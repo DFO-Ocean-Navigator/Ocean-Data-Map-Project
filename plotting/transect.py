@@ -14,7 +14,7 @@ from oceannavigator import app
 from pykml import parser
 
 
-def plot(url, bathurl, climate_url, **kwargs):
+def plot(url, climate_url, **kwargs):
     query = kwargs.get('query')
 
     points = query.get('transect_pts')
@@ -43,82 +43,79 @@ def plot(url, bathurl, climate_url, **kwargs):
     if surface is not None and (surface == '' or surface == 'none'):
         surface = None
 
-    dataset = Dataset(url, 'r')
-    grid = Grid(dataset, 'nav_lat', 'nav_lon')
-    depth = dataset.variables['deptht'][:]
-
-    if time >= dataset.variables['time_counter'].shape[0]:
-        time = -1
-
-    velocity = False
-    variables = query.get('variable').split(',')
-    anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
-    if len(variables) > 1 or \
-        ('votemper' not in variables and
-            'vosaline' not in variables and
-            'bottom_votemper' not in variables and
-            'bottom_vosaline' not in variables):
-        anom = False
-
-    if len(variables) > 1:
-        velocity = True
-        v = []
-        for name in variables:
-            v.append(dataset.variables[name])
-
-        transect_pts, distance, parallel, perpendicular = \
-            grid.velocitytransect(v[0], v[1], points, time)
-    else:
-        transect_pts, distance, value = grid.transect(
-            dataset.variables[variables[0]],
-            points, time)
-
-    if surface is not None:
-        surface_pts, surface_dist, surface_value = grid.surfacetransect(
-            dataset.variables[surface],
-            points, time)
-        surface_name = dataset.variables[
-            surface].long_name.replace(" at CMC", "")
-        surface_unit = dataset.variables[surface].units
-        if surface_unit == "Kelvins":
-            surface_unit = "Celsius"
-            surface_value = np.add(surface_value, -273.15)
-
-    variable_unit = dataset.variables[variables[0]].units
-    variable_name = dataset.variables[
-        variables[0]].long_name.replace(" at CMC", "")
-    if variable_unit == "Kelvins":
-        variable_unit = "Celsius"
-        value = np.add(value, -273.15)
-
-    if anom:
-        variable_name += " Anomaly"
-
-    t = netcdftime.utime(dataset.variables["time_counter"].units)
-    timestamp = t.num2date(dataset.variables["time_counter"][int(time)])
-    dataset.close()
-
-    if anom:
-        dataset = Dataset(climate_url, 'r')
+    with Dataset(url, 'r') as dataset:
         grid = Grid(dataset, 'nav_lat', 'nav_lon')
-        climate_points, climate_distance, climate_value = grid.transect(
-            dataset.variables[variables[0]],
-            points, time)
+        depth = dataset.variables['deptht'][:]
 
-        if dataset.variables[variables[0]].units == "Kelvins":
-            climate_value = np.add(climate_value, -273.15)
+        if time >= dataset.variables['time_counter'].shape[0]:
+            time = -1
 
-        value = value - climate_value
-        dataset.close()
+        velocity = False
+        variables = query.get('variable').split(',')
+        anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
+        if len(variables) > 1 or \
+            ('votemper' not in variables and
+                'vosaline' not in variables and
+                'bottom_votemper' not in variables and
+                'bottom_vosaline' not in variables):
+            anom = False
+
+        if len(variables) > 1:
+            velocity = True
+            v = []
+            for name in variables:
+                v.append(dataset.variables[name])
+
+            transect_pts, distance, parallel, perpendicular = \
+                grid.velocitytransect(v[0], v[1], points, time)
+        else:
+            transect_pts, distance, value = grid.transect(
+                dataset.variables[variables[0]],
+                points, time)
+
+        if surface is not None:
+            surface_pts, surface_dist, surface_value = grid.surfacetransect(
+                dataset.variables[surface],
+                points, time)
+            surface_name = dataset.variables[
+                surface].long_name.replace(" at CMC", "")
+            surface_unit = dataset.variables[surface].units
+            if surface_unit == "Kelvins":
+                surface_unit = "Celsius"
+                surface_value = np.add(surface_value, -273.15)
+
+        variable_unit = dataset.variables[variables[0]].units
+        variable_name = dataset.variables[
+            variables[0]].long_name.replace(" at CMC", "")
+        if variable_unit == "Kelvins":
+            variable_unit = "Celsius"
+            value = np.add(value, -273.15)
+
+        if anom:
+            variable_name += " Anomaly"
+
+        t = netcdftime.utime(dataset.variables["time_counter"].units)
+        timestamp = t.num2date(dataset.variables["time_counter"][int(time)])
+
+    if anom:
+        with Dataset(climate_url, 'r') as dataset:
+            grid = Grid(dataset, 'nav_lat', 'nav_lon')
+            climate_points, climate_distance, climate_value = grid.transect(
+                dataset.variables[variables[0]],
+                points, time)
+
+            if dataset.variables[variables[0]].units == "Kelvins":
+                climate_value = np.add(climate_value, -273.15)
+
+            value = value - climate_value
 
     # Bathymetry
-    dataset = Dataset(bathurl, 'r')
-    bath_x, bath_y = bathymetry(
-        dataset.variables['y'],
-        dataset.variables['x'],
-        dataset.variables['z'],
-        points)
-    dataset.close()
+    with Dataset(app.config['BATHYMETRY_FILE'], 'r') as dataset:
+        bath_x, bath_y = bathymetry(
+            dataset.variables['y'],
+            dataset.variables['x'],
+            dataset.variables['z'],
+            points)
 
     # Colormap from arguments
     cmap = query.get('colormap')

@@ -31,26 +31,25 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
         try:
             data = np.load(CACHE_DIR + "/" + hashed + ".npy")
         except:
-            ds = Dataset(BATHYMETRY_FILE, 'r')
-            lat = ds.variables['y']
-            lon = ds.variables['x']
-            z = ds.variables['z']
+            with Dataset(BATHYMETRY_FILE, 'r') as ds:
+                lat = ds.variables['y']
+                lon = ds.variables['x']
+                z = ds.variables['z']
 
-            def lat_index(v):
-                return int(round((v - lat[0]) * 60.0))
+                def lat_index(v):
+                    return int(round((v - lat[0]) * 60.0))
 
-            def lon_index(v):
-                return int(round((v - lon[0]) * 60.0))
+                def lon_index(v):
+                    return int(round((v - lon[0]) * 60.0))
 
-            minlat = lat_index(np.amin(target_lat))
-            minlon = lon_index(np.amin(target_lon))
-            maxlat = lat_index(np.amax(target_lat))
-            maxlon = lon_index(np.amax(target_lon))
+                minlat = lat_index(np.amin(target_lat))
+                minlon = lon_index(np.amin(target_lon))
+                maxlat = lat_index(np.amax(target_lat))
+                maxlon = lon_index(np.amax(target_lon))
 
-            lats, lons = np.meshgrid(
-                lat[minlat:maxlat:1], lon[minlon:maxlon:1])
-            res = z[minlat:maxlat:1, minlon:maxlon:1].transpose() * -1
-            ds.close()
+                lats, lons = np.meshgrid(
+                    lat[minlat:maxlat:1], lon[minlon:maxlon:1])
+                res = z[minlat:maxlat:1, minlon:maxlon:1].transpose() * -1
 
             orig_def = pyresample.geometry.SwathDefinition(
                 lons=lons, lats=lats)

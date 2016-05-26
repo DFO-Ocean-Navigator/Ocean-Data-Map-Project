@@ -38,102 +38,99 @@ def plot(url, climate_url, **kwargs):
         # Default to NW Atlantic
         m = basemap.load_nwatlantic()
 
-    dataset = Dataset(url, 'r')
-
-    if query.get('time') is None or len(query.get('time')) == 0:
-        time = -1
-    else:
-        time = int(query.get('time'))
-
-    if time >= dataset.variables['time_counter'].shape[0]:
-        time = -1
-
-    variable_unit = dataset.variables[variables[0]].units
-    variable_name = dataset.variables[
-        variables[0]].long_name.replace(" at CMC", "")
-    if vector:
-        variable_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
-                               variable_name)
-        variable_name = re.sub(r" +", " ", variable_name)
-
-    anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
-    if len(variables) > 1 or \
-        ('votemper' not in variables and
-            'vosaline' not in variables and
-            'bottom_votemper' not in variables and
-            'bottom_vosaline' not in variables):
-        anom = False
-    if anom:
-        variable_name += " Anomaly"
-
-    depth = 0
-    depthm = 0
-    if query.get('depth') and \
-       len(query.get('depth')) > 0 and \
-       query.get('depth') != 'all':
-        depth = int(query.get('depth'))
-        if depth >= dataset.variables['deptht'].shape[0]:
-            depth = 0
-        if 'deptht' in dataset.variables:
-            depthm = dataset.variables['deptht'][int(depth)]
+    with Dataset(url, 'r') as dataset:
+        if query.get('time') is None or len(query.get('time')) == 0:
+            time = -1
         else:
-            depthm = 0
-    data = []
-    allvars = []
-    for v in variables:
-        var = dataset.variables[v]
-        allvars.append(v)
-        target_lat, target_lon, d = load_interpolated(
-            m, 500, dataset, v,
-            depth, time)
-        data.append(d)
-        if len(var.shape) == 3:
-            depth_label = ""
-        else:
-            depth_var = dataset.variables['deptht']
-            depth_label = " at " + \
-                str(int(np.round(depthm))) + " " + depth_var.units
+            time = int(query.get('time'))
 
-    quiver_data = []
-    if 'quiver' in query and len(query.get('quiver')) > 0:
-        quiver_vars = query.get('quiver').split(',')
-        for v in quiver_vars:
-            if v is None or len(v) == 0 or v == 'none':
-                continue
-            allvars.append(v)
-            var = dataset.variables[v]
-            quiver_unit = var.units
-            quiver_name = var.long_name
-            quiver_lat, quiver_lon, d = load_interpolated(
-                m, 50, dataset, v, depth, time)
-            quiver_data.append(d)
+        if time >= dataset.variables['time_counter'].shape[0]:
+            time = -1
 
-        if quiver_vars[0] != 'none':
-            quiver_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
-                                 quiver_name)
-            quiver_name = re.sub(r" +", " ", quiver_name)
+        variable_unit = dataset.variables[variables[0]].units
+        variable_name = dataset.variables[
+            variables[0]].long_name.replace(" at CMC", "")
+        if vector:
+            variable_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
+                                   variable_name)
+            variable_name = re.sub(r" +", " ", variable_name)
 
-    if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
+        anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
+        if len(variables) > 1 or \
+            ('votemper' not in variables and
+                'vosaline' not in variables and
+                'bottom_votemper' not in variables and
+                'bottom_vosaline' not in variables):
+            anom = False
+        if anom:
+            variable_name += " Anomaly"
+
         depth = 0
+        depthm = 0
+        if query.get('depth') and \
+            len(query.get('depth')) > 0 and \
+                query.get('depth') != 'all':
+            depth = int(query.get('depth'))
+            if depth >= dataset.variables['deptht'].shape[0]:
+                depth = 0
+            if 'deptht' in dataset.variables:
+                depthm = dataset.variables['deptht'][int(depth)]
+            else:
+                depthm = 0
+        data = []
+        allvars = []
+        for v in variables:
+            var = dataset.variables[v]
+            allvars.append(v)
+            target_lat, target_lon, d = load_interpolated(
+                m, 500, dataset, v,
+                depth, time)
+            data.append(d)
+            if len(var.shape) == 3:
+                depth_label = ""
+            else:
+                depth_var = dataset.variables['deptht']
+                depth_label = " at " + \
+                    str(int(np.round(depthm))) + " " + depth_var.units
 
-    contour_data = []
-    contour = query.get('contour')
-    if contour is not None and \
-       contour != '' and \
-       contour != 'none':
-        target_lat, target_lon, d = load_interpolated(m, 500, dataset,
-                                                      contour,
-                                                      depth, time)
-        if dataset[contour].units == "Kelvins":
-            d = np.add(d, -273.15)
+        quiver_data = []
+        if 'quiver' in query and len(query.get('quiver')) > 0:
+            quiver_vars = query.get('quiver').split(',')
+            for v in quiver_vars:
+                if v is None or len(v) == 0 or v == 'none':
+                    continue
+                allvars.append(v)
+                var = dataset.variables[v]
+                quiver_unit = var.units
+                quiver_name = var.long_name
+                quiver_lat, quiver_lon, d = load_interpolated(
+                    m, 50, dataset, v, depth, time)
+                quiver_data.append(d)
 
-        contour_data.append(d)
-        contour_name = dataset.variables[contour].long_name
+            if quiver_vars[0] != 'none':
+                quiver_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
+                                     quiver_name)
+                quiver_name = re.sub(r" +", " ", quiver_name)
 
-    t = netcdftime.utime(dataset.variables["time_counter"].units)
-    timestamp = t.num2date(
-        dataset.variables["time_counter"][time])
-    dataset.close()
+        if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
+            depth = 0
+
+        contour_data = []
+        contour = query.get('contour')
+        if contour is not None and \
+            contour != '' and \
+                contour != 'none':
+            target_lat, target_lon, d = load_interpolated(m, 500, dataset,
+                                                          contour,
+                                                          depth, time)
+            if dataset[contour].units == "Kelvins":
+                d = np.add(d, -273.15)
+
+            contour_data.append(d)
+            contour_name = dataset.variables[contour].long_name
+
+        t = netcdftime.utime(dataset.variables["time_counter"].units)
+        timestamp = t.num2date(dataset.variables["time_counter"][time])
 
     # Load bathymetry data
     bathymetry = overlays.bathymetry(m, target_lat, target_lon, blur=2)
@@ -160,11 +157,10 @@ def plot(url, climate_url, **kwargs):
 
     # Anomomilies
     if anom:
-        dataset = Dataset(climate_url, 'r')
-        target_lat, target_lon, d = load_interpolated(
-            m, 500, dataset, variables[0],
-            depth, timestamp.month - 1)
-        dataset.close()
+        with Dataset(climate_url, 'r') as dataset:
+            target_lat, target_lon, d = load_interpolated(
+                m, 500, dataset, variables[0],
+                depth, timestamp.month - 1)
         data[0] = data[0] - d
 
     # Colormap from arguments

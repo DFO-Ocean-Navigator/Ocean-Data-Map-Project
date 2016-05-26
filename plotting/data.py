@@ -6,8 +6,11 @@ from cachetools import LRUCache
 from hashlib import sha1
 from threading import Thread
 from oceannavigator import app
+from netCDF4 import netcdftime
+import os
 
-_data_cache = LRUCache(maxsize=1024 * 1024 * 1024, getsizeof=len)
+_interpolated_cache = LRUCache(maxsize=1024 * 1024 * 1024, getsizeof=len)
+_timeseries_cache = LRUCache(maxsize=1024 * 1024 * 256, getsizeof=len)
 
 
 def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
@@ -21,9 +24,10 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
 
     target_lon, target_lat = basemap.makegrid(gridsize, gridsize)
 
-    if _data_cache.get(hashed) is None:
+    if _interpolated_cache.get(hashed) is None:
+        path = os.path.join(CACHE_DIR, "interp_" + hashed + ".npy")
         try:
-            resampled = np.load(CACHE_DIR + "/" + hashed + ".npy")
+            resampled = np.load(path)
         except:
             grid = Grid(dataset, 'nav_lat', 'nav_lon')
 
@@ -56,13 +60,54 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
             def do_save(filename, data):
                 data.view(np.ma.MaskedArray).dump(filename)
 
-            t = Thread(target=do_save, args=(
-                CACHE_DIR + "/" + hashed + ".npy", resampled))
+            t = Thread(target=do_save, args=(path, resampled))
             t.daemon = True
             t.start()
 
-        _data_cache[hashed] = resampled
+        _interpolated_cache[hashed] = resampled
     else:
-        return target_lat, target_lon, _data_cache.get(hashed)
+        return target_lat, target_lon, _interpolated_cache.get(hashed)
 
     return target_lat, target_lon, resampled
+
+
+def load_timeseries(dataset, variable, time, depth, lat, lon):
+    CACHE_DIR = app.config['CACHE_DIR']
+    hashed = sha1(dataset.filepath() +
+                  variable +
+                  str(depth) +
+                  str(time) +
+                  str(lat) +
+                  str(lon)).hexdigest()
+
+    if _timeseries_cache.get(hashed) is None:
+        path = os.path.join(CACHE_DIR, "ts_" + hashed + ".npy")
+        try:
+            d = np.load(path)
+        except:
+            grid = Grid(dataset, 'nav_lat', 'nav_lon')
+            y, x = grid.find_index([lat], [lon])
+            var = dataset.variables[variable]
+            if 'deptht' in var.dimensions:
+                if depth == 'all':
+                    d = var[time, :, y, x]
+                else:
+                    d = var[time, int(depth), y[0], x[0]]
+            else:
+                d = var[time, y[0], x[0]]
+
+            def do_save(filename, data):
+                d.dump(filename)
+
+            t = Thread(target=do_save, args=(path, d))
+            t.daemon = True
+            t.start()
+
+        _timeseries_cache[hashed] = d
+    else:
+        d = _timeseries_cache[hashed]
+
+    t = netcdftime.utime(dataset.variables["time_counter"].units)
+    times = t.num2date(dataset.variables["time_counter"][time])
+
+    return np.squeeze(d), times

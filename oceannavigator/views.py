@@ -88,22 +88,22 @@ def depth():
     if ',' in variable:
         variable = variable.split(',')[0]
 
-    ds = Dataset(app.config['THREDDS_SERVER'] + 'dodsC/' + filename, 'r')
-
-    data = []
-    if variable and \
-       variable in ds.variables and \
-       'deptht' in ds.variables[variable].dimensions:
-        if str(request.args.get('all')).lower() in ['true', 'yes', 'on']:
-            data.append({'id': 'all', 'value': 'All Depths'})
-        for idx, value in enumerate(np.round(ds.variables['deptht'])):
-            data.append({
-                'id': idx,
-                'value': "%d " % (value) + ds.variables['deptht'].units % value
-            })
+    with Dataset(app.config['THREDDS_SERVER'] +
+                 'dodsC/' + filename, 'r') as ds:
+        data = []
+        if variable and \
+           variable in ds.variables and \
+           'deptht' in ds.variables[variable].dimensions:
+            if str(request.args.get('all')).lower() in ['true', 'yes', 'on']:
+                data.append({'id': 'all', 'value': 'All Depths'})
+            for idx, value in enumerate(np.round(ds.variables['deptht'])):
+                data.append({
+                    'id': idx,
+                    'value': "%d " % (value) +
+                             ds.variables['deptht'].units % value
+                })
 
     js = json.dumps(data)
-    ds.close()
     resp = Response(js, status=200, mimetype='application/json')
     return resp
 
@@ -125,35 +125,35 @@ def vars_query():
     else:
         filename = 'giops/monthly/aggregated.ncml'
 
-    ds = Dataset(app.config['THREDDS_SERVER'] + 'dodsC/' + filename, 'r')
     data = []
     three_d = '3d_only' in request.args
-    if 'vectors_only' not in request.args:
-        for k, v in ds.variables.iteritems():
-            if 'time_counter' in v.dimensions and 'y' in v.dimensions:
-                if three_d and 'deptht' not in v.dimensions:
-                    continue
-                else:
-                    data.append({
-                        'id': k,
-                        'value': v.long_name.replace(" at CMC", "").title()
-                    })
+    with Dataset(app.config['THREDDS_SERVER'] +
+                 'dodsC/' + filename, 'r') as ds:
+        if 'vectors_only' not in request.args:
+            for k, v in ds.variables.iteritems():
+                if 'time_counter' in v.dimensions and 'y' in v.dimensions:
+                    if three_d and 'deptht' not in v.dimensions:
+                        continue
+                    else:
+                        data.append({
+                            'id': k,
+                            'value': v.long_name.replace(" at CMC", "").title()
+                        })
 
-    if 'vectors' in request.args or 'vectors_only' in request.args:
-        if 'vozocrtx' in ds.variables:
-            data.append(
-                {'id': 'vozocrtx,vomecrty', 'value': 'Sea Water Velocity'})
-        if 'bottom_vozocrtx' in ds.variables and not three_d:
-            data.append({
-                'id': 'bottom_vozocrtx,bottom_vomecrty',
-                'value': 'Bottom Sea Water Velocity'
-            })
-        if 'u_wind' in ds.variables and not three_d:
-            data.append({'id': 'u_wind,v_wind', 'value': 'Wind'})
+        if 'vectors' in request.args or 'vectors_only' in request.args:
+            if 'vozocrtx' in ds.variables:
+                data.append(
+                    {'id': 'vozocrtx,vomecrty', 'value': 'Sea Water Velocity'})
+            if 'bottom_vozocrtx' in ds.variables and not three_d:
+                data.append({
+                    'id': 'bottom_vozocrtx,bottom_vomecrty',
+                    'value': 'Bottom Sea Water Velocity'
+                })
+            if 'u_wind' in ds.variables and not three_d:
+                data.append({'id': 'u_wind,v_wind', 'value': 'Wind'})
 
     data = sorted(data, key=lambda k: k['value'])
     js = json.dumps(data)
-    ds.close()
     resp = Response(js, status=200, mimetype='application/json')
     return resp
 
@@ -172,11 +172,13 @@ def time_query():
     else:
         dformat = '%d %B %Y'
 
-    ds = Dataset(app.config['THREDDS_SERVER'] + 'dodsC/' + filename, 'r')
     data = []
-    t = netcdftime.utime(ds.variables['time_counter'].units)
-    for idx, date in enumerate(t.num2date(ds.variables['time_counter'][:])):
-        data.append({'id': idx, 'value': date})
+    with Dataset(app.config['THREDDS_SERVER'] +
+                 'dodsC/' + filename, 'r') as ds:
+        t = netcdftime.utime(ds.variables['time_counter'].units)
+        for idx, date in \
+                enumerate(t.num2date(ds.variables['time_counter'][:])):
+            data.append({'id': idx, 'value': date})
 
     data = sorted(data, key=lambda k: -k['id'])
     data.insert(0, {'id': -1, 'value': 'Most Recent'})
@@ -189,7 +191,6 @@ def time_query():
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
-    ds.close()
     resp = Response(js, status=200, mimetype='application/json')
     return resp
 
@@ -241,7 +242,6 @@ def plot():
 
     url = app.config['THREDDS_SERVER'] + 'dodsC/' + filename
     climate_url = app.config['THREDDS_SERVER'] + 'dodsC/' + climate_file
-    bathymetry_url = "/opt/tds-live/content/thredds/public/misc/ETOPO1_Bed_g_gmt4.grd"
 
     opts = {
         'dpi': 72,
@@ -255,7 +255,7 @@ def plot():
         response = Response(img, status=200, mimetype='image/png')
     elif plottype == 'transect':
         opts['size'] = '11x5'
-        img = transect_plot(url, bathymetry_url, climate_url, **opts)
+        img = transect_plot(url, climate_url, **opts)
         response = Response(img, status=200, mimetype='image/png')
     elif plottype == 'timeseries':
         opts['size'] = '11x5'
