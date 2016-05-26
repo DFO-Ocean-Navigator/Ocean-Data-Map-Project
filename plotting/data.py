@@ -32,6 +32,7 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
             lon = dataset.variables['nav_lon'][miny:maxy, minx:maxx]
 
             var = dataset.variables[variable]
+
             if len(var.shape) == 3:
                 data = var[time, miny:maxy, minx:maxx]
             else:

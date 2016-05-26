@@ -1,3 +1,5 @@
+#!env python
+
 from oceannavigator import app
 
 # app.config.update(
@@ -7,4 +9,4 @@ from oceannavigator import app
 # )
 app.config.from_pyfile('oceannavigator.cfg', silent=False)
 app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
-app.run(host='0.0.0.0')
+app.run(host='0.0.0.0', port=5050)

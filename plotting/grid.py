@@ -1,6 +1,5 @@
 from math import pi, radians, degrees
 import numpy as np
-# from scipy.spatial import cKDTree as KDTree
 from pykdtree.kdtree import KDTree
 import geopy
 from geopy.distance import VincentyDistance
@@ -8,6 +7,9 @@ import scipy.interpolate
 import itertools
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom
+from cachetools import LRUCache
+
+_data_cache = LRUCache(maxsize=16)
 
 
 class Grid(object):
@@ -21,16 +23,20 @@ class Grid(object):
         """
         self.latvar = ncfile.variables[latvarname]
         self.lonvar = ncfile.variables[lonvarname]
-        rad_factor = pi / 180.0
-        latvals = self.latvar[:] * rad_factor
-        lonvals = self.lonvar[:] * rad_factor
-        clat, clon = np.cos(latvals), np.cos(lonvals)
-        slat, slon = np.sin(latvals), np.sin(lonvals)
-        triples = np.array(list(zip(np.ravel(clat * clon),
-                           np.ravel(clat * slon),
-                           np.ravel(slat))))
 
-        self.kdt = KDTree(triples)
+        self.kdt = _data_cache.get(ncfile.filepath())
+        if self.kdt is None:
+            rad_factor = pi / 180.0
+            latvals = self.latvar[:] * rad_factor
+            lonvals = self.lonvar[:] * rad_factor
+            clat, clon = np.cos(latvals), np.cos(lonvals)
+            slat, slon = np.sin(latvals), np.sin(lonvals)
+            triples = np.array(list(zip(np.ravel(clat * clon),
+                                        np.ravel(clat * slon),
+                                        np.ravel(slat))))
+
+            self.kdt = KDTree(triples)
+            _data_cache[ncfile.filepath()] = self.kdt
 
         self._shape = ncfile.variables[latvarname].shape
 
@@ -71,11 +77,8 @@ class Grid(object):
         minx, maxx = np.amin(x), np.amax(x)
         return miny, maxy, minx, maxx
 
-    def transect(self, variable, start, end, timestep, n=100):
-        p0 = geopy.Point(start)
-        p1 = geopy.Point(end)
-
-        distances, target_lat, target_lon, b = points_between(p0, p1, n)
+    def transect(self, variable, points, timestep, n=100):
+        distances, target_lat, target_lon, b = _path_to_points(points, n)
 
         idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
 
@@ -86,12 +89,12 @@ class Grid(object):
 
         lat = self.latvar[miny:maxy, minx:maxx]
         lon = self.lonvar[miny:maxy, minx:maxx]
-        data = variable[timestep,:, miny:maxy, minx:maxx]
+        data = variable[timestep, :, miny:maxy, minx:maxx]
         data = np.rollaxis(data, 0, 3)
 
         masked_lon = lon.view(np.ma.MaskedArray)
         masked_lat = lat.view(np.ma.MaskedArray)
-        masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
+        masked_lon.mask = masked_lat.mask = data.mask
 
         orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
         target_def = SwathDefinition(lons=np.array(target_lon),
@@ -109,11 +112,8 @@ class Grid(object):
 
         return np.array([target_lat, target_lon]), distances, resampled
 
-    def surfacetransect(self, variable, start, end, timestep, n=100):
-        p0 = geopy.Point(start)
-        p1 = geopy.Point(end)
-
-        distances, target_lat, target_lon, b = points_between(p0, p1, n)
+    def surfacetransect(self, variable, points, timestep, n=100):
+        distances, target_lat, target_lon, b = _path_to_points(points, n)
 
         idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
 
@@ -147,11 +147,9 @@ class Grid(object):
         return np.array([target_lat, target_lon]), distances, resampled
 
     def velocitytransect(self, variablex, variabley,
-                         start, end, timestep, n=100):
-        p0 = geopy.Point(start)
-        p1 = geopy.Point(end)
+                         points, timestep, n=100):
 
-        distances, target_lat, target_lon, b = points_between(p0, p1, n)
+        distances, target_lat, target_lon, b = _path_to_points(points, n)
 
         idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
 
@@ -163,16 +161,12 @@ class Grid(object):
         lat = self.latvar[miny:maxy, minx:maxx]
         lon = self.lonvar[miny:maxy, minx:maxx]
 
-        r = radians(90 - b)
-        xmag = variablex[timestep,:, miny:maxy, minx:maxx]
-        ymag = variabley[timestep,:, miny:maxy, minx:maxx]
-        theta = np.arctan2(ymag, xmag) - r
-        mag = np.sqrt(xmag.filled() ** 2 + ymag.filled() ** 2)
-        invalid = np.sqrt(xmag.fill_value ** 2 + ymag.fill_value ** 2)
-        mag = np.ma.masked_values(mag, invalid)
+        r = np.radians(np.subtract(90, b))
+        xmag = variablex[timestep, :, miny:maxy, minx:maxx]
+        ymag = variabley[timestep, :, miny:maxy, minx:maxx]
 
-        parallel = np.rollaxis(mag * np.cos(theta), 0, 3)
-        perpendicular = np.rollaxis(mag * np.sin(theta), 0, 3)
+        xmag = np.rollaxis(xmag, 0, 3)
+        ymag = np.rollaxis(ymag, 0, 3)
 
         masked_lon = lon.view(np.ma.MaskedArray)
         masked_lat = lat.view(np.ma.MaskedArray)
@@ -182,30 +176,38 @@ class Grid(object):
         target_def = SwathDefinition(lons=np.array(target_lon),
                                      lats=np.array(target_lat))
 
-        self._fill_invalid_shift(parallel)
-        self._fill_invalid_shift(perpendicular)
+        x_resampled = resample_custom(
+            orig_def, xmag, target_def,
+            radius_of_influence=500000,
+            neighbours=10,
+            weight_funcs=np.tile([lambda r: 1 / r ** 2],
+                                 xmag.shape[-1]).tolist(),
+            fill_value=None, nprocs=4).transpose()
+        y_resampled = resample_custom(
+            orig_def, ymag, target_def,
+            radius_of_influence=500000,
+            neighbours=10,
+            weight_funcs=np.tile([lambda r: 1 / r ** 2],
+                                 ymag.shape[-1]).tolist(),
+            fill_value=None, nprocs=4).transpose()
 
-        parallel_res = resample_custom(
-            orig_def, parallel, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=np.tile([lambda r: 1 / r ** 2],
-                                 parallel.shape[-1]).tolist(),
-            fill_value=None, nprocs=4).transpose()
-        perpendicular_res = resample_custom(
-            orig_def, perpendicular, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=np.tile([lambda r: 1 / r ** 2],
-                                 perpendicular.shape[-1]).tolist(),
-            fill_value=None, nprocs=4).transpose()
+        self._fill_invalid_shift(x_resampled)
+        self._fill_invalid_shift(y_resampled)
+
+        theta = np.arctan2(y_resampled, x_resampled) - r
+        mag = np.sqrt(x_resampled.filled() ** 2 + y_resampled.filled() ** 2)
+        invalid = np.sqrt(
+            x_resampled.fill_value ** 2 + y_resampled.fill_value ** 2)
+        mag = np.ma.masked_values(mag, invalid)
+
+        parallel = mag * np.cos(theta)
+        perpendicular = mag * np.sin(theta)
 
         return np.array([target_lat, target_lon]), \
-            distances, parallel_res, perpendicular_res
+            distances, parallel, perpendicular
 
     def _fill_invalid_shift(self, z):
-        # extend values down 1 depth step, but keep the mask from nearest
-        # neighbour
+        # extend values down 1 depth step
         for shift in range(1, z.shape[-1]):
             if not z.mask.any():
                 break
@@ -213,6 +215,7 @@ class Grid(object):
             idx = ~z_shifted.mask * z.mask
             z[idx] = z_shifted[idx]
 
+        # extend values right 1 step
         for shift in range(1, z.shape[0] / 2):
             if not z.mask.any():
                 break
@@ -281,13 +284,10 @@ def bearing(lat0, lon0, lat1, lon1):
     return degrees(bearing)
 
 
-def bathymetry(latvar, lonvar, depthvar, start, end, n=200):
-    p0 = geopy.Point(start)
-    p1 = geopy.Point(end)
+def bathymetry(latvar, lonvar, depthvar, points, n=200):
+    distances, lat, lon, b = _path_to_points(points, n)
     lat_to_idx = (latvar.shape[0] - 1) / (latvar[-1] - latvar[0])
     lon_to_idx = (lonvar.shape[0] - 1) / (lonvar[-1] - lonvar[0])
-
-    distances, lat, lon, b = points_between(p0, p1, n)
 
     idx_x = np.round((lon - lonvar[0]) * lon_to_idx).astype(int)
     idx_y = np.round((lat - latvar[0]) * lat_to_idx).astype(int)
@@ -342,3 +342,36 @@ def interpolator(coords, z):
         return interp
     else:
         return scipy.interpolate.LinearNDInterpolator(coords, z)
+
+
+def _path_to_points(points, n):
+    pairs = zip(points, points[1::])
+
+    d = VincentyDistance()
+    dist_between_pts = []
+    for pair in pairs:
+        dist_between_pts.append(d.measure(pair[0], pair[1]))
+
+    total_distance = np.sum(dist_between_pts)
+    distances = []
+    target_lat = []
+    target_lon = []
+    bearings = []
+    for idx, pair in enumerate(pairs):
+        npts = int(np.ceil(n * (dist_between_pts[idx] /
+                                total_distance)))
+        if npts < 2:
+            npts = 2
+        p0 = geopy.Point(pair[0])
+        p1 = geopy.Point(pair[1])
+
+        p_dist, p_lat, p_lon, b = points_between(p0, p1, npts)
+        if len(distances) > 0:
+            distances.extend(np.add(p_dist, distances[-1]))
+        else:
+            distances.extend(p_dist)
+        target_lat.extend(p_lat)
+        target_lon.extend(p_lon)
+        bearings.extend([b] * len(p_dist))
+
+    return distances, target_lat, target_lon, bearings

@@ -39,7 +39,7 @@
 		<SimpleField type="string" name="GLOBAL_ID"></SimpleField>
 	</Schema>
 	<Folder>
-		<name>EBSA - North-west Atlantic</name>
+		<name>EBSAs - North-west Atlantic</name>
 		<open>1</open>
 		<Placemark>
 			<name>Slopes of the Flemish Cap and Grand Bank</name>

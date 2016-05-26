@@ -99,12 +99,25 @@ def _parse_coords(basemap, coordinates):
     return map_coords
 
 
+def list_overlays():
+    KML_DIR = app.config['OVERLAY_KML_DIR']
+
+    overlays = []
+    for f in os.listdir(KML_DIR):
+        if not f.endswith(".kml"):
+            continue
+
+        name = parser.parse(
+            os.path.join(KML_DIR, f)).getroot().Document.Folder.name
+        overlays.append({'id': os.path.basename(f), 'value': str(name)})
+    return overlays
+
+
 def draw_overlay(basemap, kmlfile, **kwargs):
     KML_DIR = app.config['OVERLAY_KML_DIR']
 
     doc = parser.parse(os.path.join(KML_DIR,
-                                    werkzeug.utils.secure_filename(kmlfile +
-                                                                   '.kml')))
+                                    werkzeug.utils.secure_filename(kmlfile)))
 
     nsmap = {"k": doc.getroot().nsmap[None]}
     num_places = len(doc.getroot().Document.Folder.Placemark)

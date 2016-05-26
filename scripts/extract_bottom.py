@@ -32,14 +32,15 @@ with Dataset(infile, 'r') as src, Dataset(outfile, 'w',
 
         dims = list(variable.dimensions)
         dims.remove('deptht')
-        dst.createVariable(name, variable.datatype, dims)
+        newname = "bottom_" + name
+        dst.createVariable(newname, variable.datatype, dims)
         for attrname in variable.ncattrs():
             if attrname == 'long_name':
-                dst.variables[name].setncattr(attrname, "Bottom " +
-                                              variable.getncattr(attrname))
+                dst.variables[newname].setncattr(attrname, "Bottom " +
+                                                 variable.getncattr(attrname))
             else:
-                dst.variables[name].setncattr(attrname,
-                                              variable.getncattr(attrname))
+                dst.variables[newname].setncattr(attrname,
+                                                 variable.getncattr(attrname))
 
         axis = variable.dimensions.index('deptht')
         data = variable[:]
@@ -48,7 +49,7 @@ with Dataset(infile, 'r') as src, Dataset(outfile, 'w',
             data[data.mask] = np.roll(data, shift, axis)[data.mask]
         bottom = np.rollaxis(data, axis)[variable.shape[axis] - 1, :, :]
 
-        dst.variables[name][:] = bottom[:]
+        dst.variables[newname][:] = bottom[:]
     for name in ['nav_lat', 'nav_lon', 'time_counter']:
         if name not in src.variables:
             continue

@@ -36,10 +36,6 @@ colormaps = {
         [(0, 0, 0, 0.5), (0, 0, 0, 0.1)]),
     'salinity': cmocean.cm.salinity,
     'speed': cmocean.cm.speed,
-    'temperature': make_colormap([
-        (0, 0, 1),
-        (1, 0, 0)
-    ]),
     'freesurface': cmocean.cm.freesurface,
     'free surface': cmocean.cm.freesurface,
     'velocity': cmocean.cm.velocity,
@@ -82,7 +78,7 @@ colormaps = {
         _c('#a00000'), 0.95, _c('#a00000'),
         _c('#610000')
     ]),
-    'eugene': make_colormap([
+    'anomaly': make_colormap([
         _c('#000064'),
         _c('#0000b2'), 0.090909, _c('#0000b2'),
         _c('#0000ff'), 0.181818, _c('#0000ff'),
@@ -96,7 +92,21 @@ colormaps = {
         _c('#ff0000'), 0.818182, _c('#ff0000'),
         _c('#b20000'), 0.909091, _c('#b20000'),
         _c('#640000')
-    ])
+    ]),
+    'temperature': make_colormap([
+        _c('#0000ff'),
+        _c('#0748ff'), 0.125, _c('#0748ff'),
+        _c('#9291ff'), 0.250, _c('#9291ff'),
+        _c('#dbd9ff'), 0.375, _c('#dbd9ff'),
+        _c('#ffffff'), 0.500, _c('#ffffff'),
+        _c('#ffd9dd'), 0.625, _c('#ffd9dd'),
+        _c('#ff9193'), 0.750, _c('#ff9193'),
+        _c('#ff484a'), 0.875, _c('#ff484a'),
+        _c('#ff0000')
+    ]),
+    'grey': make_colormap([
+        _c('#ffffff'),
+        _c('#000000')
+    ]),
 }
-colormaps['temperature'] = colormaps['eugene']
-colormaps['anomaly'] = colormaps['eugene']
+colormaps['wind'] = colormaps['velocity']

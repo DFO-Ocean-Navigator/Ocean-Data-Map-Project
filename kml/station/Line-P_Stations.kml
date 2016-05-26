@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Line-P_Stations.kml</name>
+	<Folder>
+		<name>Line P Stations</name>
+			<Placemark><name>P01</name><Point><coordinates>-125.5,48.575</coordinates></Point></Placemark>
+			<Placemark><name>P02</name><Point><coordinates>-126,48.6</coordinates></Point></Placemark>
+			<Placemark><name>P03</name><Point><coordinates>-126.333333333333,48.625</coordinates></Point></Placemark>
+			<Placemark><name>P04</name><Point><coordinates>-126.666666666667,48.65</coordinates></Point></Placemark>
+			<Placemark><name>P05</name><Point><coordinates>-127.166666666667,48.6916666666667</coordinates></Point></Placemark>
+			<Placemark><name>P06</name><Point><coordinates>-127.666666666667,48.7433333333333</coordinates></Point></Placemark>
+			<Placemark><name>P07</name><Point><coordinates>-128.166666666667,48.7766666666667</coordinates></Point></Placemark>
+			<Placemark><name>P08</name><Point><coordinates>-128.666666666667,48.8166666666667</coordinates></Point></Placemark>
+			<Placemark><name>P09</name><Point><coordinates>-129.166666666667,48.8566666666667</coordinates></Point></Placemark>
+			<Placemark><name>P10</name><Point><coordinates>-129.666666666667,48.8933333333333</coordinates></Point></Placemark>
+			<Placemark><name>P11</name><Point><coordinates>-130.166666666667,48.9333333333333</coordinates></Point></Placemark>
+			<Placemark><name>P12</name><Point><coordinates>-130.666666666667,48.97</coordinates></Point></Placemark>
+			<Placemark><name>P13</name><Point><coordinates>-131.666666666667,49.0433333333333</coordinates></Point></Placemark>
+			<Placemark><name>P14</name><Point><coordinates>-132.666666666667,49.1233333333333</coordinates></Point></Placemark>
+			<Placemark><name>P15</name><Point><coordinates>-133.666666666667,49.2</coordinates></Point></Placemark>
+			<Placemark><name>P16</name><Point><coordinates>-134.666666666667,49.2833333333333</coordinates></Point></Placemark>
+			<Placemark><name>P17</name><Point><coordinates>-135.666666666667,49.35</coordinates></Point></Placemark>
+			<Placemark><name>P18</name><Point><coordinates>-136.666666666667,49.4333333333333</coordinates></Point></Placemark>
+			<Placemark><name>P19</name><Point><coordinates>-137.666666666667,49.5</coordinates></Point></Placemark>
+			<Placemark><name>P20</name><Point><coordinates>-138.666666666667,49.5666666666667</coordinates></Point></Placemark>
+			<Placemark><name>P21</name><Point><coordinates>-139.666666666667,49.6333333333333</coordinates></Point></Placemark>
+			<Placemark><name>P22</name><Point><coordinates>-140.666666666667,49.7</coordinates></Point></Placemark>
+			<Placemark><name>P23</name><Point><coordinates>-141.666666666667,49.7666666666667</coordinates></Point></Placemark>
+			<Placemark><name>P24</name><Point><coordinates>-142.666666666667,49.8366666666667</coordinates></Point></Placemark>
+			<Placemark><name>P25</name><Point><coordinates>-143.605,50</coordinates></Point></Placemark>
+			<Placemark><name>P35</name><Point><coordinates>-144.303333333333,50</coordinates></Point></Placemark>
+			<Placemark><name>P26</name><Point><coordinates>-145,50</coordinates></Point></Placemark>
+	</Folder>
+</Document>
+</kml>
