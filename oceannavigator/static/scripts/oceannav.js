@@ -439,7 +439,9 @@ var StationComboBox = React.createClass({
         return {
             data: [],
             value: '',
-            url: null
+            url: null,
+            lat: 47.5467,
+            lon: -52.5867,
         };
     },
     handleChange: function(e) {
@@ -447,8 +449,32 @@ var StationComboBox = React.createClass({
         this.setState({
             value: value
         });
-        this.props.onUpdate(this.props.id, this.state.datamap[value]);
-        this.props.onUpdate('station_name', value);
+        if (value == 'custom') {
+            this.props.onUpdate('station_name', '');
+        } else {
+            this.props.onUpdate(this.props.id, this.state.datamap[value]);
+            this.props.onUpdate('station_name', value);
+        }
+    },
+    locationChanged: function() {
+        this.setState({
+            lat: parseFloat(this.refs.lat.value),
+            lon: parseFloat(this.refs.lon.value)
+        });
+    },
+    updateParent: function() {
+        var loc = this.state.lat + "," + this.state.lon;
+        this.props.onUpdate(this.props.id, loc);
+    },
+    keyPress: function(e) {
+        var key = e.which || e.keyCode;
+        if (key == 13) {
+            this.locationChanged();
+            this.updateParent();
+            return false;
+        } else {
+            return true;
+        }
     },
     componentDidMount: function() {
         this.setState({
@@ -484,6 +510,81 @@ var StationComboBox = React.createClass({
             }.bind(this)
         });
     },
+    map: null,
+    vectorSource: null,
+    showMap: function() {
+        this.refs.map.style.display = 'block';
+
+        var style = new ol.style.Style({
+            image: new ol.style.Icon({
+                color: '#ff0000',
+                src: '/images/dot.png',
+            })
+        });
+        if (this.map == null) {
+            this.vectorSource = new ol.source.Vector({
+                features: [],
+            });
+            this.map = new ol.Map({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.MapQuest({layer: 'sat'})
+                    }),
+                    new ol.layer.Vector({
+                        source: this.vectorSource,
+                    }),
+                ],
+                target: 'map',
+                controls: ol.control.defaults({
+                    attributionOptions: ({
+                        collapsible: false
+                    })
+                }),
+            });
+            this.map.on('click', function(e) {
+                this.vectorSource.clear();
+
+                var lonlat = ol.proj.transform(e.coordinate, 'EPSG:3857','EPSG:4326');
+                while (lonlat[0] < -180) {
+                    lonlat[0] += 360;
+                }
+                while (lonlat[0] > 180) {
+                    lonlat[0] -= 360;
+                }
+
+                var feature = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.transform(lonlat, 'EPSG:4326', 'EPSG:3857'))
+                });
+                feature.setStyle(style);
+                this.vectorSource.addFeature(feature);
+                this.setState({
+                    lon: lonlat[0],
+                    lat: lonlat[1],
+                });
+            }.bind(this));
+        }
+        this.vectorSource.clear();
+        var feature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([this.state.lon, this.state.lat], 'EPSG:4326', 'EPSG:3857'))
+        });
+        feature.setStyle(style);
+        this.vectorSource.addFeature(feature);
+
+        this.map.setView(new ol.View({
+            center: ol.proj.transform([this.state.lon, this.state.lat], 'EPSG:4326', 'EPSG:3857'),
+            projection: 'EPSG:3857',
+            zoom: 5,
+            maxZoom: 11,
+            minZoom: 2,
+        }));
+    },
+    closeMap: function(e) {
+        if (e.target.tagName.toLowerCase() == 'input' ||
+            e.target.className.toLowerCase() == 'modal') {
+            this.refs.map.style.display = 'none';
+            this.updateParent();
+        }
+    },
     render: function() {
         var options = [];
 
@@ -517,7 +618,34 @@ var StationComboBox = React.createClass({
                     value={this.state.value}
                     onChange={this.handleChange}>
                     {options}
+                    <option value="custom">Custom...</option>
                 </select>
+
+                <div className='latlon' style={{'display': (this.state.value == 'custom') ? 'block' : 'none'}}>
+                    <div>
+                        <label htmlFor={this.props.id + '_lat'}>Lat:</label>
+                        <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' value={parseFloat(this.state.lat).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                    </div>
+                    <div>
+                        <label htmlFor={this.props.id + '_lon'}>Lon:</label>
+                        <input ref='lon' id={this.props.id + '_lon'} type='number' step='0.0001' value={parseFloat(this.state.lon).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                    </div>
+                    <div>
+                        <label /><input type="button" value="Map" onClick={this.showMap} />
+                    </div>
+                </div>
+                <div ref='map' className='modal' onClick={this.closeMap} >
+                    <div className='modal-content'>
+                        <div id='map' style={{'height': '500px'}}></div>
+                        <div className='map-footer'>
+                            <input type="button" value="Done" onClick={this.closeMap} />
+                            <p>
+                                Latitude: {parseFloat(this.state.lat).toFixed(4)}<br />
+                                Longitude: {parseFloat(this.state.lon).toFixed(4)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -527,4 +655,3 @@ ReactDOM.render(
     <Selector />,
     document.getElementById('content')
 );
-
