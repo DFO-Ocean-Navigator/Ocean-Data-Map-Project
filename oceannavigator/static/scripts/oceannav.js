@@ -351,16 +351,20 @@ var TransectComboBox = React.createClass({
         return {
             data: [],
             value: '',
-            url: null
+            url: null,
         };
     },
     handleChange: function(e) {
         var value = e.target.value;
         this.setState({
-            value: value
+            value: value,
         });
-        this.props.onUpdate(this.props.id, this.state.datamap[value]);
-        this.props.onUpdate('transect_name', value);
+        if (value == 'custom') {
+            this.showMap(this.state.datamap[this.state.value]);
+        } else {
+            this.props.onUpdate(this.props.id, this.state.datamap[value]);
+            this.props.onUpdate('transect_name', value);
+        }
     },
     componentDidMount: function() {
         this.setState({
@@ -396,6 +400,100 @@ var TransectComboBox = React.createClass({
             }.bind(this)
         });
     },
+    map: null,
+    vectorSource: null,
+    showMap: function(pts) {
+        if (pts.constructor !== Array) {
+            pts = this.state.points;
+        } else {
+            this.setState({
+                points: pts,
+            });
+        }
+
+        this.refs.map.style.display = 'block';
+
+        if (this.map == null) {
+            this.vectorSource = new ol.source.Vector({
+                features: [],
+            });
+            this.map = new ol.Map({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.MapQuest({layer: 'sat'})
+                    }),
+                    new ol.layer.Vector({
+                        source: this.vectorSource,
+                        style: new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                color: '#ff0000',
+                                width: 2
+                            })
+                        })
+                    }),
+                ],
+                target: 'map',
+                controls: ol.control.defaults({
+                    attributionOptions: ({
+                        collapsible: false
+                    })
+                }),
+            });
+            var draw = new ol.interaction.Draw({
+                source: this.vectorSource,
+                type: 'LineString',
+            });
+            draw.on('drawstart', function(e) {
+                this.vectorSource.clear();
+            }.bind(this));
+            draw.on('drawend', function(e) {
+                console.log(e.feature.getGeometry().getCoordinates());
+                this.setState({
+                    points: e.feature.getGeometry().getCoordinates().map(function (c) {
+                        var lonlat = ol.proj.transform(c, 'EPSG:3857','EPSG:4326');
+                        return lonlat[1] + "," + lonlat[0];
+                    }),
+                });
+            }.bind(this));
+            this.map.addInteraction(draw);
+        }
+        this.vectorSource.clear();
+        var points = pts.map(function (p) {
+            var p_arr = p.split(",");
+            return ol.proj.transform([parseFloat(p_arr[1]), parseFloat(p_arr[0])], 'EPSG:4326', 'EPSG:3857')
+        });
+        var feature = new ol.Feature({
+            geometry: new ol.geom.LineString(points)
+        });
+        this.vectorSource.addFeature(feature);
+
+        this.map.setView(new ol.View({
+            center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+            projection: 'EPSG:3857',
+            zoom: 5,
+            maxZoom: 11,
+            minZoom: 2,
+        }));
+        this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
+        this.map.getView().setZoom(this.map.getView().getZoom() - 1);
+    },
+    closeMap: function(e) {
+        if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
+            e.target.className.toLowerCase() == 'modal') {
+            this.refs.map.style.display = 'none';
+            this.props.onUpdate('transect_pts', this.state.points);
+            this.props.onUpdate('transect_name', '');
+        }
+    },
+    clearMap: function(e) {
+        this.vectorSource.clear();
+        this.setState({
+            points: [],
+        });
+    },
+    customClicked: function(e) {
+        alert('Clicked');
+    },
     render: function() {
         var options = [];
 
@@ -420,7 +518,7 @@ var TransectComboBox = React.createClass({
         }
 
         return (
-            <div key={this.props.url}>
+            <div key={this.props.url} className='transect'>
                 <h1>
                     {this.props.children}
                 </h1>
@@ -429,7 +527,21 @@ var TransectComboBox = React.createClass({
                     value={this.state.value}
                     onChange={this.handleChange}>
                     {options}
+                    <option value="custom">Custom...</option>
                 </select>
+                
+                <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
+                <br style={{'clear': 'right', 'height': '0px'}} />
+
+                <div ref='map' className='modal' onClick={this.closeMap} >
+                    <div className='modal-content'>
+                        <div id='map' style={{'height': '500px'}}></div>
+                        <div className='map-footer'>
+                            <input type="button" value="Done" onClick={this.closeMap} />
+                            <input type="button" value="Clear" onClick={this.clearMap} />
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

@@ -12,6 +12,7 @@ import cStringIO
 import os
 from oceannavigator import app
 from pykml import parser
+import geopy
 
 
 def plot(url, climate_url, **kwargs):
@@ -260,7 +261,8 @@ def plot(url, climate_url, **kwargs):
 
     transect_name = query.get('transect_name')
     if transect_name is None or transect_name == '':
-        transect_name = "Transect from " + start + " to " + end
+        transect_name = "Transect from %s to %s" % (geopy.Point(start),
+                                                    geopy.Point(end))
     else:
         transect_name += " Transect"
 
@@ -333,9 +335,8 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
 
     # Tighten the y-limits
     deep = np.amax(bath_y * -1)
-    ylim = plt.ylim()
     l = 10 ** np.floor(np.log10(deep))
-    plt.ylim(np.ceil(deep / l) * l, ylim[1])
+    plt.ylim(np.ceil(deep / l) * l, 0)
     plt.yticks(list(plt.yticks()[0]) + [LINEAR, plt.ylim()[0]])
 
     divider = make_axes_locatable(plt.gca())

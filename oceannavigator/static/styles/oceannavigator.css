@@ -50,6 +50,10 @@ div.inputs {
     display: inline-block;
 }
 
+.transect input {
+    float: right;
+}
+
 .modal {
     display: none;
     position: fixed;
