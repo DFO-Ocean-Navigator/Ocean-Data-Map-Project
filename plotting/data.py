@@ -86,15 +86,62 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             d = np.load(path)
         except:
             grid = Grid(dataset, 'nav_lat', 'nav_lon')
-            y, x = grid.find_index([lat], [lon])
+            y, x = grid.find_index([lat], [lon], 10)
+
+            miny = np.amin(y)
+            maxy = np.amax(y)
+            minx = np.amin(x)
+            maxx = np.amax(x)
+
+            depthall = False
             var = dataset.variables[variable]
             if 'deptht' in var.dimensions:
                 if depth == 'all':
-                    d = var[time, :, y, x]
+                    depthall = True
+                    d = var[time, :, miny:maxy, minx:maxx]
+                    d = np.rollaxis(d, 0, 4)
+                    d = np.rollaxis(d, 0, 4)
                 else:
-                    d = var[time, int(depth), y[0], x[0]]
+                    d = var[time, int(depth), miny:maxy, minx:maxx]
+                    d = np.rollaxis(d, 0, 3)
             else:
-                d = var[time, y[0], x[0]]
+                d = var[time, miny:maxy, minx:maxx]
+                d = np.rollaxis(d, 0, 3)
+
+            lons = dataset.variables['nav_lon'][miny:maxy, minx:maxx]
+            lats = dataset.variables['nav_lat'][miny:maxy, minx:maxx]
+
+            masked_lon = lons.view(np.ma.MaskedArray)
+            masked_lat = lats.view(np.ma.MaskedArray)
+
+            if 'deptht' in var.dimensions:
+                mask_data = var[time[-1], 0, miny:maxy, minx:maxx]
+            else:
+                mask_data = var[time[-1], miny:maxy, minx:maxx]
+
+            masked_lon.mask = masked_lat.mask = mask_data.view(
+                np.ma.MaskedArray).mask
+
+            orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
+            target_def = SwathDefinition(lons=np.array([lon]),
+                                         lats=np.array([lat]))
+
+            if depthall:
+                origshape = d.shape
+                d = d.reshape([d.shape[0], d.shape[1], -1])
+            wf = [lambda r: 1 / r ** 2] * d.shape[-1]
+            resampled = resample_custom(
+                orig_def, d, target_def,
+                radius_of_influence=500000,
+                neighbours=10,
+                weight_funcs=wf,
+                # weight_funcs=lambda r: 1 / r ** 2,
+                fill_value=None, nprocs=4)
+
+            if depthall:
+                resampled = resampled.reshape([origshape[2], origshape[3]])
+
+            d = resampled
 
             def do_save(filename, data):
                 d.dump(filename)

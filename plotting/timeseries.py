@@ -7,7 +7,6 @@ import numpy as np
 import re
 import colormap
 import cStringIO
-from grid import Grid
 import os
 from oceannavigator import app
 from pykml import parser
@@ -67,8 +66,8 @@ def plot(url, climate_url=None, **kwargs):
         else:
             depth_label = ''
 
-        grid = Grid(dataset, 'nav_lat', 'nav_lon')
-        y, x = grid.find_index([float(latlon[0])], [float(latlon[1])])
+        if 'deptht' not in dataset.variables[variables[0]].dimensions:
+            depth = 0
 
         data = []
         times = []
