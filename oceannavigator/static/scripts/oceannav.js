@@ -537,6 +537,7 @@ var TransectComboBox = React.createClass({
                     <div className='modal-content'>
                         <div id='map' style={{'height': '500px'}}></div>
                         <div className='map-footer'>
+                            <p>Click to draw a transect. Double-click ends.</p>
                             <input type="button" value="Done" onClick={this.closeMap} />
                             <input type="button" value="Clear" onClick={this.clearMap} />
                         </div>
