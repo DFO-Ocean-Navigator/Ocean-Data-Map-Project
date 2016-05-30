@@ -18,6 +18,8 @@ var defaults = {
     'transect_name':   '',
     'station':         '',
     'station_name':    'S27-01',
+    'starttime':       '0',
+    'endtime':         '-1',
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
@@ -103,6 +105,8 @@ var Selector = React.createClass({
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
             'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
+            'starttime': (<ComboBox key='starttime' id='starttime' onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
+            'endtime': (<ComboBox key='endtime' id='endtime' onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
         }
 
         var map_inputs = [
@@ -129,6 +133,8 @@ var Selector = React.createClass({
             'surfacevariable',
         ];
         var timeseries_inputs = [
+            'starttime',
+            'endtime',
             'variable',
             'station',
             'depth',

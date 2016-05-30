@@ -98,14 +98,15 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             if 'deptht' in var.dimensions:
                 if depth == 'all':
                     depthall = True
-                    d = var[time, :, miny:maxy, minx:maxx]
+                    d = var[time[0]:(time[-1] + 1), :, miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 4)
                     d = np.rollaxis(d, 0, 4)
                 else:
-                    d = var[time, int(depth), miny:maxy, minx:maxx]
+                    d = var[time[0]:(time[-1] + 1), int(
+                        depth), miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 3)
             else:
-                d = var[time, miny:maxy, minx:maxx]
+                d = var[time[0]:(time[-1] + 1), miny:maxy, minx:maxx]
                 d = np.rollaxis(d, 0, 3)
 
             lons = dataset.variables['nav_lon'][miny:maxy, minx:maxx]

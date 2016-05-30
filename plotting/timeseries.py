@@ -42,13 +42,27 @@ def plot(url, climate_url=None, **kwargs):
             depth = int(query.get('depth'))
 
     with Dataset(url, 'r') as dataset:
-        # if query.get('time') is None or len(query.get('time')) == 0:
-        #     time = -1
-        # else:
-        #     time = int(query.get('time'))
+        if query.get('starttime') is None or len(query.get('starttime')) == 0:
+            starttime = 0
+        else:
+            starttime = int(query.get('starttime'))
 
-        # if time >= dataset.variables['time_counter'].shape[0]:
-        #     time = -1
+        if starttime >= dataset.variables['time_counter'].shape[0]:
+            starttime = -1
+
+        if starttime < 0:
+            starttime += dataset.variables['time_counter'].shape[0]
+
+        if query.get('endtime') is None or len(query.get('endtime')) == 0:
+            endtime = 0
+        else:
+            endtime = int(query.get('endtime'))
+
+        if endtime >= dataset.variables['time_counter'].shape[0]:
+            endtime = -1
+
+        if endtime < 0:
+            endtime += dataset.variables['time_counter'].shape[0]
 
         variable_unit = dataset.variables[variables[0]].units
         variable_name = dataset.variables[
@@ -75,7 +89,7 @@ def plot(url, climate_url=None, **kwargs):
             d, t = load_timeseries(
                 dataset,
                 v,
-                range(0, len(dataset.variables["time_counter"][:])),
+                range(starttime, endtime + 1),
                 depth,
                 float(latlon[0]),
                 float(latlon[1])
