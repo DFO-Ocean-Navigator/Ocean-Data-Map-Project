@@ -82,3 +82,26 @@ div.inputs {
 .map-footer input {
     float: right;
 }
+
+.overlayselector {
+    padding-bottom: 1em;
+}
+
+.overlayselector div.sub {
+    margin-left: 1em;
+}
+
+.overlayselector div.sub div.input {
+    display: table;
+    width: 100%;
+}
+
+.overlayselector div.sub div.input label {
+    display: table-cell;
+    width: 0;
+}
+
+.overlayselector div.sub div.input input {
+    display: table-cell;
+    width: 100%;
+}

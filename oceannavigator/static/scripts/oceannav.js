@@ -1,31 +1,57 @@
 var loading_image = '/images/spinner.gif';
 var defaults = {
-    'type':            'map',
-    'dataset':         'giops/monthly/aggregated.ncml',
-    'location':        'nwatlantic',
-    'time':            '-1',
-    'variable':        'votemper',
-    'anomaly':         false,
-    'depth':           '0',
-    'overlay':         '',
-    'colormap':        'default',
-    'bathymetry':      true,
-    'contour':         '',
-    'quiver':          '',
-    'showmap':         true,
-    'surfacevariable': '',
-    'transect_pts':    [],
-    'transect_name':   '',
-    'station':         '',
-    'station_name':    'S27-01',
-    'starttime':       '0',
-    'endtime':         '-1',
+    'type':                'map',
+    'dataset':             'giops/monthly/aggregated.ncml',
+    'map': {
+        'location':        'nwatlantic',
+        'time':            '-1',
+        'variable':        'votemper',
+        'anomaly':         false,
+        'depth':           '0',
+        'overlay':         '',
+        'colormap':        'default',
+        'bathymetry':      true,
+        'contour':         '',
+        'quiver':          '',
+    },
+    'transect': {
+        'time':            '-1',
+        'variable':        'votemper',
+        'anomaly':         false,
+        'showmap':         true,
+        'colormap':        'default',
+        'surfacevariable': '',
+        'transect_pts':    [],
+        'transect_name':   '',
+    },
+    'timeseries': {
+        'depth':           'all',
+        'variable':        'votemper',
+        'station':         '',
+        'station_name':    'S27-01',
+        'starttime':       '0',
+        'endtime':         '-1',
+        'colormap':        'default',
+    },
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
+    buildURL: function(q) {
+        var query = {
+            'type': q.type,
+            'dataset': q.dataset,
+        }
+        for (var key in defaults[q.type]) {
+            if (defaults[q.type].hasOwnProperty(key)) {
+                query[key] = q[key];
+            }
+        }
+
+        return '/plot/?query=' + JSON.stringify(query);
+    },
     getInitialState: function() {
         return {
-            'url': '/plot/?query=' + JSON.stringify(this.props.query)
+            'url': this.buildURL(this.props.query)
         };
     },
     imagePreload: function(src, callback) {
@@ -44,14 +70,13 @@ var Plot = React.createClass({
         }
     },
     componentWillUpdate: function(nextprops, nextstate) {
-        var oldQueryJSON = JSON.stringify(this.props.query);
-        var newQueryJSON = JSON.stringify(nextprops.query);
+        var oldQueryURL = this.buildURL(this.props.query);
+        var newQueryURL = this.buildURL(nextprops.query);
 
-        if (oldQueryJSON != newQueryJSON) {
-            var url = "/plot/?query=" + newQueryJSON;
-            this.imagePreload(url, function(e) {
+        if (oldQueryURL != newQueryURL) {
+            this.imagePreload(newQueryURL, function(e) {
                 this.setState({
-                    'url': url
+                    'url': newQueryURL
                 });
             }.bind(this));
         }
@@ -79,34 +104,51 @@ var Plot = React.createClass({
 
 var Selector = React.createClass({
     getInitialState: function() {
-        return defaults;
+        var state = {
+            'type': defaults.type,
+            'dataset': defaults.dataset,
+        }
+        for (var key in defaults[defaults.type]) {
+            if (defaults[defaults.type].hasOwnProperty(key)) {
+                state[key] = defaults[defaults.type][key];
+            }
+        }
+
+        return state;
     },
     onUpdate: function(key, value) {
         var newstate = {};
         newstate[key] = value;
+        if (key == 'type') {
+            for (var key in defaults[value]) {
+                if (defaults[value].hasOwnProperty(key)) {
+                    newstate[key] = defaults[value][key];
+                }
+            }
+        }
         this.setState(newstate);
     },
     render: function() {
         var inputmap = {
-            'dataset': (<ComboBox key='dataset' id='dataset' onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
-            'loc': (<ComboBox key='location' id='location' onUpdate={this.onUpdate} url='/api/locations/'>Location</ComboBox>),
-            'time': (<ComboBox key='time' id='time' onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Time</ComboBox>),
-            'variable': (<ComboBox key='variable' id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
-            'anomaly': (<CheckBox key='anomaly' id='anomaly' onUpdate={this.onUpdate}>Anomaly</CheckBox>),
-            'scale': (<Range key='scale' id='scale' onUpdate={this.onUpdate}>Variable Range</Range>),
-            'depth': (<ComboBox key='depth' id='depth' onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
-            'colormap': (<ComboBox key='colormap' id='colormap' onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
-            'overlay': (<ComboBox key='overlay' id='overlay' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>),
-            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' onUpdate={this.onUpdate}>Bathymetry</CheckBox>),
-            'quiver': (<ComboBox key='quiver' id='quiver' onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset}>Arrows</ComboBox>),
-            'contour': (<ComboBox key='contour' id='contour' onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
-            'showmap': (<CheckBox key='showmap' id='showmap' onUpdate={this.onUpdate}>Show Location</CheckBox>),
-            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
-            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
-            'station': (<StationComboBox key='station' id='station' onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
-            'starttime': (<ComboBox key='starttime' id='starttime' onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
-            'endtime': (<ComboBox key='endtime' id='endtime' onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
+            'dataset': (<ComboBox key='dataset' id='dataset' def={this.state.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
+            'plottype': (<ComboBox key='type' id='type' def={this.state.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
+            'loc': (<ComboBox key='location' id='location' def={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</ComboBox>),
+            'time': (<ComboBox key='time' id='time' def={this.state.time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Time</ComboBox>),
+            'variable': (<ComboBox key='variable' def={this.state.variable} id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
+            'anomaly': (<CheckBox key='anomaly' id='anomaly' def={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
+            'scale': (<Range key='scale' id='scale' def={this.state.scale} onUpdate={this.onUpdate}>Variable Range</Range>),
+            'depth': (<ComboBox key='depth' id='depth' def={this.state.depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
+            'colormap': (<ComboBox key='colormap' id='colormap' def={this.state.colormap} onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
+            'overlay': (<OverlaySelector key='overlay' id='overlay' def={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</OverlaySelector>),
+            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' def={this.state.bathymetry} onUpdate={this.onUpdate}>Bathymetry</CheckBox>),
+            'quiver': (<ComboBox key='quiver' id='quiver' def={this.state.quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset}>Arrows</ComboBox>),
+            'contour': (<ComboBox key='contour' id='contour' def={this.state.contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
+            'showmap': (<CheckBox key='showmap' id='showmap' def={this.state.showmap} onUpdate={this.onUpdate}>Show Location</CheckBox>),
+            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' def={this.state.surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
+            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' def={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
+            'station': (<StationComboBox key='station' id='station' def={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
+            'starttime': (<ComboBox key='starttime' id='starttime' def={this.state.starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
+            'endtime': (<ComboBox key='endtime' id='endtime' def={this.state.endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
         }
 
         var map_inputs = [
@@ -180,7 +222,7 @@ var CheckBox = React.createClass({
     getInitialState: function() {
         return {
             data: [],
-            value: defaults[this.props.id],
+            value: this.props.def,
             url: null
         };
     },
@@ -195,6 +237,49 @@ var CheckBox = React.createClass({
             <div>
                 <input type='checkbox' id={this.props.id} onChange={this.handleChange} checked={this.state.value} />
                 <label htmlFor={this.props.id}>{this.props.children}</label>
+            </div>
+        );
+    }
+});
+
+var OverlaySelector = React.createClass({
+    getInitialState: function() {
+        return {
+            file: '',
+            selection: 'all',
+            labelcolor: 'k',
+            edgecolor: 'k',
+            facecolor: 'k',
+            alpha: 0.5,
+        }
+    },
+    onUpdate: function(key, value) {
+        var state = {}
+        state[key] = value;
+        if (key == 'file') {
+            state['selection'] = 'all';
+        }
+        this.setState(state);
+        var newState = jQuery.extend({}, this.state, state);
+        this.props.onUpdate(this.props.id, newState);
+    },
+    alphaChanged: function(e) {
+        this.onUpdate('alpha', e.target.value);
+    },
+    render: function() {
+        return (
+            <div key='overlay' className='overlayselector'>
+                <ComboBox id='file' def='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
+                <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
+                    <ComboBox id='selection' multiple def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
+                    <ComboBox id='labelcolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
+                    <ComboBox id='edgecolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
+                    <ComboBox id='facecolor' def='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
+                    <div className='input'>
+                        <label forName='alpha'>Alpha:</label>
+                        <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
+                    </div>
+                </div>
             </div>
         );
     }
@@ -285,7 +370,7 @@ var ComboBox = React.createClass({
                 dataType: 'json',
                 cache: false,
                 success: function(data) {
-                    if (defaults[props.id] == '') {
+                    if (this.props.def == '') {
                         data.splice(0, 0, {'id': 'none', 'value': 'None'});
                     }
                     this.setState({
@@ -296,10 +381,16 @@ var ComboBox = React.createClass({
                         return x.id
                     });
 
-                    if (!jQuery.inArray(this.state.value, a) || (this.state.value == '' && data.length > 0)) {
-                        var value = defaults[props.id];
+                    if (!jQuery.inArray(this.state.value, a) || (this.state.value == '' && data.length > 0) || this.props.def == 'all') {
+                        var value = this.props.def;
                         if (props.multiple) {
-                            value = [value];
+                            if (value == 'all') {
+                                value = data.map(function (d) {
+                                    return d.id;
+                                });
+                            } else {
+                                value = [value];
+                            }
                         }
                         this.setState({
                             value: value
@@ -334,21 +425,25 @@ var ComboBox = React.createClass({
             );
         });
 
-        return (
-            <div key={this.props.url}>
-                <h1>
-                    {this.props.children}
-                </h1>
+        if (this.state.data.length > 1) {
+            return (
+                <div key={this.props.url}>
+                    <h1>
+                        {this.props.children}
+                    </h1>
 
-                <select
-                    size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
-                    value={this.state.value}
-                    onChange={this.handleChange}
-                    multiple={this.props.multiple}>
-                    {options}
-                </select>
-            </div>
-        );
+                    <select
+                        size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
+                        value={this.state.value}
+                        onChange={this.handleChange}
+                        multiple={this.props.multiple}>
+                        {options}
+                    </select>
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 });
 
@@ -454,7 +549,6 @@ var TransectComboBox = React.createClass({
                 this.vectorSource.clear();
             }.bind(this));
             draw.on('drawend', function(e) {
-                console.log(e.feature.getGeometry().getCoordinates());
                 this.setState({
                     points: e.feature.getGeometry().getCoordinates().map(function (c) {
                         var lonlat = ol.proj.transform(c, 'EPSG:3857','EPSG:4326');

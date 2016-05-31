@@ -9,7 +9,7 @@ from oceannavigator import app
 from plotting.transect import plot as transect_plot
 from plotting.transect import list_transects
 from plotting.map import plot as map_plot
-from plotting.overlays import list_overlays
+from plotting.overlays import list_overlays, list_overlays_in_file
 from plotting.timeseries import plot as ts_plot
 from plotting.timeseries import list_stations
 import numpy as np
@@ -29,8 +29,36 @@ def query_datasets():
 
 @app.route('/api/overlays/')
 def overlays():
-    data = list_overlays()
+    if 'file' in request.args:
+        f = request.args.get('file')
+        if f is None or f == 'none' or f == '':
+            data = []
+        else:
+            data = list_overlays_in_file(request.args.get('file'))
+    else:
+        data = list_overlays()
     data = sorted(data, key=lambda k: k['value'])
+    js = json.dumps(data)
+    resp = Response(js, status=200, mimetype='application/json')
+    return resp
+
+
+@app.route('/api/colors/')
+def colors():
+    data = [
+        {'id': 'k', 'value': 'Black'},
+        {'id': 'b', 'value': 'Blue'},
+        {'id': 'g', 'value': 'Green'},
+        {'id': 'r', 'value': 'Red'},
+        {'id': 'c', 'value': 'Cyan'},
+        {'id': 'm', 'value': 'Magenta'},
+        {'id': 'y', 'value': 'Yellow'},
+        {'id': 'w', 'value': 'White'},
+    ]
+    if request.args.get('random'):
+        data.insert(0, {'id': 'rnd', 'value': 'Randomize'})
+    if request.args.get('none'):
+        data.insert(0, {'id': 'none', 'value': 'None'})
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp

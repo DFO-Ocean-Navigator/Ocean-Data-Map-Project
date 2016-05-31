@@ -112,6 +112,19 @@ def list_overlays():
     return overlays
 
 
+def list_overlays_in_file(filename):
+    KML_DIR = app.config['OVERLAY_KML_DIR']
+
+    fp = os.path.join(KML_DIR, werkzeug.utils.secure_filename(filename))
+    doc = parser.parse(fp)
+
+    overlays = []
+    for place in doc.getroot().Document.Folder.Placemark:
+        name = str(place.name)
+        overlays.append({'id': name, 'value': name})
+    return overlays
+
+
 def draw_overlay(basemap, kmlfile, **kwargs):
     KML_DIR = app.config['OVERLAY_KML_DIR']
 
@@ -122,8 +135,15 @@ def draw_overlay(basemap, kmlfile, **kwargs):
     num_places = len(doc.getroot().Document.Folder.Placemark)
     for idx, place in enumerate(doc.getroot().Document.Folder.Placemark):
         polys = []
-        if kwargs.get('name') and kwargs.get('name') != place.name:
-            continue
+        # if kwargs.get('name') and kwargs.get('name') != place.name:
+        #     continue
+        filter_name = kwargs.get('name')
+        if filter_name is not None:
+            if isinstance(filter_name, basestring) and \
+               filter_name != place.name:
+                continue
+            elif place.name not in filter_name:
+                continue
 
         for c in place.iterfind('.//k:outerBoundaryIs//k:LinearRing', nsmap):
             map_coords = _parse_coords(basemap, c.coordinates)
@@ -131,13 +151,16 @@ def draw_overlay(basemap, kmlfile, **kwargs):
             if bool(kwargs.get('label')) or \
                 'labelcolor' in kwargs or \
                     'labelalpha' in kwargs:
+                labelcolor = kwargs.get('labelcolor')
+                if labelcolor == 'rnd':
+                    labelcolor = plt.get_cmap('prism')(float(idx) / num_places)
                 shape = shapely.geometry.Polygon(map_coords)
                 name = '\n'.join(textwrap.wrap(str(place.name), 15))
                 plt.annotate(
                     xy=(shape.centroid.x, shape.centroid.y),
                     s=name,
                     ha='center', va='center', size=10,
-                    color=kwargs.get('labelcolor'),
+                    color=labelcolor,
                     alpha=kwargs.get('labelalpha'))
 
             polys.append(Polygon(map_coords))
@@ -155,10 +178,15 @@ def draw_overlay(basemap, kmlfile, **kwargs):
             facecolor = plt.get_cmap('prism')(float(idx) / num_places)
         else:
             facecolor = kwargs.get('facecolor')
+
+        if kwargs.get('edgecolor') == 'rnd':
+            edgecolor = plt.get_cmap('prism')(float(idx) / num_places)
+        else:
+            edgecolor = kwargs.get('edgecolor')
         poly = PathPatch(path,
                          fill='facecolor' in kwargs,
                          facecolor=facecolor,
-                         edgecolor=kwargs.get('edgecolor'),
+                         edgecolor=edgecolor,
                          alpha=kwargs.get('alpha'),
                          linewidth=kwargs.get('linewidth')
                          )

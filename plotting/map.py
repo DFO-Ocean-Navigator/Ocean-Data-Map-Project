@@ -266,28 +266,25 @@ def plot(url, climate_url, **kwargs):
             levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
         plt.clabel(cs, fontsize='xx-small', fmt='%1.0fm')
 
-    if query.get('overlay') and query.get('overlay') != 'none':
-        overlays.draw_overlay(m, query.get('overlay'),
-                              labelcolor='k',
-                              edgecolor='k',
-                              # facecolor='rnd',
-                              # alpha=0.2,
-                              linewidth=0.5)
+    overlay = query.get('overlay')
+    if overlay is not None:
+        f = overlay.get('file')
+        if f is not None and f != '' and f != 'none':
+            opts = {}
+            if overlay.get('selection') != 'all':
+                opts['name'] = overlay.get('selection')
+            opts['labelcolor'] = overlay.get('labelcolor')
+            opts['edgecolor'] = overlay.get('edgecolor')
+            opts['facecolor'] = overlay.get('facecolor')
+            opts['alpha'] = float(overlay.get('alpha'))
+
+            overlays.draw_overlay(m, f, **opts)
 
     if len(contour_data) > 0:
         cs = m.contour(
             target_lon, target_lat, contour_data[0], latlon=True,
             lineweight=1, cmap=colormap.find_colormap(contour_name))
         plt.clabel(cs, fontsize='xx-small')
-
-    # NAFO divisions
-    # overlays.nafo_divisions(m)
-    # overlays.draw_overlay(m, 'NAFO_Divisions',
-    #                       labelcolor='k',
-    #                       edgecolor='k',
-    # facecolor='rnd',
-    # alpha=0.2,
-    #                       linewidth=0.5)
 
     # Map Info
     m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
