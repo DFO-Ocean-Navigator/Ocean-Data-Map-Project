@@ -440,8 +440,9 @@ var TransectComboBox = React.createClass({
                 ],
                 target: 'map',
                 controls: ol.control.defaults({
+                    zoom: true,
                     attributionOptions: ({
-                        collapsible: false
+                        collapsible: true
                     })
                 }),
             });
@@ -655,8 +656,9 @@ var StationComboBox = React.createClass({
                 ],
                 target: 'map',
                 controls: ol.control.defaults({
+                    zoom: true,
                     attributionOptions: ({
-                        collapsible: false
+                        collapsible: true
                     })
                 }),
             });
