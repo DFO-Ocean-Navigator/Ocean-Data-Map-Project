@@ -223,31 +223,6 @@ def time_query():
     return resp
 
 
-@app.route('/plot/transect/')
-def plot_transect():
-    if 'dataset' in request.args:
-        filename = request.args['dataset']
-    else:
-        filename = 'giops/monthly/aggregated.ncml'
-    if filename[0] != '/':
-        url = app.config['THREDDS_SERVER'] + 'dodsC/' + filename
-    else:
-        url = filename
-    # burl = app.config['THREDDS_SERVER'] + \
-        # 'dodsC/' + 'baselayers/ETOPO1_Bed_g_gmt4.grd'
-    burl = "/opt/tds-live/content/thredds/public/misc/ETOPO1_Bed_g_gmt4.grd"
-
-    opts = {
-        'size': '11x5',
-        'dpi': 72,
-    }
-    opts.update({k: v.encode('ascii', 'ignore') for k, v in
-                 request.args.iteritems()})
-
-    img = transect_plot(url, burl, **opts)
-    return Response(img, status=200, mimetype='image/png')
-
-
 @app.route('/plot/')
 def plot():
     FAILURE = redirect("/", code=302)
