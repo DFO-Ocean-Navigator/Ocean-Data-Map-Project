@@ -138,6 +138,13 @@ var Selector = React.createClass({
                 }
             }
         }
+        if (key == 'dataset') {
+            for (var key in defaults[this.state.type]) {
+                if (defaults[this.state.type].hasOwnProperty(key)) {
+                    newstate[key] = defaults[this.state.type][key];
+                }
+            }
+        }
         this.setState(newstate);
     },
     render: function() {
@@ -393,7 +400,7 @@ var ComboBox = React.createClass({
                         return x.id
                     });
 
-                    if (!jQuery.inArray(this.state.value, a) || (this.state.value == '' && data.length > 0) || this.props.def == 'all') {
+                    if (jQuery.inArray(this.state.value, a) == -1 || (this.state.value == '' && data.length > 0) || this.props.def == 'all') {
                         var value = this.props.def;
                         if (props.multiple) {
                             if (value == 'all') {
@@ -407,6 +414,7 @@ var ComboBox = React.createClass({
                         this.setState({
                             value: value
                         });
+                        this.props.onUpdate(this.props.id, value);
                     }
                     props.onUpdate(props.id, this.state.value);
                 }.bind(this),

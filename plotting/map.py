@@ -42,7 +42,8 @@ def plot(url, climate_url, **kwargs):
         m = basemap.load_nwatlantic()
 
     with Dataset(url, 'r') as dataset:
-        if query.get('time') is None or len(query.get('time')) == 0:
+        if query.get('time') is None or (type(query.get('time')) == str and
+                                         len(query.get('time')) == 0):
             time = -1
         else:
             time = int(query.get('time'))
@@ -270,7 +271,7 @@ def plot(url, climate_url, **kwargs):
         plt.clabel(cs, fontsize='xx-small', fmt='%1.0fm')
 
     overlay = query.get('overlay')
-    if overlay is not None:
+    if overlay is not None and overlay != '':
         f = overlay.get('file')
         if f is not None and f != '' and f != 'none':
             opts = {}
