@@ -725,7 +725,9 @@ var LocationComboBox = React.createClass({
                     })
                 }),
             });
-            var drag = new ol.interaction.DragBox();
+            var drag = new ol.interaction.DragBox({
+                condition: ol.events.condition.shiftKeyOnly,
+            });
             drag.on('boxstart', function(e) {
                 this.setState({
                     startpoint: ol.proj.transform(e.coordinate, 'EPSG:3857','EPSG:4326')
@@ -796,7 +798,7 @@ var LocationComboBox = React.createClass({
                     <div className='modal-content'>
                         <div id='map' style={{'height': '500px'}}></div>
                         <div className='map-footer'>
-                            <p>Click and drag to select an area.</p>
+                            <p>Hold shift and and drag to select an area.</p>
                         </div>
                     </div>
                 </div>
