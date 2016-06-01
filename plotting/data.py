@@ -48,7 +48,8 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
                 np.ma.MaskedArray).mask
 
             orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
-            target_def = SwathDefinition(lons=target_lon, lats=target_lat)
+            target_def = SwathDefinition(lons=target_lon.astype('float64'),
+                                         lats=target_lat.astype('float64'))
 
             resampled = resample_custom(
                 orig_def, data, target_def,

@@ -24,6 +24,16 @@ def load_map(projection, center, height, width):
                     projection=projection,
                     boundinglat=center[0],
                     lon_0=center[1])
+            elif projection == 'merc':
+                basemap = Basemap(
+                    resolution='i',
+                    rsphere=(6378137.00, 6356752.3142),
+                    projection=projection,
+                    llcrnrlat=height[0],
+                    llcrnrlon=height[1],
+                    urcrnrlat=width[0],
+                    urcrnrlon=width[1],
+                )
             else:
                 basemap = Basemap(
                     resolution='i',

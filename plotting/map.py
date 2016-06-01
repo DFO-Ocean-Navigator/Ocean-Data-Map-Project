@@ -27,13 +27,16 @@ def plot(url, climate_url, **kwargs):
         vector = True
         # quivervars = quiver.split(",")
 
-    # TODO: Make this work on multiple locations, with different projections
     if 'arctic' == query.get('location'):
         m = basemap.load_arctic()
     elif 'pacific' == query.get('location'):
         m = basemap.load_pacific()
     elif 'nwatlantic' == query.get('location'):
         m = basemap.load_nwatlantic()
+    elif isinstance(query.get('location'), list):
+        m = basemap.load_map('merc', None,
+                             query.get('location')[0],
+                             query.get('location')[1])
     else:
         # Default to NW Atlantic
         m = basemap.load_nwatlantic()

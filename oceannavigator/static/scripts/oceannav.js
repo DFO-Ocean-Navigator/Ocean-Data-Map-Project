@@ -1,4 +1,5 @@
 var loading_image = '/images/spinner.gif';
+var fail_image = '/images/failure.gif';
 var defaults = {
     'type':                'map',
     'dataset':             'giops/monthly/aggregated.ncml',
@@ -51,14 +52,23 @@ var Plot = React.createClass({
     },
     getInitialState: function() {
         return {
-            'url': this.buildURL(this.props.query)
+            'url': this.buildURL(this.props.query),
+            'fail': false,
         };
     },
     imagePreload: function(src, callback) {
         this.setState({
-            'url': loading_image
+            'url': loading_image,
+            'fail': false,
         });
         imagePreloader.src = src;
+        imagePreloader.onerror = imagePreloader.onabort = function() {
+            console.log("Image failed to load: ", src);
+            this.setState({
+                'url': fail_image,
+                'fail': true
+            });
+        }.bind(this);
         if (imagePreloader.complete) {
             callback(this);
             imagePreloader.onload = function(){};
@@ -76,7 +86,8 @@ var Plot = React.createClass({
         if (oldQueryURL != newQueryURL) {
             this.imagePreload(newQueryURL, function(e) {
                 this.setState({
-                    'url': newQueryURL
+                    'url': newQueryURL,
+                    'fail': false
                 });
             }.bind(this));
         }
@@ -94,6 +105,7 @@ var Plot = React.createClass({
             <div className='plot' style={{float: 'right'}}>
                 <img src={this.state.url} />
                 <div>
+                    <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
                     <input type='button' value='Save Image' onClick={this.saveImage} />
                     <input type='button' value='Open In New Window' onClick={this.newWindow} />
                 </div>
@@ -132,7 +144,7 @@ var Selector = React.createClass({
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' def={this.state.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
             'plottype': (<ComboBox key='type' id='type' def={this.state.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
-            'loc': (<ComboBox key='location' id='location' def={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</ComboBox>),
+            'loc': (<LocationComboBox key='location' id='location' def={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
             'time': (<ComboBox key='time' id='time' def={this.state.time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Time</ComboBox>),
             'variable': (<ComboBox key='variable' def={this.state.variable} id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
             'anomaly': (<CheckBox key='anomaly' id='anomaly' def={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
@@ -648,6 +660,143 @@ var TransectComboBox = React.createClass({
         );
     }
 });
+
+var LocationComboBox = React.createClass({
+    getInitialState: function() {
+        return {
+            data: [],
+            value: '',
+            url: null,
+        };
+    },
+    handleChange: function(e) {
+        var value = e.target.value;
+        this.setState({
+            value: value,
+        });
+        if (value == 'custom') {
+            this.showMap();
+        } else {
+            this.props.onUpdate(this.props.id, value);
+        }
+    },
+    componentDidMount: function() {
+        this.setState({
+            url: this.props.url
+        });
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
+                this.setState({
+                    data: data,
+                });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+    map: null,
+    showMap: function() {
+        this.refs.map.style.display = 'block';
+
+        if (this.map == null) {
+            this.map = new ol.Map({
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.MapQuest({layer: 'sat'})
+                    }),
+                ],
+                target: 'map',
+                controls: ol.control.defaults({
+                    zoom: true,
+                    attributionOptions: ({
+                        collapsible: true
+                    })
+                }),
+            });
+            var drag = new ol.interaction.DragBox();
+            drag.on('boxstart', function(e) {
+                this.setState({
+                    startpoint: ol.proj.transform(e.coordinate, 'EPSG:3857','EPSG:4326')
+                });
+            }.bind(this));
+            drag.on('boxend', function(e) {
+                var lonlat = ol.proj.transform(e.coordinate, 'EPSG:3857','EPSG:4326');
+                console.log(lonlat);
+
+                var coords = [
+                    [
+                        Math.min(this.state.startpoint[1], lonlat[1]),
+                        Math.min(this.state.startpoint[0], lonlat[0]),
+                    ],
+                    [
+                        Math.max(this.state.startpoint[1], lonlat[1]),
+                        Math.max(this.state.startpoint[0], lonlat[0]),
+                    ],
+                ];
+                this.setState({
+                    coordinates: coords
+                });
+                this.refs.map.style.display = 'none';
+                this.props.onUpdate(this.props.id, coords);
+            }.bind(this));
+            this.map.addInteraction(drag);
+        }
+        this.map.setView(new ol.View({
+            center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+            projection: 'EPSG:3857',
+            zoom: 2,
+            maxZoom: 11,
+            minZoom: 1,
+        }));
+    },
+    closeMap: function(e) {
+        if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
+            e.target.className.toLowerCase() == 'modal') {
+            this.refs.map.style.display = 'none';
+        }
+    },
+    render: function() {
+        var options = this.state.data.map(function(o) {
+            return (
+                <option key={o.id} value={o.id}>
+                    {o.value}
+                </option>
+            );
+        });
+
+        return (
+            <div key={this.props.url} className='location'>
+                <h1>
+                    {this.props.children}
+                </h1>
+
+                <select
+                    value={this.state.value}
+                    onChange={this.handleChange}>
+                    {options}
+                    <option value="custom">Custom...</option>
+                </select>
+                
+                <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
+                <br style={{'clear': 'right', 'height': '0px'}} />
+
+                <div ref='map' className='modal' onClick={this.closeMap} >
+                    <div className='modal-content'>
+                        <div id='map' style={{'height': '500px'}}></div>
+                        <div className='map-footer'>
+                            <p>Click and drag to select an area.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
+
 var StationComboBox = React.createClass({
     getInitialState: function() {
         return {

@@ -1,5 +1,6 @@
 from netCDF4 import Dataset
 import pyresample
+from pyresample.utils import wrap_longitudes
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import hashlib
@@ -42,14 +43,28 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
                 def lon_index(v):
                     return int(round((v - lon[0]) * 60.0))
 
-                minlat = lat_index(np.amin(target_lat))
-                minlon = lon_index(np.amin(target_lon))
-                maxlat = lat_index(np.amax(target_lat))
-                maxlon = lon_index(np.amax(target_lon))
+                lon_idx_min = target_lon.argmin()
+                lon_idx_max = target_lon.argmax()
 
-                lats, lons = np.meshgrid(
-                    lat[minlat:maxlat:1], lon[minlon:maxlon:1])
-                res = z[minlat:maxlat:1, minlon:maxlon:1].transpose() * -1
+                target_lon = wrap_longitudes(target_lon)
+
+                minlat = lat_index(np.amin(target_lat))
+                maxlat = lat_index(np.amax(target_lat))
+
+                minlon = lon_index(target_lon.ravel()[lon_idx_min])
+                maxlon = lon_index(target_lon.ravel()[lon_idx_max])
+
+                if minlon > maxlon:
+                    in_lon = np.concatenate((lon[minlon:], lon[0:maxlon]))
+                    in_data = np.concatenate((z[minlat:maxlat, minlon:],
+                                              z[minlat:maxlat, 0:maxlon]), 1)
+                else:
+                    in_lon = lon[minlon:maxlon]
+                    in_data = z[minlat:maxlat, minlon:maxlon]
+
+                res = in_data.transpose() * -1
+
+                lats, lons = np.meshgrid(lat[minlat:maxlat], in_lon)
 
             orig_def = pyresample.geometry.SwathDefinition(
                 lons=lons, lats=lats)
