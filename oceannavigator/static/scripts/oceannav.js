@@ -9,7 +9,14 @@ var defaults = {
         'variable':        'votemper',
         'anomaly':         false,
         'depth':           '0',
-        'overlay':         '',
+        'overlay': {
+            'file':        '',
+            'selection':   'all',
+            'labelcolor':  'k',
+            'edgecolor':   'k',
+            'facecolor':   'none',
+            'alpha':       0.5
+        },
         'colormap':        'default',
         'bathymetry':      true,
         'contour':         '',
@@ -650,7 +657,7 @@ var TransectComboBox = React.createClass({
                     {options}
                     <option value="custom">Custom...</option>
                 </select>
-                
+
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
@@ -790,7 +797,7 @@ var LocationComboBox = React.createClass({
                     {options}
                     <option value="custom">Custom...</option>
                 </select>
-                
+
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
