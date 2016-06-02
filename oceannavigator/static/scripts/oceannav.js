@@ -31,6 +31,7 @@ var defaults = {
         'surfacevariable': '',
         'transect_pts':    [],
         'transect_name':   '',
+        'linearthresh':    '200',
     },
     'timeseries': {
         'depth':           'all',
@@ -163,6 +164,7 @@ var Selector = React.createClass({
             'variable': (<ComboBox key='variable' def={this.state.variable} id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
             'anomaly': (<CheckBox key='anomaly' id='anomaly' def={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
             'scale': (<Range key='scale' id='scale' def={this.state.scale} onUpdate={this.onUpdate}>Variable Range</Range>),
+            'linearthresh': (<NumberBox key='linearthresh' id='linearthresh' def={this.state.linearthresh} onUpdate={this.onUpdate}>Linear Threshold</NumberBox>),
             'depth': (<ComboBox key='depth' id='depth' def={this.state.depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
             'colormap': (<ComboBox key='colormap' id='colormap' def={this.state.colormap} onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
             'overlay': (<OverlaySelector key='overlay' id='overlay' def={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</OverlaySelector>),
@@ -196,6 +198,7 @@ var Selector = React.createClass({
             'time',
             'variable',
             'anomaly',
+            'linearthresh',
             'scale',
             'colormap',
             'surfacevariable',
@@ -356,6 +359,43 @@ var Range = React.createClass({
                 <div style={{'display': this.state.auto ? 'none' : 'block'}}>
                     <label htmlFor={this.props.id + '_max'}>Max:</label>
                     <input ref='max' id={this.props.id + '_max'} type='number' disabled={this.state.auto} value={this.state.auto ? '' : this.state.max} onChange={this.rangeChanged} onBlur={this.updateParent} />
+                </div>
+            </div>
+        );
+    }
+});
+
+var NumberBox = React.createClass({
+    updateParent: function() {
+        this.props.onUpdate(this.props.id, this.state.value);
+    },
+    changed: function(e) {
+        this.setState({
+            value: this.refs.number.value,
+        });
+    },
+    getInitialState: function() {
+        return {
+            value: this.props.def
+        }
+    },
+    keyPress: function(e) {
+        var key = e.which || e.keyCode;
+        if (key == 13) {
+            this.changed();
+            this.updateParent();
+            return false;
+        } else {
+            return true;
+        }
+    },
+    render: function() {
+        return (
+            <div className='range'>
+                <h1>{this.props.children}</h1>
+                <div>
+                    <label htmlFor={this.props.id}>Value:</label>
+                    <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed} onBlur={this.updateParent} onKeyPress={this.keyPress} />
                 </div>
             </div>
         );

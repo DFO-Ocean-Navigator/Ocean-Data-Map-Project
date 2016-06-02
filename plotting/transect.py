@@ -207,6 +207,13 @@ def plot(url, climate_url, **kwargs):
             ), labels=[0, 0, 0, 1])
 
     # transect Plot
+    linearthresh = query.get('linearthresh')
+    if linearthresh is None or linearthresh == '':
+        linearthresh = 200
+    linearthresh = float(linearthresh)
+    if not linearthresh > 0:
+        linearthresh = 1
+
     if velocity:
         if scale:
             vmin = float(scale[0])
@@ -223,7 +230,7 @@ def plot(url, climate_url, **kwargs):
             plt.subplot(gs[0])
         divider = _transect_plot(
             distance, parallel, depth, variable_unit, bath_x, bath_y,
-            "Parallel", vmin, vmax, cmap, scale)
+            "Parallel", vmin, vmax, cmap, scale, linearthresh)
         if surface:
             _surface_plot(divider, surface_dist, surface_value, surface_unit,
                           surface_name)
@@ -233,7 +240,7 @@ def plot(url, climate_url, **kwargs):
             plt.subplot(gs[1])
         divider = _transect_plot(
             distance, perpendicular, depth, variable_unit, bath_x, bath_y,
-            "Perpendicular", vmin, vmax, cmap, scale)
+            "Perpendicular", vmin, vmax, cmap, scale, linearthresh)
         if surface:
             _surface_plot(divider, surface_dist, surface_value, surface_unit,
                           surface_name)
@@ -253,7 +260,7 @@ def plot(url, climate_url, **kwargs):
             plt.subplot(gs[1])
         divider = _transect_plot(
             distance, value, depth, variable_unit, bath_x, bath_y,
-            variable_name, vmin, vmax, cmap, scale)
+            variable_name, vmin, vmax, cmap, scale, linearthresh)
 
         if surface:
             _surface_plot(divider, surface_dist, surface_value, surface_unit,
@@ -313,8 +320,7 @@ def _surface_plot(axis_divider, distance, values, units, name):
 
 
 def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
-                   vmin, vmax, cmap, scale):
-    LINEAR = 200
+                   vmin, vmax, cmap, scale, linearthresh=200):
 
     c = plt.pcolormesh(distance, depth, values.data,
                        cmap=cmap,
@@ -322,7 +328,7 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
                        vmin=vmin,
                        vmax=vmax)
     plt.gca().invert_yaxis()
-    plt.yscale('symlog', linthreshy=LINEAR)
+    plt.yscale('symlog', linthreshy=linearthresh)
     plt.gca().yaxis.set_major_formatter(ScalarFormatter())
 
     # Mask out the bottom
@@ -337,7 +343,7 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
     deep = np.amax(bath_y * -1)
     l = 10 ** np.floor(np.log10(deep))
     plt.ylim(np.ceil(deep / l) * l, 0)
-    plt.yticks(list(plt.yticks()[0]) + [LINEAR, plt.ylim()[0]])
+    plt.yticks(list(plt.yticks()[0]) + [linearthresh, plt.ylim()[0]])
 
     divider = make_axes_locatable(plt.gca())
     cax = divider.append_axes("right", size="5%", pad=0.05)
