@@ -86,7 +86,7 @@ div.inputs {
     padding-bottom: 1em;
 }
 
-.overlayselector div.sub {
+div.sub {
     margin-left: 1em;
 }
 
@@ -108,4 +108,20 @@ div.inputs {
 .failmessage {
     margin: 1em;
     font-size: 2em;
+}
+
+.collapsible > h1 {
+    cursor: pointer;
+}
+
+.collapsible > h1:before {
+    content: "\25bc "
+}
+
+.collapsible.collapsed > h1:before {
+    content: "\25ba "
+}
+
+.collapsible > div {
+    display: none;
 }

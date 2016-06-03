@@ -1,5 +1,5 @@
 import numpy as np
-from grid import Grid
+from grid import Grid, resample
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom
 from cachetools import LRUCache
@@ -13,14 +13,16 @@ _interpolated_cache = LRUCache(maxsize=1024 * 1024 * 1024, getsizeof=len)
 _timeseries_cache = LRUCache(maxsize=1024 * 1024 * 256, getsizeof=len)
 
 
-def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
+def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
+                      interpolation={'method': 'inv_square', 'neighbours': 8}):
     CACHE_DIR = app.config['CACHE_DIR']
     hashed = sha1(basemap.filename +
                   dataset.filepath() +
                   str(gridsize) +
                   variable +
                   str(depth) +
-                  str(time)).hexdigest()
+                  str(time) +
+                  str(interpolation)).hexdigest()
 
     target_lon, target_lat = basemap.makegrid(gridsize, gridsize)
 
@@ -42,21 +44,14 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time):
             else:
                 data = var[time, depth, miny:maxy, minx:maxx]
 
-            masked_lon = lon.view(np.ma.MaskedArray)
-            masked_lat = lat.view(np.ma.MaskedArray)
-            masked_lon.mask = masked_lat.mask = data.view(
-                np.ma.MaskedArray).mask
+            method = interpolation.get('method')
+            neighbours = interpolation.get('neighbours')
+            if neighbours < 1:
+                neighbours = 1
 
-            orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
-            target_def = SwathDefinition(lons=target_lon.astype('float64'),
-                                         lats=target_lat.astype('float64'))
-
-            resampled = resample_custom(
-                orig_def, data, target_def,
-                radius_of_influence=500000,
-                neighbours=10,
-                weight_funcs=lambda r: 1 / r ** 2,
-                fill_value=None, nprocs=4)
+            resampled = resample(lat, lon, target_lat.astype('float64'),
+                                 target_lon.astype('float64'), data,
+                                 method=method, neighbours=neighbours)
 
             def do_save(filename, data):
                 data.view(np.ma.MaskedArray).dump(filename)
@@ -81,6 +76,7 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
                   str(lat) +
                   str(lon)).hexdigest()
 
+    timestep = int(np.ceil(len(time) / 100.0))
     if _timeseries_cache.get(hashed) is None:
         path = os.path.join(CACHE_DIR, "ts_" + hashed + ".npy")
         try:
@@ -99,15 +95,18 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             if 'deptht' in var.dimensions:
                 if depth == 'all':
                     depthall = True
-                    d = var[time[0]:(time[-1] + 1), :, miny:maxy, minx:maxx]
+                    d = var[time[0]:(time[-1] + 1):timestep,
+                            :,
+                            miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 4)
                     d = np.rollaxis(d, 0, 4)
                 else:
-                    d = var[time[0]:(time[-1] + 1), int(
-                        depth), miny:maxy, minx:maxx]
+                    d = var[time[0]:(time[-1] + 1):timestep,
+                            int(depth),
+                            miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 3)
             else:
-                d = var[time[0]:(time[-1] + 1), miny:maxy, minx:maxx]
+                d = var[time[0]:(time[-1] + 1):timestep, miny:maxy, minx:maxx]
                 d = np.rollaxis(d, 0, 3)
 
             lons = dataset.variables['nav_lon'][miny:maxy, minx:maxx]
@@ -157,6 +156,7 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
         d = _timeseries_cache[hashed]
 
     t = netcdftime.utime(dataset.variables["time_counter"].units)
-    times = t.num2date(dataset.variables["time_counter"][time])
+    times = t.num2date(
+        dataset.variables["time_counter"][time[0]:(time[-1] + 1):timestep])
 
     return np.squeeze(d), times

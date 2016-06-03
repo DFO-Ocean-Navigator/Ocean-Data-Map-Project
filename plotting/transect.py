@@ -44,6 +44,13 @@ def plot(url, climate_url, **kwargs):
     if surface is not None and (surface == '' or surface == 'none'):
         surface = None
 
+    interp = query.get('interpolation')
+    if interp is None or interp == '':
+        interp = {
+            'method': 'inv_square',
+            'neighbours': 8,
+        }
+
     with Dataset(url, 'r') as dataset:
         grid = Grid(dataset, 'nav_lat', 'nav_lon')
         depth = dataset.variables['deptht'][:]
@@ -68,16 +75,17 @@ def plot(url, climate_url, **kwargs):
                 v.append(dataset.variables[name])
 
             transect_pts, distance, parallel, perpendicular = \
-                grid.velocitytransect(v[0], v[1], points, time)
+                grid.velocitytransect(
+                    v[0], v[1], points, time, interpolation=interp)
         else:
             transect_pts, distance, value = grid.transect(
                 dataset.variables[variables[0]],
-                points, time)
+                points, time, interpolation=interp)
 
         if surface is not None:
             surface_pts, surface_dist, surface_value = grid.surfacetransect(
                 dataset.variables[surface],
-                points, time)
+                points, time, interpolation=interp)
             surface_name = dataset.variables[
                 surface].long_name.replace(" at CMC", "")
             surface_unit = dataset.variables[surface].units
@@ -103,7 +111,7 @@ def plot(url, climate_url, **kwargs):
             grid = Grid(dataset, 'nav_lat', 'nav_lon')
             climate_points, climate_distance, climate_value = grid.transect(
                 dataset.variables[variables[0]],
-                points, time)
+                points, time, interpolation=interp)
 
             if dataset.variables[variables[0]].units == "Kelvins":
                 climate_value = np.add(climate_value, -273.15)
@@ -293,6 +301,7 @@ def plot(url, climate_url, **kwargs):
     buf = cStringIO.StringIO()
     try:
         plt.savefig(buf, format='png')
+        plt.close(fig)
         return buf.getvalue()
     finally:
         buf.close()

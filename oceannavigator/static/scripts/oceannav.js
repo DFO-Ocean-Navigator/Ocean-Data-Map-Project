@@ -21,6 +21,10 @@ var defaults = {
         'bathymetry':      true,
         'contour':         '',
         'quiver':          '',
+        'interpolation': {
+            'method':      'inv_square',
+            'neighbours':  8,
+        },
     },
     'transect': {
         'time':            '-1',
@@ -32,6 +36,10 @@ var defaults = {
         'transect_pts':    [],
         'transect_name':   '',
         'linearthresh':    '200',
+        'interpolation': {
+            'method':      'inv_square',
+            'neighbours':  8,
+        },
     },
     'timeseries': {
         'depth':           'all',
@@ -148,6 +156,9 @@ var Selector = React.createClass({
         }
         if (key == 'dataset') {
             for (var key in defaults[this.state.type]) {
+                if (jQuery.inArray(key, ['location', 'overlay', 'interpolation', 'transect_name', 'transect_pts', 'linearthresh']) != -1) {
+                    continue;
+                }
                 if (defaults[this.state.type].hasOwnProperty(key)) {
                     newstate[key] = defaults[this.state.type][key];
                 }
@@ -177,6 +188,7 @@ var Selector = React.createClass({
             'station': (<StationComboBox key='station' id='station' def={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
             'starttime': (<ComboBox key='starttime' id='starttime' def={this.state.starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
             'endtime': (<ComboBox key='endtime' id='endtime' def={this.state.endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
+            'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
         }
 
         var map_inputs = [
@@ -191,6 +203,7 @@ var Selector = React.createClass({
             'bathymetry',
             'quiver',
             'contour',
+            'interp',
         ];
         var transect_inputs = [
             'transect_pts',
@@ -202,6 +215,7 @@ var Selector = React.createClass({
             'scale',
             'colormap',
             'surfacevariable',
+            'interp',
         ];
         var timeseries_inputs = [
             'starttime',
@@ -511,6 +525,52 @@ var ComboBox = React.createClass({
         } else {
             return null;
         }
+    }
+});
+
+var InterpolationOptions = React.createClass({
+    getInitialState: function() {
+        return {
+            method: 'inv_square',
+            neighbours: 8,
+        };
+    },
+    onUpdate: function(k, v) {
+        if (k == 'neighbours') {
+            v = parseInt(v);
+        }
+        var state = {};
+        state[k] = v;
+        this.setState(state);
+        var newState = jQuery.extend({}, this.state, state);
+        this.props.onUpdate(this.props.id, newState);
+    },
+    show: function(e) {
+        var p = $(e.target.parentNode);
+        if (p.hasClass("collapsed")) {
+            p.removeClass("collapsed");
+        } else {
+            p.addClass("collapsed");
+        }
+        p.children("div").slideToggle("fast");
+    },
+    render: function() {
+        var interp_methods = [
+            { id: 'inv_square', value: 'Inverse Square Distance' },
+            { id: 'bilinear', value: 'Bilinear' },
+            { id: 'nn', value: 'Nearest Neighbour' },
+        ];
+        return (
+            <div className='collapsible collapsed'>
+                <h1 onClick={this.show}>{this.props.children}</h1>
+                <div className='sub'>
+                    <ComboBox id='method' def={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
+                    <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
+                        <NumberBox id='neighbours' def={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
+                    </div>
+                </div>
+            </div>
+        );
     }
 });
 
@@ -1076,3 +1136,4 @@ ReactDOM.render(
     <Selector />,
     document.getElementById('content')
 );
+

@@ -77,7 +77,8 @@ class Grid(object):
         minx, maxx = np.amin(x), np.amax(x)
         return miny, maxy, minx, maxx
 
-    def transect(self, variable, points, timestep, n=100):
+    def transect(self, variable, points, timestep, n=100,
+                 interpolation={'method': 'inv_square', 'neighbours': 8}):
         distances, target_lat, target_lon, b = _path_to_points(points, n)
 
         idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
@@ -94,22 +95,31 @@ class Grid(object):
 
         _fill_invalid_shift(data)
 
+        method = interpolation.get('method')
+        neighbours = interpolation.get('neighbours')
+        if neighbours < 1:
+            neighbours = 1
+
         resampled = []
         for d in range(0, data.shape[-1]):
-            resampled.append(_resample(lat,
-                                       lon,
-                                       np.array(target_lat),
-                                       np.array(target_lon),
-                                       data[:, :, d],
-                                       method="inv_square",
-                                       neighbours=8,
-                                       radius_of_influence=500000,
-                                       nprocs=4))
+            resampled.append(resample(lat,
+                                      lon,
+                                      np.array(target_lat),
+                             np.array(target_lon),
+                                      data[:, :, d],
+                                      method=method,
+                                      neighbours=neighbours,
+                                      radius_of_influence=500000,
+                                      nprocs=4))
         resampled = np.ma.vstack(resampled)
 
         return np.array([target_lat, target_lon]), distances, resampled
 
-    def surfacetransect(self, variable, points, timestep, n=100):
+    def surfacetransect(self, variable, points, timestep, n=100,
+                        interpolation={
+                            'method': 'inv_square',
+                            'neighbours': 8
+                        }):
         distances, target_lat, target_lon, b = _path_to_points(points, n)
 
         idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
@@ -130,20 +140,30 @@ class Grid(object):
         masked_lat = lat.view(np.ma.MaskedArray)
         masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
 
-        resampled = _resample(lat,
-                              lon,
-                              np.array(target_lat),
-                              np.array(target_lon),
-                              data,
-                              method="inv_square",
-                              neighbours=8,
-                              radius_of_influence=500000,
-                              nprocs=4)
+        if interpolation is not None:
+            method = interpolation.get('method')
+            neighbours = interpolation.get('neighbours')
+            if neighbours < 1:
+                neighbours = 1
+
+        resampled = resample(lat,
+                             lon,
+                             np.array(target_lat),
+                             np.array(target_lon),
+                             data,
+                             method=method,
+                             neighbours=neighbours,
+                             radius_of_influence=500000,
+                             nprocs=4)
 
         return np.array([target_lat, target_lon]), distances, resampled
 
     def velocitytransect(self, variablex, variabley,
-                         points, timestep, n=100):
+                         points, timestep, n=100,
+                         interpolation={
+                             'method': 'inv_square',
+                             'neighbours': 8
+                         }):
 
         distances, target_lat, target_lon, b = _path_to_points(points, n)
 
@@ -167,30 +187,34 @@ class Grid(object):
         _fill_invalid_shift(xmag)
         _fill_invalid_shift(ymag)
 
+        method = interpolation.get('method')
+        neighbours = interpolation.get('neighbours')
+        if neighbours < 1:
+            neighbours = 1
+
         x = []
         y = []
-        neighbours = 8
         for d in range(0, xmag.shape[-1]):
-            x.append(_resample(lat,
-                               lon,
-                               np.array(target_lat),
-                               np.array(target_lon),
-                               xmag[:, :, d],
-                               method="inv_square",
-                               neighbours=neighbours,
-                               radius_of_influence=500000,
-                               nprocs=4
-                               ))
-            y.append(_resample(lat,
-                               lon,
-                               np.array(target_lat),
-                               np.array(target_lon),
-                               ymag[:, :, d],
-                               method="inv_square",
-                               neighbours=neighbours,
-                               radius_of_influence=500000,
-                               nprocs=4
-                               ))
+            x.append(resample(lat,
+                              lon,
+                              np.array(target_lat),
+                     np.array(target_lon),
+                              xmag[:, :, d],
+                              method=method,
+                              neighbours=neighbours,
+                              radius_of_influence=500000,
+                              nprocs=4
+                              ))
+            y.append(resample(lat,
+                              lon,
+                              np.array(target_lat),
+                     np.array(target_lon),
+                              ymag[:, :, d],
+                              method=method,
+                              neighbours=neighbours,
+                              radius_of_influence=500000,
+                              nprocs=4
+                              ))
 
         x_resampled = np.ma.vstack(x)
         y_resampled = np.ma.vstack(y)
@@ -213,8 +237,8 @@ def _fill_invalid_shift(z):
         z[idx] = z_shifted[idx]
 
 
-def _resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
-              neighbours=8, radius_of_influence=500000, nprocs=4):
+def resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
+             neighbours=8, radius_of_influence=500000, nprocs=4):
     masked_lat = in_lat.view(np.ma.MaskedArray)
     masked_lon = in_lon.view(np.ma.MaskedArray)
     masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
@@ -238,8 +262,8 @@ def _resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
             data,
             target_def,
             radius_of_influence=radius_of_influence,
-            neighbours=neighbours,
-            weight_funcs=lambda r: r,
+            neighbours=4,
+            weight_funcs=lambda r: 1 / r,
             fill_value=None,
             nprocs=nprocs)
     elif method == 'nn':
@@ -247,6 +271,7 @@ def _resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
             input_def,
             data,
             target_def,
+            radius_of_influence=radius_of_influence,
             fill_value=None,
             nprocs=nprocs)
     else:

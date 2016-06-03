@@ -81,6 +81,14 @@ def plot(url, climate_url, **kwargs):
                 depthm = dataset.variables['deptht'][int(depth)]
             else:
                 depthm = 0
+
+        interp = query.get('interpolation')
+        if interp is None or interp == '':
+            interp = {
+                'method': 'inv_square',
+                'neighbours': 8,
+            }
+
         data = []
         allvars = []
         for v in variables:
@@ -88,7 +96,7 @@ def plot(url, climate_url, **kwargs):
             allvars.append(v)
             target_lat, target_lon, d = load_interpolated(
                 m, 500, dataset, v,
-                depth, time)
+                depth, time, interpolation=interp)
             data.append(d)
             if len(var.shape) == 3:
                 depth_label = ""
@@ -108,7 +116,7 @@ def plot(url, climate_url, **kwargs):
                 quiver_unit = var.units
                 quiver_name = var.long_name
                 quiver_lat, quiver_lon, d = load_interpolated(
-                    m, 50, dataset, v, depth, time)
+                    m, 50, dataset, v, depth, time, interpolation=interp)
                 quiver_data.append(d)
 
             if quiver_vars[0] != 'none':
@@ -126,7 +134,8 @@ def plot(url, climate_url, **kwargs):
                 contour != 'none':
             target_lat, target_lon, d = load_interpolated(m, 500, dataset,
                                                           contour,
-                                                          depth, time)
+                                                          depth, time,
+                                                          interpolation=interp)
             if dataset[contour].units == "Kelvins":
                 d = np.add(d, -273.15)
 
@@ -164,7 +173,7 @@ def plot(url, climate_url, **kwargs):
         with Dataset(climate_url, 'r') as dataset:
             target_lat, target_lon, d = load_interpolated(
                 m, 500, dataset, variables[0],
-                depth, timestamp.month - 1)
+                depth, timestamp.month - 1, interpolation=interp)
         data[0] = data[0] - d
 
     # Colormap from arguments
