@@ -345,6 +345,11 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
     plt.ylim(np.ceil(deep / l) * l, 0)
     plt.yticks(list(plt.yticks()[0]) + [linearthresh, plt.ylim()[0]])
 
+    # Show the linear threshold
+    plt.plot([distance[0], distance[-1]],
+             [linearthresh, linearthresh],
+             'k:', alpha=0.5)
+
     divider = make_axes_locatable(plt.gca())
     cax = divider.append_axes("right", size="5%", pad=0.05)
     bar = plt.colorbar(c, cax=cax)
