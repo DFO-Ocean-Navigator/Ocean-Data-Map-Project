@@ -6,7 +6,7 @@ from geopy.distance import VincentyDistance
 import scipy.interpolate
 import itertools
 from pyresample.geometry import SwathDefinition
-from pyresample.kd_tree import resample_custom
+from pyresample.kd_tree import resample_custom, resample_nearest
 from cachetools import LRUCache
 
 _data_cache = LRUCache(maxsize=16)
@@ -92,23 +92,20 @@ class Grid(object):
         data = variable[timestep, :, miny:maxy, minx:maxx]
         data = np.rollaxis(data, 0, 3)
 
-        masked_lon = lon.view(np.ma.MaskedArray)
-        masked_lat = lat.view(np.ma.MaskedArray)
-        masked_lon.mask = masked_lat.mask = data.mask
+        _fill_invalid_shift(data)
 
-        orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
-        target_def = SwathDefinition(lons=np.array(target_lon),
-                                     lats=np.array(target_lat))
-
-        self._fill_invalid_shift(data)
-
-        resampled = resample_custom(
-            orig_def, data, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=np.tile([lambda r: 1 / r ** 2],
-                                 data.shape[-1]).tolist(),
-            fill_value=None, nprocs=4).transpose()
+        resampled = []
+        for d in range(0, data.shape[-1]):
+            resampled.append(_resample(lat,
+                                       lon,
+                                       np.array(target_lat),
+                                       np.array(target_lon),
+                                       data[:, :, d],
+                                       method="inv_square",
+                                       neighbours=8,
+                                       radius_of_influence=500000,
+                                       nprocs=4))
+        resampled = np.ma.vstack(resampled)
 
         return np.array([target_lat, target_lon]), distances, resampled
 
@@ -133,16 +130,15 @@ class Grid(object):
         masked_lat = lat.view(np.ma.MaskedArray)
         masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
 
-        orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
-        target_def = SwathDefinition(lons=np.array(target_lon),
-                                     lats=np.array(target_lat))
-
-        resampled = resample_custom(
-            orig_def, data, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=lambda r: 1 / r ** 2,
-            fill_value=None, nprocs=4)
+        resampled = _resample(lat,
+                              lon,
+                              np.array(target_lat),
+                              np.array(target_lon),
+                              data,
+                              method="inv_square",
+                              neighbours=8,
+                              radius_of_influence=500000,
+                              nprocs=4)
 
         return np.array([target_lat, target_lon]), distances, resampled
 
@@ -151,7 +147,7 @@ class Grid(object):
 
         distances, target_lat, target_lon, b = _path_to_points(points, n)
 
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
+        idx_y, idx_x = self.find_index(target_lat, target_lon, 20)
 
         miny = np.amin(idx_y)
         maxy = np.amax(idx_y)
@@ -168,37 +164,39 @@ class Grid(object):
         xmag = np.rollaxis(xmag, 0, 3)
         ymag = np.rollaxis(ymag, 0, 3)
 
-        masked_lon = lon.view(np.ma.MaskedArray)
-        masked_lat = lat.view(np.ma.MaskedArray)
-        masked_lon.mask = masked_lat.mask = xmag.view(np.ma.MaskedArray).mask
+        _fill_invalid_shift(xmag)
+        _fill_invalid_shift(ymag)
 
-        orig_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
-        target_def = SwathDefinition(lons=np.array(target_lon),
-                                     lats=np.array(target_lat))
+        x = []
+        y = []
+        neighbours = 8
+        for d in range(0, xmag.shape[-1]):
+            x.append(_resample(lat,
+                               lon,
+                               np.array(target_lat),
+                               np.array(target_lon),
+                               xmag[:, :, d],
+                               method="inv_square",
+                               neighbours=neighbours,
+                               radius_of_influence=500000,
+                               nprocs=4
+                               ))
+            y.append(_resample(lat,
+                               lon,
+                               np.array(target_lat),
+                               np.array(target_lon),
+                               ymag[:, :, d],
+                               method="inv_square",
+                               neighbours=neighbours,
+                               radius_of_influence=500000,
+                               nprocs=4
+                               ))
 
-        x_resampled = resample_custom(
-            orig_def, xmag, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=np.tile([lambda r: 1 / r ** 2],
-                                 xmag.shape[-1]).tolist(),
-            fill_value=None, nprocs=4).transpose()
-        y_resampled = resample_custom(
-            orig_def, ymag, target_def,
-            radius_of_influence=500000,
-            neighbours=10,
-            weight_funcs=np.tile([lambda r: 1 / r ** 2],
-                                 ymag.shape[-1]).tolist(),
-            fill_value=None, nprocs=4).transpose()
-
-        self._fill_invalid_shift(x_resampled)
-        self._fill_invalid_shift(y_resampled)
+        x_resampled = np.ma.vstack(x)
+        y_resampled = np.ma.vstack(y)
 
         theta = np.arctan2(y_resampled, x_resampled) - r
-        mag = np.sqrt(x_resampled.filled() ** 2 + y_resampled.filled() ** 2)
-        invalid = np.sqrt(
-            x_resampled.fill_value ** 2 + y_resampled.fill_value ** 2)
-        mag = np.ma.masked_values(mag, invalid)
+        mag = np.sqrt(x_resampled ** 2 + y_resampled ** 2)
 
         parallel = mag * np.cos(theta)
         perpendicular = mag * np.sin(theta)
@@ -206,23 +204,57 @@ class Grid(object):
         return np.array([target_lat, target_lon]), \
             distances, parallel, perpendicular
 
-    def _fill_invalid_shift(self, z):
-        # extend values down 1 depth step
-        for shift in range(1, z.shape[-1]):
-            if not z.mask.any():
-                break
-            z_shifted = np.roll(z, shift=shift, axis=1)
-            idx = ~z_shifted.mask * z.mask
-            z[idx] = z_shifted[idx]
 
-        # extend values right 1 step
-        for shift in range(1, z.shape[0] / 2):
-            if not z.mask.any():
-                break
-            for d in [-shift, shift]:
-                z_shifted = np.roll(z, shift=d, axis=0)
-                idx = ~z_shifted.mask * z.mask
-                z[idx] = z_shifted[idx]
+def _fill_invalid_shift(z):
+    # extend values down 1 depth step
+    if z.mask.any():
+        z_shifted = np.roll(z, shift=1, axis=-1)
+        idx = ~z_shifted.mask * z.mask
+        z[idx] = z_shifted[idx]
+
+
+def _resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
+              neighbours=8, radius_of_influence=500000, nprocs=4):
+    masked_lat = in_lat.view(np.ma.MaskedArray)
+    masked_lon = in_lon.view(np.ma.MaskedArray)
+    masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
+
+    input_def = SwathDefinition(lons=masked_lon, lats=masked_lat)
+    target_def = SwathDefinition(lons=out_lon, lats=out_lat)
+
+    if method == 'inv_square':
+        res = resample_custom(
+            input_def,
+            data,
+            target_def,
+            radius_of_influence=radius_of_influence,
+            neighbours=neighbours,
+            weight_funcs=lambda r: 1 / r ** 2,
+            fill_value=None,
+            nprocs=nprocs)
+    elif method == 'bilinear':
+        res = resample_custom(
+            input_def,
+            data,
+            target_def,
+            radius_of_influence=radius_of_influence,
+            neighbours=neighbours,
+            weight_funcs=lambda r: r,
+            fill_value=None,
+            nprocs=nprocs)
+    elif method == 'nn':
+        res = resample_nearest(
+            input_def,
+            data,
+            target_def,
+            fill_value=None,
+            nprocs=nprocs)
+    else:
+        raise ValueError("Unknown resample method: %s", method)
+
+    if type(res.mask) == bool:
+        res.mask = np.tile(res.mask, len(res))
+    return res
 
 
 def points_between(start, end, numpoints):
