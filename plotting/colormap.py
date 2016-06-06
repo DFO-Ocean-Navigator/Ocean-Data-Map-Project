@@ -38,6 +38,7 @@ colormaps = {
     'speed': cmocean.cm.speed,
     'freesurface': cmocean.cm.freesurface,
     'free surface': cmocean.cm.freesurface,
+    'surface height': cmocean.cm.freesurface,
     'velocity': cmocean.cm.velocity,
     'waveheight': cmocean.cm.waveheight,
     'waveperiod': cmocean.cm.waveperiod,

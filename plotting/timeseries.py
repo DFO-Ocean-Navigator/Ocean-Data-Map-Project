@@ -75,13 +75,18 @@ def plot(url, climate_url=None, **kwargs):
 
         if 'deptht' in dataset.variables:
             depth_var = dataset.variables['deptht']
+            depth_units = depth_var.units
         elif 'depth' in dataset.variables:
             depth_var = dataset.variables['depth']
+            depth_units = depth_var.units
+        else:
+            depth_var = None
+            depth_units = ''
 
-        if depth != 'all' and depth >= depth_var.shape[0]:
+        if depth != 'all' and (depth_var is None or depth >=
+                               depth_var.shape[0]):
             depth = 0
 
-        depth_units = depth_var.units
         if ('deptht' in dataset.variables or 'depth' in dataset.variables) \
            and \
             depth != 'all' and \
@@ -109,7 +114,11 @@ def plot(url, climate_url=None, **kwargs):
             )
             data.append(d)
             times.append(t)
-        depths = depth_var[:]
+
+        if depth_var is not None:
+            depths = depth_var[:]
+        else:
+            depths = [0]
 
     # Figure size
     size = kwargs.get('size').replace("x", " ").split()

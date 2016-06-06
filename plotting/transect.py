@@ -65,8 +65,13 @@ def plot(url, climate_url, **kwargs):
             depth_var = dataset.variables['deptht']
         elif 'depth' in dataset.variables:
             depth_var = dataset.variables['depth']
+        else:
+            depth_var = None
 
-        depth = depth_var[:]
+        if depth_var is None:
+            depth = [0]
+        else:
+            depth = depth_var[:]
 
         if 'time_counter' in dataset.variables:
             time_var = dataset.variables['time_counter']

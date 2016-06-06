@@ -79,7 +79,10 @@ def plot(url, climate_url, **kwargs):
             depth_var = dataset.variables['deptht']
         elif 'depth' in dataset.variables:
             depth_var = dataset.variables['depth']
-        if query.get('depth') and \
+        else:
+            depth_var = None
+
+        if depth_var is not None and query.get('depth') and \
             len(query.get('depth')) > 0 and \
                 query.get('depth') != 'all':
             depth = int(query.get('depth'))
@@ -228,6 +231,7 @@ def plot(url, climate_url, **kwargs):
                 vmin = min(vmin, np.amin(d))
                 vmax = max(vmax, np.amax(d))
                 if re.search("free surface", variable_name) or \
+                    re.search("surface height", variable_name) or \
                     re.search("velocity", variable_name) or \
                     re.search("wind", variable_name) or \
                         anom:
