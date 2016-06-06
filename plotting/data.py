@@ -149,13 +149,14 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             if depthall:
                 origshape = d.shape
                 d = d.reshape([d.shape[0], d.shape[1], -1])
-                wf = [lambda r: 1 / r ** 2] * d.shape[-1]
-                resampled = resample_custom(
-                    orig_def, d, target_def,
-                    radius_of_influence=radius,
-                    neighbours=10,
-                    weight_funcs=wf,
-                    fill_value=None, nprocs=4)
+
+            wf = [lambda r: 1 / r ** 2] * d.shape[-1]
+            resampled = resample_custom(
+                orig_def, d, target_def,
+                radius_of_influence=radius,
+                neighbours=10,
+                weight_funcs=wf,
+                fill_value=None, nprocs=4)
 
             if depthall:
                 resampled = resampled.reshape([origshape[2], origshape[3]])
@@ -177,7 +178,8 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
         time_var = dataset.variables['time_counter']
     elif 'time' in dataset.variables:
         time_var = dataset.variables['time']
-        t = netcdftime.utime(time_var.units)
-        times = t.num2date(time_var[time[0]:(time[-1] + 1):timestep])
+
+    t = netcdftime.utime(time_var.units)
+    times = t.num2date(time_var[time[0]:(time[-1] + 1):timestep])
 
     return np.squeeze(d), times
