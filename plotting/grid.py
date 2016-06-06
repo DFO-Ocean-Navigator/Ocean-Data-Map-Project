@@ -77,6 +77,20 @@ class Grid(object):
         minx, maxx = np.amin(x), np.amax(x)
         return miny, maxy, minx, maxx
 
+    def interpolation_radius(self, lat, lon):
+        y, x = self.find_index([lat], [lon], 8)
+        maxx = np.amax(x)
+        maxy = np.amax(y)
+        minx = np.amin(x)
+        miny = np.amin(y)
+        lat0 = self.latvar[miny, minx]
+        lon0 = self.lonvar[miny, minx]
+        lat1 = self.latvar[maxy, maxx]
+        lon1 = self.lonvar[maxy, maxx]
+
+        distance = VincentyDistance()
+        return distance.measure((lat0, lon0), (lat1, lon1)) * 1000 / 2
+
     def transect(self, variable, points, timestep, n=100,
                  interpolation={'method': 'inv_square', 'neighbours': 8}):
         distances, target_lat, target_lon, b = _path_to_points(points, n)
@@ -100,6 +114,8 @@ class Grid(object):
         if neighbours < 1:
             neighbours = 1
 
+        radius = self.interpolation_radius(np.median(target_lat),
+                                           np.median(target_lon))
         resampled = []
         for d in range(0, data.shape[-1]):
             resampled.append(resample(lat,
@@ -109,7 +125,7 @@ class Grid(object):
                                       data[:, :, d],
                                       method=method,
                                       neighbours=neighbours,
-                                      radius_of_influence=500000,
+                                      radius_of_influence=radius,
                                       nprocs=4))
         resampled = np.ma.vstack(resampled)
 
@@ -146,6 +162,8 @@ class Grid(object):
             if neighbours < 1:
                 neighbours = 1
 
+        radius = self.interpolation_radius(np.median(target_lat),
+                                           np.median(target_lon))
         resampled = resample(lat,
                              lon,
                              np.array(target_lat),
@@ -153,7 +171,7 @@ class Grid(object):
                              data,
                              method=method,
                              neighbours=neighbours,
-                             radius_of_influence=500000,
+                             radius_of_influence=radius,
                              nprocs=4)
 
         return np.array([target_lat, target_lon]), distances, resampled
@@ -194,6 +212,8 @@ class Grid(object):
 
         x = []
         y = []
+        radius = self.interpolation_radius(np.median(target_lat),
+                                           np.median(target_lon))
         for d in range(0, xmag.shape[-1]):
             x.append(resample(lat,
                               lon,
@@ -202,7 +222,7 @@ class Grid(object):
                               xmag[:, :, d],
                               method=method,
                               neighbours=neighbours,
-                              radius_of_influence=500000,
+                              radius_of_influence=radius,
                               nprocs=4
                               ))
             y.append(resample(lat,
@@ -212,7 +232,7 @@ class Grid(object):
                               ymag[:, :, d],
                               method=method,
                               neighbours=neighbours,
-                              radius_of_influence=500000,
+                              radius_of_influence=radius,
                               nprocs=4
                               ))
 

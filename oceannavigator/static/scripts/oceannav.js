@@ -25,6 +25,7 @@ var defaults = {
             'method':      'inv_square',
             'neighbours':  8,
         },
+        'scale':           'auto',
     },
     'transect': {
         'time':            '-1',
@@ -40,6 +41,7 @@ var defaults = {
             'method':      'inv_square',
             'neighbours':  8,
         },
+        'scale':           'auto',
     },
     'timeseries': {
         'depth':           'all',
@@ -49,6 +51,7 @@ var defaults = {
         'starttime':       '0',
         'endtime':         '-1',
         'colormap':        'default',
+        'scale':           'auto',
     },
 }
 var imagePreloader = new Image();
@@ -118,15 +121,15 @@ var Plot = React.createClass({
     },
     render: function() {
         return (
-            <div className='plot' style={{float: 'right'}}>
+                <div className='plot' style={{float: 'right'}}>
                 <img src={this.state.url} />
                 <div>
-                    <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
-                    <input type='button' value='Save Image' onClick={this.saveImage} />
-                    <input type='button' value='Open In New Window' onClick={this.newWindow} />
+                <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
+                <input type='button' value='Save Image' onClick={this.saveImage} />
+                <input type='button' value='Open In New Window' onClick={this.newWindow} />
                 </div>
-            </div>
-        );
+                </div>
+               );
     }
 });
 
@@ -171,7 +174,7 @@ var Selector = React.createClass({
             'dataset': (<ComboBox key='dataset' id='dataset' def={this.state.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
             'plottype': (<ComboBox key='type' id='type' def={this.state.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
             'loc': (<LocationComboBox key='location' id='location' def={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
-            'time': (<ComboBox key='time' id='time' def={this.state.time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Time</ComboBox>),
+            'time': (<ComboBox key='time' id='time' def={this.state.time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Time</ComboBox>),
             'variable': (<ComboBox key='variable' def={this.state.variable} id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
             'anomaly': (<CheckBox key='anomaly' id='anomaly' def={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
             'scale': (<Range key='scale' id='scale' def={this.state.scale} onUpdate={this.onUpdate}>Variable Range</Range>),
@@ -249,15 +252,15 @@ var Selector = React.createClass({
         }
 
         return (
-            <div>
+                <div>
                 <Plot query={this.state} />
                 <div className='inputs'>
-                    {inputmap['dataset']}
-                    {inputmap['plottype']}
-                    {inputs}
+                {inputmap['dataset']}
+                {inputmap['plottype']}
+                {inputs}
                 </div>
-            </div>
-        );
+                </div>
+               );
     }
 });
 
@@ -277,11 +280,11 @@ var CheckBox = React.createClass({
     },
     render: function() {
         return (
-            <div>
+                <div>
                 <input type='checkbox' id={this.props.id} onChange={this.handleChange} checked={this.state.value} />
                 <label htmlFor={this.props.id}>{this.props.children}</label>
-            </div>
-        );
+                </div>
+               );
     }
 });
 
@@ -311,20 +314,20 @@ var OverlaySelector = React.createClass({
     },
     render: function() {
         return (
-            <div key='overlay' className='overlayselector'>
+                <div key='overlay' className='overlayselector'>
                 <ComboBox id='file' def='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
                 <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
-                    <ComboBox id='selection' multiple def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
-                    <ComboBox id='labelcolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
-                    <ComboBox id='edgecolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
-                    <ComboBox id='facecolor' def='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
-                    <div className='input'>
-                        <label forName='alpha'>Alpha:</label>
-                        <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
-                    </div>
+                <ComboBox id='selection' multiple def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
+                <ComboBox id='labelcolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
+                <ComboBox id='edgecolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
+                <ComboBox id='facecolor' def='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
+                <div className='input'>
+                <label forName='alpha'>Alpha:</label>
+                <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
                 </div>
-            </div>
-        );
+                </div>
+                </div>
+               );
     }
 });
 
@@ -362,20 +365,20 @@ var Range = React.createClass({
     },
     render: function() {
         return (
-            <div className='range'>
+                <div className='range'>
                 <h1>{this.props.children}</h1>
                 <input type='checkbox' id={this.props.id + '_auto'} checked={this.state.auto} onChange={this.autoChanged} />
                 <label htmlFor={this.props.id + '_auto'}>Auto Range</label>
                 <div style={{'display': this.state.auto ? 'none' : 'block'}}>
-                    <label htmlFor={this.props.id + '_min'}>Min:</label>
-                    <input ref='min' id={this.props.id + '_min'} type='number' disabled={this.state.auto} value={this.state.auto ? '' : this.state.min} onChange={this.rangeChanged} onBlur={this.updateParent} />
+                <label htmlFor={this.props.id + '_min'}>Min:</label>
+                <input ref='min' id={this.props.id + '_min'} type='number' disabled={this.state.auto} value={this.state.auto ? '' : this.state.min} onChange={this.rangeChanged} onBlur={this.updateParent} />
                 </div>
                 <div style={{'display': this.state.auto ? 'none' : 'block'}}>
-                    <label htmlFor={this.props.id + '_max'}>Max:</label>
-                    <input ref='max' id={this.props.id + '_max'} type='number' disabled={this.state.auto} value={this.state.auto ? '' : this.state.max} onChange={this.rangeChanged} onBlur={this.updateParent} />
+                <label htmlFor={this.props.id + '_max'}>Max:</label>
+                <input ref='max' id={this.props.id + '_max'} type='number' disabled={this.state.auto} value={this.state.auto ? '' : this.state.max} onChange={this.rangeChanged} onBlur={this.updateParent} />
                 </div>
-            </div>
-        );
+                </div>
+               );
     }
 });
 
@@ -405,14 +408,14 @@ var NumberBox = React.createClass({
     },
     render: function() {
         return (
-            <div className='range'>
+                <div className='range'>
                 <h1>{this.props.children}</h1>
                 <div>
-                    <label htmlFor={this.props.id}>Value:</label>
-                    <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                <label htmlFor={this.props.id}>Value:</label>
+                <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed} onBlur={this.updateParent} onKeyPress={this.keyPress} />
                 </div>
-            </div>
-        );
+                </div>
+               );
     }
 });
 
@@ -500,28 +503,28 @@ var ComboBox = React.createClass({
     render: function() {
         var options = this.state.data.map(function(o) {
             return (
-                <option key={o.id} value={o.id}>
+                    <option key={o.id} value={o.id}>
                     {o.value}
-                </option>
-            );
+                    </option>
+                   );
         });
 
         if (this.state.data.length > 1) {
             return (
-                <div key={this.props.url}>
+                    <div key={this.props.url}>
                     <h1>
-                        {this.props.children}
+                    {this.props.children}
                     </h1>
 
                     <select
-                        size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
-                        value={this.state.value}
-                        onChange={this.handleChange}
-                        multiple={this.props.multiple}>
-                        {options}
+                    size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
+                    value={this.state.value}
+                    onChange={this.handleChange}
+                    multiple={this.props.multiple}>
+                    {options}
                     </select>
-                </div>
-            );
+                    </div>
+                   );
         } else {
             return null;
         }
@@ -556,21 +559,21 @@ var InterpolationOptions = React.createClass({
     },
     render: function() {
         var interp_methods = [
-            { id: 'inv_square', value: 'Inverse Square Distance' },
-            { id: 'bilinear', value: 'Bilinear' },
-            { id: 'nn', value: 'Nearest Neighbour' },
+        { id: 'inv_square', value: 'Inverse Square Distance' },
+        { id: 'bilinear', value: 'Bilinear' },
+        { id: 'nn', value: 'Nearest Neighbour' },
         ];
         return (
-            <div className='collapsible collapsed'>
+                <div className='collapsible collapsed'>
                 <h1 onClick={this.show}>{this.props.children}</h1>
                 <div className='sub'>
-                    <ComboBox id='method' def={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
-                    <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
-                        <NumberBox id='neighbours' def={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
-                    </div>
+                <ComboBox id='method' def={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
+                <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
+                <NumberBox id='neighbours' def={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
                 </div>
-            </div>
-        );
+                </div>
+                </div>
+               );
     }
 });
 
@@ -707,7 +710,7 @@ var TransectComboBox = React.createClass({
     },
     closeMap: function(e) {
         if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
-            e.target.className.toLowerCase() == 'modal') {
+                e.target.className.toLowerCase() == 'modal') {
             this.refs.map.style.display = 'none';
             this.props.onUpdate('transect_pts', this.state.points);
             this.props.onUpdate('transect_name', '');
@@ -729,50 +732,50 @@ var TransectComboBox = React.createClass({
         for (var i = 0; i < this.state.data.length; i++) {
             var o = this.state.data[i].transects.map(function(o) {
                 return (
-                    <option key={o.name} value={o.name}>
+                        <option key={o.name} value={o.name}>
                         {o.name}
-                    </option>
-                );
+                        </option>
+                       );
             });
             groups.push(o);
         }
 
         for (var i = 0; i < this.state.data.length; i++) {
             options.push(
-                <optgroup key={i} label={this.state.data[i].name}>
-                {groups[i]}
-                </optgroup>
-            );
+                    <optgroup key={i} label={this.state.data[i].name}>
+                    {groups[i]}
+                    </optgroup>
+                    );
         }
 
         return (
-            <div key={this.props.url} className='transect'>
+                <div key={this.props.url} className='transect'>
                 <h1>
-                    {this.props.children}
+                {this.props.children}
                 </h1>
 
                 <select
-                    value={this.state.value}
-                    onChange={this.handleChange}>
-                    {options}
-                    <option value="custom">Custom...</option>
+                value={this.state.value}
+                onChange={this.handleChange}>
+                {options}
+                <option value="custom">Custom...</option>
                 </select>
 
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
                 <div ref='map' className='modal' onClick={this.closeMap} >
-                    <div className='modal-content'>
-                        <div id='map' style={{'height': '500px'}}></div>
-                        <div className='map-footer'>
-                            <p>Click to draw a transect. Double-click ends.</p>
-                            <input type="button" value="Done" onClick={this.closeMap} />
-                            <input type="button" value="Clear" onClick={this.clearMap} />
-                        </div>
-                    </div>
+                <div className='modal-content'>
+                <div id='map' style={{'height': '500px'}}></div>
+                <div className='map-footer'>
+                <p>Click to draw a transect. Double-click ends.</p>
+                <input type="button" value="Done" onClick={this.closeMap} />
+                <input type="button" value="Clear" onClick={this.clearMap} />
                 </div>
-            </div>
-        );
+                </div>
+                </div>
+                </div>
+                );
     }
 });
 
@@ -854,11 +857,11 @@ var LocationComboBox = React.createClass({
                         Math.max(this.state.startpoint[0], lonlat[0]),
                     ],
                 ];
-                this.setState({
-                    coordinates: coords
-                });
-                this.refs.map.style.display = 'none';
-                this.props.onUpdate(this.props.id, coords);
+                    this.setState({
+                        coordinates: coords
+                    });
+                    this.refs.map.style.display = 'none';
+                    this.props.onUpdate(this.props.id, coords);
             }.bind(this));
             this.map.addInteraction(drag);
         }
@@ -872,45 +875,45 @@ var LocationComboBox = React.createClass({
     },
     closeMap: function(e) {
         if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
-            e.target.className.toLowerCase() == 'modal') {
+                e.target.className.toLowerCase() == 'modal') {
             this.refs.map.style.display = 'none';
         }
     },
     render: function() {
         var options = this.state.data.map(function(o) {
             return (
-                <option key={o.id} value={o.id}>
+                    <option key={o.id} value={o.id}>
                     {o.value}
-                </option>
-            );
+                    </option>
+                   );
         });
 
         return (
-            <div key={this.props.url} className='location'>
+                <div key={this.props.url} className='location'>
                 <h1>
-                    {this.props.children}
+                {this.props.children}
                 </h1>
 
                 <select
-                    value={this.state.value}
-                    onChange={this.handleChange}>
-                    {options}
-                    <option value="custom">Custom...</option>
+                value={this.state.value}
+                onChange={this.handleChange}>
+                {options}
+                <option value="custom">Custom...</option>
                 </select>
 
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
                 <div ref='map' className='modal' onClick={this.closeMap} >
-                    <div className='modal-content'>
-                        <div id='map' style={{'height': '500px'}}></div>
-                        <div className='map-footer'>
-                            <p>Hold shift and and drag to select an area.</p>
-                        </div>
-                    </div>
+                <div className='modal-content'>
+                <div id='map' style={{'height': '500px'}}></div>
+                <div className='map-footer'>
+                <p>Hold shift and and drag to select an area.</p>
                 </div>
-            </div>
-        );
+                </div>
+                </div>
+                </div>
+                );
     }
 });
 
@@ -1061,7 +1064,7 @@ var StationComboBox = React.createClass({
     },
     closeMap: function(e) {
         if (e.target.tagName.toLowerCase() == 'input' ||
-            e.target.className.toLowerCase() == 'modal') {
+                e.target.className.toLowerCase() == 'modal') {
             this.refs.map.style.display = 'none';
             this.updateParent();
         }
@@ -1073,67 +1076,67 @@ var StationComboBox = React.createClass({
         for (var i = 0; i < this.state.data.length; i++) {
             var o = this.state.data[i].stations.map(function(o) {
                 return (
-                    <option key={o.name} value={o.name}>
+                        <option key={o.name} value={o.name}>
                         {o.name}
-                    </option>
-                );
+                        </option>
+                       );
             });
             groups.push(o);
         }
 
         for (var i = 0; i < this.state.data.length; i++) {
             options.push(
-                <optgroup key={i} label={this.state.data[i].name}>
-                {groups[i]}
-                </optgroup>
-            );
+                    <optgroup key={i} label={this.state.data[i].name}>
+                    {groups[i]}
+                    </optgroup>
+                    );
         }
 
         return (
-            <div key={this.props.url}>
+                <div key={this.props.url}>
                 <h1>
-                    {this.props.children}
+                {this.props.children}
                 </h1>
 
                 <select
-                    value={this.state.value}
-                    onChange={this.handleChange}>
-                    {options}
-                    <option value="custom">Custom...</option>
+                value={this.state.value}
+                onChange={this.handleChange}>
+                {options}
+                <option value="custom">Custom...</option>
                 </select>
 
                 <div className='latlon' style={{'display': (this.state.value == 'custom') ? 'block' : 'none'}}>
-                    <div>
-                        <label htmlFor={this.props.id + '_lat'}>Lat:</label>
-                        <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' value={parseFloat(this.state.lat).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
-                    </div>
-                    <div>
-                        <label htmlFor={this.props.id + '_lon'}>Lon:</label>
-                        <input ref='lon' id={this.props.id + '_lon'} type='number' step='0.0001' value={parseFloat(this.state.lon).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
-                    </div>
-                    <div>
-                        <label /><input type="button" value="Map" onClick={this.showMap} />
-                    </div>
+                <div>
+                <label htmlFor={this.props.id + '_lat'}>Lat:</label>
+                <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' value={parseFloat(this.state.lat).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                </div>
+                <div>
+                <label htmlFor={this.props.id + '_lon'}>Lon:</label>
+                <input ref='lon' id={this.props.id + '_lon'} type='number' step='0.0001' value={parseFloat(this.state.lon).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                </div>
+                <div>
+                <label /><input type="button" value="Map" onClick={this.showMap} />
+                </div>
                 </div>
                 <div ref='map' className='modal' onClick={this.closeMap} >
-                    <div className='modal-content'>
-                        <div id='map' style={{'height': '500px'}}></div>
-                        <div className='map-footer'>
-                            <input type="button" value="Done" onClick={this.closeMap} />
-                            <p>
-                                Latitude: {parseFloat(this.state.lat).toFixed(4)}<br />
-                                Longitude: {parseFloat(this.state.lon).toFixed(4)}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <div className='modal-content'>
+                <div id='map' style={{'height': '500px'}}></div>
+                <div className='map-footer'>
+                <input type="button" value="Done" onClick={this.closeMap} />
+                <p>
+                Latitude: {parseFloat(this.state.lat).toFixed(4)}<br />
+                Longitude: {parseFloat(this.state.lon).toFixed(4)}
+        </p>
             </div>
-        );
+            </div>
+            </div>
+            </div>
+            );
     }
 });
 
 ReactDOM.render(
-    <Selector />,
-    document.getElementById('content')
-);
+        <Selector />,
+        document.getElementById('content')
+        );
 

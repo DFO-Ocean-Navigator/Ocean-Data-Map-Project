@@ -48,7 +48,11 @@ def plot(url, climate_url, **kwargs):
         else:
             time = int(query.get('time'))
 
-        if time >= dataset.variables['time_counter'].shape[0]:
+        if 'time_counter' in dataset.variables:
+            time_var = dataset.variables['time_counter']
+        elif 'time' in dataset.variables:
+            time_var = dataset.variables['time']
+        if time >= time_var.shape[0]:
             time = -1
 
         variable_unit = dataset.variables[variables[0]].units
@@ -71,16 +75,18 @@ def plot(url, climate_url, **kwargs):
 
         depth = 0
         depthm = 0
+        if 'deptht' in dataset.variables:
+            depth_var = dataset.variables['deptht']
+        elif 'depth' in dataset.variables:
+            depth_var = dataset.variables['depth']
         if query.get('depth') and \
             len(query.get('depth')) > 0 and \
                 query.get('depth') != 'all':
             depth = int(query.get('depth'))
-            if depth >= dataset.variables['deptht'].shape[0]:
+
+            if depth >= depth_var.shape[0]:
                 depth = 0
-            if 'deptht' in dataset.variables:
-                depthm = dataset.variables['deptht'][int(depth)]
-            else:
-                depthm = 0
+            depthm = depth_var[int(depth)]
 
         interp = query.get('interpolation')
         if interp is None or interp == '':
@@ -101,7 +107,6 @@ def plot(url, climate_url, **kwargs):
             if len(var.shape) == 3:
                 depth_label = ""
             else:
-                depth_var = dataset.variables['deptht']
                 depth_label = " at " + \
                     str(int(np.round(depthm))) + " " + depth_var.units
 
@@ -136,14 +141,14 @@ def plot(url, climate_url, **kwargs):
                                                           contour,
                                                           depth, time,
                                                           interpolation=interp)
-            if dataset[contour].units == "Kelvins":
+            if dataset[contour].units.startswith("Kelvin"):
                 d = np.add(d, -273.15)
 
             contour_data.append(d)
             contour_name = dataset.variables[contour].long_name
 
-        t = netcdftime.utime(dataset.variables["time_counter"].units)
-        timestamp = t.num2date(dataset.variables["time_counter"][time])
+        t = netcdftime.utime(time_var.units)
+        timestamp = t.num2date(time_var[time])
 
     # Load bathymetry data
     bathymetry = overlays.bathymetry(m, target_lat, target_lon, blur=2)
@@ -192,7 +197,7 @@ def plot(url, climate_url, **kwargs):
     figuresize = (float(size[0]), float(size[1]))
     fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
 
-    if variable_unit == "Kelvins":
+    if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
         for idx, val in enumerate(data):
             data[idx] = np.add(val, -273.15)

@@ -52,10 +52,28 @@ def plot(url, climate_url, **kwargs):
         }
 
     with Dataset(url, 'r') as dataset:
-        grid = Grid(dataset, 'nav_lat', 'nav_lon')
-        depth = dataset.variables['deptht'][:]
+        if 'nav_lat' in dataset.variables:
+            latvarname = 'nav_lat'
+            lonvarname = 'nav_lon'
+        elif 'latitude' in dataset.variables:
+            latvarname = 'latitude'
+            lonvarname = 'longitude'
 
-        if time >= dataset.variables['time_counter'].shape[0]:
+        grid = Grid(dataset, latvarname, lonvarname)
+
+        if 'deptht' in dataset.variables:
+            depth_var = dataset.variables['deptht']
+        elif 'depth' in dataset.variables:
+            depth_var = dataset.variables['depth']
+
+        depth = depth_var[:]
+
+        if 'time_counter' in dataset.variables:
+            time_var = dataset.variables['time_counter']
+        elif 'time' in dataset.variables:
+            time_var = dataset.variables['time']
+
+        if time >= time_var.shape[0]:
             time = -1
 
         velocity = False
@@ -89,31 +107,38 @@ def plot(url, climate_url, **kwargs):
             surface_name = dataset.variables[
                 surface].long_name.replace(" at CMC", "")
             surface_unit = dataset.variables[surface].units
-            if surface_unit == "Kelvins":
+            if surface_unit.startswith("Kelvin"):
                 surface_unit = "Celsius"
                 surface_value = np.add(surface_value, -273.15)
 
         variable_unit = dataset.variables[variables[0]].units
         variable_name = dataset.variables[
             variables[0]].long_name.replace(" at CMC", "")
-        if variable_unit == "Kelvins":
+        if variable_unit.startswith("Kelvin"):
             variable_unit = "Celsius"
             value = np.add(value, -273.15)
 
         if anom:
             variable_name += " Anomaly"
 
-        t = netcdftime.utime(dataset.variables["time_counter"].units)
-        timestamp = t.num2date(dataset.variables["time_counter"][int(time)])
+        t = netcdftime.utime(time_var.units)
+        timestamp = t.num2date(time_var[int(time)])
 
     if anom:
         with Dataset(climate_url, 'r') as dataset:
-            grid = Grid(dataset, 'nav_lat', 'nav_lon')
+            if 'nav_lat' in dataset.variables:
+                latvarname = 'nav_lat'
+                lonvarname = 'nav_lon'
+            elif 'latitude' in dataset.variables:
+                latvarname = 'latitude'
+                lonvarname = 'longitude'
+
+            grid = Grid(dataset, latvarname, lonvarname)
             climate_points, climate_distance, climate_value = grid.transect(
                 dataset.variables[variables[0]],
                 points, time, interpolation=interp)
 
-            if dataset.variables[variables[0]].units == "Kelvins":
+            if dataset.variables[variables[0]].units.startswith("Kelvin"):
                 climate_value = np.add(climate_value, -273.15)
 
             value = value - climate_value
@@ -331,7 +356,7 @@ def _surface_plot(axis_divider, distance, values, units, name):
 def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
                    vmin, vmax, cmap, scale, linearthresh=200):
 
-    c = plt.pcolormesh(distance, depth, values.data,
+    c = plt.pcolormesh(distance, depth, values,
                        cmap=cmap,
                        shading='gouraud',
                        vmin=vmin,
@@ -343,6 +368,7 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
     # Mask out the bottom
     plt.fill_between(bath_x, bath_y * -1, plt.ylim()[0],
                      facecolor='dimgray', hatch='xx')
+    plt.gca().set_axis_bgcolor('dimgray')
 
     plt.xlabel("Distance (km)")
     plt.ylabel("Depth (m)")

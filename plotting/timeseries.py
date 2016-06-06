@@ -47,40 +47,53 @@ def plot(url, climate_url=None, **kwargs):
         else:
             starttime = int(query.get('starttime'))
 
-        if starttime >= dataset.variables['time_counter'].shape[0]:
+        if 'time_counter' in dataset.variables:
+            time_var = dataset.variables['time_counter']
+        elif 'time' in dataset.variables:
+            time_var = dataset.variables['time']
+
+        if starttime >= time_var.shape[0]:
             starttime = -1
 
         if starttime < 0:
-            starttime += dataset.variables['time_counter'].shape[0]
+            starttime += time_var.shape[0]
 
         if query.get('endtime') is None or len(query.get('endtime')) == 0:
             endtime = 0
         else:
             endtime = int(query.get('endtime'))
 
-        if endtime >= dataset.variables['time_counter'].shape[0]:
+        if endtime >= time_var.shape[0]:
             endtime = -1
 
         if endtime < 0:
-            endtime += dataset.variables['time_counter'].shape[0]
+            endtime += time_var.shape[0]
 
         variable_unit = dataset.variables[variables[0]].units
         variable_name = dataset.variables[
             variables[0]].long_name.replace(" at CMC", "")
 
-        if depth != 'all' and depth >= dataset.variables['deptht'].shape[0]:
+        if 'deptht' in dataset.variables:
+            depth_var = dataset.variables['deptht']
+        elif 'depth' in dataset.variables:
+            depth_var = dataset.variables['depth']
+
+        if depth != 'all' and depth >= depth_var.shape[0]:
             depth = 0
 
-        depth_units = dataset.variables['deptht'].units
-        if 'deptht' in dataset.variables and \
+        depth_units = depth_var.units
+        if ('deptht' in dataset.variables or 'depth' in dataset.variables) \
+           and \
             depth != 'all' and \
-                'deptht' in dataset.variables[variables[0]].dimensions:
-            depth_label = " at %d%s" % (dataset.variables['deptht'][depth],
+                ('deptht' in dataset.variables[variables[0]].dimensions or
+                 'depth' in dataset.variables[variables[0]].dimensions):
+            depth_label = " at %d%s" % (depth_var[depth],
                                         depth_units)
         else:
             depth_label = ''
 
-        if 'deptht' not in dataset.variables[variables[0]].dimensions:
+        if ('deptht' not in dataset.variables[variables[0]].dimensions and
+                'depth' not in dataset.variables[variables[0]].dimensions):
             depth = 0
 
         data = []
@@ -96,7 +109,7 @@ def plot(url, climate_url=None, **kwargs):
             )
             data.append(d)
             times.append(t)
-        depths = dataset.variables['deptht'][:]
+        depths = depth_var[:]
 
     # Figure size
     size = kwargs.get('size').replace("x", " ").split()
@@ -110,7 +123,7 @@ def plot(url, climate_url=None, **kwargs):
     if cmap is None:
         cmap = colormap.find_colormap(variable_name)
 
-    if variable_unit == "Kelvins":
+    if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
         for idx, val in enumerate(data):
             data[idx] = np.add(val, -273.15)

@@ -20,6 +20,7 @@ def query_datasets():
     data = [
         {'id': 'giops/monthly/aggregated.ncml', 'value': 'GIOPS Monthly'},
         {'id': 'giops/daily/aggregated.ncml', 'value': 'GIOPS Daily'},
+        {'id': 'riops/riopsf/aggregated.ncml', 'value': 'RIOPS Forecast'},
         {'id': 'glorys/monthly/aggregated.ncml', 'value': 'GLORYS Monthly'},
     ]
     js = json.dumps(data)
@@ -121,14 +122,20 @@ def depth():
         data = []
         if variable and \
            variable in ds.variables and \
-           'deptht' in ds.variables[variable].dimensions:
+           ('deptht' in ds.variables[variable].dimensions or
+                'depth' in ds.variables[variable].dimensions):
             if str(request.args.get('all')).lower() in ['true', 'yes', 'on']:
                 data.append({'id': 'all', 'value': 'All Depths'})
-            for idx, value in enumerate(np.round(ds.variables['deptht'])):
+
+            if 'deptht' in ds.variables:
+                depth_var = ds.variables['deptht']
+            elif 'depth' in ds.variables:
+                depth_var = ds.variables['depth']
+
+            for idx, value in enumerate(np.round(depth_var)):
                 data.append({
                     'id': idx,
-                    'value': "%d " % (value) +
-                             ds.variables['deptht'].units % value
+                    'value': "%d " % (value) + depth_var.units % value
                 })
 
     js = json.dumps(data)
@@ -159,8 +166,10 @@ def vars_query():
                  'dodsC/' + filename, 'r') as ds:
         if 'vectors_only' not in request.args:
             for k, v in ds.variables.iteritems():
-                if 'time_counter' in v.dimensions and 'y' in v.dimensions:
-                    if three_d and 'deptht' not in v.dimensions:
+                if ('time_counter' in v.dimensions or 'time' in v.dimensions) \
+                   and ('y' in v.dimensions or 'yc' in v.dimensions):
+                    if three_d and ('deptht' not in v.dimensions and
+                                    'depth' not in v.dimensions):
                         continue
                     else:
                         data.append({
@@ -177,6 +186,9 @@ def vars_query():
                     'id': 'bottom_vozocrtx,bottom_vomecrty',
                     'value': 'Bottom Sea Water Velocity'
                 })
+            if 'itzocrtx' in ds.variables:
+                data.append(
+                    {'id': 'itzocrtx,itmecrty', 'value': 'Sea Ice Velocity'})
             if 'u_wind' in ds.variables and not three_d:
                 data.append({'id': 'u_wind,v_wind', 'value': 'Wind'})
 
@@ -203,9 +215,14 @@ def time_query():
     data = []
     with Dataset(app.config['THREDDS_SERVER'] +
                  'dodsC/' + filename, 'r') as ds:
-        t = netcdftime.utime(ds.variables['time_counter'].units)
+        if 'time_counter' in ds.variables:
+            time_var = ds.variables['time_counter']
+        elif 'time' in ds.variables:
+            time_var = ds.variables['time']
+
+        t = netcdftime.utime(time_var.units)
         for idx, date in \
-                enumerate(t.num2date(ds.variables['time_counter'][:])):
+                enumerate(t.num2date(time_var[:])):
             data.append({'id': idx, 'value': date})
 
     data = sorted(data, key=lambda k: -k['id'])

@@ -31,11 +31,18 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
         try:
             resampled = np.load(path)
         except:
-            grid = Grid(dataset, 'nav_lat', 'nav_lon')
+            if 'nav_lat' in dataset.variables:
+                latvarname = 'nav_lat'
+                lonvarname = 'nav_lon'
+            elif 'latitude' in dataset.variables:
+                latvarname = 'latitude'
+                lonvarname = 'longitude'
+
+            grid = Grid(dataset, latvarname, lonvarname)
 
             miny, maxy, minx, maxx = grid.bounding_box(basemap)
-            lat = dataset.variables['nav_lat'][miny:maxy, minx:maxx]
-            lon = dataset.variables['nav_lon'][miny:maxy, minx:maxx]
+            lat = dataset.variables[latvarname][miny:maxy, minx:maxx]
+            lon = dataset.variables[lonvarname][miny:maxy, minx:maxx]
 
             var = dataset.variables[variable]
 
@@ -49,9 +56,13 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
             if neighbours < 1:
                 neighbours = 1
 
+            radius = grid.interpolation_radius(
+                target_lat[gridsize / 2, gridsize / 2],
+                target_lon[gridsize / 2, gridsize / 2])
             resampled = resample(lat, lon, target_lat.astype('float64'),
                                  target_lon.astype('float64'), data,
-                                 method=method, neighbours=neighbours)
+                                 method=method, neighbours=neighbours,
+                                 radius_of_influence=radius)
 
             def do_save(filename, data):
                 data.view(np.ma.MaskedArray).dump(filename)
@@ -82,7 +93,14 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
         try:
             d = np.load(path)
         except:
-            grid = Grid(dataset, 'nav_lat', 'nav_lon')
+            if 'nav_lat' in dataset.variables:
+                latvarname = 'nav_lat'
+                lonvarname = 'nav_lon'
+            elif 'latitude' in dataset.variables:
+                latvarname = 'latitude'
+                lonvarname = 'longitude'
+
+            grid = Grid(dataset, latvarname, lonvarname)
             y, x = grid.find_index([lat], [lon], 10)
 
             miny = np.amin(y)
@@ -92,7 +110,7 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
 
             depthall = False
             var = dataset.variables[variable]
-            if 'deptht' in var.dimensions:
+            if 'deptht' in var.dimensions or 'depth' in var.dimensions:
                 if depth == 'all':
                     depthall = True
                     d = var[time[0]:(time[-1] + 1):timestep,
@@ -109,13 +127,13 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
                 d = var[time[0]:(time[-1] + 1):timestep, miny:maxy, minx:maxx]
                 d = np.rollaxis(d, 0, 3)
 
-            lons = dataset.variables['nav_lon'][miny:maxy, minx:maxx]
-            lats = dataset.variables['nav_lat'][miny:maxy, minx:maxx]
+            lons = dataset.variables[lonvarname][miny:maxy, minx:maxx]
+            lats = dataset.variables[latvarname][miny:maxy, minx:maxx]
 
             masked_lon = lons.view(np.ma.MaskedArray)
             masked_lat = lats.view(np.ma.MaskedArray)
 
-            if 'deptht' in var.dimensions:
+            if 'deptht' in var.dimensions or 'depth' in var.dimensions:
                 mask_data = var[time[-1], 0, miny:maxy, minx:maxx]
             else:
                 mask_data = var[time[-1], miny:maxy, minx:maxx]
@@ -127,17 +145,17 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             target_def = SwathDefinition(lons=np.array([lon]),
                                          lats=np.array([lat]))
 
+            radius = grid.interpolation_radius(lat, lon)
             if depthall:
                 origshape = d.shape
                 d = d.reshape([d.shape[0], d.shape[1], -1])
-            wf = [lambda r: 1 / r ** 2] * d.shape[-1]
-            resampled = resample_custom(
-                orig_def, d, target_def,
-                radius_of_influence=500000,
-                neighbours=10,
-                weight_funcs=wf,
-                # weight_funcs=lambda r: 1 / r ** 2,
-                fill_value=None, nprocs=4)
+                wf = [lambda r: 1 / r ** 2] * d.shape[-1]
+                resampled = resample_custom(
+                    orig_def, d, target_def,
+                    radius_of_influence=radius,
+                    neighbours=10,
+                    weight_funcs=wf,
+                    fill_value=None, nprocs=4)
 
             if depthall:
                 resampled = resampled.reshape([origshape[2], origshape[3]])
@@ -155,8 +173,11 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
     else:
         d = _timeseries_cache[hashed]
 
-    t = netcdftime.utime(dataset.variables["time_counter"].units)
-    times = t.num2date(
-        dataset.variables["time_counter"][time[0]:(time[-1] + 1):timestep])
+    if 'time_counter' in dataset.variables:
+        time_var = dataset.variables['time_counter']
+    elif 'time' in dataset.variables:
+        time_var = dataset.variables['time']
+        t = netcdftime.utime(time_var.units)
+        times = t.num2date(time_var[time[0]:(time[-1] + 1):timestep])
 
     return np.squeeze(d), times
