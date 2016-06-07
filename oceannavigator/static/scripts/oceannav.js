@@ -56,7 +56,7 @@ var defaults = {
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
-    buildURL: function(q) {
+    buildQuery: function(q) {
         var query = {
             'type': q.type,
             'dataset': q.dataset,
@@ -67,7 +67,10 @@ var Plot = React.createClass({
             }
         }
 
-        return '/plot/?query=' + JSON.stringify(query);
+        return JSON.stringify(query);
+    },
+    buildURL: function(q) {
+        return '/plot/?query=' + this.buildQuery(q);
     },
     getInitialState: function() {
         return {
@@ -84,7 +87,7 @@ var Plot = React.createClass({
         imagePreloader.onerror = imagePreloader.onabort = function() {
             console.log("Image failed to load: ", src);
             this.setState({
-                'url': fail_image,
+                'url': fail_image + '?query=' + this.buildQuery(this.props.query),
                 'fail': true
             });
         }.bind(this);

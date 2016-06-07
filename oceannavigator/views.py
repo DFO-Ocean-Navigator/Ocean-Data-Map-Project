@@ -1,11 +1,12 @@
 #!env python
 
-from flask import Response, request, redirect
+from flask import Response, request, redirect, send_file
 import json
 from netCDF4 import Dataset, netcdftime
 import datetime
 
 from oceannavigator import app
+from oceannavigator.database import log_query_to_db
 from plotting.transect import plot as transect_plot
 from plotting.transect import list_transects
 from plotting.map import plot as map_plot
@@ -238,6 +239,12 @@ def time_query():
     js = json.dumps(data, cls=DateTimeEncoder)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
+
+
+@app.route('/images/failure.gif')
+def log_failure():
+    log_query_to_db(request)
+    return send_file('static/images/failure.gif')
 
 
 @app.route('/plot/')
