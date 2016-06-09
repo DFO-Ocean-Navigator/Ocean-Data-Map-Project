@@ -85,7 +85,7 @@ var Plot = React.createClass({
         });
         imagePreloader.src = src;
         imagePreloader.onerror = imagePreloader.onabort = function() {
-            console.log("Image failed to load: ", src);
+            console.error("Image failed to load: ", src);
             this.setState({
                 'url': fail_image + '?query=' + this.buildQuery(this.props.query),
                 'fail': true
@@ -122,6 +122,51 @@ var Plot = React.createClass({
         window.location.href = this.state.url + '&save';
         return false;
     },
+    copyURL: function() {
+		var textArea = document.createElement("textarea");
+
+		// Place in top-left corner of screen regardless of scroll position.
+		textArea.style.position = 'fixed';
+		textArea.style.top = 0;
+		textArea.style.left = 0;
+
+		// Ensure it has a small width and height. Setting to 1px / 1em
+		// doesn't work as this gives a negative w/h on some browsers.
+		textArea.style.width = '2em';
+		textArea.style.height = '2em';
+
+		// We don't need padding, reducing the size if it does flash render.
+		textArea.style.padding = 0;
+
+		// Clean up any borders.
+		textArea.style.border = 'none';
+		textArea.style.outline = 'none';
+		textArea.style.boxShadow = 'none';
+
+		// Avoid flash of white box if rendered for any reason.
+		textArea.style.background = 'transparent';
+
+		var url;
+		if (window.location.href.endsWith('/')) {
+			url = window.location.href.slice(0, -1) + this.buildURL(this.props.query);
+		} else {
+			url = window.location.href + this.buildURL(this.props.query);
+		}
+
+		textArea.value = url;
+
+		document.body.appendChild(textArea);
+
+		textArea.select();
+
+		try {
+			document.execCommand('copy');
+		} catch (err) {
+			console.error('Unable to copy');
+		}
+
+		document.body.removeChild(textArea);
+    },
     render: function() {
         return (
                 <div className='plot' style={{float: 'right'}}>
@@ -130,6 +175,7 @@ var Plot = React.createClass({
                 <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
                 <input type='button' value='Save Image' onClick={this.saveImage} />
                 <input type='button' value='Open In New Window' onClick={this.newWindow} />
+                <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': document.queryCommandSupported('copy') ? 'inline-block' : 'none'}} />
                 </div>
                 </div>
                );
@@ -848,7 +894,6 @@ var LocationComboBox = React.createClass({
             }.bind(this));
             drag.on('boxend', function(e) {
                 var lonlat = ol.proj.transform(e.coordinate, 'EPSG:3857','EPSG:4326');
-                console.log(lonlat);
 
                 var coords = [
                     [
