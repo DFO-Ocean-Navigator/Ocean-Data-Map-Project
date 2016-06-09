@@ -20,14 +20,14 @@ def load_map(projection, center, height, width):
             if projection == 'npstere':
                 basemap = Basemap(
                     resolution='i',
-                    rsphere=(6378137.00, 6356752.3142),
+                    ellps='WGS84',
                     projection=projection,
                     boundinglat=center[0],
                     lon_0=center[1])
             elif projection == 'merc':
                 basemap = Basemap(
                     resolution='i',
-                    rsphere=(6378137.00, 6356752.3142),
+                    ellps='WGS84',
                     projection=projection,
                     llcrnrlat=height[0],
                     llcrnrlon=height[1],
@@ -37,7 +37,7 @@ def load_map(projection, center, height, width):
             else:
                 basemap = Basemap(
                     resolution='i',
-                    rsphere=(6378137.00, 6356752.3142),
+                    ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
                     lon_0=center[1],
