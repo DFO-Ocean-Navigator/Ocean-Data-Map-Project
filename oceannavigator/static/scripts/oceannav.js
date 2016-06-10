@@ -699,7 +699,12 @@ var TransectComboBox = React.createClass({
             });
         }
 
-        this.refs.map.style.display = 'block';
+        var m = jQuery(this.refs.map);
+        var emSize = parseFloat($("body").css("font-size"));
+        var pad = 3 * emSize;
+        m.height(jQuery(document).height() - 4*pad);
+        m.parent().css('margin-top', pad + 'px');
+        this.refs.mapwindow.style.display = 'block';
 
         if (this.map == null) {
             this.vectorSource = new ol.source.Vector({
@@ -755,6 +760,7 @@ var TransectComboBox = React.createClass({
         });
         this.vectorSource.addFeature(feature);
 
+        this.map.updateSize();
         this.map.setView(new ol.View({
             center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
@@ -768,7 +774,7 @@ var TransectComboBox = React.createClass({
     closeMap: function(e) {
         if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
                 e.target.className.toLowerCase() == 'modal') {
-            this.refs.map.style.display = 'none';
+            this.refs.mapwindow.style.display = 'none';
             this.props.onUpdate('transect_pts', this.state.points);
             this.props.onUpdate('transect_name', '');
         }
@@ -821,9 +827,9 @@ var TransectComboBox = React.createClass({
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
-                <div ref='map' className='modal' onClick={this.closeMap} >
+                <div ref='mapwindow' className='modal' onClick={this.closeMap} >
                 <div className='modal-content'>
-                <div id='map' style={{'height': '500px'}}></div>
+                <div ref='map' id='map' style={{'height': '500px'}}></div>
                 <div className='map-footer'>
                 <p>Click to draw a transect. Double-click ends.</p>
                 <input type="button" value="Done" onClick={this.closeMap} />
@@ -875,7 +881,12 @@ var LocationComboBox = React.createClass({
     },
     map: null,
     showMap: function() {
-        this.refs.map.style.display = 'block';
+        var m = jQuery(this.refs.map);
+        var emSize = parseFloat($("body").css("font-size"));
+        var pad = 3 * emSize;
+        m.height(jQuery(document).height() - 4*pad);
+        m.parent().css('margin-top', pad + 'px');
+        this.refs.mapwindow.style.display = 'block';
 
         if (this.map == null) {
             this.map = new ol.Map({
@@ -916,11 +927,12 @@ var LocationComboBox = React.createClass({
                     this.setState({
                         coordinates: coords
                     });
-                    this.refs.map.style.display = 'none';
+                    this.refs.mapwindow.style.display = 'none';
                     this.props.onUpdate(this.props.id, coords);
             }.bind(this));
             this.map.addInteraction(drag);
         }
+        this.map.updateSize();
         this.map.setView(new ol.View({
             center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
@@ -932,7 +944,7 @@ var LocationComboBox = React.createClass({
     closeMap: function(e) {
         if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
                 e.target.className.toLowerCase() == 'modal') {
-            this.refs.map.style.display = 'none';
+            this.refs.mapwindow.style.display = 'none';
         }
     },
     render: function() {
@@ -960,9 +972,9 @@ var LocationComboBox = React.createClass({
                 <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
-                <div ref='map' className='modal' onClick={this.closeMap} >
+                <div ref='mapwindow' className='modal' onClick={this.closeMap} >
                 <div className='modal-content'>
-                <div id='map' style={{'height': '500px'}}></div>
+                <div ref='map' id='map' style={{'height': '500px'}}></div>
                 <div className='map-footer'>
                 <p>Hold shift and and drag to select an area.</p>
                 </div>
@@ -1052,7 +1064,12 @@ var StationComboBox = React.createClass({
     map: null,
     vectorSource: null,
     showMap: function() {
-        this.refs.map.style.display = 'block';
+        var m = jQuery(this.refs.map);
+        var emSize = parseFloat($("body").css("font-size"));
+        var pad = 3 * emSize;
+        m.height(jQuery(document).height() - 4*pad);
+        m.parent().css('margin-top', pad + 'px');
+        this.refs.mapwindow.style.display = 'block';
 
         var style = new ol.style.Style({
             image: new ol.style.Icon({
@@ -1110,6 +1127,7 @@ var StationComboBox = React.createClass({
         feature.setStyle(style);
         this.vectorSource.addFeature(feature);
 
+        this.map.updateSize();
         this.map.setView(new ol.View({
             center: ol.proj.transform([this.state.lon, this.state.lat], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
@@ -1121,7 +1139,7 @@ var StationComboBox = React.createClass({
     closeMap: function(e) {
         if (e.target.tagName.toLowerCase() == 'input' ||
                 e.target.className.toLowerCase() == 'modal') {
-            this.refs.map.style.display = 'none';
+            this.refs.mapwindow.style.display = 'none';
             this.updateParent();
         }
     },
@@ -1174,9 +1192,9 @@ var StationComboBox = React.createClass({
                 <label /><input type="button" value="Map" onClick={this.showMap} />
                 </div>
                 </div>
-                <div ref='map' className='modal' onClick={this.closeMap} >
+                <div ref='mapwindow' className='modal' onClick={this.closeMap} >
                 <div className='modal-content'>
-                <div id='map' style={{'height': '500px'}}></div>
+                <div ref='map' id='map' style={{'height': '500px'}}></div>
                 <div className='map-footer'>
                 <input type="button" value="Done" onClick={this.closeMap} />
                 <p>
