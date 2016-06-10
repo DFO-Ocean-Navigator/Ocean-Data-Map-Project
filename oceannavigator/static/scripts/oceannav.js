@@ -76,30 +76,37 @@ var Plot = React.createClass({
         return {
             'url': this.buildURL(this.props.query),
             'fail': false,
+            'loading': false,
         };
     },
+    timer: 0,
     imagePreload: function(src, callback) {
         this.setState({
             'url': loading_image,
             'fail': false,
+            'loading': true,
         });
-        imagePreloader.src = src;
-        imagePreloader.onerror = imagePreloader.onabort = function() {
-            console.error("Image failed to load: ", src);
-            this.setState({
-                'url': fail_image + '?query=' + this.buildQuery(this.props.query),
-                'fail': true
-            });
-        }.bind(this);
-        if (imagePreloader.complete) {
-            callback(this);
-            imagePreloader.onload = function(){};
-        } else {
-            imagePreloader.onload = function() {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(function() {
+            imagePreloader.src = src;
+            imagePreloader.onerror = imagePreloader.onabort = function() {
+                console.error("Image failed to load: ", src);
+                this.setState({
+                    'url': fail_image + '?query=' + this.buildQuery(this.props.query),
+                    'fail': true,
+                    'loading': false,
+                });
+            }.bind(this);
+            if (imagePreloader.complete) {
                 callback(this);
                 imagePreloader.onload = function(){};
-            };
-        }
+            } else {
+                imagePreloader.onload = function() {
+                    callback(this);
+                    imagePreloader.onload = function(){};
+                };
+            }
+        }.bind(this), 100);
     },
     componentWillUpdate: function(nextprops, nextstate) {
         var oldQueryURL = this.buildURL(this.props.query);
@@ -109,7 +116,8 @@ var Plot = React.createClass({
             this.imagePreload(newQueryURL, function(e) {
                 this.setState({
                     'url': newQueryURL,
-                    'fail': false
+                    'fail': false,
+                    'loading': false,
                 });
             }.bind(this));
         }
