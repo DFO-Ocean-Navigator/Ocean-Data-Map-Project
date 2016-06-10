@@ -198,7 +198,7 @@ def plot(url, climate_url, **kwargs):
     # Anomomilies
     if anom:
         with Dataset(climate_url, 'r') as dataset:
-            target_lat, target_lon, d = load_interpolated_grid(
+            d = load_interpolated_grid(
                 target_lat, target_lon, dataset, variables[0],
                 depth, timestamp.month - 1, interpolation=interp)
         data[0] = data[0] - d
@@ -362,10 +362,11 @@ def plot(url, climate_url, **kwargs):
                 overlays.draw_overlay(m, f, **opts)
 
         if len(contour_data) > 0:
-            cs = m.contour(
-                target_lon, target_lat, contour_data[0], latlon=True,
-                lineweight=1, cmap=colormap.find_colormap(contour_name))
-            plt.clabel(cs, fontsize='xx-small')
+            if (contour_data[0].min() != contour_data[0].max()):
+                cs = m.contour(
+                    target_lon, target_lat, contour_data[0], latlon=True,
+                    lineweight=1, cmap=colormap.find_colormap(contour_name))
+                plt.clabel(cs, fontsize='xx-small')
 
         # Map Info
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
