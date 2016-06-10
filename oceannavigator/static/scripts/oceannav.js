@@ -182,6 +182,10 @@ var Plot = React.createClass({
     },
     render: function() {
         var disableButtons = this.state.loading || this.state.fail;
+        var geotiff = "";
+        if (this.props.query.type == 'map') {
+            geotiff = <option value='geotiff'>GeoTIFF</option>;
+        }
         return (
                 <div className='plot' style={{float: 'right'}}>
                 <img src={this.state.url} />
@@ -190,12 +194,13 @@ var Plot = React.createClass({
                     <div className='buttonbar' ref='buttonbar'>
                         <select ref='format' onChange={this.saveImage} disabled={disableButtons}>
                             <option value=''>Save Image</option>
-                            <option value='eps'>EPS</option>
-                            <option value='pdf'>PDF</option>
                             <option value='png'>PNG</option>
-                            <option value='ps'>PS</option>
+                            <option value='pdf'>PDF</option>
                             <option value='svg'>SVG</option>
+                            <option value='ps'>PS</option>
+                            <option value='eps'>EPS</option>
                             <option value='tif'>TIFF</option>
+                            {geotiff}
                         </select>
                         <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
                         <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': document.queryCommandSupported('copy') ? 'inline-block' : 'none'}} disabled={disableButtons}/>

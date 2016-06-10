@@ -36,6 +36,8 @@ def get_mimetype(filetype):
         mime = 'image/tiff'
     elif filetype == 'eps':
         mime = 'application/postscript'
+    elif filetype == 'geotiff':
+        mime = 'image/geotifffloat64'
     else:
         filetype = 'png'
         mime = 'image/png'
