@@ -72,6 +72,9 @@ class Grid(object):
 
     def bounding_box(self, basemap):
         lon, lat = basemap.makegrid(100, 100)
+        return self.bounding_box_grid(lat, lon)
+
+    def bounding_box_grid(self, lat, lon):
         y, x = self.find_index(lat.ravel(), lon.ravel())
         miny, maxy = np.amin(y), np.amax(y)
         minx, maxx = np.amin(x), np.amax(x)

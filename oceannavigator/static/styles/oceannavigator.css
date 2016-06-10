@@ -26,6 +26,7 @@ div.inputs {
 .plot {
     width: 75%;
     height: 100%;
+    max-height: 100%;
     text-align: center;
 }
 
@@ -33,19 +34,23 @@ div.inputs {
     display: block;
     max-width: 100%;
     max-height: 95%;
+    max-height: calc(100% - 3.5em);
     margin: 0.5em auto;
 }
 
 .plot div {
-    min-height: 5%;
+    height: 2.5em;
 }
 
-.plot input + input {
+.plot .buttonbar * {
+    height: 2em;
+}
+.plot .buttonbar > * + * {
     margin-left: 1em;
 }
 
-.range label, .latlon label {
-    min-width: 20%;
+.range label, .latlon label, .size label {
+    min-width: 25%;
     display: inline-block;
 }
 
@@ -68,7 +73,7 @@ div.inputs {
 
 .modal-content {
     background-color: white;
-    margin: 15% auto;
+    margin: 0 auto;
     padding: 2em;
     border: 1px solid black;
     width: 80%;
@@ -124,4 +129,12 @@ div.sub {
 
 .collapsible > div {
     display: none;
+}
+
+input:not([type='checkbox']), select {
+    height: 2em;
+}
+
+.inputs > div:last-of-type {
+    margin-bottom: 1em;
 }

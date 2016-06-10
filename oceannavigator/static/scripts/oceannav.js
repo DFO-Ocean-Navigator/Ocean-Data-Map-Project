@@ -3,6 +3,8 @@ var fail_image = '/images/failure.gif';
 var defaults = {
     'type':                'map',
     'dataset':             'giops/monthly/aggregated.ncml',
+    'size':                '10x7.5',
+    'dpi':                 72,
     'map': {
         'location':        'nwatlantic',
         'time':            '-1',
@@ -127,8 +129,11 @@ var Plot = React.createClass({
         return false;
     },
     saveImage: function() {
-        window.location.href = this.state.url + '&save';
-        return false;
+        var format = this.refs.format.value;
+        if (format != '') {
+            window.location.href = this.state.url + '&save&format=' + format + '&size=' + this.props.query.size + '&dpi=' + this.props.query.dpi;
+        }
+        this.refs.format.value = '';
     },
     copyURL: function() {
 		var textArea = document.createElement("textarea");
@@ -176,14 +181,25 @@ var Plot = React.createClass({
 		document.body.removeChild(textArea);
     },
     render: function() {
+        var disableButtons = this.state.loading || this.state.fail;
         return (
                 <div className='plot' style={{float: 'right'}}>
                 <img src={this.state.url} />
                 <div>
                 <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
-                <input type='button' value='Save Image' onClick={this.saveImage} />
-                <input type='button' value='Open In New Window' onClick={this.newWindow} />
-                <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': document.queryCommandSupported('copy') ? 'inline-block' : 'none'}} />
+                    <div className='buttonbar' ref='buttonbar'>
+                        <select ref='format' onChange={this.saveImage} disabled={disableButtons}>
+                            <option value=''>Save Image</option>
+                            <option value='eps'>EPS</option>
+                            <option value='pdf'>PDF</option>
+                            <option value='png'>PNG</option>
+                            <option value='ps'>PS</option>
+                            <option value='svg'>SVG</option>
+                            <option value='tif'>TIFF</option>
+                        </select>
+                        <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
+                        <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': document.queryCommandSupported('copy') ? 'inline-block' : 'none'}} disabled={disableButtons}/>
+                    </div>
                 </div>
                 </div>
                );
@@ -195,6 +211,8 @@ var Selector = React.createClass({
         var state = {
             'type': defaults.type,
             'dataset': defaults.dataset,
+            'size': defaults.size,
+            'dpi': defaults.dpi,
         }
         for (var key in defaults[defaults.type]) {
             if (defaults[defaults.type].hasOwnProperty(key)) {
@@ -249,6 +267,7 @@ var Selector = React.createClass({
             'starttime': (<ComboBox key='starttime' id='starttime' def={this.state.starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
             'endtime': (<ComboBox key='endtime' id='endtime' def={this.state.endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
+            'size': (<Size key='size' id='size' onUpdate={this.onUpdate}>Image Size</Size>),
         }
 
         var map_inputs = [
@@ -315,6 +334,7 @@ var Selector = React.createClass({
                 {inputmap['dataset']}
                 {inputmap['plottype']}
                 {inputs}
+                {inputmap['size']}
                 </div>
                 </div>
                );
@@ -1207,6 +1227,57 @@ var StationComboBox = React.createClass({
             </div>
             );
     }
+});
+
+var Size = React.createClass({
+    getInitialState: function() {
+        return {
+            width: 10,
+            height: 7.5,
+            dpi: 72,
+        }
+    },
+    show: function(e) {
+        var p = $(e.target.parentNode);
+        if (p.hasClass("collapsed")) {
+            p.removeClass("collapsed");
+        } else {
+            p.addClass("collapsed");
+        }
+        p.children("div").slideToggle("fast");
+    },
+    changed: function() {
+        this.setState({
+            width: parseFloat(this.refs.width.value),
+            height: parseFloat(this.refs.height.value),
+            dpi: parseFloat(this.refs.dpi.value),
+        });
+        this.props.onUpdate('size', parseFloat(this.refs.width.value) + 'x' + parseFloat(this.refs.height.value));
+        this.props.onUpdate('dpi', parseFloat(this.refs.dpi.value));
+    },
+    render: function() {
+        return (
+            <div className='collapsible collapsed size'>
+                <h1 onClick={this.show}>{this.props.children}</h1>
+                <div className='sub'>
+                    <div>
+                        <label htmlFor={this.props.id + '_width'}>Width:</label>
+                        <input ref='width' id={this.props.id + '_width'} type='number' step='0.25' value={parseFloat(this.state.width).toFixed(2)} onChange={this.changed} />
+                        in
+                    </div>
+                    <div>
+                        <label htmlFor={this.props.id + '_height'}>Height:</label>
+                        <input ref='height' id={this.props.id + '_height'} type='number' step='0.25' value={parseFloat(this.state.height).toFixed(2)} onChange={this.changed} />
+                        in
+                    </div>
+                    <div>
+                        <label htmlFor={this.props.id + '_dpi'}>DPI:</label>
+                        <input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' value={parseFloat(this.state.dpi).toFixed(0)} onChange={this.changed} />
+                    </div>
+                </div>
+            </div>
+        );
+    },
 });
 
 ReactDOM.render(

@@ -276,22 +276,48 @@ def plot():
     }
     plottype = query.get('type')
 
+    size = None
+    if 'save' in request.args:
+        if 'size' in request.args:
+            size = request.args.get('size')
+        if 'dpi' in request.args:
+            opts['dpi'] = request.args.get('dpi')
+
+    filename = 'png'
     if plottype == 'map':
-        opts['size'] = '11x9'
-        img = map_plot(url, climate_url, **opts)
-        response = Response(img, status=200, mimetype='image/png')
+        if size is None:
+            opts['size'] = '11x9'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = map_plot(url, climate_url, **opts)
+        response = Response(img, status=200, mimetype=mime)
     elif plottype == 'transect':
-        opts['size'] = '11x5'
-        img = transect_plot(url, climate_url, **opts)
-        response = Response(img, status=200, mimetype='image/png')
+        if size is None:
+            opts['size'] = '11x5'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = transect_plot(url, climate_url, **opts)
+        response = Response(img, status=200, mimetype=mime)
     elif plottype == 'timeseries':
-        opts['size'] = '11x5'
-        img = ts_plot(url, climate_url, **opts)
-        response = Response(img, status=200, mimetype='image/png')
+        if size is None:
+            opts['size'] = '11x5'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = ts_plot(url, climate_url, **opts)
+        response = Response(img, status=200, mimetype=mime)
     else:
         response = FAILURE
 
     if 'save' in request.args:
         response.headers[
-            'Content-Disposition'] = 'attachment; filename="plot.png"'
+            'Content-Disposition'] = "attachment; filename=\"%s\"" % filename
     return response

@@ -31,38 +31,14 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
         try:
             resampled = np.load(path)
         except:
-            if 'nav_lat' in dataset.variables:
-                latvarname = 'nav_lat'
-                lonvarname = 'nav_lon'
-            elif 'latitude' in dataset.variables:
-                latvarname = 'latitude'
-                lonvarname = 'longitude'
-
-            grid = Grid(dataset, latvarname, lonvarname)
-
-            miny, maxy, minx, maxx = grid.bounding_box(basemap)
-            lat = dataset.variables[latvarname][miny:maxy, minx:maxx]
-            lon = dataset.variables[lonvarname][miny:maxy, minx:maxx]
-
-            var = dataset.variables[variable]
-
-            if len(var.shape) == 3:
-                data = var[time, miny:maxy, minx:maxx]
-            else:
-                data = var[time, depth, miny:maxy, minx:maxx]
-
-            method = interpolation.get('method')
-            neighbours = interpolation.get('neighbours')
-            if neighbours < 1:
-                neighbours = 1
-
-            radius = grid.interpolation_radius(
-                target_lat[gridsize / 2, gridsize / 2],
-                target_lon[gridsize / 2, gridsize / 2])
-            resampled = resample(lat, lon, target_lat.astype('float64'),
-                                 target_lon.astype('float64'), data,
-                                 method=method, neighbours=neighbours,
-                                 radius_of_influence=radius)
+            resampled = load_interpolated_grid(
+                target_lat,
+                target_lon,
+                dataset,
+                variable,
+                depth,
+                time,
+                interpolation)
 
             def do_save(filename, data):
                 data.view(np.ma.MaskedArray).dump(filename)
@@ -76,6 +52,47 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
         return target_lat, target_lon, _interpolated_cache.get(hashed)
 
     return target_lat, target_lon, resampled
+
+
+def load_interpolated_grid(lat, lon, dataset, variable, depth, time,
+                           interpolation={
+                               'method': 'inv_square',
+                               'neighbours': 8
+                           }):
+    if 'nav_lat' in dataset.variables:
+        latvarname = 'nav_lat'
+        lonvarname = 'nav_lon'
+    elif 'latitude' in dataset.variables:
+        latvarname = 'latitude'
+        lonvarname = 'longitude'
+
+    grid = Grid(dataset, latvarname, lonvarname)
+
+    miny, maxy, minx, maxx = grid.bounding_box_grid(lat, lon)
+    lat_in = dataset.variables[latvarname][miny:maxy, minx:maxx]
+    lon_in = dataset.variables[lonvarname][miny:maxy, minx:maxx]
+
+    var = dataset.variables[variable]
+
+    if len(var.shape) == 3:
+        data = var[time, miny:maxy, minx:maxx]
+    else:
+        data = var[time, depth, miny:maxy, minx:maxx]
+
+    method = interpolation.get('method')
+    neighbours = interpolation.get('neighbours')
+    if neighbours < 1:
+        neighbours = 1
+
+    radius = grid.interpolation_radius(
+        lat[lat.shape[0] / 2, lat.shape[1] / 2],
+        lon[lon.shape[0] / 2, lon.shape[1] / 2])
+    resampled = resample(lat_in, lon_in, lat.astype('float64'),
+                         lon.astype('float64'), data,
+                         method=method, neighbours=neighbours,
+                         radius_of_influence=radius)
+
+    return resampled
 
 
 def load_timeseries(dataset, variable, time, depth, lat, lon):

@@ -24,7 +24,12 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
     CACHE_DIR = app.config['CACHE_DIR']
     BATHYMETRY_FILE = app.config['BATHYMETRY_FILE']
 
-    hashed = hashlib.sha1(basemap.filename +
+    if basemap is None:
+        fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
+    else:
+        fname = basemap.filename
+
+    hashed = hashlib.sha1(fname +
                           str(target_lat.shape) +
                           str(target_lon.shape)
                           ).hexdigest()

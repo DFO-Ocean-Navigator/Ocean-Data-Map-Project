@@ -6,11 +6,12 @@ import matplotlib
 import numpy as np
 import re
 import colormap
-import cStringIO
+from StringIO import StringIO
 import os
 from oceannavigator import app
 from pykml import parser
 from data import load_timeseries
+import utils
 
 
 def plot(url, climate_url=None, **kwargs):
@@ -216,12 +217,18 @@ def plot(url, climate_url=None, **kwargs):
         plt.gca().yaxis.grid(True)
         fig.autofmt_xdate()
 
+    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+
     # Output the plot
-    buf = cStringIO.StringIO()
+    buf = StringIO()
     try:
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format=filetype, dpi='figure')
         plt.close(fig)
-        return buf.getvalue()
+        filename = utils.get_filename(url, query.get('station'),
+                                      variables, variable_unit,
+                                      [times[0][0], times[0][-1]], None,
+                                      filetype)
+        return (buf.getvalue(), mime, filename)
     finally:
         buf.close()
 

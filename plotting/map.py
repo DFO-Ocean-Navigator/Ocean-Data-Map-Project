@@ -6,9 +6,10 @@ from mpl_toolkits.basemap import maskoceans
 import numpy as np
 import re
 import colormap
-import cStringIO
+from StringIO import StringIO
 import basemap
 import overlays
+import utils
 from data import load_interpolated
 
 
@@ -338,11 +339,17 @@ def plot(url, climate_url, **kwargs):
     bar.set_label(variable_name.title() + " (" + variable_unit + ")")
     fig.tight_layout(pad=3, w_pad=4)
 
+    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+
     # Output the plot
-    buf = cStringIO.StringIO()
+    buf = StringIO()
     try:
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format=filetype, dpi='figure')
         plt.close(fig)
-        return buf.getvalue()
+        filename = utils.get_filename(url, query.get('location'),
+                                      variables, variable_unit,
+                                      timestamp, depthm,
+                                      filetype)
+        return (buf.getvalue(), mime, filename)
     finally:
         buf.close()

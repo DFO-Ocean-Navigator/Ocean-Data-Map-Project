@@ -8,11 +8,12 @@ from matplotlib.ticker import ScalarFormatter
 import numpy as np
 import re
 import colormap
-import cStringIO
+from StringIO import StringIO
 import os
 from oceannavigator import app
 from pykml import parser
 import geopy
+import utils
 
 
 def plot(url, climate_url, **kwargs):
@@ -327,12 +328,18 @@ def plot(url, climate_url, **kwargs):
     if velocity:
         fig.subplots_adjust(top=0.9)
 
+    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+
     # Output the plot
-    buf = cStringIO.StringIO()
+    buf = StringIO()
     try:
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format=filetype, dpi='figure')
         plt.close(fig)
-        return buf.getvalue()
+        filename = utils.get_filename(url, None,
+                                      variables, variable_unit,
+                                      timestamp, None,
+                                      filetype)
+        return (buf.getvalue(), mime, filename)
     finally:
         buf.close()
 
