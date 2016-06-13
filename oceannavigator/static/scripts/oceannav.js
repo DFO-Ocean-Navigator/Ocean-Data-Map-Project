@@ -247,7 +247,19 @@ var Selector = React.createClass({
         }
         if (key == 'dataset') {
             for (var key in defaults[this.state.type]) {
-                if (jQuery.inArray(key, ['location', 'overlay', 'interpolation', 'transect_name', 'transect_pts', 'linearthresh']) != -1) {
+                if (jQuery.inArray(key,
+                        [
+                            'location',
+                            'overlay',
+                            'interpolation',
+                            'transect_name',
+                            'transect_pts',
+                            'linearthresh',
+                            'colormap',
+                            'bathymetry',
+                            'size',
+                        ]
+                    ) != -1) {
                     continue;
                 }
                 if (defaults[this.state.type].hasOwnProperty(key)) {
@@ -259,26 +271,26 @@ var Selector = React.createClass({
     },
     render: function() {
         var inputmap = {
-            'dataset': (<ComboBox key='dataset' id='dataset' def={this.state.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' def={this.state.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
-            'loc': (<LocationComboBox key='location' id='location' def={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
-            'time': (<ComboBox key='time' id='time' def={this.state.time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Time</ComboBox>),
-            'variable': (<ComboBox key='variable' def={this.state.variable} id='variable' onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
-            'anomaly': (<CheckBox key='anomaly' id='anomaly' def={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
-            'scale': (<Range key='scale' id='scale' def={this.state.scale} onUpdate={this.onUpdate}>Variable Range</Range>),
-            'linearthresh': (<NumberBox key='linearthresh' id='linearthresh' def={this.state.linearthresh} onUpdate={this.onUpdate}>Linear Threshold</NumberBox>),
-            'depth': (<ComboBox key='depth' id='depth' def={this.state.depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
-            'colormap': (<ComboBox key='colormap' id='colormap' def={this.state.colormap} onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
-            'overlay': (<OverlaySelector key='overlay' id='overlay' def={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</OverlaySelector>),
-            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' def={this.state.bathymetry} onUpdate={this.onUpdate}>Bathymetry</CheckBox>),
-            'quiver': (<ComboBox key='quiver' id='quiver' def={this.state.quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset}>Arrows</ComboBox>),
-            'contour': (<ComboBox key='contour' id='contour' def={this.state.contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
-            'showmap': (<CheckBox key='showmap' id='showmap' def={this.state.showmap} onUpdate={this.onUpdate}>Show Location</CheckBox>),
-            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' def={this.state.surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
-            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' def={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
-            'station': (<StationComboBox key='station' id='station' def={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
-            'starttime': (<ComboBox key='starttime' id='starttime' def={this.state.starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
-            'endtime': (<ComboBox key='endtime' id='endtime' def={this.state.endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
+            'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
+            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
+            'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
+            'time': (<ComboBox key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Time</ComboBox>),
+            'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
+            'anomaly': (<CheckBox key='anomaly' id='anomaly' state={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
+            'scale': (<Range key='scale' id='scale' state={this.state.scale} def={defaults[this.state.type].scale} onUpdate={this.onUpdate}>Variable Range</Range>),
+            'linearthresh': (<NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onUpdate}>Linear Threshold</NumberBox>),
+            'depth': (<ComboBox key='depth' id='depth' state={this.state.depth} def={defaults[this.state.type].depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
+            'colormap': (<ComboBox key='colormap' id='colormap' state={this.state.colormap} def={defaults[this.state.type].colormap} onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
+            'overlay': (<OverlaySelector key='overlay' id='overlay' state={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</OverlaySelector>),
+            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate}>Bathymetry</CheckBox>),
+            'quiver': (<ComboBox key='quiver' id='quiver' state={this.state.quiver} def={defaults[this.state.type].quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset}>Arrows</ComboBox>),
+            'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
+            'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate}>Show Location</CheckBox>),
+            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
+            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
+            'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
+            'starttime': (<ComboBox key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
+            'endtime': (<ComboBox key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
             'size': (<Size key='size' id='size' onUpdate={this.onUpdate}>Image Size</Size>),
         }
@@ -358,7 +370,7 @@ var CheckBox = React.createClass({
     getInitialState: function() {
         return {
             data: [],
-            value: this.props.def,
+            value: this.props.state,
             url: null
         };
     },
@@ -366,6 +378,11 @@ var CheckBox = React.createClass({
         this.props.onUpdate(this.props.id, e.target.checked);
         this.setState({
             value: e.target.checked
+        });
+    },
+    componentWillReceiveProps: function(nextProps) {
+        this.setState({
+            value: nextProps.state,
         });
     },
     render: function() {
@@ -405,12 +422,12 @@ var OverlaySelector = React.createClass({
     render: function() {
         return (
                 <div key='overlay' className='overlayselector'>
-                <ComboBox id='file' def='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
+                <ComboBox id='file' state='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
                 <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
-                <ComboBox id='selection' multiple def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
-                <ComboBox id='labelcolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
-                <ComboBox id='edgecolor' def='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
-                <ComboBox id='facecolor' def='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
+                <ComboBox id='selection' multiple state='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
+                <ComboBox id='labelcolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
+                <ComboBox id='edgecolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
+                <ComboBox id='facecolor' state='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
                 <div className='input'>
                 <label forName='alpha'>Alpha:</label>
                 <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
@@ -451,6 +468,19 @@ var Range = React.createClass({
             auto: true,
             min: -10,
             max: 10
+        }
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.state.indexOf(",") != -1) {
+            var scale = nextProps.state.split(",");
+            this.setState({
+                min: parseFloat(scale[0]),
+                max: parseFloat(scale[1]),
+            });
+        } else {
+            this.setState({
+                auto: true,
+            });
         }
     },
     render: function() {
@@ -543,7 +573,7 @@ var ComboBox = React.createClass({
                 dataType: 'json',
                 cache: false,
                 success: function(data) {
-                    if (this.props.def == '') {
+                    if (this.props.state == '') {
                         data.splice(0, 0, {'id': 'none', 'value': 'None'});
                     }
                     this.setState({
@@ -554,8 +584,8 @@ var ComboBox = React.createClass({
                         return x.id
                     });
 
-                    if (jQuery.inArray(this.state.value, a) == -1 || (this.state.value == '' && data.length > 0) || this.props.def == 'all') {
-                        var value = this.props.def;
+                    if (jQuery.inArray(this.state.value, a) == -1 || (this.state.value == '' && data.length > 0) || this.props.state == 'all') {
+                        var value = this.props.state;
                         if (props.multiple) {
                             if (value == 'all') {
                                 value = data.map(function (d) {
@@ -570,7 +600,11 @@ var ComboBox = React.createClass({
                         });
                         this.props.onUpdate(this.props.id, value);
                     }
-                    props.onUpdate(props.id, this.state.value);
+                    if (data.length <= 1) {
+                        this.props.onUpdate(this.props.id, this.props.def);
+                    } else {
+                        props.onUpdate(props.id, this.state.value);
+                    }
                 }.bind(this),
                 error: function(xhr, status, err) {
                     console.error(props.url, status, err.toString());
@@ -589,6 +623,10 @@ var ComboBox = React.createClass({
         if (nextProps.url != this.state.url) {
             this.populate(nextProps);
         }
+
+        this.setState({
+            value: nextProps.state
+        });
     },
     render: function() {
         var options = this.state.data.map(function(o) {
@@ -657,7 +695,7 @@ var InterpolationOptions = React.createClass({
                 <div className='collapsible collapsed'>
                 <h1 onClick={this.show}>{this.props.children}</h1>
                 <div className='sub'>
-                <ComboBox id='method' def={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
+                <ComboBox id='method' state={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
                 <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
                 <NumberBox id='neighbours' def={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
                 </div>
@@ -1275,17 +1313,17 @@ var Size = React.createClass({
                 <div className='sub'>
                     <div>
                         <label htmlFor={this.props.id + '_width'}>Width:</label>
-                        <input ref='width' id={this.props.id + '_width'} type='number' step='0.25' value={parseFloat(this.state.width).toFixed(2)} onChange={this.changed} />
+                        <input ref='width' id={this.props.id + '_width'} type='number' step='0.25' defaultValue={parseFloat(this.state.width).toFixed(2)} onBlur={this.changed} />
                         in
                     </div>
                     <div>
                         <label htmlFor={this.props.id + '_height'}>Height:</label>
-                        <input ref='height' id={this.props.id + '_height'} type='number' step='0.25' value={parseFloat(this.state.height).toFixed(2)} onChange={this.changed} />
+                        <input ref='height' id={this.props.id + '_height'} type='number' step='0.25' defaultValue={parseFloat(this.state.height).toFixed(2)} onBlur={this.changed} />
                         in
                     </div>
                     <div>
                         <label htmlFor={this.props.id + '_dpi'}>DPI:</label>
-                        <input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' value={parseFloat(this.state.dpi).toFixed(0)} onChange={this.changed} />
+                        <input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' defaultValue={parseFloat(this.state.dpi).toFixed(0)} onBlur={this.changed} />
                     </div>
                 </div>
             </div>

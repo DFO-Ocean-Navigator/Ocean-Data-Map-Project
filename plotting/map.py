@@ -101,14 +101,17 @@ def plot(url, climate_url, **kwargs):
         else:
             depth_var = None
 
-        if depth_var is not None and query.get('depth') and \
-            len(query.get('depth')) > 0 and \
-                query.get('depth') != 'all':
-            depth = int(query.get('depth'))
+        if depth_var is not None and query.get('depth'):
+            if query.get('depth') == 'bottom':
+                depth = 'bottom'
+                depthm = 'Bottom'
+            if len(query.get('depth')) > 0 and \
+                    query.get('depth') != 'bottom':
+                depth = int(query.get('depth'))
 
-            if depth >= depth_var.shape[0]:
-                depth = 0
-            depthm = depth_var[int(depth)]
+                if depth >= depth_var.shape[0]:
+                    depth = 0
+                depthm = depth_var[int(depth)]
 
         interp = query.get('interpolation')
         if interp is None or interp == '':
@@ -128,6 +131,8 @@ def plot(url, climate_url, **kwargs):
             data.append(d)
             if len(var.shape) == 3:
                 depth_label = ""
+            elif depth == 'bottom':
+                depth_label = " at Bottom"
             else:
                 depth_label = " at " + \
                     str(int(np.round(depthm))) + " " + depth_var.units
@@ -177,7 +182,7 @@ def plot(url, climate_url, **kwargs):
     if len(quiver_data) > 0 and int(depth) != 0:
         quiver_bathymetry = overlays.bathymetry(m, quiver_lat, quiver_lon)
 
-    if int(depth) != 0:
+    if depth != 'bottom' and int(depth) != 0:
         for d in data:
             d[np.where(bathymetry < depthm)] = np.ma.masked
         for d in quiver_data:

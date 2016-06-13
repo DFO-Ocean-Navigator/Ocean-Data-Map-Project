@@ -39,6 +39,8 @@ def plot(url, climate_url=None, **kwargs):
         if query.get('depth') == 'all':
             depth = 'all'
             depth_label = ''
+        elif query.get('depth') == 'bottom':
+            depth = 'bottom'
         else:
             depth = int(query.get('depth'))
 
@@ -84,17 +86,18 @@ def plot(url, climate_url=None, **kwargs):
             depth_var = None
             depth_units = ''
 
-        if depth != 'all' and (depth_var is None or depth >=
-                               depth_var.shape[0]):
+        if depth != 'all' and depth != 'bottom' and \
+           (depth_var is None or depth >= depth_var.shape[0]):
             depth = 0
 
-        if ('deptht' in dataset.variables or 'depth' in dataset.variables) \
-           and \
-            depth != 'all' and \
+        if ('deptht' in dataset.variables or 'depth' in dataset.variables):
+            if depth != 'all' and depth != 'bottom' and \
                 ('deptht' in dataset.variables[variables[0]].dimensions or
                  'depth' in dataset.variables[variables[0]].dimensions):
-            depth_label = " at %d%s" % (depth_var[depth],
-                                        depth_units)
+                depth_label = " at %d%s" % (depth_var[depth],
+                                            depth_units)
+            elif depth == 'bottom':
+                depth_label = ' at Bottom'
         else:
             depth_label = ''
 

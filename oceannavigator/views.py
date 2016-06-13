@@ -139,6 +139,8 @@ def depth():
                     'value': "%d " % (value) + depth_var.units % value
                 })
 
+            data.insert(0, {'id': 'bottom', 'value': 'Bottom'})
+
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
