@@ -11,7 +11,6 @@ def log_query_to_db(request):
                                                         ip text,
                                                         query text)''')
 
-        print request.headers
         c.execute("INSERT INTO log VALUES (?, ?, ?, ?)",
                   (dt.datetime.now(),
                    request.headers.get('Host'),
