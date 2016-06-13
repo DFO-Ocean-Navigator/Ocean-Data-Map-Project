@@ -179,7 +179,7 @@ def plot(url, climate_url, **kwargs):
 
     # Load bathymetry data
     bathymetry = overlays.bathymetry(m, target_lat, target_lon, blur=2)
-    if len(quiver_data) > 0 and int(depth) != 0:
+    if len(quiver_data) > 0 and depth != 'bottom' and int(depth) != 0:
         quiver_bathymetry = overlays.bathymetry(m, quiver_lat, quiver_lon)
 
     if depth != 'bottom' and int(depth) != 0:
