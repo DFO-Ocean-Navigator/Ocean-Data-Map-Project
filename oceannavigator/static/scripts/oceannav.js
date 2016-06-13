@@ -186,6 +186,14 @@ var Plot = React.createClass({
         if (this.props.query.type == 'map') {
             geotiff = <option value='geotiff'>GeoTIFF</option>;
         }
+        var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        var chromeversion = raw ? parseInt(raw[2], 10) : false;
+        var showCopy =
+            (chromeversion &&
+                (chromeversion < 48 && chromeversion >= 43)
+            )
+            ||
+            document.queryCommandSupported('copy');
         return (
                 <div className='plot' style={{float: 'right'}}>
                 <img src={this.state.url} />
@@ -203,7 +211,7 @@ var Plot = React.createClass({
                             {geotiff}
                         </select>
                         <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
-                        <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': document.queryCommandSupported('copy') ? 'inline-block' : 'none'}} disabled={disableButtons}/>
+                        <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
                     </div>
                 </div>
                 </div>
