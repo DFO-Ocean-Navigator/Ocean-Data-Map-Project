@@ -142,7 +142,7 @@ def plot(url, climate_url, **kwargs):
             grid = Grid(dataset, latvarname, lonvarname)
             climate_points, climate_distance, climate_value = grid.transect(
                 dataset.variables[variables[0]],
-                points, time, interpolation=interp)
+                points, timestamp.month - 1, interpolation=interp)
 
             if dataset.variables[variables[0]].units.startswith("Kelvin"):
                 climate_value = np.add(climate_value, -273.15)
