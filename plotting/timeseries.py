@@ -135,8 +135,9 @@ def plot(url, climate_url=None, **kwargs):
 
     if vector:
         mag = np.sqrt(data[0] ** 2 + data[1] ** 2)
-        variable_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
-                               variable_name)
+        variable_name = re.sub(
+            r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
+            variable_name)
         if scale:
             vmin = scale[0]
             vmax = scale[1]

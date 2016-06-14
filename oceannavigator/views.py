@@ -187,6 +187,9 @@ def vars_query():
             if 'itzocrtx' in ds.variables:
                 data.append(
                     {'id': 'itzocrtx,itmecrty', 'value': 'Sea Ice Velocity'})
+            if 'iicevelu' in ds.variables:
+                data.append(
+                    {'id': 'iicevelu,iicevelv', 'value': 'Sea Ice Velocity'})
             if 'u_wind' in ds.variables and not three_d:
                 data.append({'id': 'u_wind,v_wind', 'value': 'Wind'})
 

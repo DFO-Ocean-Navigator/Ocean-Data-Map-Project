@@ -78,8 +78,9 @@ def plot(url, climate_url, **kwargs):
         variable_name = dataset.variables[
             variables[0]].long_name.replace(" at CMC", "")
         if vector:
-            variable_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
-                                   variable_name)
+            variable_name = re.sub(
+                r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
+                variable_name)
             variable_name = re.sub(r" +", " ", variable_name)
 
         anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
@@ -150,8 +151,9 @@ def plot(url, climate_url, **kwargs):
                 quiver_data.append(d)
 
             if quiver_vars[0] != 'none':
-                quiver_name = re.sub(r"(?i)( x | y |zonal |meridional )", " ",
-                                     quiver_name)
+                quiver_name = re.sub(
+                    r"(?i)( x | y |zonal |meridional |northward |eastward )",
+                    " ", quiver_name)
                 quiver_name = re.sub(r" +", " ", quiver_name)
 
         if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
