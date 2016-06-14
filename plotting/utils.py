@@ -38,6 +38,8 @@ def get_mimetype(filetype):
         mime = 'application/postscript'
     elif filetype == 'geotiff':
         mime = 'image/geotifffloat64'
+    elif filetype == 'csv':
+        mime = 'text/csv'
     else:
         filetype = 'png'
         mime = 'image/png'

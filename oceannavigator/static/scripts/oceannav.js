@@ -136,49 +136,49 @@ var Plot = React.createClass({
         this.refs.format.value = '';
     },
     copyURL: function() {
-		var textArea = document.createElement("textarea");
+        var textArea = document.createElement("textarea");
 
-		// Place in top-left corner of screen regardless of scroll position.
-		textArea.style.position = 'fixed';
-		textArea.style.top = 0;
-		textArea.style.left = 0;
+        // Place in top-left corner of screen regardless of scroll position.
+        textArea.style.position = 'fixed';
+        textArea.style.top = 0;
+        textArea.style.left = 0;
 
-		// Ensure it has a small width and height. Setting to 1px / 1em
-		// doesn't work as this gives a negative w/h on some browsers.
-		textArea.style.width = '2em';
-		textArea.style.height = '2em';
+        // Ensure it has a small width and height. Setting to 1px / 1em
+        // doesn't work as this gives a negative w/h on some browsers.
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
 
-		// We don't need padding, reducing the size if it does flash render.
-		textArea.style.padding = 0;
+        // We don't need padding, reducing the size if it does flash render.
+        textArea.style.padding = 0;
 
-		// Clean up any borders.
-		textArea.style.border = 'none';
-		textArea.style.outline = 'none';
-		textArea.style.boxShadow = 'none';
+        // Clean up any borders.
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
 
-		// Avoid flash of white box if rendered for any reason.
-		textArea.style.background = 'transparent';
+        // Avoid flash of white box if rendered for any reason.
+        textArea.style.background = 'transparent';
 
-		var url;
-		if (window.location.href.endsWith('/')) {
-			url = window.location.href.slice(0, -1) + this.buildURL(this.props.query);
-		} else {
-			url = window.location.href + this.buildURL(this.props.query);
-		}
+        var url;
+        if (window.location.href.endsWith('/')) {
+            url = window.location.href.slice(0, -1) + this.buildURL(this.props.query);
+        } else {
+            url = window.location.href + this.buildURL(this.props.query);
+        }
 
-		textArea.value = url;
+        textArea.value = url;
 
-		document.body.appendChild(textArea);
+        document.body.appendChild(textArea);
 
-		textArea.select();
+        textArea.select();
 
-		try {
-			document.execCommand('copy');
-		} catch (err) {
-			console.error('Unable to copy');
-		}
+        try {
+            document.execCommand('copy');
+        } catch (err) {
+            console.error('Unable to copy');
+        }
 
-		document.body.removeChild(textArea);
+        document.body.removeChild(textArea);
     },
     render: function() {
         var disableButtons = this.state.loading || this.state.fail;
@@ -186,11 +186,16 @@ var Plot = React.createClass({
         if (this.props.query.type == 'map') {
             geotiff = <option value='geotiff'>GeoTIFF</option>;
         }
+        var csv = "";
+        if (this.props.query.type == 'transect' ||
+                this.props.query.type == 'timeseries') {
+            csv = <option value='csv'>CSV</option>;
+        }
         var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
         var chromeversion = raw ? parseInt(raw[2], 10) : false;
         var showCopy =
             (chromeversion &&
-                (chromeversion < 48 && chromeversion >= 43)
+             (chromeversion < 48 && chromeversion >= 43)
             )
             ||
             document.queryCommandSupported('copy');
@@ -199,23 +204,24 @@ var Plot = React.createClass({
                 <img src={this.state.url} />
                 <div>
                 <p className='failmessage' style={{'display': this.state.fail ? 'block' : 'none'}}>Something went horribly wrong.</p>
-                    <div className='buttonbar' ref='buttonbar'>
-                        <select ref='format' onChange={this.saveImage} disabled={disableButtons}>
-                            <option value=''>Save Image</option>
-                            <option value='png'>PNG</option>
-                            <option value='pdf'>PDF</option>
-                            <option value='svg'>SVG</option>
-                            <option value='ps'>PS</option>
-                            <option value='eps'>EPS</option>
-                            <option value='tif'>TIFF</option>
-                            {geotiff}
-                        </select>
-                        <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
-                        <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
-                    </div>
+                <div className='buttonbar' ref='buttonbar'>
+                <select ref='format' onChange={this.saveImage} disabled={disableButtons}>
+                <option value=''>Save&hellip;</option>
+                <option value='png'>PNG</option>
+                <option value='pdf'>PDF</option>
+                <option value='svg'>SVG</option>
+                <option value='ps'>PS</option>
+                <option value='eps'>EPS</option>
+                <option value='tif'>TIFF</option>
+                {geotiff}
+                {csv}
+                </select>
+                <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
+                <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
                 </div>
                 </div>
-               );
+                </div>
+                );
     }
 });
 
@@ -248,7 +254,7 @@ var Selector = React.createClass({
         if (key == 'dataset') {
             for (var key in defaults[this.state.type]) {
                 if (jQuery.inArray(key,
-                        [
+                            [
                             'location',
                             'overlay',
                             'interpolation',
@@ -258,8 +264,8 @@ var Selector = React.createClass({
                             'colormap',
                             'bathymetry',
                             'size',
-                        ]
-                    ) != -1) {
+                            ]
+                            ) != -1) {
                     continue;
                 }
                 if (defaults[this.state.type].hasOwnProperty(key)) {
@@ -1314,26 +1320,26 @@ var Size = React.createClass({
     },
     render: function() {
         return (
-            <div className='collapsible collapsed size'>
+                <div className='collapsible collapsed size'>
                 <h1 onClick={this.show}>{this.props.children}</h1>
                 <div className='sub'>
-                    <div>
-                        <label htmlFor={this.props.id + '_width'}>Width:</label>
-                        <input ref='width' id={this.props.id + '_width'} type='number' step='0.25' defaultValue={parseFloat(this.state.width).toFixed(2)} onBlur={this.changed} />
-                        in
-                    </div>
-                    <div>
-                        <label htmlFor={this.props.id + '_height'}>Height:</label>
-                        <input ref='height' id={this.props.id + '_height'} type='number' step='0.25' defaultValue={parseFloat(this.state.height).toFixed(2)} onBlur={this.changed} />
-                        in
-                    </div>
-                    <div>
-                        <label htmlFor={this.props.id + '_dpi'}>DPI:</label>
-                        <input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' defaultValue={parseFloat(this.state.dpi).toFixed(0)} onBlur={this.changed} />
-                    </div>
+                <div>
+                <label htmlFor={this.props.id + '_width'}>Width:</label>
+                <input ref='width' id={this.props.id + '_width'} type='number' step='0.25' defaultValue={parseFloat(this.state.width).toFixed(2)} onBlur={this.changed} />
+                in
                 </div>
-            </div>
-        );
+                <div>
+                <label htmlFor={this.props.id + '_height'}>Height:</label>
+                <input ref='height' id={this.props.id + '_height'} type='number' step='0.25' defaultValue={parseFloat(this.state.height).toFixed(2)} onBlur={this.changed} />
+                in
+                </div>
+                <div>
+                <label htmlFor={this.props.id + '_dpi'}>DPI:</label>
+                <input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' defaultValue={parseFloat(this.state.dpi).toFixed(0)} onBlur={this.changed} />
+                </div>
+                </div>
+                </div>
+               );
     },
 });
 

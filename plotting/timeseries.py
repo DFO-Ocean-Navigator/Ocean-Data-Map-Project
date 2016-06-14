@@ -15,6 +15,8 @@ import utils
 
 
 def plot(url, climate_url=None, **kwargs):
+    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+
     query = kwargs.get('query')
 
     point = query.get('station')
@@ -121,20 +123,10 @@ def plot(url, climate_url=None, **kwargs):
 
         if depth_var is not None:
             depths = depth_var[:]
+            depth_unit = depth_var.units
         else:
             depths = [0]
-
-    # Figure size
-    size = kwargs.get('size').replace("x", " ").split()
-    figuresize = (float(size[0]), float(size[1]))
-    fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
-
-    # Colormap from arguments
-    cmap = query.get('colormap')
-    if cmap is not None:
-        cmap = colormap.colormaps.get(cmap)
-    if cmap is None:
-        cmap = colormap.find_colormap(variable_name)
+            depth_unit = "m"
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
@@ -152,7 +144,7 @@ def plot(url, climate_url=None, **kwargs):
             vmin = 0
             vmax = np.amax(mag)
             if query.get('colormap') is None or \
-               query.get('colormap') == 'default':
+                    query.get('colormap') == 'default':
                 cmap = colormap.colormaps.get('speed')
     else:
         if scale:
@@ -166,74 +158,119 @@ def plot(url, climate_url=None, **kwargs):
                 vmin = min(vmin, np.amin(d))
                 vmax = max(vmax, np.amax(d))
                 if re.search("free surface", variable_name) or \
-                   re.search("velocity", variable_name) or \
-                   re.search("wind", variable_name):
+                    re.search("velocity", variable_name) or \
+                        re.search("wind", variable_name):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
             if variable_unit == "fraction":
                 vmin = 0
                 vmax = 1
 
-    station_name = query.get('station_name')
-    if station_name is None or station_name == '':
-        station_name = "(%1.4f, %1.4f)" % (float(latlon[0]), float(latlon[1]))
-    plt.title("%s%s at %s" % (variable_name.title(), depth_label,
-                              station_name))
-
     d = data[0]
     t = times[0]
     if vector:
         d = mag
-    datenum = matplotlib.dates.date2num(t)
-    if depth == 'all':
-        LINEAR = 200
-        dlim = np.ma.flatnotmasked_edges(d[0, :])
-        maxdepth = depths[dlim[1]]
 
-        c = plt.pcolormesh(
-            datenum, depths[:dlim[1] + 1], d[:, :dlim[1] + 1].transpose(),
-            shading='gouraud', cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.gca().invert_yaxis()
-        if maxdepth > LINEAR:
-            plt.yscale('symlog', linthreshy=LINEAR)
-        plt.gca().yaxis.set_major_formatter(ScalarFormatter())
-        plt.gca().xaxis_date()
+    filename = utils.get_filename(url, query.get('station'),
+                                  variables, variable_unit,
+                                  [times[0][0], times[0][-1]], None,
+                                  filetype)
+    if filetype == 'csv':
+        # CSV File
+        output = StringIO()
+        try:
+            # Write Header
+            output.write("Time, ")
+            if depth == 'all':
+                d = np.ma.compress_cols(d)
+                output.write(", ".join([
+                    "%d%s" % (np.round(dep), depth_unit)
+                    for dep in depths[:d.shape[1]]
+                ]))
+            else:
+                output.write("%s (%s)" % (variable_name, variable_unit))
+            output.write("\n")
 
-        plt.xlim(datenum[0], datenum[-1])
-        if maxdepth > LINEAR:
-            l = 10 ** np.floor(np.log10(maxdepth))
-            plt.ylim(np.ceil(maxdepth / l) * l, depths[0])
-            plt.yticks(list(plt.yticks()[0]) + [maxdepth, LINEAR])
-        else:
-            plt.ylim(maxdepth, depths[0])
-        plt.ylabel("Depth (%s)" % depth_units)
-        fig.autofmt_xdate()
+            for idx, vals in enumerate(d):
+                output.write("%s, " % t[idx].isoformat())
+                if depth == 'all':
+                    output.write(", ".join([
+                        "%0.4f" % value for value in vals
+                    ]))
+                else:
+                    output.write("%0.4f" % vals)
 
-        divider = make_axes_locatable(plt.gca())
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label(variable_name.title() + " (" + variable_unit + ")")
+                output.write("\n")
+
+            return (output.getvalue(), mime, filename)
+        finally:
+            output.close()
+
+        pass
     else:
-        plt.plot_date(datenum, d, '-', figure=fig)
-        plt.ylabel(variable_name.title() + " (" + variable_unit + ")")
-        plt.gca().xaxis.grid(True)
-        plt.gca().yaxis.grid(True)
-        fig.autofmt_xdate()
+        # Figure size
+        size = kwargs.get('size').replace("x", " ").split()
+        figuresize = (float(size[0]), float(size[1]))
+        fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
 
-    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+        # Colormap from arguments
+        cmap = query.get('colormap')
+        if cmap is not None:
+            cmap = colormap.colormaps.get(cmap)
+        if cmap is None:
+            cmap = colormap.find_colormap(variable_name)
 
-    # Output the plot
-    buf = StringIO()
-    try:
-        plt.savefig(buf, format=filetype, dpi='figure')
-        plt.close(fig)
-        filename = utils.get_filename(url, query.get('station'),
-                                      variables, variable_unit,
-                                      [times[0][0], times[0][-1]], None,
-                                      filetype)
-        return (buf.getvalue(), mime, filename)
-    finally:
-        buf.close()
+        station_name = query.get('station_name')
+        if station_name is None or station_name == '':
+            station_name = "(%1.4f, %1.4f)" % (
+                float(latlon[0]), float(latlon[1]))
+        plt.title("%s%s at %s" % (variable_name.title(), depth_label,
+                                  station_name))
+
+        datenum = matplotlib.dates.date2num(t)
+        if depth == 'all':
+            LINEAR = 200
+            dlim = np.ma.flatnotmasked_edges(d[0, :])
+            maxdepth = depths[dlim[1]]
+
+            c = plt.pcolormesh(
+                datenum, depths[:dlim[1] + 1], d[:, :dlim[1] + 1].transpose(),
+                shading='gouraud', cmap=cmap, vmin=vmin, vmax=vmax)
+            plt.gca().invert_yaxis()
+            if maxdepth > LINEAR:
+                plt.yscale('symlog', linthreshy=LINEAR)
+            plt.gca().yaxis.set_major_formatter(ScalarFormatter())
+            plt.gca().xaxis_date()
+
+            plt.xlim(datenum[0], datenum[-1])
+            if maxdepth > LINEAR:
+                l = 10 ** np.floor(np.log10(maxdepth))
+                plt.ylim(np.ceil(maxdepth / l) * l, depths[0])
+                plt.yticks(list(plt.yticks()[0]) + [maxdepth, LINEAR])
+            else:
+                plt.ylim(maxdepth, depths[0])
+            plt.ylabel("Depth (%s)" % depth_units)
+            fig.autofmt_xdate()
+
+            divider = make_axes_locatable(plt.gca())
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            bar = plt.colorbar(c, cax=cax)
+            bar.set_label(variable_name.title() + " (" + variable_unit + ")")
+        else:
+            plt.plot_date(datenum, d, '-', figure=fig)
+            plt.ylabel(variable_name.title() + " (" + variable_unit + ")")
+            plt.gca().xaxis.grid(True)
+            plt.gca().yaxis.grid(True)
+            fig.autofmt_xdate()
+
+        # Output the plot
+        buf = StringIO()
+        try:
+            plt.savefig(buf, format=filetype, dpi='figure')
+            plt.close(fig)
+            return (buf.getvalue(), mime, filename)
+        finally:
+            buf.close()
 
 
 def list_stations():
