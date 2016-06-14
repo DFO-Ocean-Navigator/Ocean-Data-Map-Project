@@ -85,9 +85,7 @@ def plot(url, climate_url, **kwargs):
         anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
         if len(variables) > 1 or \
             ('votemper' not in variables and
-                'vosaline' not in variables and
-                'bottom_votemper' not in variables and
-                'bottom_vosaline' not in variables):
+             'vosaline' not in variables):
             anom = False
         if anom:
             variable_name += " Anomaly"
