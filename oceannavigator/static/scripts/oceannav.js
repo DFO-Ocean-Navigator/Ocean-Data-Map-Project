@@ -422,9 +422,9 @@ var OverlaySelector = React.createClass({
     render: function() {
         return (
                 <div key='overlay' className='overlayselector'>
-                <ComboBox id='file' state='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
+                <ComboBox id='file' state={this.state.file} def='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
                 <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
-                <ComboBox id='selection' multiple state='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
+                <ComboBox id='selection' multiple state={this.state.selection} def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
                 <ComboBox id='labelcolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
                 <ComboBox id='edgecolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
                 <ComboBox id='facecolor' state='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
@@ -513,7 +513,7 @@ var NumberBox = React.createClass({
     },
     getInitialState: function() {
         return {
-            value: this.props.def
+            value: this.props.state
         }
     },
     keyPress: function(e) {
@@ -598,10 +598,10 @@ var ComboBox = React.createClass({
                         this.setState({
                             value: value
                         });
-                        this.props.onUpdate(this.props.id, value);
+                        props.onUpdate(props.id, value);
                     }
                     if (data.length <= 1) {
-                        this.props.onUpdate(this.props.id, this.props.def);
+                        props.onUpdate(props.id, props.def);
                     } else {
                         props.onUpdate(props.id, this.state.value);
                     }
@@ -638,6 +638,12 @@ var ComboBox = React.createClass({
         });
 
         if (this.state.data.length > 1) {
+            var value = this.state.value;
+            if (this.props.multiple && value == 'all') {
+                value = this.state.data.map(function(d) {
+                    return d.id;
+                });
+            }
             return (
                     <div key={this.props.url}>
                     <h1>
@@ -646,7 +652,7 @@ var ComboBox = React.createClass({
 
                     <select
                     size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
-                    value={this.state.value}
+                    value={value}
                     onChange={this.handleChange}
                     multiple={this.props.multiple}>
                     {options}
@@ -697,7 +703,7 @@ var InterpolationOptions = React.createClass({
                 <div className='sub'>
                 <ComboBox id='method' state={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
                 <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
-                <NumberBox id='neighbours' def={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
+                <NumberBox id='neighbours' state={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
                 </div>
                 </div>
                 </div>

@@ -131,7 +131,7 @@ div.sub {
     display: none;
 }
 
-input:not([type='checkbox']), select {
+input:not([type='checkbox']), select:not([multiple]) {
     height: 2em;
 }
 
