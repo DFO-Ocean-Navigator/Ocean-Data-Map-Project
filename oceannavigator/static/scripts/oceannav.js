@@ -295,8 +295,8 @@ var Selector = React.createClass({
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
             'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
-            'starttime': (<ComboBox key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>Start Time</ComboBox>),
-            'endtime': (<ComboBox key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset}>End Time</ComboBox>),
+            'starttime': (<ComboBox key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Start Time</ComboBox>),
+            'endtime': (<ComboBox key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>End Time</ComboBox>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
             'size': (<Size key='size' id='size' onUpdate={this.onUpdate}>Image Size</Size>),
         }
