@@ -377,18 +377,31 @@ def plot(url, climate_url, **kwargs):
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
         m.drawcoastlines(linewidth=0.5)
         m.fillcontinents(color='grey', lake_color='dimgrey')
-        m.drawparallels(
-            np.arange(
+        if np.amax(target_lat) - np.amin(target_lat) < 25:
+            parallels = np.round(
+                np.arange(np.amin(target_lat),
+                          np.amax(target_lat),
+                          round(np.amax(target_lat) - np.amin(target_lat)) / 5)
+            )
+        else:
+            parallels = np.arange(
                 round(np.amin(target_lat), -1),
                 round(np.amax(target_lat), -1),
-                5
-            ), labels=[1, 0, 0, 0], color=(0, 0, 0, 0.5))
-        m.drawmeridians(
-            np.arange(
+                5)
+        if np.amax(target_lon) - np.amin(target_lon) < 25:
+            meridians = np.round(
+                np.arange(np.amin(target_lon),
+                          np.amax(target_lon),
+                          round(np.amax(target_lon) - np.amin(target_lon)) / 5)
+            )
+        else:
+            meridians = np.arange(
                 round(np.amin(target_lon), -1),
                 round(np.amax(target_lon), -1),
-                10
-            ), labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
+                10)
+        m.drawparallels(parallels, labels=[1, 0, 0, 0], color=(0, 0, 0, 0.5))
+        m.drawmeridians(
+            meridians, labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
 
         quantum = query.get('quantum')
         if quantum == 'month':
