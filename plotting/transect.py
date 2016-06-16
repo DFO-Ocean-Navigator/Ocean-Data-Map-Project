@@ -86,6 +86,9 @@ def plot(url, climate_url, **kwargs):
         if time >= time_var.shape[0]:
             time = -1
 
+        if time < 0:
+            time += time_var.shape[0]
+
         velocity = False
         variables = query.get('variable').split(',')
         anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']

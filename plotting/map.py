@@ -74,6 +74,9 @@ def plot(url, climate_url, **kwargs):
         if time >= time_var.shape[0]:
             time = -1
 
+        if time < 0:
+            time += time_var.shape[0]
+
         variable_unit = dataset.variables[variables[0]].units
         variable_name = dataset.variables[
             variables[0]].long_name.replace(" at CMC", "")
