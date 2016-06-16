@@ -135,6 +135,11 @@ input:not([type='checkbox']), select:not([multiple]) {
     height: 2em;
 }
 
+
+.inputs div.timepicker input {
+    width: calc(100% - 4px);
+}
+
 .inputs > div:last-of-type {
     margin-bottom: 1em;
 }

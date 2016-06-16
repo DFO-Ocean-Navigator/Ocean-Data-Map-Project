@@ -47,7 +47,8 @@ def plot(url, climate_url=None, **kwargs):
             depth = int(query.get('depth'))
 
     with Dataset(url, 'r') as dataset:
-        if query.get('starttime') is None or len(query.get('starttime')) == 0:
+        if query.get('starttime') is None or \
+           len(str(query.get('starttime'))) == 0:
             starttime = 0
         else:
             starttime = int(query.get('starttime'))
@@ -63,7 +64,8 @@ def plot(url, climate_url=None, **kwargs):
         if starttime < 0:
             starttime += time_var.shape[0]
 
-        if query.get('endtime') is None or len(query.get('endtime')) == 0:
+        if query.get('endtime') is None or \
+           len(str(query.get('endtime'))) == 0:
             endtime = 0
         else:
             endtime = int(query.get('endtime'))

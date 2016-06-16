@@ -355,10 +355,18 @@ def plot(url, climate_url, **kwargs):
         else:
             transect_name += " Transect"
 
-        if 'monthly' in url:
+        quantum = query.get('quantum')
+        if quantum == 'month':
             dformat = "%B %Y"
-        else:
+        elif quantum == 'day':
             dformat = "%d %B %Y"
+        elif quantum == 'hour':
+            dformat = "%H:%M %d %B %Y"
+        else:
+            if 'monthly' in url:
+                dformat = "%B %Y"
+            else:
+                dformat = "%d %B %Y"
 
         if velocity:
             fig.suptitle("Sea water velocity, " + timestamp.strftime(dformat) +

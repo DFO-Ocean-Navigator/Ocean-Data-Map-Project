@@ -19,10 +19,28 @@ import numpy as np
 @app.route('/api/datasets/')
 def query_datasets():
     data = [
-        {'id': 'giops/monthly/aggregated.ncml', 'value': 'GIOPS Monthly'},
-        {'id': 'giops/daily/aggregated.ncml', 'value': 'GIOPS Daily'},
-        {'id': 'riops/riopsf/aggregated.ncml', 'value': 'RIOPS Forecast'},
-        {'id': 'glorys/monthly/aggregated.ncml', 'value': 'GLORYS Monthly'},
+        {
+            'id': 'giops/monthly/aggregated.ncml',
+            'value': 'GIOPS Monthly',
+            'quantum': 'month',
+        },
+        {
+            'id': 'giops/daily/aggregated.ncml',
+            'value': 'GIOPS Daily',
+            'quantum': 'day',
+        },
+        # {'id': 'giops/daily/surface.ncml', 'value':
+        #     'GIOPS Daily (Surface Variables)'},
+        {
+            'id': 'riops/riopsf/aggregated.ncml',
+            'value': 'RIOPS Forecast',
+            'quantum': 'hour',
+        },
+        {
+            'id': 'glorys/monthly/aggregated.ncml',
+            'value': 'GLORYS Monthly',
+            'quantum': 'month',
+        },
     ]
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -206,12 +224,18 @@ def time_query():
     else:
         filename = 'giops/monthly/aggregated.ncml'
 
-    if 'format' in request.args:
-        dformat = request.args.get('format')
-    elif 'monthly' in filename:
-        dformat = '%B %Y'
+    quantum = request.args.get('quantum')
+    if quantum == 'month':
+        dformat = "%B %Y"
+    elif quantum == 'day':
+        dformat = "%d %B %Y"
+    elif quantum == 'hour':
+        dformat = "%d %B %Y %H:%M"
     else:
-        dformat = '%d %B %Y'
+        if 'monthly' in filename:
+            dformat = "%B %Y"
+        else:
+            dformat = "%d %B %Y"
 
     data = []
     with Dataset(app.config['THREDDS_SERVER'] +

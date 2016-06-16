@@ -3,6 +3,7 @@ var fail_image = '/images/failure.gif';
 var defaults = {
     'type':                'map',
     'dataset':             'giops/monthly/aggregated.ncml',
+    'dataset_quantum':     'month',
     'size':                '10x7.5',
     'dpi':                 72,
     'map': {
@@ -62,6 +63,7 @@ var Plot = React.createClass({
         var query = {
             'type': q.type,
             'dataset': q.dataset,
+            'quantum': q.dataset_quantum,
         }
         for (var key in defaults[q.type]) {
             if (defaults[q.type].hasOwnProperty(key)) {
@@ -280,7 +282,7 @@ var Selector = React.createClass({
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
             'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
-            'time': (<ComboBox key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Time</ComboBox>),
+            'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>Time</TimePicker>),
             'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
             'anomaly': (<CheckBox key='anomaly' id='anomaly' state={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
             'scale': (<Range key='scale' id='scale' state={this.state.scale} def={defaults[this.state.type].scale} onUpdate={this.onUpdate}>Variable Range</Range>),
@@ -295,8 +297,8 @@ var Selector = React.createClass({
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
             'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
-            'starttime': (<ComboBox key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>Start Time</ComboBox>),
-            'endtime': (<ComboBox key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + ((this.state.dataset.indexOf('riops') != -1) ? '&format=%d %B %Y %H:%M' : '')}>End Time</ComboBox>),
+            'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>Start Time</TimePicker>),
+            'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>End Time</TimePicker>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
             'size': (<Size key='size' id='size' onUpdate={this.onUpdate}>Image Size</Size>),
         }
@@ -568,6 +570,10 @@ var ComboBox = React.createClass({
             value: value
         });
         this.props.onUpdate(this.props.id, value);
+        var dataset = e.target.options[e.target.selectedIndex].dataset;
+        for (var key in dataset) {
+            this.props.onUpdate(this.props.id + '_' + key, dataset[key]);
+        }
     },
     populate: function(props) {
         this.setState({
@@ -590,8 +596,8 @@ var ComboBox = React.createClass({
                         return x.id
                     });
 
+                    var value = this.props.state;
                     if (jQuery.inArray(this.state.value, a) == -1 || (this.state.value == '' && data.length > 0) || this.props.state == 'all') {
-                        var value = this.props.state;
                         if (props.multiple) {
                             if (value == 'all') {
                                 value = data.map(function (d) {
@@ -604,12 +610,23 @@ var ComboBox = React.createClass({
                         this.setState({
                             value: value
                         });
-                        props.onUpdate(props.id, value);
-                    }
-                    if (data.length <= 1) {
-                        props.onUpdate(props.id, props.def);
                     } else {
-                        props.onUpdate(props.id, this.state.value);
+                        if (data.length == 0) {
+                            value = props.def;
+                        } else if (data.length == 1) {
+                            value = props.def;
+                        } else {
+                            value = this.state.value;
+                        }
+                    }
+                    props.onUpdate(props.id, value);
+                    if (a.indexOf(value) != -1) {
+                        var d = data[a.indexOf(value)];
+                        for (var key in d) {
+                            if (d.hasOwnProperty(key) && key != 'id' && key != 'value') {
+                                this.props.onUpdate(this.props.id + '_' + key, d[key]);
+                            }
+                        }
                     }
                 }.bind(this),
                 error: function(xhr, status, err) {
@@ -636,11 +653,17 @@ var ComboBox = React.createClass({
     },
     render: function() {
         var options = this.state.data.map(function(o) {
-            return (
-                    <option key={o.id} value={o.id}>
-                    {o.value}
-                    </option>
-                   );
+            var opts = {
+                key: o.id,
+                value: o.id,
+            }
+            for (var key in o) {
+                if (key == 'id' || key == 'value') continue;
+                if (o.hasOwnProperty(key)) {
+                    opts['data-' + key] = o[key];
+                }
+            }
+            return React.createElement("option", opts, o.value);
         });
 
         if (this.state.data.length > 1) {
@@ -1343,8 +1366,163 @@ var Size = React.createClass({
     },
 });
 
-ReactDOM.render(
-        <Selector />,
-        document.getElementById('content')
+var TimePicker = React.createClass({
+    getInitialState: function() {
+        return {
+            data: [],
+            value: -1,
+            url: null,
+            map: {},
+            revmap: {},
+            times: [],
+        };
+    },
+    populate: function(props) {
+        this.setState({
+            url: props.url
+        });
+        if ('url' in props && '' != props.url) {
+            $.ajax({
+                url: props.url,
+                dataType: 'json',
+                cache: false,
+                success: function(data) {
+                    var map = {};
+                    var revmap = {};
+                    for (var d in data) {
+                        map[data[d].id] = data[d].value;
+                        revmap[data[d].value] = data[d].id;
+                    }
+                    this.setState({
+                        data: data,
+                        map: map,
+                        revmap: revmap,
+                    });
+                    this.pickerChange();
+
+                    var picker;
+                    switch(props.quantum) {
+                        case 'month':
+                            picker = $(this.refs.picker).MonthPicker({
+                                Button: false,
+                                MonthFormat: "MM yy",
+                                OnAfterMenuClose: this.pickerChange,
+                                MinMonth: map[0],
+                                MaxMonth: map[data.length - 2],
+                            });
+                            break;
+                        case 'day':
+                            picker = $(this.refs.picker).datepicker({
+                                Button: false,
+                                dateFormat: "dd MM yy",
+                                onClose: this.pickerChange,
+                                minDate: new Date(this.state.map[0]),
+                                maxDate: new Date(this.state.map[this.state.data.length - 2]),
+                            });
+                        case 'hour':
+                            picker = $(this.refs.picker).datepicker({
+                                Button: false,
+                                dateFormat: "dd MM yy",
+                                onClose: this.pickerChange,
+                                minDate: new Date(this.state.map[0]),
+                                maxDate: new Date(this.state.map[this.state.data.length - 2]),
+                            });
+                            break;
+                    }
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(props.url, status, err.toString());
+                }.bind(this)
+            });
+        } else {
+            this.setState({
+                data: props.data
+            });
+        }
+    },
+    componentDidMount: function() {
+        this.populate(this.props);
+
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.url != this.state.url) {
+            this.populate(nextProps);
+        }
+
+        this.setState({
+            value: nextProps.state
+        });
+    },
+    pickerChange: function() {
+        if (this.props.quantum == 'hour') {
+            var times = [];
+            for (var i in this.state.data) {
+                if (this.state.data[i].value.startsWith(this.refs.picker.value)) {
+                    times.push({
+                        id: this.state.data[i].id,
+                        value: $.format.date(new Date(this.state.data[i].value), "HH:mm")
+                    });
+                }
+            }
+            this.setState({
+                times: times,
+            });
+            this.props.onUpdate(this.props.id, times[0].id);
+        } else {
+            this.props.onUpdate(this.props.id, this.state.revmap[this.refs.picker.value]);
+        }
+    },
+    timeChange: function(e) {
+        var value = e.target.value;
+        this.setState({
+            value: value
+        });
+        this.props.onUpdate(this.props.id, value);
+    },
+    render: function() {
+        var date;
+        var value = this.state.value;
+        if (value == -1) {
+            value = this.state.data.length - 2;
+        }
+        date = new Date(this.state.map[value]);
+        var input = "";
+        switch(this.props.quantum) {
+            case 'month':
+                input = <input readOnly ref='picker' type="text" value={$.format.date(date, "MMMM yyyy")} />;
+                break;
+            case 'day':
+            case 'hour':
+                input = <input readOnly ref='picker' type="text" value={$.format.date(date, "dd MMMM yyyy")} />;
+                break;
+        }
+
+        var timeinput = "";
+        var options = this.state.times.map(function (t) {
+            return (
+                <option key={t.id} value={t.id}>
+                    {t.value}
+                </option>
+            );
+        });
+        if (this.props.quantum == 'hour') {
+            timeinput = <select
+                            value={this.state.value}
+                            onChange={this.timeChange}>
+                                {options}
+                        </select>;
+        }
+
+        return (
+            <div key={this.props.url} className='timepicker'>
+                <h1>{this.props.children}</h1>
+
+                {input}
+                {timeinput}
+            </div>
         );
+    },
+});
+
+ReactDOM.render(<Selector />, document.getElementById('content'));
 

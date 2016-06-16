@@ -390,10 +390,18 @@ def plot(url, climate_url, **kwargs):
                 10
             ), labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
 
-        if 'monthly' in url:
+        quantum = query.get('quantum')
+        if quantum == 'month':
             dformat = "%B %Y"
-        else:
+        elif quantum == 'day':
             dformat = "%d %B %Y"
+        elif quantum == 'hour':
+            dformat = "%H:%M %d %B %Y"
+        else:
+            if 'monthly' in url:
+                dformat = "%B %Y"
+            else:
+                dformat = "%d %B %Y"
 
         plt.title(variable_name.title() + depth_label +
                   ", " + timestamp.strftime(dformat))
