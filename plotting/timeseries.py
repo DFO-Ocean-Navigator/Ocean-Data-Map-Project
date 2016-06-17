@@ -102,6 +102,8 @@ def plot(url, climate_url=None, **kwargs):
                                             depth_units)
             elif depth == 'bottom':
                 depth_label = ' at Bottom'
+            else:
+                depth_label = ''
         else:
             depth_label = ''
 

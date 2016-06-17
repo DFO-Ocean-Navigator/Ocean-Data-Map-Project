@@ -30,7 +30,7 @@ def plot(url, climate_url, **kwargs):
     start = points[0]
     end = points[-1]
 
-    if query.get('time') is None or len(query.get('time')) == 0:
+    if query.get('time') is None or len(str(query.get('time'))) == 0:
         time = -1
     else:
         time = int(query.get('time'))
