@@ -73,12 +73,16 @@ var Plot = React.createClass({
 
         return JSON.stringify(query);
     },
-    buildURL: function(q) {
-        return '/plot/?query=' + this.buildQuery(q);
+    buildURL: function(q, page) {
+        if (page) {
+            return '/?query=' + this.buildQuery(q);
+        } else {
+            return '/plot/?query=' + this.buildQuery(q);
+        }
     },
     getInitialState: function() {
         return {
-            'url': this.buildURL(this.props.query),
+            'url': this.buildURL(this.props.query, false),
             'fail': false,
             'loading': false,
         };
@@ -113,8 +117,8 @@ var Plot = React.createClass({
         }.bind(this), 100);
     },
     componentWillUpdate: function(nextprops, nextstate) {
-        var oldQueryURL = this.buildURL(this.props.query);
-        var newQueryURL = this.buildURL(nextprops.query);
+        var oldQueryURL = this.buildURL(this.props.query, false);
+        var newQueryURL = this.buildURL(nextprops.query, false);
 
         if (oldQueryURL != newQueryURL) {
             this.imagePreload(newQueryURL, function(e) {
@@ -137,7 +141,7 @@ var Plot = React.createClass({
         }
         this.refs.format.value = '';
     },
-    copyURL: function() {
+    copyURL: function(page) {
         var textArea = document.createElement("textarea");
 
         // Place in top-left corner of screen regardless of scroll position.
@@ -161,11 +165,14 @@ var Plot = React.createClass({
         // Avoid flash of white box if rendered for any reason.
         textArea.style.background = 'transparent';
 
-        var url;
-        if (window.location.href.endsWith('/')) {
-            url = window.location.href.slice(0, -1) + this.buildURL(this.props.query);
+        var url = window.location.href;
+        if (url.indexOf('?') != -1) {
+            url = url.slice(0, url.indexOf('?'));
+        }
+        if (url.endsWith('/')) {
+            url = url.slice(0, -1) + this.buildURL(this.props.query, page);
         } else {
-            url = window.location.href + this.buildURL(this.props.query);
+            url = url + this.buildURL(this.props.query, page);
         }
 
         textArea.value = url;
@@ -219,7 +226,8 @@ var Plot = React.createClass({
                 {csv}
                 </select>
                 <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
-                <input type='button' value='Copy Image URL' onClick={this.copyURL} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
+                <input type='button' value='Copy Image URL' onClick={this.copyURL.bind(this, false)} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
+                <input type='button' value='Copy Page URL' onClick={this.copyURL.bind(this, true)} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
                 </div>
                 </div>
                 </div>
@@ -241,10 +249,27 @@ var Selector = React.createClass({
             }
         }
 
+        if (window.location.search.length > 0) {
+            console.log(window.location.search.substring(7));
+            try {
+                var querystate = JSON.parse(
+                        decodeURIComponent(
+                            window.location.search.replace("?query=", ""))
+                        );
+                console.log(querystate);
+                $.extend(state, querystate);
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
         return state;
     },
     onUpdate: function(key, value) {
         var newstate = {};
+        if (this.state[key] == value) {
+            return;
+        }
         newstate[key] = value;
         if (key == 'type') {
             for (var key in defaults[value]) {
@@ -295,7 +320,7 @@ var Selector = React.createClass({
             'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
             'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate}>Show Location</CheckBox>),
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
-            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={this.state.transect_pts} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
+            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
             'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>Start Time</TimePicker>),
             'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>End Time</TimePicker>),
@@ -744,20 +769,21 @@ var TransectComboBox = React.createClass({
     getInitialState: function() {
         return {
             data: [],
-            value: '',
+            name: this.props.state.name,
+            points: this.props.state.pts,
             url: null,
         };
     },
     handleChange: function(e) {
-        var value = e.target.value;
+        var name = e.target.value;
         this.setState({
-            value: value,
+            name: name,
         });
-        if (value == 'custom') {
-            this.showMap(this.state.datamap[this.state.value]);
+        if (name == 'custom') {
+            this.showMap(this.state.datamap[this.state.name]);
         } else {
-            this.props.onUpdate(this.props.id, this.state.datamap[value]);
-            this.props.onUpdate('transect_name', value);
+            this.props.onUpdate(this.props.id, this.state.datamap[name]);
+            this.props.onUpdate('transect_name', name);
         }
     },
     componentDidMount: function() {
@@ -780,14 +806,19 @@ var TransectComboBox = React.createClass({
                     datamap: datamap,
                 });
 
-                if (this.state.value == '' && data.length > 0) {
-                    var value = 'Flemish Cap';
+                if (this.state.name == '' && this.state.pts == '' && data.length > 0) {
+                    var name = 'Flemish Cap';
                     this.setState({
-                        value: value
+                        name: name,
+                        pts: datamap[name],
+                    });
+                    this.props.onUpdate(this.props.id, this.state.pts);
+                    this.props.onUpdate('transect_name', this.state.name);
+                } else if (this.state.name == '' && this.state.pts != '') {
+                    this.setState({
+                        name: 'custom',
                     });
                 }
-                this.props.onUpdate(this.props.id, this.state.datamap[this.state.value]);
-                this.props.onUpdate('transect_name', 'Flemish Cap');
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
@@ -924,13 +955,13 @@ var TransectComboBox = React.createClass({
                 </h1>
 
                 <select
-                value={this.state.value}
+                value={this.state.name}
                 onChange={this.handleChange}>
                 {options}
                 <option value="custom">Custom...</option>
                 </select>
 
-                <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.value == 'custom') ? 'inline-block' : 'none'}} />
+                <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.name == 'custom') ? 'inline-block' : 'none'}} />
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
                 <div ref='mapwindow' className='modal' onClick={this.closeMap} >
@@ -1458,7 +1489,7 @@ var TimePicker = React.createClass({
             var times = [];
             for (var i in this.state.data) {
                 if (this.state.data[i].value.startsWith(this.refs.picker.value)) {
-                    times.push({
+                    times.unshift({
                         id: this.state.data[i].id,
                         value: $.format.date(new Date(this.state.data[i].value), "HH:mm")
                     });
