@@ -304,28 +304,28 @@ var Selector = React.createClass({
     },
     render: function() {
         var inputmap = {
-            'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/'>Dataset</ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]}>Plot Type</ComboBox>),
-            'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/'>Location</LocationComboBox>),
-            'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>Time</TimePicker>),
-            'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')}>Variable</ComboBox>),
-            'anomaly': (<CheckBox key='anomaly' id='anomaly' state={this.state.anomaly} onUpdate={this.onUpdate}>Anomaly</CheckBox>),
-            'scale': (<Range key='scale' id='scale' state={this.state.scale} def={defaults[this.state.type].scale} onUpdate={this.onUpdate}>Variable Range</Range>),
-            'linearthresh': (<NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onUpdate}>Linear Threshold</NumberBox>),
-            'depth': (<ComboBox key='depth' id='depth' state={this.state.depth} def={defaults[this.state.type].depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')}>Depth</ComboBox>),
-            'colormap': (<ComboBox key='colormap' id='colormap' state={this.state.colormap} def={defaults[this.state.type].colormap} onUpdate={this.onUpdate} url='/api/colormaps/'>Colourmap</ComboBox>),
-            'overlay': (<OverlaySelector key='overlay' id='overlay' state={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</OverlaySelector>),
-            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate}>Bathymetry</CheckBox>),
-            'quiver': (<ComboBox key='quiver' id='quiver' state={this.state.quiver} def={defaults[this.state.type].quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset}>Arrows</ComboBox>),
-            'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Additional Contours</ComboBox>),
-            'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate}>Show Location</CheckBox>),
-            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset}>Surface Variable</ComboBox>),
-            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects'>Transect</TransectComboBox>),
-            'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations'>Station</StationComboBox>),
-            'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>Start Time</TimePicker>),
-            'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum}>End Time</TimePicker>),
-            'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate}>Interpolation</InterpolationOptions>),
-            'size': (<Size key='size' id='size' onUpdate={this.onUpdate}>Image Size</Size>),
+            'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
+            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]} title='Plot Type'></ComboBox>),
+            'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
+            'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
+            'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')} title='Variable'></ComboBox>),
+            'anomaly': (<CheckBox key='anomaly' id='anomaly' state={this.state.anomaly} onUpdate={this.onUpdate} title='Anomaly'></CheckBox>),
+            'scale': (<Range key='scale' id='scale' state={this.state.scale} def={defaults[this.state.type].scale} onUpdate={this.onUpdate} title='Variable Range'></Range>),
+            'linearthresh': (<NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onUpdate} title='Linear Threshold'>The depth axis is broken into two parts at the linear threshold. Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.</NumberBox>),
+            'depth': (<ComboBox key='depth' id='depth' state={this.state.depth} def={defaults[this.state.type].depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')} title='Depth'></ComboBox>),
+            'colormap': (<ComboBox key='colormap' id='colormap' state={this.state.colormap} def={defaults[this.state.type].colormap} onUpdate={this.onUpdate} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.</ComboBox>),
+            'overlay': (<OverlaySelector key='overlay' id='overlay' state={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></OverlaySelector>),
+            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate} title='Bathymetry'></CheckBox>),
+            'quiver': (<ComboBox key='quiver' id='quiver' state={this.state.quiver} def={defaults[this.state.type].quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset} title='Arrows'>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>),
+            'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Additional Contours'>Contour lets you select an additional variable to be overlayed on top of the plot as contour lines.</ComboBox>),
+            'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate} title='Show Location'>Shows the mini map of the location in the plot.</CheckBox>),
+            'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Surface Variable'>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>),
+            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
+            'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
+            'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Start Time'></TimePicker>),
+            'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='End Time'></TimePicker>),
+            'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate} title='Interpolation'></InterpolationOptions>),
+            'size': (<Size key='size' id='size' onUpdate={this.onUpdate} title='Image Size'></Size>),
         }
 
         var map_inputs = [
@@ -422,7 +422,7 @@ var CheckBox = React.createClass({
         return (
                 <div>
                 <input type='checkbox' id={this.props.id} onChange={this.handleChange} checked={this.state.value} />
-                <label htmlFor={this.props.id}>{this.props.children}</label>
+                <label htmlFor={this.props.id}>{this.props.title}</label>
                 </div>
                );
     }
@@ -455,12 +455,12 @@ var OverlaySelector = React.createClass({
     render: function() {
         return (
                 <div key='overlay' className='overlayselector'>
-                <ComboBox id='file' state={this.state.file} def='' onUpdate={this.onUpdate} url='/api/overlays/'>Overlay</ComboBox>
+                <ComboBox id='file' state={this.state.file} def='' onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></ComboBox>
                 <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
-                <ComboBox id='selection' multiple state={this.state.selection} def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file}>Name</ComboBox>
-                <ComboBox id='labelcolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Label Color</ComboBox>
-                <ComboBox id='edgecolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Edge Color</ComboBox>
-                <ComboBox id='facecolor' state='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'}>Face Color</ComboBox>
+                <ComboBox id='selection' multiple state={this.state.selection} def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file} title='Name'></ComboBox>
+                <ComboBox id='labelcolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Label Color'></ComboBox>
+                <ComboBox id='edgecolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Edge Color'></ComboBox>
+                <ComboBox id='facecolor' state='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Face Color'></ComboBox>
                 <div className='input'>
                 <label forName='alpha'>Alpha:</label>
                 <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
@@ -519,7 +519,7 @@ var Range = React.createClass({
     render: function() {
         return (
                 <div className='range'>
-                <h1>{this.props.children}</h1>
+                <h1>{this.props.title}</h1>
                 <input type='checkbox' id={this.props.id + '_auto'} checked={this.state.auto} onChange={this.autoChanged} />
                 <label htmlFor={this.props.id + '_auto'}>Auto Range</label>
                 <div style={{'display': this.state.auto ? 'none' : 'block'}}>
@@ -559,10 +559,30 @@ var NumberBox = React.createClass({
             return true;
         }
     },
+    helpClicked: function(e) {
+        var helpdiv = this.refs.help.style;
+        helpdiv.display = 'block';
+        helpdiv.paddingTop = '5em';
+    },
+    closeHelp: function(e) {
+        if (e.target.className.toLowerCase() == 'modal') {
+            this.refs.help.style.display = 'none';
+        }
+    },
     render: function() {
+        var hasHelp = (this.props.children != null && this.props.children.length > 0);
         return (
                 <div className='range'>
-                <h1>{this.props.children}</h1>
+                <h1>{this.props.title}
+                    <span onClick={this.helpClicked} style={{'display': hasHelp ? 'block' : 'none'}}>?</span>
+                </h1>
+
+                <div className="modal" ref="help" onClick={this.closeHelp}>
+                    <div className="modal-content">
+                        {this.props.children}
+                    </div>
+                </div>
+
                 <div>
                 <label htmlFor={this.props.id}>Value:</label>
                 <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed} onBlur={this.updateParent} onKeyPress={this.keyPress} />
@@ -676,6 +696,16 @@ var ComboBox = React.createClass({
             value: nextProps.state
         });
     },
+    helpClicked: function(e) {
+        var helpdiv = this.refs.help.style;
+        helpdiv.display = 'block';
+        helpdiv.paddingTop = '5em';
+    },
+    closeHelp: function(e) {
+        if (e.target.className.toLowerCase() == 'modal') {
+            this.refs.help.style.display = 'none';
+        }
+    },
     render: function() {
         var options = this.state.data.map(function(o) {
             var opts = {
@@ -698,11 +728,34 @@ var ComboBox = React.createClass({
                     return d.id;
                 });
             }
+
+            var hasHelp =
+                (this.props.children != null && this.props.children.length > 0) ||
+                this.state.data.slice(-1)[0].hasOwnProperty('help');
+
+            var helpOptions = [];
+            if (this.state.data.slice(-1)[0].hasOwnProperty('help')) {
+                helpOptions = this.state.data.map(function(d) {
+                    return (
+                        <p key={d.id}><em>{d.value}</em>: <span dangerouslySetInnerHTML={{ __html: d.help}} /></p>
+                           );
+                });
+            }
+
             return (
                     <div key={this.props.url}>
                     <h1>
-                    {this.props.children}
+                    {this.props.title}
+                    <span onClick={this.helpClicked} style={{'display': hasHelp ? 'block' : 'none'}}>?</span>
                     </h1>
+
+                    <div className="modal" ref="help" onClick={this.closeHelp}>
+                        <div className="modal-content">
+                            {this.props.children}
+                            {helpOptions}
+                        </div>
+                    </div>
+
 
                     <select
                     size={ Math.min(10, this.props.multiple ? this.state.data.length : 1) }
@@ -753,11 +806,11 @@ var InterpolationOptions = React.createClass({
         ];
         return (
                 <div className='collapsible collapsed'>
-                <h1 onClick={this.show}>{this.props.children}</h1>
+                <h1 onClick={this.show}>{this.props.title}</h1>
                 <div className='sub'>
-                <ComboBox id='method' state={this.state.method} data={interp_methods} onUpdate={this.onUpdate}>Method</ComboBox>
+                <ComboBox id='method' state={this.state.method} data={interp_methods} onUpdate={this.onUpdate} title='Method'></ComboBox>
                 <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
-                <NumberBox id='neighbours' state={this.state.neighbours} onUpdate={this.onUpdate}>Neighbours</NumberBox>
+                <NumberBox id='neighbours' state={this.state.neighbours} onUpdate={this.onUpdate} title='Neighbours'></NumberBox>
                 </div>
                 </div>
                 </div>
@@ -806,15 +859,15 @@ var TransectComboBox = React.createClass({
                     datamap: datamap,
                 });
 
-                if (this.state.name == '' && this.state.pts == '' && data.length > 0) {
+                if (this.state.name == '' && this.state.points == '' && data.length > 0) {
                     var name = 'Flemish Cap';
                     this.setState({
                         name: name,
-                        pts: datamap[name],
+                        points: datamap[name],
                     });
-                    this.props.onUpdate(this.props.id, this.state.pts);
+                    this.props.onUpdate(this.props.id, this.state.points);
                     this.props.onUpdate('transect_name', this.state.name);
-                } else if (this.state.name == '' && this.state.pts != '') {
+                } else if (this.state.name == '' && this.state.points != '') {
                     this.setState({
                         name: 'custom',
                     });
@@ -951,7 +1004,7 @@ var TransectComboBox = React.createClass({
         return (
                 <div key={this.props.url} className='transect'>
                 <h1>
-                {this.props.children}
+                {this.props.title}
                 </h1>
 
                 <select
@@ -1084,6 +1137,16 @@ var LocationComboBox = React.createClass({
             this.refs.mapwindow.style.display = 'none';
         }
     },
+    helpClicked: function(e) {
+        var helpdiv = this.refs.help.style;
+        helpdiv.display = 'block';
+        helpdiv.paddingTop = '5em';
+    },
+    closeHelp: function(e) {
+        if (e.target.className.toLowerCase() == 'modal') {
+            this.refs.help.style.display = 'none';
+        }
+    },
     render: function() {
         var options = this.state.data.map(function(o) {
             return (
@@ -1093,11 +1156,36 @@ var LocationComboBox = React.createClass({
                    );
         });
 
+        var hasHelp = false;
+        var helpOptions = [];
+        if (this.state.data.length > 1) {
+            hasHelp =
+                (this.props.children != null && this.props.children.length > 0) ||
+                this.state.data.slice(-1)[0].hasOwnProperty('help');
+
+            if (this.state.data.slice(-1)[0].hasOwnProperty('help')) {
+                helpOptions = this.state.data.map(function(d) {
+                    return (
+                        <p key={d.id}><em>{d.value}</em>: <span dangerouslySetInnerHTML={{ __html: d.help}} /></p>
+                            );
+                });
+            }
+        }
+
         return (
                 <div key={this.props.url} className='location'>
                 <h1>
-                {this.props.children}
+                {this.props.title}
+                <span onClick={this.helpClicked} style={{'display': hasHelp ? 'block' : 'none'}}>?</span>
                 </h1>
+
+                <div className="modal" ref="help" onClick={this.closeHelp}>
+                    <div className="modal-content">
+                        {this.props.children}
+                        {helpOptions}
+                        <p><em>Custom</em>: Custom area selection, Mercator Projection</p>
+                    </div>
+                </div>
 
                 <select
                 value={this.state.value}
@@ -1306,7 +1394,7 @@ var StationComboBox = React.createClass({
         return (
                 <div key={this.props.url}>
                 <h1>
-                {this.props.children}
+                {this.props.title}
                 </h1>
 
                 <select
@@ -1375,7 +1463,7 @@ var Size = React.createClass({
     render: function() {
         return (
                 <div className='collapsible collapsed size'>
-                <h1 onClick={this.show}>{this.props.children}</h1>
+                <h1 onClick={this.show}>{this.props.title}</h1>
                 <div className='sub'>
                 <div>
                 <label htmlFor={this.props.id + '_width'}>Width:</label>
@@ -1499,7 +1587,7 @@ var TimePicker = React.createClass({
                 times: times,
             });
             this.props.onUpdate(this.props.id, times[0].id);
-        } else {
+        } else if (this.refs.picker != null) {
             this.props.onUpdate(this.props.id, this.state.revmap[this.refs.picker.value]);
         }
     },
@@ -1546,7 +1634,7 @@ var TimePicker = React.createClass({
 
         return (
             <div key={this.props.url} className='timepicker'>
-                <h1>{this.props.children}</h1>
+                <h1>{this.props.title}</h1>
 
                 {input}
                 {timeinput}

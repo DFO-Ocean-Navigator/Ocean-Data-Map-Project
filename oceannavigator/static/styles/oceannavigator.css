@@ -68,7 +68,7 @@ div.inputs {
     height: 100%;
     overflow: auto;
     background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.7);
 }
 
 .modal-content {
@@ -77,6 +77,8 @@ div.inputs {
     padding: 2em;
     border: 1px solid black;
     width: 80%;
+    max-height: calc(100% - 13.5em);
+    overflow-y: auto;
 }
 
 .map-footer {
@@ -142,4 +144,45 @@ input:not([type='checkbox']), select:not([multiple]) {
 
 .inputs > div:last-of-type {
     margin-bottom: 1em;
+}
+
+.inputs h1 span {
+    display: block;
+    float: right;
+    font-weight: normal;
+    font-size: 80%;
+    border: 1px solid grey;
+    padding: 2px;
+    margin-bottom: 1px;
+    margin-top: -3px;
+    cursor: pointer;
+}
+
+.inputs div.help {
+    display: none;
+    position: absolute;
+    left: 50;
+    top: 0;
+    z-index: 1;
+    background-color: white;
+    border: 2px solid black;
+    padding: 1em;
+}
+
+.modal-content p {
+    margin-top: 1em;
+}
+
+.modal-content em {
+    font-weight: bold;
+}
+
+.modal-content ul {
+    list-style: disc;
+    margin-left: 1.5em;
+}
+
+.modal-content h1 {
+    font-size: 150%;
+    margin-top: 0;
 }

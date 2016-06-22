@@ -1,10 +1,12 @@
 #!env python
+# vim: set fileencoding=utf-8 :
 
 from flask import Response, request, redirect, send_file
 import json
 from netCDF4 import Dataset, netcdftime
 import datetime
 
+import oceannavigator
 from oceannavigator import app
 from oceannavigator.database import log_query_to_db
 from plotting.transect import plot as transect_plot
@@ -14,34 +16,26 @@ from plotting.overlays import list_overlays, list_overlays_in_file
 from plotting.timeseries import plot as ts_plot
 from plotting.timeseries import list_stations
 import numpy as np
+import ConfigParser
+import os
 
 
 @app.route('/api/datasets/')
 def query_datasets():
-    data = [
-        {
-            'id': 'giops/monthly/aggregated.ncml',
-            'value': 'GIOPS Monthly',
-            'quantum': 'month',
-        },
-        {
-            'id': 'giops/daily/aggregated.ncml',
-            'value': 'GIOPS Daily',
-            'quantum': 'day',
-        },
-        # {'id': 'giops/daily/surface.ncml', 'value':
-        #     'GIOPS Daily (Surface Variables)'},
-        {
-            'id': 'riops/riopsf/aggregated.ncml',
-            'value': 'RIOPS Forecast',
-            'quantum': 'hour',
-        },
-        {
-            'id': 'glorys/monthly/aggregated.ncml',
-            'value': 'GLORYS Monthly',
-            'quantum': 'month',
-        },
-    ]
+    config = ConfigParser.RawConfigParser()
+    config.read(os.path.join(os.path.dirname(oceannavigator.__file__),
+                             'datasetconfig.cfg'))
+    datasets = config.items("datasets")
+    data = []
+    for key, value in datasets:
+        ds = json.loads(value.replace("\n", ""))
+        data.append({
+            'id': ds['url'],
+            'value': ds['name'],
+            'quantum': ds['quantum'],
+            'help': ds['help'],
+        })
+
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
@@ -167,9 +161,24 @@ def depth():
 @app.route('/api/locations/')
 def locations():
     data = [
-        {'id': 'nwatlantic', 'value': 'Northwest Atlantic'},
-        {'id': 'arctic', 'value': 'Arctic Circle'},
-        {'id': 'pacific', 'value': 'Northeast Pacific'},
+        {
+            'id': 'nwatlantic',
+            'value': 'Northwest Atlantic',
+            'help': 'Predefined Northwest Atlantic area, ' +
+                    'Lambert Conformal Conic Projection',
+        },
+        {
+            'id': 'arctic',
+            'value': 'Arctic Circle',
+            'help': 'Predefined Arctic area, ' +
+                    'Polar Stereographic Projection',
+        },
+        {
+            'id': 'pacific',
+            'value': 'Northeast Pacific',
+            'help': 'Predefined Northeast Pacific area, ' +
+                    'Lambert Conformal Conic Projection',
+        },
     ]
     return Response(json.dumps(data), status=200, mimetype='application/json')
 
