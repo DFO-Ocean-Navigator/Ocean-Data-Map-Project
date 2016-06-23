@@ -33,7 +33,8 @@ def query_datasets():
             'id': ds['url'],
             'value': ds['name'],
             'quantum': ds['quantum'],
-            'help': ds['help'],
+            'help': ds.get('help'),
+            'climatology': ds.get('climatology'),
         })
 
     js = json.dumps(data)
@@ -130,8 +131,7 @@ def depth():
     if ',' in variable:
         variable = variable.split(',')[0]
 
-    with Dataset(app.config['THREDDS_SERVER'] +
-                 'dodsC/' + filename, 'r') as ds:
+    with Dataset(filename, 'r') as ds:
         data = []
         if variable and \
            variable in ds.variables and \
@@ -192,8 +192,7 @@ def vars_query():
 
     data = []
     three_d = '3d_only' in request.args
-    with Dataset(app.config['THREDDS_SERVER'] +
-                 'dodsC/' + filename, 'r') as ds:
+    with Dataset(filename, 'r') as ds:
         if 'vectors_only' not in request.args:
             for k, v in ds.variables.iteritems():
                 if ('time_counter' in v.dimensions or 'time' in v.dimensions) \
@@ -214,7 +213,7 @@ def vars_query():
             if 'itzocrtx' in ds.variables:
                 data.append(
                     {'id': 'itzocrtx,itmecrty', 'value': 'Sea Ice Velocity'})
-            if 'iicevelu' in ds.variables:
+            if 'iicevelu' in ds.variables and not three_d:
                 data.append(
                     {'id': 'iicevelu,iicevelv', 'value': 'Sea Ice Velocity'})
             if 'u_wind' in ds.variables and not three_d:
@@ -247,8 +246,7 @@ def time_query():
             dformat = "%d %B %Y"
 
     data = []
-    with Dataset(app.config['THREDDS_SERVER'] +
-                 'dodsC/' + filename, 'r') as ds:
+    with Dataset(filename, 'r') as ds:
         if 'time_counter' in ds.variables:
             time_var = ds.variables['time_counter']
         elif 'time' in ds.variables:
@@ -288,20 +286,15 @@ def plot():
 
     query = json.loads(request.args.get('query'))
 
-    if 'dataset' in query:
-        filename = query['dataset']
-    else:
-        filename = 'giops/monthly/aggregated.ncml'
+    # if filename.startswith('giops'):
+    #     climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
+    # elif filename.startswith('glorys'):
+    #     climate_file = 'climatology/glorys/aggregated.ncml'
+    # else:
+    # climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
 
-    if filename.startswith('giops'):
-        climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
-    elif filename.startswith('glorys'):
-        climate_file = 'climatology/glorys/aggregated.ncml'
-    else:
-        climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
-
-    url = app.config['THREDDS_SERVER'] + 'dodsC/' + filename
-    climate_url = app.config['THREDDS_SERVER'] + 'dodsC/' + climate_file
+    url = query.get('dataset')
+    # climate_url = app.config['THREDDS_SERVER'] + 'dodsC/' + climate_file
 
     opts = {
         'dpi': 72,
@@ -325,7 +318,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = map_plot(url, climate_url, **opts)
+        img, mime, filename = map_plot(url, **opts)
         response = Response(img, status=200, mimetype=mime)
     elif plottype == 'transect':
         if size is None:
@@ -335,7 +328,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = transect_plot(url, climate_url, **opts)
+        img, mime, filename = transect_plot(url, **opts)
         response = Response(img, status=200, mimetype=mime)
     elif plottype == 'timeseries':
         if size is None:
@@ -345,7 +338,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = ts_plot(url, climate_url, **opts)
+        img, mime, filename = ts_plot(url, **opts)
         response = Response(img, status=200, mimetype=mime)
     else:
         response = FAILURE

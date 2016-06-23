@@ -2,8 +2,9 @@ var loading_image = '/images/spinner.gif';
 var fail_image = '/images/failure.gif';
 var defaults = {
     'type':                'map',
-    'dataset':             'giops/monthly/aggregated.ncml',
+    'dataset':             'http://localhost:8080/thredds/dodsC/giops/monthly/aggregated.ncml',
     'dataset_quantum':     'month',
+    'dataset_climatology': 'http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml',
     'size':                '10x7.5',
     'dpi':                 72,
     'map': {
@@ -64,6 +65,7 @@ var Plot = React.createClass({
             'type': q.type,
             'dataset': q.dataset,
             'quantum': q.dataset_quantum,
+            'climatology': q.dataset_climatology,
         }
         for (var key in defaults[q.type]) {
             if (defaults[q.type].hasOwnProperty(key)) {

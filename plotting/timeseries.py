@@ -14,7 +14,7 @@ from data import load_timeseries
 import utils
 
 
-def plot(url, climate_url=None, **kwargs):
+def plot(url, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')

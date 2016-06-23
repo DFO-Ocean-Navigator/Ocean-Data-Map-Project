@@ -17,7 +17,7 @@ import tempfile
 import os
 
 
-def plot(url, climate_url, **kwargs):
+def plot(url, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')
@@ -85,14 +85,6 @@ def plot(url, climate_url, **kwargs):
                 r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
                 variable_name)
             variable_name = re.sub(r" +", " ", variable_name)
-
-        anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
-        if len(variables) > 1 or \
-            ('votemper' not in variables and
-             'vosaline' not in variables):
-            anom = False
-        if anom:
-            variable_name += " Anomaly"
 
         depth = 0
         depthm = 0
@@ -204,12 +196,21 @@ def plot(url, climate_url, **kwargs):
             d[~mask] = np.ma.masked
 
     # Anomomilies
-    if anom:
-        with Dataset(climate_url, 'r') as dataset:
-            d = load_interpolated_grid(
-                target_lat, target_lon, dataset, variables[0],
-                depth, timestamp.month - 1, interpolation=interp)
-        data[0] = data[0] - d
+    anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
+
+    if anom and query.get('climatology') is not None:
+        a = []
+        with Dataset(query.get('climatology'), 'r') as dataset:
+            if variables[0] in dataset.variables:
+                for i, v in enumerate(variables):
+                    a.append(load_interpolated_grid(
+                        target_lat, target_lon, dataset, v,
+                        depth, timestamp.month - 1, interpolation=interp))
+                    if not vector:
+                        data[i] = data[i] - a[i]
+                variable_name += " Anomaly"
+            else:
+                anom = False
 
     # Colormap from arguments
     cmap = query.get('colormap')
@@ -228,15 +229,18 @@ def plot(url, climate_url, **kwargs):
 
     if vector:
         data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
+        a[0] = np.sqrt(a[0] ** 2 + a[1] ** 2)
+        data[0] = data[0] - a[0]
         if scale:
             vmin = scale[0]
             vmax = scale[1]
         else:
-            vmin = 0
             vmax = np.amax(data[0])
-            if query.get('colormap') is None or \
-               query.get('colormap') == 'default':
-                cmap = colormap.colormaps.get('speed')
+            vmin = -vmax
+            if not anom:
+                if query.get('colormap') is None or \
+                        query.get('colormap') == 'default':
+                    cmap = colormap.colormaps.get('speed')
 
     else:
         if scale:

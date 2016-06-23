@@ -16,7 +16,7 @@ import geopy
 import utils
 
 
-def plot(url, climate_url, **kwargs):
+def plot(url, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')
@@ -92,10 +92,6 @@ def plot(url, climate_url, **kwargs):
         velocity = False
         variables = query.get('variable').split(',')
         anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
-        if len(variables) > 1 or \
-            ('votemper' not in variables and
-             'vosaline' not in variables):
-            anom = False
 
         if len(variables) > 1:
             velocity = True
@@ -129,14 +125,11 @@ def plot(url, climate_url, **kwargs):
             variable_unit = "Celsius"
             value = np.add(value, -273.15)
 
-        if anom:
-            variable_name += " Anomaly"
-
         t = netcdftime.utime(time_var.units)
         timestamp = t.num2date(time_var[int(time)])
 
-    if anom:
-        with Dataset(climate_url, 'r') as dataset:
+    if anom and query.get('climatology') is not None:
+        with Dataset(query.get('climatology'), 'r') as dataset:
             if 'nav_lat' in dataset.variables:
                 latvarname = 'nav_lat'
                 lonvarname = 'nav_lon'
@@ -145,14 +138,30 @@ def plot(url, climate_url, **kwargs):
                 lonvarname = 'longitude'
 
             grid = Grid(dataset, latvarname, lonvarname)
-            climate_points, climate_distance, climate_value = grid.transect(
-                dataset.variables[variables[0]],
-                points, timestamp.month - 1, interpolation=interp)
-
-            if dataset.variables[variables[0]].units.startswith("Kelvin"):
-                climate_value = np.add(climate_value, -273.15)
-
-            value = value - climate_value
+            if variables[0] not in dataset.variables:
+                anom = False
+            else:
+                if not velocity:
+                    climate_points, climate_distance, climate_value = \
+                        grid.transect(
+                            dataset.variables[variables[0]],
+                            points, timestamp.month - 1, interpolation=interp)
+                    if dataset.variables[
+                        variables[0]
+                    ].units.startswith("Kelvin"):
+                        climate_value = np.add(climate_value, -273.15)
+                    value = value - climate_value
+                else:
+                    climate_points, climate_distance, \
+                        climate_parallel, climate_perpendicular = \
+                        grid.velocitytransect(
+                            dataset.variables[variables[0]],
+                            dataset.variables[variables[1]],
+                            points, timestamp.month - 1, interpolation=interp)
+                    parallel = parallel - climate_parallel
+                    perpendicular = perpendicular - climate_perpendicular
+    if anom:
+        variable_name += " Anomaly"
 
     # Bathymetry
     with Dataset(app.config['BATHYMETRY_FILE'], 'r') as dataset:
@@ -372,11 +381,13 @@ def plot(url, climate_url, **kwargs):
                 dformat = "%d %B %Y"
 
         if velocity:
-            fig.suptitle("Sea water velocity, " + timestamp.strftime(dformat) +
-                         "\n" + transect_name)
-        else:
-            fig.suptitle(variable_name + ", " + timestamp.strftime(dformat) +
-                         "\n" + transect_name)
+            variable_name = re.sub(
+                r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
+                variable_name)
+            variable_name = re.sub(r" +", " ", variable_name)
+
+        fig.suptitle(variable_name + ", " + timestamp.strftime(dformat) +
+                     "\n" + transect_name)
 
         fig.tight_layout(pad=3, w_pad=4)
         if velocity:
