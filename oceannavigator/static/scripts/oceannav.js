@@ -892,7 +892,7 @@ var TransectComboBox = React.createClass({
         var m = jQuery(this.refs.map);
         var emSize = parseFloat($("body").css("font-size"));
         var pad = 3 * emSize;
-        m.height(jQuery(document).height() - 4*pad);
+        m.height(jQuery(document).height() - 16*emSize);
         m.parent().css('margin-top', pad + 'px');
         this.refs.mapwindow.style.display = 'block';
 
@@ -1074,7 +1074,7 @@ var LocationComboBox = React.createClass({
         var m = jQuery(this.refs.map);
         var emSize = parseFloat($("body").css("font-size"));
         var pad = 3 * emSize;
-        m.height(jQuery(document).height() - 4*pad);
+        m.height(jQuery(document).height() - 16*emSize);
         m.parent().css('margin-top', pad + 'px');
         this.refs.mapwindow.style.display = 'block';
 
@@ -1292,7 +1292,7 @@ var StationComboBox = React.createClass({
         var m = jQuery(this.refs.map);
         var emSize = parseFloat($("body").css("font-size"));
         var pad = 3 * emSize;
-        m.height(jQuery(document).height() - 4*pad);
+        m.height(jQuery(document).height() - 16*emSize);
         m.parent().css('margin-top', pad + 'px');
         this.refs.mapwindow.style.display = 'block';
 
