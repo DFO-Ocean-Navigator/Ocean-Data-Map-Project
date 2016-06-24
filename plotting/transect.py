@@ -473,11 +473,10 @@ def list_transects():
             continue
 
         doc = parser.parse(os.path.join(TRANSECT_DIR, f)).getroot()
-        # nsmap = {"k": doc.nsmap[None]}
         folder = doc.Document.Folder
 
         group = {
-            'name': doc.Document.Folder.name.text,
+            'name': doc.Document.Folder.name.text.encode("utf-8"),
             'transects': []
         }
 
@@ -488,7 +487,8 @@ def list_transects():
                 lonlat = point_txt.split(',')
                 coords.append(lonlat[1] + "," + lonlat[0])
 
-            group['transects'].append({'name': str(place.name), 'pts': coords})
+            group['transects'].append(
+                {'name': place.name.text.encode("utf-8"), 'pts': coords})
         group['transects'] = sorted(group['transects'],
                                     key=lambda k: k['name'])
 

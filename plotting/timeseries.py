@@ -290,7 +290,7 @@ def list_stations():
         folder = doc.Document.Folder
 
         group = {
-            'name': doc.Document.Folder.name.text,
+            'name': doc.Document.Folder.name.text.encode("utf-8"),
             'stations': []
         }
 
@@ -298,8 +298,10 @@ def list_stations():
             c_txt = place.Point.coordinates.text
             lonlat = c_txt.split(',')
 
-            group['stations'].append({'name': str(place.name), 'point':
-                                      lonlat[1] + "," + lonlat[0]})
+            group['stations'].append({
+                'name': place.name.text.encode("utf-8"),
+                'point': lonlat[1] + "," + lonlat[0]
+            })
 
         group['stations'] = sorted(group['stations'], key=lambda k: k['name'])
 

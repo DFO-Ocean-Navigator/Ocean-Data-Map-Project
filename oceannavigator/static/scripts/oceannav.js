@@ -1491,7 +1491,7 @@ var TimePicker = React.createClass({
     getInitialState: function() {
         return {
             data: [],
-            value: -1,
+            value: this.props.def,
             url: null,
             map: {},
             revmap: {},

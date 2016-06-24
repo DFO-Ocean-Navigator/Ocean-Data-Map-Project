@@ -128,7 +128,10 @@ def list_overlays():
 
         name = parser.parse(
             os.path.join(KML_DIR, f)).getroot().Document.Folder.name
-        overlays.append({'id': os.path.basename(f), 'value': str(name)})
+        overlays.append({
+            'id': os.path.basename(f),
+            'value': name.text.encode("utf-8")
+        })
     return overlays
 
 
@@ -140,7 +143,7 @@ def list_overlays_in_file(filename):
 
     overlays = []
     for place in doc.getroot().Document.Folder.Placemark:
-        name = str(place.name)
+        name = place.name.text.encode("utf-8")
         overlays.append({'id': name, 'value': name})
     return overlays
 
@@ -155,14 +158,13 @@ def draw_overlay(basemap, kmlfile, **kwargs):
     num_places = len(doc.getroot().Document.Folder.Placemark)
     for idx, place in enumerate(doc.getroot().Document.Folder.Placemark):
         polys = []
-        # if kwargs.get('name') and kwargs.get('name') != place.name:
-        #     continue
         filter_name = kwargs.get('name')
+        name = place.name.text.encode("utf-8")
         if filter_name is not None:
             if isinstance(filter_name, basestring) and \
-               filter_name != place.name:
+               filter_name != name:
                 continue
-            elif place.name not in filter_name:
+            elif name not in filter_name:
                 continue
 
         for c in place.iterfind('.//k:outerBoundaryIs//k:LinearRing', nsmap):
@@ -175,10 +177,10 @@ def draw_overlay(basemap, kmlfile, **kwargs):
                 if labelcolor == 'rnd':
                     labelcolor = plt.get_cmap('prism')(float(idx) / num_places)
                 shape = shapely.geometry.Polygon(map_coords)
-                name = '\n'.join(textwrap.wrap(str(place.name), 15))
+                wrappedname = '\n'.join(textwrap.wrap(name, 15))
                 plt.annotate(
                     xy=(shape.centroid.x, shape.centroid.y),
-                    s=name,
+                    s=wrappedname,
                     ha='center', va='center', size=10,
                     color=labelcolor,
                     alpha=kwargs.get('labelalpha'))
