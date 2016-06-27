@@ -12,9 +12,11 @@ from oceannavigator import app
 from pykml import parser
 from data import load_timeseries
 import utils
+from oceannavigator.util import get_variable_name, get_variable_unit, \
+    get_dataset_url
 
 
-def plot(url, **kwargs):
+def plot(dataset_name, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')
@@ -46,7 +48,7 @@ def plot(url, **kwargs):
         else:
             depth = int(query.get('depth'))
 
-    with Dataset(url, 'r') as dataset:
+    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if query.get('starttime') is None or \
            len(str(query.get('starttime'))) == 0:
             starttime = 0
@@ -76,9 +78,10 @@ def plot(url, **kwargs):
         if endtime < 0:
             endtime += time_var.shape[0]
 
-        variable_unit = dataset.variables[variables[0]].units
-        variable_name = dataset.variables[
-            variables[0]].long_name.replace(" at CMC", "")
+        variable_unit = get_variable_unit(dataset_name,
+                                          dataset.variables[variables[0]])
+        variable_name = get_variable_name(dataset_name,
+                                          dataset.variables[variables[0]])
 
         if 'deptht' in dataset.variables:
             depth_var = dataset.variables['deptht']
@@ -162,9 +165,11 @@ def plot(url, **kwargs):
             for d in data:
                 vmin = min(vmin, np.amin(d))
                 vmax = max(vmax, np.amax(d))
-                if re.search("free surface", variable_name) or \
-                    re.search("velocity", variable_name) or \
-                        re.search("wind", variable_name):
+                if re.search("free surface", variable_name, re.IGNORECASE) or \
+                    re.search("surface height", variable_name,
+                              re.IGNORECASE) or \
+                    re.search("velocity", variable_name, re.IGNORECASE) or \
+                        re.search("wind", variable_name, re.IGNORECASE):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
             if variable_unit == "fraction":
@@ -176,7 +181,8 @@ def plot(url, **kwargs):
     if vector:
         d = mag
 
-    filename = utils.get_filename(url, query.get('station'),
+    filename = utils.get_filename(get_dataset_url(dataset_name),
+                                  query.get('station'),
                                   variables, variable_unit,
                                   [times[0][0], times[0][-1]], None,
                                   filetype)

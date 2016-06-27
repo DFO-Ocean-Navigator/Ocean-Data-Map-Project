@@ -14,9 +14,11 @@ from oceannavigator import app
 from pykml import parser
 import geopy
 import utils
+from oceannavigator.util import get_variable_name, get_variable_unit, \
+    get_dataset_url, get_dataset_climatology
 
 
-def plot(url, **kwargs):
+def plot(dataset_name, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')
@@ -54,7 +56,7 @@ def plot(url, **kwargs):
             'neighbours': 8,
         }
 
-    with Dataset(url, 'r') as dataset:
+    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if 'nav_lat' in dataset.variables:
             latvarname = 'nav_lat'
             lonvarname = 'nav_lon'
@@ -111,16 +113,18 @@ def plot(url, **kwargs):
             surface_pts, surface_dist, surface_value = grid.surfacetransect(
                 dataset.variables[surface],
                 points, time, interpolation=interp)
-            surface_name = dataset.variables[
-                surface].long_name.replace(" at CMC", "")
-            surface_unit = dataset.variables[surface].units
+            surface_unit = get_variable_unit(dataset_name,
+                                             dataset.variables[surface])
+            surface_name = get_variable_name(dataset_name,
+                                             dataset.variables[surface])
             if surface_unit.startswith("Kelvin"):
                 surface_unit = "Celsius"
                 surface_value = np.add(surface_value, -273.15)
 
-        variable_unit = dataset.variables[variables[0]].units
-        variable_name = dataset.variables[
-            variables[0]].long_name.replace(" at CMC", "")
+        variable_unit = get_variable_unit(dataset_name,
+                                          dataset.variables[variables[0]])
+        variable_name = get_variable_name(dataset_name,
+                                          dataset.variables[variables[0]])
         if variable_unit.startswith("Kelvin"):
             variable_unit = "Celsius"
             value = np.add(value, -273.15)
@@ -128,8 +132,8 @@ def plot(url, **kwargs):
         t = netcdftime.utime(time_var.units)
         timestamp = t.num2date(time_var[int(time)])
 
-    if anom and query.get('climatology') is not None:
-        with Dataset(query.get('climatology'), 'r') as dataset:
+    if anom:
+        with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
             if 'nav_lat' in dataset.variables:
                 latvarname = 'nav_lat'
                 lonvarname = 'nav_lon'
@@ -181,7 +185,7 @@ def plot(url, **kwargs):
         else:
             cmap = colormap.find_colormap(variable_name)
 
-    filename = utils.get_filename(url, None,
+    filename = utils.get_filename(get_dataset_url(dataset_name), None,
                                   variables, variable_unit,
                                   timestamp, None,
                                   filetype)
@@ -345,7 +349,7 @@ def plot(url, **kwargs):
             else:
                 vmin = np.amin(value)
                 vmax = np.amax(value)
-                if re.search("velocity", variable_name) or anom:
+                if re.search("velocity", variable_name, re.IGNORECASE) or anom:
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
 
@@ -375,7 +379,7 @@ def plot(url, **kwargs):
         elif quantum == 'hour':
             dformat = "%H:%M %d %B %Y"
         else:
-            if 'monthly' in url:
+            if 'monthly' in get_dataset_url(dataset_name):
                 dformat = "%B %Y"
             else:
                 dformat = "%d %B %Y"
@@ -415,7 +419,8 @@ def _surface_plot(axis_divider, distance, values, units, name):
     plt.setp(label, size='smaller')
     plt.setp(surface_ax.get_yticklabels(), size='x-small')
     plt.xlim([0, distance[-1]])
-    if re.search("free surface", name):
+    if re.search("free surface", name, re.IGNORECASE) or \
+       re.search("surface height", name, re.IGNORECASE):
         ylim = plt.ylim()
         plt.ylim([min(ylim[0], -ylim[1]), max([-ylim[0], ylim[1]])])
         surface_ax.yaxis.grid(True)

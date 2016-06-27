@@ -15,9 +15,11 @@ import gdal
 import osr
 import tempfile
 import os
+from oceannavigator.util import get_variable_name, get_variable_unit, \
+    get_dataset_url, get_dataset_climatology
 
 
-def plot(url, **kwargs):
+def plot(dataset_name, **kwargs):
     filetype, mime = utils.get_mimetype(kwargs.get('format'))
 
     query = kwargs.get('query')
@@ -60,7 +62,7 @@ def plot(url, **kwargs):
     else:
         target_lon, target_lat = m.makegrid(500, 500)
 
-    with Dataset(url, 'r') as dataset:
+    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if query.get('time') is None or (type(query.get('time')) == str and
                                          len(query.get('time')) == 0):
             time = -1
@@ -77,9 +79,10 @@ def plot(url, **kwargs):
         if time < 0:
             time += time_var.shape[0]
 
-        variable_unit = dataset.variables[variables[0]].units
-        variable_name = dataset.variables[
-            variables[0]].long_name.replace(" at CMC", "")
+        variable_unit = get_variable_unit(dataset_name,
+                                          dataset.variables[variables[0]])
+        variable_name = get_variable_name(dataset_name,
+                                          dataset.variables[variables[0]])
         if vector:
             variable_name = re.sub(
                 r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
@@ -198,9 +201,9 @@ def plot(url, **kwargs):
     # Anomomilies
     anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
 
-    if anom and query.get('climatology') is not None:
+    if anom:
         a = []
-        with Dataset(query.get('climatology'), 'r') as dataset:
+        with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
             if variables[0] in dataset.variables:
                 for i, v in enumerate(variables):
                     a.append(load_interpolated_grid(
@@ -229,14 +232,17 @@ def plot(url, **kwargs):
 
     if vector:
         data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
-        a[0] = np.sqrt(a[0] ** 2 + a[1] ** 2)
-        data[0] = data[0] - a[0]
+        if anom:
+            a[0] = np.sqrt(a[0] ** 2 + a[1] ** 2)
+            data[0] = data[0] - a[0]
         if scale:
             vmin = scale[0]
             vmax = scale[1]
         else:
             vmax = np.amax(data[0])
-            vmin = -vmax
+            vmin = 0
+            if anom:
+                vmin = -vmax
             if not anom:
                 if query.get('colormap') is None or \
                         query.get('colormap') == 'default':
@@ -253,10 +259,11 @@ def plot(url, **kwargs):
             for d in data:
                 vmin = min(vmin, np.amin(d))
                 vmax = max(vmax, np.amax(d))
-                if re.search("free surface", variable_name) or \
-                    re.search("surface height", variable_name) or \
-                    re.search("velocity", variable_name) or \
-                    re.search("wind", variable_name) or \
+                if re.search("free surface", variable_name, re.IGNORECASE) or \
+                    re.search("surface height", variable_name,
+                              re.IGNORECASE) or \
+                    re.search("velocity", variable_name, re.IGNORECASE) or \
+                    re.search("wind", variable_name, re.IGNORECASE) or \
                         anom:
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
@@ -264,7 +271,8 @@ def plot(url, **kwargs):
                         vmin = 0
                         vmax = 1
 
-    filename = utils.get_filename(url, query.get('location'),
+    filename = utils.get_filename(get_dataset_url(dataset_name),
+                                  query.get('location'),
                                   variables, variable_unit,
                                   timestamp, depthm,
                                   filetype)
@@ -418,7 +426,7 @@ def plot(url, **kwargs):
         elif quantum == 'hour':
             dformat = "%H:%M %d %B %Y"
         else:
-            if 'monthly' in url:
+            if 'monthly' in get_dataset_url(dataset_name):
                 dformat = "%B %Y"
             else:
                 dformat = "%d %B %Y"

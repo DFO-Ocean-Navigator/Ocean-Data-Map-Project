@@ -6,9 +6,10 @@ import json
 from netCDF4 import Dataset, netcdftime
 import datetime
 
-import oceannavigator
 from oceannavigator import app
 from oceannavigator.database import log_query_to_db
+from oceannavigator.util import get_variable_name, get_datasets, \
+    get_dataset_url
 from plotting.transect import plot as transect_plot
 from plotting.transect import list_transects
 from plotting.map import plot as map_plot
@@ -16,27 +17,21 @@ from plotting.overlays import list_overlays, list_overlays_in_file
 from plotting.timeseries import plot as ts_plot
 from plotting.timeseries import list_stations
 import numpy as np
-import ConfigParser
-import os
+import re
 
 
 @app.route('/api/datasets/')
 def query_datasets():
-    config = ConfigParser.RawConfigParser()
-    config.read(os.path.join(os.path.dirname(oceannavigator.__file__),
-                             'datasetconfig.cfg'))
-    datasets = config.items("datasets")
     data = []
-    for key, value in datasets:
-        ds = json.loads(value.replace("\n", ""))
+    for key, ds in get_datasets().items():
         data.append({
-            'id': ds['url'],
+            'id': key,
             'value': ds['name'],
             'quantum': ds['quantum'],
             'help': ds.get('help'),
-            'climatology': ds.get('climatology'),
         })
 
+    data = sorted(data, key=lambda k: k['value'])
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
@@ -122,36 +117,36 @@ def colormaps():
 
 @app.route('/api/depth/')
 def depth():
-    if 'dataset' in request.args:
-        filename = request.args.get('dataset')
-    else:
-        filename = 'giops/monthly/aggregated.ncml'
-
     variable = request.args.get('variable')
     if ',' in variable:
         variable = variable.split(',')[0]
 
-    with Dataset(filename, 'r') as ds:
-        data = []
-        if variable and \
-           variable in ds.variables and \
-           ('deptht' in ds.variables[variable].dimensions or
-                'depth' in ds.variables[variable].dimensions):
-            if str(request.args.get('all')).lower() in ['true', 'yes', 'on']:
-                data.append({'id': 'all', 'value': 'All Depths'})
+    data = []
+    if 'dataset' in request.args:
+        dataset = request.args['dataset']
 
-            if 'deptht' in ds.variables:
-                depth_var = ds.variables['deptht']
-            elif 'depth' in ds.variables:
-                depth_var = ds.variables['depth']
+        with Dataset(get_dataset_url(dataset), 'r') as ds:
+            if variable and \
+                variable in ds.variables and \
+                ('deptht' in ds.variables[variable].dimensions or
+                    'depth' in ds.variables[variable].dimensions):
+                if str(request.args.get('all')).lower() in ['true',
+                                                            'yes',
+                                                            'on']:
+                    data.append({'id': 'all', 'value': 'All Depths'})
 
-            for idx, value in enumerate(np.round(depth_var)):
-                data.append({
-                    'id': idx,
-                    'value': "%d " % (value) + depth_var.units % value
-                })
+                if 'deptht' in ds.variables:
+                    depth_var = ds.variables['deptht']
+                elif 'depth' in ds.variables:
+                    depth_var = ds.variables['depth']
 
-            data.insert(0, {'id': 'bottom', 'value': 'Bottom'})
+                for idx, value in enumerate(np.round(depth_var)):
+                    data.append({
+                        'id': idx,
+                        'value': "%d " % (value) + depth_var.units % value
+                    })
+
+                data.insert(0, {'id': 'bottom', 'value': 'Bottom'})
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -185,39 +180,52 @@ def locations():
 
 @app.route('/api/variables/')
 def vars_query():
-    if 'dataset' in request.args:
-        filename = request.args['dataset']
-    else:
-        filename = 'giops/monthly/aggregated.ncml'
-
     data = []
-    three_d = '3d_only' in request.args
-    with Dataset(filename, 'r') as ds:
-        if 'vectors_only' not in request.args:
-            for k, v in ds.variables.iteritems():
-                if ('time_counter' in v.dimensions or 'time' in v.dimensions) \
-                   and ('y' in v.dimensions or 'yc' in v.dimensions):
-                    if three_d and ('deptht' not in v.dimensions and
-                                    'depth' not in v.dimensions):
-                        continue
-                    else:
-                        data.append({
-                            'id': k,
-                            'value': v.long_name.replace(" at CMC", "").title()
-                        })
+    if 'dataset' in request.args:
+        dataset = request.args['dataset']
 
-        if 'vectors' in request.args or 'vectors_only' in request.args:
-            if 'vozocrtx' in ds.variables:
-                data.append(
-                    {'id': 'vozocrtx,vomecrty', 'value': 'Sea Water Velocity'})
-            if 'itzocrtx' in ds.variables:
-                data.append(
-                    {'id': 'itzocrtx,itmecrty', 'value': 'Sea Ice Velocity'})
-            if 'iicevelu' in ds.variables and not three_d:
-                data.append(
-                    {'id': 'iicevelu,iicevelv', 'value': 'Sea Ice Velocity'})
-            if 'u_wind' in ds.variables and not three_d:
-                data.append({'id': 'u_wind,v_wind', 'value': 'Wind'})
+        three_d = '3d_only' in request.args
+        with Dataset(get_dataset_url(dataset), 'r') as ds:
+            if 'vectors_only' not in request.args:
+                for k, v in ds.variables.iteritems():
+                    if ('time_counter' in v.dimensions or
+                        'time' in v.dimensions) \
+                            and ('y' in v.dimensions or 'yc' in v.dimensions):
+                        if three_d and ('deptht' not in v.dimensions and
+                                        'depth' not in v.dimensions):
+                            continue
+                        else:
+                            data.append({
+                                'id': k,
+                                'value': get_variable_name(dataset, v)
+                            })
+
+            if 'vectors' in request.args or 'vectors_only' in request.args:
+                rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
+                if 'vozocrtx' in ds.variables:
+                    n = get_variable_name(dataset, ds.variables['vozocrtx'])
+                    data.append({
+                        'id': 'vozocrtx,vomecrty',
+                        'value': re.sub(rxp, " ", n)
+                    })
+                if 'itzocrtx' in ds.variables:
+                    n = get_variable_name(dataset, ds.variables['itzocrtx'])
+                    data.append({
+                        'id': 'itzocrtx,itmecrty',
+                        'value': re.sub(rxp, " ", n)
+                    })
+                if 'iicevelu' in ds.variables and not three_d:
+                    n = get_variable_name(dataset, ds.variables['itzocrtx'])
+                    data.append({
+                        'id': 'iicevelu,iicevelv',
+                        'value': re.sub(rxp, " ", n)
+                    })
+                if 'u_wind' in ds.variables and not three_d:
+                    n = get_variable_name(dataset, ds.variables['u_wind'])
+                    data.append({
+                        'id': 'u_wind,v_wind',
+                        'value': re.sub(rxp, " ", n)
+                    })
 
     data = sorted(data, key=lambda k: k['value'])
     js = json.dumps(data)
@@ -227,35 +235,31 @@ def vars_query():
 
 @app.route('/api/timestamps/')
 def time_query():
-    if 'dataset' in request.args:
-        filename = request.args['dataset']
-    else:
-        filename = 'giops/monthly/aggregated.ncml'
-
-    quantum = request.args.get('quantum')
-    if quantum == 'month':
-        dformat = "%B %Y"
-    elif quantum == 'day':
-        dformat = "%d %B %Y"
-    elif quantum == 'hour':
-        dformat = "%d %B %Y %H:%M"
-    else:
-        if 'monthly' in filename:
-            dformat = "%B %Y"
-        else:
-            dformat = "%d %B %Y"
-
     data = []
-    with Dataset(filename, 'r') as ds:
-        if 'time_counter' in ds.variables:
-            time_var = ds.variables['time_counter']
-        elif 'time' in ds.variables:
-            time_var = ds.variables['time']
+    if 'dataset' in request.args:
+        dataset = request.args['dataset']
+        quantum = request.args.get('quantum')
+        if quantum == 'month':
+            dformat = "%B %Y"
+        elif quantum == 'day':
+            dformat = "%d %B %Y"
+        elif quantum == 'hour':
+            dformat = "%d %B %Y %H:%M"
+        else:
+            if 'month' in dataset:
+                dformat = "%B %Y"
+            else:
+                dformat = "%d %B %Y"
+        with Dataset(get_dataset_url(dataset), 'r') as ds:
+            if 'time_counter' in ds.variables:
+                time_var = ds.variables['time_counter']
+            elif 'time' in ds.variables:
+                time_var = ds.variables['time']
 
-        t = netcdftime.utime(time_var.units)
-        for idx, date in \
-                enumerate(t.num2date(time_var[:])):
-            data.append({'id': idx, 'value': date})
+            t = netcdftime.utime(time_var.units)
+            for idx, date in \
+                    enumerate(t.num2date(time_var[:])):
+                data.append({'id': idx, 'value': date})
 
     data = sorted(data, key=lambda k: -k['id'])
     data.insert(0, {'id': -1, 'value': 'Most Recent'})
@@ -286,15 +290,7 @@ def plot():
 
     query = json.loads(request.args.get('query'))
 
-    # if filename.startswith('giops'):
-    #     climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
-    # elif filename.startswith('glorys'):
-    #     climate_file = 'climatology/glorys/aggregated.ncml'
-    # else:
-    # climate_file = 'climatology/Levitus98_PHC21/aggregated.ncml'
-
-    url = query.get('dataset')
-    # climate_url = app.config['THREDDS_SERVER'] + 'dodsC/' + climate_file
+    dataset = query.get('dataset')
 
     opts = {
         'dpi': 72,
@@ -318,7 +314,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = map_plot(url, **opts)
+        img, mime, filename = map_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
     elif plottype == 'transect':
         if size is None:
@@ -328,7 +324,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = transect_plot(url, **opts)
+        img, mime, filename = transect_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
     elif plottype == 'timeseries':
         if size is None:
@@ -338,7 +334,7 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = ts_plot(url, **opts)
+        img, mime, filename = ts_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
     else:
         response = FAILURE
