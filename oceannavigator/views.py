@@ -14,7 +14,8 @@ from plotting.transect import plot as transect_plot
 from plotting.transect import list_transects
 from plotting.map import plot as map_plot
 from plotting.overlays import list_overlays, list_overlays_in_file
-from plotting.timeseries import plot as ts_plot
+from plotting.timeseries import plot as timeseries_plot
+from plotting.ts import plot as ts_plot
 from plotting.timeseries import list_stations
 import numpy as np
 import re
@@ -329,6 +330,16 @@ def plot():
     elif plottype == 'timeseries':
         if size is None:
             opts['size'] = '11x5'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = timeseries_plot(dataset, **opts)
+        response = Response(img, status=200, mimetype=mime)
+    elif plottype == 'ts':
+        if size is None:
+            opts['size'] = '11x9'
         else:
             opts['size'] = size
 

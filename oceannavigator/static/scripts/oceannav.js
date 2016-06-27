@@ -56,6 +56,11 @@ var defaults = {
         'colormap':        'default',
         'scale':           'auto',
     },
+    'ts': {
+        'time':            '-1',
+        'station':         '',
+        'station_name':    'SEGB-20',
+    },
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
@@ -197,7 +202,8 @@ var Plot = React.createClass({
         }
         var csv = "";
         if (this.props.query.type == 'transect' ||
-                this.props.query.type == 'timeseries') {
+                this.props.query.type == 'timeseries' ||
+                this.props.query.type == 'ts') {
             csv = <option value='csv'>CSV</option>;
         }
         var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -305,7 +311,7 @@ var Selector = React.createClass({
     render: function() {
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'}]} title='Plot Type'></ComboBox>),
+            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'}]} title='Plot Type'></ComboBox>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
             'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
             'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')} title='Variable'></ComboBox>),
@@ -321,7 +327,7 @@ var Selector = React.createClass({
             'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate} title='Show Location'>Shows the mini map of the location in the plot.</CheckBox>),
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Surface Variable'>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>),
             'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
-            'station': (<StationComboBox key='station' id='station' state={this.state.station} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
+            'station': (<StationComboBox key='station' id='station' state={this.state.station} def={defaults[this.state.type].station_name} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
             'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Start Time'></TimePicker>),
             'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='End Time'></TimePicker>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate} title='Interpolation'></InterpolationOptions>),
@@ -363,6 +369,10 @@ var Selector = React.createClass({
             'scale',
             'colormap',
         ];
+        var ts_inputs = [
+            'time',
+            'station',
+        ];
 
         var inputs;
         switch(this.state.type) {
@@ -378,6 +388,11 @@ var Selector = React.createClass({
                 break;
             case 'timeseries':
                 inputs = timeseries_inputs.map(function(i) {
+                    return inputmap[i];
+                });
+                break;
+            case 'ts':
+                inputs = ts_inputs.map(function(i) {
                     return inputmap[i];
                 });
                 break;
@@ -1273,13 +1288,13 @@ var StationComboBox = React.createClass({
                 });
 
                 if (this.state.value == '' && data.length > 0) {
-                    var value = 'S27-01';
+                    var value = this.props.def;
                     this.setState({
                         value: value
                     });
                 }
                 this.props.onUpdate(this.props.id, this.state.datamap[this.state.value]);
-                this.props.onUpdate('station_name', 'S27-01');
+                this.props.onUpdate('station_name', this.props.def);
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
