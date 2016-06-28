@@ -1,13 +1,11 @@
 from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
-import matplotlib.ticker as tkr
 import numpy as np
 from StringIO import StringIO
 import utils
 from data import load_timeseries
-from oceannavigator.util import get_variable_unit, get_dataset_url
-import seawater
-from pint import UnitRegistry
+from oceannavigator.util import get_variable_unit, get_variable_name, \
+    get_dataset_url
 
 
 def plot(dataset_name, **kwargs):
@@ -22,7 +20,6 @@ def plot(dataset_name, **kwargs):
         latlon = point.split(',')
 
     variables = ['votemper', 'vosaline']
-    ureg = UnitRegistry()
 
     with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if query.get('time') is None or \
@@ -45,8 +42,14 @@ def plot(dataset_name, **kwargs):
         t = netcdftime.utime(time_var.units)
         timestamp = t.num2date(time_var[time])
 
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variables[0]])
+        temperature_name = get_variable_name(dataset_name,
+                                             dataset.variables[variables[0]])
+        temperature_unit = get_variable_unit(dataset_name,
+                                             dataset.variables[variables[0]])
+        salinity_name = get_variable_name(dataset_name,
+                                          dataset.variables[variables[1]])
+        salinity_unit = get_variable_unit(dataset_name,
+                                          dataset.variables[variables[1]])
 
         if 'deptht' in dataset.variables:
             depth_var = dataset.variables['deptht']
@@ -66,8 +69,6 @@ def plot(dataset_name, **kwargs):
                 float(latlon[0]),
                 float(latlon[1])
             )
-            if dataset.variables[v].units.startswith("Kelvin"):
-                d = np.add(d, -273.15)
             data.append(d)
             times.append(t)
 
@@ -77,14 +78,14 @@ def plot(dataset_name, **kwargs):
         temperature = data[0]
         salinity = data[1]
 
-        depthm = (depths * ureg.parse_expression(depth_unit)).to(ureg.meter)
-        pressure = seawater.pres(depthm, float(latlon[0]))
-
-        sspeed = seawater.svel(salinity, temperature, pressure)
+        if temperature_unit.startswith("Kelvin"):
+            temperature = np.add(temperature, -273.15)
+            temperature_unit = "Celsius"
 
     filename = utils.get_filename(get_dataset_url(dataset_name),
                                   query.get('station'),
-                                  variables, variable_unit,
+                                  variables, temperature_unit + "," +
+                                  salinity_unit,
                                   [times[0][0], times[0][-1]], None,
                                   filetype)
     if filetype == 'csv':
@@ -92,17 +93,13 @@ def plot(dataset_name, **kwargs):
         output = StringIO()
         try:
             output.write(
-                "Depth, Pressure, Salinity, Temperature, Sound Speed\n")
+                "Depth, Temperature, Salinity\n")
 
             for idx, val in enumerate(temperature):
                 if np.ma.is_masked(val):
                     break
                 output.write("%0.1f, %0.1f, %0.1f, %0.1f, %0.1f\n" %
-                             (depths[idx],
-                              pressure[idx],
-                              salinity[idx],
-                              temperature[idx],
-                              sspeed[idx]))
+                             (depths[idx], temperature[idx], salinity[idx]))
             return (output.getvalue(), mime, filename)
         finally:
             output.close()
@@ -110,7 +107,10 @@ def plot(dataset_name, **kwargs):
         # Figure size
         size = kwargs.get('size').replace("x", " ").split()
         figuresize = (float(size[0]), float(size[1]))
-        fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
+        # fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
+        fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True,
+                                       figsize=figuresize,
+                                       dpi=float(kwargs.get('dpi')))
 
         station_name = query.get('station_name')
         if station_name is None or station_name == '':
@@ -130,34 +130,21 @@ def plot(dataset_name, **kwargs):
             else:
                 dformat = "%d %B %Y"
 
-        ax = plt.gca()
-        ax.plot(sspeed, depthm, '-')
+        ax1.plot(temperature, depths, 'b-')
+        ax1.invert_yaxis()
+        ax1.set_ylabel("Depth (%s)" % depth_unit)
+        ax1.set_xlabel("%s (%s)" % (temperature_name, temperature_unit))
+        ax1.xaxis.set_label_position('top')
+        ax1.xaxis.set_ticks_position('top')
+        ax2.plot(salinity, depths, 'r-')
+        ax2.set_xlabel("%s (%s)" % (salinity_name, salinity_unit))
+        ax2.xaxis.set_label_position('top')
+        ax2.xaxis.set_ticks_position('top')
 
-        minspeed = np.amin(sspeed)
-        maxspeed = np.amax(sspeed)
-
-        ax.set_xlim([
-            np.amin(sspeed) - (maxspeed - minspeed) * 0.1,
-            np.amax(sspeed) + (maxspeed - minspeed) * 0.1,
-        ])
-        ax.set_xlabel("Sound Speed (m/s)")
-        ax.set_ylabel("Depth (m)")
-        ax.invert_yaxis()
-        ax.xaxis.set_ticks_position('top')
-        ax.xaxis.set_label_position('top')
-        x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
-        ax.xaxis.set_major_formatter(x_format)
-        ax.set_title("Sound Speed Profile for %s (%s)" %
+        plt.suptitle("CTD Profile for %s (%s)" %
                     (station_name, timestamp.strftime(dformat)))
-        ax.title.set_position([.5, 1.10])
-        plt.subplots_adjust(top=0.85)
-        ax.xaxis.grid(True)
-
-        ylim = ax.get_ylim()
-        ax2 = ax.twinx()
-        depthm = (depths * ureg.parse_expression(depth_unit)).to(ureg.meter)
-        ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
-        ax2.set_ylabel("Depth (ft)")
+        fig.tight_layout()
+        fig.subplots_adjust(top=0.90)
 
         # Output the plot
         buf = StringIO()

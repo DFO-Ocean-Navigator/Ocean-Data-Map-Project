@@ -66,6 +66,11 @@ var defaults = {
         'station':         '',
         'station_name':    'SEGB-20',
     },
+    'ctd': {
+        'time':            '-1',
+        'station':         '',
+        'station_name':    'SEGB-20',
+    },
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
@@ -278,6 +283,12 @@ var Selector = React.createClass({
         if (key == 'type') {
             for (var key in defaults[value]) {
                 if (defaults[value].hasOwnProperty(key)) {
+                    if (key == 'station_name' && this.state.station_name != '') {
+                        continue;
+                    }
+                    if (key == 'station' && this.state.station != '') {
+                        continue;
+                    }
                     newstate[key] = defaults[value][key];
                 }
             }
@@ -311,7 +322,8 @@ var Selector = React.createClass({
     render: function() {
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'},{'id': 'sound', 'value': 'Sound Profile'}]} title='Plot Type'></ComboBox>),
+            // 'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'},{'id': 'sound', 'value': 'Sound Profile'},{'id': 'ctd', 'value': 'CTD Profile'}]} title='Plot Type'></ComboBox>),
+            'plottype': (<PlotType key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} title='Plot Type'></PlotType>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
             'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
             'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')} title='Variable'></ComboBox>),
@@ -377,6 +389,10 @@ var Selector = React.createClass({
             'time',
             'station',
         ];
+        var ctd_inputs = [
+            'time',
+            'station',
+        ];
 
         var inputs;
         switch(this.state.type) {
@@ -402,6 +418,11 @@ var Selector = React.createClass({
                 break;
             case 'sound':
                 inputs = sound_inputs.map(function(i) {
+                    return inputmap[i];
+                });
+                break;
+            case 'ctd':
+                inputs = ctd_inputs.map(function(i) {
                     return inputmap[i];
                 });
                 break;
@@ -1310,7 +1331,7 @@ var StationComboBox = React.createClass({
                 }
                 this.refs.lat.value = datamap[value].split(",")[0];
                 this.refs.lon.value = datamap[value].split(",")[1];
-                this.props.onUpdate(this.props.id, datamap[this.state.value]);
+                this.props.onUpdate(this.props.id, datamap[value]);
                 this.props.onUpdate('station_name', this.props.def);
             }.bind(this),
             error: function(xhr, status, err) {
@@ -1673,6 +1694,75 @@ var TimePicker = React.createClass({
             </div>
         );
     },
+});
+
+var PlotType = React.createClass({
+    getInitialState: function() {
+        return {
+            value: this.props.def,
+        };
+    },
+    handleChange: function(e) {
+        var value = e.target.value;
+        this.setState({
+            value: value
+        });
+        this.props.onUpdate(this.props.id, value);
+    },
+    helpClicked: function(e) {
+        var helpdiv = this.refs.help.style;
+        helpdiv.display = 'block';
+        helpdiv.paddingTop = '5em';
+    },
+    closeHelp: function(e) {
+        if (e.target.className.toLowerCase() == 'modal') {
+            this.refs.help.style.display = 'none';
+        }
+    },
+    render: function() {
+        var hasHelp = false;
+        var helpOptions = [];
+        var value = this.state.value;
+        if (value != "map" && value != "transect" && value != 'timeseries') {
+            value = "ctd";
+        }
+        return (
+            <div>
+            <h1>
+            {this.props.title}
+            <span onClick={this.helpClicked} style={{'display': hasHelp ? 'block' : 'none'}}>?</span>
+            </h1>
+
+            <div className="modal" ref="help" onClick={this.closeHelp}>
+                <div className="modal-content">
+                    {this.props.children}
+                    {helpOptions}
+                </div>
+            </div>
+
+            <select
+                size={1}
+                value={value}
+                onChange={this.handleChange}
+            >
+                <option value="map">Map</option>
+                <option value="transect">Virtual Transect</option>
+                <option value="timeseries">Virtual Mooring</option>
+                <option value="ctd">Virtual CTD</option>
+            </select>
+
+            <select
+                style={{'display': (value == 'ctd') ? 'inline-block' : 'none'}}
+                size={1}
+                value={this.state.value}
+                onChange={this.handleChange}>
+                <option value="ctd">CTD Profile</option>
+                <option value="ts">T/S Diagram</option>
+                <option value="sound">Sound Speed Profile</option>
+            </select>
+            </div>
+        );
+    }
 });
 
 ReactDOM.render(<Selector />, document.getElementById('content'));
