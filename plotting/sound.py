@@ -96,7 +96,7 @@ def plot(dataset_name, **kwargs):
             for idx, val in enumerate(temperature):
                 if np.ma.is_masked(val):
                     break
-                output.write("%0.1f, %0.1f, %0.1f, %0.2f\n" %
+                output.write("%0.1f, %0.1f, %0.1f, %0.1f, %0.1f\n" %
                              (depths[idx],
                               pressure[idx],
                               salinity[idx],
