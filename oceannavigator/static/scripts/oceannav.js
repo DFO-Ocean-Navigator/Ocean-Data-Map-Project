@@ -256,16 +256,14 @@ var Selector = React.createClass({
         }
 
         if (window.location.search.length > 0) {
-            console.log(window.location.search.substring(7));
             try {
                 var querystate = JSON.parse(
                         decodeURIComponent(
                             window.location.search.replace("?query=", ""))
                         );
-                console.log(querystate);
                 $.extend(state, querystate);
             } catch(err) {
-                console.log(err);
+                console.error(err);
             }
         }
 
@@ -297,6 +295,8 @@ var Selector = React.createClass({
                             'colormap',
                             'bathymetry',
                             'size',
+                            'station',
+                            'station_name',
                             ]
                             ) != -1) {
                     continue;
@@ -1240,8 +1240,8 @@ var StationComboBox = React.createClass({
             data: [],
             value: '',
             url: null,
-            lat: 47.5467,
-            lon: -52.5867,
+            lat: 0,
+            lon: 0,
         };
     },
     handleChange: function(e) {
@@ -1252,15 +1252,20 @@ var StationComboBox = React.createClass({
         if (value == 'custom') {
             this.props.onUpdate('station_name', '');
         } else {
+            this.refs.lat.value = this.state.datamap[value].split(",")[0];
+            this.refs.lon.value = this.state.datamap[value].split(",")[1];
             this.props.onUpdate(this.props.id, this.state.datamap[value]);
             this.props.onUpdate('station_name', value);
         }
     },
     locationChanged: function() {
+        var lat = parseFloat(this.refs.lat.value);
+        var lon = parseFloat(this.refs.lon.value);
         this.setState({
-            lat: parseFloat(this.refs.lat.value),
-            lon: parseFloat(this.refs.lon.value)
+            lat: lat,
+            lon: lon,
         });
+        this.props.onUpdate(this.props.id, lat + "," + lon);
     },
     updateParent: function() {
         var loc = this.state.lat + "," + this.state.lon;
@@ -1296,13 +1301,16 @@ var StationComboBox = React.createClass({
                     datamap: datamap,
                 });
 
+                var value = this.state.value;
                 if (this.state.value == '' && data.length > 0) {
-                    var value = this.props.def;
+                    value = this.props.def;
                     this.setState({
-                        value: value
+                        value: value,
                     });
                 }
-                this.props.onUpdate(this.props.id, this.state.datamap[this.state.value]);
+                this.refs.lat.value = datamap[value].split(",")[0];
+                this.refs.lon.value = datamap[value].split(",")[1];
+                this.props.onUpdate(this.props.id, datamap[this.state.value]);
                 this.props.onUpdate('station_name', this.props.def);
             }.bind(this),
             error: function(xhr, status, err) {
@@ -1431,11 +1439,11 @@ var StationComboBox = React.createClass({
                 <div className='latlon' style={{'display': (this.state.value == 'custom') ? 'block' : 'none'}}>
                 <div>
                 <label htmlFor={this.props.id + '_lat'}>Lat:</label>
-                <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' value={parseFloat(this.state.lat).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' defaultValue={parseFloat(this.state.lat).toFixed(4)} onBlur={this.locationChanged} onKeyPress={this.keyPress} />
                 </div>
                 <div>
                 <label htmlFor={this.props.id + '_lon'}>Lon:</label>
-                <input ref='lon' id={this.props.id + '_lon'} type='number' step='0.0001' value={parseFloat(this.state.lon).toFixed(4)} onChange={this.locationChanged} onBlur={this.updateParent} onKeyPress={this.keyPress} />
+                <input ref='lon' id={this.props.id + '_lon'} type='number' step='0.0001' defaultValue={parseFloat(this.state.lon).toFixed(4)} onBlur={this.locationChanged} onKeyPress={this.keyPress} />
                 </div>
                 <div>
                 <label /><input type="button" value="Map" onClick={this.showMap} />
