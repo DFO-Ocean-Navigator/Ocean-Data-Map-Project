@@ -4,9 +4,9 @@ import numpy as np
 from StringIO import StringIO
 import utils
 from data import load_timeseries
-from oceannavigator.util import get_variable_unit, \
-    get_dataset_url
+from oceannavigator.util import get_variable_unit, get_dataset_url
 import seawater
+from pint import UnitRegistry
 
 
 def plot(dataset_name, **kwargs):
@@ -21,6 +21,7 @@ def plot(dataset_name, **kwargs):
         latlon = point.split(',')
 
     variables = ['votemper', 'vosaline']
+    ureg = UnitRegistry()
 
     with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if query.get('time') is None or \
@@ -72,6 +73,14 @@ def plot(dataset_name, **kwargs):
         depths = depth_var[:]
         depth_unit = depth_var.units
 
+        temperature = data[0]
+        salinity = data[1]
+
+        depthm = (depths * ureg.parse_expression(depth_unit)).to(ureg.meter)
+        pressure = seawater.pres(depthm, float(latlon[0]))
+
+        sspeed = seawater.svel(salinity, temperature, pressure)
+
     filename = utils.get_filename(get_dataset_url(dataset_name),
                                   query.get('station'),
                                   variables, variable_unit,
@@ -81,16 +90,18 @@ def plot(dataset_name, **kwargs):
         # CSV File
         output = StringIO()
         try:
-            output.write("Depth, Salinity, Temperature\n")
+            output.write(
+                "Depth, Pressure, Salinity, Temperature, Sound Speed\n")
 
-            for idx, val in enumerate(data[0]):
+            for idx, val in enumerate(temperature):
                 if np.ma.is_masked(val):
                     break
-                else:
-                    print val
-                output.write("%0.1f, %0.1f, %0.2f\n" % (depths[idx],
-                                                        data[1][idx],
-                                                        val))
+                output.write("%0.1f, %0.1f, %0.1f, %0.2f\n" %
+                             (depths[idx],
+                              pressure[idx],
+                              salinity[idx],
+                              temperature[idx],
+                              sspeed[idx]))
             return (output.getvalue(), mime, filename)
         finally:
             output.close()
@@ -117,50 +128,32 @@ def plot(dataset_name, **kwargs):
                 dformat = "%B %Y"
             else:
                 dformat = "%d %B %Y"
-        plt.title("T/S Diagram for %s (%s)" % (station_name,
-                                               timestamp.strftime(dformat)))
 
-        smin = np.amin(data[1]) - (np.amin(data[1]) * 0.01)
-        smax = np.amax(data[1]) + (np.amax(data[1]) * 0.01)
-        tmin = np.amin(data[0]) - (np.abs(np.amax(data[0]) * 0.1))
-        tmax = np.amax(data[0]) + (np.abs(np.amax(data[0]) * 0.1))
+        plt.plot(sspeed, depthm, '-')
 
-        xdim = round((smax - smin) / 0.1 + 1, 0)
-        ydim = round((tmax - tmin) + 1, 0)
+        minspeed = np.amin(sspeed)
+        maxspeed = np.amax(sspeed)
+        plt.xlim([
+            np.amin(sspeed) - (maxspeed - minspeed) * 0.1,
+            np.amax(sspeed) + (maxspeed - minspeed) * 0.1,
+        ])
+        plt.xlabel("Sound Speed (m/s)")
+        plt.ylabel("Depth (m)")
+        ax = plt.gca()
+        ax.invert_yaxis()
+        ax.xaxis.set_ticks_position('top')
+        ax.xaxis.set_label_position('top')
+        plt.title("Sound Speed Profile for %s (%s)" %
+                  (station_name, timestamp.strftime(dformat)))
+        ax.title.set_position([.5, 1.10])
+        plt.subplots_adjust(top=0.85)
+        ax.xaxis.grid(True)
 
-        dens = np.zeros((ydim, xdim))
-        ti = np.linspace(0, ydim - 1, ydim) + tmin
-        si = np.linspace(0, xdim - 1, xdim) * 0.1 + smin
-
-        for j in range(0, int(ydim)):
-            for i in range(0, int(xdim)):
-                dens[j, i] = seawater.dens(si[i], ti[j], 0)
-
-        dens = dens - 1000
-
-        CS = plt.contour(si, ti, dens, linestyles='dashed', colors='k')
-        plt.clabel(CS, fontsize=16, inline=1, fmt=r"$\sigma_t = %1.1f$")
-        plt.plot(data[1], data[0], '-')
-
-        labels = []
-        for idx, d in enumerate(depths):
-            if np.ma.is_masked(data[0][idx]):
-                break
-            digits = max(np.ceil(np.log10(d)), 3)
-            d = np.round(d, -int(digits - 1))
-            if d not in labels:
-                labels.append(d)
-                plt.annotate(
-                    '{:.0f}{:s}'.format(d, depth_unit),
-                    xy=(data[1][idx], data[0][idx]),
-                    xytext=(15, -15),
-                    ha='left',
-                    textcoords='offset points',
-                    arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
-                )
-
-        plt.xlabel("Salinity (PSU)")
-        plt.ylabel("Temperature (Celsius)")
+        ylim = ax.get_ylim()
+        ax2 = ax.twinx()
+        depthm = (depths * ureg.parse_expression(depth_unit)).to(ureg.meter)
+        ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
+        ax2.set_ylabel("Depth (ft)")
 
         # Output the plot
         buf = StringIO()

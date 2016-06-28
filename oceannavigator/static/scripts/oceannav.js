@@ -61,6 +61,11 @@ var defaults = {
         'station':         '',
         'station_name':    'SEGB-20',
     },
+    'sound': {
+        'time':            '-1',
+        'station':         '',
+        'station_name':    'SEGB-20',
+    },
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
@@ -196,15 +201,11 @@ var Plot = React.createClass({
     },
     render: function() {
         var disableButtons = this.state.loading || this.state.fail;
-        var geotiff = "";
+        var exportData = "";
         if (this.props.query.type == 'map') {
-            geotiff = <option value='geotiff'>GeoTIFF</option>;
-        }
-        var csv = "";
-        if (this.props.query.type == 'transect' ||
-                this.props.query.type == 'timeseries' ||
-                this.props.query.type == 'ts') {
-            csv = <option value='csv'>CSV</option>;
+            exportData = <option value='geotiff'>GeoTIFF</option>;
+        } else {
+            exportData = <option value='csv'>CSV</option>;
         }
         var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
         var chromeversion = raw ? parseInt(raw[2], 10) : false;
@@ -228,8 +229,7 @@ var Plot = React.createClass({
                 <option value='ps'>PS</option>
                 <option value='eps'>EPS</option>
                 <option value='tif'>TIFF</option>
-                {geotiff}
-                {csv}
+                {exportData}
                 </select>
                 <input type='button' value='Open In New Window' onClick={this.newWindow} disabled={disableButtons} />
                 <input type='button' value='Copy Image URL' onClick={this.copyURL.bind(this, false)} style={{'display': showCopy ? 'inline-block' : 'none'}} disabled={disableButtons}/>
@@ -311,7 +311,7 @@ var Selector = React.createClass({
     render: function() {
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
-            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'}]} title='Plot Type'></ComboBox>),
+            'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'},{'id': 'sound', 'value': 'Sound Profile'}]} title='Plot Type'></ComboBox>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
             'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
             'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')} title='Variable'></ComboBox>),
@@ -373,6 +373,10 @@ var Selector = React.createClass({
             'time',
             'station',
         ];
+        var sound_inputs = [
+            'time',
+            'station',
+        ];
 
         var inputs;
         switch(this.state.type) {
@@ -393,6 +397,11 @@ var Selector = React.createClass({
                 break;
             case 'ts':
                 inputs = ts_inputs.map(function(i) {
+                    return inputmap[i];
+                });
+                break;
+            case 'sound':
+                inputs = sound_inputs.map(function(i) {
                     return inputmap[i];
                 });
                 break;
