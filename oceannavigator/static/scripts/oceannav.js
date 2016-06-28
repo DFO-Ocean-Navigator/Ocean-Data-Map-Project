@@ -283,7 +283,7 @@ var Selector = React.createClass({
         if (key == 'type') {
             for (var key in defaults[value]) {
                 if (defaults[value].hasOwnProperty(key)) {
-                    if (key == 'station_name' && this.state.station_name != '') {
+                    if (key == 'station_name') {
                         continue;
                     }
                     if (key == 'station' && this.state.station != '') {
@@ -1267,14 +1267,21 @@ var StationComboBox = React.createClass({
     },
     handleChange: function(e) {
         var value = e.target.value;
-        this.setState({
-            value: value
-        });
         if (value == 'custom') {
             this.props.onUpdate('station_name', '');
+            this.setState({
+                value: value,
+            });
         } else {
-            this.refs.lat.value = this.state.datamap[value].split(",")[0];
-            this.refs.lon.value = this.state.datamap[value].split(",")[1];
+            var lat = parseFloat(this.state.datamap[value].split(",")[0]);
+            var lon = parseFloat(this.state.datamap[value].split(",")[1]);
+            this.setState({
+                value: value,
+                lat: lat,
+                lon: lon,
+            });
+            this.refs.lat.value = lat.toFixed(4),
+            this.refs.lon.value = lon.toFixed(4),
             this.props.onUpdate(this.props.id, this.state.datamap[value]);
             this.props.onUpdate('station_name', value);
         }
@@ -1317,11 +1324,6 @@ var StationComboBox = React.createClass({
                         datamap[data[i].stations[j].name] = data[i].stations[j].point;
                     }
                 }
-                this.setState({
-                    data: data,
-                    datamap: datamap,
-                });
-
                 var value = this.state.value;
                 if (this.state.value == '' && data.length > 0) {
                     value = this.props.def;
@@ -1329,8 +1331,15 @@ var StationComboBox = React.createClass({
                         value: value,
                     });
                 }
-                this.refs.lat.value = datamap[value].split(",")[0];
-                this.refs.lon.value = datamap[value].split(",")[1];
+                this.refs.lat.value = parseFloat(datamap[value].split(",")[0]).toFixed(4);
+                this.refs.lon.value = parseFloat(datamap[value].split(",")[1]).toFixed(4);
+                this.setState({
+                    data: data,
+                    datamap: datamap,
+                    lat: parseFloat(this.refs.lat.value),
+                    lon: parseFloat(this.refs.lon.value),
+                });
+
                 this.props.onUpdate(this.props.id, datamap[value]);
                 this.props.onUpdate('station_name', this.props.def);
             }.bind(this),
@@ -1396,6 +1405,8 @@ var StationComboBox = React.createClass({
                     lon: lonlat[0],
                     lat: lonlat[1],
                 });
+                this.refs.lat.value = parseFloat(lonlat[1]).toFixed(4);
+                this.refs.lon.value = parseFloat(lonlat[0]).toFixed(4);
             }.bind(this));
         }
         this.vectorSource.clear();
