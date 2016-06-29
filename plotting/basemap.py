@@ -71,6 +71,10 @@ def load_pacific():
     return load_map('lcc', (53, -137), 2e6, 2.5e6)
 
 
+def load_nwpassage():
+    return load_map('lcc', (74, -95), 1.5e6, 2.5e6)
+
+
 def _get_filename(projection, center, height, width):
     hash = hashlib.sha1(";".join(
         str(x) for x in [projection, center, height, width])

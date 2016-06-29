@@ -42,6 +42,8 @@ def plot(dataset_name, **kwargs):
         m = basemap.load_pacific()
     elif 'nwatlantic' == query.get('location'):
         m = basemap.load_nwatlantic()
+    elif 'nwpassage' == query.get('location'):
+        m = basemap.load_nwpassage()
     elif isinstance(query.get('location'), list):
         m = basemap.load_map('merc', None,
                              query.get('location')[0],

@@ -172,6 +172,12 @@ def locations():
                     'Polar Stereographic Projection',
         },
         {
+            'id': 'nwpassage',
+            'value': 'Northwest Passage',
+            'help': 'Predefined Northwest Passage area, ' +
+                    'Lambert Conformal Conic Projection',
+        },
+        {
             'id': 'pacific',
             'value': 'Northeast Pacific',
             'help': 'Predefined Northeast Pacific area, ' +
