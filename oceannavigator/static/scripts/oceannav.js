@@ -1640,7 +1640,9 @@ var TimePicker = React.createClass({
         this.populate(this.props);
     },
     componentWillReceiveProps: function(nextProps) {
-        if (nextProps.url != this.state.url) {
+        if (nextProps.url != this.state.url ||
+            nextProps.min != this.props.min ||
+            nextProps.max != this.props.max) {
             this.populate(nextProps);
         }
 
