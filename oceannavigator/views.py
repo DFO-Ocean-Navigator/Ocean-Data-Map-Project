@@ -270,8 +270,7 @@ def time_query():
                     enumerate(t.num2date(time_var[:])):
                 data.append({'id': idx, 'value': date})
 
-    data = sorted(data, key=lambda k: -k['id'])
-    data.insert(0, {'id': -1, 'value': 'Most Recent'})
+    data = sorted(data, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
 

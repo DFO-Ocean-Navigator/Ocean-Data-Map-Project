@@ -51,7 +51,7 @@ var defaults = {
         'variable':        'votemper',
         'station':         '',
         'station_name':    'S27-01',
-        'starttime':       '0',
+        'starttime':       '-24',
         'endtime':         '-1',
         'colormap':        'default',
         'scale':           'auto',
@@ -322,7 +322,6 @@ var Selector = React.createClass({
     render: function() {
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
-            // 'plottype': (<ComboBox key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} data={[{'id': 'map', 'value': 'Map'}, {'id': 'transect', 'value': 'Transect'},{'id': 'timeseries', 'value': 'Timeseries'},{'id': 'ts', 'value': 'T/S Diagram'},{'id': 'sound', 'value': 'Sound Profile'},{'id': 'ctd', 'value': 'CTD Profile'}]} title='Plot Type'></ComboBox>),
             'plottype': (<PlotType key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} title='Plot Type'></PlotType>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
             'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
@@ -340,8 +339,8 @@ var Selector = React.createClass({
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Surface Variable'>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>),
             'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' state={this.state.station} def={defaults[this.state.type].station_name} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
-            'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Start Time'></TimePicker>),
-            'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='End Time'></TimePicker>),
+            'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} max={this.state.endtime} title='Start Time'></TimePicker>),
+            'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} min={this.state.starttime} title='End Time'></TimePicker>),
             'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate} title='Interpolation'></InterpolationOptions>),
             'size': (<Size key='size' id='size' onUpdate={this.onUpdate} title='Image Size'></Size>),
         }
@@ -1572,6 +1571,20 @@ var TimePicker = React.createClass({
                 success: function(data) {
                     var map = {};
                     var revmap = {};
+                    var min = 0;
+                    var max = data.length - 1;
+                    if (this.props.hasOwnProperty('min')) {
+                        min = parseInt(this.props.min) + 1;
+                        if (min < 0) {
+                            min += data.length;
+                        }
+                    }
+                    if (this.props.hasOwnProperty('max')) {
+                        max = parseInt(this.props.max) - 1;
+                        if (max < 0) {
+                            max += data.length;
+                        }
+                    }
                     for (var d in data) {
                         map[data[d].id] = data[d].value;
                         revmap[data[d].value] = data[d].id;
@@ -1590,8 +1603,8 @@ var TimePicker = React.createClass({
                                 Button: false,
                                 MonthFormat: "MM yy",
                                 OnAfterMenuClose: this.pickerChange,
-                                MinMonth: map[0],
-                                MaxMonth: map[data.length - 2],
+                                MinMonth: map[min],
+                                MaxMonth: map[max],
                             });
                             break;
                         case 'day':
@@ -1599,16 +1612,16 @@ var TimePicker = React.createClass({
                                 Button: false,
                                 dateFormat: "dd MM yy",
                                 onClose: this.pickerChange,
-                                minDate: new Date(this.state.map[0]),
-                                maxDate: new Date(this.state.map[this.state.data.length - 2]),
+                                minDate: new Date(map[min]),
+                                maxDate: new Date(map[max]),
                             });
                         case 'hour':
                             picker = $(this.refs.picker).datepicker({
                                 Button: false,
                                 dateFormat: "dd MM yy",
                                 onClose: this.pickerChange,
-                                minDate: new Date(this.state.map[0]),
-                                maxDate: new Date(this.state.map[this.state.data.length - 2]),
+                                minDate: new Date(map[min]),
+                                maxDate: new Date(map[max]),
                             });
                             break;
                     }
@@ -1625,7 +1638,6 @@ var TimePicker = React.createClass({
     },
     componentDidMount: function() {
         this.populate(this.props);
-
     },
     componentWillReceiveProps: function(nextProps) {
         if (nextProps.url != this.state.url) {
@@ -1637,14 +1649,31 @@ var TimePicker = React.createClass({
         });
     },
     pickerChange: function() {
+        var min = 0;
+        var max = -1;
+        if (this.props.hasOwnProperty('min')) {
+            min = parseInt(this.props.min) + 1;
+        }
+        if (this.props.hasOwnProperty('max')) {
+            max = parseInt(this.props.max) - 1;
+        }
+        if (min < 0) {
+            min += this.state.data.length;
+        }
+        if (max < 0) {
+            max += this.state.data.length;
+        }
+
         if (this.props.quantum == 'hour') {
             var times = [];
             for (var i in this.state.data) {
                 if (this.state.data[i].value.startsWith(this.refs.picker.value)) {
-                    times.unshift({
-                        id: this.state.data[i].id,
-                        value: $.format.date(new Date(this.state.data[i].value), "HH:mm")
-                    });
+                    if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
+                        times.unshift({
+                            id: this.state.data[i].id,
+                            value: $.format.date(new Date(this.state.data[i].value), "HH:mm")
+                        });
+                    }
                 }
             }
             this.setState({
@@ -1664,9 +1693,13 @@ var TimePicker = React.createClass({
     },
     render: function() {
         var date;
-        var value = this.state.value;
-        if (value == -1) {
-            value = this.state.data.length - 2;
+        var value = parseInt(this.state.value);
+        if (value < 0) {
+            value += this.state.data.length;
+        }
+
+        if (value < 0) {
+            value = 0;
         }
         date = new Date(this.state.map[value]);
         var input = "";
