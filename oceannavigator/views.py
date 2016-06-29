@@ -215,25 +215,25 @@ def vars_query():
                     n = get_variable_name(dataset, ds.variables['vozocrtx'])
                     data.append({
                         'id': 'vozocrtx,vomecrty',
-                        'value': re.sub(r" *", "", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
                     })
                 if 'itzocrtx' in ds.variables:
                     n = get_variable_name(dataset, ds.variables['itzocrtx'])
                     data.append({
                         'id': 'itzocrtx,itmecrty',
-                        'value': re.sub(r" *", "", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
                     })
                 if 'iicevelu' in ds.variables and not three_d:
                     n = get_variable_name(dataset, ds.variables['iicevelu'])
                     data.append({
                         'id': 'iicevelu,iicevelv',
-                        'value': re.sub(r" *", "", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
                     })
                 if 'u_wind' in ds.variables and not three_d:
                     n = get_variable_name(dataset, ds.variables['u_wind'])
                     data.append({
                         'id': 'u_wind,v_wind',
-                        'value': re.sub(r" *", "", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
                     })
 
     data = sorted(data, key=lambda k: k['value'])
