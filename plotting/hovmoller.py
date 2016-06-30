@@ -275,7 +275,9 @@ def plot(dataset_name, **kwargs):
         else:
             vmin = np.amin(value)
             vmax = np.amax(value)
-            if re.search("velocity", variable_name, re.IGNORECASE):
+            if re.search("velocity", variable_name, re.IGNORECASE) or \
+                re.search("surface height", variable_name, re.IGNORECASE) or \
+                    re.search("wind", variable_name, re.IGNORECASE):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
             if vector:
