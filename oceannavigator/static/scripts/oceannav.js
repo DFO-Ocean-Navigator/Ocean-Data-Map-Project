@@ -359,7 +359,7 @@ var Selector = React.createClass({
             'station': (<StationComboBox key='station' id='station' state={this.state.station} def={defaults[this.state.type].station_name} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
             'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} max={this.state.endtime} title='Start Time'></TimePicker>),
             'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} min={this.state.starttime} title='End Time'></TimePicker>),
-            'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate} title='Interpolation'></InterpolationOptions>),
+            'interp': (<InterpolationOptions key='interpolation' id='interpolation' onUpdate={this.onUpdate} state={this.state.interpolation} title='Interpolation'></InterpolationOptions>),
             'size': (<Size key='size' id='size' onUpdate={this.onUpdate} title='Image Size'></Size>),
         }
 
@@ -462,28 +462,13 @@ var Selector = React.createClass({
 });
 
 var CheckBox = React.createClass({
-    getInitialState: function() {
-        return {
-            data: [],
-            value: this.props.state,
-            url: null
-        };
-    },
     handleChange: function(e) {
         this.props.onUpdate(this.props.id, e.target.checked);
-        this.setState({
-            value: e.target.checked
-        });
-    },
-    componentWillReceiveProps: function(nextProps) {
-        this.setState({
-            value: nextProps.state,
-        });
     },
     render: function() {
         return (
                 <div>
-                <input type='checkbox' id={this.props.id} onChange={this.handleChange} checked={this.state.value} />
+                <input type='checkbox' id={this.props.id} onChange={this.handleChange} checked={this.props.state} />
                 <label htmlFor={this.props.id}>{this.props.title}</label>
                 </div>
                );
@@ -491,24 +476,13 @@ var CheckBox = React.createClass({
 });
 
 var OverlaySelector = React.createClass({
-    getInitialState: function() {
-        return {
-            file: '',
-            selection: 'all',
-            labelcolor: 'k',
-            edgecolor: 'k',
-            facecolor: 'k',
-            alpha: 0.5,
-        }
-    },
     onUpdate: function(key, value) {
         var state = {}
         state[key] = value;
         if (key == 'file') {
             state['selection'] = 'all';
         }
-        this.setState(state);
-        var newState = jQuery.extend({}, this.state, state);
+        var newState = jQuery.extend({}, this.props.state, state);
         this.props.onUpdate(this.props.id, newState);
     },
     alphaChanged: function(e) {
@@ -517,15 +491,15 @@ var OverlaySelector = React.createClass({
     render: function() {
         return (
                 <div key='overlay' className='overlayselector'>
-                <ComboBox id='file' state={this.state.file} def='' onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></ComboBox>
-                <div className='sub' style={{'display': (this.state.file == 'none' || this.state.file == '') ? 'none' : 'block'}}>
-                <ComboBox id='selection' multiple state={this.state.selection} def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.state.file} title='Name'></ComboBox>
-                <ComboBox id='labelcolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Label Color'></ComboBox>
-                <ComboBox id='edgecolor' state='k' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Edge Color'></ComboBox>
-                <ComboBox id='facecolor' state='none' onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Face Color'></ComboBox>
+                <ComboBox id='file' state={this.props.state.file} def='' onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></ComboBox>
+                <div className='sub' style={{'display': (this.props.state.file == 'none' || this.props.state.file == '') ? 'none' : 'block'}}>
+                <ComboBox id='selection' multiple state={this.props.state.selection} def='all' onUpdate={this.onUpdate} url={'/api/overlays/?file=' + this.props.state.file} title='Name'></ComboBox>
+                <ComboBox id='labelcolor' state={this.props.state.labelcolor} onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Label Color'></ComboBox>
+                <ComboBox id='edgecolor' state={this.props.state.edgecolor} onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Edge Color'></ComboBox>
+                <ComboBox id='facecolor' state={this.props.state.facecolor} onUpdate={this.onUpdate} url={'/api/colors/?none=true&random=true'} title='Face Color'></ComboBox>
                 <div className='input'>
                 <label forName='alpha'>Alpha:</label>
-                <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.state.alpha} onChange={this.alphaChanged} />
+                <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.props.state.alpha} onChange={this.alphaChanged} />
                 </div>
                 </div>
                 </div>
@@ -658,7 +632,6 @@ var ComboBox = React.createClass({
     getInitialState: function() {
         return {
             data: [],
-            value: this.props.multiple ? [] : '',
             url: null
         };
     },
@@ -673,9 +646,6 @@ var ComboBox = React.createClass({
                 }
             }
         }
-        this.setState({
-            value: value
-        });
         this.props.onUpdate(this.props.id, value);
         var dataset = e.target.options[e.target.selectedIndex].dataset;
         for (var key in dataset) {
@@ -704,7 +674,7 @@ var ComboBox = React.createClass({
                     });
 
                     var value = this.props.state;
-                    if (jQuery.inArray(this.state.value, a) == -1 || (this.state.value == '' && data.length > 0) || this.props.state == 'all') {
+                    if (jQuery.inArray(this.props.state, a) == -1 || (this.props.state == '' && data.length > 0) || this.props.state == 'all') {
                         if (props.multiple) {
                             if (value == 'all') {
                                 value = data.map(function (d) {
@@ -714,16 +684,13 @@ var ComboBox = React.createClass({
                                 value = [value];
                             }
                         }
-                        this.setState({
-                            value: value
-                        });
                     } else {
                         if (data.length == 0) {
                             value = props.def;
                         } else if (data.length == 1) {
                             value = props.def;
                         } else {
-                            value = this.state.value;
+                            value = this.props.state;
                         }
                     }
                     props.onUpdate(props.id, value);
@@ -753,10 +720,6 @@ var ComboBox = React.createClass({
         if (nextProps.url != this.state.url) {
             this.populate(nextProps);
         }
-
-        this.setState({
-            value: nextProps.state
-        });
     },
     helpClicked: function(e) {
         var helpdiv = this.refs.help.style;
@@ -784,7 +747,7 @@ var ComboBox = React.createClass({
         });
 
         if (this.state.data.length > 1) {
-            var value = this.state.value;
+            var value = this.props.state;
             if (this.props.multiple && value == 'all') {
                 value = this.state.data.map(function(d) {
                     return d.id;
@@ -835,20 +798,13 @@ var ComboBox = React.createClass({
 });
 
 var InterpolationOptions = React.createClass({
-    getInitialState: function() {
-        return {
-            method: 'inv_square',
-            neighbours: 8,
-        };
-    },
     onUpdate: function(k, v) {
         if (k == 'neighbours') {
             v = parseInt(v);
         }
         var state = {};
         state[k] = v;
-        this.setState(state);
-        var newState = jQuery.extend({}, this.state, state);
+        var newState = jQuery.extend({}, this.props.state, state);
         this.props.onUpdate(this.props.id, newState);
     },
     show: function(e) {
@@ -870,9 +826,9 @@ var InterpolationOptions = React.createClass({
                 <div className='collapsible collapsed'>
                 <h1 onClick={this.show}>{this.props.title}</h1>
                 <div className='sub'>
-                <ComboBox id='method' state={this.state.method} data={interp_methods} onUpdate={this.onUpdate} title='Method'></ComboBox>
-                <div style={{'display': (this.state.method == 'inv_square') ? 'block' : 'none'}}>
-                <NumberBox id='neighbours' state={this.state.neighbours} onUpdate={this.onUpdate} title='Neighbours'></NumberBox>
+                <ComboBox id='method' state={this.props.state.method} data={interp_methods} onUpdate={this.onUpdate} title='Method'></ComboBox>
+                <div style={{'display': (this.props.state.method == 'inv_square') ? 'block' : 'none'}}>
+                <NumberBox id='neighbours' state={this.props.state.neighbours} onUpdate={this.onUpdate} title='Neighbours'></NumberBox>
                 </div>
                 </div>
                 </div>
