@@ -71,6 +71,21 @@ var defaults = {
         'station':         '',
         'station_name':    'SEGB-20',
     },
+    'hovmoller': {
+        'starttime':       '-24',
+        'endtime':         '-1',
+        'variable':        'votemper',
+        'depth':           '0',
+        'showmap':         true,
+        'colormap':        'default',
+        'scale':           'auto',
+        'path_pts':        [],
+        'path_name':       '',
+        'interpolation': {
+            'method':      'inv_square',
+            'neighbours':  8,
+        },
+    }
 }
 var imagePreloader = new Image();
 var Plot = React.createClass({
@@ -302,6 +317,8 @@ var Selector = React.createClass({
                             'interpolation',
                             'transect_name',
                             'transect_pts',
+                            'path_name',
+                            'path_pts',
                             'linearthresh',
                             'colormap',
                             'bathymetry',
@@ -337,7 +354,8 @@ var Selector = React.createClass({
             'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Additional Contours'>Contour lets you select an additional variable to be overlayed on top of the plot as contour lines.</ComboBox>),
             'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate} title='Show Location'>Shows the mini map of the location in the plot.</CheckBox>),
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Surface Variable'>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>),
-            'transect_pts': (<TransectComboBox key='transect_pts' id='transect_pts' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
+            'transect': (<TransectComboBox key='transect' id='transect' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
+            'path': (<TransectComboBox key='path' id='path' state={{'name': this.state.path_name, 'pts': this.state.path_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Path'></TransectComboBox>),
             'station': (<StationComboBox key='station' id='station' state={this.state.station} def={defaults[this.state.type].station_name} onUpdate={this.onUpdate} url='/api/stations' title='Station'></StationComboBox>),
             'starttime': (<TimePicker key='starttime' id='starttime' state={this.state.starttime} def={defaults[this.state.type].starttime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} max={this.state.endtime} title='Start Time'></TimePicker>),
             'endtime': (<TimePicker key='endtime' id='endtime' state={this.state.endtime} def={defaults[this.state.type].endtime} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} min={this.state.starttime} title='End Time'></TimePicker>),
@@ -360,7 +378,7 @@ var Selector = React.createClass({
             'interp',
         ];
         var transect_inputs = [
-            'transect_pts',
+            'transect',
             'showmap',
             'time',
             'variable',
@@ -380,17 +398,20 @@ var Selector = React.createClass({
             'scale',
             'colormap',
         ];
-        var ts_inputs = [
-            'time',
-            'station',
-        ];
-        var sound_inputs = [
-            'time',
-            'station',
-        ];
         var ctd_inputs = [
             'time',
             'station',
+        ];
+        var hovmoller_inputs = [
+            'path',
+            'showmap',
+            'starttime',
+            'endtime',
+            'depth',
+            'variable',
+            'scale',
+            'colormap',
+            'interp',
         ];
 
         var inputs;
@@ -411,17 +432,14 @@ var Selector = React.createClass({
                 });
                 break;
             case 'ts':
-                inputs = ts_inputs.map(function(i) {
-                    return inputmap[i];
-                });
-                break;
             case 'sound':
-                inputs = sound_inputs.map(function(i) {
-                    return inputmap[i];
-                });
-                break;
             case 'ctd':
                 inputs = ctd_inputs.map(function(i) {
+                    return inputmap[i];
+                });
+                break;
+            case 'hovmoller':
+                inputs = hovmoller_inputs.map(function(i) {
                     return inputmap[i];
                 });
                 break;
@@ -879,8 +897,8 @@ var TransectComboBox = React.createClass({
         if (name == 'custom') {
             this.showMap(this.state.datamap[this.state.name]);
         } else {
-            this.props.onUpdate(this.props.id, this.state.datamap[name]);
-            this.props.onUpdate('transect_name', name);
+            this.props.onUpdate(this.props.id + "_pts", this.state.datamap[name]);
+            this.props.onUpdate(this.props.id + "_name", name);
         }
     },
     componentDidMount: function() {
@@ -909,8 +927,8 @@ var TransectComboBox = React.createClass({
                         name: name,
                         points: datamap[name],
                     });
-                    this.props.onUpdate(this.props.id, this.state.points);
-                    this.props.onUpdate('transect_name', this.state.name);
+                    this.props.onUpdate(this.props.id + "_pts", this.state.points);
+                    this.props.onUpdate(this.props.id + "_name", this.state.name);
                 } else if (this.state.name == '' && this.state.points != '') {
                     this.setState({
                         name: 'custom',
@@ -1009,8 +1027,8 @@ var TransectComboBox = React.createClass({
         if ((e.target.tagName.toLowerCase() == 'input' && e.target.value != 'Clear') ||
                 e.target.className.toLowerCase() == 'modal') {
             this.refs.mapwindow.style.display = 'none';
-            this.props.onUpdate('transect_pts', this.state.points);
-            this.props.onUpdate('transect_name', '');
+            this.props.onUpdate(this.props.id + '_pts', this.state.points);
+            this.props.onUpdate(this.props.id + '_name', '');
         }
     },
     clearMap: function(e) {
@@ -1766,10 +1784,9 @@ var PlotType = React.createClass({
         }
     },
     render: function() {
-        var hasHelp = false;
-        var helpOptions = [];
+        var hasHelp = true;
         var value = this.state.value;
-        if (value != "map" && value != "transect" && value != 'timeseries') {
+        if (value == "ctd" || value == "ts" || value == "sound") {
             value = "ctd";
         }
         return (
@@ -1781,8 +1798,31 @@ var PlotType = React.createClass({
 
             <div className="modal" ref="help" onClick={this.closeHelp}>
                 <div className="modal-content">
-                    {this.props.children}
-                    {helpOptions}
+                    <h1>{this.props.title}</h1>
+                    <p><em>Map</em>: 2-Dimensional plot of an area, showing the selected variable with a colourmap.
+                                     You can also add a second variable as contours, and can add a vector variable
+                                     (water, ice, or wind velocity) as arrows/quivers.</p>
+                    <p><em>Virtual Transect</em>: 2-Dimensional plot along a line/curve showing a variable at multiple
+                                                  depths. You can optionally add a line plot above the main plot showing
+                                                  a second variable at the surface.</p>
+                    <p><em>Virtual Mooring</em>: Timeseries plot of a variable at a single location. If a single depth
+                                                 is selected, a line plot is produced, but you can also choose to see
+                                                 the entire water column at that point and have the variable represented
+                                                 as a colourmap.</p>
+                    <p><em>Virtual CTD</em>: Plots emulating a perfectly vertical CTD cast at a single location at a
+                                             single point in time.
+                        <ul>
+                            <li><em>CTD Profile</em>: Depth vs Temperature and Salinity plots.</li>
+                            <li><em>T/S Diagram</em>: Temperature vs Salinity, with dashed lines showing water density.</li>
+                            <li><em>Sound Speed Profile</em>: Depth vs Speed of Sound.</li>
+                        </ul>
+                    </p>
+                    <p><em>Hovm&ouml;ller Diagram</em>: 2-Dimensional plot with time represented on the vertical axis and
+                                                        distance along a path on the horizontal. Commonly used for
+                                                        meteorological data to highlight the role of waves.
+                                                        See <a href="https://en.wikipedia.org/wiki/Hovm%C3%B6ller_diagram">
+                                                        description on Wikipedia</a> and example/explanation from <a
+                                                        href="https://www.climate.gov/news-features/understanding-climate/hovm%C3%B6ller-diagram-climate-scientist%E2%80%99s-best-friend">NOAA</a>.</p>
                 </div>
             </div>
 
@@ -1795,6 +1835,7 @@ var PlotType = React.createClass({
                 <option value="transect">Virtual Transect</option>
                 <option value="timeseries">Virtual Mooring</option>
                 <option value="ctd">Virtual CTD</option>
+                <option value="hovmoller">Hovm&ouml;ller Diagram</option>
             </select>
 
             <select

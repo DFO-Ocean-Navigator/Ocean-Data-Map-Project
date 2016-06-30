@@ -18,6 +18,7 @@ from plotting.timeseries import plot as timeseries_plot
 from plotting.ts import plot as ts_plot
 from plotting.sound import plot as sound_plot
 from plotting.ctd import plot as ctd_plot
+from plotting.hovmoller import plot as hovmoller_plot
 from plotting.timeseries import list_stations
 import numpy as np
 import re
@@ -373,6 +374,16 @@ def plot():
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
         img, mime, filename = ctd_plot(dataset, **opts)
+        response = Response(img, status=200, mimetype=mime)
+    elif plottype == 'hovmoller':
+        if size is None:
+            opts['size'] = '11x9'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = hovmoller_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
     else:
         response = FAILURE

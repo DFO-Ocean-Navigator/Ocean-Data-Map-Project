@@ -251,6 +251,77 @@ class Grid(object):
         return np.array([target_lat, target_lon]), \
             distances, parallel, perpendicular
 
+    def hovmoller(self, variable, points, timestep, depth, n=100,
+                  interpolation={'method': 'inv_square',
+                                 'neighbours': 8
+                                 }):
+        distances, target_lat, target_lon, b = _path_to_points(points, n)
+
+        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
+
+        miny = np.amin(idx_y)
+        maxy = np.amax(idx_y)
+        minx = np.amin(idx_x)
+        maxx = np.amax(idx_x)
+
+        lat = self.latvar[miny:maxy, minx:maxx]
+        lon = self.lonvar[miny:maxy, minx:maxx]
+        if len(variable.shape) == 3:
+            data = variable[
+                timestep[0]:(timestep[-1] + 1), miny:maxy, minx:maxx]
+        elif depth == 'bottom':
+            data = []
+            for t in timestep:
+                fulldata = variable[t, :, miny:maxy, minx:maxx]
+
+                reshaped = fulldata.reshape([fulldata.shape[0], -1])
+                edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
+
+                depths = edges[1, 0, :]
+                indices = edges[1, 1, :]
+
+                data_t = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+                                                     fulldata.shape[2]]),
+                                           mask=True,
+                                           dtype=fulldata.dtype)
+
+                data_t[np.unravel_index(indices, data_t.shape)] = \
+                    fulldata.reshape([fulldata.shape[0], -1])[depths, indices]
+
+                data.append(data_t)
+            data = np.ma.MaskedArray(data)
+        else:
+            data = variable[timestep[0]:(timestep[
+                -1] + 1), int(depth), miny:maxy, minx:maxx]
+
+        masked_lon = lon.view(np.ma.MaskedArray)
+        masked_lat = lat.view(np.ma.MaskedArray)
+        masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
+
+        if interpolation is not None:
+            method = interpolation.get('method')
+            neighbours = interpolation.get('neighbours')
+            if neighbours < 1:
+                neighbours = 1
+
+        radius = self.interpolation_radius(np.median(target_lat),
+                                           np.median(target_lon))
+        resampled = []
+        for t in range(0, data.shape[0]):
+            resampled.append(resample(lat,
+                                      lon,
+                                      np.array(target_lat),
+                             np.array(target_lon),
+                                      data[t, :, :],
+                                      method=method,
+                                      neighbours=neighbours,
+                                      radius_of_influence=radius,
+                                      nprocs=4))
+
+        resampled = np.ma.vstack(resampled)
+
+        return np.array([target_lat, target_lon]), distances, resampled
+
 
 def _fill_invalid_shift(z):
     # extend values down 1 depth step
