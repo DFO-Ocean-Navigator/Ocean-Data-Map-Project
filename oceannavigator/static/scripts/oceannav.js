@@ -1810,13 +1810,12 @@ var PlotType = React.createClass({
                                                  the entire water column at that point and have the variable represented
                                                  as a colourmap.</p>
                     <p><em>Virtual CTD</em>: Plots emulating a perfectly vertical CTD cast at a single location at a
-                                             single point in time.
-                        <ul>
-                            <li><em>CTD Profile</em>: Depth vs Temperature and Salinity plots.</li>
-                            <li><em>T/S Diagram</em>: Temperature vs Salinity, with dashed lines showing water density.</li>
-                            <li><em>Sound Speed Profile</em>: Depth vs Speed of Sound.</li>
-                        </ul>
-                    </p>
+                                             single point in time.</p>
+                    <ul>
+                        <li><em>CTD Profile</em>: Depth vs Temperature and Salinity plots.</li>
+                        <li><em>T/S Diagram</em>: Temperature vs Salinity, with dashed lines showing water density.</li>
+                        <li><em>Sound Speed Profile</em>: Depth vs Speed of Sound.</li>
+                    </ul>
                     <p><em>Hovm&ouml;ller Diagram</em>: 2-Dimensional plot with time represented on the vertical axis and
                                                         distance along a path on the horizontal. Commonly used for
                                                         meteorological data to highlight the role of waves.
