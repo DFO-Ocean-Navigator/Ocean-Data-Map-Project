@@ -146,7 +146,7 @@ def plot(dataset_name, **kwargs):
             depth_label = " at Bottom"
         else:
             depth_label = " at " + \
-                str(int(np.round(depthm))) + " " + depth_unit
+                str(int(np.round(depthm))) + " " + utils.mathtext(depth_unit)
 
         if variable_unit.startswith("Kelvin"):
             variable_unit = "Celsius"
@@ -326,8 +326,10 @@ def _plot(distance, values, times, unit, name,
                        shading='gouraud',
                        vmin=vmin,
                        vmax=vmax)
-    plt.gca().yaxis_date()
-    plt.gca().set_axis_bgcolor('dimgray')
+    ax = plt.gca()
+    ax.yaxis_date()
+    ax.yaxis.grid(True)
+    ax.set_axis_bgcolor('dimgray')
 
     plt.xlabel("Distance (km)")
     plt.xlim([distance[0], distance[-1]])
@@ -335,4 +337,4 @@ def _plot(distance, values, times, unit, name,
     divider = make_axes_locatable(plt.gca())
     cax = divider.append_axes("right", size="5%", pad=0.05)
     bar = plt.colorbar(c, cax=cax)
-    bar.set_label(name + " (" + unit + ")")
+    bar.set_label("%s (%s)" % (name, utils.mathtext(unit)))

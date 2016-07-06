@@ -132,12 +132,14 @@ def plot(dataset_name, **kwargs):
 
         ax1.plot(temperature, depths, 'b-')
         ax1.invert_yaxis()
-        ax1.set_ylabel("Depth (%s)" % depth_unit)
-        ax1.set_xlabel("%s (%s)" % (temperature_name, temperature_unit))
+        ax1.set_ylabel("Depth (%s)" % utils.mathtext(depth_unit))
+        ax1.set_xlabel("%s (%s)" % (temperature_name,
+                                    utils.mathtext(temperature_unit)))
         ax1.xaxis.set_label_position('top')
         ax1.xaxis.set_ticks_position('top')
         ax2.plot(salinity, depths, 'r-')
-        ax2.set_xlabel("%s (%s)" % (salinity_name, salinity_unit))
+        ax2.set_xlabel("%s (%s)" % (salinity_name,
+                                    utils.mathtext(salinity_unit)))
         ax2.xaxis.set_label_position('top')
         ax2.xaxis.set_ticks_position('top')
 

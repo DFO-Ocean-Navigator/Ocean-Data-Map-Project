@@ -260,16 +260,18 @@ def plot(dataset_name, **kwargs):
                 plt.yticks(list(plt.yticks()[0]) + [maxdepth, LINEAR])
             else:
                 plt.ylim(maxdepth, depths[0])
-            plt.ylabel("Depth (%s)" % depth_units)
+            plt.ylabel("Depth (%s)" % utils.mathtext(depth_units))
             fig.autofmt_xdate()
 
             divider = make_axes_locatable(plt.gca())
             cax = divider.append_axes("right", size="5%", pad=0.05)
             bar = plt.colorbar(c, cax=cax)
-            bar.set_label(variable_name.title() + " (" + variable_unit + ")")
+            bar.set_label("%s (%s)" % (variable_name.title(),
+                                       utils.mathtext(variable_unit)))
         else:
             plt.plot_date(datenum, d, '-', figure=fig)
-            plt.ylabel(variable_name.title() + " (" + variable_unit + ")")
+            plt.ylabel("%s (%s)" % (variable_name.title(),
+                                    utils.mathtext(variable_unit)))
             plt.gca().xaxis.grid(True)
             plt.gca().yaxis.grid(True)
             fig.autofmt_xdate()

@@ -1,3 +1,7 @@
+import numpy as np
+import re
+
+
 def get_filename(url, location, variable, units, timestamp, depthstr,
                  extension):
     outname = []
@@ -12,9 +16,9 @@ def get_filename(url, location, variable, units, timestamp, depthstr,
         outname.append(",".join(["%0.4f" % x for x in location[1]]))
     elif location is not None:
         outname.append(location)
-    if isinstance(timestamp, list):
-        for t in timestamp:
-            outname.append(t.strftime("%Y%m%d%H%M%S"))
+    if isinstance(timestamp, list) and len(timestamp) > 0:
+        outname.append(timestamp[0].strftime("%Y%m%d%H%M%S"))
+        outname.append(timestamp[-1].strftime("%Y%m%d%H%M%S"))
     elif timestamp is not None:
         outname.append(timestamp.strftime("%Y%m%d%H%M%S"))
     if depthstr is not None:
@@ -45,3 +49,28 @@ def get_mimetype(filetype):
         mime = 'image/png'
 
     return (filetype, mime)
+
+
+def normalize_scale(data, name, unit):
+    vmin = np.amin(data)
+    vmax = np.amax(data)
+
+    if re.search("free surface", name, re.IGNORECASE) or \
+        re.search("surface height", name, re.IGNORECASE) or \
+        re.search("velocity", name, re.IGNORECASE) or \
+            re.search("wind", name, re.IGNORECASE):
+        vmin = min(vmin, -vmax)
+        vmax = max(vmax, -vmin)
+
+    if unit == 'fraction':
+        vmin = 0
+        vmax = 1
+
+    return vmin, vmax
+
+
+def mathtext(text):
+    if re.search(r"[/_\^\\]", text):
+        return "$%s$" % text
+    else:
+        return text

@@ -53,7 +53,7 @@ def get_variable_name(dataset_name, variable):
     var_name = variable
     if "short_name" in dir(variable):
         var_name = variable.short_name
-    from_config = get_variables(dataset_name).get(var_name)
+    from_config = get_variables(dataset_name).get(var_name.lower())
 
     if from_config is not None:
         return from_config.get("name")
@@ -67,7 +67,7 @@ def get_variable_unit(dataset_name, variable):
     var_name = variable
     if "short_name" in dir(variable):
         var_name = variable.short_name
-    from_config = get_variables(dataset_name).get(var_name)
+    from_config = get_variables(dataset_name).get(var_name.lower())
 
     if from_config is not None:
         return from_config.get("unit")

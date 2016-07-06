@@ -4,7 +4,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from netCDF4 import Dataset, netcdftime
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
 import re
 import colormap
@@ -13,6 +13,7 @@ import os
 from oceannavigator import app
 from pykml import parser
 import geopy
+from geopy.distance import VincentyDistance
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
@@ -325,7 +326,7 @@ def plot(dataset_name, **kwargs):
                 plt.subplot(gs[0])
             divider = _transect_plot(
                 distance, parallel, depth, variable_unit, bath_x, bath_y,
-                "Parallel", vmin, vmax, cmap, scale, linearthresh)
+                "Parallel", vmin, vmax, cmap, scale, linearthresh, points)
             if surface:
                 _surface_plot(
                     divider, surface_dist, surface_value, surface_unit,
@@ -336,7 +337,7 @@ def plot(dataset_name, **kwargs):
                 plt.subplot(gs[1])
             divider = _transect_plot(
                 distance, perpendicular, depth, variable_unit, bath_x, bath_y,
-                "Perpendicular", vmin, vmax, cmap, scale, linearthresh)
+                "Perpendicular", vmin, vmax, cmap, scale, linearthresh, points)
             if surface:
                 _surface_plot(
                     divider, surface_dist, surface_value, surface_unit,
@@ -357,7 +358,7 @@ def plot(dataset_name, **kwargs):
                 plt.subplot(gs[1])
             divider = _transect_plot(
                 distance, value, depth, variable_unit, bath_x, bath_y,
-                variable_name, vmin, vmax, cmap, scale, linearthresh)
+                variable_name, vmin, vmax, cmap, scale, linearthresh, points)
 
             if surface:
                 _surface_plot(
@@ -413,7 +414,7 @@ def _surface_plot(axis_divider, distance, values, units, name):
     surface_ax.locator_params(nbins=3)
     surface_ax.yaxis.tick_right()
     surface_ax.yaxis.set_label_position("right")
-    label = plt.ylabel(units)
+    label = plt.ylabel(utils.mathtext(units))
     title = plt.title(name)
     plt.setp(title, size='smaller')
     plt.setp(label, size='smaller')
@@ -430,21 +431,22 @@ def _surface_plot(axis_divider, distance, values, units, name):
 
 
 def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
-                   vmin, vmax, cmap, scale, linearthresh=200):
+                   vmin, vmax, cmap, scale, linearthresh=200, points=[]):
 
     c = plt.pcolormesh(distance, depth, values,
                        cmap=cmap,
                        shading='gouraud',
                        vmin=vmin,
                        vmax=vmax)
-    plt.gca().invert_yaxis()
+    ax = plt.gca()
+    ax.invert_yaxis()
     plt.yscale('symlog', linthreshy=linearthresh)
-    plt.gca().yaxis.set_major_formatter(ScalarFormatter())
+    ax.yaxis.set_major_formatter(ScalarFormatter())
 
     # Mask out the bottom
     plt.fill_between(bath_x, bath_y * -1, plt.ylim()[0],
                      facecolor='dimgray', hatch='xx')
-    plt.gca().set_axis_bgcolor('dimgray')
+    ax.set_axis_bgcolor('dimgray')
 
     plt.xlabel("Distance (km)")
     plt.ylabel("Depth (m)")
@@ -461,11 +463,37 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
              [linearthresh, linearthresh],
              'k:', alpha=0.5)
 
-    divider = make_axes_locatable(plt.gca())
+    divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     bar = plt.colorbar(c, cax=cax)
-    bar.set_label(name + " (" + unit + ")")
+    bar.set_label(name + " (" + utils.mathtext(unit) + ")")
 
+    if len(points) > 2:
+        station_distances = []
+        current_dist = 0
+        d = VincentyDistance()
+        for idx, p in enumerate(points):
+            if idx == 0:
+                station_distances.append(0)
+            else:
+                current_dist += d.measure(p, points[idx - 1])
+                station_distances.append(current_dist)
+
+        ax2 = ax.twiny()
+        ax2.set_xticks(station_distances)
+        ax2.set_xlim([distance[0], distance[-1]])
+        ax2.tick_params(
+            'x',
+            length=0,
+            width=0,
+            pad=-3,
+            labelsize='xx-small',
+            which='major')
+        ax2.xaxis.set_major_formatter(StrMethodFormatter(u"$\u25bc$"))
+        cax = make_axes_locatable(ax2).append_axes(
+            "right", size="5%", pad=0.05)
+        bar2 = plt.colorbar(c, cax=cax)
+        bar2.set_ticks([])
     return divider
 
 

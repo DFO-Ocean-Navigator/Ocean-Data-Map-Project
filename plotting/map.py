@@ -2,6 +2,7 @@ from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.basemap import maskoceans
 import numpy as np
 import re
@@ -144,8 +145,8 @@ def plot(dataset_name, **kwargs):
                     continue
                 allvars.append(v)
                 var = dataset.variables[v]
-                quiver_unit = var.units
-                quiver_name = var.long_name
+                quiver_unit = get_variable_unit(dataset_name, var)
+                quiver_name = get_variable_name(dataset_name, var)
                 quiver_lat, quiver_lon, d = load_interpolated(
                     m, 50, dataset, v, depth, time, interpolation=interp)
                 quiver_data.append(d)
@@ -168,11 +169,13 @@ def plot(dataset_name, **kwargs):
                                                           contour,
                                                           depth, time,
                                                           interpolation=interp)
-            if dataset[contour].units.startswith("Kelvin"):
+            contour_unit = get_variable_unit(dataset_name, contour)
+            contour_name = get_variable_name(dataset_name, contour)
+            if contour_unit.startswith("Kelvin"):
                 d = np.add(d, -273.15)
+                contour_unit = "Celsius"
 
             contour_data.append(d)
-            contour_name = dataset.variables[contour].long_name
 
         t = netcdftime.utime(time_var.units)
         timestamp = t.num2date(time_var[time])
@@ -259,19 +262,14 @@ def plot(dataset_name, **kwargs):
             vmax = -np.inf
 
             for d in data:
-                vmin = min(vmin, np.amin(d))
-                vmax = max(vmax, np.amax(d))
-                if re.search("free surface", variable_name, re.IGNORECASE) or \
-                    re.search("surface height", variable_name,
-                              re.IGNORECASE) or \
-                    re.search("velocity", variable_name, re.IGNORECASE) or \
-                    re.search("wind", variable_name, re.IGNORECASE) or \
-                        anom:
-                    vmin = min(vmin, -vmax)
-                    vmax = max(vmax, -vmin)
-                    if variable_unit == "fraction":
-                        vmin = 0
-                        vmax = 1
+                dmin, dmax = utils.normalize_scale(d, variable_name,
+                                                   variable_unit)
+                vmin = min(vmin, dmin)
+                vmax = max(vmax, dmax)
+
+            if anom:
+                vmin = min(vmin, -vmax)
+                vmax = max(vmax, -vmin)
 
     filename = utils.get_filename(get_dataset_url(dataset_name),
                                   query.get('location'),
@@ -355,7 +353,8 @@ def plot(dataset_name, **kwargs):
                 plt.quiverkey(q, .65, .01,
                               unit_length,
                               quiver_name.title() + " " +
-                              str(unit_length) + " " + quiver_unit,
+                              str(unit_length) + " " +
+                              utils.mathtext(quiver_unit),
                               coordinates='figure',
                               labelpos='E')
 
@@ -385,10 +384,14 @@ def plot(dataset_name, **kwargs):
 
         if len(contour_data) > 0:
             if (contour_data[0].min() != contour_data[0].max()):
-                cs = m.contour(
+                cmin, cmax = utils.normalize_scale(contour_data[0],
+                                                   contour_name, contour_unit)
+                contours = m.contour(
                     target_lon, target_lat, contour_data[0], latlon=True,
-                    lineweight=1, cmap=colormap.find_colormap(contour_name))
-                plt.clabel(cs, fontsize='xx-small')
+                    lineweight=1,
+                    levels=np.linspace(cmin, cmax, 5),
+                    cmap=colormap.find_colormap(contour_name))
+                plt.clabel(contours, fontsize='xx-small', colors='k')
 
         # Map Info
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
@@ -435,10 +438,26 @@ def plot(dataset_name, **kwargs):
 
         plt.title(variable_name.title() + depth_label +
                   ", " + timestamp.strftime(dformat))
+        ax = plt.gca()
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
-        bar.set_label(variable_name.title() + " (" + variable_unit + ")")
+        bar.set_label("%s (%s)" % (variable_name.title(),
+                                   utils.mathtext(variable_unit)))
+
+        if len(contour_data) > 0:
+            cax2 = inset_axes(ax, width='5%', height='10%', loc=3)
+            contourbar = plt.colorbar(
+                contours, cax=cax2, orientation='vertical', extend='both')
+            h = cax2.set_ylabel("%s (%s)" % (contour_name,
+                                             utils.mathtext(contour_unit)))
+            h.set_rotation('horizontal')
+            h.set_horizontalalignment('left')
+            h.set_verticalalignment('center')
+
+            for l in contourbar.lines:
+                l.set_linewidths(15)
+
         fig.tight_layout(pad=3, w_pad=4)
 
         # Output the plot

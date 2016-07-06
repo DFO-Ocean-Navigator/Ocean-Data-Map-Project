@@ -1,6 +1,9 @@
 import matplotlib.colors as mcolors
 import cmocean
 import re
+import plotting
+import os
+import numpy as np
 
 
 def make_colormap(seq):
@@ -29,6 +32,7 @@ def find_colormap(name):
     return colormaps['mercator']
 
 _c = mcolors.ColorConverter().to_rgb
+data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
     'bathymetry': cmocean.cm.bathymetry,
     'transparent_gray': mcolors.LinearSegmentedColormap.from_list(
@@ -42,6 +46,13 @@ colormaps = {
     'velocity': cmocean.cm.velocity,
     'waveheight': cmocean.cm.waveheight,
     'waveperiod': cmocean.cm.waveperiod,
+    'chlorophyll': cmocean.cm.chlorophyll,
+    'iron': cmocean.cm.waveheight,
+    'oxygen': cmocean.cm.oxygen,
+    'phosphate': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
+    'nitrate': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'nitrate.txt'))),
     'ice': make_colormap([
         _c('#1d3b7a'),
         _c('#f3fafe')

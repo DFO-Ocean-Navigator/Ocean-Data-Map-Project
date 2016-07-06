@@ -151,7 +151,7 @@ def plot(dataset_name, **kwargs):
             if d not in labels:
                 labels.append(d)
                 plt.annotate(
-                    '{:.0f}{:s}'.format(d, depth_unit),
+                    '{:.0f}{:s}'.format(d, utils.mathtext(depth_unit)),
                     xy=(data[1][idx], data[0][idx]),
                     xytext=(15, -15),
                     ha='left',
