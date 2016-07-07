@@ -14,6 +14,7 @@ import geopy
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url
+import datetime
 
 
 def plot(dataset_name, **kwargs):
@@ -153,7 +154,11 @@ def plot(dataset_name, **kwargs):
             value = np.add(value, -273.15)
 
         t = netcdftime.utime(time_var.units)
-        times = t.num2date(time_var[int(starttime):(int(endtime) + 1)])
+        times = t.num2date(time_var[int(starttime):(int(endtime) +
+                                                    1)]).tolist()
+
+    if query.get('quantum') == 'month':
+        times = [datetime.date(x.year, x.month, 1) for x in times]
 
     # Colormap from arguments
     cmap = query.get('colormap')
@@ -167,7 +172,7 @@ def plot(dataset_name, **kwargs):
 
     filename = utils.get_filename(get_dataset_url(dataset_name), None,
                                   variables, variable_unit,
-                                  times.tolist(), None,
+                                  times, None,
                                   filetype)
     if filetype == 'csv':
         # CSV File

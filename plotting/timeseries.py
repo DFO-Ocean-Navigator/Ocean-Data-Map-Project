@@ -14,6 +14,7 @@ from data import load_timeseries
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url
+import datetime
 
 
 def plot(dataset_name, **kwargs):
@@ -125,6 +126,9 @@ def plot(dataset_name, **kwargs):
                 float(latlon[0]),
                 float(latlon[1])
             )
+            if query.get('quantum') == 'month':
+                t = [datetime.date(x.year, x.month, 1) for x in t]
+
             data.append(d)
             times.append(t)
 
