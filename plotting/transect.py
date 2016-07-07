@@ -415,7 +415,7 @@ def _surface_plot(axis_divider, distance, values, units, name):
     surface_ax.yaxis.tick_right()
     surface_ax.yaxis.set_label_position("right")
     label = plt.ylabel(utils.mathtext(units))
-    title = plt.title(name)
+    title = plt.title(name, y=1.1)
     plt.setp(title, size='smaller')
     plt.setp(label, size='smaller')
     plt.setp(surface_ax.get_yticklabels(), size='x-small')
@@ -493,7 +493,7 @@ def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
         cax = make_axes_locatable(ax2).append_axes(
             "right", size="5%", pad=0.05)
         bar2 = plt.colorbar(c, cax=cax)
-        bar2.set_ticks([])
+        bar2.remove()
     return divider
 
 
