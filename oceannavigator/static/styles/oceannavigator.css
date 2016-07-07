@@ -55,7 +55,7 @@ div.inputs {
 }
 
 .transect input, .location input {
-    float: right;
+    float: none;
 }
 
 .modal {
@@ -185,4 +185,18 @@ input:not([type='checkbox']), select:not([multiple]) {
 .modal-content h1 {
     font-size: 150%;
     margin-top: 0;
+} 
+
+.transect .buttons input {
+    width: calc(50% - 0.5em);
+    min-height: 2em;
+    height: 100%;
 }
+.transect .buttons input + input {
+    margin-left: 1em;
+}
+
+code {
+    font-family: monospace;
+}
+

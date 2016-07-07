@@ -11,7 +11,7 @@ var defaults = {
         'time':            '-1',
         'variable':        'votemper',
         'anomaly':         false,
-        'depth':           '0',
+        'depth':           0,
         'overlay': {
             'file':        '',
             'selection':   'all',
@@ -75,7 +75,7 @@ var defaults = {
         'starttime':       '-24',
         'endtime':         '-1',
         'variable':        'votemper',
-        'depth':           '0',
+        'depth':           0,
         'showmap':         true,
         'colormap':        'default',
         'scale':           'auto',
@@ -304,6 +304,9 @@ var Selector = React.createClass({
                     if (key == 'station' && this.state.station != '') {
                         continue;
                     }
+                    if (key == 'variable') {
+                        continue;
+                    }
                     newstate[key] = defaults[value][key];
                 }
             }
@@ -333,13 +336,16 @@ var Selector = React.createClass({
                     newstate[key] = defaults[this.state.type][key];
                 }
             }
+            if (value == 'biomer' && jQuery.inArray(this.state.type, ['ctd', 'sound', 'ts']) != -1) {
+                newstate.type = defaults.type;
+            }
         }
         this.setState(newstate);
     },
     render: function() {
         var inputmap = {
             'dataset': (<ComboBox key='dataset' id='dataset' state={this.state.dataset} def={defaults.dataset} onUpdate={this.onUpdate} url='/api/datasets/' title='Dataset'><h1>Datasets</h1></ComboBox>),
-            'plottype': (<PlotType key='type' id='type' state={this.state.type} def={defaults.type} onUpdate={this.onUpdate} title='Plot Type'></PlotType>),
+            'plottype': (<PlotType key='type' id='type' state={this.state.type} def={defaults.type} dataset={this.state.dataset} onUpdate={this.onUpdate} title='Plot Type'></PlotType>),
             'loc': (<LocationComboBox key='location' id='location' state={this.state.location} onUpdate={this.onUpdate} url='/api/locations/' title='Location'><h1>Location Selection</h1></LocationComboBox>),
             'time': (<TimePicker key='time' id='time' state={this.state.time} def={defaults[this.state.type].time} quantum={this.state.dataset_quantum} onUpdate={this.onUpdate} url={'/api/timestamps/?dataset=' + this.state.dataset + '&quantum=' + this.state.dataset_quantum} title='Time'></TimePicker>),
             'variable': (<ComboBox key='variable' state={this.state.variable} id='variable' def={defaults[this.state.type].variable} onUpdate={this.onUpdate} url={'/api/variables/?vectors&dataset=' + this.state.dataset + ((this.state.type == 'transect') ? '&3d_only' : '')} title='Variable'></ComboBox>),
@@ -662,8 +668,14 @@ var ComboBox = React.createClass({
                 dataType: 'json',
                 cache: false,
                 success: function(data) {
-                    if (this.props.state == '') {
-                        data.splice(0, 0, {'id': 'none', 'value': 'None'});
+                    var ids = data.map(function(d) {return d.id;});
+                    if (
+                            (this.props.state == '' && typeof(this.props.state) == "string") ||
+                            this.props.state == 'none'
+                       ) {
+                        if (jQuery.inArray('none', ids) == -1) {
+                            data.splice(0, 0, {'id': 'none', 'value': 'None'});
+                        }
                     }
                     this.setState({
                         data: data,
@@ -692,6 +704,9 @@ var ComboBox = React.createClass({
                         } else {
                             value = this.props.state;
                         }
+                    }
+                    if (data.length > 0 && !props.multiple && jQuery.inArray(value, a) == -1) {
+                        value = data[0].id;
                     }
                     props.onUpdate(props.id, value);
                     if (a.indexOf(value) != -1) {
@@ -851,7 +866,7 @@ var TransectComboBox = React.createClass({
             name: name,
         });
         if (name == 'custom') {
-            this.showMap(this.state.datamap[this.state.name]);
+            // this.showMap(this.state.datamap[this.state.name]);
         } else {
             this.props.onUpdate(this.props.id + "_pts", this.state.datamap[name]);
             this.props.onUpdate(this.props.id + "_name", name);
@@ -996,6 +1011,43 @@ var TransectComboBox = React.createClass({
     customClicked: function(e) {
         alert('Clicked');
     },
+    parsecsv: function(e) {
+        if (e.target.files.length == 1) {
+            var file = e.target.files[0];
+            Papa.parse(file, {
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    var points = results.data.map(function(r) {
+                        return r[0] + "," + r[1];
+                    });
+
+                    this.setState({
+                        name: 'custom',
+                        points: points
+                    });
+                    this.props.onUpdate(this.props.id + '_pts', points);
+                    this.props.onUpdate(this.props.id + '_name', '');
+                }.bind(this)
+            });
+        }
+        e.target.value = '';
+        if (e.target.value) {
+            e.target.type = 'text';
+            e.target.type = 'file';
+        }
+        return false;
+    },
+    helpClicked: function(e) {
+        var helpdiv = this.refs.help.style;
+        helpdiv.display = 'block';
+        helpdiv.paddingTop = '5em';
+    },
+    closeHelp: function(e) {
+        if (e.target.className.toLowerCase() == 'modal') {
+            this.refs.help.style.display = 'none';
+        }
+    },
     render: function() {
         var options = [];
 
@@ -1023,7 +1075,16 @@ var TransectComboBox = React.createClass({
                 <div key={this.props.url} className='transect'>
                 <h1>
                 {this.props.title}
+                <span onClick={this.helpClicked}>?</span>
                 </h1>
+
+                <div className="modal" ref="help" onClick={this.closeHelp}>
+                    <div className="modal-content">
+                        <h1>{this.props.title}</h1>
+                        <p>Here you can select your path from the predefined options, or pick 'Custom' and define your own.</p>
+                        <p>To define your own, you can click on multiple points on a map (double-click ends the path), or supply a CSV file. The CSV file must be in the format <code>latitude,longitude</code> with no header line in the file.</p>
+                    </div>
+                </div>
 
                 <select
                 value={this.state.name}
@@ -1032,7 +1093,13 @@ var TransectComboBox = React.createClass({
                 <option value="custom">Custom...</option>
                 </select>
 
-                <input type='button' value='Edit Custom...' onClick={this.showMap} style={{'display': (this.state.name == 'custom') ? 'inline-block' : 'none'}} />
+                <input type='file' ref='fileinput' style={{'display': 'none'}} onChange={this.parsecsv} />
+                <div className='buttons' style={{'display': (this.state.name == 'custom') ? 'block' : 'none'}}>
+                    <input type='button' value='Draw on Map&hellip;' onClick={this.showMap} />
+                    <input type='button' value='Upload CSV&hellip;' onClick={function() {this.refs.fileinput.click()}.bind(this)} />
+                </div>
+
+
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
                 <div ref='mapwindow' className='modal' onClick={this.closeMap} >
@@ -1717,16 +1784,8 @@ var TimePicker = React.createClass({
 });
 
 var PlotType = React.createClass({
-    getInitialState: function() {
-        return {
-            value: this.props.def,
-        };
-    },
     handleChange: function(e) {
         var value = e.target.value;
-        this.setState({
-            value: value
-        });
         this.props.onUpdate(this.props.id, value);
     },
     helpClicked: function(e) {
@@ -1741,7 +1800,7 @@ var PlotType = React.createClass({
     },
     render: function() {
         var hasHelp = true;
-        var value = this.state.value;
+        var value = this.props.state;
         if (value == "ctd" || value == "ts" || value == "sound") {
             value = "ctd";
         }
@@ -1789,14 +1848,14 @@ var PlotType = React.createClass({
                 <option value="map">Map</option>
                 <option value="transect">Virtual Transect</option>
                 <option value="timeseries">Virtual Mooring</option>
-                <option value="ctd">Virtual CTD</option>
+                <option value="ctd" disabled={this.props.dataset == 'biomer'}>Virtual CTD</option>
                 <option value="hovmoller">Hovm&ouml;ller Diagram</option>
             </select>
 
             <select
                 style={{'display': (value == 'ctd') ? 'inline-block' : 'none'}}
                 size={1}
-                value={this.state.value}
+                value={this.props.state}
                 onChange={this.handleChange}>
                 <option value="ctd">CTD Profile</option>
                 <option value="ts">T/S Diagram</option>
