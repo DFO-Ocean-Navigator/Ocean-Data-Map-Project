@@ -865,11 +865,12 @@ var TransectComboBox = React.createClass({
         this.setState({
             name: name,
         });
-        if (name == 'custom') {
-            // this.showMap(this.state.datamap[this.state.name]);
-        } else {
+        if (name != 'custom') {
             this.props.onUpdate(this.props.id + "_pts", this.state.datamap[name]);
             this.props.onUpdate(this.props.id + "_name", name);
+            this.setState({
+                points: this.state.datamap[name],
+            });
         }
     },
     componentDidMount: function() {
@@ -969,6 +970,7 @@ var TransectComboBox = React.createClass({
                         var lonlat = ol.proj.transform(c, 'EPSG:3857','EPSG:4326');
                         return lonlat[1] + "," + lonlat[0];
                     }),
+                    name: 'custom',
                 });
             }.bind(this));
             this.map.addInteraction(draw);
@@ -1004,12 +1006,6 @@ var TransectComboBox = React.createClass({
     },
     clearMap: function(e) {
         this.vectorSource.clear();
-        this.setState({
-            points: [],
-        });
-    },
-    customClicked: function(e) {
-        alert('Clicked');
     },
     parsecsv: function(e) {
         if (e.target.files.length == 1) {
@@ -1114,15 +1110,14 @@ var TransectComboBox = React.createClass({
                 value={this.state.name}
                 onChange={this.handleChange}>
                 {options}
-                <option value="custom">Custom...</option>
+                <option value="custom" disabled>Custom</option>
                 </select>
 
                 <input type='file' ref='fileinput' style={{'display': 'none'}} onChange={this.parsecsv} />
-                <div className='buttons' style={{'display': (this.state.name == 'custom') ? 'block' : 'none'}}>
+                <div className='buttons'>
                     <input type='button' value='Draw on Map&hellip;' onClick={this.showMap} />
                     <input type='button' value='Upload CSV&hellip;' onClick={function() {this.refs.fileinput.click()}.bind(this)} />
                 </div>
-
 
                 <br style={{'clear': 'right', 'height': '0px'}} />
 
@@ -1331,12 +1326,7 @@ var StationComboBox = React.createClass({
     },
     handleChange: function(e) {
         var value = e.target.value;
-        if (value == 'custom') {
-            this.props.onUpdate('station_name', '');
-            this.setState({
-                value: value,
-            });
-        } else {
+        if (value != 'custom') {
             var lat = parseFloat(this.state.datamap[value].split(",")[0]);
             var lon = parseFloat(this.state.datamap[value].split(",")[1]);
             this.setState({
@@ -1356,6 +1346,7 @@ var StationComboBox = React.createClass({
         this.setState({
             lat: lat,
             lon: lon,
+            value: 'custom',
         });
         this.props.onUpdate(this.props.id, lat + "," + lon);
     },
@@ -1468,7 +1459,9 @@ var StationComboBox = React.createClass({
                 this.setState({
                     lon: lonlat[0],
                     lat: lonlat[1],
+                    value: 'custom',
                 });
+                this.props.onUpdate('station_name', '');
                 this.refs.lat.value = parseFloat(lonlat[1]).toFixed(4);
                 this.refs.lon.value = parseFloat(lonlat[0]).toFixed(4);
             }.bind(this));
@@ -1529,10 +1522,10 @@ var StationComboBox = React.createClass({
                 value={this.state.value}
                 onChange={this.handleChange}>
                 {options}
-                <option value="custom">Custom...</option>
+                <option value="custom" disabled>Custom</option>
                 </select>
 
-                <div className='latlon' style={{'display': (this.state.value == 'custom') ? 'block' : 'none'}}>
+                <div className='latlon'>
                 <div>
                 <label htmlFor={this.props.id + '_lat'}>Lat:</label>
                 <input ref='lat' id={this.props.id + '_lat'} type='number' step='0.0001' defaultValue={parseFloat(this.state.lat).toFixed(4)} onBlur={this.locationChanged} onKeyPress={this.keyPress} />
