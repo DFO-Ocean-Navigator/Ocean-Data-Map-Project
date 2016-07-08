@@ -336,7 +336,7 @@ var Selector = React.createClass({
                     newstate[key] = defaults[this.state.type][key];
                 }
             }
-            if (value == 'biomer' && jQuery.inArray(this.state.type, ['ctd', 'sound', 'ts']) != -1) {
+            if (value.startsWith('biomer') && jQuery.inArray(this.state.type, ['ctd', 'sound', 'ts']) != -1) {
                 newstate.type = defaults.type;
             }
         }
@@ -1017,9 +1017,33 @@ var TransectComboBox = React.createClass({
             Papa.parse(file, {
                 dynamicTyping: true,
                 skipEmptyLines: true,
+                header: true,
                 complete: function(results) {
+                    var fields_lowered = results.meta.fields.map(function(f) {
+                        return f.toLowerCase();
+                    });
+                    function findKey(names) {
+                        for (var i = 0; i < names.length; i++) {
+                            var index = fields_lowered.indexOf(names[i]);
+                            if (index > -1) {
+                                return results.meta.fields[index];
+                            }
+                        }
+                        return -1;
+                    }
+
+                    var lat = findKey(["latitude", "lat"]);
+                    var lon = findKey(["longitude", "lon"]);
+                    if (lat == -1) {
+                        alert("Error: Could not find latitude column. Should be one of: latitude, lat");
+                        return;
+                    }
+                    if (lon == -1) {
+                        alert("Error: Could not find longitude column. Should be one of: longitude, lon");
+                        return;
+                    }
                     var points = results.data.map(function(r) {
-                        return r[0] + "," + r[1];
+                        return r[lat] + "," + r[lon];
                     });
 
                     this.setState({
@@ -1082,7 +1106,7 @@ var TransectComboBox = React.createClass({
                     <div className="modal-content">
                         <h1>{this.props.title}</h1>
                         <p>Here you can select your path from the predefined options, or pick 'Custom' and define your own.</p>
-                        <p>To define your own, you can click on multiple points on a map (double-click ends the path), or supply a CSV file. The CSV file must be in the format <code>latitude,longitude</code> with no header line in the file.</p>
+                        <p>To define your own, you can click on multiple points on a map (double-click ends the path), or supply a CSV file. The CSV file must have a header line with <code>latitude</code> and <code>longitude</code> included.</p>
                     </div>
                 </div>
 
@@ -1848,7 +1872,7 @@ var PlotType = React.createClass({
                 <option value="map">Map</option>
                 <option value="transect">Virtual Transect</option>
                 <option value="timeseries">Virtual Mooring</option>
-                <option value="ctd" disabled={this.props.dataset == 'biomer'}>Virtual CTD</option>
+                <option value="ctd" disabled={this.props.dataset.startsWith('biomer')}>Virtual CTD</option>
                 <option value="hovmoller">Hovm&ouml;ller Diagram</option>
             </select>
 
