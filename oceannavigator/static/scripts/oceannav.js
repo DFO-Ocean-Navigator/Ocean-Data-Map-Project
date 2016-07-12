@@ -937,7 +937,16 @@ var TransectComboBox = React.createClass({
             this.map = new ol.Map({
                 layers: [
                     new ol.layer.Tile({
-                        source: new ol.source.MapQuest({layer: 'sat'})
+                        source: new ol.source.XYZ({
+                            attributions: [
+                                new ol.Attribution({
+                                    html: 'Tiles &copy; <a href="http://services.arcgisonline.com/ArcGIS/' +
+                                        'rest/services/Ocean_Basemap/MapServer">ArcGIS</a>'
+                                })
+                            ],
+                            url: 'http://server.arcgisonline.com/ArcGIS/rest/services/' +
+                                'Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'
+                        })
                     }),
                     new ol.layer.Vector({
                         source: this.vectorSource,
@@ -990,7 +999,7 @@ var TransectComboBox = React.createClass({
             center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
             zoom: 5,
-            maxZoom: 11,
+            maxZoom: 10,
             minZoom: 2,
         }));
         this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
@@ -1186,7 +1195,16 @@ var LocationComboBox = React.createClass({
             this.map = new ol.Map({
                 layers: [
                     new ol.layer.Tile({
-                        source: new ol.source.MapQuest({layer: 'sat'})
+                        source: new ol.source.XYZ({
+                            attributions: [
+                                new ol.Attribution({
+                                    html: 'Tiles &copy; <a href="http://services.arcgisonline.com/ArcGIS/' +
+                                        'rest/services/Ocean_Basemap/MapServer">ArcGIS</a>'
+                                })
+                            ],
+                            url: 'http://server.arcgisonline.com/ArcGIS/rest/services/' +
+                                'Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'
+                        })
                     }),
                 ],
                 target: 'map',
@@ -1231,7 +1249,7 @@ var LocationComboBox = React.createClass({
             center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
             zoom: 2,
-            maxZoom: 11,
+            maxZoom: 10,
             minZoom: 1,
         }));
     },
@@ -1349,6 +1367,7 @@ var StationComboBox = React.createClass({
             value: 'custom',
         });
         this.props.onUpdate(this.props.id, lat + "," + lon);
+        this.props.onUpdate('station_name', 'custom');
     },
     updateParent: function() {
         var loc = this.state.lat + "," + this.state.lon;
@@ -1426,7 +1445,16 @@ var StationComboBox = React.createClass({
             this.map = new ol.Map({
                 layers: [
                     new ol.layer.Tile({
-                        source: new ol.source.MapQuest({layer: 'sat'})
+                        source: new ol.source.XYZ({
+                            attributions: [
+                                new ol.Attribution({
+                                    html: 'Tiles &copy; <a href="http://services.arcgisonline.com/ArcGIS/' +
+                                        'rest/services/Ocean_Basemap/MapServer">ArcGIS</a>'
+                                })
+                            ],
+                            url: 'http://server.arcgisonline.com/ArcGIS/rest/services/' +
+                                'Ocean_Basemap/MapServer/tile/{z}/{y}/{x}'
+                        })
                     }),
                     new ol.layer.Vector({
                         source: this.vectorSource,
@@ -1478,7 +1506,7 @@ var StationComboBox = React.createClass({
             center: ol.proj.transform([this.state.lon, this.state.lat], 'EPSG:4326', 'EPSG:3857'),
             projection: 'EPSG:3857',
             zoom: 5,
-            maxZoom: 11,
+            maxZoom: 10,
             minZoom: 2,
         }));
     },

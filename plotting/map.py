@@ -2,7 +2,6 @@ from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.basemap import maskoceans
 import numpy as np
 import re
@@ -386,12 +385,33 @@ def plot(dataset_name, **kwargs):
             if (contour_data[0].min() != contour_data[0].max()):
                 cmin, cmax = utils.normalize_scale(contour_data[0],
                                                    contour_name, contour_unit)
+                levels = np.linspace(cmin, cmax, 5)
+                cmap = colormap.find_colormap(contour_name)
+                if contour == variables[0]:
+                    cmap = 'gray_r'
                 contours = m.contour(
                     target_lon, target_lat, contour_data[0], latlon=True,
-                    lineweight=1,
-                    levels=np.linspace(cmin, cmax, 5),
-                    cmap=colormap.find_colormap(contour_name))
-                plt.clabel(contours, fontsize='xx-small', colors='k')
+                    linewidths=2,
+                    levels=levels,
+                    cmap=cmap)
+                for idx, l in enumerate(levels):
+                    if contour_unit == 'fraction':
+                        contours.collections[idx].set_label(
+                            "{0:.0%}".format(l))
+                    else:
+                        contours.collections[idx].set_label(
+                            "%.2g %s" % (l, utils.mathtext(contour_unit)))
+                ax = plt.gca()
+
+                # Reverse order
+                handles, labels = ax.get_legend_handles_labels()
+                leg = ax.legend(handles[::-1], labels[::-1],
+                                loc='best', fontsize='small',
+                                frameon=True, framealpha=0.5,
+                                title=contour_name)
+                leg.get_title().set_fontsize('small')
+                for legobj in leg.legendHandles:
+                    legobj.set_linewidth(3)
 
         # Map Info
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
@@ -446,17 +466,29 @@ def plot(dataset_name, **kwargs):
                                    utils.mathtext(variable_unit)))
 
         if len(contour_data) > 0:
-            cax2 = inset_axes(ax, width='5%', height='10%', loc=3)
-            contourbar = plt.colorbar(
-                contours, cax=cax2, orientation='vertical', extend='both')
-            h = cax2.set_ylabel("%s (%s)" % (contour_name,
-                                             utils.mathtext(contour_unit)))
-            h.set_rotation('horizontal')
-            h.set_horizontalalignment('left')
-            h.set_verticalalignment('center')
+            # cax2 = inset_axes(ax, width='5%', height='10%', loc=3)
+            # contourbar = plt.colorbar(
+            #     contours, cax=cax2, orientation='vertical', extend='both')
+            # mappable = ScalarMappable(norm=contours.norm, cmap=contours.cmap)
+            # mappable.set_array([0, 1])
+            # print abcd
+            # contourbar = plt.colorbar(
+            #     mappable,
+            #     cax=cax2, orientation='vertical', extend='neither')
+            # plt.legend(loc='lower left')
+            # h = cax2.set_ylabel("%s (%s)" % (contour_name,
+            #                                  utils.mathtext(contour_unit)))
+            # h.set_rotation('horizontal')
+            # h.set_horizontalalignment('left')
+            # h.set_verticalalignment('center')
 
-            for l in contourbar.lines:
-                l.set_linewidths(15)
+            # contourbar.set_clim(-1, 2.0)
+            # contourbar.patch.set_facecolor((0, 0, 0, 0))
+            # contourbar.outline.set_linewidth(0)
+            # contourbar.set_ticks([0, 0.5, 1])
+            # for l in contourbar.lines:
+            #     l.set_linewidths(4)
+            pass
 
         fig.tight_layout(pad=3, w_pad=4)
 
