@@ -465,31 +465,6 @@ def plot(dataset_name, **kwargs):
         bar.set_label("%s (%s)" % (variable_name.title(),
                                    utils.mathtext(variable_unit)))
 
-        if len(contour_data) > 0:
-            # cax2 = inset_axes(ax, width='5%', height='10%', loc=3)
-            # contourbar = plt.colorbar(
-            #     contours, cax=cax2, orientation='vertical', extend='both')
-            # mappable = ScalarMappable(norm=contours.norm, cmap=contours.cmap)
-            # mappable.set_array([0, 1])
-            # print abcd
-            # contourbar = plt.colorbar(
-            #     mappable,
-            #     cax=cax2, orientation='vertical', extend='neither')
-            # plt.legend(loc='lower left')
-            # h = cax2.set_ylabel("%s (%s)" % (contour_name,
-            #                                  utils.mathtext(contour_unit)))
-            # h.set_rotation('horizontal')
-            # h.set_horizontalalignment('left')
-            # h.set_verticalalignment('center')
-
-            # contourbar.set_clim(-1, 2.0)
-            # contourbar.patch.set_facecolor((0, 0, 0, 0))
-            # contourbar.outline.set_linewidth(0)
-            # contourbar.set_ticks([0, 0.5, 1])
-            # for l in contourbar.lines:
-            #     l.set_linewidths(4)
-            pass
-
         fig.tight_layout(pad=3, w_pad=4)
 
         # Output the plot
