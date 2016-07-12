@@ -22,7 +22,12 @@ var defaults = {
         },
         'colormap':        'default',
         'bathymetry':      true,
-        'contour':         '',
+        'contour': {
+            'variable':    '',
+            'colormap':    'default',
+            'levels':      'auto',
+            'legend':      true,
+        },
         'quiver':          '',
         'interpolation': {
             'method':      'inv_square',
@@ -357,7 +362,7 @@ var Selector = React.createClass({
             'overlay': (<OverlaySelector key='overlay' id='overlay' state={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></OverlaySelector>),
             'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate} title='Bathymetry'></CheckBox>),
             'quiver': (<ComboBox key='quiver' id='quiver' state={this.state.quiver} def={defaults[this.state.type].quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset} title='Arrows'>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>),
-            'contour': (<ComboBox key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Additional Contours'>Contour lets you select an additional variable to be overlayed on top of the plot as contour lines.</ComboBox>),
+            'contour': (<ContourSelector key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} dataset={this.state.dataset} title='Additional Contours'>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>),
             'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate} title='Show Location'>Shows the mini map of the location in the plot.</CheckBox>),
             'surfacevariable': (<ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} def={defaults[this.state.type].surfacevariable} onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.state.dataset} title='Surface Variable'>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>),
             'transect': (<TransectComboBox key='transect' id='transect' state={{'name': this.state.transect_name, 'pts': this.state.transect_pts}} onUpdate={this.onUpdate} url='/api/transects' title='Transect'></TransectComboBox>),
@@ -508,6 +513,49 @@ var OverlaySelector = React.createClass({
                 <input id='alpha' type='range' min={0.0} max={1.0} step={0.05} value={this.props.state.alpha} onChange={this.alphaChanged} />
                 </div>
                 </div>
+                </div>
+               );
+    }
+});
+
+var ContourSelector = React.createClass({
+    getInitialState: function() {
+        return {
+            autolevels: this.props.state.levels == 'auto',
+            levels: "-10,0,10",
+        };
+    },
+    onUpdate: function(key, value) {
+        var state = {}
+        state[key] = value;
+        var newState = jQuery.extend({}, this.props.state, state);
+        this.props.onUpdate(this.props.id, newState);
+    },
+    onUpdateAuto: function(key, value) {
+        this.setState({
+            autolevels: value,
+        });
+        this.onUpdate('levels', value ? 'auto' : this.state.levels);
+    },
+    levelsChanged: function(e) {
+        this.setState({
+            levels: e.target.value,
+        });
+    },
+    updateLevels: function() {
+        this.onUpdate('levels', this.state.levels);
+    },
+    render: function() {
+        return (
+                <div key={this.props.id}>
+                    <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
+                    <div className='sub' style={{'display': (this.props.state.variable == 'none' || this.props.state.variable == '') ? 'none' : 'block'}}>
+                        <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def={defaults['map'].colormap} onUpdate={this.onUpdate} url='/api/colormaps/' title='Colourmap'></ComboBox>
+                        <CheckBox key='legend' id='legend' state={this.props.state.legend} onUpdate={this.onUpdate} title='Show Legend'></CheckBox>
+                        <h1>Levels</h1>
+                        <CheckBox key='autolevels' id='autolevels' state={this.state.autolevels} onUpdate={this.onUpdateAuto} title='Auto Levels'></CheckBox>
+                        <input type="text" style={{'display': this.state.autolevels ? 'none' : 'inline-block'}} value={this.state.levels} onChange={this.levelsChanged} onBlur={this.updateLevels} />
+                    </div>
                 </div>
                );
     }

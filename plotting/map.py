@@ -162,14 +162,14 @@ def plot(dataset_name, **kwargs):
         contour_data = []
         contour = query.get('contour')
         if contour is not None and \
-            contour != '' and \
-                contour != 'none':
+            contour['variable'] != '' and \
+                contour['variable'] != 'none':
             target_lat, target_lon, d = load_interpolated(m, 500, dataset,
-                                                          contour,
+                                                          contour['variable'],
                                                           depth, time,
                                                           interpolation=interp)
-            contour_unit = get_variable_unit(dataset_name, contour)
-            contour_name = get_variable_name(dataset_name, contour)
+            contour_unit = get_variable_unit(dataset_name, contour['variable'])
+            contour_name = get_variable_name(dataset_name, contour['variable'])
             if contour_unit.startswith("Kelvin"):
                 d = np.add(d, -273.15)
                 contour_unit = "Celsius"
@@ -385,33 +385,55 @@ def plot(dataset_name, **kwargs):
             if (contour_data[0].min() != contour_data[0].max()):
                 cmin, cmax = utils.normalize_scale(contour_data[0],
                                                    contour_name, contour_unit)
-                levels = np.linspace(cmin, cmax, 5)
-                cmap = colormap.find_colormap(contour_name)
-                if contour == variables[0]:
-                    cmap = 'gray_r'
+                levels = None
+                if contour.get('levels') is not None and \
+                    contour['levels'] != 'auto' and \
+                        contour['levels'] != '':
+                    try:
+                        levels = list(
+                            set(
+                                [float(x)
+                                 for x in contour['levels'].split(",")
+                                 if x.strip()]
+                            )
+                        )
+                        levels.sort()
+                    except ValueError:
+                        pass
+
+                if levels is None:
+                    levels = np.linspace(cmin, cmax, 5)
+                cmap = contour['colormap']
+                if cmap is not None:
+                    cmap = colormap.colormaps.get(cmap)
+                    if cmap is None:
+                        cmap = colormap.find_colormap(contour_name)
+
                 contours = m.contour(
                     target_lon, target_lat, contour_data[0], latlon=True,
                     linewidths=2,
                     levels=levels,
                     cmap=cmap)
-                for idx, l in enumerate(levels):
-                    if contour_unit == 'fraction':
-                        contours.collections[idx].set_label(
-                            "{0:.0%}".format(l))
-                    else:
-                        contours.collections[idx].set_label(
-                            "%.2g %s" % (l, utils.mathtext(contour_unit)))
-                ax = plt.gca()
 
-                # Reverse order
-                handles, labels = ax.get_legend_handles_labels()
-                leg = ax.legend(handles[::-1], labels[::-1],
-                                loc='best', fontsize='small',
-                                frameon=True, framealpha=0.5,
-                                title=contour_name)
-                leg.get_title().set_fontsize('small')
-                for legobj in leg.legendHandles:
-                    legobj.set_linewidth(3)
+                if contour['legend']:
+                    for idx, l in enumerate(levels):
+                        if contour_unit == 'fraction':
+                            contours.collections[idx].set_label(
+                                "{0:.0%}".format(l))
+                        else:
+                            contours.collections[idx].set_label(
+                                "%.3g %s" % (l, utils.mathtext(contour_unit)))
+                    ax = plt.gca()
+
+                    # Reverse order
+                    handles, labels = ax.get_legend_handles_labels()
+                    leg = ax.legend(handles[::-1], labels[::-1],
+                                    loc='best', fontsize='small',
+                                    frameon=True, framealpha=0.5,
+                                    title=contour_name)
+                    leg.get_title().set_fontsize('small')
+                    for legobj in leg.legendHandles:
+                        legobj.set_linewidth(3)
 
         # Map Info
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))

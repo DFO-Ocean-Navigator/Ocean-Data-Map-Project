@@ -70,6 +70,8 @@ def normalize_scale(data, name, unit):
 
 
 def mathtext(text):
+    if text == 'Celsius':
+        text = u'\u00b0C'
     if re.search(r"[/_\^\\]", text):
         return "$%s$" % text
     else:
