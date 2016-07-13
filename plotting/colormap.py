@@ -57,6 +57,11 @@ colormaps = {
         _c('#1d3b7a'),
         _c('#f3fafe')
     ]),
+    'phytoplankton': cmocean.cm.bathymetry_r,
+    'silicate': make_colormap([
+        _c('#ffffff'),
+        _c('#57a6bd'),
+    ]),
     'mercator_current': make_colormap([
         _c('#e1f3fc'),
         _c('#7ebce5'), 0.17, _c('#7ebce5'),
