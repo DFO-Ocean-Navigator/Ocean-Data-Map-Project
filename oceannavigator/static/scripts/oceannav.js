@@ -27,6 +27,7 @@ var defaults = {
             'colormap':    'default',
             'levels':      'auto',
             'legend':      true,
+            'hatch':       false,
         },
         'quiver':          '',
         'interpolation': {
@@ -360,7 +361,7 @@ var Selector = React.createClass({
             'depth': (<ComboBox key='depth' id='depth' state={this.state.depth} def={defaults[this.state.type].depth} onUpdate={this.onUpdate} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.state.dataset + '&all=' + (this.state.type == 'timeseries')} title='Depth'></ComboBox>),
             'colormap': (<ComboBox key='colormap' id='colormap' state={this.state.colormap} def={defaults[this.state.type].colormap} onUpdate={this.onUpdate} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.</ComboBox>),
             'overlay': (<OverlaySelector key='overlay' id='overlay' state={this.state.overlay} onUpdate={this.onUpdate} url='/api/overlays/' title='Overlay'></OverlaySelector>),
-            'bathymetry': (<CheckBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate} title='Bathymetry'></CheckBox>),
+            'bathymetry': (<div key='bathymetry'><h1>Bathymetry</h1><CheckBox id='bathymetry' state={this.state.bathymetry} onUpdate={this.onUpdate} title='Show Bathymetry Contours'></CheckBox></div>),
             'quiver': (<ComboBox key='quiver' id='quiver' state={this.state.quiver} def={defaults[this.state.type].quiver} onUpdate={this.onUpdate} url={'/api/variables/?vectors_only&dataset=' + this.state.dataset} title='Arrows'>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>),
             'contour': (<ContourSelector key='contour' id='contour' state={this.state.contour} def={defaults[this.state.type].contour} onUpdate={this.onUpdate} dataset={this.state.dataset} title='Additional Contours'>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>),
             'showmap': (<CheckBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onUpdate} title='Show Location'>Shows the mini map of the location in the plot.</CheckBox>),
@@ -550,7 +551,10 @@ var ContourSelector = React.createClass({
                 <div key={this.props.id}>
                     <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate} url={'/api/variables/?dataset=' + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
                     <div className='sub' style={{'display': (this.props.state.variable == 'none' || this.props.state.variable == '') ? 'none' : 'block'}}>
-                        <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def={defaults['map'].colormap} onUpdate={this.onUpdate} url='/api/colormaps/' title='Colourmap'></ComboBox>
+                        <CheckBox key='hatch' id='hatch' state={this.props.state.hatch} onUpdate={this.onUpdate} title='Crosshatch'></CheckBox>
+                        <div style={{'display': this.props.state.hatch ? 'none' : 'block'}}>
+                            <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def={defaults['map'].colormap} onUpdate={this.onUpdate} url='/api/colormaps/' title='Colourmap'></ComboBox>
+                        </div>
                         <CheckBox key='legend' id='legend' state={this.props.state.legend} onUpdate={this.onUpdate} title='Show Legend'></CheckBox>
                         <h1>Levels</h1>
                         <CheckBox key='autolevels' id='autolevels' state={this.state.autolevels} onUpdate={this.onUpdateAuto} title='Auto Levels'></CheckBox>

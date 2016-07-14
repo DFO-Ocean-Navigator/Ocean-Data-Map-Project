@@ -409,31 +409,82 @@ def plot(dataset_name, **kwargs):
                     if cmap is None:
                         cmap = colormap.find_colormap(contour_name)
 
-                contours = m.contour(
-                    target_lon, target_lat, contour_data[0], latlon=True,
-                    linewidths=2,
-                    levels=levels,
-                    cmap=cmap)
+                if not contour.get('hatch'):
+                    contours = m.contour(
+                        target_lon, target_lat, contour_data[0], latlon=True,
+                        linewidths=2,
+                        levels=levels,
+                        cmap=cmap)
+                else:
+                    hatches = [
+                        '//', 'xx', '\\\\', '--', '||', '..', 'oo', '**'
+                    ]
+                    if len(levels) + 1 < len(hatches):
+                        hatches = hatches[0:len(levels) + 2]
+                    m.contour(
+                        target_lon, target_lat, contour_data[0], latlon=True,
+                        linewidths=1,
+                        levels=levels,
+                        colors='k')
+                    contours = m.contourf(
+                        target_lon, target_lat, contour_data[0],
+                        latlon=True, colors=['none'],
+                        levels=levels,
+                        hatches=hatches,
+                        vmin=cmin, vmax=cmax, extend='both')
 
                 if contour['legend']:
-                    for idx, l in enumerate(levels):
-                        if contour_unit == 'fraction':
-                            contours.collections[idx].set_label(
-                                "{0:.0%}".format(l))
+                    handles, l = contours.legend_elements()
+                    labels = []
+                    for i, lab in enumerate(l):
+                        if contour.get('hatch'):
+                            if contour_unit == 'fraction':
+                                if i == 0:
+                                    labels.append("$x \\leq {0: .0f}\\%$".
+                                                  format(levels[i] * 100))
+                                elif i == len(levels):
+                                    labels.append("$x > {0: .0f}\\%$".
+                                                  format(levels[i - 1] * 100))
+                                else:
+                                    labels.append(
+                                        "${0:.0f}\\% < x \\leq {1:.0f}\\%$".
+                                        format(levels[i - 1] * 100,
+                                               levels[i] * 100))
+                            else:
+                                if i == 0:
+                                    labels.append("$x \\leq %.3g$" %
+                                                  levels[i])
+                                elif i == len(levels):
+                                    labels.append("$x > %.3g$" %
+                                                  levels[i - 1])
+                                else:
+                                    labels.append("$%.3g < x \\leq %.3g$" %
+                                                  (levels[i - 1], levels[i]))
                         else:
-                            contours.collections[idx].set_label(
-                                "%.3g %s" % (l, utils.mathtext(contour_unit)))
+                            if contour_unit == 'fraction':
+                                labels.append("{0:.0%}".format(levels[i]))
+                            else:
+                                labels.append(
+                                    "%.3g %s" %
+                                    (levels[i], utils.mathtext(contour_unit)))
                     ax = plt.gca()
 
                     # Reverse order
-                    handles, labels = ax.get_legend_handles_labels()
+                    # handles, labels = ax.get_legend_handles_labels()
+
+                    if contour_unit != 'fraction' and not contour.get('hatch'):
+                        contour_title = "%s (%s)" % \
+                            (contour_name, utils.mathtext(contour_unit))
+                    else:
+                        contour_title = contour_name
                     leg = ax.legend(handles[::-1], labels[::-1],
-                                    loc='best', fontsize='small',
-                                    frameon=True, framealpha=0.5,
-                                    title=contour_name)
-                    leg.get_title().set_fontsize('small')
-                    for legobj in leg.legendHandles:
-                        legobj.set_linewidth(3)
+                                    loc='lower left', fontsize='medium',
+                                    frameon=True, framealpha=0.75,
+                                    title=contour_title)
+                    leg.get_title().set_fontsize('medium')
+                    if not contour.get('hatch'):
+                        for legobj in leg.legendHandles:
+                            legobj.set_linewidth(3)
 
         # Map Info
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))

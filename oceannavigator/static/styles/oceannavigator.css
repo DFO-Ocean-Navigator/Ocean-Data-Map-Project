@@ -89,10 +89,6 @@ div.inputs {
     float: right;
 }
 
-.overlayselector {
-    padding-bottom: 1em;
-}
-
 div.sub {
     margin-left: 1em;
 }
@@ -200,3 +196,15 @@ code {
     font-family: monospace;
 }
 
+input[type='checkbox'] {
+    margin-top: 1em;
+}
+
+h1 + div input[type='checkbox'],
+h1 + input[type='checkbox'] {
+    margin-top: 0.5em;
+}
+
+/* input[type='checkbox']:first-child { */
+/*     margin-top: 0; */
+/* } */
