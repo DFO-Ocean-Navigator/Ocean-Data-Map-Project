@@ -342,7 +342,7 @@ var Selector = React.createClass({
                     newstate[key] = defaults[this.state.type][key];
                 }
             }
-            if (value.startsWith('biomer') && jQuery.inArray(this.state.type, ['ctd', 'sound', 'ts']) != -1) {
+            if (value.indexOf('biomer') == 0 && jQuery.inArray(this.state.type, ['ctd', 'sound', 'ts']) != -1) {
                 newstate.type = defaults.type;
             }
         }
@@ -1807,7 +1807,7 @@ var TimePicker = React.createClass({
         if (this.props.quantum == 'hour') {
             var times = [];
             for (var i in this.state.data) {
-                if (this.state.data[i].value.startsWith(this.refs.picker.value)) {
+                if (this.state.data[i].value.indexOf(this.refs.picker.value) == 0) {
                     if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
                         times.unshift({
                             id: this.state.data[i].id,
@@ -1945,7 +1945,7 @@ var PlotType = React.createClass({
                 <option value="map">Map</option>
                 <option value="transect">Virtual Transect</option>
                 <option value="timeseries">Virtual Mooring</option>
-                <option value="ctd" disabled={this.props.dataset.startsWith('biomer')}>Virtual CTD</option>
+                <option value="ctd" disabled={this.props.dataset.indexOf('biomer') == 0}>Virtual CTD</option>
                 <option value="hovmoller">Hovm&ouml;ller Diagram</option>
             </select>
 
