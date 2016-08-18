@@ -49,6 +49,9 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
             def do_save(filename, data):
                 data.view(np.ma.MaskedArray).dump(filename)
 
+            if not os.path.isdir(CACHE_DIR):
+                os.makedirs(CACHE_DIR)
+
             t = Thread(target=do_save, args=(path, resampled))
             t.daemon = True
             t.start()
@@ -246,6 +249,9 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
 
             def do_save(filename, data):
                 d.dump(filename)
+
+            if not os.path.isdir(CACHE_DIR):
+                os.makedirs(CACHE_DIR)
 
             t = Thread(target=do_save, args=(path, d))
             t.daemon = True

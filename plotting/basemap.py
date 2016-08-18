@@ -4,6 +4,7 @@ import hashlib
 import threading
 from cachetools import LRUCache
 from oceannavigator import app
+import os
 
 _loaded_maps = {}
 _maps_cache = LRUCache(maxsize=64)
@@ -47,6 +48,9 @@ def load_map(projection, center, height, width):
 
             def do_pickle(basemap, filename):
                 pickle.dump(basemap, open(filename, 'wb'), -1)
+
+            if not os.path.isdir(CACHE_DIR):
+                os.makedirs(CACHE_DIR)
 
             t = threading.Thread(target=do_pickle, args=(basemap, CACHE_DIR +
                                                          "/" + filename))

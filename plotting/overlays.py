@@ -87,6 +87,9 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
             def do_save(filename, data):
                 np.save(filename, data.filled())
 
+            if not os.path.isdir(CACHE_DIR):
+                os.makedirs(CACHE_DIR)
+
             t = threading.Thread(
                 target=do_save, args=(CACHE_DIR + "/" + hashed, data))
             t.daemon = True
