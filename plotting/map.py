@@ -516,7 +516,7 @@ def plot(dataset_name, **kwargs):
         m.drawmeridians(
             meridians, labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
 
-        quantum = query.get('quantum')
+        quantum = query.get('dataset_quantum')
         if quantum == 'month':
             dformat = "%B %Y"
         elif quantum == 'day':

@@ -105,7 +105,7 @@ def plot(dataset_name, **kwargs):
             station_name = "(%1.4f, %1.4f)" % (
                 float(latlon[0]), float(latlon[1]))
 
-        quantum = query.get('quantum')
+        quantum = query.get('dataset_quantum')
         if quantum == 'month':
             dformat = "%B %Y"
         elif quantum == 'day':

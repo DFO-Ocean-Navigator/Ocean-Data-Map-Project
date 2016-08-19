@@ -157,7 +157,7 @@ def plot(dataset_name, **kwargs):
         times = t.num2date(time_var[int(starttime):(int(endtime) +
                                                     1)]).tolist()
 
-    if query.get('quantum') == 'month':
+    if query.get('dataset_quantum') == 'month':
         times = [datetime.date(x.year, x.month, 1) for x in times]
 
     # Colormap from arguments

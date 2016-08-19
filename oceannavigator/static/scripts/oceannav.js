@@ -1,4 +1,5 @@
 var loading_image = '/images/spinner.gif';
+
 var fail_image = '/images/failure.gif';
 var defaults = {
     'type':                'map',
@@ -99,7 +100,7 @@ var Plot = React.createClass({
         var query = {
             'type': q.type,
             'dataset': q.dataset,
-            'quantum': q.dataset_quantum,
+            'dataset_quantum': q.dataset_quantum,
         }
         for (var key in defaults[q.type]) {
             if (defaults[q.type].hasOwnProperty(key)) {
@@ -107,7 +108,7 @@ var Plot = React.createClass({
             }
         }
 
-        return JSON.stringify(query);
+        return encodeURIComponent(JSON.stringify(query));
     },
     buildURL: function(q, page) {
         if (page) {
@@ -738,7 +739,8 @@ var ComboBox = React.createClass({
                     });
 
                     var value = this.props.state;
-                    if (jQuery.inArray(this.props.state, a) == -1 || (this.props.state == '' && data.length > 0) || this.props.state == 'all') {
+                    var floatValue = parseFloat(value);
+                    if ((jQuery.inArray(this.props.state, a) == -1 && jQuery.inArray(floatValue, a) == -1) || (this.props.state == '' && data.length > 0) || this.props.state == 'all') {
                         if (props.multiple) {
                             if (value == 'all') {
                                 value = data.map(function (d) {
@@ -757,7 +759,7 @@ var ComboBox = React.createClass({
                             value = this.props.state;
                         }
                     }
-                    if (data.length > 0 && !props.multiple && jQuery.inArray(value, a) == -1) {
+                    if (data.length > 0 && !props.multiple && jQuery.inArray(value, a) == -1 && jQuery.inArray(floatValue, a) == -1) {
                         value = data[0].id;
                     }
                     props.onUpdate(props.id, value);
@@ -1711,14 +1713,14 @@ var TimePicker = React.createClass({
                     var revmap = {};
                     var min = 0;
                     var max = data.length - 1;
-                    if (this.props.hasOwnProperty('min')) {
-                        min = parseInt(this.props.min) + 1;
+                    if (props.hasOwnProperty('min')) {
+                        min = parseInt(props.min) + 1;
                         if (min < 0) {
                             min += data.length;
                         }
                     }
-                    if (this.props.hasOwnProperty('max')) {
-                        max = parseInt(this.props.max) - 1;
+                    if (props.hasOwnProperty('max')) {
+                        max = parseInt(props.max) - 1;
                         if (max < 0) {
                             max += data.length;
                         }

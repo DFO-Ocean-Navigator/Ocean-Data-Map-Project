@@ -372,7 +372,7 @@ def plot(dataset_name, **kwargs):
         else:
             transect_name += " Transect"
 
-        quantum = query.get('quantum')
+        quantum = query.get('dataset_quantum')
         if quantum == 'month':
             dformat = "%B %Y"
         elif quantum == 'day':

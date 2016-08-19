@@ -126,7 +126,7 @@ def plot(dataset_name, **kwargs):
                 float(latlon[0]),
                 float(latlon[1])
             )
-            if query.get('quantum') == 'month':
+            if query.get('dataset_quantum') == 'month':
                 t = [datetime.date(x.year, x.month, 1) for x in t]
 
             data.append(d)
