@@ -92,7 +92,11 @@ class Grid(object):
         lon1 = self.lonvar[maxy, maxx]
 
         distance = VincentyDistance()
-        return distance.measure((lat0, lon0), (lat1, lon1)) * 1000 / 2
+
+        d = distance.measure((lat0, lon0), (lat1, lon1)) * 1000 / 2
+        if d == 0:
+            d = 50000
+        return d
 
     def transect(self, variable, points, timestep, n=100,
                  interpolation={'method': 'inv_square', 'neighbours': 8}):
