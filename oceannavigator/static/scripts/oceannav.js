@@ -1755,7 +1755,10 @@ var TimePicker = React.createClass({
                                 minDate: new Date(map[min]),
                                 maxDate: new Date(map[max]),
                             });
+                            $(this.refs.picker).datepicker("option", "minDate", new Date(map[min]));
+                            $(this.refs.picker).datepicker("option", "maxDate", new Date(map[max]));
                         case 'hour':
+                            console.log("hour picker");
                             picker = $(this.refs.picker).datepicker({
                                 Button: false,
                                 dateFormat: "dd MM yy",
@@ -1763,6 +1766,8 @@ var TimePicker = React.createClass({
                                 minDate: new Date(map[min]),
                                 maxDate: new Date(map[max]),
                             });
+                            $(this.refs.picker).datepicker("option", "minDate", new Date(map[min]));
+                            $(this.refs.picker).datepicker("option", "maxDate", new Date(map[max]));
                             break;
                     }
                 }.bind(this),
