@@ -34,21 +34,21 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
-    'bathymetry': cmocean.cm.bathymetry,
+    'bathymetry': cmocean.cm.deep,
     'transparent_gray': mcolors.LinearSegmentedColormap.from_list(
         'transparent_gray',
         [(0, 0, 0, 0.5), (0, 0, 0, 0.1)]),
-    'salinity': cmocean.cm.salinity,
+    'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
-    'freesurface': cmocean.cm.freesurface,
-    'free surface': cmocean.cm.freesurface,
-    'surface height': cmocean.cm.freesurface,
-    'velocity': cmocean.cm.velocity,
-    'waveheight': cmocean.cm.waveheight,
-    'waveperiod': cmocean.cm.waveperiod,
-    'chlorophyll': cmocean.cm.chlorophyll,
-    'iron': cmocean.cm.waveheight,
-    'oxygen': cmocean.cm.oxygen,
+    'freesurface': cmocean.cm.balance,
+    'free surface': cmocean.cm.balance,
+    'surface height': cmocean.cm.balance,
+    'velocity': cmocean.cm.delta,
+    'waveheight': cmocean.cm.amp,
+    'waveperiod': cmocean.cm.tempo,
+    'chlorophyll': cmocean.cm.algae,
+    'iron': cmocean.cm.amp,
+    'oxygen': cmocean.cm.oxy,
     'phosphate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
     'nitrate': mcolors.ListedColormap(
@@ -57,7 +57,7 @@ colormaps = {
         _c('#1d3b7a'),
         _c('#f3fafe')
     ]),
-    'phytoplankton': cmocean.cm.bathymetry_r,
+    'phytoplankton': cmocean.cm.deep_r,
     'silicate': make_colormap([
         _c('#ffffff'),
         _c('#57a6bd'),
