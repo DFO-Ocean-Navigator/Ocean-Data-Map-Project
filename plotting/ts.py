@@ -14,11 +14,21 @@ def plot(dataset_name, **kwargs):
 
     query = kwargs.get('query')
 
-    point = query.get('station')
-    if point is None or len(point.split(',')) < 2:
-        latlon = [47.546667, -52.586667]
-    else:
-        latlon = point.split(',')
+    points = query.get('station')
+    if points is None or len(points) < 1:
+        points = [[47.546667, -52.586667]]
+
+    names = query.get('names')
+    if names is None or \
+            len(names) == 0 or \
+            len(names) != len(points) or \
+            names[0] is None:
+        names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in
+                 points]
+
+    t = sorted(zip(names, points))
+    names = [n for (n, p) in t]
+    points = [p for (n, p) in t]
 
     variables = ['votemper', 'vosaline']
 
@@ -53,44 +63,56 @@ def plot(dataset_name, **kwargs):
         else:
             depth_var = None
 
-        data = []
-        times = []
-        for v in variables:
-            d, t = load_timeseries(
-                dataset,
-                v,
-                range(time, time + 1),
-                'all',
-                float(latlon[0]),
-                float(latlon[1])
-            )
-            if dataset.variables[v].units.startswith("Kelvin"):
-                d = np.add(d, -273.15)
-            data.append(d)
-            times.append(t)
+        times = None
+        temperature = []
+        salinity = []
+        for p in points:
+            data = []
+            for v in variables:
+                d, t = load_timeseries(
+                    dataset,
+                    v,
+                    range(time, time + 1),
+                    'all',
+                    float(p[0]),
+                    float(p[1])
+                )
+                if times is None:
+                    times = t
+                data.append(d)
+            temperature.append(data[0])
+            salinity.append(data[1])
 
         depths = depth_var[:]
         depth_unit = depth_var.units
 
+        temperature = np.ma.array(temperature)
+        salinity = np.ma.array(salinity)
+
+        if variable_unit.startswith("Kelvin"):
+            temperature = np.ma.add(temperature, -273.15)
+            variable_unit = "Celsius"
+
     filename = utils.get_filename(get_dataset_url(dataset_name),
                                   query.get('station'),
                                   variables, variable_unit,
-                                  [times[0][0], times[0][-1]], None,
+                                  [times[0], times[-1]], None,
                                   filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
-            output.write("Depth, Salinity, Temperature\n")
+            output.write("Latitude, Longitude, Depth, Salinity, Temperature\n")
 
-            for idx, val in enumerate(data[0]):
-                if np.ma.is_masked(val):
-                    break
-                else:
-                    print val
-                output.write("%0.1f, %0.1f, %0.2f\n" % (depths[idx],
-                                                        data[1][idx],
-                                                        val))
+            for idx, p in enumerate(points):
+                for idx2, val in enumerate(temperature[idx]):
+                    if np.ma.is_masked(val):
+                        break
+                    output.write("%0.4f, %0.4f, %0.1f, %0.1f, %0.2f\n" %
+                                 (p[0], p[1],
+                                  depths[idx2],
+                                  salinity[idx][idx2],
+                                  temperature[idx][idx2]))
             return (output.getvalue(), mime, filename)
         finally:
             output.close()
@@ -99,11 +121,6 @@ def plot(dataset_name, **kwargs):
         size = kwargs.get('size').replace("x", " ").split()
         figuresize = (float(size[0]), float(size[1]))
         fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
-
-        station_name = query.get('station_name')
-        if station_name is None or station_name == '':
-            station_name = "(%1.4f, %1.4f)" % (
-                float(latlon[0]), float(latlon[1]))
 
         quantum = query.get('dataset_quantum')
         if quantum == 'month':
@@ -117,13 +134,14 @@ def plot(dataset_name, **kwargs):
                 dformat = "%B %Y"
             else:
                 dformat = "%d %B %Y"
-        plt.title("T/S Diagram for %s (%s)" % (station_name,
+
+        plt.title("T/S Diagram for %s (%s)" % (", ".join(names),
                                                timestamp.strftime(dformat)))
 
-        smin = np.amin(data[1]) - (np.amin(data[1]) * 0.01)
-        smax = np.amax(data[1]) + (np.amax(data[1]) * 0.01)
-        tmin = np.amin(data[0]) - (np.abs(np.amax(data[0]) * 0.1))
-        tmax = np.amax(data[0]) + (np.abs(np.amax(data[0]) * 0.1))
+        smin = np.amin(salinity) - (np.amin(salinity) * 0.01)
+        smax = np.amax(salinity) + (np.amax(salinity) * 0.01)
+        tmin = np.amin(temperature) - (np.abs(np.amax(temperature) * 0.1))
+        tmax = np.amax(temperature) + (np.abs(np.amax(temperature) * 0.1))
 
         xdim = round((smax - smin) / 0.1 + 1, 0)
         ydim = round((tmax - tmin) + 1, 0)
@@ -140,27 +158,33 @@ def plot(dataset_name, **kwargs):
 
         CS = plt.contour(si, ti, dens, linestyles='dashed', colors='k')
         plt.clabel(CS, fontsize=16, inline=1, fmt=r"$\sigma_t = %1.1f$")
-        plt.plot(data[1], data[0], '-')
 
-        labels = []
-        for idx, d in enumerate(depths):
-            if np.ma.is_masked(data[0][idx]):
-                break
-            digits = max(np.ceil(np.log10(d)), 3)
-            d = np.round(d, -int(digits - 1))
-            if d not in labels:
-                labels.append(d)
-                plt.annotate(
-                    '{:.0f}{:s}'.format(d, utils.mathtext(depth_unit)),
-                    xy=(data[1][idx], data[0][idx]),
-                    xytext=(15, -15),
-                    ha='left',
-                    textcoords='offset points',
-                    arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
-                )
+        for idx, _ in enumerate(temperature):
+            plt.plot(salinity[idx], temperature[idx], '-')
 
         plt.xlabel("Salinity (PSU)")
         plt.ylabel("Temperature (Celsius)")
+
+        if len(points) > 1:
+            plt.legend(names, loc='best')
+        else:
+            labels = []
+            for idx, d in enumerate(depths):
+                if np.ma.is_masked(data[0][idx]):
+                    break
+                digits = max(np.ceil(np.log10(d)), 3)
+                d = np.round(d, -int(digits - 1))
+                if d not in labels:
+                    labels.append(d)
+                    for idx2, _ in enumerate(temperature):
+                        plt.annotate(
+                            '{:.0f}{:s}'.format(d, utils.mathtext(depth_unit)),
+                            xy=(salinity[idx2][idx], temperature[idx2][idx]),
+                            xytext=(15, -15),
+                            ha='left',
+                            textcoords='offset points',
+                            arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
+                        )
 
         # Output the plot
         buf = StringIO()

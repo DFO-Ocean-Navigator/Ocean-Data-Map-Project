@@ -1,0 +1,44 @@
+body {
+    font-family: $font-family;
+
+    input, select {
+        font-size: 0.75em;
+    }
+
+    .nav-tabs {
+        font-size: 0.8em;
+    }
+}
+.OceanNavigator {
+    .MapInputs {
+        width: $sidebar-width;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+    > .content {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: $sidebar-width;
+        right: 0;
+        display: flex;
+        flex-flow: column;
+
+        .MapToolbar {
+            flex: 0 1 auto;
+        }
+
+        .Map {
+            flex: 1 1 auto;
+        }
+    }
+
+}
+
+.permalink-modal {
+    textarea {
+        font-size: 1em;
+        width: 100%;
+    }
+}

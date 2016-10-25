@@ -22,7 +22,7 @@ def plot(dataset_name, **kwargs):
 
     query = kwargs.get('query')
 
-    points = query.get('path_pts')
+    points = query.get('path')
     if points is None or len(points) == 0:
         points = [
             '47 N 52.8317 W',
@@ -32,7 +32,7 @@ def plot(dataset_name, **kwargs):
     end = points[-1]
 
     scale = query.get('scale')
-    if scale is None or scale == 'auto':
+    if scale is None or 'auto' in scale:
         scale = None
     else:
         scale = [float(x) for x in scale.split(',')]
@@ -175,14 +175,12 @@ def plot(dataset_name, **kwargs):
                                   times, None,
                                   filetype)
     if filetype == 'csv':
+        return
         # CSV File
         output = StringIO()
         try:
             # Write Header
-            output.write("Latitude, Longitude, Distance (km), ")
-            output.write(", ".join(["%d%s" % (np.round(d), depth_unit) for d
-                                   in depth]))
-            output.write("\n")
+            output.write("Time, Latitude, Longitude, Distance (km)\n")
 
             # Write Values
             for idx, val in enumerate(value.transpose()):
@@ -301,7 +299,7 @@ def plot(dataset_name, **kwargs):
             distance, value, times, variable_unit,
             variable_name, vmin, vmax, cmap, scale)
 
-        path_name = query.get('path_name')
+        path_name = query.get('name')
         if path_name is None or path_name == '':
             path_name = "%s to %s" % (geopy.Point(start), geopy.Point(end))
         else:

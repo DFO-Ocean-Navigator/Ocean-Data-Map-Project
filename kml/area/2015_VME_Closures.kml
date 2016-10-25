@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document id="root_doc">
+        <Schema name="2015_VME_Closures" id="2015_VME_Closures">
+            <SimpleField name="Name" type="string"></SimpleField>
+            <SimpleField name="Id" type="int"></SimpleField>
+        </Schema>
+        <Folder><name>2015 VME Closures</name>
+            <Placemark>
+                <name>3O Coral Closure</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-51.0,42.883333329999971 -51.0,42.55055556000007 -51.685,42.8 -52.9330555599999,43.449722220000062 -54.5,44.498611110000013 -54.5,44.83305556 -53.401944440000022,44.310000000000116 -53.1,44.310555560000068 -52.97,44.081388890000085 -52.663333329999944,43.93861111000006 -52.464444439999966,43.683055560000014 -52.219444440000018,43.660555559999978 -51.97166667,43.405555560000039 -51.97,43.403611110000099 -51.528888889999962,42.867777780000097 -51.0,42.883333329999971</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Corner Seamounts</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-48.0,36.000000000000114 -48.0,35.000000000000114 -52.0,35.000000000000114 -52.0,36.000000000000114 -48.0,36.000000000000114</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Fogo Seamounts 1</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-53.38805556,42.525833330000012 -52.560277779999979,42.525833330000012 -52.560277779999979,41.93 -53.38805556,41.93 -53.38805556,42.525833330000012</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Fogo Seamounts 2</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-52.463611109999981,41.122777780000035 -51.63611111,41.122777780000035 -51.63611111,40.526944439999966 -52.463611109999981,40.526944439999966 -52.463611109999981,41.122777780000035</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>New England Seamounts</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-64.0,39.0 -57.0,39.0 -57.0,35.000000000000114 -62.24,35.000000000000114 -62.631944439999977,35.258055560000116 -63.271944439999913,35.511944439999979 -63.95611111,35.668888890000062 -64.0,35.671944440000118 -64.0,39.0</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Newfoundland Seamounts</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-43.33333333,43.483333329999986 -46.666666669999927,43.483333329999986 -46.666666669999927,44.000000000000114 -43.33333333,44.000000000000114 -43.33333333,43.483333329999986</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Orphan Knoll</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.008333330000028,50.008333330000085 -47.008333329999964,50.008333330000085 -47.008333329999964,51.008333330000085 -45.008333330000028,51.008333330000085 -45.008333330000028,50.008333330000085</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Tail of the Bank</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-48.8193,44.048277779999978 -48.88119444,44.0485 -48.842388889999988,44.196694440000037 -48.842388889999988,44.359583330000135 -48.78,44.358694440000136 -48.8193,44.048277779999978</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Flemish Pass / Eastern Canyon</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-48.729277779999961,44.849 -48.82569444,44.896500000000117 -48.48727778,45.32869444 -47.688277780000014,45.818400000000111 -47.510083329999986,46.1171 -47.26294444,46.287027780000017 -47.184147219999943,46.506166670000027 -46.98138889,46.442222220000133 -46.98138889,46.351327780000076 -46.856388889999948,46.406694440000081 -47.0513,46.678 -46.96058333000002,47.196388889999916 -46.6679,47.058083329999931 -46.920694439999977,46.775583330000018 -46.7976944399999,46.424583330000132 -46.7976944399999,46.315194440000141 -48.729277779999961,44.849</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Beothuk Knoll</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.1007,45.8195 -46.3023,45.8195 -46.3023,45.9965 -46.1007,45.9965 -46.1007,45.8195</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Eastern Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-44.054,46.743 -43.5712,46.972 -43.5712,47.175 -43.3477,47.175 -43.3477,46.809800000000109 -43.969,46.66 -44.054,46.743</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northeast Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-43.48527778,47.796111110000083 -43.451861109999982,47.681777780000061 -43.7192,47.599277780000023 -43.809888890000025,47.854 -44.3522,48.455388890000052 -43.752222220000021,48.69369444 -43.69,48.620277780000094 -43.692222219999962,48.504166670000075 -43.755555559999948,48.41888889 -43.84722222,48.40805556000003 -43.805277779999926,48.238888890000105 -43.823333329999969,48.164722220000101 -43.48527778,47.796111110000083</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Sackville Spur</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.620388890000015,48.31419444 -46.653083330000015,48.353388890000019 -45.21238889,49.002700000000118 -45.149972219999938,48.94169444 -45.45569444,48.827 -46.142694439999957,48.48088889 -46.620388890000015,48.31419444</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northern Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.2878888899999,48.41727778000012 -44.91058333,48.41727778000012 -44.91058333,48.319083330000012 -45.032916669999956,48.319083330000012 -45.032916669999956,48.341583330000049 -45.2878888899999,48.341583330000049 -45.2878888899999,48.41727778000012</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northern Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.325527780000016,48.635527780000125 -45.195638889999941,48.635527780000125 -45.195777779999958,48.6694 -45.09319444,48.6694 -45.09319444,48.599000000000103 -45.325527780000016,48.599000000000103 -45.325527780000016,48.635527780000125</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northern Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.438583330000029,48.573194440000123 -45.5778888899999,48.4585 -45.661777780000023,48.505083330000041 -45.52108333000001,48.615277780000092 -45.438583330000029,48.573194440000123</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northwest Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.380027779999978,47.828194440000061 -46.06903889,48.159611110000014 -45.999555559999919,48.13025 -46.132694439999959,47.987694440000091 -46.112138889999983,47.978388890000019 -46.29108333,47.78808333 -46.380027779999978,47.828194440000061</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northwest Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-46.356583329999978,47.430000000000113 -46.459194439999976,47.430000000000113 -46.459194439999976,47.5004 -46.356583329999978,47.5004 -46.356583329999978,47.430000000000113</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Northwest Flemish Cap</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.90358333,48.201833330000113 -45.79036111,48.286611110000138 -45.763361109999948,48.268627780000088 -45.877944440000022,48.18425556 -45.90358333,48.201833330000113</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+            <Placemark>
+                <name>Beothuk Knoll</name>
+                <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+                <Polygon><outerBoundaryIs><LinearRing><coordinates>-45.687,46.233000000000111 -46.04,46.233000000000111 -46.04,46.364 -45.9467,46.364 -45.928869439999971,46.337311110000087 -45.687,46.337311110000087 -45.687,46.233000000000111</coordinates></LinearRing></outerBoundaryIs></Polygon>
+            </Placemark>
+        </Folder>
+</Document>
+</kml>

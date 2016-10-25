@@ -15,11 +15,11 @@ def plot(dataset_name, **kwargs):
 
     query = kwargs.get('query')
 
-    point = query.get('station')
-    if point is None or len(point.split(',')) < 2:
-        latlon = [47.546667, -52.586667]
+    points = query.get('station')
+    if points is None or len(points) < 1:
+        latlon = [[47.546667, -52.586667]]
     else:
-        latlon = point.split(',')
+        latlon = points
 
     variables = ['votemper', 'vosaline']
     ureg = UnitRegistry()
@@ -55,54 +55,64 @@ def plot(dataset_name, **kwargs):
         else:
             depth_var = None
 
-        data = []
-        times = []
-        for v in variables:
-            d, t = load_timeseries(
-                dataset,
-                v,
-                range(time, time + 1),
-                'all',
-                float(latlon[0]),
-                float(latlon[1])
-            )
-            if dataset.variables[v].units.startswith("Kelvin"):
-                d = np.add(d, -273.15)
-            data.append(d)
-            times.append(t)
+        times = None
+        temperature = []
+        salinity = []
+        for p in latlon:
+            data = []
+            for v in variables:
+                d, t = load_timeseries(
+                    dataset,
+                    v,
+                    range(time, time + 1),
+                    'all',
+                    float(p[0]),
+                    float(p[1])
+                )
+                if times is None:
+                    times = t
+                data.append(d)
+            temperature.append(data[0])
+            salinity.append(data[1])
 
         depths = depth_var[:]
         depth_unit = depth_var.units
 
-        temperature = data[0]
-        salinity = data[1]
+        temperature = np.ma.array(temperature)
+        salinity = np.ma.array(salinity)
+
+        if variable_unit.startswith("Kelvin"):
+            temperature = np.ma.add(temperature, -273.15)
+            variable_unit = "Celsius"
 
         depthm = (depths * ureg.parse_expression(depth_unit)).to(ureg.meter)
-        pressure = seawater.pres(depthm, float(latlon[0]))
+        pressure = [seawater.pres(depthm, ll[0]) for ll in latlon]
 
         sspeed = seawater.svel(salinity, temperature, pressure)
 
     filename = utils.get_filename(get_dataset_url(dataset_name),
                                   query.get('station'),
                                   variables, variable_unit,
-                                  [times[0][0], times[0][-1]], None,
+                                  [times[0], times[-1]], None,
                                   filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
             output.write(
-                "Depth, Pressure, Salinity, Temperature, Sound Speed\n")
+                "Latitude, Longitude, Depth, Pressure, Salinity, Temperature, Sound Speed\n")
 
-            for idx, val in enumerate(temperature):
-                if np.ma.is_masked(val):
-                    break
-                output.write("%0.1f, %0.1f, %0.1f, %0.1f, %0.1f\n" %
-                             (depths[idx],
-                              pressure[idx],
-                              salinity[idx],
-                              temperature[idx],
-                              sspeed[idx]))
+            for idx, p in enumerate(points):
+                for idx2, val in enumerate(temperature[idx]):
+                    if np.ma.is_masked(val):
+                        break
+                    output.write("%0.4f, %0.4f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f\n" %
+                                (p[0], p[1],
+                                 depths[idx],
+                                 pressure[idx][idx2],
+                                 salinity[idx][idx2],
+                                 temperature[idx][idx2],
+                                 sspeed[idx][idx2]))
             return (output.getvalue(), mime, filename)
         finally:
             output.close()
@@ -112,10 +122,13 @@ def plot(dataset_name, **kwargs):
         figuresize = (float(size[0]), float(size[1]))
         fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
 
-        station_name = query.get('station_name')
-        if station_name is None or station_name == '':
-            station_name = "(%1.4f, %1.4f)" % (
-                float(latlon[0]), float(latlon[1]))
+        names = query.get('names')
+        if names is None or \
+                len(names) == 0 or \
+                len(names) != len(points) or \
+                names[0] is None:
+            names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in
+                     latlon]
 
         quantum = query.get('dataset_quantum')
         if quantum == 'month':
@@ -131,7 +144,8 @@ def plot(dataset_name, **kwargs):
                 dformat = "%d %B %Y"
 
         ax = plt.gca()
-        ax.plot(sspeed, depthm, '-')
+        for ss in sspeed:
+            ax.plot(ss, depthm, '-')
 
         minspeed = np.amin(sspeed)
         maxspeed = np.amax(sspeed)
@@ -148,10 +162,13 @@ def plot(dataset_name, **kwargs):
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
         ax.set_title("Sound Speed Profile for %s (%s)" %
-                    (station_name, timestamp.strftime(dformat)))
+                    (", ".join(names), timestamp.strftime(dformat)))
         ax.title.set_position([.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)
+
+        if len(latlon) > 1:
+            plt.legend(names, loc='best')
 
         ylim = ax.get_ylim()
         ax2 = ax.twinx()

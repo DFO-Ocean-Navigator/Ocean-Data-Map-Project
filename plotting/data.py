@@ -78,7 +78,7 @@ def load_interpolated_grid(lat, lon, dataset, variable, depth, time,
                   str(time) +
                   str(interpolation)).hexdigest()
 
-    if _interpolated_cache.get(hashed) is None:
+    if _interpolated_cache.get(hashed) is None or True:
         if 'nav_lat' in dataset.variables:
             latvarname = 'nav_lat'
             lonvarname = 'nav_lon'

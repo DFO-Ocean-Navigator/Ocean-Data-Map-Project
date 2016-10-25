@@ -1,0 +1,65 @@
+.Map {
+    position: relative;
+
+    > div {
+        height: 100%;
+        position: fixed;
+        width: 100%;
+        max-height: calc(100% - #{$toolbar-height});
+        max-width: calc(100% - #{$sidebar-width});
+    }
+
+    .scale-viewer {
+        top: 0.5em;
+        right: 0.5em;
+        background-color: transparent;
+
+        :hover {
+            background-color: transparent;
+        }
+    }
+
+    .ol-mouse-position {
+        top: inherit;
+        bottom: 0;
+        left: 0;
+        right: inherit;
+        background-color: white;
+
+        div {
+            display: block;
+            padding: 0.5em;
+        }
+    }
+
+    .ol-popup {
+        position: relative;
+        background-color: $tooltip-color;
+        filter: drop-shadow(1px 1px 4px rgba(0,0,0,0.4));
+        padding: 0.25em;
+        color: white;
+        min-height: $tooltip-height;
+        border-radius: 5px;
+        text-align: center;
+
+        span {
+            display: block;
+            font-size: x-small;
+            margin-top: 0.3em;
+        }
+    }
+
+    .ol-popup:before {
+        content: '';
+        display: block;
+        width: 0;
+        height: 0;
+        position: absolute;
+
+        border-left: $tooltip-arrow-size solid transparent;
+        border-right: $tooltip-arrow-size solid transparent;
+        border-top:$tooltip-arrow-size solid $tooltip-color;
+        bottom: -$tooltip-arrow-size;
+        right: calc(50% - #{$tooltip-arrow-size});
+    }
+}

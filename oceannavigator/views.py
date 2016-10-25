@@ -9,19 +9,23 @@ import datetime
 from oceannavigator import app
 from oceannavigator.database import log_query_to_db
 from oceannavigator.util import get_variable_name, get_datasets, \
-    get_dataset_url
+    get_dataset_url, get_dataset_climatology, get_variable_scale
 from plotting.transect import plot as transect_plot
-from plotting.transect import list_transects
+from plotting.drifter import plot as drifter_plot
 from plotting.map import plot as map_plot
 from plotting.overlays import list_overlays, list_overlays_in_file
 from plotting.timeseries import plot as timeseries_plot
 from plotting.ts import plot as ts_plot
 from plotting.sound import plot as sound_plot
-from plotting.ctd import plot as ctd_plot
+from plotting.profile import plot as profile_plot
 from plotting.hovmoller import plot as hovmoller_plot
-from plotting.timeseries import list_stations
+from plotting.class4 import plot as class4_plot
+from plotting.stats import stats as areastats
+import plotting.tile
 import numpy as np
 import re
+import oceannavigator.misc
+import os
 
 
 @app.route('/api/datasets/')
@@ -38,6 +42,7 @@ def query_datasets():
     data = sorted(data, key=lambda k: k['value'])
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
+    resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
 
@@ -78,24 +83,6 @@ def colors():
     return resp
 
 
-@app.route('/api/transects/')
-def transects():
-    data = list_transects()
-    data = sorted(data, key=lambda k: k['name'])
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
-    return resp
-
-
-@app.route('/api/stations/')
-def stations():
-    data = list_stations()
-    data = sorted(data, key=lambda k: k['name'])
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
-    return resp
-
-
 @app.route('/api/colormaps/')
 def colormaps():
     data = [
@@ -128,36 +115,41 @@ def colormaps():
 
 @app.route('/api/depth/')
 def depth():
-    variable = request.args.get('variable')
-    if ',' in variable:
-        variable = variable.split(',')[0]
+    var = request.args.get('variable')
+
+    variables = var.split(',')
+    variables = [re.sub('_anom$', '', v) for v in variables]
 
     data = []
     if 'dataset' in request.args:
         dataset = request.args['dataset']
 
         with Dataset(get_dataset_url(dataset), 'r') as ds:
-            if variable and \
-                variable in ds.variables and \
-                ('deptht' in ds.variables[variable].dimensions or
-                    'depth' in ds.variables[variable].dimensions):
-                if str(request.args.get('all')).lower() in ['true',
-                                                            'yes',
-                                                            'on']:
-                    data.append({'id': 'all', 'value': 'All Depths'})
+            for variable in variables:
+                if variable and \
+                    variable in ds.variables and \
+                    ('deptht' in ds.variables[variable].dimensions or
+                        'depth' in ds.variables[variable].dimensions):
+                    if str(request.args.get('all')).lower() in ['true',
+                                                                'yes',
+                                                                'on']:
+                        data.append({'id': 'all', 'value': 'All Depths'})
 
-                if 'deptht' in ds.variables:
-                    depth_var = ds.variables['deptht']
-                elif 'depth' in ds.variables:
-                    depth_var = ds.variables['depth']
+                    if 'deptht' in ds.variables:
+                        depth_var = ds.variables['deptht']
+                    elif 'depth' in ds.variables:
+                        depth_var = ds.variables['depth']
 
-                for idx, value in enumerate(np.round(depth_var)):
-                    data.append({
-                        'id': idx,
-                        'value': "%d " % (value) + depth_var.units % value
-                    })
+                    for idx, value in enumerate(np.round(depth_var)):
+                        data.append({
+                            'id': idx,
+                            'value': "%d " % (value) + depth_var.units % value
+                        })
 
                 data.insert(0, {'id': 'bottom', 'value': 'Bottom'})
+    data = [
+        e for i, e in enumerate(data) if data.index(e) == i
+    ]
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -201,6 +193,12 @@ def vars_query():
     if 'dataset' in request.args:
         dataset = request.args['dataset']
 
+        if get_dataset_climatology(dataset) != "" and 'anom' in request.args:
+            with Dataset(get_dataset_climatology(dataset), 'r') as ds:
+                climatology_variables = map(str, ds.variables)
+        else:
+            climatology_variables = []
+
         three_d = '3d_only' in request.args
         with Dataset(get_dataset_url(dataset), 'r') as ds:
             if 'vectors_only' not in request.args:
@@ -214,8 +212,15 @@ def vars_query():
                         else:
                             data.append({
                                 'id': k,
-                                'value': get_variable_name(dataset, v)
+                                'value': get_variable_name(dataset, v),
+                                'scale': get_variable_scale(dataset, v)
                             })
+                            if k in climatology_variables:
+                                data.append({
+                                    'id': k + "_anom",
+                                    'value': get_variable_name(dataset, v) + " Anomaly",
+                                    'scale': [-10, 10]
+                                })
 
             if 'vectors' in request.args or 'vectors_only' in request.args:
                 rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
@@ -223,25 +228,32 @@ def vars_query():
                     n = get_variable_name(dataset, ds.variables['vozocrtx'])
                     data.append({
                         'id': 'vozocrtx,vomecrty',
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                        'scale': [0, get_variable_scale(dataset,
+                                                        'vozocrtx')[1]]
                     })
                 if 'itzocrtx' in ds.variables:
                     n = get_variable_name(dataset, ds.variables['itzocrtx'])
                     data.append({
                         'id': 'itzocrtx,itmecrty',
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                        'scale': [0, get_variable_scale(dataset,
+                                                        'itzocrtx')[1]]
                     })
                 if 'iicevelu' in ds.variables and not three_d:
                     n = get_variable_name(dataset, ds.variables['iicevelu'])
                     data.append({
                         'id': 'iicevelu,iicevelv',
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                        'scale': [0, get_variable_scale(dataset,
+                                                        'iicevelu')[1]]
                     })
                 if 'u_wind' in ds.variables and not three_d:
                     n = get_variable_name(dataset, ds.variables['u_wind'])
                     data.append({
                         'id': 'u_wind,v_wind',
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n))
+                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                        'scale': [0, get_variable_scale(dataset, 'u_wind')[1]]
                     })
 
     data = sorted(data, key=lambda k: k['value'])
@@ -289,6 +301,201 @@ def time_query():
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
     resp = Response(js, status=200, mimetype='application/json')
+    return resp
+
+
+@app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
+def scale(dataset, variable, scale):
+    img = plotting.tile.scale({
+        'dataset': dataset,
+        'variable': variable,
+        'scale': scale,
+    })
+    resp = Response(img, status=200, mimetype='image/png')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
+    cache_dir = app.config['CACHE_DIR']
+    f = os.path.join(cache_dir, request.path[1:])
+    if os.path.isfile(f):
+        return send_file(f, mimetype='image/png', cache_timeout=86400)
+    else:
+        if depth != "bottom" and depth != "all":
+            depth = int(depth)
+
+        img = plotting.tile.plot(projection, x, y, zoom, {
+            'dataset': dataset,
+            'variable': variable,
+            'time': time,
+            'depth': depth,
+            'scale': scale,
+        })
+
+        p = os.path.dirname(f)
+        if not os.path.isdir(p):
+            os.makedirs(p)
+
+        with open(f, 'w') as out:
+            out.write(img)
+
+        resp = Response(img, status=200, mimetype='image/png')
+        resp.cache_control.max_age = 86400
+        return resp
+
+
+@app.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
+def topo(projection, zoom, x, y):
+    cache_dir = app.config['CACHE_DIR']
+    f = os.path.join(cache_dir, request.path[1:])
+    if os.path.isfile(f):
+        return send_file(f, mimetype='image/png', cache_timeout=86400)
+    else:
+        img = plotting.tile.topo(projection, x, y, zoom, {})
+
+        p = os.path.dirname(f)
+        if not os.path.isdir(p):
+            os.makedirs(p)
+
+        with open(f, 'w') as out:
+            out.write(img)
+
+        resp = Response(img, status=200, mimetype='image/png')
+        resp.cache_control.max_age = 86400
+        return resp
+
+
+@app.route('/api/points/')
+def points():
+    pts = oceannavigator.misc.list_point_files()
+    data = json.dumps(pts)
+    return Response(data, status=200, mimetype='application/json')
+
+
+@app.route('/api/points/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
+def points_file(projection, resolution, extent, file_id):
+    pts = oceannavigator.misc.points(file_id, projection, resolution, extent)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/api/lines/')
+def lines():
+    pts = oceannavigator.misc.list_line_files()
+    data = json.dumps(pts)
+    return Response(data, status=200, mimetype='application/json')
+
+
+@app.route('/api/lines/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
+def lines_file(projection, resolution, extent, file_id):
+    pts = oceannavigator.misc.lines(file_id, projection, resolution, extent)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/api/areas/')
+def areas():
+    pts = oceannavigator.misc.list_area_files()
+    data = json.dumps(pts)
+    return Response(data, status=200, mimetype='application/json')
+
+
+@app.route('/api/areas/<string:projection>/<int:resolution>/<string:extent>/<string:area_id>.json')
+def areas_resolution(projection, resolution, extent, area_id):
+    d = oceannavigator.misc.areas(area_id, projection,
+                                  resolution, extent)
+    data = json.dumps(d)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 1
+    return resp
+
+
+@app.route('/api/areas/<string:file_id>')
+def areas_file(file_id):
+    pts = oceannavigator.misc.list_areas(file_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/api/drifters/')
+def drifters():
+    pts = oceannavigator.misc.list_drifters()
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 3600
+    return resp
+
+
+@app.route('/api/drifters/<string:projection>/<int:resolution>/<string:extent>/<string:drifter_id>.json')
+def drifter(projection, resolution, extent, drifter_id):
+    d = oceannavigator.misc.drifters(drifter_id, projection,
+                                     resolution, extent)
+    data = json.dumps(d)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 3600
+    return resp
+
+
+@app.route('/api/drifters/vars/<string:drifter_id>')
+def drifter_var(drifter_id):
+    pts = oceannavigator.misc.drifters_vars(drifter_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 3600
+    return resp
+
+
+@app.route('/api/drifters/time/<string:drifter_id>')
+def drifter_time(drifter_id):
+    pts = oceannavigator.misc.drifters_time(drifter_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 3600
+    return resp
+
+
+@app.route('/api/class4/')
+def class4_files():
+    pts = oceannavigator.misc.list_class4_files()
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 3600
+    return resp
+
+
+@app.route('/api/class4/<string:class4_id>')
+def class4(class4_id):
+    pts = oceannavigator.misc.list_class4(class4_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/api/class4/<string:projection>/<int:resolution>/<string:extent>/<string:class4_id>.json')
+def class4_json(projection, resolution, extent, class4_id):
+    d = oceannavigator.misc.class4(class4_id, projection,
+                                   resolution, extent)
+    data = json.dumps(d)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
+@app.route('/api/class4/forecasts/<string:class4_id>/<int:index>')
+def class4_forecasts(class4_id, index):
+    pts = oceannavigator.misc.list_class4_forecasts(class4_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
     return resp
 
 
@@ -342,6 +549,16 @@ def plot():
             opts['format'] = request.args.get('format')
         img, mime, filename = transect_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
+    elif plottype == 'drifter':
+        if size is None:
+            opts['size'] = '11x5'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = drifter_plot(dataset, **opts)
+        response = Response(img, status=200, mimetype=mime)
     elif plottype == 'timeseries':
         if size is None:
             opts['size'] = '11x5'
@@ -372,7 +589,7 @@ def plot():
             opts['format'] = request.args.get('format')
         img, mime, filename = sound_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
-    elif plottype == 'ctd':
+    elif plottype == 'profile':
         if size is None:
             opts['size'] = '11x9'
         else:
@@ -380,7 +597,17 @@ def plot():
 
         if 'format' in request.args:
             opts['format'] = request.args.get('format')
-        img, mime, filename = ctd_plot(dataset, **opts)
+        img, mime, filename = profile_plot(dataset, **opts)
+        response = Response(img, status=200, mimetype=mime)
+    elif plottype == 'class4':
+        if size is None:
+            opts['size'] = '11x9'
+        else:
+            opts['size'] = size
+
+        if 'format' in request.args:
+            opts['format'] = request.args.get('format')
+        img, mime, filename = class4_plot(dataset, **opts)
         response = Response(img, status=200, mimetype=mime)
     elif plottype == 'hovmoller':
         if size is None:
@@ -398,4 +625,22 @@ def plot():
     if 'save' in request.args:
         response.headers[
             'Content-Disposition'] = "attachment; filename=\"%s\"" % filename
+
+    if response != FAILURE:
+        response.cache_control.max_age = 300
+
     return response
+
+
+@app.route('/stats/')
+def stats():
+    FAILURE = redirect("/", code=302)
+    if 'query' not in request.args:
+        return FAILURE
+
+    query = json.loads(request.args.get('query'))
+
+    dataset = query.get('dataset')
+
+    data = areastats(dataset, query)
+    return Response(data, status=200, mimetype='application/json')

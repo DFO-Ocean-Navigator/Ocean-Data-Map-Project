@@ -24,7 +24,7 @@ def plot(dataset_name, **kwargs):
 
     query = kwargs.get('query')
 
-    points = query.get('transect_pts')
+    points = query.get('path')
     if points is None or len(points) == 0:
         points = [
             '47 N 52.8317 W',
@@ -39,7 +39,7 @@ def plot(dataset_name, **kwargs):
         time = int(query.get('time'))
 
     scale = query.get('scale')
-    if scale is None or scale == 'auto':
+    if scale is None or 'auto' in scale:
         scale = None
     else:
         scale = [float(x) for x in scale.split(',')]
@@ -94,7 +94,9 @@ def plot(dataset_name, **kwargs):
 
         velocity = False
         variables = query.get('variable').split(',')
-        anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
+        anom = np.array([v.endswith('_anom') for v in variables]).all()
+        if anom:
+            variables = [v[:-5] for v in variables]
 
         if len(variables) > 1:
             velocity = True
@@ -365,7 +367,7 @@ def plot(dataset_name, **kwargs):
                     divider, surface_dist, surface_value, surface_unit,
                     surface_name)
 
-        transect_name = query.get('transect_name')
+        transect_name = query.get('name')
         if transect_name is None or transect_name == '':
             transect_name = "Transect from %s to %s" % (geopy.Point(start),
                                                         geopy.Point(end))

@@ -14,11 +14,11 @@ def load_map(projection, center, height, width):
     CACHE_DIR = app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
-    if _maps_cache.get(filename) is None:
+    if _maps_cache.get(filename) is None or True:
         try:
             basemap = pickle.load(open(CACHE_DIR + "/" + filename))
         except:
-            if projection == 'npstere':
+            if projection in ['npstere', 'spstere']:
                 basemap = Basemap(
                     resolution='i',
                     ellps='WGS84',

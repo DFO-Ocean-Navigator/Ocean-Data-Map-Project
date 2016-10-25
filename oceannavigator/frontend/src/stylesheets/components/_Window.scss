@@ -1,0 +1,15 @@
+.Window {
+    div.content {
+        margin-top: 0.5em;
+
+        img {
+            display: block;
+            margin: 0 auto;
+        }
+    }
+
+    div.inputs {
+        float: left;
+        max-width: $sidebar-width;
+    }
+}

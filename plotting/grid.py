@@ -8,6 +8,9 @@ import itertools
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
 from cachetools import LRUCache
+import pytz
+from netCDF4 import netcdftime
+from bisect import bisect_left
 
 _data_cache = LRUCache(maxsize=16)
 
@@ -23,6 +26,13 @@ class Grid(object):
         """
         self.latvar = ncfile.variables[latvarname]
         self.lonvar = ncfile.variables[lonvarname]
+
+        if 'time_counter' in ncfile.variables:
+            self.timevar = ncfile.variables['time_counter']
+        elif 'time' in ncfile.variables:
+            self.timevar = ncfile.variables['time']
+        else:
+            self.timevar = None
 
         self.kdt = _data_cache.get(ncfile.filepath())
         if self.kdt is None:
@@ -78,22 +88,39 @@ class Grid(object):
         y, x = self.find_index(lat.ravel(), lon.ravel())
         miny, maxy = np.amin(y), np.amax(y)
         minx, maxx = np.amin(x), np.amax(x)
+
+        dy = maxy - miny
+        if dy == 0:
+            miny -= 1
+            maxy += 1
+
+        miny = int(miny - dy / 4.0)
+        if miny < 0:
+            miny = 0
+        maxy = int(maxy + dy / 4.0)
+        if maxy >= self.latvar.shape[0]:
+            maxy = self.latvar.shape[0] - 1
+
+        dx = maxx - minx
+        if dx == 0:
+            minx -= 1
+            maxx += 1
+
+        minx = int(minx - dx / 4.0)
+        if minx < 0:
+            minx = 0
+        maxx = int(maxx + dx / 4.0)
+        if maxx >= self.latvar.shape[1]:
+            maxx = self.latvar.shape[1] - 1
+
         return miny, maxy, minx, maxx
 
     def interpolation_radius(self, lat, lon):
-        y, x = self.find_index([lat], [lon], 8)
-        maxx = np.amax(x)
-        maxy = np.amax(y)
-        minx = np.amin(x)
-        miny = np.amin(y)
-        lat0 = self.latvar[miny, minx]
-        lon0 = self.lonvar[miny, minx]
-        lat1 = self.latvar[maxy, maxx]
-        lon1 = self.lonvar[maxy, maxx]
-
         distance = VincentyDistance()
-
-        d = distance.measure((lat0, lon0), (lat1, lon1)) * 1000 / 2
+        d = distance.measure(
+            (np.amin(lat), np.amin(lon)),
+            (np.amax(lat), np.amax(lon))
+        ) * 1000 / 1.5
         if d == 0:
             d = 50000
         return d
@@ -326,6 +353,104 @@ class Grid(object):
 
         return np.array([target_lat, target_lon]), distances, resampled
 
+    def path(self, variable, depth, points, times, n=100,
+             interpolation={'method': 'inv_square', 'neighbours': 8}):
+        # distances, times, target_lat, target_lon, b = \
+            # _path_to_points_time(points, times, n)
+
+        target_lat = points[:, 0]
+        target_lon = points[:, 1]
+
+        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
+
+        miny = np.amin(idx_y)
+        maxy = np.amax(idx_y)
+        minx = np.amin(idx_x)
+        maxx = np.amax(idx_x)
+        if minx == maxx:
+            maxx += 1
+        if miny == maxy:
+            maxy += 1
+
+        lat = self.latvar[miny:maxy, minx:maxx]
+        lon = self.lonvar[miny:maxy, minx:maxx]
+
+        method = interpolation.get('method')
+        neighbours = interpolation.get('neighbours')
+        if neighbours < 1:
+            neighbours = 1
+
+        radius = self.interpolation_radius(np.median(target_lat),
+                                           np.median(target_lon))
+        ts = [
+            t.replace(tzinfo=pytz.UTC)
+            for t in
+            netcdftime.utime(self.timevar.units).num2date(self.timevar[:])
+        ]
+
+        mintime, x = _take_surrounding(ts, times[0])
+        x, maxtime = _take_surrounding(ts, times[-1])
+        maxtime += 1
+        uniquetimes = range(mintime, maxtime + 1)
+
+        combined = []
+        for t in range(mintime, maxtime):
+            if len(variable.shape) == 3:
+                data = variable[t, miny:maxy, minx:maxx]
+            else:
+                data = variable[t, depth, miny:maxy, minx:maxx]
+            _fill_invalid_shift(np.ma.array(data))
+            combined.append(resample(lat,
+                                     lon,
+                                     np.array(target_lat),
+                            np.array(target_lon),
+                                     data,
+                                     method=method,
+                                     neighbours=neighbours,
+                                     radius_of_influence=radius,
+                                     nprocs=4))
+        combined = np.ma.array(combined)
+
+        if mintime + 1 >= len(ts):
+            result = combined[0]
+        else:
+            t0 = ts[mintime]
+            td = (ts[mintime + 1] - t0).total_seconds()
+
+            deltas = np.ma.masked_array([t.total_seconds() / td
+                                        for t in np.subtract(times, t0)])
+
+            model_td = ts[1] - ts[0]
+
+            deltas[
+                np.where(np.array(times) > ts[-1] + model_td / 2)
+            ] = np.ma.masked
+            deltas[
+                np.where(np.array(times) < ts[0] - model_td / 2)
+            ] = np.ma.masked
+
+            # This is a slight modification on scipy's interp1d
+            # https://github.com/scipy/scipy/blob/v0.17.1/scipy/interpolate/interpolate.py#L534-L561
+            x = np.array(range(0, len(uniquetimes) - 1))
+            new_idx = np.searchsorted(x, deltas)
+            new_idx = new_idx.clip(1, len(x) - 1).astype(int)
+            low = new_idx - 1
+            high = new_idx
+            if (high >= len(x)).any():
+                result = combined[0]
+                # result[:, np.where(deltas.mask)] = np.ma.masked
+                result[np.where(deltas.mask)] = np.ma.masked
+            else:
+                x_low = x[low]
+                x_high = x[high]
+                y_low = combined[low, range(0, len(times))]
+                y_high = combined[high, range(0, len(times))]
+                slope = (y_high - y_low) / (x_high - x_low)[None]
+                y_new = slope * (deltas - x_low)[None] + y_low
+                result = y_new[0]
+
+        return result
+
 
 def _fill_invalid_shift(z):
     # extend values down 1 depth step
@@ -351,7 +476,8 @@ def resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
             target_def,
             radius_of_influence=radius_of_influence,
             neighbours=neighbours,
-            weight_funcs=lambda r: 1 / r ** 2,
+            weight_funcs=lambda r: 1 / np.clip(r, 0.0625,
+                                               np.finfo(r.dtype).max) ** 2,
             fill_value=None,
             nprocs=nprocs)
     elif method == 'bilinear':
@@ -361,7 +487,8 @@ def resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
             target_def,
             radius_of_influence=radius_of_influence,
             neighbours=4,
-            weight_funcs=lambda r: 1 / r,
+            weight_funcs=lambda r: 1 / np.clip(r, 0.0625,
+                                               np.finfo(r.dtype).max),
             fill_value=None,
             nprocs=nprocs)
     elif method == 'nn':
@@ -530,3 +657,48 @@ def _path_to_points(points, n):
         bearings.extend([b] * len(p_dist))
 
     return distances, target_lat, target_lon, bearings
+
+
+def _path_to_points_time(points, intimes, n):
+    tuples = zip(points, points[1::], intimes, intimes[1::])
+
+    d = VincentyDistance()
+    dist_between_pts = []
+    for pair in tuples:
+        dist_between_pts.append(d.measure(pair[0], pair[1]))
+
+    total_distance = np.sum(dist_between_pts)
+    distances = []
+    target_lat = []
+    target_lon = []
+    bearings = []
+    times = []
+    for idx, tup in enumerate(tuples):
+        npts = int(np.ceil(n * (dist_between_pts[idx] /
+                                total_distance)))
+        if npts < 2:
+            npts = 2
+        p0 = geopy.Point(tup[0])
+        p1 = geopy.Point(tup[1])
+
+        p_dist, p_lat, p_lon, b = points_between(p0, p1, npts)
+        if len(distances) > 0:
+            distances.extend(np.add(p_dist, distances[-1]))
+        else:
+            distances.extend(p_dist)
+        target_lat.extend(p_lat)
+        target_lon.extend(p_lon)
+        bearings.extend([b] * len(p_dist))
+        times.extend([tup[2] + i * (tup[3] - tup[2]) / (npts - 1)
+                     for i in range(0, npts)])
+
+    return distances, times, target_lat, target_lon, bearings
+
+
+def _take_surrounding(myList, mynum):
+    pos = bisect_left(myList, mynum)
+    if pos == 0:
+        return 0, 0
+    if pos == len(myList):
+        return len(myList) - 1, len(myList) - 1
+    return pos - 1, pos

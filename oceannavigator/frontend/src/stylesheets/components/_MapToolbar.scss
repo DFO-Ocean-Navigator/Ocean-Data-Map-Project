@@ -1,0 +1,15 @@
+
+.MapToolbar {
+    width: 100%;
+    height: $toolbar-height;
+    padding: 0.25em;
+    background-color: $toolbar-color;
+
+    button {
+        height: calc(#{$toolbar-height} - 0.2em);
+    }
+
+    div + div, div + button, button + div, button + button {
+        margin-left: 0.5em;
+    }
+}

@@ -53,10 +53,11 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
     'nitrate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'nitrate.txt'))),
-    'ice': make_colormap([
-        _c('#1d3b7a'),
-        _c('#f3fafe')
-    ]),
+    'ice': cmocean.cm.ice,
+    # 'ice': make_colormap([
+    # _c('#1d3b7a'),
+    # _c('#f3fafe')
+    # ]),
     'phytoplankton': cmocean.cm.deep_r,
     'silicate': make_colormap([
         _c('#ffffff'),

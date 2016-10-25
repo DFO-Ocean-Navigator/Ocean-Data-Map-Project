@@ -75,3 +75,17 @@ def get_variable_unit(dataset_name, variable):
         return variable.units
     else:
         return "Unknown"
+
+
+def get_variable_scale(dataset_name, variable):
+    var_name = variable
+    if "short_name" in dir(variable):
+        var_name = variable.short_name
+    from_config = get_variables(dataset_name).get(var_name.lower())
+
+    if from_config is not None:
+        scale = from_config.get("scale")
+        if scale is not None:
+            return scale
+
+    return [0, 100]

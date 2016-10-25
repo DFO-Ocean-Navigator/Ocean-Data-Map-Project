@@ -1,0 +1,80 @@
+
+div.input {
+    padding: 0.5em;
+
+    > div {
+        padding: 0;
+    }
+
+    h1 {
+        margin-top: 0.5em;
+        font-weight: bold;
+
+        span {
+            display: block;
+            float: right;
+            font-weight: normal;
+            font-size: 80%;
+            border: 1px solid grey;
+            padding: 2px;
+            margin-bottom: 1px;
+            margin-top: -3px;
+            cursor: pointer;
+        }
+    }
+
+    table {
+        width: 100%;
+
+        input {
+            width: 100%;
+        }
+    }
+
+    select {
+        width: 100%;
+    }
+
+    input:not([type='checkbox']) {
+        width: 100%;
+    }
+
+    input[type='checkbox'] + label {
+        padding-left: 0.5em;
+        padding-bottom: 0.5em;
+        max-width: 90%;
+    }
+
+    label.forcheckbox {
+        display: block;
+        padding-left: 1.25em;
+        text-indent: -1.25em;
+
+        input {
+            font-size: 100%;
+            width: 1.25em;
+            vertical-align: middle;
+        }
+    }
+}
+
+.helpDialog {
+    p {
+        margin-top: 1em;
+    }
+
+    em {
+        font-weight: bold;
+    }
+
+    ul {
+        list-style: disc;
+        margin-left: 1.5em;
+    }
+
+    h1 {
+        font-size: 150%;
+        margin-top: 0;
+    }
+
+}

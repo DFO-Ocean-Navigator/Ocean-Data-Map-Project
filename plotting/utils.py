@@ -2,7 +2,7 @@ import numpy as np
 import re
 
 
-def get_filename(url, location, variable, units, timestamp, depthstr,
+def get_filename(url, locations, variable, units, timestamp, depthstr,
                  extension):
     outname = []
     outname.append("_".join(url.split('/')[-3:-1]))
@@ -11,11 +11,11 @@ def get_filename(url, location, variable, units, timestamp, depthstr,
     else:
         outname.append(variable)
     outname.append(units)
-    if isinstance(location, list):
-        outname.append(",".join(["%0.4f" % x for x in location[0]]))
-        outname.append(",".join(["%0.4f" % x for x in location[1]]))
-    elif location is not None:
-        outname.append(location)
+    if isinstance(locations, list):
+        for l in locations:
+            outname.append(",".join(["%0.4f" % x for x in l]))
+    elif locations is not None:
+        outname.append(locations)
     if isinstance(timestamp, list) and len(timestamp) > 0:
         outname.append(timestamp[0].strftime("%Y%m%d%H%M%S"))
         outname.append(timestamp[-1].strftime("%Y%m%d%H%M%S"))
@@ -70,7 +70,7 @@ def normalize_scale(data, name, unit):
 
 
 def mathtext(text):
-    if text == 'Celsius':
+    if text in ['Celsius', 'degree_Celsius']:
         text = u'\u00b0C'
     if re.search(r"[/_\^\\]", text):
         return "$%s$" % text

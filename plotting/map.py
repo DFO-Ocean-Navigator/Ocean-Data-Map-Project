@@ -17,6 +17,13 @@ import tempfile
 import os
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
+from shapely.geometry import LinearRing
+from shapely.ops import cascaded_union
+from matplotlib.patches import Polygon
+from matplotlib.bezier import concatenate_paths
+from matplotlib.patches import PathPatch
+from textwrap import wrap
+from oceannavigator.misc import list_areas
 
 
 def plot(dataset_name, **kwargs):
@@ -25,7 +32,7 @@ def plot(dataset_name, **kwargs):
     query = kwargs.get('query')
 
     scale = query.get('scale')
-    if scale is None or scale == 'auto':
+    if scale is None or 'auto' in scale:
         scale = None
     else:
         scale = [float(x) for x in scale.split(',')]
@@ -36,21 +43,98 @@ def plot(dataset_name, **kwargs):
         vector = True
         # quivervars = quiver.split(",")
 
-    if 'arctic' == query.get('location'):
-        m = basemap.load_arctic()
-    elif 'pacific' == query.get('location'):
-        m = basemap.load_pacific()
-    elif 'nwatlantic' == query.get('location'):
-        m = basemap.load_nwatlantic()
-    elif 'nwpassage' == query.get('location'):
-        m = basemap.load_nwpassage()
-    elif isinstance(query.get('location'), list):
-        m = basemap.load_map('merc', None,
-                             query.get('location')[0],
-                             query.get('location')[1])
+    projection = query.get('projection')
+
+    area = query.get('area')
+    names = None
+    centroids = None
+    data = None
+
+    if area:
+        names = []
+        centroids = []
+        all_rings = []
+        for idx, a in enumerate(area):
+            if isinstance(a, str) or isinstance(a, unicode):
+                a = a.encode("utf-8")
+                sp = a.split('/', 1)
+                if data is None:
+                    data = list_areas(sp[0], simplify=False)
+
+                b = [x for x in data if x.get('key') == a]
+                a = b[0]
+                area[idx] = a
+
+            rings = [LinearRing(p) for p in a['polygons']]
+            if len(rings) > 1:
+                u = cascaded_union(rings)
+            else:
+                u = rings[0]
+            all_rings.append(u.envelope)
+            if a.get('name'):
+                names.append(a.get('name'))
+                centroids.append(u.centroid)
+
+        nc = sorted(zip(names, centroids))
+        names = [n for (n, c) in nc]
+        centroids = [c for (n, c) in nc]
+        data = None
+
+        if len(all_rings) > 1:
+            combined = cascaded_union(all_rings)
+        else:
+            combined = all_rings[0]
+
+        combined = combined.envelope
+
+        from geopy.distance import VincentyDistance
+        distance = VincentyDistance()
+
+        centroid = list(combined.centroid.coords)[0]
+
+        b = combined.bounds
+        height = distance.measure(
+            (b[0], centroid[1]), (b[2], centroid[1])) * 1000 * 1.1
+        width = distance.measure(
+            (b[1], centroid[0]), (b[3], centroid[0])) * 1000 * 1.1
+
+        # bounds = list(b)
+        # Add 10%
+        # bounds[0] -= (b[2] - b[0]) / 10.0
+        # bounds[2] += (b[2] - b[0]) / 10.0
+        # bounds[1] -= (b[3] - b[1]) / 10.0
+        # bounds[3] += (b[3] - b[1]) / 10.0
+        # m = basemap.load_map('merc', None,
+        #                      bounds[0:2],
+        #                      bounds[2:4])
+
+        if projection == 'EPSG:32661':
+            blat = min(b[0], b[2])
+            blat = 5 * np.floor(blat / 5)
+            m = basemap.load_map('npstere', (blat, 0), None, None)
+        elif projection == 'EPSG:3031':
+            blat = max(b[0], b[2])
+            blat = 5 * np.ceil(blat / 5)
+            m = basemap.load_map('spstere', (blat, 180), None, None)
+        else:
+            m = basemap.load_map('lcc', centroid, height, width)
+
     else:
-        # Default to NW Atlantic
-        m = basemap.load_nwatlantic()
+        if 'arctic' == query.get('location'):
+            m = basemap.load_arctic()
+        elif 'pacific' == query.get('location'):
+            m = basemap.load_pacific()
+        elif 'nwatlantic' == query.get('location'):
+            m = basemap.load_nwatlantic()
+        elif 'nwpassage' == query.get('location'):
+            m = basemap.load_nwpassage()
+        elif isinstance(query.get('location'), list):
+            m = basemap.load_map('merc', None,
+                                 query.get('location')[0],
+                                 query.get('location')[1])
+        else:
+            # Default to NW Atlantic
+            m = basemap.load_nwatlantic()
 
     if filetype == 'geotiff' and m.projection == 'merc':
         target_lat, target_lon = np.meshgrid(
@@ -63,6 +147,11 @@ def plot(dataset_name, **kwargs):
         )
     else:
         target_lon, target_lat = m.makegrid(500, 500)
+
+    # Anomomilies
+    anom = np.array([v.endswith('_anom') for v in variables]).all()
+    if anom:
+        variables = [v[:-5] for v in variables]
 
     with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
         if query.get('time') is None or (type(query.get('time')) == str and
@@ -201,9 +290,6 @@ def plot(dataset_name, **kwargs):
         for d in contour_data:
             mask = maskoceans(target_lon, target_lat, d).mask
             d[~mask] = np.ma.masked
-
-    # Anomomilies
-    anom = str(query.get('anomaly')).lower() in ['true', 'yes', 'on']
 
     if anom:
         a = []
@@ -381,6 +467,39 @@ def plot(dataset_name, **kwargs):
 
                 overlays.draw_overlay(m, f, **opts)
 
+        if area and query.get('showarea'):
+            for a in area:
+                polys = []
+                for co in a['polygons'] + a['innerrings']:
+                    coords = np.array(co).transpose()
+                    mx, my = m(coords[1], coords[0])
+                    map_coords = zip(mx, my)
+                    polys.append(Polygon(map_coords))
+
+                paths = []
+                for poly in polys:
+                    paths.append(poly.get_path())
+                path = concatenate_paths(paths)
+
+                poly = PathPatch(path,
+                                 fill=None,
+                                 edgecolor='k',
+                                 linewidth=1
+                                 )
+                plt.gca().add_patch(poly)
+
+            if names is not None and len(names) > 1:
+                for idx, name in enumerate(names):
+                    x, y = m(centroids[idx].y, centroids[idx].x)
+                    plt.annotate(
+                        xy=(x, y),
+                        s=name,
+                        ha='center',
+                        va='center',
+                        size=12,
+                        # weight='bold'
+                    )
+
         if len(contour_data) > 0:
             if (contour_data[0].min() != contour_data[0].max()):
                 cmin, cmax = utils.normalize_scale(contour_data[0],
@@ -392,9 +511,9 @@ def plot(dataset_name, **kwargs):
                     try:
                         levels = list(
                             set(
-                                [float(x)
-                                 for x in contour['levels'].split(",")
-                                 if x.strip()]
+                                [float(xx)
+                                 for xx in contour['levels'].split(",")
+                                 if xx.strip()]
                             )
                         )
                         levels.sort()
@@ -490,7 +609,9 @@ def plot(dataset_name, **kwargs):
         m.drawmapboundary(fill_color=(0.3, 0.3, 0.3))
         m.drawcoastlines(linewidth=0.5)
         m.fillcontinents(color='grey', lake_color='dimgrey')
-        if np.amax(target_lat) - np.amin(target_lat) < 25:
+        if np.amax(target_lat) - np.amin(target_lat) < 1:
+            parallels = [target_lat.mean()]
+        elif np.amax(target_lat) - np.amin(target_lat) < 25:
             parallels = np.round(
                 np.arange(np.amin(target_lat),
                           np.amax(target_lat),
@@ -501,7 +622,9 @@ def plot(dataset_name, **kwargs):
                 round(np.amin(target_lat), -1),
                 round(np.amax(target_lat), -1),
                 5)
-        if np.amax(target_lon) - np.amin(target_lon) < 25:
+        if np.amax(target_lon) - np.amin(target_lon) < 0.5:
+            meridians = [target_lon.mean()]
+        elif np.amax(target_lon) - np.amin(target_lon) < 25:
             meridians = np.round(
                 np.arange(np.amin(target_lon),
                           np.amax(target_lon),
@@ -529,8 +652,19 @@ def plot(dataset_name, **kwargs):
             else:
                 dformat = "%d %B %Y"
 
-        plt.title(variable_name.title() + depth_label +
-                  ", " + timestamp.strftime(dformat))
+        area_title = ""
+        if area:
+            area_title = "\n".join(
+                wrap(", ".join(names), 60)
+            ) + "\n"
+
+        title = "%s %s %s, %s" % (
+            area_title,
+            variable_name.title(),
+            depth_label,
+            timestamp.strftime(dformat)
+        )
+        plt.title(title.strip())
         ax = plt.gca()
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.05)
