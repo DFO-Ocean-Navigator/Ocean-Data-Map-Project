@@ -58,7 +58,28 @@ div.input {
     }
 }
 
-.helpDialog {
+.helpdialog {
+    margin: 30px auto;
+    max-height: calc(100vh - 60px);
+    height: 100%;
+
+    .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+
+        .modal-header {
+            flex: 0 0 auto;
+        }
+        .modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+        }
+        .modal-footer {
+            flex: 0 0 auto;
+        }
+    }
+
     p {
         margin-top: 1em;
     }
