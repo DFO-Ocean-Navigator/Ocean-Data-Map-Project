@@ -587,6 +587,8 @@ class Map extends React.Component {
             this.mapView.on('change:center', this.constrainPan.bind(this));
             this.map.setView(this.mapView);
         }
+
+        this.map.render();
     }
 
     refreshFeatures(e) {

@@ -89,6 +89,8 @@ class MapToolbar extends React.Component {
                 parser: 'point',
             });
             this.fileinput.click();
+        } else if (key == "draw") {
+            this.props.action("point");
         } else {
             this.props.action("show", "points", key);
         }
@@ -100,6 +102,8 @@ class MapToolbar extends React.Component {
                 parser: 'line',
             });
             this.fileinput.click();
+        } else if (key == "draw") {
+            this.props.action("line");
         } else {
             this.props.action("show", "lines", key);
         }
@@ -111,6 +115,8 @@ class MapToolbar extends React.Component {
                 parser: 'area',
             });
             this.fileinput.click();
+        } else if (key == "draw") {
+            this.props.action("area");
         } else {
             this.props.action("show", "areas", key);
         }
@@ -186,16 +192,19 @@ class MapToolbar extends React.Component {
                 <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Point</span>} onSelect={this.pointSelect.bind(this)}>
                     {pointFiles}
                     <MenuItem divider />
+                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
                 <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Line</span>} onSelect={this.lineSelect.bind(this)}>
                     {lineFiles}
                     <MenuItem divider />
+                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
                 <SplitButton name="area" id="area" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Area</span>} onSelect={this.areaSelect.bind(this)}>
                     {areaFiles}
                     <MenuItem divider />
+                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
                 <SplitButton name="class4" id="class4" onClick={this.buttonHandler.bind(this)} title='Class4' onSelect={this.class4Select.bind(this)}>
