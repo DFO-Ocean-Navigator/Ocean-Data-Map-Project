@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, DropdownButton, ButtonToolbar, MenuItem, Modal} from 'react-bootstrap';
-import FontAwesome from 'react-fontawesome';
+import Icon from './Icon.jsx';
 
 var LOADING_IMAGE = require('../images/spinner.gif');
 var FAIL_IMAGE = require('../images/failure.gif');
@@ -165,18 +165,18 @@ class PlotImage extends React.Component {
             <div className='PlotImage'>
                 <img src={src} />
                 <ButtonToolbar>
-                    <DropdownButton id="save" title={<span><FontAwesome name="save" /> Save&hellip;</span>} dropup onSelect={this.saveImage.bind(this)}>
-                        <MenuItem eventKey="png"><FontAwesome name="file-image-o" /> PNG</MenuItem>
-                        <MenuItem eventKey="pdf"><FontAwesome name="file-pdf-o" /> PDF</MenuItem>
-                        <MenuItem eventKey="svg"><FontAwesome name="file-code-o" /> SVG</MenuItem>
-                        <MenuItem eventKey="ps"><FontAwesome name="file-pdf-o" /> PS</MenuItem>
-                        <MenuItem eventKey="eps"><FontAwesome name="file-pdf-o" /> EPS</MenuItem>
-                        <MenuItem eventKey="tiff"><FontAwesome name="file-image-o" /> TIFF</MenuItem>
-                        <MenuItem eventKey="csv" disabled={this.props.query.type == 'map' || this.props.query.type == 'hovmoller'}><FontAwesome name="file-text-o" /> CSV</MenuItem>
-                        <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><FontAwesome name="file-image-o" /> GeoTIFF</MenuItem>
+                    <DropdownButton id="save" title={<span><Icon icon="save" /> Save&hellip;</span>} dropup onSelect={this.saveImage.bind(this)}>
+                        <MenuItem eventKey="png"><Icon icon="file-image-o" /> PNG</MenuItem>
+                        <MenuItem eventKey="pdf"><Icon icon="file-pdf-o" /> PDF</MenuItem>
+                        <MenuItem eventKey="svg"><Icon icon="file-code-o" /> SVG</MenuItem>
+                        <MenuItem eventKey="ps"><Icon icon="file-pdf-o" /> PS</MenuItem>
+                        <MenuItem eventKey="eps"><Icon icon="file-pdf-o" /> EPS</MenuItem>
+                        <MenuItem eventKey="tiff"><Icon icon="file-image-o" /> TIFF</MenuItem>
+                        <MenuItem eventKey="csv" disabled={this.props.query.type == 'map' || this.props.query.type == 'hovmoller'}><Icon icon="file-text-o" /> CSV</MenuItem>
+                        <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
                     </DropdownButton>
 
-                    <Button onClick={() => this.setState({showPermalink: true})}><FontAwesome name="link" /> Get Link</Button>
+                    <Button onClick={() => this.setState({showPermalink: true})}><Icon icon="link" /> Get Link</Button>
                 </ButtonToolbar>
 
                 <Modal show={this.state.showPermalink} onHide={() => this.setState({showPermalink: false})} dialogClassName='permalink-modal' onEntered={permalinkModalEntered}>
@@ -187,8 +187,8 @@ class PlotImage extends React.Component {
                         <textarea ref={(t) => this.permalinkbox = t} type="text" id="permalink_area" readOnly value={this.props.permlink} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><FontAwesome name="copy" /> Copy</Button>
-                        <Button onClick={() => this.setState({showPermalink: false})}><FontAwesome name="close" /> Close</Button>
+                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> Copy</Button>
+                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> Close</Button>
                     </Modal.Footer>
                 </Modal>
             </div>

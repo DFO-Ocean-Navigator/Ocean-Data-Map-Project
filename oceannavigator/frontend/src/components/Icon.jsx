@@ -1,0 +1,21 @@
+import React from 'react';
+import FontAwesome from 'react-fontawesome';
+require('font-awesome/scss/font-awesome.scss');
+
+class Icon extends React.Component {
+    render() {
+        var alt = null;
+        if (this.props.alt) {
+            alt = <span className="alt"> {this.props.alt}</span>;
+        }
+        return (
+            <span className='Icon'>
+                <FontAwesome name={this.props.icon} />
+                {alt}
+            </span>
+        );
+    }
+}
+
+export default Icon;
+

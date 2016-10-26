@@ -1,8 +1,7 @@
 import React from 'react';
 import {Button, SplitButton, DropdownButton, MenuItem} from 'react-bootstrap';
 import Papa from 'papaparse';
-import FontAwesome from 'react-fontawesome';
-require('font-awesome/scss/font-awesome.scss');
+import Icon from './Icon.jsx';
 
 class MapToolbar extends React.Component {
     constructor(props) {
@@ -189,23 +188,23 @@ class MapToolbar extends React.Component {
 
         return (
             <div className='MapToolbar'>
-                <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Point</span>} onSelect={this.pointSelect.bind(this)}>
+                <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Point</span>} onSelect={this.pointSelect.bind(this)}>
                     {pointFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
-                <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Line</span>} onSelect={this.lineSelect.bind(this)}>
+                <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Line</span>} onSelect={this.lineSelect.bind(this)}>
                     {lineFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
-                <SplitButton name="area" id="area" onClick={this.buttonHandler.bind(this)} title={<span><FontAwesome name="pencil" /> Area</span>} onSelect={this.areaSelect.bind(this)}>
+                <SplitButton name="area" id="area" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Area</span>} onSelect={this.areaSelect.bind(this)}>
                     {areaFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><FontAwesome name="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><FontAwesome name="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
                 <SplitButton name="class4" id="class4" onClick={this.buttonHandler.bind(this)} title='Class4' onSelect={this.class4Select.bind(this)}>
                     {class4Files}
@@ -216,8 +215,8 @@ class MapToolbar extends React.Component {
                     <MenuItem eventKey='not responding' key='not responding'>Not Responding</MenuItem>
                     <MenuItem eventKey='inactive' key='inactive'>Inactive</MenuItem>
                 </DropdownButton>
-                <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><FontAwesome name='line-chart' /> Plot</Button>
-                <span style={{'float': 'right'}} title="Permalink"><Button name="permalink" onClick={this.buttonHandler.bind(this)}><FontAwesome name='link' /></Button></span>
+                <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> Plot</Button>
+                <span style={{'float': 'right'}} title="Permalink"><Button name="permalink" onClick={this.buttonHandler.bind(this)}><Icon icon='link' alt='Link' /></Button></span>
 
                 <form ref={(f) => this.fileform = f}>
                     <input type='file' style={{'display': 'none'}} onChange={this.parseCSV.bind(this)} ref={(f) => this.fileinput = f} accept=".csv,.CSV" />

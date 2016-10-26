@@ -8,7 +8,7 @@ import AreaWindow from './AreaWindow.jsx';
 import DrifterWindow from './DrifterWindow.jsx';
 import Class4Window from './Class4Window.jsx';
 import {Button, Modal} from 'react-bootstrap';
-import FontAwesome from 'react-fontawesome';
+import Icon from './Icon.jsx';
 
 function formatLatLon(latitude, longitude) {
     var formatted = ""
@@ -315,7 +315,7 @@ class OceanNavigator extends React.Component {
                     {modalContent}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeModal.bind(this)}><FontAwesome name="close" /> Close</Button>
+                        <Button onClick={this.closeModal.bind(this)}><Icon icon="close" /> Close</Button>
                     </Modal.Footer>
                 </Modal>
 
@@ -327,8 +327,8 @@ class OceanNavigator extends React.Component {
                         <textarea ref={(t) => this.permalinkbox = t} type="text" id="permalink_area" readOnly value={this.generatePermLink()} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><FontAwesome name="copy" /> Copy</Button>
-                        <Button onClick={() => this.setState({showPermalink: false})}><FontAwesome name="close" /> Close</Button>
+                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> Copy</Button>
+                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> Close</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
