@@ -135,6 +135,9 @@ class OceanNavigator extends React.Component {
             case "plot":
                 this.showModal();
                 break;
+            case "reset":
+                this.mapComponent.resetMap();
+                break;
             case "permalink":
                 this.setState({
                     showPermalink: true,

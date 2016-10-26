@@ -16,10 +16,12 @@ class MapToolbar extends React.Component {
     }
 
     buttonHandler(e) {
-        var name = e.target.name;
-        if (name == undefined) {
-            name = e.target.parentElement.name;
-        }
+        var name = undefined;
+        var elem = e.target;
+        do {
+            name = elem.name;
+            elem = elem.parentElement;
+        } while (name == undefined);
         if (name == 'class4') {
             this.props.action("show", "class4", 'latest');
         } else {
@@ -216,6 +218,7 @@ class MapToolbar extends React.Component {
                     <MenuItem eventKey='inactive' key='inactive'>Inactive</MenuItem>
                 </DropdownButton>
                 <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> Plot</Button>
+                <Button name="reset" onClick={this.buttonHandler.bind(this)}><Icon icon='undo' alt='Reset Map' /></Button>
                 <span style={{'float': 'right'}} title="Permalink"><Button name="permalink" onClick={this.buttonHandler.bind(this)}><Icon icon='link' alt='Link' /></Button></span>
 
                 <form ref={(f) => this.fileform = f}>
