@@ -8,6 +8,7 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var config = {
     entry: [
+        'babel-polyfill',
         APP_DIR + '/index.jsx',
     ],
     output: {
