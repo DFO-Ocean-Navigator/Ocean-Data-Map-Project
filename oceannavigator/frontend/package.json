@@ -29,8 +29,7 @@
     "react-bootstrap": "^0.30.3",
     "react-dom": "~15.3.1",
     "react-fontawesome": "^1.2.0",
-    "webfontloader": "^1.6.26",
-    "webpack": "~1.13.2"
+    "webfontloader": "^1.6.26"
   },
   "devDependencies": {
     "css-loader": "~0.25.0",
