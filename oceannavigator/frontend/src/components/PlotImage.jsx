@@ -142,7 +142,7 @@ class PlotImage extends React.Component {
     }
 
     saveImage(key) {
-        var url = `${this.urlFromQuery(this.props.query)}&save&format=${key}&size=8x10&dpi=72`;
+        var url = `${this.urlFromQuery(this.props.query)}&save&format=${key}&size=${this.props.query.size}&dpi=${this.props.query.dpi}`;
         window.location.href = url;
     }
 

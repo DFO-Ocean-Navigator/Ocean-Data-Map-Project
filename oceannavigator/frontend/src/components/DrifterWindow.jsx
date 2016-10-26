@@ -5,6 +5,7 @@ import Range from './Range.jsx';
 import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
 import ContinousTimePicker from './ContinousTimePicker.jsx';
+import ImageSize from './ImageSize.jsx';
 
 class DrifterWindow extends React.Component {
     constructor(props) {
@@ -16,6 +17,8 @@ class DrifterWindow extends React.Component {
             buoyvariable: ['sst'],
             starttime: null,
             endtime: null,
+            size: "10x7",
+            dpi: 72,
         }
 
         if (props.init != null) {
@@ -65,6 +68,7 @@ class DrifterWindow extends React.Component {
         var latlon = <SelectBox key='latlon' id='latlon' state={this.state.latlon} onUpdate={this.onLocalUpdate.bind(this)} title='Show Latitude/Longitude Plots'>Generates plots of the latitude and longitude vs time.</SelectBox>;
         var starttime = <ContinousTimePicker key='starttime' id='starttime' state={this.state.starttime} title='Start Time' onUpdate={this.onLocalUpdate.bind(this)} max={this.state.endtime} min={this.state.mindate} />;
         var endtime = <ContinousTimePicker key='endtime' id='endtime' state={this.state.endtime} title='End Time' onUpdate={this.onLocalUpdate.bind(this)} min={this.state.starttime} max={this.state.maxdate} />;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
 
         var inputs = [];
         var plot_query = {
@@ -78,12 +82,14 @@ class DrifterWindow extends React.Component {
             variable: this.state.variable,
             latlon: this.state.latlon,
             buoyvariable: this.state.buoyvariable,
+            size: this.state.size,
+            dpi: this.state.dpi,
         }
         if (this.state.starttime) {
             plot_query.starttime = this.state.starttime.toISOString();
             plot_query.endtime = this.state.endtime.toISOString();
         }
-        inputs = [dataset, showmap, latlon, starttime, endtime, buoyvariable, variable];
+        inputs = [dataset, showmap, latlon, starttime, endtime, buoyvariable, variable, size];
 
         return (
             <div className='DrifterWindow Window'>

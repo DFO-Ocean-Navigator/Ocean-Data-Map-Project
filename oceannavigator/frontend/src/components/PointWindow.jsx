@@ -18,6 +18,8 @@ class PointWindow extends React.Component {
             starttime: -24,
             variables: [],
             variable: [props.variable],
+            size: "10x7",
+            dpi: 72,
         }
 
         if (props.init != null) {
@@ -113,6 +115,8 @@ class PointWindow extends React.Component {
             quantum: this.props.quantum,
             point: this.props.point,
             names: this.props.names,
+            size: this.state.size,
+            dpi: this.state.dpi,
         };
 
         var active = this.state.selected;

@@ -3,6 +3,7 @@ import {Nav, NavItem} from 'react-bootstrap';
 import PlotImage from './PlotImage.jsx';
 import ComboBox from './ComboBox.jsx';
 import SelectBox from './SelectBox.jsx';
+import ImageSize from './ImageSize.jsx';
 
 class Class4Window extends React.Component {
     constructor(props) {
@@ -12,6 +13,8 @@ class Class4Window extends React.Component {
             showmap: true,
             climatology: false,
             error: 'none',
+            size: "10x7",
+            dpi: 72,
         }
 
         if (props.init != null) {
@@ -33,6 +36,8 @@ class Class4Window extends React.Component {
             showmap: this.state.showmap,
             climatology: this.state.climatology,
             error: this.state.error,
+            size: this.state.size,
+            dpi: this.state.dpi,
         };
         var error_options = [
             {
@@ -57,6 +62,7 @@ class Class4Window extends React.Component {
                         <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title='Show Location'>Shows the mini map of the location in the plot.</SelectBox>
                         <SelectBox key='climatology' id='climatology' state={this.state.climatology} onUpdate={this.onLocalUpdate.bind(this)} title='Show Climatology'>Shows the climatology data.</SelectBox>
                         <ComboBox key='error' id='error' state={this.state.error} def='' data={error_options} title='Show Error' onUpdate={this.onLocalUpdate.bind(this)} />
+                        <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />
                     </div>
                     <PlotImage query={plot_query} permlink={this.props.generatePermLink(this.state)}/>
                     <br className='clear' />

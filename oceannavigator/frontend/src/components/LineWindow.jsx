@@ -7,6 +7,7 @@ import LocationInput from './LocationInput.jsx';
 import Range from './Range.jsx';
 import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
+import ImageSize from './ImageSize.jsx';
 
 class LineWindow extends React.Component {
     constructor(props) {
@@ -19,6 +20,8 @@ class LineWindow extends React.Component {
             showmap: true,
             surfacevariable: 'none',
             linearthresh: 200,
+            size: "10x7",
+            dpi: 72,
         }
 
         if (props.init != null) {
@@ -58,6 +61,7 @@ class LineWindow extends React.Component {
         var showmap = <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title='Show Location'>Shows the mini map of the location in the plot.</SelectBox>;
         var linearthreshold = <NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onLocalUpdate.bind(this)} title='Linear Threshold'>The depth axis is broken into two parts at the linear threshold. Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.</NumberBox>;
         var surfacevariable = <ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} onUpdate={this.onLocalUpdate.bind(this)} title='Surface Variable' url={'/api/variables/?dataset=' + this.props.dataset}>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
 
         var inputs = [];
         var plot_query = {
@@ -69,6 +73,8 @@ class LineWindow extends React.Component {
             colormap: this.state.colormap,
             showmap: this.state.showmap,
             name: this.props.names[0],
+            size: this.state.size,
+            dpi: this.state.dpi,
         };
 
         switch(this.state.selected) {
@@ -87,6 +93,8 @@ class LineWindow extends React.Component {
                 inputs = [dataset, starttime, endtime, hovmoller_variable, showmap, depth, scale, colormap];
                 break;
         }
+
+        inputs.push(size);
 
         return (
             <div className='LineWindow Window'>

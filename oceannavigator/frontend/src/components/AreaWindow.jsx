@@ -9,6 +9,7 @@ import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
 import ContourSelector from './ContourSelector.jsx';
 import StatsTable from './StatsTable.jsx';
+import ImageSize from './ImageSize.jsx';
 
 class AreaWindow extends React.Component {
     constructor(props) {
@@ -31,6 +32,8 @@ class AreaWindow extends React.Component {
                 hatch: false,
             },
             variable: [props.variable],
+            size: "10x7",
+            dpi: 72,
         }
 
         if (props.init != null) {
@@ -79,6 +82,7 @@ class AreaWindow extends React.Component {
         var quiver = <ComboBox key='quiver' id='quiver' state={this.state.quiver} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors_only&dataset=' + this.props.dataset} title='Arrows'>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>;
         var contour = <ContourSelector key='contour' id='contour' state={this.state.contour} def='' onUpdate={this.onLocalUpdate.bind(this)} dataset={this.props.dataset} title='Additional Contours'>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>;
         var showarea = <SelectBox key='showarea' id='showarea' state={this.state.showarea} onUpdate={this.onLocalUpdate.bind(this)} title='Show Selected Area(s)'>Shows the selected areas on the map.</SelectBox>;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
 
         var inputs = [];
         var plot_query = {
@@ -102,8 +106,10 @@ class AreaWindow extends React.Component {
                 plot_query.showarea = this.state.showarea;
                 plot_query.variable = this.props.variable;
                 plot_query.projection = this.props.projection;
+                plot_query.size = this.state.size;
+                plot_query.dpi = this.state.dpi;
                 inputs = [dataset, time, showarea, variable, depth, scale, colormap,
-                          bathymetry, quiver, contour];
+                          bathymetry, quiver, contour, size];
 
                 content = <PlotImage query={plot_query} permlink={this.props.generatePermLink(this.state)}/>;
                 break;
