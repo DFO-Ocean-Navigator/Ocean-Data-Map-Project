@@ -12,4 +12,9 @@
     div + div, div + button, button + div, button + button {
         margin-left: 0.5em;
     }
+
+    .dropdown-menu {
+        max-height: calc(100vh - #{2 * $toolbar-height});
+        overflow-y: auto;
+    }
 }
