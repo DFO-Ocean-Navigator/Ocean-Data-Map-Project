@@ -9,7 +9,7 @@ class Icon extends React.Component {
             alt = <span className="alt"> {this.props.alt}</span>;
         }
         return (
-            <span className='Icon'>
+            <span className='Icon' title={this.props.alt}>
                 <FontAwesome name={this.props.icon} />
                 {alt}
             </span>
