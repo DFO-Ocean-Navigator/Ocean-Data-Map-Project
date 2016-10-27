@@ -1,7 +1,13 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {Button, SplitButton, DropdownButton, MenuItem} from 'react-bootstrap';
 import Papa from 'papaparse';
 import Icon from './Icon.jsx';
+
+import 'jquery-ui-css/base.css';
+import 'jquery-ui-css/datepicker.css';
+import 'jquery-ui-css/theme.css';
+import 'jquery-ui/datepicker';
 
 class MapToolbar extends React.Component {
     constructor(props) {
@@ -10,23 +16,47 @@ class MapToolbar extends React.Component {
             pointFiles: [],
             lineFiles: [],
             areaFiles: [],
-            class4Files: [],
+            class4Files: {},
             parser: null,
         };
     }
 
     buttonHandler(e) {
-        var name = undefined;
         var elem = e.target;
-        do {
-            name = elem.name;
+        var name = elem.name;
+        while (name == undefined) {
             elem = elem.parentElement;
-        } while (name == undefined);
-        if (name == 'class4') {
-            this.props.action("show", "class4", 'latest');
-        } else {
-            this.props.action(name);
+            name = elem.name;
         }
+        this.props.action(name);
+    }
+
+    class4ButtonHandler() {
+        var button = $(ReactDOM.findDOMNode(this.class4button));
+        if (this.class4Picker && this.class4Picker.is(":visible")) {
+            this.class4Picker.hide();
+        } else if (!this.class4Picker) {
+            this.class4Picker = $(this.class4div).datepicker({
+                dateFormat: "yy-mm-dd",
+                beforeShowDay: this.beforeShowDay.bind(this),
+                onSelect: function(text, picker) {
+                    this.props.action("show", "class4", this.state.class4Files[text]);
+                    this.class4Picker.hide();
+                }.bind(this),
+            });
+            $(this.class4div).css("left", button.offset().left + "px");
+        } else {
+            this.class4Picker.show();
+        }
+    }
+
+    beforeShowDay(d) {
+        var formatted = $.datepicker.formatDate("yy-mm-dd", d);
+        return [
+            this.state.class4Files.hasOwnProperty(formatted),
+            "",
+            null
+        ];
     }
 
     componentDidMount() {
@@ -75,7 +105,10 @@ class MapToolbar extends React.Component {
             cache: true,
             success: function(data) {
                 this.setState({
-                    class4Files: data,
+                    class4Files: data.reduce(function(map, obj) {
+                        map[obj.name] = obj.id;
+                        return map;
+                    }, {}),
                 });
             }.bind(this),
             error: function(r, status, err) {
@@ -184,9 +217,6 @@ class MapToolbar extends React.Component {
         var areaFiles = this.state.areaFiles.map(function(d) {
             return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
         });
-        var class4Files = this.state.class4Files.map(function(d) {
-            return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
-        });
 
         return (
             <div className='MapToolbar'>
@@ -208,9 +238,7 @@ class MapToolbar extends React.Component {
                     <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
                 </SplitButton>
-                <SplitButton name="class4" id="class4" onClick={this.buttonHandler.bind(this)} title='Class4' onSelect={this.class4Select.bind(this)}>
-                    {class4Files}
-                </SplitButton>
+                <Button name="class4" onClick={this.class4ButtonHandler.bind(this)} ref={(b) => this.class4button = b}>Class4 <span className='caret'/></Button>
                 <DropdownButton name="drifter" id="drifter" title="Drifters" onSelect={this.drifterSelect.bind(this)}>
                     <MenuItem eventKey='all' key='all'>All</MenuItem>
                     <MenuItem eventKey='active' key='active'>Active</MenuItem>
@@ -224,6 +252,8 @@ class MapToolbar extends React.Component {
                 <form ref={(f) => this.fileform = f}>
                     <input type='file' style={{'display': 'none'}} onChange={this.parseCSV.bind(this)} ref={(f) => this.fileinput = f} accept=".csv,.CSV" />
                 </form>
+
+                <div ref={(d) => this.class4div = d} style={{'position': 'fixed', 'zIndex': 1}}/>
             </div>
         );
     }
