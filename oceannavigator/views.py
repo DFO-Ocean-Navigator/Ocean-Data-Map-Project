@@ -26,6 +26,7 @@ import numpy as np
 import re
 import oceannavigator.misc
 import os
+import plotting.colormap
 
 
 @app.route('/api/datasets/')
@@ -85,29 +86,15 @@ def colors():
 
 @app.route('/api/colormaps/')
 def colormaps():
-    data = [
-        {'id': 'default', 'value': 'Default for Variable'},
-        {'id': 'anomaly', 'value': 'Anomaly'},
-        {'id': 'bathymetry', 'value': 'Bathymetry'},
-        {'id': 'chlorophyll', 'value': 'Chlorophyll'},
-        {'id': 'freesurface', 'value': 'Sea Surface Height (Free Surface)'},
-        {'id': 'grey', 'value': 'Greyscale'},
-        {'id': 'ice', 'value': 'Ice'},
-        {'id': 'iron', 'value': 'Iron'},
-        {'id': 'mercator_current', 'value': 'Mercator Ocean Current'},
-        {'id': 'mercator', 'value': 'Mercator'},
-        {'id': 'nitrate', 'value': 'Nitrate'},
-        {'id': 'oxygen', 'value': 'Oxygen'},
-        {'id': 'phosphate', 'value': 'Phosphate'},
-        {'id': 'phytoplankton', 'value': 'Phytoplankton'},
-        {'id': 'salinity', 'value': 'Salinity'},
-        {'id': 'silicate', 'value': 'Silicate'},
-        {'id': 'speed', 'value': 'Speed'},
-        {'id': 'temperature', 'value': 'Temperature'},
-        {'id': 'velocity', 'value': 'Velocity'},
-        {'id': 'waveheight', 'value': 'Wave Height'},
-        {'id': 'waveperiod', 'value': 'Wave Period'},
-    ]
+    data = sorted([
+        {
+            'id': i,
+            'value': n
+        }
+        for i, n in plotting.colormap.colormap_names.iteritems()
+    ], key=lambda k: k['value'])
+    data.insert(0, {'id': 'default', 'value': 'Default for Variable'})
+
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp

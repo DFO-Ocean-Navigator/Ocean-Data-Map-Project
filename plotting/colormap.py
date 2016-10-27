@@ -35,9 +35,6 @@ _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
     'bathymetry': cmocean.cm.deep,
-    'transparent_gray': mcolors.LinearSegmentedColormap.from_list(
-        'transparent_gray',
-        [(0, 0, 0, 0.5), (0, 0, 0, 0.1)]),
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
     'freesurface': cmocean.cm.balance,
@@ -54,10 +51,6 @@ colormaps = {
     'nitrate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'nitrate.txt'))),
     'ice': cmocean.cm.ice,
-    # 'ice': make_colormap([
-    # _c('#1d3b7a'),
-    # _c('#f3fafe')
-    # ]),
     'phytoplankton': cmocean.cm.deep_r,
     'silicate': make_colormap([
         _c('#ffffff'),
@@ -126,5 +119,58 @@ colormaps = {
         _c('#ffffff'),
         _c('#000000')
     ]),
+    'thermal': cmocean.cm.thermal,
+    'neo_sst': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'neo_sst.txt'))),
+    'BuYlRd': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
+    'temperature-new': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'temperature-new.txt'))),
+
 }
 colormaps['wind'] = colormaps['velocity']
+
+colormap_names = {
+    'anomaly': 'Anomaly',
+    'bathymetry': 'Bathymetry',
+    'chlorophyll': 'Chlorophyll',
+    'freesurface': 'Sea Surface Height (Free Surface)',
+    'grey': 'Greyscale',
+    'ice': 'Ice',
+    'iron': 'Iron',
+    'mercator_current': 'Mercator Ocean Current',
+    'mercator': 'Mercator',
+    'nitrate': 'Nitrate',
+    'oxygen': 'Oxygen',
+    'phosphate': 'Phosphate',
+    'phytoplankton': 'Phytoplankton',
+    'salinity': 'Salinity',
+    'silicate': 'Silicate',
+    'speed': 'Speed',
+    'temperature': 'Temperature',
+    'velocity': 'Velocity',
+    'waveheight': 'Wave Height',
+    'waveperiod': 'Wave Period',
+    'thermal': 'Thermal',
+    'neo_sst': 'NEO SST',
+    'BuYlRd': 'Color Brewer Blue-Yellow-Red',
+    'temperature-new': 'Temperature (new)',
+}
+
+
+if __name__ == '__main__':
+    import viscm
+    import matplotlib.cm
+    import sys
+
+    for k, v in colormaps.iteritems():
+        matplotlib.cm.register_cmap(name=k, cmap=v)
+
+    maps = [i for i in colormaps]
+    if len(sys.argv) > 1:
+        maps = sys.argv[1:]
+
+    for m in maps:
+        v = viscm.viscm(m, uniform_space="CAM02-UCS")
+        v.fig.set_size_inches(20, 12)
+        v.fig.savefig(m + ".png")

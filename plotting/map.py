@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
+import matplotlib.colors as mcolors
 import numpy as np
 import re
 import colormap
@@ -449,7 +450,10 @@ def plot(dataset_name, **kwargs):
                 target_lon, target_lat, bathymetry, latlon=True,
                 lineweight=0.5,
                 norm=LogNorm(vmin=1, vmax=6000),
-                cmap=colormap.colormaps['transparent_gray'],
+                cmap=mcolors.LinearSegmentedColormap.from_list(
+                    'transparent_gray',
+                    [(0, 0, 0, 0.5), (0, 0, 0, 0.1)]
+                ),
                 levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
             plt.clabel(cs, fontsize='xx-small', fmt='%1.0fm')
 
