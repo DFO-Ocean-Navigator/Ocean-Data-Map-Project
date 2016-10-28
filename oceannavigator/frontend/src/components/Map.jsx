@@ -476,29 +476,8 @@ class Map extends React.Component {
         this.map.addOverlay(this.overlay);
     }
 
-
-    point() {
-        $(this.map.getTarget()).css("cursor", "crosshair");
-        var listen = this.map.once('singleclick', function(e) {
-            this.resetMap();
-            var lonlat = ol.proj.transform(e.coordinate, this.props.state.projection,'EPSG:4326');
-            while (lonlat[0] < -180) {
-                lonlat[0] += 360;
-            }
-            while (lonlat[0] > 180) {
-                lonlat[0] -= 360;
-            }
-
-            this.vectorSource.addFeature(new ol.Feature({
-                geometry: new ol.geom.Point(e.coordinate)
-            }));
-            $(this.map.getTarget()).css("cursor", "");
-
-            this.props.action("point", lonlat);
-        }.bind(this));
-    }
-
     resetMap() {
+        this.removeMapInteractions("all");
         this.props.updateState("vectortype", null);
         this.props.updateState("vectorid", null);
         this.selectedFeatures.clear();
@@ -506,13 +485,53 @@ class Map extends React.Component {
         this.overlay.setPosition(undefined);
     }
 
+    removeMapInteractions(type) {
+        var interactions = this.map.getInteractions();
+        var stat = {
+            coll: interactions,
+            ret: false,
+        };
+        interactions.forEach(function(e, i, a) {
+            if (e instanceof ol.interaction.Draw) {
+                stat.coll.remove(e);
+                if (e.get("type") == type) {
+                    stat.ret = true;
+                }
+            }
+        }, stat);
+        return stat.ret;
+    }
+
+    point() {
+        if (this.removeMapInteractions("Point")) {
+            return;
+        }
+
+        this.resetMap();
+        var draw = new ol.interaction.Draw({
+            source: this.vectorSource,
+            type: 'Point',
+        });
+        draw.set("type", "Point");
+        draw.on('drawend', function(e) {
+            var lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection,'EPSG:4326');
+            this.props.action("point", lonlat);
+            this.map.removeInteraction(draw);
+        }.bind(this));
+        this.map.addInteraction(draw);
+    }
+
     line() {
-        $(this.map.getTarget()).css("cursor", "crosshair");
+        if (this.removeMapInteractions("LineString")) {
+            return;
+        }
+
         this.resetMap();
         var draw = new ol.interaction.Draw({
             source: this.vectorSource,
             type: 'LineString'
         });
+        draw.set("type", "LineString");
         draw.on('drawend', function(e) {
             var points = e.feature.getGeometry().getCoordinates().map(function (c) {
                 var lonlat = ol.proj.transform(c, this.props.state.projection,'EPSG:4326');
@@ -520,17 +539,21 @@ class Map extends React.Component {
             }.bind(this));
             this.props.action("line", [points]);
             this.map.removeInteraction(draw);
-            $(this.map.getTarget()).css("cursor", "");
         }.bind(this));
         this.map.addInteraction(draw);
     }
 
     area() {
+        if (this.removeMapInteractions("Polygon")) {
+            return;
+        }
+
         this.resetMap();
         var draw = new ol.interaction.Draw({
             source: this.vectorSource,
             type: 'Polygon'
         });
+        draw.set("type", "Polygon");
         draw.on('drawend', function(e) {
             var points = e.feature.getGeometry().getCoordinates()[0].map(function (c) {
                 var lonlat = ol.proj.transform(c, this.props.state.projection,'EPSG:4326');
@@ -543,7 +566,6 @@ class Map extends React.Component {
             };
             this.props.action("area", [area]);
             this.map.removeInteraction(draw);
-            $(this.map.getTarget()).css("cursor", "");
         }.bind(this));
         this.map.addInteraction(draw);
     }
