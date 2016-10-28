@@ -426,7 +426,7 @@ class Map extends React.Component {
                 }
             }.bind(this));
 
-            if (t && ((t != "line" && t != "drifter" && t != "class4") || content.length == 1) && content.length <= 20) {
+            if (t && ((t != "line" && t != "drifter" && t != "class4") || content.length == 1) && (t == "area" || content.length <= 20)) {
                 this.props.updateState(t, content);
                 this.props.updateState('modal', t);
                 this.props.updateState('names', names);
