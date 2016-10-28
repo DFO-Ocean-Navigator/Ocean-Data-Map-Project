@@ -66,22 +66,28 @@ def plot(dataset_name, **kwargs):
         else:
             starttime = int(query.get('starttime'))
 
+        if query.get('endtime') is None or \
+           len(str(query.get('endtime'))) == 0:
+            endtime = 0
+        else:
+            endtime = int(query.get('endtime'))
+
         if 'time_counter' in dataset.variables:
             time_var = dataset.variables['time_counter']
         elif 'time' in dataset.variables:
             time_var = dataset.variables['time']
+
+        if starttime > endtime:
+            starttime = endtime - 1
+            if starttime < 0:
+                starttime = 0
+                endtime = 2
 
         if starttime >= time_var.shape[0]:
             starttime = -1
 
         if starttime < 0:
             starttime += time_var.shape[0]
-
-        if query.get('endtime') is None or \
-           len(str(query.get('endtime'))) == 0:
-            endtime = 0
-        else:
-            endtime = int(query.get('endtime'))
 
         if endtime >= time_var.shape[0]:
             endtime = -1

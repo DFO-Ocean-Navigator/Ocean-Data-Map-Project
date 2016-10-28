@@ -15,7 +15,7 @@ class PointWindow extends React.Component {
             scale: props.scale + ',auto',
             depth: props.depth,
             colormap: 'default',
-            starttime: -24,
+            starttime: Math.max(props.time - 24, 0),
             variables: [],
             variable: [props.variable],
             size: "10x7",
