@@ -25,6 +25,7 @@ from matplotlib.bezier import concatenate_paths
 from matplotlib.patches import PathPatch
 from textwrap import wrap
 from oceannavigator.misc import list_areas
+import pyresample.utils
 
 
 def plot(dataset_name, **kwargs):
@@ -65,6 +66,11 @@ def plot(dataset_name, **kwargs):
                 b = [x for x in data if x.get('key') == a]
                 a = b[0]
                 area[idx] = a
+            else:
+                p = np.array(a['polygons'])
+                p[:, :, 1] = pyresample.utils.wrap_longitudes(p[:, :, 1])
+                a['polygons'] = p.tolist()
+                del p
 
             rings = [LinearRing(p) for p in a['polygons']]
             if len(rings) > 1:
