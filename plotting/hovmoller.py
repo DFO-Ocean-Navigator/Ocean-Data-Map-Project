@@ -118,6 +118,12 @@ def plot(dataset_name, **kwargs):
 
         variables = query.get('variable').split(',')
 
+        if starttime > endtime:
+            starttime = endtime - 1
+            if starttime < 0:
+                starttime = 0
+                endtime = 2
+
         time = range(starttime, endtime + 1)
 
         vector = False

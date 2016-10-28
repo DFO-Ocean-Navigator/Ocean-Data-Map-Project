@@ -16,7 +16,7 @@ class LineWindow extends React.Component {
             selected: 1,
             scale: props.scale + ',auto',
             colormap: 'default',
-            starttime: -24,
+            starttime: Math.max(props.time - 24, 0),
             showmap: true,
             surfacevariable: 'none',
             linearthresh: 200,
