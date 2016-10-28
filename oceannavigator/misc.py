@@ -427,7 +427,7 @@ def drifters_time(drifter_id):
 def list_class4_files():
     c = Crawl(
         'http://localhost:8080/thredds/catalog/class4/catalog.xml',
-        select=[".*.nc$"]
+        select=[".*_GIOPS_.*.nc$"]
     )
 
     result = []
@@ -443,13 +443,6 @@ def list_class4_files():
 
 
 def list_class4(d):
-    if d == 'latest':
-        c = Crawl(
-            'http://localhost:8080/thredds/catalog/class4/latest.xml',
-            select=[".*.nc$"])
-
-        d = c.datasets[0].id.split("/")[1][:-3]
-
     dataset_url = 'http://localhost:8080/thredds/dodsC/class4/%s.nc' % d
 
     with Dataset(dataset_url, 'r') as ds:
@@ -486,13 +479,6 @@ def list_class4(d):
 
 
 def class4(class4_id, projection, resolution, extent):
-    if class4_id == 'latest':
-        c = Crawl(
-            'http://localhost:8080/thredds/catalog/class4/latest.xml',
-            select=[".*.nc$"])
-
-        class4_id = c.datasets[0].id.split("/")[1][:-3]
-
     dataset_url = 'http://localhost:8080/thredds/dodsC/class4/%s.nc' % class4_id
 
     proj = pyproj.Proj(init=projection)
@@ -577,3 +563,23 @@ def list_class4_forecasts(class4_id):
             })
 
     return res
+
+
+def list_class4_models(class4_id):
+    select = ["(.*/)?%s.*_profile.nc$" % class4_id[:16]]
+    c = Crawl(
+        'http://localhost:8080/thredds/catalog/class4/catalog.xml',
+        select=select
+    )
+
+    result = []
+    for dataset in c.datasets:
+        value = dataset.name[:-3]
+        model = value.split("_")[2]
+        if model != "GIOPS":
+            result.append({
+                'value': value.split("_")[2],
+                'id': value
+            })
+
+    return result

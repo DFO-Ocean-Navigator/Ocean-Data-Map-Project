@@ -15,6 +15,7 @@ class Class4Window extends React.Component {
             error: 'none',
             size: "10x7",
             dpi: 72,
+            models: [],
         }
 
         if (props.init != null) {
@@ -38,6 +39,7 @@ class Class4Window extends React.Component {
             error: this.state.error,
             size: this.state.size,
             dpi: this.state.dpi,
+            models: this.state.models,
         };
         var error_options = [
             {
@@ -61,6 +63,7 @@ class Class4Window extends React.Component {
                         <ComboBox key='forecast' id='forecast' state={this.state.forecast} def='' url={'/api/class4/forecasts/' + this.props.class4id} title='Forecast' onUpdate={this.onLocalUpdate.bind(this)} />
                         <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title='Show Location'>Shows the mini map of the location in the plot.</SelectBox>
                         <SelectBox key='climatology' id='climatology' state={this.state.climatology} onUpdate={this.onLocalUpdate.bind(this)} title='Show Climatology'>Shows the climatology data.</SelectBox>
+                        <ComboBox key='models' id='models' state={this.state.models} multiple onUpdate={this.onLocalUpdate.bind(this)} url={'/api/class4/models/' + this.props.class4id} title='Additional Models' />
                         <ComboBox key='error' id='error' state={this.state.error} def='' data={error_options} title='Show Error' onUpdate={this.onLocalUpdate.bind(this)} />
                         <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />
                     </div>

@@ -65,6 +65,27 @@ def plot(dataset_name, **kwargs):
     climatology_data = np.ma.array(climatology_data)
     depths = np.ma.vstack(depths)
 
+    models = query.get("models")
+    if models is None:
+        models = []
+
+    additional_model_data = []
+    additional_model_names = []
+    for m in models:
+        additional_model_names.append(m.split("_")[2])
+        with Dataset("http://localhost:8080/thredds/dodsC/class4/%s.nc" % m,
+                     'r') as ds:
+            m_data = []
+            for i in indices:
+                data = []
+                for j in range(0, len(variables)):
+                    data.append(ds['best_estimate'][i, j, :])
+                m_data.append(np.ma.vstack(data))
+
+            additional_model_data.append(np.ma.array(m_data))
+
+    additional_model_data = np.ma.array(additional_model_data)
+
     filename = utils.get_filename(class4[0][0], None,
                                   variables, variable_units,
                                   None, None,
@@ -112,19 +133,19 @@ def plot(dataset_name, **kwargs):
         if showmap:
             width += 1
 
-        gs = gridspec.GridSpec(1, width)
+        gs = gridspec.GridSpec(2, width)
 
         subplot = 0
 
         if showmap:
-            plt.subplot(gs[subplot])
+            plt.subplot(gs[0, subplot])
             subplot += 1
             minlat = lat.min()
             maxlat = lat.max()
             minlon = lon.min()
             maxlon = lon.max()
-            lat_d = max(maxlat - minlat, 20)
-            lon_d = max(maxlon - minlon, 20)
+            lat_d = max(maxlat - minlat, 40)
+            lon_d = max(maxlon - minlon, 40)
             minlat -= lat_d / 2
             minlon -= lon_d / 2
             maxlat += lat_d / 2
@@ -164,10 +185,15 @@ def plot(dataset_name, **kwargs):
                 plt.legend(ids, loc='best')
 
         plot_label = ""
+        giops_name = "Model"
+        if len(additional_model_names) > 0:
+            giops_name = "GIOPS"
+
         for idx, v in enumerate(variables):
-            plt.subplot(gs[subplot])
+            plt.subplot(gs[:, subplot])
             subplot += 1
 
+            handles = []
             legend = []
             for i in range(0, len(forecast_data)):
                 if len(ids) > 1:
@@ -182,37 +208,57 @@ def plot(dataset_name, **kwargs):
                 if error in ['climatology', 'observation']:
                     if error == 'climatology':
                         plot_label = "Error wrt Climatology"
-                        plt.plot(
-                            forecast_data[i, idx, :] -
-                            climatology_data[i, idx, :],
-                            depths[i],
-                            form
-                        )
-                        legend.append(
-                            "%s %s" % (id_label, "Model"))
-                        plt.plot(
+                        handles.append(plt.plot(
                             observed_data[i, idx, :] -
                             climatology_data[i, idx, :],
                             depths[i],
                             form
-                        )
+                        ))
                         legend.append(
                             "%s %s" % (id_label, "Observed"))
+
+                        handles.append(plt.plot(
+                            forecast_data[i, idx, :] -
+                            climatology_data[i, idx, :],
+                            depths[i],
+                            form
+                        ))
+                        legend.append(
+                            "%s %s" % (id_label, giops_name))
+                        for j, m in enumerate(additional_model_names):
+                            handles.append(plt.plot(
+                                additional_model_data[j, i, idx, :] -
+                                climatology_data[i, idx, :],
+                                depths[i],
+                                form
+                            ))
+                            legend.append(
+                                "%s %s" % (id_label, m))
                     else:
                         plot_label = "Error wrt Observation"
-                        plt.plot(
+                        handles.append(plt.plot(
                             forecast_data[i, idx, :] -
                             observed_data[i, idx, :],
                             depths[i],
                             form
-                        )
+                        ))
                         legend.append(
-                            "%s %s" % (id_label, "Model"))
+                            "%s %s" % (id_label, giops_name))
+                        for j, m in enumerate(additional_model_names):
+                            handles.append(plt.plot(
+                                additional_model_data[j, i, idx, :] -
+                                observed_data[i, idx, :],
+                                depths[i],
+                                form
+                            ))
+                            legend.append(
+                                "%s %s" % (id_label, m))
+
                         if climatology:
-                            plt.plot(
+                            handles.append(plt.plot(
                                 climatology_data[i, idx, :] -
                                 observed_data[i, idx, :],
-                                depths[i], form)
+                                depths[i], form))
                             legend.append(
                                 "%s %s" % (
                                     id_label, "Climatology"))
@@ -220,17 +266,23 @@ def plot(dataset_name, **kwargs):
                     plt.xlim([-lim, lim])
                 else:
                     plot_label = "Class 4"
-                    plt.plot(forecast_data[i, idx, :], depths[i], form)
-                    legend.append("%s %s" % (id_label, "Model"))
-                    plt.plot(observed_data[i, idx, :], depths[i], form)
+                    handles.append(plt.plot(observed_data[i, idx, :],
+                                            depths[i], form))
                     legend.append("%s %s" % (id_label, "Observed"))
+                    handles.append(plt.plot(forecast_data[i, idx, :],
+                                            depths[i], form))
+                    legend.append("%s %s" % (id_label, giops_name))
+                    for j, m in enumerate(additional_model_names):
+                        handles.append(plt.plot(additional_model_data[
+                                                j, i, idx, :], depths[i], form))
+                        legend.append("%s %s" % (id_label, m))
+
                     if climatology:
-                        plt.plot(climatology_data[i, idx, :], depths[i], form)
+                        handles.append(plt.plot(climatology_data[i, idx, :],
+                                                depths[i], form))
                         legend.append("%s %s" % (id_label, "Climatology"))
 
             plt.xlim([np.floor(plt.xlim()[0]), np.ceil(plt.xlim()[1])])
-            plt.ylim([0, depths.max() * 1.2])
-            plt.legend(legend, loc='lower left')
 
             plt.gca().xaxis.set_label_position('top')
             plt.gca().xaxis.set_ticks_position('top')
@@ -238,6 +290,12 @@ def plot(dataset_name, **kwargs):
             plt.gca().invert_yaxis()
             plt.ylabel("Depth (%s)" % utils.mathtext(depth_unit))
             plt.grid(True)
+
+        leg = fig.legend(
+            map(lambda x: x[0], handles), legend, loc='lower left',
+            bbox_to_anchor=(0.05, 0.05))
+        for legobj in leg.legendHandles:
+            legobj.set_linewidth(4.0)
 
         names = map(lambda x: "%s (%0.2f, %0.2f)" % x, zip(ids, lat, lon))
 

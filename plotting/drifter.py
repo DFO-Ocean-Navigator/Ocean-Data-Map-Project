@@ -305,7 +305,9 @@ def plot(dataset_name, **kwargs):
                 legend = ["Observed", "Modelled"]
 
             if len(legend) > 1:
-                plt.legend(legend, loc='best')
+                leg = plt.legend(legend, loc='best')
+                for legobj in leg.legendHandles:
+                    legobj.set_linewidth(4.0)
 
             if data_units[j] is not None:
                 plt.ylabel("%s (%s)" % (data_names[j],
@@ -326,7 +328,10 @@ def plot(dataset_name, **kwargs):
                 plt.plot(times[i][start[i]:end[i]],
                          model_data[i][idx][start[i]:end[i]])
             if len(names) > 1:
-                plt.legend(names, loc='best')
+                leg = plt.legend(names, loc='best')
+                for legobj in leg.legendHandles:
+                    legobj.set_linewidth(4.0)
+
             plt.ylabel(variable_names[idx])
             plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
@@ -342,7 +347,9 @@ def plot(dataset_name, **kwargs):
             plt.ylabel("Latitude (degrees)")
 
             if len(names) > 1:
-                plt.legend(names, loc='best')
+                leg = plt.legend(names, loc='best')
+                for legobj in leg.legendHandles:
+                    legobj.set_linewidth(4.0)
 
             plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
@@ -356,7 +363,9 @@ def plot(dataset_name, **kwargs):
             plt.ylabel("Longitude (degrees)")
 
             if len(names) > 1:
-                plt.legend(names, loc='best')
+                leg = plt.legend(names, loc='best')
+                for legobj in leg.legendHandles:
+                    legobj.set_linewidth(4.0)
 
             plt.setp(plt.gca().get_xticklabels(), rotation=30)
 

@@ -73,7 +73,7 @@ class ComboBox extends React.Component {
                                 value = data.map(function (d) {
                                     return d.id;
                                 });
-                            } else {
+                            } else if (!Array.isArray(value)) {
                                 value = [value];
                             }
                         }

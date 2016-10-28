@@ -486,6 +486,15 @@ def class4_forecasts(class4_id, index):
     return resp
 
 
+@app.route('/api/class4/models/<string:class4_id>/<int:index>')
+def class4_models(class4_id, index):
+    pts = oceannavigator.misc.list_class4_models(class4_id)
+    data = json.dumps(pts)
+    resp = Response(data, status=200, mimetype='application/json')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
 @app.route('/images/failure.gif')
 def log_failure():
     log_query_to_db(request)

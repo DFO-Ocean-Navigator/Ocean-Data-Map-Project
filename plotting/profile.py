@@ -191,7 +191,9 @@ def plot(dataset_name, **kwargs):
         ax[0].set_ylabel("Depth (%s)" % utils.mathtext(depth_unit))
 
         if len(points) > 1:
-            plt.legend(names, loc='best')
+            leg = plt.legend(names, loc='best')
+            for legobj in leg.legendHandles:
+                legobj.set_linewidth(4.0)
 
         plt.suptitle("\n".join(wrap(
             "%s Profile for %s (%s)" %

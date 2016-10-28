@@ -166,7 +166,9 @@ def plot(dataset_name, **kwargs):
         plt.ylabel("Temperature (Celsius)")
 
         if len(points) > 1:
-            plt.legend(names, loc='best')
+            leg = plt.legend(names, loc='best')
+            for legobj in leg.legendHandles:
+                legobj.set_linewidth(4.0)
         else:
             labels = []
             for idx, d in enumerate(depths):

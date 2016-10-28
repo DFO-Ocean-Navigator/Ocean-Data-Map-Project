@@ -135,6 +135,7 @@ class PlotImage extends React.Component {
                 query.error = q.error;
                 query.showmap = q.showmap;
                 query.climatology = q.climatology;
+                query.models = q.models;
                 break;
         }
 

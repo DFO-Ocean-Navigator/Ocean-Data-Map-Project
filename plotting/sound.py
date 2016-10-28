@@ -168,7 +168,9 @@ def plot(dataset_name, **kwargs):
         ax.xaxis.grid(True)
 
         if len(latlon) > 1:
-            plt.legend(names, loc='best')
+            leg = plt.legend(names, loc='best')
+            for legobj in leg.legendHandles:
+                legobj.set_linewidth(4.0)
 
         ylim = ax.get_ylim()
         ax2 = ax.twinx()

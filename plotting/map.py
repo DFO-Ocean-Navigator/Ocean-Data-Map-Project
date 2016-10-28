@@ -101,9 +101,9 @@ def plot(dataset_name, **kwargs):
 
         b = combined.bounds
         height = distance.measure(
-            (b[0], centroid[1]), (b[2], centroid[1])) * 1000 * 1.1
+            (b[0], centroid[1]), (b[2], centroid[1])) * 1000 * 1.25
         width = distance.measure(
-            (b[1], centroid[0]), (b[3], centroid[0])) * 1000 * 1.1
+            (centroid[0], b[1]), (centroid[0], b[3])) * 1000 * 1.25
 
         # bounds = list(b)
         # Add 10%
