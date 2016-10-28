@@ -9,6 +9,7 @@ from shapely.geometry.multipolygon import MultiPolygon
 from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
+from operator import itemgetter
 
 
 def list_point_files():
@@ -29,7 +30,7 @@ def list_point_files():
 
         files.append(entry)
 
-    return files
+    return sorted(files, key=itemgetter('name'))
 
 
 def points(file_id, projection, resolution, extent):
@@ -92,7 +93,7 @@ def list_line_files():
 
         files.append(entry)
 
-    return files
+    return sorted(files, key=itemgetter('name'))
 
 
 def lines(file_id, projection, resolution, extent):
@@ -160,7 +161,7 @@ def list_area_files():
 
         files.append(entry)
 
-    return files
+    return sorted(files, key=itemgetter('name'))
 
 
 def list_areas(file_id, simplify=True):
