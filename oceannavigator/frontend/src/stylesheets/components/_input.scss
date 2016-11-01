@@ -58,6 +58,10 @@ div.input {
     }
 }
 
+.ie .helpdialog .modal-content {
+    height: 100%;
+}
+
 .helpdialog {
     margin: 30px auto;
     max-height: calc(100vh - 60px);
