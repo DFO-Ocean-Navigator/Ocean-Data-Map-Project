@@ -1,9 +1,11 @@
+import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import cmocean
 import re
 import plotting
 import os
 import numpy as np
+from StringIO import StringIO
 
 
 def make_colormap(seq):
@@ -156,6 +158,38 @@ colormap_names = {
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
     'temperature-old': 'Temperature (old)',
 }
+
+
+def plot_colormaps():
+    fig, axes = plt.subplots(
+        nrows=len(colormap_names),
+        figsize=(8, 0.3 * len(colormap_names))
+    )
+    fig.subplots_adjust(top=0.925, bottom=0.01, left=0.01, right=0.6)
+
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
+
+    fig.suptitle("Ocean Navigator Colourmaps", fontsize=14)
+    for ax, cmap in zip(axes, sorted(colormap_names.keys(),
+                                     key=colormap_names.get)):
+        ax.imshow(gradient, aspect='auto', cmap=colormaps.get(cmap))
+        pos = list(ax.get_position().bounds)
+        x_text = pos[2] + 0.025
+        y_text = pos[1] + pos[3] / 2.
+        fig.text(x_text, y_text, colormap_names[
+                 cmap], va='center', ha='left', fontsize=12)
+
+    for ax in axes:
+        ax.set_axis_off()
+
+    buf = StringIO()
+    try:
+        plt.savefig(buf, format="png", dpi='figure')
+        plt.close(fig)
+        return buf.getvalue()
+    finally:
+        buf.close()
 
 
 if __name__ == '__main__':

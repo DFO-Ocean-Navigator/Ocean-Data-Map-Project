@@ -101,6 +101,14 @@ def colormaps():
     return resp
 
 
+@app.route('/colormaps.png')
+def colormap_image():
+    img = plotting.colormap.plot_colormaps()
+    resp = Response(img, status=200, mimetype='image/png')
+    resp.cache_control.max_age = 86400
+    return resp
+
+
 @app.route('/api/depth/')
 def depth():
     var = request.args.get('variable')
