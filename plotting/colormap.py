@@ -104,7 +104,7 @@ colormaps = {
         _c('#b20000'), 0.909091, _c('#b20000'),
         _c('#640000')
     ]),
-    'temperature': make_colormap([
+    'temperature-old': make_colormap([
         _c('#0000ff'),
         _c('#0748ff'), 0.125, _c('#0748ff'),
         _c('#9291ff'), 0.250, _c('#9291ff'),
@@ -124,8 +124,8 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'neo_sst.txt'))),
     'BuYlRd': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
-    'temperature-new': mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, 'temperature-new.txt'))),
+    'temperature': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
 
 }
 colormaps['wind'] = colormaps['velocity']
@@ -154,7 +154,7 @@ colormap_names = {
     'thermal': 'Thermal',
     'neo_sst': 'NEO SST',
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
-    'temperature-new': 'Temperature (new)',
+    'temperature-old': 'Temperature (old)',
 }
 
 
