@@ -66,24 +66,43 @@ class PointWindow extends React.Component {
 
     onLocalUpdate(key, value) {
         var newState = {};
-        newState[key] = value;
+        if (typeof(key) === "string") {
+            newState[key] = value;
+        } else {
+            for (var i = 0; i < key.length; i++) {
+                newState[key[i]] = value[i];
+            }
+        }
         this.setState(newState);
 
-        if (key == 'depth' && value != 'all') {
-            this.props.onUpdate(key, value);
+        var parentKeys = [];
+        var parentValues = [];
+
+        if (newState.hasOwnProperty('depth') && newState.depth != 'all') {
+            parentKeys.push('depth');
+            parentValues.push(newState.depth);
         }
 
-        if (key == 'point') {
-            this.props.onUpdate(key, value);
-            this.props.onUpdate('names', []);
+        if (newState.hasOwnProperty('point')) {
+            parentKeys.push('point');
+            parentValues.push(newState.point);
+
+            parentKeys.push('names');
+            parentValues.push([]);
         }
 
-        if (key == 'variable_scale' && this.state.variable.length == 1) {
-            this.props.onUpdate(key, value);
+        if (newState.hasOwnProperty('variable_scale') && this.state.variable.length == 1) {
+            parentKeys.push('variable_scale');
+            parentValues.push(newState.variable_scale);
         }
 
-        if (key == 'variable' && value.length == 1) {
-            this.props.onUpdate(key, value[0]);
+        if (newState.hasOwnProperty('variable') && newState.variable.length == 1) {
+            parentKeys.push('variable');
+            parentValues.push(newState.variable[0]);
+        }
+
+        if (parentKeys.length > 0) {
+            this.props.onUpdate(parentKeys, parentValues);
         }
     }
 

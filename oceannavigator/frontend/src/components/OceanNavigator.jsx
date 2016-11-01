@@ -64,17 +64,61 @@ class OceanNavigator extends React.Component {
     }
     updateState(key, value) {
         var newState = {};
-        newState[key] = value;
+        if (typeof(key) === "string") {
+            newState[key] = value;
+        } else {
+            for (var i = 0; i < key.length; i++) {
+                newState[key[i]] = value[i];
+            }
+        }
         if (key == 'time') {
             if (typeof(value) == "undefined") {
-                console.log("time undefined, skipping");
                 return;
             }
         }
         if (key == "variable_scale" && this.state.scale != value) {
             newState['scale'] = value;
         }
+
+        if (key == "dataset" && this.state.dataset != value) {
+            this.changeDataset(value);
+            return;
+        } else if ($.inArray("dataset", key) != -1) {
+            var state = {};
+            var dataset = "";
+            for (var i = 0; i < key.length; i++) {
+                if (key[i] == "dataset") {
+                    dataset = value[i];
+                } else {
+                    state[key[i]] = value[i];
+                }
+            }
+            this.changeDataset(dataset, state);
+            return;
+        }
         this.setState(newState);
+    }
+
+    changeDataset(dataset, state) {
+        // When dataset changes, so does time & variable list
+        var var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+        var time_promise = $.ajax("/api/timestamp/" + this.state.dataset + "/" + this.state.time + "/" + dataset).promise();
+        $.when(var_promise, time_promise).done(function(v, t) {
+            var newvariable = this.state.variable;
+            if ($.inArray(this.state.variable, v[0].map(function(e) { return e.id; })) == -1) {
+                newvariable = v[0][0].id;
+            }
+
+            if (state === undefined) {
+                state = {};
+            }
+
+            state.dataset = dataset;
+            state.variable = newvariable;
+            state.time = t[0];
+
+            this.setState(state);
+        }.bind(this));
     }
     action(name, arg, arg2, arg3) {
         switch(name) {

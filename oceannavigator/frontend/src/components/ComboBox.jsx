@@ -24,11 +24,15 @@ class ComboBox extends React.Component {
             }
         }
         if (typeof(this.props.onUpdate) === "function") {
-            this.props.onUpdate(this.props.id, value);
             var dataset = e.target.options[e.target.selectedIndex].dataset;
+
+            var keys = [this.props.id];
+            var values = [value]
             for (var key in dataset) {
-                this.props.onUpdate(this.props.id + '_' + key, dataset[key]);
+                keys.push(this.props.id + '_' + key);
+                values.push(dataset[key]);
             }
+            this.props.onUpdate(keys, values);
         }
     }
     populate(props) {
@@ -39,7 +43,7 @@ class ComboBox extends React.Component {
             $.ajax({
                 url: props.url,
                 dataType: 'json',
-                cache: false,
+                cache: true,
                 success: function(data) {
                     var ids = data.map(function(d) {return d.id;});
                     if (

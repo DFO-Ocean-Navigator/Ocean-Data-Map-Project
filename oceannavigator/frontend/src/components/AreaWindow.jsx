@@ -50,15 +50,30 @@ class AreaWindow extends React.Component {
 
     onLocalUpdate(key, value) {
         var newState = {};
-        newState[key] = value;
+        if (typeof(key) === "string") {
+            newState[key] = value;
+        } else {
+            for (var i = 0; i < key.length; i++) {
+                newState[key[i]] = value[i];
+            }
+        }
         this.setState(newState);
 
-        if (key == 'variable_scale' && this.state.variable.length == 1) {
-            this.props.onUpdate(key, value);
+        var parentKeys = [];
+        var parentValues = [];
+
+        if (newState.hasOwnProperty('variable_scale') && this.state.variable.length == 1) {
+            parentKeys.push('variable_scale');
+            parentValues.push(newState.variable_scale);
         }
 
-        if (key == 'variable' && value.length == 1) {
-            this.props.onUpdate(key, value[0]);
+        if (newState.hasOwnProperty('variable') && newState.variable.length == 1) {
+            parentKeys.push('variable');
+            parentValues.push(newState.variable[0]);
+        }
+
+        if (parentKeys.length > 0) {
+            this.props.onUpdate(parentKeys, parentValues);
         }
     }
 

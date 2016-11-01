@@ -38,7 +38,13 @@ class LineWindow extends React.Component {
 
     onLocalUpdate(key, value) {
         var newState = {};
-        newState[key] = value;
+        if (typeof(key) === "string") {
+            newState[key] = value;
+        } else {
+            for (var i = 0; i < key.length; i++) {
+                newState[key[i]] = value[i];
+            }
+        }
         this.setState(newState);
     }
 
