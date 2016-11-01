@@ -90,9 +90,9 @@ class Grid(object):
         minx, maxx = np.amin(x), np.amax(x)
 
         dy = maxy - miny
-        if dy == 0:
-            miny -= 1
-            maxy += 1
+        if dy < 2:
+            miny -= 2
+            maxy += 2
 
         miny = int(miny - dy / 4.0)
         if miny < 0:
@@ -102,9 +102,9 @@ class Grid(object):
             maxy = self.latvar.shape[0] - 1
 
         dx = maxx - minx
-        if dx == 0:
-            minx -= 1
-            maxx += 1
+        if dx < 2:
+            minx -= 2
+            maxx += 2
 
         minx = int(minx - dx / 4.0)
         if minx < 0:
