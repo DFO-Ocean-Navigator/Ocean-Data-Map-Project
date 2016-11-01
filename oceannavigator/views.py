@@ -5,6 +5,7 @@ from flask import Response, request, redirect, send_file
 import json
 from netCDF4 import Dataset, netcdftime
 import datetime
+import dateutil
 
 from oceannavigator import app
 from oceannavigator.database import log_query_to_db
@@ -289,6 +290,35 @@ def time_query():
     js = json.dumps(data, cls=DateTimeEncoder)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
+
+
+@app.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
+def timestamp_for_date(old_dataset, date, new_dataset):
+    with Dataset(get_dataset_url(old_dataset), 'r') as ds:
+        if 'time_counter' in ds.variables:
+            time_var = ds.variables['time_counter']
+        elif 'time' in ds.variables:
+            time_var = ds.variables['time']
+
+        t = netcdftime.utime(time_var.units)
+        timestamp = t.num2date(time_var[date])
+
+    with Dataset(get_dataset_url(new_dataset), 'r') as ds:
+        if 'time_counter' in ds.variables:
+            time_var = ds.variables['time_counter']
+        elif 'time' in ds.variables:
+            time_var = ds.variables['time']
+
+        t = netcdftime.utime(time_var.units)
+        timestamps = t.num2date(time_var[:])
+
+    diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
+    idx = np.where(diffs <= 0)[0]
+    res = 0
+    if len(idx) > 0:
+        res = idx.max()
+
+    return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
 @app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
