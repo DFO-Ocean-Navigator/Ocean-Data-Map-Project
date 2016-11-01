@@ -43,6 +43,7 @@ class MapToolbar extends React.Component {
                     this.props.action("show", "class4", this.state.class4Files[text]);
                     this.class4Picker.hide();
                 }.bind(this),
+                defaultDate: this.state.class4Current,
             });
             $(this.class4div).css("left", button.offset().left + "px");
         } else {
@@ -109,6 +110,7 @@ class MapToolbar extends React.Component {
                         map[obj.name] = obj.id;
                         return map;
                     }, {}),
+                    class4Current: data[0].name,
                 });
             }.bind(this),
             error: function(r, status, err) {
