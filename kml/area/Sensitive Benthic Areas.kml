@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 <Document>
-	<name>Sensitive Benthic Areas.kml</name>
+	<name>DFO NL Region Sensitive Benthic Areas.kml</name>
 	<Schema name="NL_SmallGorgonians_FinalSBA" id="NL_SmallGorgonians_FinalSBA">
 		<SimpleField type="string" name="Name"></SimpleField>
 		<SimpleField type="int" name="Id"></SimpleField>
@@ -31,7 +31,7 @@
 		<SimpleField type="float" name="Id"></SimpleField>
 	</Schema>
 	<Folder>
-		<name>Sensitive Benthic Areas</name>
+		<name>DFO NL Region Sensitive Benthic Areas</name>
 		<open>1</open>
 		<Placemark>
 			<name>Eastern Arctic Sea Pens</name>

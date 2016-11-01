@@ -12,7 +12,7 @@
 	<SimpleField name="CGNS_FID" type="string"></SimpleField>
 	<SimpleField name="DATE_E" type="string"></SimpleField>
 </Schema>
-<Folder><name>Marine Protected Areas</name>
+<Folder><name>Canada Marine Protected Areas</name>
   <Placemark>
 	<name>Musquash Marine Protected Area</name>
 	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>

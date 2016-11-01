@@ -59,7 +59,7 @@
 		<SimpleField type="string" name="GLOBAL_ID"></SimpleField>
 	</Schema>
 	<Folder>
-		<name>EBSAs - Arctic</name>
+		<name>CBD EBSAs - Arctic</name>
 		<open>1</open>
 		<Placemark>
 			<name>Multi-Year Ice of the Arctic Ocean</name>

@@ -5,7 +5,7 @@
             <SimpleField name="Name" type="string"></SimpleField>
             <SimpleField name="Id" type="int"></SimpleField>
         </Schema>
-        <Folder><name>2015 VME Closures</name>
+        <Folder><name>NAFO 2015 VME Closures</name>
             <Placemark>
                 <name>3O Coral Closure</name>
                 <Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>

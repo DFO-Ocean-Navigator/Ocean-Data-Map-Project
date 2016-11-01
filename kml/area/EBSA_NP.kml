@@ -104,7 +104,7 @@
 		<SimpleField type="string" name="GLOBAL_ID"></SimpleField>
 	</Schema>
 	<Folder>
-		<name>EBSAs - North Pacific</name>
+		<name>CBD EBSAs - North Pacific</name>
 		<open>1</open>
 		<Placemark>
 			<name>West Kamchatka shelf, Russia</name>

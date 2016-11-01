@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 <Document>
-	<name>NL 2015 VMEs.kml</name>
+	<name>DFO NL Region 2015 VMEs.kml</name>
 	<Schema name="seapen_VME_1_4_Clipped_v1" id="seapen_VME_1_4_Clipped_v1">
 		<SimpleField type="string" name="Name"></SimpleField>
 		<SimpleField type="int" name="OBJECTID"></SimpleField>
@@ -111,7 +111,7 @@
 		</Pair>
 	</StyleMap>
 	<Folder>
-		<name>NL 2015 VMEs</name>
+		<name>DFO NL Region 2015 VMEs</name>
 		<open>1</open>
 		<Placemark>
 			<name>Sponges VME</name>
