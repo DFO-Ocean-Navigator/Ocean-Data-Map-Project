@@ -66,18 +66,27 @@ class OceanNavigator extends React.Component {
         var newState = {};
         if (typeof(key) === "string") {
             newState[key] = value;
+
+            if (key == 'time') {
+                if (typeof(value) == "undefined") {
+                    return;
+                }
+            }
         } else {
             for (var i = 0; i < key.length; i++) {
-                newState[key[i]] = value[i];
+                switch(key[i]) {
+                    case "variable_scale":
+                        newState.scale = value[i];
+                        break;
+                    case "time":
+                        if (value[i] != undefined) {
+                            newState.time = value[i];
+                        }
+                        break;
+                    default:
+                        newState[key[i]] = value[i];
+                }
             }
-        }
-        if (key == 'time') {
-            if (typeof(value) == "undefined") {
-                return;
-            }
-        }
-        if (key == "variable_scale" && this.state.scale != value) {
-            newState['scale'] = value;
         }
 
         if (key == "dataset" && this.state.dataset != value) {
