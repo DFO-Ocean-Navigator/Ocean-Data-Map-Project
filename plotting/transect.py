@@ -248,7 +248,7 @@ def plot(dataset_name, **kwargs):
             output.write("\n")
 
             cruise = dataset_name
-            station = 1
+            station = 0
 
             f = scipy.interpolate.interp1d(bath_x, bath_y)
             botdep = f(distance)
@@ -257,14 +257,15 @@ def plot(dataset_name, **kwargs):
                 if distance[idx] == distance[idx - 1]:
                     continue
 
-                for d in range(0, len(val)):
-                    if station == 1 and d == 0:
-                        output.write(cruise)
+                station += 1
 
-                    output.write("\t")
+                for d, v in enumerate(val):
+                    if np.ma.is_masked(v):
+                        continue
 
                     if d == 0:
                         output.write("\t".join([
+                            cruise,
                             "%d" % station,
                             "C",
                             timestamp.isoformat(),
@@ -273,7 +274,7 @@ def plot(dataset_name, **kwargs):
                             "%0.0f" % -botdep[idx],
                         ]))
                     else:
-                        output.write("\t" * 5)
+                        output.write("\t" * 6)
 
                     output.write("\t%d\t%0.1f\n" % (
                         np.round(depth[d]),
