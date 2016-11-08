@@ -18,7 +18,7 @@ import tempfile
 import os
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
-from shapely.geometry import LinearRing
+from shapely.geometry import LinearRing, Point
 from shapely.ops import cascaded_union
 from matplotlib.patches import Polygon
 from matplotlib.bezier import concatenate_paths
@@ -26,6 +26,9 @@ from matplotlib.patches import PathPatch
 from textwrap import wrap
 from oceannavigator.misc import list_areas
 import pyresample.utils
+import datetime
+from grid import Grid
+import shapely.geometry
 
 
 def plot(dataset_name, **kwargs):
@@ -77,7 +80,8 @@ def plot(dataset_name, **kwargs):
                 u = cascaded_union(rings)
             else:
                 u = rings[0]
-            all_rings.append(u.envelope)
+            # all_rings.append(u.envelope)
+            all_rings.append(u)
             if a.get('name'):
                 names.append(a.get('name'))
                 centroids.append(u.centroid)
@@ -92,6 +96,7 @@ def plot(dataset_name, **kwargs):
         else:
             combined = all_rings[0]
 
+        combined_area = combined
         combined = combined.envelope
 
         from geopy.distance import VincentyDistance
@@ -104,6 +109,8 @@ def plot(dataset_name, **kwargs):
             (b[0], centroid[1]), (b[2], centroid[1])) * 1000 * 1.25
         width = distance.measure(
             (centroid[0], b[1]), (centroid[0], b[3])) * 1000 * 1.25
+
+        bounds = b
 
         # bounds = list(b)
         # Add 10%
@@ -160,214 +167,218 @@ def plot(dataset_name, **kwargs):
     if anom:
         variables = [v[:-5] for v in variables]
 
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
-        if query.get('time') is None or (type(query.get('time')) == str and
-                                         len(query.get('time')) == 0):
-            time = -1
-        else:
-            time = int(query.get('time'))
+    if query.get('time') is None or (
+        type(query.get('time')) == str and len(query.get('time')) == 0
+    ):
+        time = -1
+    else:
+        time = int(query.get('time'))
 
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-        if time >= time_var.shape[0]:
-            time = -1
+    if filetype != 'txt':
+        with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
+            if 'time_counter' in dataset.variables:
+                time_var = dataset.variables['time_counter']
+            elif 'time' in dataset.variables:
+                time_var = dataset.variables['time']
+            if time >= time_var.shape[0]:
+                time = -1
 
-        if time < 0:
-            time += time_var.shape[0]
+            if time < 0:
+                time += time_var.shape[0]
 
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variables[0]])
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variables[0]])
-        if vector:
-            variable_name = re.sub(
-                r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
-                variable_name)
-            variable_name = re.sub(r" +", " ", variable_name)
-
-        depth = 0
-        depthm = 0
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-        else:
-            depth_var = None
-
-        if depth_var is not None and query.get('depth'):
-            if query.get('depth') == 'bottom':
-                depth = 'bottom'
-                depthm = 'Bottom'
-            if len(query.get('depth')) > 0 and \
-                    query.get('depth') != 'bottom':
-                depth = int(query.get('depth'))
-
-                if depth >= depth_var.shape[0]:
-                    depth = 0
-                depthm = depth_var[int(depth)]
-
-        interp = query.get('interpolation')
-        if interp is None or interp == '':
-            interp = {
-                'method': 'inv_square',
-                'neighbours': 8,
-            }
-
-        data = []
-        allvars = []
-        for v in variables:
-            var = dataset.variables[v]
-            allvars.append(v)
-            d = load_interpolated_grid(
-                target_lat, target_lon, dataset, v,
-                depth, time, interpolation=interp)
-            data.append(d)
-            if len(var.shape) == 3:
-                depth_label = ""
-            elif depth == 'bottom':
-                depth_label = " at Bottom"
-            else:
-                depth_label = " at " + \
-                    str(int(np.round(depthm))) + " " + depth_var.units
-
-        quiver_data = []
-        if 'quiver' in query and len(query.get('quiver')) > 0:
-            quiver_vars = query.get('quiver').split(',')
-            for v in quiver_vars:
-                if v is None or len(v) == 0 or v == 'none':
-                    continue
-                allvars.append(v)
-                var = dataset.variables[v]
-                quiver_unit = get_variable_unit(dataset_name, var)
-                quiver_name = get_variable_name(dataset_name, var)
-                quiver_lat, quiver_lon, d = load_interpolated(
-                    m, 50, dataset, v, depth, time, interpolation=interp)
-                quiver_data.append(d)
-
-            if quiver_vars[0] != 'none':
-                quiver_name = re.sub(
+            variable_unit = get_variable_unit(dataset_name,
+                                              dataset.variables[variables[0]])
+            variable_name = get_variable_name(dataset_name,
+                                              dataset.variables[variables[0]])
+            if vector:
+                variable_name = re.sub(
                     r"(?i)( x | y |zonal |meridional |northward |eastward )",
-                    " ", quiver_name)
-                quiver_name = re.sub(r" +", " ", quiver_name)
+                    " ", variable_name)
+                variable_name = re.sub(r" +", " ", variable_name)
 
-        if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
             depth = 0
-
-        contour_data = []
-        contour = query.get('contour')
-        if contour is not None and \
-            contour['variable'] != '' and \
-                contour['variable'] != 'none':
-            target_lat, target_lon, d = load_interpolated(m, 500, dataset,
-                                                          contour['variable'],
-                                                          depth, time,
-                                                          interpolation=interp)
-            contour_unit = get_variable_unit(dataset_name, contour['variable'])
-            contour_name = get_variable_name(dataset_name, contour['variable'])
-            if contour_unit.startswith("Kelvin"):
-                d = np.add(d, -273.15)
-                contour_unit = "Celsius"
-
-            contour_data.append(d)
-
-        t = netcdftime.utime(time_var.units)
-        timestamp = t.num2date(time_var[time])
-
-    # Load bathymetry data
-    bathymetry = overlays.bathymetry(m, target_lat, target_lon, blur=2)
-    if len(quiver_data) > 0 and depth != 'bottom' and int(depth) != 0:
-        quiver_bathymetry = overlays.bathymetry(m, quiver_lat, quiver_lon)
-
-    if depth != 'bottom' and int(depth) != 0:
-        for d in data:
-            d[np.where(bathymetry < depthm)] = np.ma.masked
-        for d in quiver_data:
-            d[np.where(quiver_bathymetry < depthm)] = np.ma.masked
-        for d in contour_data:
-            d[np.where(bathymetry < depthm)] = np.ma.masked
-    else:
-        for d in data:
-            mask = maskoceans(target_lon, target_lat, d).mask
-            d[~mask] = np.ma.masked
-        for d in quiver_data:
-            mask = maskoceans(quiver_lon, quiver_lat, d).mask
-            d[~mask] = np.ma.masked
-        for d in contour_data:
-            mask = maskoceans(target_lon, target_lat, d).mask
-            d[~mask] = np.ma.masked
-
-    if anom:
-        a = []
-        with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
-            if variables[0] in dataset.variables:
-                for i, v in enumerate(variables):
-                    a.append(load_interpolated_grid(
-                        target_lat, target_lon, dataset, v,
-                        depth, timestamp.month - 1, interpolation=interp))
-                    if not vector:
-                        data[i] = data[i] - a[i]
-                variable_name += " Anomaly"
+            depthm = 0
+            if 'deptht' in dataset.variables:
+                depth_var = dataset.variables['deptht']
+            elif 'depth' in dataset.variables:
+                depth_var = dataset.variables['depth']
             else:
-                anom = False
+                depth_var = None
 
-    # Colormap from arguments
-    cmap = query.get('colormap')
-    if cmap is not None:
-        cmap = colormap.colormaps.get(cmap)
-    if cmap is None:
-        if anom:
-            cmap = colormap.colormaps['anomaly']
-        else:
-            cmap = colormap.find_colormap(variable_name)
+            if depth_var is not None and query.get('depth'):
+                if query.get('depth') == 'bottom':
+                    depth = 'bottom'
+                    depthm = 'Bottom'
+                if len(query.get('depth')) > 0 and \
+                        query.get('depth') != 'bottom':
+                    depth = int(query.get('depth'))
 
-    if variable_unit.startswith("Kelvin"):
-        variable_unit = "Celsius"
-        for idx, val in enumerate(data):
-            data[idx] = np.add(val, -273.15)
+                    if depth >= depth_var.shape[0]:
+                        depth = 0
+                    depthm = depth_var[int(depth)]
 
-    if vector:
-        data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
-        if anom:
-            a[0] = np.sqrt(a[0] ** 2 + a[1] ** 2)
-            data[0] = data[0] - a[0]
-        if scale:
-            vmin = scale[0]
-            vmax = scale[1]
-        else:
-            vmax = np.amax(data[0])
-            vmin = 0
-            if anom:
-                vmin = -vmax
-            if not anom:
-                if query.get('colormap') is None or \
-                        query.get('colormap') == 'default':
-                    cmap = colormap.colormaps.get('speed')
+            interp = query.get('interpolation')
+            if interp is None or interp == '':
+                interp = {
+                    'method': 'inv_square',
+                    'neighbours': 8,
+                }
 
-    else:
-        if scale:
-            vmin = scale[0]
-            vmax = scale[1]
-        else:
-            vmin = np.inf
-            vmax = -np.inf
+            data = []
+            allvars = []
+            for v in variables:
+                var = dataset.variables[v]
+                allvars.append(v)
+                d = load_interpolated_grid(
+                    target_lat, target_lon, dataset, v,
+                    depth, time, interpolation=interp)
+                data.append(d)
+                if len(var.shape) == 3:
+                    depth_label = ""
+                elif depth == 'bottom':
+                    depth_label = " at Bottom"
+                else:
+                    depth_label = " at " + \
+                        str(int(np.round(depthm))) + " " + depth_var.units
 
+            quiver_data = []
+            if 'quiver' in query and len(query.get('quiver')) > 0:
+                quiver_vars = query.get('quiver').split(',')
+                for v in quiver_vars:
+                    if v is None or len(v) == 0 or v == 'none':
+                        continue
+                    allvars.append(v)
+                    var = dataset.variables[v]
+                    quiver_unit = get_variable_unit(dataset_name, var)
+                    quiver_name = get_variable_name(dataset_name, var)
+                    quiver_lat, quiver_lon, d = load_interpolated(
+                        m, 50, dataset, v, depth, time, interpolation=interp)
+                    quiver_data.append(d)
+
+                if quiver_vars[0] != 'none':
+                    quiver_name = re.sub(
+                        r"(?i)( x | y |zonal |meridional |northward |eastward )",
+                        " ", quiver_name)
+                    quiver_name = re.sub(r" +", " ", quiver_name)
+
+            if all(map(lambda v: len(dataset.variables[v].shape) == 3,
+                       allvars)):
+                depth = 0
+
+            contour_data = []
+            contour = query.get('contour')
+            if contour is not None and \
+                contour['variable'] != '' and \
+                    contour['variable'] != 'none':
+                target_lat, target_lon, d = load_interpolated(
+                    m, 500, dataset,
+                    contour['variable'],
+                    depth, time,
+                    interpolation=interp)
+                contour_unit = get_variable_unit(
+                    dataset_name, contour['variable'])
+                contour_name = get_variable_name(
+                    dataset_name, contour['variable'])
+                if contour_unit.startswith("Kelvin"):
+                    d = np.add(d, -273.15)
+                    contour_unit = "Celsius"
+
+                contour_data.append(d)
+
+            t = netcdftime.utime(time_var.units)
+            timestamp = t.num2date(time_var[time])
+
+        # Load bathymetry data
+        bathymetry = overlays.bathymetry(m, target_lat, target_lon, blur=2)
+        if len(quiver_data) > 0 and depth != 'bottom' and int(depth) != 0:
+            quiver_bathymetry = overlays.bathymetry(m, quiver_lat, quiver_lon)
+
+        if depth != 'bottom' and int(depth) != 0:
             for d in data:
-                dmin, dmax = utils.normalize_scale(d, variable_name,
-                                                   variable_unit)
-                vmin = min(vmin, dmin)
-                vmax = max(vmax, dmax)
+                d[np.where(bathymetry < depthm)] = np.ma.masked
+            for d in quiver_data:
+                d[np.where(quiver_bathymetry < depthm)] = np.ma.masked
+            for d in contour_data:
+                d[np.where(bathymetry < depthm)] = np.ma.masked
+        else:
+            for d in data:
+                mask = maskoceans(target_lon, target_lat, d).mask
+                d[~mask] = np.ma.masked
+            for d in quiver_data:
+                mask = maskoceans(quiver_lon, quiver_lat, d).mask
+                d[~mask] = np.ma.masked
+            for d in contour_data:
+                mask = maskoceans(target_lon, target_lat, d).mask
+                d[~mask] = np.ma.masked
 
+        if anom:
+            a = []
+            with Dataset(
+                get_dataset_climatology(dataset_name), 'r'
+            ) as dataset:
+                if variables[0] in dataset.variables:
+                    for i, v in enumerate(variables):
+                        a.append(load_interpolated_grid(
+                            target_lat, target_lon, dataset, v,
+                            depth, timestamp.month - 1, interpolation=interp))
+                        if not vector:
+                            data[i] = data[i] - a[i]
+                    variable_name += " Anomaly"
+                else:
+                    anom = False
+
+        # Colormap from arguments
+        cmap = query.get('colormap')
+        if cmap is not None:
+            cmap = colormap.colormaps.get(cmap)
+        if cmap is None:
             if anom:
-                vmin = min(vmin, -vmax)
-                vmax = max(vmax, -vmin)
+                cmap = colormap.colormaps['anomaly']
+            else:
+                cmap = colormap.find_colormap(variable_name)
 
-    filename = utils.get_filename(get_dataset_url(dataset_name),
-                                  query.get('location'),
-                                  variables, variable_unit,
-                                  timestamp, depthm,
-                                  filetype)
+        if variable_unit.startswith("Kelvin"):
+            variable_unit = "Celsius"
+            for idx, val in enumerate(data):
+                data[idx] = np.add(val, -273.15)
+
+        if vector:
+            data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
+            if anom:
+                a[0] = np.sqrt(a[0] ** 2 + a[1] ** 2)
+                data[0] = data[0] - a[0]
+            if scale:
+                vmin = scale[0]
+                vmax = scale[1]
+            else:
+                vmax = np.amax(data[0])
+                vmin = 0
+                if anom:
+                    vmin = -vmax
+                if not anom:
+                    if query.get('colormap') is None or \
+                            query.get('colormap') == 'default':
+                        cmap = colormap.colormaps.get('speed')
+
+        else:
+            if scale:
+                vmin = scale[0]
+                vmax = scale[1]
+            else:
+                vmin = np.inf
+                vmax = -np.inf
+
+                for d in data:
+                    dmin, dmax = utils.normalize_scale(d, variable_name,
+                                                       variable_unit)
+                    vmin = min(vmin, dmin)
+                    vmax = max(vmax, dmax)
+
+                if anom:
+                    vmin = min(vmin, -vmax)
+                    vmax = max(vmax, -vmin)
+
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'geotiff':
         f, fname = tempfile.mkstemp()
         os.close(f)
@@ -406,6 +417,207 @@ def plot(dataset_name, **kwargs):
         os.remove(fname)
 
         return (buf, mime, filename.replace(".geotiff", ".tif"))
+    elif filetype == 'txt':
+        with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
+            if 'time_counter' in dataset.variables:
+                time_var = dataset.variables['time_counter']
+            elif 'time' in dataset.variables:
+                time_var = dataset.variables['time']
+            if time >= time_var.shape[0]:
+                time = -1
+
+            if time < 0:
+                time += time_var.shape[0]
+
+            timestamp = netcdftime.utime(
+                time_var.units).num2date(time_var[time])
+
+            depth = 0
+            depthm = 0
+            if 'deptht' in dataset.variables:
+                depth_var = dataset.variables['deptht']
+            elif 'depth' in dataset.variables:
+                depth_var = dataset.variables['depth']
+            else:
+                depth_var = None
+
+            if depth_var is not None and query.get('depth'):
+                if query.get('depth') == 'bottom':
+                    depth = 'bottom'
+                    depthm = 'Bottom'
+                if len(query.get('depth')) > 0 and \
+                        query.get('depth') != 'bottom':
+                    depth = int(query.get('depth'))
+
+                    if depth >= depth_var.shape[0]:
+                        depth = 0
+                    depthm = depth_var[int(depth)]
+                all_depths = depth_var[:]
+
+            if 'nav_lat' in dataset.variables:
+                latvarname = 'nav_lat'
+                lonvarname = 'nav_lon'
+            elif 'latitude' in dataset.variables:
+                latvarname = 'latitude'
+                lonvarname = 'longitude'
+
+            grid = Grid(dataset, latvarname, lonvarname)
+            lat, lon = np.meshgrid(
+                np.linspace(bounds[0], bounds[2], 50),
+                np.linspace(bounds[1], bounds[3], 50)
+            )
+            miny, maxy, minx, maxx = grid.bounding_box_grid(lat, lon)
+
+            lat = dataset.variables[latvarname][miny:maxy, minx:maxx]
+            lon = dataset.variables[lonvarname][miny:maxy, minx:maxx]
+            lon[np.where(lon > 180)] -= 360
+
+            data = []
+            allvars = []
+            variable_units = []
+            variable_names = []
+            variable_depths = []
+            for v_idx, v in enumerate(variables):
+                var = dataset.variables[v]
+                allvars.append(v)
+
+                variable_names.append(get_variable_name(dataset_name, var))
+                variable_units.append(get_variable_unit(dataset_name, var))
+
+                if anom:
+                    variable_names[-1] += " Anomaly"
+
+                if len(var.shape) == 3:
+                    d = var[time, miny:maxy, minx:maxx]
+                    variable_depths.append("")
+                elif depth == 'bottom':
+                    fulldata = var[time, :, miny:maxy, minx:maxx]
+                    reshaped = fulldata.reshape([fulldata.shape[0], -1])
+                    edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
+
+                    depths = edges[1, 0, :]
+                    indices = edges[1, 1, :]
+
+                    d = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+                                                    fulldata.shape[2]]),
+                                          mask=True,
+                                          dtype=fulldata.dtype)
+
+                    d[np.unravel_index(indices, d.shape)] = fulldata.reshape(
+                        [fulldata.shape[0], -1])[depths, indices]
+                    variable_depths.append("(@ Bottom)")
+
+                    depthm = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+                                                         fulldata.shape[2]]),
+                                               mask=True,
+                                               dtype=all_depths.dtype)
+                    depthm[
+                        np.unravel_index(indices, d.shape)
+                    ] = all_depths[depths]
+                else:
+                    d = var[time, depth, miny:maxy, minx:maxx]
+                    variable_depths.append("(@%d %s)" % (np.round(depthm),
+                                                         depth_var.units))
+                data.append(d)
+
+            if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
+                depth = 0
+
+        for idx, d in enumerate(data):
+            if variable_units[idx].startswith("Kelvin"):
+                variable_units[idx] = "Celsius"
+                data[idx] = d - 273.15
+
+        if anom:
+            with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
+                for v_idx, v in enumerate(variables):
+                    var = dataset.variables[v]
+
+                    if len(var.shape) == 3:
+                        d = var[timestamp.month - 1, miny:maxy, minx:maxx]
+                    elif depth == 'bottom':
+                        fulldata = var[
+                            timestamp.month - 1, :, miny:maxy, minx:maxx]
+                        reshaped = fulldata.reshape([fulldata.shape[0], -1])
+                        edges = np.array(
+                            np.ma.notmasked_edges(reshaped, axis=0))
+
+                        depths = edges[1, 0, :]
+                        indices = edges[1, 1, :]
+
+                        d = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+                                                        fulldata.shape[2]]),
+                                              mask=True,
+                                              dtype=fulldata.dtype)
+
+                        d[np.unravel_index(indices, d.shape)] = fulldata.reshape(
+                            [fulldata.shape[0], -1])[depths, indices]
+                    else:
+                        d = var[
+                            timestamp.month - 1, depth, miny:maxy, minx:maxx]
+
+                    data[v_idx] = data[v_idx] - d
+
+        output = StringIO()
+        try:
+            output.write("//<CreateTime>%s</CreateTime>\n" %
+                         datetime.datetime.now().isoformat())
+            output.write("//<Software>Ocean Navigator</Software>\n")
+            output.write("\t".join([
+                "Cruise",
+                "Station",
+                "Type",
+                "yyyy-mm-ddThh:mm:ss.sss",
+                "Longitude [degrees_east]",
+                "Latitude [degrees_north]",
+                "Depth [m]",
+            ] + map(
+                lambda x: "%s [%s]" % x, zip(variable_names, variable_units)),
+            ))
+            output.write("\n")
+
+            cruise = dataset_name
+            station = 0
+
+            lat = lat.ravel()
+            lon = lon.ravel()
+            data[0] = data[0].ravel()
+
+            points = [Point(p) for p in zip(lat, lon)]
+            if isinstance(combined_area, shapely.geometry.MultiLineString):
+                polygon = shapely.geometry.MultiPolygon([
+                    shapely.geometry.Polygon(x) for x in combined_area.geoms
+                ]).buffer(0)
+            else:
+                polygon = shapely.geometry.Polygon(combined_area)
+
+            for idx, p in enumerate(points):
+                if not polygon.contains(p):
+                    continue
+
+                if isinstance(depthm, np.ndarray):
+                    d = depthm.ravel()[idx]
+                else:
+                    d = depthm
+
+                output.write("\t".join([
+                    cruise,
+                    "%d" % station,
+                    "C",
+                    timestamp.isoformat(),
+                    "%0.4f" % lon[idx],
+                    "%0.4f" % lat[idx],
+                    "%d" % d,
+                    "%0.1f" % data[0][idx],
+                ]))
+                cruise = ""
+                station += 1
+                output.write("\n")
+
+            return (output.getvalue(), 'text/plain', filename)
+        finally:
+            output.close()
+
     else:
         # Figure size
         size = kwargs.get('size').replace("x", " ").split()

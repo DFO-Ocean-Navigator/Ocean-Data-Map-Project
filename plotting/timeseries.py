@@ -207,15 +207,21 @@ def plot(dataset_name, **kwargs):
     if vector:
         point_data = np.ma.expand_dims(mags, 1)
 
-    filename = utils.get_filename(get_dataset_url(dataset_name),
-                                  ",".join(names),
-                                  variables, variable_unit,
-                                  [times[0], times[-1]], None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
+            output.write("\n".join([
+                "// Dataset: %s" % dataset_name,
+                ""
+            ]))
+            if depth != 'all':
+                if isinstance(depth, str) or isinstance(depth, unicode):
+                    output.write("// Depth: %s\n" % depth)
+                else:
+                    output.write("// Depth: %d\n" % depths[depth])
+
             # Write Header
             output.write("Time, Latitude, Longitude, ")
             if depth == 'all':

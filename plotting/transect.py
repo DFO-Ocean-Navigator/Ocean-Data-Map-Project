@@ -17,6 +17,8 @@ from geopy.distance import VincentyDistance
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
+import datetime
+import scipy.interpolate
 
 
 def plot(dataset_name, **kwargs):
@@ -188,14 +190,16 @@ def plot(dataset_name, **kwargs):
         else:
             cmap = colormap.find_colormap(variable_name)
 
-    filename = utils.get_filename(get_dataset_url(dataset_name), None,
-                                  variables, variable_unit,
-                                  timestamp, None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
+            output.write("\n".join([
+                "// Dataset: %s" % dataset_name,
+                "// Timestamp: %s" % timestamp.isoformat(),
+                ""
+            ]))
             # Write Header
             output.write("Latitude, Longitude, Distance (km), ")
             if surface is not None:
@@ -224,6 +228,62 @@ def plot(dataset_name, **kwargs):
             return (output.getvalue(), mime, filename)
         finally:
             output.close()
+    elif filetype == "txt":
+        output = StringIO()
+        try:
+            output.write("//<CreateTime>%s</CreateTime>\n" %
+                         datetime.datetime.now().isoformat())
+            output.write("//<Software>Ocean Navigator</Software>\n")
+            output.write("\t".join([
+                "Cruise",
+                "Station",
+                "Type",
+                "yyyy-mm-ddThh:mm:ss.sss",
+                "Longitude [degrees_east]",
+                "Latitude [degrees_north]",
+                "Bot. Depth [m]",
+                "Depth [m]",
+                "%s [%s]" % (variable_name, variable_unit)
+            ]))
+            output.write("\n")
+
+            cruise = dataset_name
+            station = 1
+
+            f = scipy.interpolate.interp1d(bath_x, bath_y)
+            botdep = f(distance)
+
+            for idx, val in enumerate(value.transpose()):
+                if distance[idx] == distance[idx - 1]:
+                    continue
+
+                for d in range(0, len(val)):
+                    if station == 1 and d == 0:
+                        output.write(cruise)
+
+                    output.write("\t")
+
+                    if d == 0:
+                        output.write("\t".join([
+                            "%d" % station,
+                            "C",
+                            timestamp.isoformat(),
+                            "%0.4f" % transect_pts[1, idx],
+                            "%0.4f" % transect_pts[0, idx],
+                            "%0.0f" % -botdep[idx],
+                        ]))
+                    else:
+                        output.write("\t" * 5)
+
+                    output.write("\t%d\t%0.1f\n" % (
+                        np.round(depth[d]),
+                        val[d],
+                    ))
+
+            return (output.getvalue(), mime, filename)
+        finally:
+            output.close()
+        pass
     else:
         # Figure size
         size = kwargs.get('size').replace("x", " ").split()

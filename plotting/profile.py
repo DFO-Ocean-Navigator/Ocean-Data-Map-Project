@@ -8,6 +8,7 @@ from textwrap import wrap
 from oceannavigator.util import get_variable_unit, get_variable_name, \
     get_dataset_url, get_dataset_climatology
 import re
+import datetime
 
 
 def plot(dataset_name, **kwargs):
@@ -124,17 +125,19 @@ def plot(dataset_name, **kwargs):
                         )
                         point_data[p_idx, idx] = point_data[p_idx, idx] - d
 
-    filename = utils.get_filename(get_dataset_url(dataset_name),
-                                  points,
-                                  variables, ",".join(variable_units),
-                                  [times[0], times[-1]], None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
+            output.write("\n".join([
+                "// Dataset: %s" % dataset_name,
+                "// Timestamp: %s" % timestamp.isoformat(),
+                ""
+            ]))
             output.write("Latitude, Longitude, Depth, ")
-            output.write(", ".join(variable_names))
+            output.write(", ".join(map(lambda x: "%s (%s)" % x,
+                                       zip(variable_names, variable_units))))
             output.write("\n")
 
             # For each point
@@ -147,6 +150,63 @@ def plot(dataset_name, **kwargs):
                     output.write(", ".join(map(lambda v: "%0.1f" % v,
                                                point_data[p, :, d])))
                     output.write("\n")
+
+            return (output.getvalue(), mime, filename)
+        finally:
+            output.close()
+    elif filetype == 'txt':
+        output = StringIO()
+        try:
+            output.write("//<CreateTime>%s</CreateTime>\n" %
+                         datetime.datetime.now().isoformat())
+            output.write("//<Software>Ocean Navigator</Software>\n")
+            output.write("\t".join([
+                "Cruise",
+                "Station",
+                "Type",
+                "yyyy-mm-ddThh:mm:ss.sss",
+                "Longitude [degrees_east]",
+                "Latitude [degrees_north]",
+                "Depth [m]"
+            ] + map(lambda x: "%s [%s]" % x, zip(variable_names,
+                                                 variable_units))))
+            output.write("\n")
+
+            cruise = dataset_name
+
+            first_point = True
+            # For each point
+            for p in range(0, point_data.shape[0]):
+                first_depth = True
+
+                # For each depth
+                for d in range(0, point_data.shape[2]):
+                    if point_data[p, :, d].mask.any():
+                        continue
+
+                    if first_depth:
+                        output.write("\t".join([
+                            cruise,
+                            names[p],
+                            "C",
+                            timestamp.isoformat(),
+                            "%0.4f" % points[p][1],
+                            "%0.4f" % points[p][0],
+                        ]))
+                        first_depth = False
+                    else:
+                        output.write("\t" * 5)
+
+                    output.write("\t".join([
+                        "",
+                        "%d" % depths[d],
+                    ] + map(lambda x: "%0.1f" % x, point_data[p, :,
+                                                              d].tolist())))
+                    output.write("\n")
+
+                if first_point:
+                    first_point = False
+                    cruise = ""
 
             return (output.getvalue(), mime, filename)
         finally:

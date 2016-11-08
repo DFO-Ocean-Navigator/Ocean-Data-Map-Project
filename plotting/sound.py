@@ -90,15 +90,16 @@ def plot(dataset_name, **kwargs):
 
         sspeed = seawater.svel(salinity, temperature, pressure)
 
-    filename = utils.get_filename(get_dataset_url(dataset_name),
-                                  query.get('station'),
-                                  variables, variable_unit,
-                                  [times[0], times[-1]], None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
+            output.write("\n".join([
+                "// Dataset: %s" % dataset_name,
+                "// Timestamp: %s" % timestamp.isoformat(),
+                ""
+            ]))
             output.write(
                 "Latitude, Longitude, Depth, Pressure, Salinity, Temperature, Sound Speed\n")
 

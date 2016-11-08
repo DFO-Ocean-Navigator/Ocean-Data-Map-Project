@@ -165,10 +165,7 @@ def plot(dataset_name, **kwargs):
                 for i, d in enumerate(model_data):
                     model_data[i][idx, :] = d[idx, :] - 273.15
 
-    filename = utils.get_filename(get_dataset_url(dataset_name), None,
-                                  variables, variable_units,
-                                  times[0][0], None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
@@ -332,7 +329,8 @@ def plot(dataset_name, **kwargs):
                 for legobj in leg.legendHandles:
                     legobj.set_linewidth(4.0)
 
-            plt.ylabel(variable_names[idx])
+            plt.ylabel("%s (%s)" % (variable_names[idx],
+                                    utils.mathtext(variable_units[idx])))
             plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
         # latlon

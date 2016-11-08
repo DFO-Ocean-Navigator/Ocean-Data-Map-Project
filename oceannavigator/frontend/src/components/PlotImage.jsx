@@ -174,6 +174,7 @@ class PlotImage extends React.Component {
                         <MenuItem eventKey="eps"><Icon icon="file-pdf-o" /> EPS</MenuItem>
                         <MenuItem eventKey="tiff"><Icon icon="file-image-o" /> TIFF</MenuItem>
                         <MenuItem eventKey="csv" disabled={this.props.query.type == 'map' || this.props.query.type == 'hovmoller'}><Icon icon="file-text-o" /> CSV</MenuItem>
+                        <MenuItem eventKey="odv" disabled={jQuery.inArray(this.props.query.type, ["profile", "transect", "map"]) == -1}><Icon icon="file-text-o" /> ODV</MenuItem>
                         <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
                     </DropdownButton>
 

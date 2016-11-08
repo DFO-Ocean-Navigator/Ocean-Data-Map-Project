@@ -1,30 +1,20 @@
 import numpy as np
 import re
+import inspect
+import datetime
 
 
-def get_filename(url, locations, variable, units, timestamp, depthstr,
-                 extension):
-    outname = []
-    outname.append("_".join(url.split('/')[-3:-1]))
-    if isinstance(variable, list):
-        outname.append(",".join([str(x) for x in variable]))
-    else:
-        outname.append(variable)
-    outname.append(units)
-    if isinstance(locations, list):
-        for l in locations:
-            outname.append(",".join(["%0.4f" % x for x in l]))
-    elif locations is not None:
-        outname.append(locations)
-    if isinstance(timestamp, list) and len(timestamp) > 0:
-        outname.append(timestamp[0].strftime("%Y%m%d%H%M%S"))
-        outname.append(timestamp[-1].strftime("%Y%m%d%H%M%S"))
-    elif timestamp is not None:
-        outname.append(timestamp.strftime("%Y%m%d%H%M%S"))
-    if depthstr is not None:
-        outname.append(depthstr)
+def get_filename(dataset_name, extension):
+    st = inspect.stack()
 
-    return "%s.%s" % ("_".join([str(x) for x in outname]), extension)
+    outname = [
+        st[1][1].split('/')[-1].split('.')[0],
+        st[1][3],
+    ]
+    outname.append(dataset_name)
+    outname.append(datetime.datetime.now().isoformat())
+
+    return "%s.%s" % ("_".join(outname), extension)
 
 
 def get_mimetype(filetype):
@@ -44,6 +34,9 @@ def get_mimetype(filetype):
         mime = 'image/geotifffloat64'
     elif filetype == 'csv':
         mime = 'text/csv'
+    elif filetype == 'odv':
+        mime = 'text/plain'
+        filetype = 'txt'
     else:
         filetype = 'png'
         mime = 'image/png'

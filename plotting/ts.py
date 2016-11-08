@@ -93,15 +93,16 @@ def plot(dataset_name, **kwargs):
             temperature = np.ma.add(temperature, -273.15)
             variable_unit = "Celsius"
 
-    filename = utils.get_filename(get_dataset_url(dataset_name),
-                                  query.get('station'),
-                                  variables, variable_unit,
-                                  [times[0], times[-1]], None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         # CSV File
         output = StringIO()
         try:
+            output.write("\n".join([
+                "// Dataset: %s" % dataset_name,
+                "// Timestamp: %s" % timestamp.isoformat(),
+                ""
+            ]))
             output.write("Latitude, Longitude, Depth, Salinity, Temperature\n")
 
             for idx, p in enumerate(points):

@@ -176,10 +176,7 @@ def plot(dataset_name, **kwargs):
         else:
             cmap = colormap.find_colormap(variable_name)
 
-    filename = utils.get_filename(get_dataset_url(dataset_name), None,
-                                  variables, variable_unit,
-                                  times, None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         return
         # CSV File

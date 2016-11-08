@@ -86,10 +86,7 @@ def plot(dataset_name, **kwargs):
 
     additional_model_data = np.ma.array(additional_model_data)
 
-    filename = utils.get_filename(class4[0][0], None,
-                                  variables, variable_units,
-                                  None, None,
-                                  filetype)
+    filename = utils.get_filename(dataset_name, filetype)
     if filetype == 'csv':
         output = StringIO()
         try:
