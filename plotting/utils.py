@@ -14,7 +14,7 @@ def get_filename(dataset_name, extension):
     outname.append(dataset_name)
     outname.append(datetime.datetime.now().isoformat())
 
-    return "%s.%s" % ("_".join(outname), extension)
+    return "%s.%s" % ("_".join(map(str, outname)), extension)
 
 
 def get_mimetype(filetype):
