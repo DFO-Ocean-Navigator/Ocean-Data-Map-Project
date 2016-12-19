@@ -7,17 +7,27 @@ import LocationInput from './LocationInput.jsx';
 import Range from './Range.jsx';
 import ImageSize from './ImageSize.jsx';
 
+var TabEnum = {
+    PROFILE: 1,
+    CTD: 2,
+    TS: 3,
+    SOUND: 4,
+    OBSERVATION: 5,
+    MOORING: 6,
+};
+
 class PointWindow extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: 2,
+            selected: TabEnum.CTD,
             scale: props.scale + ',auto',
             depth: props.depth,
             colormap: 'default',
             starttime: Math.max(props.time - 24, 0),
             variables: [],
             variable: [props.variable],
+            observation_variable: [0],
             size: "10x7",
             dpi: 72,
         }
@@ -37,7 +47,7 @@ class PointWindow extends React.Component {
                 if ($.inArray(this.props.variable.split(',')[0], vars) == -1) {
                     this.props.onUpdate('variable', vars[0]);
                     this.setState({
-                        selected: 1,
+                        selected: TabEnum.PROFILE,
                     });
                 }
                 this.setState({
@@ -52,6 +62,11 @@ class PointWindow extends React.Component {
 
     componentDidMount() {
         this.populateVariables(this.props.dataset);
+        if (this.props.point[0][2] !== undefined) {
+            this.setState({
+                selected: TabEnum.OBSERVATION,
+            });
+        }
     }
 
     componentWillReceiveProps(props) {
@@ -124,6 +139,13 @@ class PointWindow extends React.Component {
         var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title='Variable Range' />;
         var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
+        var observation_data = [];
+        if (this.props.point[0][2] !== undefined) {
+            observation_data = this.props.point[0][2].datatypes.map(function (o, i) {
+                return { id: i, value: o.replace(/ \[.*\]/, "") };
+            });
+        }
+        var observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} data={observation_data} title='Observation Variable' multiple onUpdate={this.onLocalUpdate.bind(this)} />
 
         var hasTempSalinity = $.inArray('votemper', this.state.variables) != -1  &&
             $.inArray('vosaline', this.state.variables) != -1;
@@ -139,12 +161,12 @@ class PointWindow extends React.Component {
         };
 
         var active = this.state.selected;
-        if (!hasTempSalinity && (active != 1 && active != 5)) {
+        if (!hasTempSalinity && (active != 1 && active != 6)) {
             active = 1;
         }
 
         switch(active) {
-            case 1:
+            case TabEnum.PROFILE:
                 plot_query.type = 'profile';
                 plot_query.time = this.props.time;
                 plot_query.variable = this.state.variable;
@@ -153,7 +175,7 @@ class PointWindow extends React.Component {
                     inputs.push(point);
                 }
                 break;
-            case 2:
+            case TabEnum.CTD:
                 plot_query.type = 'profile';
                 plot_query.time = this.props.time;
                 plot_query.variable = 'votemper,vosaline';
@@ -162,7 +184,7 @@ class PointWindow extends React.Component {
                     inputs.push(point);
                 }
                 break;
-            case 3:
+            case TabEnum.TS:
                 plot_query.type = 'ts';
                 plot_query.time = this.props.time;
                 inputs = [dataset, time];
@@ -170,7 +192,7 @@ class PointWindow extends React.Component {
                     inputs.push(point);
                 }
                 break;
-            case 4:
+            case TabEnum.SOUND:
                 plot_query.type = 'sound';
                 plot_query.time = this.props.time;
                 inputs = [dataset, time];
@@ -178,7 +200,16 @@ class PointWindow extends React.Component {
                     inputs.push(point);
                 }
                 break;
-            case 5:
+            case TabEnum.OBSERVATION:
+                plot_query.type = 'observation';
+                plot_query.observation = this.props.point.map(function (o) {
+                    return o[2];
+                });
+                plot_query.observation_variable = this.state.observation_variable;
+                plot_query.variable = this.state.variable;
+                inputs = [dataset, observation_variable, profilevariable];
+                break;
+            case TabEnum.MOORING:
                 plot_query.type = 'timeseries';
                 plot_query.variable = this.props.variable;
                 plot_query.starttime = this.state.starttime;
@@ -209,11 +240,12 @@ class PointWindow extends React.Component {
         return (
             <div className='PointWindow Window'>
                 <Nav bsStyle="tabs" activeKey={active} onSelect={this.onSelect.bind(this)}>
-                    <NavItem eventKey={1}>Profile</NavItem>
-                    <NavItem eventKey={2} disabled={!hasTempSalinity}>CTD Profile</NavItem>
-                    <NavItem eventKey={3} disabled={!hasTempSalinity}>T/S Diagram</NavItem>
-                    <NavItem eventKey={4} disabled={!hasTempSalinity}>Sound Speed Profile</NavItem>
-                    <NavItem eventKey={5}>Virtual Mooring</NavItem>
+                    <NavItem eventKey={TabEnum.PROFILE}>Profile</NavItem>
+                    <NavItem eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>CTD Profile</NavItem>
+                    <NavItem eventKey={TabEnum.TS} disabled={!hasTempSalinity}>T/S Diagram</NavItem>
+                    <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>Sound Speed Profile</NavItem>
+                    <NavItem eventKey={TabEnum.OBSERVATION} disabled={this.props.point[0][2] === undefined}>Observation</NavItem>
+                    <NavItem eventKey={TabEnum.MOORING}>Virtual Mooring</NavItem>
                 </Nav>
                 <div className='content'>
                     <div className='inputs'>

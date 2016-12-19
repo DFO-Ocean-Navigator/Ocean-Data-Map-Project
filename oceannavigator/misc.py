@@ -12,15 +12,15 @@ import pyproj
 from operator import itemgetter
 
 
-def list_point_files():
-    POINT_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'point')
+def list_kml_files(subdir):
+    DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)
 
     files = []
-    for f in os.listdir(POINT_DIR):
+    for f in os.listdir(DIR):
         if not f.endswith(".kml"):
             continue
 
-        doc = parser.parse(os.path.join(POINT_DIR, f)).getroot()
+        doc = parser.parse(os.path.join(DIR, f)).getroot()
         folder = doc.Document.Folder
 
         entry = {
@@ -33,19 +33,29 @@ def list_point_files():
     return sorted(files, key=itemgetter('name'))
 
 
-def points(file_id, projection, resolution, extent):
-    POINT_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'point')
-
-    points = []
-    f = os.path.join(POINT_DIR, "%s.kml" % file_id)
-
-    proj = pyproj.Proj(init=projection)
+def _get_view(extent):
     extent = map(float, extent.split(","))
-    view = LinearRing([(extent[1], extent[0]), (extent[3], extent[0]),
-                       (extent[3], extent[2]), (extent[1], extent[2])])
+    view = LinearRing([
+        (extent[1], extent[0]),
+        (extent[3], extent[0]),
+        (extent[3], extent[2]),
+        (extent[1], extent[2])
+    ])
+    return view
 
+
+def _get_kml(subdir, file_id):
+    DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)
+    f = os.path.join(DIR, "%s.kml" % file_id)
     doc = parser.parse(f).getroot()
-    folder = doc.Document.Folder
+    return doc.Document.Folder, {"k": doc.nsmap[None]}
+
+
+def points(file_id, projection, resolution, extent):
+    proj = pyproj.Proj(init=projection)
+    view = _get_view(extent)
+    folder, nsmap = _get_kml('point', file_id)
+    points = []
 
     for place in folder.Placemark:
         c_txt = place.Point.coordinates.text
@@ -75,40 +85,12 @@ def points(file_id, projection, resolution, extent):
     return result
 
 
-def list_line_files():
-    LINE_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'line')
-
-    files = []
-    for f in os.listdir(LINE_DIR):
-        if not f.endswith(".kml"):
-            continue
-
-        doc = parser.parse(os.path.join(LINE_DIR, f)).getroot()
-        folder = doc.Document.Folder
-
-        entry = {
-            'name': folder.name.text.encode("utf-8"),
-            'id': f[:-4]
-        }
-
-        files.append(entry)
-
-    return sorted(files, key=itemgetter('name'))
-
-
 def lines(file_id, projection, resolution, extent):
-    LINE_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'line')
+    proj = pyproj.Proj(init=projection)
+    view = _get_view(extent)
+    folder, nsmap = _get_kml('line', file_id)
 
     lines = []
-    f = os.path.join(LINE_DIR, "%s.kml" % file_id)
-
-    proj = pyproj.Proj(init=projection)
-    extent = map(float, extent.split(","))
-    view = LinearRing([(extent[1], extent[0]), (extent[3], extent[0]),
-                       (extent[3], extent[2]), (extent[1], extent[2])])
-
-    doc = parser.parse(f).getroot()
-    folder = doc.Document.Folder
 
     for place in folder.Placemark:
         c_txt = place.LineString.coordinates.text
@@ -143,27 +125,6 @@ def lines(file_id, projection, resolution, extent):
     return result
 
 
-def list_area_files():
-    AREA_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'area')
-
-    files = []
-    for f in os.listdir(AREA_DIR):
-        if not f.endswith(".kml"):
-            continue
-
-        doc = parser.parse(os.path.join(AREA_DIR, f)).getroot()
-        folder = doc.Document.Folder
-
-        entry = {
-            'name': folder.name.text.encode("utf-8"),
-            'id': f[:-4]
-        }
-
-        files.append(entry)
-
-    return sorted(files, key=itemgetter('name'))
-
-
 def list_areas(file_id, simplify=True):
     AREA_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'area')
 
@@ -174,36 +135,28 @@ def list_areas(file_id, simplify=True):
     folder = doc.Document.Folder
     nsmap = {"k": doc.nsmap[None]}
 
+    def get_coords(path):
+        result = []
+        for c in place.iterfind(path, nsmap):
+            tuples = c.coordinates.text.split(' ')
+            coords = []
+            for tup in tuples:
+                tup = tup.strip()
+                if not tup:
+                    continue
+                lonlat = tup.split(',')
+                coords.append([float(lonlat[1]), float(lonlat[0])])
+
+            if simplify:
+                coords = list(LinearRing(coords).simplify(1.0 / 32).coords)
+
+            result.append(coords)
+
+        return result
+
     for place in folder.Placemark:
-        outers = []
-        for c in place.iterfind('.//k:outerBoundaryIs//k:LinearRing', nsmap):
-            tuples = c.coordinates.text.split(' ')
-            coords = []
-            for tup in tuples:
-                tup = tup.strip()
-                if not tup:
-                    continue
-                lonlat = tup.split(',')
-                coords.append([float(lonlat[1]), float(lonlat[0])])
-
-            if simplify:
-                coords = list(LinearRing(coords).simplify(1.0 / 32).coords)
-            outers.append(coords)
-
-        inners = []
-        for c in place.iterfind('.//k:innerBoundaryIs//k:LinearRing', nsmap):
-            tuples = c.coordinates.text.split(' ')
-            coords = []
-            for tup in tuples:
-                tup = tup.strip()
-                if not tup:
-                    continue
-                lonlat = tup.split(',')
-                coords.append([float(lonlat[1]), float(lonlat[0])])
-
-            if simplify:
-                coords = list(LinearRing(coords).simplify(1.0 / 32).coords)
-            inners.append(coords)
+        outers = get_coords('.//k:outerBoundaryIs//k:LinearRing')
+        inners = get_coords('.//k:innerBoundaryIs//k:LinearRing')
 
         centroids = [LinearRing(x).centroid for x in outers]
         areas.append({
@@ -219,61 +172,50 @@ def list_areas(file_id, simplify=True):
 
 
 def areas(area_id, projection, resolution, extent):
-    AREA_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'area')
-
-    areas = []
-    f = os.path.join(AREA_DIR, "%s.kml" % area_id)
-
-    doc = parser.parse(f).getroot()
-    folder = doc.Document.Folder
-    nsmap = {"k": doc.nsmap[None]}
+    folder, nsmap = _get_kml('area', area_id)
 
     proj = pyproj.Proj(init=projection)
-    extent = map(float, extent.split(","))
-    view = LinearRing([(extent[0], extent[1]), (extent[0], extent[3]),
-                       (extent[2], extent[3]), (extent[2], extent[1])])
+    view = _get_view(extent)
+    areas = []
 
     for place in folder.Placemark:
         polys = []
 
         for p in place.iterfind('.//k:Polygon', nsmap):
-            outer_coords = np.array(map(lambda c: c.split(','),
-                                        p.outerBoundaryIs.LinearRing.coordinates.text.split())).astype(float)
-            oy, ox = proj(outer_coords[:, 0], outer_coords[:, 1])
+            lonlat = np.array(map(lambda c: c.split(','),
+                                  p.outerBoundaryIs.LinearRing.coordinates.text.split())).astype(float)
+            ox, oy = proj(lonlat[:, 0], lonlat[:, 1])
 
             holes = []
             for i in p.iterfind('.//k:innerBoundaryIs/k:LinearRing', nsmap):
-                inner_coords = np.array(map(lambda c: c.split(','),
+                lonlat_inner = np.array(map(lambda c: c.split(','),
                                             i.coordinates.text.split())).astype(float)
-                iy, ix = proj(inner_coords[:, 0], inner_coords[:, 1])
+                ix, iy = proj(lonlat_inner[:, 0], lonlat_inner[:, 1])
                 holes.append(zip(iy, ix))
 
             polys.append(Polygon(zip(oy, ox), holes))
 
         mp = MultiPolygon(polys).simplify(resolution * 1.5)
+
+        def get_coordinates(poly):
+            out = np.array(poly.exterior.coords)
+            out = np.array(proj(out[:, 1], out[:, 0],
+                                inverse=True)).transpose().tolist()
+            coords = [out]
+            for i in poly.interiors:
+                inn = np.array(i.coords)
+                coords.append(
+                    np.array(proj(inn[:, 0], inn[:, 1],
+                             inverse=True)).transpose().tolist())
+            return coords
+
         if view.envelope.intersects(mp):
             coordinates = []
             if isinstance(mp, MultiPolygon):
                 for p in mp.geoms:
-                    out = np.array(p.exterior.coords)
-                    out = np.array(proj(out[:, 0], out[:, 1],
-                                        inverse=True)).transpose().tolist()
-                    coords = [out]
-                    for i in p.interiors:
-                        inn = np.array(i.coords)
-                        coords.append(np.array(proj(inn[:, 0], inn[:, 1],
-                                                    inverse=True)).transpose().tolist())
-                    coordinates.append(coords)
+                    coordinates.append(get_coordinates(p))
             else:
-                out = np.array(mp.exterior.coords)
-                out = np.array(proj(out[:, 0], out[:, 1],
-                                    inverse=True)).transpose().tolist()
-                coords = [out]
-                for i in mp.interiors:
-                    inn = np.array(i.coords)
-                    coords.append(np.array(proj(inn[:, 0], inn[:, 1],
-                                                inverse=True)).transpose().tolist())
-                coordinates.append(coords)
+                coordinates.append(get_coordinates(mp))
 
             areas.append({
                 'type': "Feature",
@@ -287,7 +229,7 @@ def areas(area_id, projection, resolution, extent):
                     'resolution': resolution,
                     'key': "%s/%s" % (area_id,
                                       place.name.text.encode("utf-8")),
-                    'centroid': proj(mp.centroid.x, mp.centroid.y,
+                    'centroid': proj(mp.centroid.y, mp.centroid.x,
                                      inverse=True),
                 },
             })
@@ -330,9 +272,7 @@ def drifters(drifter_id, projection, resolution, extent):
             status.append(ds.status)
 
     proj = pyproj.Proj(init=projection)
-    extent = map(float, extent.split(","))
-    view = LinearRing([(extent[1], extent[0]), (extent[3], extent[0]),
-                       (extent[3], extent[2]), (extent[1], extent[2])])
+    view = _get_view(extent)
 
     res = []
     for i, bid in enumerate(buoy_id):
@@ -483,9 +423,7 @@ def class4(class4_id, projection, resolution, extent):
     dataset_url = 'http://localhost:8080/thredds/dodsC/class4/%s.nc' % class4_id
 
     proj = pyproj.Proj(init=projection)
-    extent = map(float, extent.split(","))
-    view = LinearRing([(extent[1], extent[0]), (extent[3], extent[0]),
-                       (extent[3], extent[2]), (extent[1], extent[2])])
+    view = _get_view(extent)
 
     rmse = []
     lat = []

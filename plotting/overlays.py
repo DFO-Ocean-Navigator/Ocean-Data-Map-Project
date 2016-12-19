@@ -4,18 +4,10 @@ from pyresample.utils import wrap_longitudes
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 import hashlib
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
 from cachetools import LRUCache
 import threading
 from oceannavigator import app
-from pykml import parser
-import shapely.geometry
 import os
-import werkzeug.utils
-from matplotlib.bezier import concatenate_paths
-from matplotlib.patches import PathPatch
-import textwrap
 
 _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
 
@@ -106,113 +98,3 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
             return data
     else:
         return data
-
-
-def _parse_coords(basemap, coordinates):
-    coords = []
-    coords_txt = coordinates
-    for point_txt in coords_txt.text.split():
-        lonlat = point_txt.split(",")
-        coords.append((float(lonlat[0]), float(lonlat[1])))
-
-    coords = np.array(coords)
-    mx, my = basemap(coords.transpose()[0], coords.transpose()[1])
-    map_coords = zip(mx, my)
-    return map_coords
-
-
-def list_overlays():
-    KML_DIR = app.config['OVERLAY_KML_DIR']
-
-    overlays = []
-    for f in os.listdir(KML_DIR):
-        if not f.endswith(".kml"):
-            continue
-
-        name = parser.parse(
-            os.path.join(KML_DIR, f)).getroot().Document.Folder.name
-        overlays.append({
-            'id': os.path.basename(f),
-            'value': name.text.encode("utf-8")
-        })
-    return overlays
-
-
-def list_overlays_in_file(filename):
-    KML_DIR = app.config['OVERLAY_KML_DIR']
-
-    fp = os.path.join(KML_DIR, werkzeug.utils.secure_filename(filename))
-    doc = parser.parse(fp)
-
-    overlays = []
-    for place in doc.getroot().Document.Folder.Placemark:
-        name = place.name.text.encode("utf-8")
-        overlays.append({'id': name, 'value': name})
-    return overlays
-
-
-def draw_overlay(basemap, kmlfile, **kwargs):
-    KML_DIR = app.config['OVERLAY_KML_DIR']
-
-    doc = parser.parse(os.path.join(KML_DIR,
-                                    werkzeug.utils.secure_filename(kmlfile)))
-
-    nsmap = {"k": doc.getroot().nsmap[None]}
-    num_places = len(doc.getroot().Document.Folder.Placemark)
-    for idx, place in enumerate(doc.getroot().Document.Folder.Placemark):
-        polys = []
-        filter_name = kwargs.get('name')
-        name = place.name.text.encode("utf-8")
-        if filter_name is not None:
-            if isinstance(filter_name, basestring) and \
-               filter_name != name:
-                continue
-            elif name not in filter_name:
-                continue
-
-        for c in place.iterfind('.//k:outerBoundaryIs//k:LinearRing', nsmap):
-            map_coords = _parse_coords(basemap, c.coordinates)
-
-            if bool(kwargs.get('label')) or \
-                'labelcolor' in kwargs or \
-                    'labelalpha' in kwargs:
-                labelcolor = kwargs.get('labelcolor')
-                if labelcolor == 'rnd':
-                    labelcolor = plt.get_cmap('prism')(float(idx) / num_places)
-                shape = shapely.geometry.Polygon(map_coords)
-                wrappedname = '\n'.join(textwrap.wrap(name, 15))
-                plt.annotate(
-                    xy=(shape.centroid.x, shape.centroid.y),
-                    s=wrappedname,
-                    ha='center', va='center', size=10,
-                    color=labelcolor,
-                    alpha=kwargs.get('labelalpha'))
-
-            polys.append(Polygon(map_coords))
-
-        for c in place.iterfind('.//k:innerBoundaryIs//k:LinearRing', nsmap):
-            map_coords = _parse_coords(basemap, c.coordinates)
-            polys.append(Polygon(map_coords))
-
-        paths = []
-        for poly in polys:
-            paths.append(poly.get_path())
-        path = concatenate_paths(paths)
-
-        if kwargs.get('facecolor') == 'rnd':
-            facecolor = plt.get_cmap('prism')(float(idx) / num_places)
-        else:
-            facecolor = kwargs.get('facecolor')
-
-        if kwargs.get('edgecolor') == 'rnd':
-            edgecolor = plt.get_cmap('prism')(float(idx) / num_places)
-        else:
-            edgecolor = kwargs.get('edgecolor')
-        poly = PathPatch(path,
-                         fill='facecolor' in kwargs,
-                         facecolor=facecolor,
-                         edgecolor=edgecolor,
-                         alpha=kwargs.get('alpha'),
-                         linewidth=kwargs.get('linewidth')
-                         )
-        plt.gca().add_patch(poly)

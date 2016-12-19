@@ -1,5 +1,4 @@
 from grid import Grid, bathymetry
-from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from netCDF4 import Dataset, netcdftime
 import matplotlib.gridspec as gridspec
@@ -8,291 +7,278 @@ from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
 import re
 import colormap
-from StringIO import StringIO
-import os
 from oceannavigator import app
-from pykml import parser
-import geopy
 from geopy.distance import VincentyDistance
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
-import datetime
-import scipy.interpolate
+import line
 
 
-def plot(dataset_name, **kwargs):
-    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+class TransectPlotter(line.LinePlotter):
 
-    query = kwargs.get('query')
+    def __init__(self, dataset_name, query, format):
+        self.plottype = "transect"
+        super(TransectPlotter, self).__init__(dataset_name, query, format)
+        self.size = '11x5'
 
-    points = query.get('path')
-    if points is None or len(points) == 0:
-        points = [
-            '47 N 52.8317 W',
-            '47 N 42 W'
-        ]
-    start = points[0]
-    end = points[-1]
+    def load_data(self):
+        interp = utils.get_interpolation(self.query)
+        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
+            latvar, lonvar = utils.get_latlon_vars(dataset)
 
-    if query.get('time') is None or len(str(query.get('time'))) == 0:
-        time = -1
-    else:
-        time = int(query.get('time'))
+            grid = Grid(dataset, latvar.name, lonvar.name)
 
-    scale = query.get('scale')
-    if scale is None or 'auto' in scale:
-        scale = None
-    else:
-        scale = [float(x) for x in scale.split(',')]
+            depth_var = utils.get_depth_var(dataset)
 
-    showmap = query.get('showmap') is None or bool(query.get('showmap'))
+            if depth_var is None:
+                depth = [0]
+                depth_unit = "m"
+            else:
+                depth = depth_var[:]
+                depth_unit = depth_var.units
 
-    surface = query.get('surfacevariable')
-    if surface is not None and (surface == '' or surface == 'none'):
-        surface = None
+            time_var = utils.get_time_var(dataset)
+            time = self.clip_value(self.time, time_var)
 
-    interp = query.get('interpolation')
-    if interp is None or interp == '':
-        interp = {
-            'method': 'inv_square',
-            'neighbours': 8,
+            value = parallel = perpendicular = None
+            if len(self.variables) > 1:
+                v = []
+                for name in self.variables:
+                    v.append(dataset.variables[name])
+
+                transect_pts, distance, parallel, perpendicular = \
+                    grid.velocitytransect(
+                        v[0], v[1], self.points, time,
+                        interpolation=interp)
+            else:
+                transect_pts, distance, value = grid.transect(
+                    dataset.variables[self.variables[0]],
+                    self.points, time,
+                    interpolation=interp)
+
+            variable_names = self.get_variable_names(dataset, self.variables)
+            variable_units = self.get_variable_units(dataset, self.variables)
+
+            variable_units[0], value = self.kelvin_to_celsius(
+                variable_units[0],
+                value
+            )
+
+            if len(self.variables) == 2:
+                variable_names[0] = self.vector_name(variable_names[0])
+
+            if self.cmap is None:
+                self.cmap = colormap.find_colormap(variable_names[0])
+
+            t = netcdftime.utime(time_var.units)
+            self.timestamp = t.num2date(time_var[int(time)])
+
+            self.depth = depth
+            self.depth_unit = depth_unit
+
+            self.transect_data = {
+                "points": transect_pts,
+                "distance": distance,
+                "data": value,
+                "name": variable_names[0],
+                "unit": variable_units[0],
+                "parallel": parallel,
+                "perpendicular": perpendicular,
+            }
+
+            if self.surface is not None:
+                surface_pts, surface_dist, surface_value = \
+                    grid.surfacetransect(
+                        dataset.variables[self.surface],
+                        self.points, time,
+                        interpolation=interp
+                    )
+                surface_unit = get_variable_unit(
+                    self.dataset_name,
+                    dataset.variables[self.surface]
+                )
+                surface_name = get_variable_name(
+                    self.dataset_name,
+                    dataset.variables[self.surface]
+                )
+                surface_unit, surface_value = self.kelvin_to_celsius(
+                    surface_unit,
+                    surface_value
+                )
+
+                self.surface_data = {
+                    "points": surface_pts,
+                    "distance": surface_dist,
+                    "data": surface_value,
+                    "name": surface_name,
+                    "unit": surface_unit
+                }
+
+        if self.variables != self.variables_anom:
+            with Dataset(
+                get_dataset_climatology(self.dataset_name),
+                'r'
+            ) as dataset:
+                latvar, lonvar = utils.get_latlon_vars(dataset)
+                grid = Grid(dataset, latvar.name, lonvar.name)
+                if self.variables[0] in dataset.variables:
+                    if len(self.variables) == 1:
+                        climate_points, climate_distance, climate_data = \
+                            grid.transect(
+                                dataset.variables[self.variables[0]],
+                                self.points, self.timestamp.month - 1,
+                                interpolation=interp)
+                        u, climate_data = self.kelvin_to_celsius(
+                            dataset.variables[self.variables[0]].units,
+                            climate_data
+                        )
+                        self.transect_data['data'] -= - climate_data
+                    else:
+                        climate_points, climate_distance, \
+                            climate_parallel, climate_perpendicular = \
+                            grid.velocitytransect(
+                                dataset.variables[self.variables[0]],
+                                dataset.variables[self.variables[1]],
+                                self.points, self.timestamp.month - 1,
+                                interpolation=interp)
+                        self.transect_data['parallel'] -= climate_parallel
+                        self.transect_data[
+                            'perpendicular'] -= climate_perpendicular
+
+        # Bathymetry
+        with Dataset(app.config['BATHYMETRY_FILE'], 'r') as dataset:
+            bath_x, bath_y = bathymetry(
+                dataset.variables['y'],
+                dataset.variables['x'],
+                dataset.variables['z'],
+                self.points)
+
+        self.bathymetry = {
+            'x': bath_x,
+            'y': bath_y
         }
 
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
-        if 'nav_lat' in dataset.variables:
-            latvarname = 'nav_lat'
-            lonvarname = 'nav_lon'
-        elif 'latitude' in dataset.variables:
-            latvarname = 'latitude'
-            lonvarname = 'longitude'
+    def csv(self):
+        header = [
+            ['Dataset', self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()]
+        ]
 
-        grid = Grid(dataset, latvarname, lonvarname)
+        columns = [
+            "Latitude",
+            "Longitude",
+            "Distance (km)",
+        ]
 
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-        else:
-            depth_var = None
+        if self.surface is not None:
+            columns.append("%s (%s)" % (
+                self.surface_data['name'],
+                self.surface_data['unit']
+            ))
 
-        if depth_var is None:
-            depth = [0]
-            depth_unit = "m"
-        else:
-            depth = depth_var[:]
-            depth_unit = depth_var.units
-
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-
-        if time >= time_var.shape[0]:
-            time = -1
-
-        if time < 0:
-            time += time_var.shape[0]
-
-        velocity = False
-        variables = query.get('variable').split(',')
-        anom = np.array([v.endswith('_anom') for v in variables]).all()
-        if anom:
-            variables = [v[:-5] for v in variables]
-
-        if len(variables) > 1:
-            velocity = True
-            v = []
-            for name in variables:
-                v.append(dataset.variables[name])
-
-            transect_pts, distance, parallel, perpendicular = \
-                grid.velocitytransect(
-                    v[0], v[1], points, time, interpolation=interp)
-        else:
-            transect_pts, distance, value = grid.transect(
-                dataset.variables[variables[0]],
-                points, time, interpolation=interp)
-
-        if surface is not None:
-            surface_pts, surface_dist, surface_value = grid.surfacetransect(
-                dataset.variables[surface],
-                points, time, interpolation=interp)
-            surface_unit = get_variable_unit(dataset_name,
-                                             dataset.variables[surface])
-            surface_name = get_variable_name(dataset_name,
-                                             dataset.variables[surface])
-            if surface_unit.startswith("Kelvin"):
-                surface_unit = "Celsius"
-                surface_value = np.add(surface_value, -273.15)
-
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variables[0]])
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variables[0]])
-        if variable_unit.startswith("Kelvin"):
-            variable_unit = "Celsius"
-            value = np.add(value, -273.15)
-
-        t = netcdftime.utime(time_var.units)
-        timestamp = t.num2date(time_var[int(time)])
-
-    if anom:
-        with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
-            if 'nav_lat' in dataset.variables:
-                latvarname = 'nav_lat'
-                lonvarname = 'nav_lon'
-            elif 'latitude' in dataset.variables:
-                latvarname = 'latitude'
-                lonvarname = 'longitude'
-
-            grid = Grid(dataset, latvarname, lonvarname)
-            if variables[0] not in dataset.variables:
-                anom = False
-            else:
-                if not velocity:
-                    climate_points, climate_distance, climate_value = \
-                        grid.transect(
-                            dataset.variables[variables[0]],
-                            points, timestamp.month - 1, interpolation=interp)
-                    if dataset.variables[
-                        variables[0]
-                    ].units.startswith("Kelvin"):
-                        climate_value = np.add(climate_value, -273.15)
-                    value = value - climate_value
-                else:
-                    climate_points, climate_distance, \
-                        climate_parallel, climate_perpendicular = \
-                        grid.velocitytransect(
-                            dataset.variables[variables[0]],
-                            dataset.variables[variables[1]],
-                            points, timestamp.month - 1, interpolation=interp)
-                    parallel = parallel - climate_parallel
-                    perpendicular = perpendicular - climate_perpendicular
-    if anom:
-        variable_name += " Anomaly"
-
-    # Bathymetry
-    with Dataset(app.config['BATHYMETRY_FILE'], 'r') as dataset:
-        bath_x, bath_y = bathymetry(
-            dataset.variables['y'],
-            dataset.variables['x'],
-            dataset.variables['z'],
-            points)
-
-    # Colormap from arguments
-    cmap = query.get('colormap')
-    if cmap is not None:
-        cmap = colormap.colormaps.get(cmap)
-    if cmap is None:
-        if anom:
-            cmap = colormap.colormaps['anomaly']
-        else:
-            cmap = colormap.find_colormap(variable_name)
-
-    filename = utils.get_filename(dataset_name, filetype)
-    if filetype == 'csv':
-        # CSV File
-        output = StringIO()
-        try:
-            output.write("\n".join([
-                "// Dataset: %s" % dataset_name,
-                "// Timestamp: %s" % timestamp.isoformat(),
-                ""
-            ]))
-            # Write Header
-            output.write("Latitude, Longitude, Distance (km), ")
-            if surface is not None:
-                output.write("%s (%s), " % (surface_name, surface_unit))
-            output.write(", ".join(["%d%s" % (np.round(d), depth_unit) for d
-                                   in depth]))
-            output.write("\n")
-
-            # Write Values
-            for idx, val in enumerate(value.transpose()):
-                if distance[idx] == distance[idx - 1]:
-                    continue
-                output.write(
-                    "%0.4f, %0.4f, %0.1f, " % (transect_pts[0, idx],
-                                               transect_pts[1, idx],
-                                               distance[idx])
+        if len(self.variables) > 1:
+            for t in ["Parallel", "Perpendicular"]:
+                columns.extend(
+                    map(
+                        lambda d: "%s @ %s %s" % (
+                            t, np.round(d), self.depth_unit
+                        ),
+                        self.depth
+                    )
                 )
-                if surface is not None:
-                    output.write("%0.4f, ", surface_value[idx])
+        else:
+            columns.extend(
+                map(
+                    lambda d: "%s (%s)" % (np.round(d), self.depth_unit),
+                    self.depth
+                )
+            )
 
-                output.write(", ".join([
-                    "%0.4f" % n for n in val
-                ]))
-                output.write("\n")
+        data = []
+        for idx, dist in enumerate(self.transect_data['distance']):
+            if dist == self.transect_data['distance'][idx - 1]:
+                continue
 
-            return (output.getvalue(), mime, filename)
-        finally:
-            output.close()
-    elif filetype == "txt":
-        output = StringIO()
-        try:
-            output.write("//<CreateTime>%s</CreateTime>\n" %
-                         datetime.datetime.now().isoformat())
-            output.write("//<Software>Ocean Navigator</Software>\n")
-            output.write("\t".join([
-                "Cruise",
-                "Station",
-                "Type",
-                "yyyy-mm-ddThh:mm:ss.sss",
-                "Longitude [degrees_east]",
-                "Latitude [degrees_north]",
-                "Bot. Depth [m]",
-                "Depth [m]",
-                "%s [%s]" % (variable_name, variable_unit)
-            ]))
-            output.write("\n")
+            entry = [
+                "%0.4f" % self.transect_data['points'][0, idx],
+                "%0.4f" % self.transect_data['points'][1, idx],
+                "%0.1f" % dist
+            ]
+            if self.surface is not None:
+                entry.append("%0.4f" % self.surface_data['data'][idx])
 
-            cruise = dataset_name
-            station = 0
+            if len(self.variables) > 1:
+                values = ['parallel', 'perpendicular']
+            else:
+                values = ['data']
 
-            f = scipy.interpolate.interp1d(bath_x, bath_y)
-            botdep = f(distance)
+            for t in values:
+                entry.extend(
+                    map(
+                        lambda v: "%0.4f" % v,
+                        self.transect_data[t][:, idx]
+                    )
+                )
 
-            for idx, val in enumerate(value.transpose()):
-                if distance[idx] == distance[idx - 1]:
-                    continue
+            data.append(entry)
 
-                station += 1
+        return super(TransectPlotter, self).csv(header, columns, data)
 
-                for d, v in enumerate(val):
-                    if np.ma.is_masked(v):
-                        continue
+    def odv_ascii(self):
+        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
+        numstations = len(self.transect_data['distance'])
+        station = range(1, 1 + numstations)
+        station = map(
+            lambda s: "%03d" % s,
+            np.repeat(station, len(self.depth))
+        )
 
-                    if d == 0:
-                        output.write("\t".join([
-                            cruise,
-                            "%d" % station,
-                            "C",
-                            timestamp.isoformat(),
-                            "%0.4f" % transect_pts[1, idx],
-                            "%0.4f" % transect_pts[0, idx],
-                            "%0.0f" % -botdep[idx],
-                        ]))
-                    else:
-                        output.write("\t" * 6)
+        latitude = np.repeat(self.transect_data['points'][0, :],
+                             len(self.depth))
+        longitude = np.repeat(self.transect_data['points'][1, :],
+                              len(self.depth))
+        time = np.repeat(self.timestamp, len(station))
+        depth = np.tile(self.depth, numstations)
 
-                    output.write("\t%d\t%0.1f\n" % (
-                        np.round(depth[d]),
-                        val[d],
-                    ))
+        if len(self.variables) > 1:
+            variable_names = [
+                "%s Parallel" % self.transect_data['name'],
+                "%s Perpendicular" % self.transect_data['name']
+            ]
+            variable_units = [self.transect_data['unit']] * 2
+            pa = self.transect_data['parallel'].transpose().ravel()
+            pe = self.transect_data['perpendicular'].transpose().ravel()
+            data = np.ma.array([pa, pe]).transpose()
+        else:
+            variable_names = [self.transect_data['name']]
+            variable_units = [self.transect_data['unit']]
+            data = self.transect_data['data'].transpose().ravel()
 
-            return (output.getvalue(), mime, filename)
-        finally:
-            output.close()
-        pass
-    else:
+        data = float_to_str(data)
+
+        return super(TransectPlotter, self).odv_ascii(
+            self.dataset_name,
+            variable_names,
+            variable_units,
+            station,
+            latitude,
+            longitude,
+            depth,
+            time,
+            data
+        )
+
+    def plot(self):
         # Figure size
-        size = kwargs.get('size').replace("x", " ").split()
-        figuresize = (float(size[0]), float(
-            size[1]) * (1 if not velocity else 2))
-        fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
+        figuresize = map(float, self.size.split("x"))
+        figuresize[1] *= len(self.variables)
+        fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
-        if showmap:
+        velocity = len(self.variables) == 2
+        anom = self.variables[0] != self.variables_anom[0]
+
+        if self.showmap:
             width = 2
             width_ratios = [2, 7]
         else:
@@ -305,289 +291,178 @@ def plot(dataset_name, **kwargs):
         else:
             gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
-        # Bounds for map view
-        minlat = np.min(transect_pts[0, :])
-        maxlat = np.max(transect_pts[0, :])
-        minlon = np.min(transect_pts[1, :])
-        maxlon = np.max(transect_pts[1, :])
-        lat_d = max(maxlat - minlat, 20)
-        lon_d = max(maxlon - minlon, 20)
-        minlat -= lat_d / 3
-        minlon -= lon_d / 3
-        maxlat += lat_d / 3
-        maxlon += lon_d / 3
-
-        if showmap:
+        if self.showmap:
             # Plot the transect on a map
             if velocity:
                 plt.subplot(gs[:, 0])
             else:
                 plt.subplot(gs[0])
-            m = Basemap(
-                llcrnrlon=minlon,
-                llcrnrlat=minlat,
-                urcrnrlon=maxlon,
-                urcrnrlat=maxlat,
-                lat_0=np.mean(transect_pts[0, :]),
-                lon_0=np.mean(transect_pts[1, :]),
-                resolution='c', projection='merc',
-                rsphere=(6378137.00, 6356752.3142),
-            )
-            # m = basemap.load_arctic()
 
-            m.plot(transect_pts[1, :], transect_pts[0, :],
-                   latlon=True, color='r', linestyle='-')
-            qx, qy = m([transect_pts[1, -1]], [transect_pts[0, -1]])
-            # qu = transect_pts[1, -1] - transect_pts[1, 0]
-            # qv = transect_pts[0, -1] - transect_pts[0, 0]
-            qu = transect_pts[1, -1] - transect_pts[1, -2]
-            qv = transect_pts[0, -1] - transect_pts[0, -2]
-            qmag = np.sqrt(qu ** 2 + qv ** 2)
-            qu /= qmag
-            qv /= qmag
-            m.quiver(qx, qy, qu, qv,
-                     pivot='tip',
-                     scale=8,
-                     width=0.25,
-                     minlength=0.25,
-                     color='r')
-            m.etopo()
-            m.drawparallels(
-                np.arange(
-                    round(minlat),
-                    round(maxlat),
-                    round(lat_d / 1.5)
-                ), labels=[0, 1, 0, 0])
-            m.drawmeridians(
-                np.arange(
-                    round(minlon),
-                    round(maxlon),
-                    round(lon_d / 1.5)
-                ), labels=[0, 0, 0, 1])
+            utils.path_plot(self.transect_data['points'])
+
+        def do_plot(map_subplot, nomap_subplot, data, name):
+            if self.showmap:
+                plt.subplot(map_subplot)
+            else:
+                plt.subplot(nomap_subplot)
+
+            divider = self._transect_plot(data, name, vmin, vmax)
+
+            if self.surface:
+                self._surface_plot(divider)
 
         # transect Plot
-        linearthresh = query.get('linearthresh')
-        if linearthresh is None or linearthresh == '':
-            linearthresh = 200
-        linearthresh = float(linearthresh)
-        if not linearthresh > 0:
-            linearthresh = 1
-
         if velocity:
-            if scale:
-                vmin = float(scale[0])
-                vmax = float(scale[1])
+            if self.scale:
+                vmin = self.scale[0]
+                vmax = self.scale[1]
             else:
-                vmin = min(np.amin(parallel), np.amin(perpendicular))
-                vmax = max(np.amax(parallel), np.amin(perpendicular))
+                vmin = min(np.amin(self.transect_data['parallel']),
+                           np.amin(self.transect_data['perpendicular']))
+                vmax = max(np.amax(self.transect_data['parallel']),
+                           np.amin(self.transect_data['perpendicular']))
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
 
-            if showmap:
-                plt.subplot(gs[1])
-            else:
-                plt.subplot(gs[0])
-            divider = _transect_plot(
-                distance, parallel, depth, variable_unit, bath_x, bath_y,
-                "Parallel", vmin, vmax, cmap, scale, linearthresh, points)
-            if surface:
-                _surface_plot(
-                    divider, surface_dist, surface_value, surface_unit,
-                    surface_name)
-            if showmap:
-                plt.subplot(gs[3])
-            else:
-                plt.subplot(gs[1])
-            divider = _transect_plot(
-                distance, perpendicular, depth, variable_unit, bath_x, bath_y,
-                "Perpendicular", vmin, vmax, cmap, scale, linearthresh, points)
-            if surface:
-                _surface_plot(
-                    divider, surface_dist, surface_value, surface_unit,
-                    surface_name)
-
+            do_plot(
+                gs[1], gs[0],
+                self.transect_data['parallel'],
+                "Parallel"
+            )
+            do_plot(
+                gs[3], gs[1],
+                self.transect_data['perpendicular'],
+                "Perpendicular"
+            )
         else:
-            if scale:
-                vmin = float(scale[0])
-                vmax = float(scale[1])
+            if self.scale:
+                vmin = self.scale[0]
+                vmax = self.scale[1]
             else:
-                vmin = np.amin(value)
-                vmax = np.amax(value)
-                if re.search("velocity", variable_name, re.IGNORECASE) or anom:
+                vmin = np.amin(self.transect_data['data'])
+                vmax = np.amax(self.transect_data['data'])
+                if re.search(
+                    "velocity",
+                    self.transect_data['name'],
+                    re.IGNORECASE
+                ) or anom:
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
 
-            if showmap:
-                plt.subplot(gs[1])
-            divider = _transect_plot(
-                distance, value, depth, variable_unit, bath_x, bath_y,
-                variable_name, vmin, vmax, cmap, scale, linearthresh, points)
+            do_plot(
+                gs[1], gs[0],
+                self.transect_data['data'],
+                self.transect_data['name'],
+            )
 
-            if surface:
-                _surface_plot(
-                    divider, surface_dist, surface_value, surface_unit,
-                    surface_name)
-
-        transect_name = query.get('name')
-        if transect_name is None or transect_name == '':
-            transect_name = "Transect from %s to %s" % (geopy.Point(start),
-                                                        geopy.Point(end))
-        else:
-            transect_name += " Transect"
-
-        quantum = query.get('dataset_quantum')
-        if quantum == 'month':
-            dformat = "%B %Y"
-        elif quantum == 'day':
-            dformat = "%d %B %Y"
-        elif quantum == 'hour':
-            dformat = "%H:%M %d %B %Y"
-        else:
-            if 'monthly' in get_dataset_url(dataset_name):
-                dformat = "%B %Y"
-            else:
-                dformat = "%d %B %Y"
-
-        if velocity:
-            variable_name = re.sub(
-                r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
-                variable_name)
-            variable_name = re.sub(r" +", " ", variable_name)
-
-        fig.suptitle(variable_name + ", " + timestamp.strftime(dformat) +
-                     "\n" + transect_name)
+        fig.suptitle("%s, %s\n%s" % (
+            self.transect_data['name'],
+            self.timestamp.strftime(self.dformat),
+            self.name
+        ))
 
         fig.tight_layout(pad=3, w_pad=4)
         if velocity:
             fig.subplots_adjust(top=0.9)
 
-        # Output the plot
-        buf = StringIO()
-        try:
-            plt.savefig(buf, format=filetype, dpi='figure')
-            plt.close(fig)
-            return (buf.getvalue(), mime, filename)
-        finally:
-            buf.close()
+        return super(TransectPlotter, self).plot(fig)
 
+    def _surface_plot(self, axis_divider):
+        ax = axis_divider.append_axes("top", size="15%", pad=0.15)
+        ax.plot(self.surface_data['distance'],
+                self.surface_data['data'], color='r')
+        ax.locator_params(nbins=3)
+        ax.yaxis.tick_right()
+        ax.yaxis.set_label_position("right")
+        label = plt.ylabel(utils.mathtext(self.surface_data['unit']))
+        title = plt.title(self.surface_data['name'], y=1.1)
+        plt.setp(title, size='smaller')
+        plt.setp(label, size='smaller')
+        plt.setp(ax.get_yticklabels(), size='x-small')
+        plt.xlim([0, self.surface_data['distance'][-1]])
+        if np.any(map(
+            lambda x: re.search(x, self.surface_data['name'], re.IGNORECASE),
+            [
+                "free surface",
+                "surface height"
+            ]
+        )):
+            ylim = plt.ylim()
+            plt.ylim([min(ylim[0], -ylim[1]), max([-ylim[0], ylim[1]])])
+            ax.yaxis.grid(True)
+        ax.axes.get_xaxis().set_visible(False)
 
-def _surface_plot(axis_divider, distance, values, units, name):
-    surface_ax = axis_divider.append_axes("top", size="15%", pad=0.15)
-    surface_ax.plot(distance, values, color='r')
-    surface_ax.locator_params(nbins=3)
-    surface_ax.yaxis.tick_right()
-    surface_ax.yaxis.set_label_position("right")
-    label = plt.ylabel(utils.mathtext(units))
-    title = plt.title(name, y=1.1)
-    plt.setp(title, size='smaller')
-    plt.setp(label, size='smaller')
-    plt.setp(surface_ax.get_yticklabels(), size='x-small')
-    plt.xlim([0, distance[-1]])
-    if re.search("free surface", name, re.IGNORECASE) or \
-       re.search("surface height", name, re.IGNORECASE):
-        ylim = plt.ylim()
-        plt.ylim([min(ylim[0], -ylim[1]), max([-ylim[0], ylim[1]])])
-        surface_ax.yaxis.grid(True)
-    # s = surface_ax.imshow(np.tile(values, [2, 1]),
-                            # cmap=colormap.find_colormap(name))
-    surface_ax.axes.get_xaxis().set_visible(False)
+    def _transect_plot(self, values, name, vmin, vmax):
 
+        c = plt.pcolormesh(self.transect_data['distance'], self.depth, values,
+                           cmap=self.cmap,
+                           shading='gouraud',
+                           vmin=vmin,
+                           vmax=vmax)
+        ax = plt.gca()
+        ax.invert_yaxis()
+        plt.yscale('symlog', linthreshy=self.linearthresh)
+        ax.yaxis.set_major_formatter(ScalarFormatter())
 
-def _transect_plot(distance, values, depth, unit, bath_x, bath_y, name,
-                   vmin, vmax, cmap, scale, linearthresh=200, points=[]):
+        # Mask out the bottom
+        plt.fill_between(
+            self.bathymetry['x'],
+            self.bathymetry['y'] * -1,
+            plt.ylim()[0],
+            facecolor='dimgray',
+            hatch='xx'
+        )
+        ax.set_axis_bgcolor('dimgray')
 
-    c = plt.pcolormesh(distance, depth, values,
-                       cmap=cmap,
-                       shading='gouraud',
-                       vmin=vmin,
-                       vmax=vmax)
-    ax = plt.gca()
-    ax.invert_yaxis()
-    plt.yscale('symlog', linthreshy=linearthresh)
-    ax.yaxis.set_major_formatter(ScalarFormatter())
+        plt.xlabel("Distance (km)")
+        plt.ylabel("Depth (m)")
+        plt.xlim([self.transect_data['distance'][0],
+                  self.transect_data['distance'][-1]])
 
-    # Mask out the bottom
-    plt.fill_between(bath_x, bath_y * -1, plt.ylim()[0],
-                     facecolor='dimgray', hatch='xx')
-    ax.set_axis_bgcolor('dimgray')
+        # Tighten the y-limits
+        deep = np.amax(self.bathymetry['y'] * -1)
+        l = 10 ** np.floor(np.log10(deep))
+        plt.ylim(np.ceil(deep / l) * l, 0)
+        plt.yticks(list(plt.yticks()[0]) + [self.linearthresh, plt.ylim()[0]])
 
-    plt.xlabel("Distance (km)")
-    plt.ylabel("Depth (m)")
-    plt.xlim([distance[0], distance[-1]])
+        # Show the linear threshold
+        plt.plot([self.transect_data['distance'][0],
+                  self.transect_data['distance'][-1]],
+                 [self.linearthresh, self.linearthresh],
+                 'k:', alpha=0.5)
 
-    # Tighten the y-limits
-    deep = np.amax(bath_y * -1)
-    l = 10 ** np.floor(np.log10(deep))
-    plt.ylim(np.ceil(deep / l) * l, 0)
-    plt.yticks(list(plt.yticks()[0]) + [linearthresh, plt.ylim()[0]])
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        bar = plt.colorbar(c, cax=cax)
+        bar.set_label(
+            name + " (" + utils.mathtext(self.transect_data['unit']) + ")")
 
-    # Show the linear threshold
-    plt.plot([distance[0], distance[-1]],
-             [linearthresh, linearthresh],
-             'k:', alpha=0.5)
+        if len(self.points) > 2:
+            station_distances = []
+            current_dist = 0
+            d = VincentyDistance()
+            for idx, p in enumerate(self.points):
+                if idx == 0:
+                    station_distances.append(0)
+                else:
+                    current_dist += d.measure(
+                        p, self.points[idx - 1])
+                    station_distances.append(current_dist)
 
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    bar = plt.colorbar(c, cax=cax)
-    bar.set_label(name + " (" + utils.mathtext(unit) + ")")
-
-    if len(points) > 2:
-        station_distances = []
-        current_dist = 0
-        d = VincentyDistance()
-        for idx, p in enumerate(points):
-            if idx == 0:
-                station_distances.append(0)
-            else:
-                current_dist += d.measure(p, points[idx - 1])
-                station_distances.append(current_dist)
-
-        ax2 = ax.twiny()
-        ax2.set_xticks(station_distances)
-        ax2.set_xlim([distance[0], distance[-1]])
-        ax2.tick_params(
-            'x',
-            length=0,
-            width=0,
-            pad=-3,
-            labelsize='xx-small',
-            which='major')
-        ax2.xaxis.set_major_formatter(StrMethodFormatter(u"$\u25bc$"))
-        cax = make_axes_locatable(ax2).append_axes(
-            "right", size="5%", pad=0.05)
-        bar2 = plt.colorbar(c, cax=cax)
-        bar2.remove()
-    return divider
-
-
-def list_transects():
-    TRANSECT_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'transect')
-
-    transects = []
-    for f in os.listdir(TRANSECT_DIR):
-        if not f.endswith(".kml"):
-            continue
-
-        doc = parser.parse(os.path.join(TRANSECT_DIR, f)).getroot()
-        folder = doc.Document.Folder
-
-        group = {
-            'name': doc.Document.Folder.name.text.encode("utf-8"),
-            'transects': []
-        }
-
-        for place in folder.Placemark:
-            c_txt = place.LineString.coordinates.text
-            coords = []
-            for point_txt in c_txt.split():
-                lonlat = point_txt.split(',')
-                coords.append(lonlat[1] + "," + lonlat[0])
-
-            group['transects'].append(
-                {'name': place.name.text.encode("utf-8"), 'pts': coords})
-        group['transects'] = sorted(group['transects'],
-                                    key=lambda k: k['name'])
-
-        transects.append(group)
-
-    return transects
+            ax2 = ax.twiny()
+            ax2.set_xticks(station_distances)
+            ax2.set_xlim([self.transect_data['distance'][0],
+                          self.transect_data['distance'][-1]])
+            ax2.tick_params(
+                'x',
+                length=0,
+                width=0,
+                pad=-3,
+                labelsize='xx-small',
+                which='major')
+            ax2.xaxis.set_major_formatter(StrMethodFormatter(u"$\u25bc$"))
+            cax = make_axes_locatable(ax2).append_axes(
+                "right", size="5%", pad=0.05)
+            bar2 = plt.colorbar(c, cax=cax)
+            bar2.remove()
+        return divider

@@ -49,42 +49,18 @@ def get_m_coords(projection, x, y, z):
         # 0,0 is top-left, 1st dim is rows
         x1, y1 = pyproj.transform(wgs84, dest, nw[1], nw[0])
         x2, y2 = pyproj.transform(wgs84, dest, se[1], se[0])
-    elif projection == 'EPSG:32661':
-        boundinglat = 60.0
-        lon_0 = 0
+    elif projection == 'EPSG:32661' or projection == 'EPSG:3031':
+        if projection == 'EPSG:32661':
+            boundinglat = 60.0
+            lon_0 = 0
+            llcrnr_lon = -45
+            urcrnr_lon = 135
+        elif projection == 'EPSG:3031':
+            boundinglat = -60.0
+            lon_0 = 0
+            llcrnr_lon = -135
+            urcrnr_lon = 45
 
-        llcrnr_lon = -45
-        urcrnr_lon = 135
-        proj = Proj(init=projection)
-
-        xx, yy = proj(lon_0, boundinglat)
-        lon, llcrnr_lat = proj(math.sqrt(2.) * yy, 0., inverse=True)
-        urcrnr_lat = llcrnr_lat
-
-        urcrnrx, urcrnry = proj(urcrnr_lon, urcrnr_lat)
-        llcrnrx, llcrnry = proj(llcrnr_lon, llcrnr_lat)
-
-        n = 2 ** z
-        x_tile = (urcrnrx - llcrnrx) / n
-        y_tile = (urcrnry - llcrnry) / n
-
-        dx = x_tile / 256
-        dy = y_tile / 256
-
-        x = llcrnrx + x * x_tile + \
-            dx * np.indices((256, 256), np.float32)[0, :, :]
-        y = llcrnry + (n - y - 1) * y_tile + \
-            dy * np.indices((256, 256), np.float32)[1, :, :]
-        x = x[:, ::-1]
-        y = y[:, ::-1]
-
-        return x, y
-    elif projection == 'EPSG:3031':
-        boundinglat = -60.0
-        lon_0 = 0
-
-        llcrnr_lon = -135
-        urcrnr_lon = 45
         proj = Proj(init=projection)
 
         xx, yy = proj(lon_0, boundinglat)
@@ -212,12 +188,9 @@ def plot(projection, x, y, z, args):
         else:
             time = int(args.get('time'))
 
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-            if time >= time_var.shape[0]:
-                time = -1
+        time_var = utils.get_time_var(dataset)
+        if time >= time_var.shape[0]:
+            time = -1
 
         if time < 0:
             time += time_var.shape[0]
@@ -229,12 +202,7 @@ def plot(projection, x, y, z, args):
             'neighbours': 8,
         }
 
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-        else:
-            depth_var = None
+        depth_var = utils.get_depth_var(dataset)
 
         depth = 0
         depthm = 0
@@ -247,6 +215,8 @@ def plot(projection, x, y, z, args):
 
                 if depth >= depth_var.shape[0]:
                     depth = 0
+                    depthm = 0
+                else:
                     depthm = depth_var[int(depth)]
 
         if len(dataset.variables[variable[0]].shape) < 4:

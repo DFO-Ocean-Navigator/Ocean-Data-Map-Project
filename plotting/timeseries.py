@@ -5,282 +5,134 @@ from matplotlib.ticker import ScalarFormatter
 import matplotlib
 import numpy as np
 import re
+from textwrap import wrap
 import colormap
-from StringIO import StringIO
-import os
-from oceannavigator import app
-from pykml import parser
 from data import load_timeseries
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url
 import datetime
+import point
+
+LINEAR = 200
 
 
-def plot(dataset_name, **kwargs):
-    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+class TimeseriesPlotter(point.PointPlotter):
 
-    query = kwargs.get('query')
+    def __init__(self, dataset_name, query, format):
+        self.plottype = "timeseries"
+        super(TimeseriesPlotter, self).__init__(dataset_name, query, format)
+        self.size = '11x5'
 
-    points = query.get('station')
-    if points is None or len(points) < 1:
-        points = [[47.546667, -52.586667]]
+    def csv(self):
+        header = [
+            ['Dataset', self.dataset_name],
+        ]
 
-    names = query.get('names')
-    if names is None or \
-            len(names) == 0 or \
-            len(names) != len(points) or \
-            names[0] is None:
-        names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in
-                 points]
+        columns = [
+            "Latitude",
+            "Longitude",
+            "Time",
+        ]
 
-    t = sorted(zip(names, points))
-    names = [n for (n, p) in t]
-    points = [p for (n, p) in t]
-
-    scale = query.get('scale')
-    if scale is None or 'auto' in scale:
-        scale = None
-    else:
-        scale = [float(x) for x in scale.split(',')]
-
-    variables = query.get('variable').split(',')
-    vector = False
-    if len(variables) > 1:
-        vector = True
-
-    depth = 0
-    if query.get('depth') and len(query.get('depth')) > 0:
-        if query.get('depth') == 'all':
-            depth = 'all'
-            depth_label = ''
-        elif query.get('depth') == 'bottom':
-            depth = 'bottom'
-        else:
-            depth = int(query.get('depth'))
-
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
-        if query.get('starttime') is None or \
-           len(str(query.get('starttime'))) == 0:
-            starttime = 0
-        else:
-            starttime = int(query.get('starttime'))
-
-        if query.get('endtime') is None or \
-           len(str(query.get('endtime'))) == 0:
-            endtime = 0
-        else:
-            endtime = int(query.get('endtime'))
-
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-
-        if starttime > endtime:
-            starttime = endtime - 1
-            if starttime < 0:
-                starttime = 0
-                endtime = 2
-
-        if starttime >= time_var.shape[0]:
-            starttime = -1
-
-        if starttime < 0:
-            starttime += time_var.shape[0]
-
-        if endtime >= time_var.shape[0]:
-            endtime = -1
-
-        if endtime < 0:
-            endtime += time_var.shape[0]
-
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variables[0]])
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variables[0]])
-
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-            depth_units = depth_var.units
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-            depth_units = depth_var.units
-        else:
-            depth_var = None
-            depth_units = ''
-
-        if depth != 'all' and depth != 'bottom' and \
-           (depth_var is None or depth >= depth_var.shape[0]):
-            depth = 0
-
-        if ('deptht' in dataset.variables or 'depth' in dataset.variables):
-            if depth != 'all' and depth != 'bottom' and \
-                ('deptht' in dataset.variables[variables[0]].dimensions or
-                 'depth' in dataset.variables[variables[0]].dimensions):
-                depth_label = " at %d%s" % (depth_var[depth],
-                                            depth_units)
-            elif depth == 'bottom':
-                depth_label = ' at Bottom'
+        if self.depth != 'all':
+            if isinstance(self.depth, str) or isinstance(self.depth, unicode):
+                header.append(["Depth", self.depth])
             else:
-                depth_label = ''
+                header.append(["Depth", "%d" % self.depths[self.depth]])
+
+            columns.append("%s (%s)" % (self.variable_name,
+                                        self.variable_unit))
         else:
-            depth_label = ''
+            header.append(["Variable", "%s (%s)" % (self.variable_name,
+                                                    self.variable_unit)])
+            max_dep_idx = np.where(~self.data[:, 0, 0, :].mask)[1].max()
+            for dep in self.depths[:max_dep_idx + 1]:
+                columns.append("%d%s" % (np.round(dep), self.depth_unit))
 
-        if ('deptht' not in dataset.variables[variables[0]].dimensions and
-                'depth' not in dataset.variables[variables[0]].dimensions):
-            depth = 0
+        data = []
 
-        times = None
-        point_data = []
-        for p in points:
-            data = []
-            for v in variables:
-                d, t = load_timeseries(
-                    dataset,
-                    v,
-                    range(starttime, endtime + 1),
-                    depth,
-                    float(p[0]),
-                    float(p[1])
-                )
-                if times is None:
-                    if query.get('dataset_quantum') == 'month':
-                        t = [datetime.date(x.year, x.month, 1) for x in t]
-                    times = t
+        # For each point
+        for p in range(0, self.data.shape[0]):
+            # For each time
+            for t in range(0, self.data.shape[2]):
+                entry = [
+                    "%0.4f" % self.points[p][0],
+                    "%0.4f" % self.points[p][1],
+                    self.times[t].isoformat(),
+                ]
+                if self.depth == 'all':
+                    entry.extend(map(
+                        lambda f: "%0.3f" % f,
+                        self.data[p, 0, t, :max_dep_idx + 1]
+                    ))
+                else:
+                    entry.append("%0.3f" % self.data[p, 0, t])
 
-                data.append(d)
+                data.append(entry)
 
-            point_data.append(np.ma.array(data))
+        d = np.array(data)
+        d[np.where(d == 'nan')] = ''
+        data = d.tolist()
 
-        point_data = np.ma.array(point_data)
+        return super(TimeseriesPlotter, self).csv(header, columns, data)
 
-        if depth_var is not None:
-            depths = depth_var[:]
-            depth_unit = depth_var.units
+    def plot(self):
+        if len(self.variables) > 1:
+            self.variable_name = self.vector_name(self.variable_name)
+            if self.scale:
+                vmin = self.scale[0]
+                vmax = self.scale[1]
+            else:
+                vmin = 0
+                vmax = self.data.max()
+                if self.cmap is None:
+                    self.cmap = colormap.colormaps.get('speed')
         else:
-            depths = [0]
-            depth_unit = "m"
+            if self.scale:
+                vmin = self.scale[0]
+                vmax = self.scale[1]
+            else:
+                vmin = self.data.min()
+                vmax = self.data.max()
 
-    if variable_unit.startswith("Kelvin"):
-        variable_unit = "Celsius"
-        for idx, v in enumerate(variables):
-            point_data[:, idx, :] = point_data[:, idx, :] - 273.15
-
-    if vector:
-        mags = np.sqrt(point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2)
-        variable_name = re.sub(
-            r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
-            variable_name)
-        if scale:
-            vmin = scale[0]
-            vmax = scale[1]
-        else:
-            vmin = 0
-            vmax = np.amax(mags)
-            if query.get('colormap') is None or \
-                    query.get('colormap') == 'default':
-                cmap = colormap.colormaps.get('speed')
-    else:
-        if scale:
-            vmin = scale[0]
-            vmax = scale[1]
-        else:
-            vmin = np.inf
-            vmax = -np.inf
-
-            for d in point_data:
-                vmin = min(vmin, np.amin(d))
-                vmax = max(vmax, np.amax(d))
-                if re.search("free surface", variable_name, re.IGNORECASE) or \
-                    re.search("surface height", variable_name,
-                              re.IGNORECASE) or \
-                    re.search("velocity", variable_name, re.IGNORECASE) or \
-                        re.search("wind", variable_name, re.IGNORECASE):
+                if self.variable_unit == "fraction":
+                    vmin = 0
+                    vmax = 1
+                elif np.any(map(lambda x: re.search(x, self.variable_name,
+                                                    re.IGNORECASE), [
+                    "free surface",
+                    "surface height",
+                    "velocity",
+                    "wind"
+                ])):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-            if variable_unit == "fraction":
-                vmin = 0
-                vmax = 1
 
-    t = times
-    if vector:
-        point_data = np.ma.expand_dims(mags, 1)
+        if self.cmap is None:
+            self.cmap = colormap.find_colormap(self.variable_name)
 
-    filename = utils.get_filename(dataset_name, filetype)
-    if filetype == 'csv':
-        # CSV File
-        output = StringIO()
-        try:
-            output.write("\n".join([
-                "// Dataset: %s" % dataset_name,
-                ""
-            ]))
-            if depth != 'all':
-                if isinstance(depth, str) or isinstance(depth, unicode):
-                    output.write("// Depth: %s\n" % depth)
-                else:
-                    output.write("// Depth: %d\n" % depths[depth])
-
-            # Write Header
-            output.write("Time, Latitude, Longitude, ")
-            if depth == 'all':
-                max_dep_idx = np.where(~point_data[:, 0, 0, :].mask)[1].max()
-                output.write(", ".join([
-                    "%d%s" % (np.round(dep), depth_unit)
-                    for dep in depths[:max_dep_idx + 1]
-                ]))
-            else:
-                output.write("%s (%s)" % (variable_name, variable_unit))
-            output.write("\n")
-
-            for idx, p in enumerate(points):
-                for idx2, vals in enumerate(point_data[idx, 0, :]):
-                    output.write("%s, " % t[idx2].isoformat())
-                    output.write("%0.4f, %0.4f, " % tuple(p))
-                    if depth == 'all':
-                        output.write(", ".join([
-                            "%0.4f" % value for value in vals[:max_dep_idx + 1]
-                        ]))
-                    else:
-                        output.write("%0.4f" % vals)
-
-                    output.write("\n")
-
-            return (output.getvalue(), mime, filename)
-        finally:
-            output.close()
-    else:
-        # Figure size
-        size = kwargs.get('size').replace("x", " ").split()
-
-        # Colormap from arguments
-        cmap = query.get('colormap')
-        if cmap is not None:
-            cmap = colormap.colormaps.get(cmap)
-        if cmap is None:
-            cmap = colormap.find_colormap(variable_name)
-
-        datenum = matplotlib.dates.date2num(t)
-        if depth == 'all':
-            figuresize = (float(size[0]), float(size[1]) * len(points))
+        datenum = matplotlib.dates.date2num(self.times)
+        if self.depth == 'all':
+            size = map(float, self.size.split("x"))
+            numpoints = len(self.points)
+            figuresize = (size[0], size[1] * numpoints)
             fig, ax = plt.subplots(
-                len(points), 1, sharex=True, figsize=figuresize,
-                dpi=float(kwargs.get('dpi')))
-            if len(points) == 1:
+                numpoints, 1, sharex=True, figsize=figuresize,
+                dpi=self.dpi)
+
+            if not isinstance(ax, np.ndarray):
                 ax = [ax]
 
-            LINEAR = 200
-
-            for idx, p in enumerate(points):
-                d = point_data[idx, 0, :]
+            for idx, p in enumerate(self.points):
+                d = self.data[idx, 0, :]
                 dlim = np.ma.flatnotmasked_edges(d[0, :])
-                maxdepth = depths[dlim[1]]
+                maxdepth = self.depths[dlim[1]]
 
                 c = ax[idx].pcolormesh(
-                    datenum, depths[:dlim[1] + 1], d[
+                    datenum, self.depths[:dlim[1] + 1], d[
                         :, :dlim[1] + 1].transpose(),
-                    shading='gouraud', cmap=cmap, vmin=vmin, vmax=vmax)
+                    shading='gouraud', cmap=self.cmap, vmin=vmin, vmax=vmax)
                 ax[idx].invert_yaxis()
                 if maxdepth > LINEAR:
                     ax[idx].set_yscale('symlog', linthreshy=LINEAR)
@@ -288,12 +140,13 @@ def plot(dataset_name, **kwargs):
 
                 if maxdepth > LINEAR:
                     l = 10 ** np.floor(np.log10(maxdepth))
-                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, depths[0])
+                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, self.depths[0])
                     ax[idx].set_yticks(
                         list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
                 else:
-                    ax[idx].set_ylim(maxdepth, depths[0])
-                ax[idx].set_ylabel("Depth (%s)" % utils.mathtext(depth_units))
+                    ax[idx].set_ylim(maxdepth, self.depths[0])
+                ax[idx].set_ylabel("Depth (%s)" %
+                                   utils.mathtext(self.depth_units))
 
                 ax[idx].xaxis_date()
                 ax[idx].set_xlim(datenum[0], datenum[-1])
@@ -301,69 +154,138 @@ def plot(dataset_name, **kwargs):
                 divider = make_axes_locatable(ax[idx])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 bar = plt.colorbar(c, cax=cax)
-                bar.set_label("%s (%s)" % (variable_name.title(),
-                                           utils.mathtext(variable_unit)))
+                bar.set_label("%s (%s)" % (self.variable_name.title(),
+                                           utils.mathtext(self.variable_unit)))
                 ax[idx].set_title(
-                    "%s%s at %s" % (variable_name.title(), depth_label,
-                                    names[idx]))
+                    "%s%s at %s" % (
+                        self.variable_name.title(), self.depth_label,
+                        self.names[idx]))
                 plt.setp(ax[idx].get_xticklabels(), rotation=30)
             fig.autofmt_xdate()
         else:
-            figuresize = (float(size[0]), float(size[1]))
-            fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
-            plt.title("%s%s at %s" % (variable_name.title(), depth_label,
-                                      ",".join(names)))
+            fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
+            wrapped_title = wrap(
+                "%s%s at %s" % (
+                    self.variable_name.title(),
+                    self.depth_label,
+                    ", ".join(self.names)
+                ), 80)
+
+            plt.title("\n".join(wrapped_title))
             plt.plot_date(
-                datenum, point_data[:, 0, :].transpose(), '-', figure=fig)
-            plt.ylabel("%s (%s)" % (variable_name.title(),
-                                    utils.mathtext(variable_unit)))
+                datenum, self.data[:, 0, :].transpose(), '-', figure=fig)
+            plt.ylabel("%s (%s)" % (self.variable_name.title(),
+                                    utils.mathtext(self.variable_unit)))
             plt.ylim(vmin, vmax)
             plt.gca().xaxis.grid(True)
             plt.gca().yaxis.grid(True)
             fig.autofmt_xdate()
 
-            if len(points) > 1:
-                leg = plt.legend(names, loc='best')
-                for legobj in leg.legendHandles:
-                    legobj.set_linewidth(4.0)
+            self.plot_legend(fig, self.names)
 
-        # Output the plot
-        buf = StringIO()
-        try:
-            plt.savefig(buf, format=filetype, dpi='figure')
-            plt.close(fig)
-            return (buf.getvalue(), mime, filename)
-        finally:
-            buf.close()
+        return super(TimeseriesPlotter, self).plot(fig)
 
+    def parse_query(self, query):
+        super(TimeseriesPlotter, self).parse_query(query)
 
-def list_stations():
-    STATION_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'station')
+        depth = 0
+        qdepth = query.get('depth')
+        if qdepth and len(qdepth) > 0:
+            if qdepth == 'all':
+                depth = 'all'
+            elif qdepth == 'bottom':
+                depth = 'bottom'
+            else:
+                depth = int(qdepth)
 
-    stations = []
-    for f in os.listdir(STATION_DIR):
-        if not f.endswith(".kml"):
-            continue
+        self.depth = depth
 
-        doc = parser.parse(os.path.join(STATION_DIR, f)).getroot()
-        folder = doc.Document.Folder
+    def load_data(self):
+        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
+            self.fix_startend_times(dataset)
 
-        group = {
-            'name': doc.Document.Folder.name.text.encode("utf-8"),
-            'stations': []
-        }
+            self.variable_unit = get_variable_unit(
+                self.dataset_name,
+                dataset.variables[self.variables[0]]
+            )
+            self.variable_name = get_variable_name(
+                self.dataset_name,
+                dataset.variables[self.variables[0]]
+            )
 
-        for place in folder.Placemark:
-            c_txt = place.Point.coordinates.text
-            lonlat = c_txt.split(',')
+            depth_var = utils.get_depth_var(dataset)
+            if depth_var is None:
+                self.depth_units = ''
+            else:
+                self.depth_units = depth_var.units
 
-            group['stations'].append({
-                'name': place.name.text.encode("utf-8"),
-                'point': lonlat[1] + "," + lonlat[0]
-            })
+            if self.depth != 'all' and self.depth != 'bottom' and \
+                    (depth_var is None or self.depth >= depth_var.shape[0]):
+                self.depth = 0
 
-        group['stations'] = sorted(group['stations'], key=lambda k: k['name'])
+            var = self.variables[0]
+            if ('deptht' in dataset.variables or 'depth' in dataset.variables):
+                if self.depth != 'all' and self.depth != 'bottom' and \
+                    ('deptht' in dataset.variables[var].dimensions or
+                     'depth' in dataset.variables[var].dimensions):
+                    self.depth_label = " at %d%s" % (depth_var[self.depth],
+                                                     self.depth_units)
+                elif self.depth == 'bottom':
+                    self.depth_label = ' at Bottom'
+                else:
+                    self.depth_label = ''
+            else:
+                self.depth_label = ''
 
-        stations.append(group)
+            if ('deptht' not in dataset.variables[var].dimensions and
+                    'depth' not in dataset.variables[var].dimensions):
+                self.depth = 0
 
-    return stations
+            times = None
+            point_data = []
+            for p in self.points:
+                data = []
+                for v in self.variables:
+                    d, t = load_timeseries(
+                        dataset,
+                        v,
+                        range(self.starttime, self.endtime + 1),
+                        self.depth,
+                        float(p[0]),
+                        float(p[1])
+                    )
+                    if times is None:
+                        if self.query.get('dataset_quantum') == 'month':
+                            t = [datetime.date(x.year, x.month, 1) for x in t]
+                        times = t
+
+                    data.append(d)
+
+                point_data.append(np.ma.array(data))
+
+            point_data = np.ma.array(point_data)
+
+            if depth_var is not None:
+                depths = depth_var[:]
+                depth_unit = depth_var.units
+            else:
+                depths = [0]
+                depth_unit = "m"
+
+        # TODO: pint
+        if self.variable_unit.startswith("Kelvin"):
+            self.variable_unit = "Celsius"
+            for idx, v in enumerate(self.variables):
+                point_data[:, idx, :] = point_data[:, idx, :] - 273.15
+
+        if point_data.shape[1] == 2:
+            point_data = np.ma.expand_dims(
+                np.sqrt(
+                    point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
+                ), 1
+            )
+
+        self.times = times
+        self.data = point_data
+        self.depths = depths
+        self.depth_unit = depth_unit

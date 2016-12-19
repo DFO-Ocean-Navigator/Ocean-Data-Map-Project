@@ -125,6 +125,8 @@ class MapToolbar extends React.Component {
                 parser: 'point',
             });
             this.fileinput.click();
+        } else if (key == "odv") {
+            this.odvinput.click();
         } else if (key == "draw") {
             this.props.action("point");
         } else {
@@ -209,6 +211,144 @@ class MapToolbar extends React.Component {
         }
     }
 
+    parseODV(e) {
+        if (e.target.files.length == 1) {
+            var file = e.target.files[0];
+            this.setState({
+                parsedFile: file.name,
+            });
+            Papa.parse(file, {
+                delimiter: "\t",
+                comments: "//",
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                header: false,
+                encoding: "ascii",
+                complete: function(results) {
+                    function findColumn(prefix) {
+                        for (var i = 0; i < headerLine.length; i++) {
+                            if (headerLine[i].toLowerCase().startsWith(prefix.toLowerCase())) {
+                                return i;
+                            }
+                        }
+                        return -1;
+                    }
+                    var headerLine = results.data[0];
+                    var latCol = jQuery.inArray("Latitude [degrees_north]", headerLine);
+                    var lonCol = jQuery.inArray("Longitude [degrees_east]", headerLine);
+                    var staCol = jQuery.inArray("Station", headerLine);
+
+                    var dateCol = findColumn("yyyy-mm-dd");
+                    if (dateCol == -1) {
+                        dateCol = headerLine.length;
+                        var col;
+                        if ((col = findColumn("mon/day/yr")) != -1 ||
+                            (col = findColumn("mm/dd/yyyy")) != -1) {
+
+                            for (var i = 1; i < results.data.length; i++) {
+                                var split = results.data[i][col].split('/');
+                                results.data[i][dateCol] = split[2] + "-" + split[0] + "-" + split[1] + " ";
+                            }
+                        } else if ((col = findColumn("dd/mm/yyyy")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                var split = results.data[i][col].split('/');
+                                results.data[i][dateCol] = split[2] + "-" + split[1] + "-" + split[0] + " ";
+                            }
+                        } else if ((col = findColumn("yyyy/mm/dd")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                var split = results.data[i][col].split('/');
+                                results.data[i][dateCol] = split[0] + "-" + split[1] + "-" + split[2] + " ";
+                            }
+                        } else if ((col = findColumn("mmddyyyy")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                var d = results.data[i][col];
+                                results.data[i][dateCol] = d.substring(4, 4) + "-" + d.substring(0, 2) + "-" + d.substring(2, 2) + " ";
+                            }
+                        } else if ((col = findColumn("ddmmyyyy")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                var d = results.data[i][col];
+                                results.data[i][dateCol] = d.substring(4, 4) + "-" + d.substring(2, 2) + "-" + d.substring(0, 2) + " ";
+                            }
+                        } else if ((col = findColumn("yyyymmdd")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                var d = results.data[i][col];
+                                results.data[i][dateCol] = d.substring(0, 4) + "-" + d.substring(4, 2) + "-" + d.substring(6, 2) + " ";
+                            }
+                        } else if ((col = findColumn("year")) != -1) {
+                            var yearcol = col;
+                            var monthcol = findColumn("month");
+                            var daycol = findColumn("day");
+                            for (var i = 1; i < results.data.length; i++) {
+                                results.data[i][dateCol] = results.data[i][yearcol] + "-" + results.data[i][monthcol] + "-" + results.data[i][daycol] + " ";
+                            }
+                        } else {
+                            alert("Error: Unknown Date/Time format");
+                            return;
+                        }
+
+                        if ((col = findColumn("hh:mm")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                results.data[i][dateCol] += results.data[i][col];
+                            }
+                        } else if ((col = findColumn("hhmm")) != -1) {
+                            for (var i = 1; i < results.data.length; i++) {
+                                results.data[i][dateCol] += results.data[i][col].substring(0, 2) + ":" + results.data[i][col].substring(2, 2);
+                            }
+                        } else if ((col = findColumn("hour")) != -1) {
+                            var minutecol = findColumn("minute");
+                            for (var i = 1; i < results.data.length; i++) {
+                                results.data[i][dateCol] += results.data[i][col] + ":" + results.data[i][minutecol];
+                            }
+                        }
+                    }
+
+                    var depthCol = findColumn("Depth");
+                    var depthunit = new RegExp(/\[(.*)\]/).exec(headerLine[depthCol])[1];
+                    var datacols = [];
+                    var dataheaders = [];
+                    for (var i = depthCol + 1; i < headerLine.length; i++) {
+                        if (headerLine[i] != "QF") {
+                            datacols.push(i);
+                            dataheaders.push(headerLine[i]);
+                        }
+                    }
+
+                    var points = [];
+
+                    var station = "";
+                    var point = {};
+                    for (var i = 1; i < results.data.length; i++) {
+                        if (String(results.data[i][staCol]) != "" && results.data[i][staCol] != station) {
+                            station = results.data[i][staCol];
+                            point = {
+                                station: station,
+                                latitude: results.data[i][latCol],
+                                longitude: results.data[i][lonCol],
+                                time: new Date(results.data[i][dateCol]),
+                                datatypes: dataheaders,
+                                depth: [],
+                                data: [],
+                                depthunit: depthunit,
+                            };
+                            points.push(point);
+                        }
+
+                        points[points.length - 1].depth.push(results.data[i][depthCol]);
+                        var data = [];
+                        for (var j of datacols) {
+                            data.push(results.data[i][j]);
+                        }
+                        points[points.length - 1].data.push(data);
+                    }
+
+                    this.props.action("add", "observation", points);
+                }.bind(this),
+            });
+
+            this.odvform.reset();
+        }
+    }
+
     render() {
         var pointFiles = this.state.pointFiles.map(function(d) {
             return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
@@ -227,6 +367,7 @@ class MapToolbar extends React.Component {
                     <MenuItem divider />
                     <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='odv' key='odv'><Icon icon="upload" /> Upload ODV&hellip;</MenuItem>
                 </SplitButton>
                 <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Line</span>} onSelect={this.lineSelect.bind(this)}>
                     {lineFiles}
@@ -249,10 +390,15 @@ class MapToolbar extends React.Component {
                 </DropdownButton>
                 <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> Plot</Button>
                 <Button name="reset" onClick={this.buttonHandler.bind(this)}><Icon icon='undo' alt='Reset Map' /></Button>
+
                 <span style={{'float': 'right'}} title="Permalink"><Button name="permalink" onClick={this.buttonHandler.bind(this)}><Icon icon='link' alt='Link' /></Button></span>
 
                 <form ref={(f) => this.fileform = f}>
                     <input type='file' style={{'display': 'none'}} onChange={this.parseCSV.bind(this)} ref={(f) => this.fileinput = f} accept=".csv,.CSV" />
+                </form>
+
+                <form ref={(f) => this.odvform = f}>
+                    <input type='file' style={{'display': 'none'}} onChange={this.parseODV.bind(this)} ref={(f) => this.odvinput = f} accept=".txt,.TXT" />
                 </form>
 
                 <div ref={(d) => this.class4div = d} style={{'position': 'fixed', 'zIndex': 1}}/>

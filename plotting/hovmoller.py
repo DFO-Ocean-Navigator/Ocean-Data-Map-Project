@@ -1,7 +1,6 @@
 # vim: set fileencoding=utf-8 :
 
 from grid import Grid
-from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from netCDF4 import Dataset, netcdftime
 import matplotlib.gridspec as gridspec
@@ -9,207 +8,85 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import colormap
-from StringIO import StringIO
-import geopy
 import utils
-from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url
-import datetime
+from oceannavigator.util import get_dataset_url
+import line
 
 
-def plot(dataset_name, **kwargs):
-    filetype, mime = utils.get_mimetype(kwargs.get('format'))
+class HovmollerPlotter(line.LinePlotter):
 
-    query = kwargs.get('query')
+    def __init__(self, dataset_name, query, format):
+        self.plottype = "hovmoller"
+        super(HovmollerPlotter, self).__init__(dataset_name, query, format)
 
-    points = query.get('path')
-    if points is None or len(points) == 0:
-        points = [
-            '47 N 52.8317 W',
-            '47 N 42 W'
-        ]
-    start = points[0]
-    end = points[-1]
+    def load_data(self):
+        interp = utils.get_interpolation(self.query)
+        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
+            latvar, lonvar = utils.get_latlon_vars(dataset)
 
-    scale = query.get('scale')
-    if scale is None or 'auto' in scale:
-        scale = None
-    else:
-        scale = [float(x) for x in scale.split(',')]
+            grid = Grid(dataset, latvar.name, lonvar.name)
 
-    showmap = query.get('showmap') is None or bool(query.get('showmap'))
+            depth_var = utils.get_depth_var(dataset)
+            if depth_var is not None and self.depth:
+                if self.depth == 'bottom':
+                    self.depth_value = 'Bottom'
+                    self.depth_unit = ''
+                else:
+                    self.depth = self.clip_value(int(self.depth), depth_var)
+                    self.depth_value = depth_var[self.depth]
+                    self.depth_unit = depth_var.units
+            else:
+                self.depth_value = 0
+                self.depth_unit = "m"
 
-    interp = query.get('interpolation')
-    if interp is None or interp == '':
-        interp = {
-            'method': 'inv_square',
-            'neighbours': 8,
-        }
+            self.fix_startend_times(dataset)
 
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
-        if query.get('starttime') is None or \
-           len(str(query.get('starttime'))) == 0:
-            starttime = 0
-        else:
-            starttime = int(query.get('starttime'))
+            time = range(self.starttime, self.endtime + 1)
+            if len(self.variables) > 1:
+                v = []
+                for name in self.variables:
+                    pts, distance, value = grid.hovmoller(
+                        dataset.variables[name],
+                        self.points, time, self.depth,
+                        interpolation=interp
+                    )
+                    v.append(value ** 2)
 
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-
-        if starttime >= time_var.shape[0]:
-            starttime = -1
-
-        if starttime < 0:
-            starttime += time_var.shape[0]
-
-        if query.get('endtime') is None or \
-           len(str(query.get('endtime'))) == 0:
-            endtime = 0
-        else:
-            endtime = int(query.get('endtime'))
-
-        if endtime >= time_var.shape[0]:
-            endtime = -1
-
-        if endtime < 0:
-            endtime += time_var.shape[0]
-
-        if 'nav_lat' in dataset.variables:
-            latvarname = 'nav_lat'
-            lonvarname = 'nav_lon'
-        elif 'latitude' in dataset.variables:
-            latvarname = 'latitude'
-            lonvarname = 'longitude'
-
-        grid = Grid(dataset, latvarname, lonvarname)
-
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-        else:
-            depth_var = None
-
-        depth = 0
-        depthm = 0
-        if depth_var is not None and query.get('depth'):
-            if query.get('depth') == 'bottom':
-                depth = 'bottom'
-                depthm = 'Bottom'
-            if len(query.get('depth')) > 0 and \
-                    query.get('depth') != 'bottom':
-                depth = int(query.get('depth'))
-
-                if depth >= depth_var.shape[0]:
-                    depth = 0
-                depthm = depth_var[int(depth)]
-
-        if depth_var is None:
-            depth_unit = "m"
-        else:
-            depth_unit = depth_var.units
-
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
-
-        variables = query.get('variable').split(',')
-
-        if starttime > endtime:
-            starttime = endtime - 1
-            if starttime < 0:
-                starttime = 0
-                endtime = 2
-
-        time = range(starttime, endtime + 1)
-
-        vector = False
-        if len(variables) > 1:
-            vector = True
-            v = []
-            for name in variables:
+                value = np.sqrt(np.ma.sum(v, axis=0))
+            else:
                 pts, distance, value = grid.hovmoller(
-                    dataset.variables[name],
-                    points, time, depth, interpolation=interp)
-                v.append(value ** 2)
-
-            value = np.sqrt(np.ma.sum(v, axis=0))
-        else:
-            pts, distance, value = grid.hovmoller(
-                dataset.variables[variables[0]],
-                points, time, depth, interpolation=interp)
-
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variables[0]])
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variables[0]])
-
-        if len(dataset.variables[variables[0]].shape) == 3:
-            depth_label = ""
-        elif depth == 'bottom':
-            depth_label = " at Bottom"
-        else:
-            depth_label = " at " + \
-                str(int(np.round(depthm))) + " " + utils.mathtext(depth_unit)
-
-        if variable_unit.startswith("Kelvin"):
-            variable_unit = "Celsius"
-            value = np.add(value, -273.15)
-
-        t = netcdftime.utime(time_var.units)
-        times = t.num2date(time_var[int(starttime):(int(endtime) +
-                                                    1)]).tolist()
-
-    if query.get('dataset_quantum') == 'month':
-        times = [datetime.date(x.year, x.month, 1) for x in times]
-
-    # Colormap from arguments
-    cmap = query.get('colormap')
-    if cmap is not None:
-        cmap = colormap.colormaps.get(cmap)
-    if cmap is None:
-        if vector:
-            cmap = colormap.colormaps.get('speed')
-        else:
-            cmap = colormap.find_colormap(variable_name)
-
-    filename = utils.get_filename(dataset_name, filetype)
-    if filetype == 'csv':
-        return
-        # CSV File
-        output = StringIO()
-        try:
-            # Write Header
-            output.write("Time, Latitude, Longitude, Distance (km)\n")
-
-            # Write Values
-            for idx, val in enumerate(value.transpose()):
-                if distance[idx] == distance[idx - 1]:
-                    continue
-                output.write(
-                    "%0.4f, %0.4f, %0.1f, " % (pts[0, idx],
-                                               pts[1, idx],
-                                               distance[idx])
+                    dataset.variables[self.variables[0]],
+                    self.points, time, self.depth,
+                    interpolation=interp
                 )
 
-                output.write(", ".join([
-                    "%0.4f" % n for n in val
-                ]))
-                output.write("\n")
+            self.path_points = pts
+            self.distance = distance
 
-            return (output.getvalue(), mime, filename)
-        finally:
-            output.close()
-    else:
+            variable_names = self.get_variable_names(dataset, self.variables)
+            variable_units = self.get_variable_units(dataset, self.variables)
+
+            self.variable_unit, self.data = self.kelvin_to_celsius(
+                variable_units[0],
+                value
+            )
+            self.variable_name = variable_names[0]
+
+            if self.cmap is None:
+                self.cmap = colormap.find_colormap(self.variable_name)
+
+            time_var = utils.get_time_var(dataset)
+            t = netcdftime.utime(time_var.units)
+            self.times = t.num2date(
+                time_var[self.starttime:self.endtime + 1]
+            ).tolist()
+
+    def plot(self):
         # Figure size
-        size = kwargs.get('size').replace("x", " ").split()
-        figuresize = (float(size[0]), float(size[1]))
-        fig = plt.figure(figsize=figuresize, dpi=float(kwargs.get('dpi')))
+        figuresize = map(float, self.size.split("x"))
+        fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
-        if showmap:
+        if self.showmap:
             width = 2
             width_ratios = [2, 7]
         else:
@@ -218,129 +95,68 @@ def plot(dataset_name, **kwargs):
 
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
-        # Bounds for map view
-        minlat = np.min(pts[0, :])
-        maxlat = np.max(pts[0, :])
-        minlon = np.min(pts[1, :])
-        maxlon = np.max(pts[1, :])
-        lat_d = max(maxlat - minlat, 20)
-        lon_d = max(maxlon - minlon, 20)
-        minlat -= lat_d / 3
-        minlon -= lon_d / 3
-        maxlat += lat_d / 3
-        maxlon += lon_d / 3
-
-        if showmap:
+        if self.showmap:
             # Plot the path on a map
             plt.subplot(gs[0])
-            m = Basemap(
-                llcrnrlon=minlon,
-                llcrnrlat=minlat,
-                urcrnrlon=maxlon,
-                urcrnrlat=maxlat,
-                lat_0=np.mean(pts[0, :]),
-                lon_0=np.mean(pts[1, :]),
-                resolution='c', projection='merc',
-                rsphere=(6378137.00, 6356752.3142),
-            )
-            # m = basemap.load_arctic()
 
-            m.plot(pts[1, :], pts[0, :],
-                   latlon=True, color='r', linestyle='-')
-            qx, qy = m([pts[1, -1]], [pts[0, -1]])
-            # qu = pts[1, -1] - pts[1, 0]
-            # qv = pts[0, -1] - pts[0, 0]
-            qu = pts[1, -1] - pts[1, -2]
-            qv = pts[0, -1] - pts[0, -2]
-            qmag = np.sqrt(qu ** 2 + qv ** 2)
-            qu /= qmag
-            qv /= qmag
-            m.quiver(qx, qy, qu, qv,
-                     pivot='tip',
-                     scale=8,
-                     width=0.25,
-                     minlength=0.25,
-                     color='r')
-            m.etopo()
-            m.drawparallels(
-                np.arange(
-                    round(minlat),
-                    round(maxlat),
-                    round(lat_d / 1.5)
-                ), labels=[0, 1, 0, 0])
-            m.drawmeridians(
-                np.arange(
-                    round(minlon),
-                    round(maxlon),
-                    round(lon_d / 1.5)
-                ), labels=[0, 0, 0, 1])
+            utils.path_plot(self.path_points)
 
-        if scale:
-            vmin = float(scale[0])
-            vmax = float(scale[1])
+        if self.scale:
+            vmin = self.scale[0]
+            vmax = self.scale[1]
         else:
-            vmin = np.amin(value)
-            vmax = np.amax(value)
-            if re.search("velocity", variable_name, re.IGNORECASE) or \
-                re.search("surface height", variable_name, re.IGNORECASE) or \
-                    re.search("wind", variable_name, re.IGNORECASE):
+            vmin = np.amin(self.data)
+            vmax = np.amax(self.data)
+            if np.any(map(
+                lambda x: re.search(x, self.variable_name, re.IGNORECASE),
+                [
+                    "velocity",
+                    "surface height",
+                    "wind"
+                ]
+            )):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
-            if vector:
+            if len(self.variables) > 1:
                 vmin = 0
 
-        if showmap:
+        if self.showmap:
             plt.subplot(gs[1])
 
-        if vector:
-            variable_name = re.sub(
-                r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
-                variable_name)
-            variable_name = re.sub(r" +", " ", variable_name)
+        if len(self.variables) > 1:
+            self.variable_name = self.vector_name(self.variable_name)
 
-        _plot(
-            distance, value, times, variable_unit,
-            variable_name, vmin, vmax, cmap, scale)
+        c = plt.pcolormesh(self.distance, self.times, self.data,
+                           cmap=self.cmap,
+                           shading='gouraud',
+                           vmin=vmin,
+                           vmax=vmax)
+        ax = plt.gca()
+        ax.yaxis_date()
+        ax.yaxis.grid(True)
+        ax.set_axis_bgcolor('dimgray')
 
-        path_name = query.get('name')
-        if path_name is None or path_name == '':
-            path_name = "%s to %s" % (geopy.Point(start), geopy.Point(end))
+        plt.xlabel("Distance (km)")
+        plt.xlim([self.distance[0], self.distance[-1]])
+
+        divider = make_axes_locatable(plt.gca())
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        bar = plt.colorbar(c, cax=cax)
+        bar.set_label("%s (%s)" % (self.variable_name,
+                                   utils.mathtext(self.variable_unit)))
+
+        if self.depth == 'bottom':
+            depth_label = " at Bottom"
         else:
-            path_name += " Path"
+            depth_label = " at %d %s" % (self.depth_value, self.depth_unit)
 
-        fig.suptitle(u"Hovm\xf6ller Diagram for " + variable_name + depth_label
-                     + ", " + "\n" + path_name)
+        fig.suptitle(u"Hovm\xf6ller Diagram for %s%s,\n%s" % (
+            self.variable_name,
+            depth_label,
+            self.name
+        ))
 
         fig.tight_layout(pad=3, w_pad=4)
         fig.subplots_adjust(top=0.92)
 
-        # Output the plot
-        buf = StringIO()
-        try:
-            plt.savefig(buf, format=filetype, dpi='figure')
-            plt.close(fig)
-            return (buf.getvalue(), mime, filename)
-        finally:
-            buf.close()
-
-
-def _plot(distance, values, times, unit, name,
-          vmin, vmax, cmap, scale):
-
-    c = plt.pcolormesh(distance, times, values,
-                       cmap=cmap,
-                       shading='gouraud',
-                       vmin=vmin,
-                       vmax=vmax)
-    ax = plt.gca()
-    ax.yaxis_date()
-    ax.yaxis.grid(True)
-    ax.set_axis_bgcolor('dimgray')
-
-    plt.xlabel("Distance (km)")
-    plt.xlim([distance[0], distance[-1]])
-
-    divider = make_axes_locatable(plt.gca())
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    bar = plt.colorbar(c, cax=cax)
-    bar.set_label("%s (%s)" % (name, utils.mathtext(unit)))
+        return super(HovmollerPlotter, self).plot(fig)

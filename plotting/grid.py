@@ -11,6 +11,8 @@ from cachetools import LRUCache
 import pytz
 from netCDF4 import netcdftime
 from bisect import bisect_left
+import utils
+from data import get_data_depth
 
 _data_cache = LRUCache(maxsize=16)
 
@@ -27,12 +29,7 @@ class Grid(object):
         self.latvar = ncfile.variables[latvarname]
         self.lonvar = ncfile.variables[lonvarname]
 
-        if 'time_counter' in ncfile.variables:
-            self.timevar = ncfile.variables['time_counter']
-        elif 'time' in ncfile.variables:
-            self.timevar = ncfile.variables['time']
-        else:
-            self.timevar = None
+        self.time_var = utils.get_time_var(ncfile)
 
         self.kdt = _data_cache.get(ncfile.filepath())
         if self.kdt is None:
@@ -80,38 +77,32 @@ class Grid(object):
         iy_min, ix_min = np.unravel_index(minindex_1d, self._shape)
         return iy_min, ix_min
 
-    def bounding_box(self, basemap):
-        lon, lat = basemap.makegrid(100, 100)
-        return self.bounding_box_grid(lat, lon)
-
-    def bounding_box_grid(self, lat, lon):
-        y, x = self.find_index(lat.ravel(), lon.ravel())
+    def bounding_box(self, lat, lon, n=10):
+        y, x = self.find_index(np.array(lat).ravel(), np.array(lon).ravel(), n)
         miny, maxy = np.amin(y), np.amax(y)
         minx, maxx = np.amin(x), np.amax(x)
 
-        dy = maxy - miny
-        if dy < 2:
-            miny -= 2
-            maxy += 2
+        def fix_limits(data, limit):
+            max = np.amax(data)
+            min = np.amin(data)
+            delta = max - min
 
-        miny = int(miny - dy / 4.0)
-        if miny < 0:
-            miny = 0
-        maxy = int(maxy + dy / 4.0)
-        if maxy >= self.latvar.shape[0]:
-            maxy = self.latvar.shape[0] - 1
+            if delta < 2:
+                min -= 2
+                max += 2
 
-        dx = maxx - minx
-        if dx < 2:
-            minx -= 2
-            maxx += 2
+            min = int(min - delta / 4.0)
+            if min < 0:
+                min = 0
 
-        minx = int(minx - dx / 4.0)
-        if minx < 0:
-            minx = 0
-        maxx = int(maxx + dx / 4.0)
-        if maxx >= self.latvar.shape[1]:
-            maxx = self.latvar.shape[1] - 1
+            max = int(max + delta / 4.0)
+            if max > limit:
+                max = limit - 1
+
+            return min, max
+
+        miny, maxy = fix_limits(y, self.latvar.shape[0])
+        minx, maxx = fix_limits(x, self.latvar.shape[1])
 
         return miny, maxy, minx, maxx
 
@@ -125,90 +116,76 @@ class Grid(object):
             d = 50000
         return d
 
-    def transect(self, variable, points, timestep, n=100,
-                 interpolation={'method': 'inv_square', 'neighbours': 8}):
-        distances, target_lat, target_lon, b = _path_to_points(points, n)
-
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
-
-        miny = np.amin(idx_y)
-        maxy = np.amax(idx_y)
-        minx = np.amin(idx_x)
-        maxx = np.amax(idx_x)
-
-        lat = self.latvar[miny:maxy, minx:maxx]
-        lon = self.lonvar[miny:maxy, minx:maxx]
-        data = variable[timestep, :, miny:maxy, minx:maxx]
-        data = np.rollaxis(data, 0, 3)
-
-        _fill_invalid_shift(data)
-
-        method = interpolation.get('method')
-        neighbours = interpolation.get('neighbours')
+    def _get_interpolation(self, interp, lat, lon):
+        method = interp.get('method')
+        neighbours = interp.get('neighbours')
         if neighbours < 1:
             neighbours = 1
 
-        radius = self.interpolation_radius(np.median(target_lat),
-                                           np.median(target_lon))
+        radius = self.interpolation_radius(np.median(lat),
+                                           np.median(lon))
+
+        return method, neighbours, radius
+
+    def _transect(self, variable, points, timestep, depth=None, n=100,
+                  interpolation={'method': 'inv_square', 'neighbours': 8}):
+        distances, times, target_lat, target_lon, b = _path_to_points(
+            points, n)
+
+        miny, maxy, minx, maxx = self.bounding_box(target_lat, target_lon, 10)
+
+        lat = self.latvar[miny:maxy, minx:maxx]
+        lon = self.lonvar[miny:maxy, minx:maxx]
+
+        if depth is None:
+            data = variable[timestep, :, miny:maxy, minx:maxx]
+            data = np.rollaxis(data, 0, 3)
+        else:
+            if len(variable.shape) == 4:
+                data = variable[timestep, depth, miny:maxy, minx:maxx]
+            else:
+                data = variable[timestep, miny:maxy, minx:maxx]
+
+            data = np.expand_dims(data, -1).view(np.ma.MaskedArray)
+
+        _fill_invalid_shift(data)
+
+        method, neighbours, radius = self._get_interpolation(interpolation,
+                                                             target_lat,
+                                                             target_lon)
         resampled = []
         for d in range(0, data.shape[-1]):
-            resampled.append(resample(lat,
-                                      lon,
-                                      np.array(target_lat),
-                             np.array(target_lon),
-                                      data[:, :, d],
-                                      method=method,
-                                      neighbours=neighbours,
-                                      radius_of_influence=radius,
-                                      nprocs=4))
+            resampled.append(
+                resample(
+                    lat,
+                    lon,
+                    np.array(target_lat),
+                    np.array(target_lon),
+                    data[:, :, d],
+                    method=method,
+                    neighbours=neighbours,
+                    radius_of_influence=radius,
+                    nprocs=4
+                )
+            )
         resampled = np.ma.vstack(resampled)
 
-        return np.array([target_lat, target_lon]), distances, resampled
+        return np.array([target_lat, target_lon]), distances, resampled, b
+
+    def transect(self, variable, points, timestep, n=100,
+                 interpolation={'method': 'inv_square', 'neighbours': 8}):
+        latlon, distances, resampled, b = self._transect(
+            variable, points, timestep, None, n, interpolation)
+        return latlon, distances, resampled
 
     def surfacetransect(self, variable, points, timestep, n=100,
                         interpolation={
                             'method': 'inv_square',
                             'neighbours': 8
                         }):
-        distances, target_lat, target_lon, b = _path_to_points(points, n)
-
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
-
-        miny = np.amin(idx_y)
-        maxy = np.amax(idx_y)
-        minx = np.amin(idx_x)
-        maxx = np.amax(idx_x)
-
-        lat = self.latvar[miny:maxy, minx:maxx]
-        lon = self.lonvar[miny:maxy, minx:maxx]
-        if len(variable.shape) == 4:
-            data = variable[timestep, 0, miny:maxy, minx:maxx]
-        else:
-            data = variable[timestep, miny:maxy, minx:maxx]
-
-        masked_lon = lon.view(np.ma.MaskedArray)
-        masked_lat = lat.view(np.ma.MaskedArray)
-        masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
-
-        if interpolation is not None:
-            method = interpolation.get('method')
-            neighbours = interpolation.get('neighbours')
-            if neighbours < 1:
-                neighbours = 1
-
-        radius = self.interpolation_radius(np.median(target_lat),
-                                           np.median(target_lon))
-        resampled = resample(lat,
-                             lon,
-                             np.array(target_lat),
-                             np.array(target_lon),
-                             data,
-                             method=method,
-                             neighbours=neighbours,
-                             radius_of_influence=radius,
-                             nprocs=4)
-
-        return np.array([target_lat, target_lon]), distances, resampled
+        latlon, distances, resampled, b = self._transect(
+            variable, points, timestep, 0, n, interpolation)
+        return latlon, distances, resampled[0]
 
     def velocitytransect(self, variablex, variabley,
                          points, timestep, n=100,
@@ -217,126 +194,75 @@ class Grid(object):
                              'neighbours': 8
                          }):
 
-        distances, target_lat, target_lon, b = _path_to_points(points, n)
-
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 20)
-
-        miny = np.amin(idx_y)
-        maxy = np.amax(idx_y)
-        minx = np.amin(idx_x)
-        maxx = np.amax(idx_x)
-
-        lat = self.latvar[miny:maxy, minx:maxx]
-        lon = self.lonvar[miny:maxy, minx:maxx]
+        latlon, distances, x, b = self._transect(variablex, points, timestep,
+                                                 None, n, interpolation)
+        latlon, distances, y, b = self._transect(variabley, points, timestep,
+                                                 None, n, interpolation)
 
         r = np.radians(np.subtract(90, b))
-        xmag = variablex[timestep, :, miny:maxy, minx:maxx]
-        ymag = variabley[timestep, :, miny:maxy, minx:maxx]
-
-        xmag = np.rollaxis(xmag, 0, 3)
-        ymag = np.rollaxis(ymag, 0, 3)
-
-        _fill_invalid_shift(xmag)
-        _fill_invalid_shift(ymag)
-
-        method = interpolation.get('method')
-        neighbours = interpolation.get('neighbours')
-        if neighbours < 1:
-            neighbours = 1
-
-        x = []
-        y = []
-        radius = self.interpolation_radius(np.median(target_lat),
-                                           np.median(target_lon))
-        for d in range(0, xmag.shape[-1]):
-            x.append(resample(lat,
-                              lon,
-                              np.array(target_lat),
-                     np.array(target_lon),
-                              xmag[:, :, d],
-                              method=method,
-                              neighbours=neighbours,
-                              radius_of_influence=radius,
-                              nprocs=4
-                              ))
-            y.append(resample(lat,
-                              lon,
-                              np.array(target_lat),
-                     np.array(target_lon),
-                              ymag[:, :, d],
-                              method=method,
-                              neighbours=neighbours,
-                              radius_of_influence=radius,
-                              nprocs=4
-                              ))
-
-        x_resampled = np.ma.vstack(x)
-        y_resampled = np.ma.vstack(y)
-
-        theta = np.arctan2(y_resampled, x_resampled) - r
-        mag = np.sqrt(x_resampled ** 2 + y_resampled ** 2)
+        theta = np.arctan2(y, x) - r
+        mag = np.sqrt(x ** 2 + y ** 2)
 
         parallel = mag * np.cos(theta)
         perpendicular = mag * np.sin(theta)
 
-        return np.array([target_lat, target_lon]), \
-            distances, parallel, perpendicular
+        return latlon, distances, parallel, perpendicular
 
     def hovmoller(self, variable, points, timestep, depth, n=100,
                   interpolation={'method': 'inv_square',
                                  'neighbours': 8
                                  }):
-        distances, target_lat, target_lon, b = _path_to_points(points, n)
+        distances, times, target_lat, target_lon, b = _path_to_points(
+            points, n)
 
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
-
-        miny = np.amin(idx_y)
-        maxy = np.amax(idx_y)
-        minx = np.amin(idx_x)
-        maxx = np.amax(idx_x)
+        miny, maxy, minx, maxx = self.bounding_box(target_lat, target_lon, 10)
 
         lat = self.latvar[miny:maxy, minx:maxx]
         lon = self.lonvar[miny:maxy, minx:maxx]
-        if len(variable.shape) == 3:
-            data = variable[
-                timestep[0]:(timestep[-1] + 1), miny:maxy, minx:maxx]
-        elif depth == 'bottom':
-            data = []
-            for t in timestep:
-                fulldata = variable[t, :, miny:maxy, minx:maxx]
 
-                reshaped = fulldata.reshape([fulldata.shape[0], -1])
-                edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
+        data = get_data_depth(
+            variable,
+            timestep[0],
+            timestep[-1] + 1,
+            depth,
+            miny, maxy,
+            minx, maxx,
+        )
+        # if len(variable.shape) == 3:
+        #     data = variable[
+        #         timestep[0]:(timestep[-1] + 1), miny:maxy, minx:maxx]
+        # elif depth == 'bottom':
+        #     data = []
+        #     for t in timestep:
+        #         fulldata = variable[t, :, miny:maxy, minx:maxx]
 
-                depths = edges[1, 0, :]
-                indices = edges[1, 1, :]
+        #         reshaped = fulldata.reshape([fulldata.shape[0], -1])
+        #         edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
 
-                data_t = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
-                                                     fulldata.shape[2]]),
-                                           mask=True,
-                                           dtype=fulldata.dtype)
+        #         depths = edges[1, 0, :]
+        #         indices = edges[1, 1, :]
 
-                data_t[np.unravel_index(indices, data_t.shape)] = \
-                    fulldata.reshape([fulldata.shape[0], -1])[depths, indices]
+        #         data_t = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+        #                                              fulldata.shape[2]]),
+        #                                    mask=True,
+        #                                    dtype=fulldata.dtype)
 
-                data.append(data_t)
-            data = np.ma.MaskedArray(data)
-        else:
-            data = variable[timestep[0]:(timestep[
-                -1] + 1), int(depth), miny:maxy, minx:maxx]
+        #         data_t[np.unravel_index(indices, data_t.shape)] = \
+        # fulldata.reshape([fulldata.shape[0], -1])[depths, indices]
+
+        #         data.append(data_t)
+        #     data = np.ma.MaskedArray(data)
+        # else:
+        #     data = variable[timestep[0]:(timestep[
+        #         -1] + 1), int(depth), miny:maxy, minx:maxx]
 
         masked_lon = lon.view(np.ma.MaskedArray)
         masked_lat = lat.view(np.ma.MaskedArray)
         masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
 
-        if interpolation is not None:
-            method = interpolation.get('method')
-            neighbours = interpolation.get('neighbours')
-            if neighbours < 1:
-                neighbours = 1
-
-        radius = self.interpolation_radius(np.median(target_lat),
-                                           np.median(target_lon))
+        method, neighbours, radius = self._get_interpolation(interpolation,
+                                                             target_lat,
+                                                             target_lon)
         resampled = []
         for t in range(0, data.shape[0]):
             resampled.append(resample(lat,
@@ -355,37 +281,23 @@ class Grid(object):
 
     def path(self, variable, depth, points, times, n=100,
              interpolation={'method': 'inv_square', 'neighbours': 8}):
-        # distances, times, target_lat, target_lon, b = \
-            # _path_to_points_time(points, times, n)
 
         target_lat = points[:, 0]
         target_lon = points[:, 1]
 
-        idx_y, idx_x = self.find_index(target_lat, target_lon, 10)
-
-        miny = np.amin(idx_y)
-        maxy = np.amax(idx_y)
-        minx = np.amin(idx_x)
-        maxx = np.amax(idx_x)
-        if minx == maxx:
-            maxx += 1
-        if miny == maxy:
-            maxy += 1
+        miny, maxy, minx, maxx = self.bounding_box(target_lat, target_lon, 10)
 
         lat = self.latvar[miny:maxy, minx:maxx]
         lon = self.lonvar[miny:maxy, minx:maxx]
 
-        method = interpolation.get('method')
-        neighbours = interpolation.get('neighbours')
-        if neighbours < 1:
-            neighbours = 1
+        method, neighbours, radius = self._get_interpolation(interpolation,
+                                                             target_lat,
+                                                             target_lon)
 
-        radius = self.interpolation_radius(np.median(target_lat),
-                                           np.median(target_lon))
         ts = [
             t.replace(tzinfo=pytz.UTC)
             for t in
-            netcdftime.utime(self.timevar.units).num2date(self.timevar[:])
+            netcdftime.utime(self.time_var.units).num2date(self.time_var[:])
         ]
 
         mintime, x = _take_surrounding(ts, times[0])
@@ -567,7 +479,7 @@ def bearing(lat0, lon0, lat1, lon1):
 
 
 def bathymetry(latvar, lonvar, depthvar, points, n=200):
-    distances, lat, lon, b = _path_to_points(points, n)
+    distances, times, lat, lon, b = _path_to_points(points, n)
     lat_to_idx = (latvar.shape[0] - 1) / (latvar[-1] - latvar[0])
     lon_to_idx = (lonvar.shape[0] - 1) / (lonvar[-1] - lonvar[0])
 
@@ -594,8 +506,11 @@ def bathymetry(latvar, lonvar, depthvar, points, n=200):
 
 
 def interpolator(coords, z):
-    if np.unique(coords[:, 0]).size == 1:
-        c = coords[:, 1]
+    if np.unique(coords[:, 0]).size == 1 or np.unique(coords[:, 1]).size == 1:
+        if np.unique(coords[:, 0]).size == 1:
+            c = coords[:, 1]
+        else:
+            c = coords[:, 0]
 
         if c[-1] > c[0]:
             g = scipy.interpolate.interp1d(c, z.ravel(),
@@ -604,62 +519,22 @@ def interpolator(coords, z):
             g = scipy.interpolate.interp1d(c[::-1], z.ravel()[::-1],
                                            fill_value='extrapolate')
 
-        def interp(x, y):
-            return g(y)
-
-        return interp
-    elif np.unique(coords[:, 1]).size == 1:
-        c = coords[:, 0]
-
-        if c[-1] > c[0]:
-            g = scipy.interpolate.interp1d(c, z.ravel(),
-                                           fill_value='extrapolate')
+        if np.unique(coords[:, 0]).size == 1:
+            def interp(x, y):
+                return g(y)
         else:
-            g = scipy.interpolate.interp1d(c[::-1], z.ravel()[::-1],
-                                           fill_value='extrapolate')
-
-        def interp(x, y):
-            return g(x)
+            def interp(x, y):
+                return g(x)
 
         return interp
     else:
         return scipy.interpolate.LinearNDInterpolator(coords, z)
 
 
-def _path_to_points(points, n):
-    pairs = zip(points, points[1::])
+def _path_to_points(points, n, intimes=None):
+    if intimes is None:
+        intimes = [0] * len(points)
 
-    d = VincentyDistance()
-    dist_between_pts = []
-    for pair in pairs:
-        dist_between_pts.append(d.measure(pair[0], pair[1]))
-
-    total_distance = np.sum(dist_between_pts)
-    distances = []
-    target_lat = []
-    target_lon = []
-    bearings = []
-    for idx, pair in enumerate(pairs):
-        npts = int(np.ceil(n * (dist_between_pts[idx] /
-                                total_distance)))
-        if npts < 2:
-            npts = 2
-        p0 = geopy.Point(pair[0])
-        p1 = geopy.Point(pair[1])
-
-        p_dist, p_lat, p_lon, b = points_between(p0, p1, npts)
-        if len(distances) > 0:
-            distances.extend(np.add(p_dist, distances[-1]))
-        else:
-            distances.extend(p_dist)
-        target_lat.extend(p_lat)
-        target_lon.extend(p_lon)
-        bearings.extend([b] * len(p_dist))
-
-    return distances, target_lat, target_lon, bearings
-
-
-def _path_to_points_time(points, intimes, n):
     tuples = zip(points, points[1::], intimes, intimes[1::])
 
     d = VincentyDistance()

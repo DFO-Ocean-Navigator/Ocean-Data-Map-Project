@@ -1,5 +1,6 @@
 import numpy as np
-from grid import Grid, resample
+# from grid import Grid, resample
+import grid as g
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom
 from cachetools import LRUCache
@@ -8,13 +9,14 @@ from threading import Thread
 from oceannavigator import app
 from netCDF4 import netcdftime
 import os
+import utils
 
 _interpolated_cache = LRUCache(maxsize=1024 * 1024 * 1024, getsizeof=len)
 _timeseries_cache = LRUCache(maxsize=1024 * 1024 * 256, getsizeof=len)
 
 
 def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
-                      interpolation={'method': 'inv_square', 'neighbours': 8}):
+                      interpolation):
     CACHE_DIR = app.config['CACHE_DIR']
 
     target_lon, target_lat = basemap.makegrid(gridsize, gridsize)
@@ -64,10 +66,7 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
 
 
 def load_interpolated_grid(lat, lon, dataset, variable, depth, time,
-                           interpolation={
-                               'method': 'inv_square',
-                               'neighbours': 8
-                           }):
+                           interpolation):
     lat_hash = str(lat[0, 0]) + str(lat[-1, -1]) + str(np.median(lat.ravel()))
     lon_hash = str(lon[0, 0]) + str(lon[-1, -1]) + str(np.median(lon.ravel()))
     hashed = sha1(dataset.filepath() +
@@ -79,40 +78,24 @@ def load_interpolated_grid(lat, lon, dataset, variable, depth, time,
                   str(interpolation)).hexdigest()
 
     if _interpolated_cache.get(hashed) is None or True:
-        if 'nav_lat' in dataset.variables:
-            latvarname = 'nav_lat'
-            lonvarname = 'nav_lon'
-        elif 'latitude' in dataset.variables:
-            latvarname = 'latitude'
-            lonvarname = 'longitude'
+        latvar, lonvar = utils.get_latlon_vars(dataset)
+        # if 'nav_lat' in dataset.variables:
+        #     latvarname = 'nav_lat'
+        #     lonvarname = 'nav_lon'
+        # elif 'latitude' in dataset.variables:
+        #     latvarname = 'latitude'
+        #     lonvarname = 'longitude'
 
-        grid = Grid(dataset, latvarname, lonvarname)
+        grid = g.Grid(dataset, latvar.name, lonvar.name)
 
-        miny, maxy, minx, maxx = grid.bounding_box_grid(lat, lon)
-        lat_in = dataset.variables[latvarname][miny:maxy, minx:maxx]
-        lon_in = dataset.variables[lonvarname][miny:maxy, minx:maxx]
+        miny, maxy, minx, maxx = grid.bounding_box(lat, lon)
+        lat_in = latvar[miny:maxy, minx:maxx]
+        lon_in = lonvar[miny:maxy, minx:maxx]
 
         var = dataset.variables[variable]
 
-        if len(var.shape) == 3:
-            data = var[time, miny:maxy, minx:maxx]
-        elif depth == 'bottom':
-            fulldata = var[time, :, miny:maxy, minx:maxx]
-            reshaped = fulldata.reshape([fulldata.shape[0], -1])
-            edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
-
-            depths = edges[1, 0, :]
-            indices = edges[1, 1, :]
-
-            data = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
-                                               fulldata.shape[2]]),
-                                     mask=True,
-                                     dtype=fulldata.dtype)
-
-            data[np.unravel_index(indices, data.shape)] = fulldata.reshape(
-                [fulldata.shape[0], -1])[depths, indices]
-        else:
-            data = var[time, depth, miny:maxy, minx:maxx]
+        data = get_data_depth(
+            var, time, time + 1, depth, miny, maxy, minx, maxx)
 
         method = interpolation.get('method')
         neighbours = interpolation.get('neighbours')
@@ -120,12 +103,20 @@ def load_interpolated_grid(lat, lon, dataset, variable, depth, time,
             neighbours = 1
 
         radius = grid.interpolation_radius(
-            lat[lat.shape[0] / 2, lat.shape[1] / 2],
-            lon[lon.shape[0] / 2, lon.shape[1] / 2])
-        resampled = resample(lat_in, lon_in, lat.astype('float64'),
-                             lon.astype('float64'), data,
-                             method=method, neighbours=neighbours,
-                             radius_of_influence=radius)
+            [
+                lat[0, 0],
+                lat[-1, -1],
+            ],
+            [
+                lon[0, 0],
+                lon[-1, -1],
+            ]
+        )
+
+        resampled = g.resample(lat_in, lon_in, lat.astype('float64'),
+                               lon.astype('float64'), data,
+                               method=method, neighbours=neighbours,
+                               radius_of_influence=radius)
 
         _interpolated_cache[hashed] = resampled
     else:
@@ -149,14 +140,9 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
         try:
             d = np.load(path)
         except:
-            if 'nav_lat' in dataset.variables:
-                latvarname = 'nav_lat'
-                lonvarname = 'nav_lon'
-            elif 'latitude' in dataset.variables:
-                latvarname = 'latitude'
-                lonvarname = 'longitude'
+            latvar, lonvar = utils.get_latlon_vars(dataset)
 
-            grid = Grid(dataset, latvarname, lonvarname)
+            grid = g.Grid(dataset, latvar.name, lonvar.name)
             y, x = grid.find_index([lat], [lon], 10)
 
             miny = np.amin(y)
@@ -168,8 +154,8 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
 
             if depth == 'bottom':
                 bdata = var[time[0], :, miny:maxy, minx:maxx]
-                blats = dataset.variables[latvarname][miny:maxy, minx:maxx]
-                blons = dataset.variables[lonvarname][miny:maxy, minx:maxx]
+                blats = dataset.variables[latvar.name][miny:maxy, minx:maxx]
+                blons = dataset.variables[lonvar.name][miny:maxy, minx:maxx]
 
                 reshaped = bdata.reshape([bdata.shape[0], -1])
                 edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
@@ -211,8 +197,8 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
                 d = var[time[0]:(time[-1] + 1):timestep, miny:maxy, minx:maxx]
                 d = np.rollaxis(d, 0, 3)
 
-            lons = dataset.variables[lonvarname][miny:maxy, minx:maxx]
-            lats = dataset.variables[latvarname][miny:maxy, minx:maxx]
+            lons = dataset.variables[lonvar.name][miny:maxy, minx:maxx]
+            lats = dataset.variables[latvar.name][miny:maxy, minx:maxx]
 
             masked_lon = lons.view(np.ma.MaskedArray)
             masked_lat = lats.view(np.ma.MaskedArray)
@@ -261,12 +247,35 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
     else:
         d = _timeseries_cache[hashed]
 
-    if 'time_counter' in dataset.variables:
-        time_var = dataset.variables['time_counter']
-    elif 'time' in dataset.variables:
-        time_var = dataset.variables['time']
+    time_var = utils.get_time_var(dataset)
 
     t = netcdftime.utime(time_var.units)
     times = t.num2date(time_var[time[0]:(time[-1] + 1):timestep])
 
     return np.squeeze(d), times
+
+
+def get_data_depth(variable, mintime, maxtime, depth, miny, maxy, minx, maxx):
+    if len(variable.shape) == 3:
+        return variable[mintime:maxtime, miny:maxy, minx:maxx]
+    elif depth == 'bottom':
+        data = []
+        for t in range(mintime, maxtime):
+            fulldata = variable[t, :, miny:maxy, minx:maxx]
+            reshaped = fulldata.reshape([fulldata.shape[0], -1])
+            edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
+
+            depths = edges[1, 0, :]
+            indices = edges[1, 1, :]
+
+            d = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
+                                            fulldata.shape[2]]),
+                                  mask=True,
+                                  dtype=fulldata.dtype)
+
+            d[np.unravel_index(indices, d.shape)] = fulldata.reshape(
+                [fulldata.shape[0], -1])[depths, indices]
+            data.append(d)
+        return np.ma.MaskedArray(data)
+    else:
+        return variable[mintime:maxtime, depth, miny:maxy, minx:maxx]

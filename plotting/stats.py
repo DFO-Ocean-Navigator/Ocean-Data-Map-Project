@@ -9,6 +9,8 @@ from plotting.grid import Grid
 import json
 from operator import itemgetter
 import re
+import utils
+from data import get_data_depth
 
 
 def stats(dataset_name, query):
@@ -64,10 +66,7 @@ def stats(dataset_name, query):
         else:
             time = int(query.get('time'))
 
-        if 'time_counter' in dataset.variables:
-            time_var = dataset.variables['time_counter']
-        elif 'time' in dataset.variables:
-            time_var = dataset.variables['time']
+        time_var = utils.get_time_var(dataset)
         if time >= time_var.shape[0]:
             time = -1
 
@@ -78,12 +77,7 @@ def stats(dataset_name, query):
 
         depth = 0
         depthm = 0
-        if 'deptht' in dataset.variables:
-            depth_var = dataset.variables['deptht']
-        elif 'depth' in dataset.variables:
-            depth_var = dataset.variables['depth']
-        else:
-            depth_var = None
+        depth_var = utils.get_depth_var(dataset)
 
         if depth_var is not None and query.get('depth'):
             if query.get('depth') == 'bottom':
@@ -109,7 +103,7 @@ def stats(dataset_name, query):
             np.linspace(bounds[0], bounds[2], 50),
             np.linspace(bounds[1], bounds[3], 50)
         )
-        miny, maxy, minx, maxx = grid.bounding_box_grid(lat, lon)
+        miny, maxy, minx, maxx = grid.bounding_box(lat, lon)
 
         lat = dataset.variables[latvarname][miny:maxy, minx:maxx]
         lon = dataset.variables[lonvarname][miny:maxy, minx:maxx]
@@ -129,30 +123,16 @@ def stats(dataset_name, query):
             if v != variables_anom[v_idx]:
                 variable_names[-1] += " Anomaly"
 
+            data.append(get_data_depth(var, time, time + 1,
+                                       depth, miny, maxy, minx, maxx))
+
             if len(var.shape) == 3:
-                d = var[time, miny:maxy, minx:maxx]
                 variable_depths.append("")
             elif depth == 'bottom':
-                fulldata = var[time, :, miny:maxy, minx:maxx]
-                reshaped = fulldata.reshape([fulldata.shape[0], -1])
-                edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
-
-                depths = edges[1, 0, :]
-                indices = edges[1, 1, :]
-
-                d = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
-                                                fulldata.shape[2]]),
-                                      mask=True,
-                                      dtype=fulldata.dtype)
-
-                d[np.unravel_index(indices, d.shape)] = fulldata.reshape(
-                    [fulldata.shape[0], -1])[depths, indices]
                 variable_depths.append("(@ Bottom)")
             else:
-                d = var[time, depth, miny:maxy, minx:maxx]
                 variable_depths.append("(@%d %s)" % (np.round(depthm),
                                                      depth_var.units))
-            data.append(d)
 
         if all(map(lambda v: len(dataset.variables[v].shape) == 3, allvars)):
             depth = 0
@@ -169,29 +149,10 @@ def stats(dataset_name, query):
                 if v == variables_anom[v_idx]:
                     continue
                 var = dataset.variables[v]
-
-                if len(var.shape) == 3:
-                    d = var[timestamp.month - 1, miny:maxy, minx:maxx]
-                elif depth == 'bottom':
-                    fulldata = var[
-                        timestamp.month - 1, :, miny:maxy, minx:maxx]
-                    reshaped = fulldata.reshape([fulldata.shape[0], -1])
-                    edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
-
-                    depths = edges[1, 0, :]
-                    indices = edges[1, 1, :]
-
-                    d = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
-                                                    fulldata.shape[2]]),
-                                          mask=True,
-                                          dtype=fulldata.dtype)
-
-                    d[np.unravel_index(indices, d.shape)] = fulldata.reshape(
-                        [fulldata.shape[0], -1])[depths, indices]
-                else:
-                    d = var[timestamp.month - 1, depth, miny:maxy, minx:maxx]
-
-                data[v_idx] = data[v_idx] - d
+                data[v_idx] -= get_data_depth(var,
+                                              timestamp.month - 1,
+                                              timestamp.month,
+                                              depth, miny, maxy, minx, maxx)
 
     lon[np.where(lon > 180)] -= 360
     points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]

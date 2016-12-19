@@ -393,7 +393,7 @@ class Map extends React.Component {
                             break;
                         case "point":
                             var c = feature.getGeometry().clone().transform(this.props.state.projection, 'EPSG:4326').getCoordinates();
-                            content.push([c[1], c[0]]);
+                            content.push([c[1], c[0], feature.get("observation")]);
                             break;
                         case "line":
                             content.push(feature.getGeometry().clone().transform(this.props.state.projection, 'EPSG:4326').getCoordinates().map(function(o) {
@@ -426,7 +426,7 @@ class Map extends React.Component {
                 }
             }.bind(this));
 
-            if (t && ((t != "line" && t != "drifter" && t != "class4") || content.length == 1) && (t == "area" || content.length <= 20)) {
+            if (t && ((t != "line" && t != "drifter" && t != "class4") || content.length == 1)) {
                 this.props.updateState(t, content);
                 this.props.updateState('modal', t);
                 this.props.updateState('names', names);
@@ -710,6 +710,19 @@ class Map extends React.Component {
                     centroid: centroid,
                 });
                 this.vectorSource.addFeature(feat);
+                break;
+            case "observation":
+                for (var p of data) {
+                    var geom = new ol.geom.Point([p.longitude, p.latitude]);
+                    geom.transform('EPSG:4326', this.props.state.projection);
+                    var feat = new ol.Feature({
+                        geometry: geom,
+                        name: String(p.station),
+                        type: "point",
+                        observation: p,
+                    });
+                    this.vectorSource.addFeature(feat);
+                }
                 break;
         }
 

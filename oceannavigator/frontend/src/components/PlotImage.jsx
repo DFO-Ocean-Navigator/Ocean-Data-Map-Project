@@ -9,58 +9,58 @@ class PlotImage extends React.Component {
     constructor(props) {
         super(props);
 
-        this.imagePreloader = new Image();
         this.state = {
             showPermalink: false,
         };
     }
 
     componentWillMount() {
-        this.loadImage(this.urlFromQuery(this.props.query));
+        this.loadImage(this.generateQuery(this.props.query));
     }
     componentWillReceiveProps(props) {
-        this.loadImage(this.urlFromQuery(props.query));
-    }
-    componentWillUnmount() {
-        this.imagePreloader.onload = function(){};
-        this.imagePreloader.error = function(){};
+        this.loadImage(this.generateQuery(props.query));
     }
 
-    loadImage(src) {
-        this.setState({
-            loading: true,
-            fail: false,
+    loadImage(query) {
+        var paramString = $.param({
+            query: JSON.stringify(query),
+            format: "json",
         });
-        clearTimeout(this.timer);
-        this.timer = setTimeout(function() {
-            this.imagePreloader.src = src;
-            this.imagePreloader.onerror = this.imagePreloader.onabort = function() {
-                console.error("Image failed to load", src);
+
+        if (this.state.paramString != paramString) {
+            this.setState({
+                loading: true,
+                fail: false,
+                paramString: paramString,
+            });
+
+            var promise = $.ajax({
+                url: "/plot/",
+                cache: true,
+                data: paramString,
+                dataType: "json",
+                method: (paramString.length < 1536) ? "GET" : "POST",
+            }).promise();
+
+            promise.done(function(d) {
+                this.setState({
+                    loading: false,
+                    fail: false,
+                    url: d,
+                });
+            }.bind(this));
+            
+            promise.fail(function(d) {
                 this.setState({
                     loading: false,
                     fail: true,
                 });
-            }.bind(this)
-
-            if (this.imagePreloader.complete) {
-                this.imageLoaded();
-            } else {
-                this.imagePreloader.onload = function() {
-                    this.imageLoaded();
-                }.bind(this);
-            }
-        }.bind(this), 100);
+                console.log("AJAX Error", d);
+            }.bind(this));
+        }
     }
 
-    imageLoaded() {
-        this.imagePreloader.onload = function(){};
-        this.setState({
-            loading: false,
-            fail: false,
-        });
-    }
-
-    urlFromQuery(q) {
+    generateQuery(q) {
         var query = {
             type: q.type,
             dataset: q.dataset,
@@ -137,8 +137,17 @@ class PlotImage extends React.Component {
                 query.climatology = q.climatology;
                 query.models = q.models;
                 break;
+            case "observation":
+                query.observation = q.observation;
+                query.observation_variable = q.observation_variable;
+                query.variable = q.variable;
+                break;
         }
+        return query;
+    }
 
+    urlFromQuery(q) {
+        var query = this.generateQuery(q);
         return "/plot/?query=" + encodeURIComponent(JSON.stringify(query));
     }
 
@@ -154,7 +163,7 @@ class PlotImage extends React.Component {
         } else if (this.state.loading) {
             src = LOADING_IMAGE;
         } else {
-            src = this.urlFromQuery(this.props.query);
+            src = this.state.url;
         }
 
         var permalinkModalEntered = function() {
@@ -174,7 +183,7 @@ class PlotImage extends React.Component {
                         <MenuItem eventKey="eps"><Icon icon="file-pdf-o" /> EPS</MenuItem>
                         <MenuItem eventKey="tiff"><Icon icon="file-image-o" /> TIFF</MenuItem>
                         <MenuItem eventKey="csv" disabled={this.props.query.type == 'map' || this.props.query.type == 'hovmoller'}><Icon icon="file-text-o" /> CSV</MenuItem>
-                        <MenuItem eventKey="odv" disabled={jQuery.inArray(this.props.query.type, ["profile", "transect", "map"]) == -1}><Icon icon="file-text-o" /> ODV</MenuItem>
+                        <MenuItem eventKey="odv" disabled={jQuery.inArray(this.props.query.type, ["profile", "observation", "transect", "map"]) == -1}><Icon icon="file-text-o" /> ODV</MenuItem>
                         <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
                     </DropdownButton>
 

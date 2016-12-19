@@ -24,13 +24,15 @@ class ComboBox extends React.Component {
             }
         }
         if (typeof(this.props.onUpdate) === "function") {
-            var dataset = e.target.options[e.target.selectedIndex].dataset;
-
             var keys = [this.props.id];
             var values = [value]
-            for (var key in dataset) {
-                keys.push(this.props.id + '_' + key);
-                values.push(dataset[key]);
+            if (e.target.selectedIndex != -1) {
+                var dataset = e.target.options[e.target.selectedIndex].dataset;
+
+                for (var key in dataset) {
+                    keys.push(this.props.id + '_' + key);
+                    values.push(dataset[key]);
+                }
             }
             this.props.onUpdate(keys, values);
         }
