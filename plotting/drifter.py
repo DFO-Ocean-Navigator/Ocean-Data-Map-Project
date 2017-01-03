@@ -39,6 +39,9 @@ class DrifterPlotter(plotter.Plotter):
 
         self.buoyvariables = buoyvariables
 
+        self.starttime = query.get('starttime')
+        self.endtime = query.get('endtime')
+
     def load_data(self):
         ds_url = app.config['DRIFTER_URL']
         data_names = []
