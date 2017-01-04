@@ -12,7 +12,6 @@ from oceannavigator.util import get_variable_name, get_datasets, \
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
-# from plotting.overlays import list_overlays, list_overlays_in_file
 from plotting.timeseries import TimeseriesPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from plotting.sound import SoundSpeedPlotter
@@ -58,6 +57,8 @@ def query_id(q, q_id):
         data = oceannavigator.misc.list_areas(q_id)
     elif q == 'class4':
         data = oceannavigator.misc.list_class4(q_id)
+    elif q == 'drifters' and q_id == 'meta':
+        data = oceannavigator.misc.drifter_meta()
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')

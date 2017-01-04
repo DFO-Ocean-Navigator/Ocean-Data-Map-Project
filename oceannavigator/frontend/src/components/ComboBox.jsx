@@ -121,7 +121,7 @@ class ComboBox extends React.Component {
         this.populate(this.props)
     }
     componentWillReceiveProps(nextProps) {
-        if (nextProps.url != this.state.url) {
+        if (nextProps.url != this.state.url || nextProps.data != this.props.data) {
             this.populate(nextProps);
         }
     }

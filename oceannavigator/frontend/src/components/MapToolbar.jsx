@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Button, SplitButton, DropdownButton, MenuItem} from 'react-bootstrap';
+import {Button, SplitButton, DropdownButton, MenuItem, Modal} from 'react-bootstrap';
 import Papa from 'papaparse';
 import Icon from './Icon.jsx';
+import DrifterSelector from './DrifterSelector.jsx';
 
 import 'jquery-ui-css/base.css';
 import 'jquery-ui-css/datepicker.css';
@@ -18,6 +19,7 @@ class MapToolbar extends React.Component {
             areaFiles: [],
             class4Files: {},
             parser: null,
+            showDriftersSelect: false,
         };
     }
 
@@ -161,7 +163,17 @@ class MapToolbar extends React.Component {
     }
 
     drifterSelect(key) {
-        this.props.action("show", "drifters", key);
+        if (key == "select") {
+            this.setState({
+                showDriftersSelect: true,
+            });
+        } else {
+            this.props.action("show", "drifters", key);
+        }
+    }
+
+    drifterSelection(list) {
+        this.setState({drifterList: list});
     }
 
     class4Select(key) {
@@ -387,6 +399,7 @@ class MapToolbar extends React.Component {
                     <MenuItem eventKey='active' key='active'>Active</MenuItem>
                     <MenuItem eventKey='not responding' key='not responding'>Not Responding</MenuItem>
                     <MenuItem eventKey='inactive' key='inactive'>Inactive</MenuItem>
+                    <MenuItem eventKey='select' key='select'><Icon icon='list'/> Select&hellip;</MenuItem>
                 </DropdownButton>
                 <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> Plot</Button>
                 <Button name="reset" onClick={this.buttonHandler.bind(this)}><Icon icon='undo' alt='Reset Map' /></Button>
@@ -402,6 +415,20 @@ class MapToolbar extends React.Component {
                 </form>
 
                 <div ref={(d) => this.class4div = d} style={{'position': 'fixed', 'zIndex': 1}}/>
+
+                <Modal show={this.state.showDriftersSelect} onHide={() => this.setState({showDriftersSelect: false})} dialogClassName="drifter-modal">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Select Drifters</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <DrifterSelector select={this.drifterSelection.bind(this)}/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={() => this.setState({showDriftersSelect: false})}><Icon icon="close" /> Close</Button>
+                        <Button onClick={function() {this.drifterSelect(this.state.drifterList.join(',')); this.setState({showDriftersSelect: false});}.bind(this)}><Icon icon="check" /> Apply</Button>
+                    </Modal.Footer>
+
+                </Modal>
             </div>
         );
     }

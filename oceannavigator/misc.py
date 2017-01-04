@@ -242,6 +242,33 @@ def areas(area_id, projection, resolution, extent):
     return result
 
 
+def drifter_meta():
+    imei = {}
+    wmo = {}
+    deployment = {}
+
+    with Dataset('http://localhost:8080/thredds/dodsC/misc/output/test.ncml', 'r') as ds:
+        for idx, b in enumerate(ds.variables['buoy'][:]):
+            bid = str(chartostring(b))[:-3]
+
+            for data, key in [
+                [imei, 'imei'],
+                [wmo, 'wmo'],
+                [deployment, 'deployment']
+            ]:
+                d = str(chartostring(ds.variables[key][idx][0]))
+                if data.get(d) is None:
+                    data[d] = [bid]
+                else:
+                    data[d].append(bid)
+
+    return {
+        'imei': imei,
+        'wmo': wmo,
+        'deployment': deployment,
+    }
+
+
 def drifters(drifter_id, projection, resolution, extent):
     buoy_id = []
     lat = []
@@ -393,8 +420,8 @@ def list_class4(d):
         rmse = []
 
         for i in range(0, lat.shape[0]):
-            best = ds['best_estimate'][i, 0, :]
-            obsv = ds['observation'][i, 0, :]
+            best = ds['best_estimate'][i, 0,:]
+            obsv = ds['observation'][i, 0,:]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
     rmse = np.ma.hstack(rmse)
@@ -440,8 +467,8 @@ def class4(class4_id, projection, resolution, extent):
             if view.envelope.intersects(p):
                 lat.append(float(lat_in[i]))
                 lon.append(float(lon_in[i]))
-                best = ds['best_estimate'][i, 0, :]
-                obsv = ds['observation'][i, 0, :]
+                best = ds['best_estimate'][i, 0,:]
+                obsv = ds['observation'][i, 0,:]
                 point_id.append(i)
                 rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
