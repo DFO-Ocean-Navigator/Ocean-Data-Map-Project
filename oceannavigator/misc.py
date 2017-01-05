@@ -346,6 +346,9 @@ def drifters_vars(drifter_id):
                             "latitude", "longitude"]:
                     continue
 
+                if ds.variables[name].datatype == np.dtype("S1"):
+                    continue
+
                 var_info = {
                     'id': name,
                 }
@@ -420,8 +423,8 @@ def list_class4(d):
         rmse = []
 
         for i in range(0, lat.shape[0]):
-            best = ds['best_estimate'][i, 0,:]
-            obsv = ds['observation'][i, 0,:]
+            best = ds['best_estimate'][i, 0, :]
+            obsv = ds['observation'][i, 0, :]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
     rmse = np.ma.hstack(rmse)
@@ -467,8 +470,8 @@ def class4(class4_id, projection, resolution, extent):
             if view.envelope.intersects(p):
                 lat.append(float(lat_in[i]))
                 lon.append(float(lon_in[i]))
-                best = ds['best_estimate'][i, 0,:]
-                obsv = ds['observation'][i, 0,:]
+                best = ds['best_estimate'][i, 0, :]
+                obsv = ds['observation'][i, 0, :]
                 point_id.append(i)
                 rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
