@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack -d --watch",
-    "build": "node --stack_size=1000000 node_modules/.bin/webpack --progress -p"
+    "build": "NODE_ENV=production node --stack_size=1000000 node_modules/.bin/webpack --progress -p"
   },
   "author": "",
   "license": "BSD-2-Clause",
