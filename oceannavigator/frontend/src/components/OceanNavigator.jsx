@@ -10,6 +10,8 @@ import Class4Window from './Class4Window.jsx';
 import {Button, Modal} from 'react-bootstrap';
 import Icon from './Icon.jsx';
 
+var LOADING_IMAGE = require('../images/bar_loader.gif');
+
 function formatLatLon(latitude, longitude) {
     var formatted = ""
     formatted += Math.abs(latitude).toFixed(4) + " ";
@@ -34,8 +36,12 @@ class OceanNavigator extends React.Component {
             showModal: false,
             vectortype: null,
             vectorid: null,
+            busy: false,
         };
         this.mapComponent = null;
+
+        var preload = new Image();
+        preload.src = LOADING_IMAGE;
 
         if (window.location.search.length > 0) {
             try {
@@ -109,6 +115,9 @@ class OceanNavigator extends React.Component {
     }
 
     changeDataset(dataset, state) {
+        this.setState({
+            busy: true,
+        });
         // When dataset changes, so does time & variable list
         var var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
         var time_promise = $.ajax("/api/timestamp/" + this.state.dataset + "/" + this.state.time + "/" + dataset).promise();
@@ -125,6 +134,7 @@ class OceanNavigator extends React.Component {
             state.dataset = dataset;
             state.variable = newvariable;
             state.time = t[0];
+            state.busy = false;
 
             this.setState(state);
         }.bind(this));
@@ -386,6 +396,15 @@ class OceanNavigator extends React.Component {
                         <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> Copy</Button>
                         <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> Close</Button>
                     </Modal.Footer>
+                </Modal>
+
+                <Modal show={this.state.busy} dialogClassName='busy-modal'>
+                    <Modal.Header>
+                        <Modal.Title>Please Wait&hellip;</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <img src={LOADING_IMAGE} alt='Loading' />
+                    </Modal.Body>
                 </Modal>
             </div>
         );
