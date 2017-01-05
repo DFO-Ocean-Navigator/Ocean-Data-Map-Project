@@ -111,9 +111,13 @@ class Grid(object):
         d = distance.measure(
             (np.amin(lat), np.amin(lon)),
             (np.amax(lat), np.amax(lon))
-        ) * 1000 / 1.5
+        ) * 1000 / 8.0
+
         if d == 0:
             d = 50000
+
+        d = np.clip(d, 20000, 50000)
+
         return d
 
     def _get_interpolation(self, interp, lat, lon):
