@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, DropdownButton, ButtonToolbar, MenuItem, Modal} from 'react-bootstrap';
 import Icon from './Icon.jsx';
+var i18n = require('../i18n.js');
 
 var LOADING_IMAGE = require('../images/spinner.gif');
 var FAIL_IMAGE = require('../images/failure.gif');
@@ -175,7 +176,7 @@ class PlotImage extends React.Component {
             <div className='PlotImage'>
                 <img src={src} />
                 <ButtonToolbar>
-                    <DropdownButton id="save" title={<span><Icon icon="save" /> Save&hellip;</span>} dropup onSelect={this.saveImage.bind(this)}>
+                    <DropdownButton id="save" title={<span><Icon icon="save" /> {_("Save…")}</span>} dropup onSelect={this.saveImage.bind(this)}>
                         <MenuItem eventKey="png"><Icon icon="file-image-o" /> PNG</MenuItem>
                         <MenuItem eventKey="pdf"><Icon icon="file-pdf-o" /> PDF</MenuItem>
                         <MenuItem eventKey="svg"><Icon icon="file-code-o" /> SVG</MenuItem>
@@ -187,19 +188,19 @@ class PlotImage extends React.Component {
                         <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
                     </DropdownButton>
 
-                    <Button onClick={() => this.setState({showPermalink: true})}><Icon icon="link" /> Get Link</Button>
+                    <Button onClick={() => this.setState({showPermalink: true})}><Icon icon="link" /> {_("Get Link")}</Button>
                 </ButtonToolbar>
 
                 <Modal show={this.state.showPermalink} onHide={() => this.setState({showPermalink: false})} dialogClassName='permalink-modal' onEntered={permalinkModalEntered}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Share Link</Modal.Title>
+                        <Modal.Title>{_("Share Link")}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <textarea ref={(t) => this.permalinkbox = t} type="text" id="permalink_area" readOnly value={this.props.permlink} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> Copy</Button>
-                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> Close</Button>
+                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> {_("Close")}</Button>
                     </Modal.Footer>
                 </Modal>
             </div>

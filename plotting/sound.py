@@ -4,6 +4,7 @@ import numpy as np
 import seawater
 import pint
 import ts
+from flask.ext.babel import gettext
 
 
 class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
@@ -28,15 +29,15 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
             np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
             np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         ])
-        ax.set_xlabel("Sound Speed (m/s)")
-        ax.set_ylabel("Depth (m)")
+        ax.set_xlabel(gettext("Sound Speed (m/s)"))
+        ax.set_ylabel(gettext("Depth (m)"))
         ax.invert_yaxis()
         ax.xaxis.set_ticks_position('top')
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
-        ax.set_title("Sound Speed Profile for %s (%s)" % (
-            ", ".join(self.names), self.timestamp.strftime(self.dformat)
+        ax.set_title(gettext("Sound Speed Profile for %s (%s)") % (
+            ", ".join(self.names), self.date_formatter(self.timestamp)
         ))
         ax.title.set_position([.5, 1.10])
         plt.subplots_adjust(top=0.85)
@@ -48,7 +49,7 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         ax2 = ax.twinx()
         ureg = pint.UnitRegistry()
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
-        ax2.set_ylabel("Depth (ft)")
+        ax2.set_ylabel(gettext("Depth (ft)"))
 
         return super(ts.TemperatureSalinityPlotter, self).plot(fig)
 

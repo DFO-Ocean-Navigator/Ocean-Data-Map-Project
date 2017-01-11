@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, ButtonToolbar} from 'react-bootstrap';
 import ComboBox from './ComboBox.jsx';
+var i18n = require('../i18n.js');
 
 class DrifterSelector extends React.Component {
     constructor(props) {
@@ -61,12 +62,15 @@ class DrifterSelector extends React.Component {
         var imei = Array.from(new Set(Object.keys(this.state.imei_map))).sort().map(function(o) { return { id: o, value: o, }; });
         var wmo = Array.from(new Set(Object.keys(this.state.wmo_map))).sort().map(function(o) { return { id: o, value: o, }; });
         var deployment = Array.from(new Set(Object.keys(this.state.deployment_map))).sort().map(function(o) { return { id: o, value: o, }; });
+        _('IMEI');
+        _('WMO');
+        _('Deployment');
         return (
             <div className='DrifterSelector'>
                 <div className='inputs'>
-                    <ComboBox key='imei' id='imei' state={this.state.imei} multiple title='IMEI' data={imei} onUpdate={this.onUpdate.bind(this)} />
-                    <ComboBox key='wmo' id='wmo' state={this.state.wmo} multiple title='WMO' data={wmo} onUpdate={this.onUpdate.bind(this)}/>
-                    <ComboBox key='deployment' id='deployment' state={this.state.deployment} multiple title='Deployment' data={deployment} onUpdate={this.onUpdate.bind(this)} />
+                    <ComboBox key='imei' id='imei' state={this.state.imei} multiple title={_('IMEI')} data={imei} onUpdate={this.onUpdate.bind(this)} />
+                    <ComboBox key='wmo' id='wmo' state={this.state.wmo} multiple title={_('WMO')} data={wmo} onUpdate={this.onUpdate.bind(this)}/>
+                    <ComboBox key='deployment' id='deployment' state={this.state.deployment} multiple title={_('Deployment')} data={deployment} onUpdate={this.onUpdate.bind(this)} />
                 </div>
             </div>
         );

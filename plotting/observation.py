@@ -9,6 +9,7 @@ import re
 import dateutil.parser
 import pytz
 import point
+from flask.ext.babel import gettext, format_datetime
 
 
 class ObservationPlotter(point.PointPlotter):
@@ -111,7 +112,7 @@ class ObservationPlotter(point.PointPlotter):
             ax[ax_idx].xaxis.set_ticks_position('top')
             ax[ax_idx].set_xlabel("%s (%s)" % (
                 self.observation_variable_names[idx],
-                self.observation_variable_units[idx],
+                utils.mathtext(self.observation_variable_units[idx]),
             ))
             axis_map[self.observation_variable_names[idx]] = ax[ax_idx]
 
@@ -164,13 +165,13 @@ class ObservationPlotter(point.PointPlotter):
                 axis.xaxis.set_ticks_position('top')
                 axis.set_xlabel("%s (%s)" % (
                     self.variable_names[idx],
-                    self.variable_units[idx],
+                    utils.mathtext(self.variable_units[idx]),
                 ))
             else:
                 l = []
                 for j in [
-                    ("Observed", self.observation_times),
-                    ("Modelled", self.timestamps)
+                    (gettext("Observed"), self.observation_times),
+                    (gettext("Modelled"), self.timestamps)
                 ]:
                     for i, name in enumerate(self.names):
                         if len(self.names) == 1:
@@ -181,7 +182,7 @@ class ObservationPlotter(point.PointPlotter):
                         l.append("%s%s (%s)" % (
                             name,
                             j[0],
-                            j[1][i].strftime(self.dformat)
+                            format_datetime(j[1][i])
                         ))
 
                 leg = axis.legend(l, loc='best')
@@ -190,23 +191,25 @@ class ObservationPlotter(point.PointPlotter):
                     legobj.set_linewidth(4.0)
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel("Depth (%s)" % utils.mathtext(self.depth_unit))
+        ax[0].set_ylabel(gettext("Depth (%s)") %
+                         utils.mathtext(self.depth_unit))
 
         if len(self.variables) > 0:
             plt.suptitle("\n".join(
                 wrap(
-                    "Profile for %s, Observed at %s, Modelled at %s" % (
+                    gettext("Profile for %s, Observed at %s, Modelled at %s")
+                    % (
                         ", ".join(self.names),
-                        self.observation_time.strftime(self.dformat),
-                        self.timestamp.strftime(self.dformat)
+                        format_datetime(self.observation_time),
+                        format_datetime(self.timestamp)
                     ), 80)
             ))
         else:
             plt.suptitle("\n".join(
                 wrap(
-                    "Profile for %s (%s)" % (
+                    gettext("Profile for %s (%s)") % (
                         ", ".join(self.names),
-                        self.observation_time.strftime(self.dformat)
+                        format_datetime(self.observation_time)
                     ), 80)
             ))
 

@@ -1,4 +1,5 @@
 import React from 'react'
+var i18n = require('../i18n.js');
 
 class ImageSize extends React.Component {
     constructor(props) {
@@ -29,23 +30,24 @@ class ImageSize extends React.Component {
         this.props.onUpdate('dpi', parseFloat(this.refs.dpi.value));
     }
     render() {
+        _("inches");
         return (
             <div className='Size input'>
                 <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
                 <table>
                     <tbody>
                         <tr>
-                            <td><label htmlFor={this.props.id + '_width'}>Width:</label></td>
+                            <td><label htmlFor={this.props.id + '_width'}>{_("Width:")}</label></td>
                             <td><input ref='width' id={this.props.id + '_width'} type='number' step='0.25' defaultValue={parseFloat(this.state.width).toFixed(2)} onBlur={this.changed.bind(this)} /></td>
-                            <td>in</td>
+                            <td>{_("inches")}</td>
                         </tr>
                         <tr>
-                            <td><label htmlFor={this.props.id + '_height'}>Height:</label></td>
+                            <td><label htmlFor={this.props.id + '_height'}>{_("Height:")}</label></td>
                             <td><input ref='height' id={this.props.id + '_height'} type='number' step='0.25' defaultValue={parseFloat(this.state.height).toFixed(2)} onBlur={this.changed.bind(this)} /></td>
-                            <td>in</td>
+                            <td>{_("inches")}</td>
                         </tr>
                         <tr>
-                            <td><label htmlFor={this.props.id + '_dpi'}>DPI:</label></td>
+                            <td><label htmlFor={this.props.id + '_dpi'}>{_("DPI:")}</label></td>
                             <td><input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' defaultValue={parseFloat(this.state.dpi).toFixed(0)} onBlur={this.changed.bind(this)} /></td>
                             <td></td>
                         </tr>

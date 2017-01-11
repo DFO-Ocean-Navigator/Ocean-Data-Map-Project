@@ -13,6 +13,7 @@ import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
 import line
+from flask.ext.babel import gettext
 
 
 class TransectPlotter(line.LinePlotter):
@@ -327,12 +328,12 @@ class TransectPlotter(line.LinePlotter):
             do_plot(
                 gs[1], gs[0],
                 self.transect_data['parallel'],
-                "Parallel"
+                gettext("Parallel")
             )
             do_plot(
                 gs[3], gs[1],
                 self.transect_data['perpendicular'],
-                "Perpendicular"
+                gettext("Perpendicular")
             )
         else:
             if self.scale:
@@ -357,7 +358,7 @@ class TransectPlotter(line.LinePlotter):
 
         fig.suptitle("%s, %s\n%s" % (
             self.transect_data['name'],
-            self.timestamp.strftime(self.dformat),
+            self.date_formatter(self.timestamp),
             self.name
         ))
 
@@ -414,8 +415,8 @@ class TransectPlotter(line.LinePlotter):
         )
         ax.set_axis_bgcolor('dimgray')
 
-        plt.xlabel("Distance (km)")
-        plt.ylabel("Depth (m)")
+        plt.xlabel(gettext("Distance (km)"))
+        plt.ylabel(gettext("Depth (m)"))
         plt.xlim([self.transect_data['distance'][0],
                   self.transect_data['distance'][-1]])
 

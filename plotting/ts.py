@@ -5,6 +5,7 @@ import utils
 from oceannavigator.util import get_dataset_url
 import seawater
 import point
+from flask.ext.babel import gettext
 
 
 class TemperatureSalinityPlotter(point.PointPlotter):
@@ -49,9 +50,9 @@ class TemperatureSalinityPlotter(point.PointPlotter):
     def plot(self):
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
-        plt.title("T/S Diagram for %s (%s)" % (
+        plt.title(gettext("T/S Diagram for %s (%s)") % (
             ", ".join(self.names),
-            self.timestamp.strftime(self.dformat)))
+            self.date_formatter(self.timestamp)))
 
         smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
         smax = np.amax(self.salinity) + (np.amax(self.salinity) * 0.01)
@@ -79,8 +80,8 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], '-')
 
-        plt.xlabel("Salinity (PSU)")
-        plt.ylabel("Temperature (Celsius)")
+        plt.xlabel(gettext("Salinity (PSU)"))
+        plt.ylabel(gettext("Temperature (Celsius)"))
 
         self.plot_legend(fig, self.names)
         if len(self.points) == 1:

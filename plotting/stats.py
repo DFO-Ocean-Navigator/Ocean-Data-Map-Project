@@ -11,6 +11,7 @@ from operator import itemgetter
 import re
 import utils
 from data import get_data_depth
+from flask.ext.babel import gettext
 
 
 def stats(dataset_name, query):
@@ -200,11 +201,11 @@ def stats(dataset_name, query):
                     'name': ("%s %s" % (variable_names[idx],
                                         variable_depths[idx])).strip(),
                     'unit': variable_units[idx],
-                    'min': "No Data",
-                    'max': "No Data",
-                    'mean': "No Data",
-                    'median': "No Data",
-                    'stddev': "No Data",
+                    'min': gettext("No Data"),
+                    'max': gettext("No Data"),
+                    'mean': gettext("No Data"),
+                    'median': gettext("No Data"),
+                    'stddev': gettext("No Data"),
                     'num': "0",
                 })
 

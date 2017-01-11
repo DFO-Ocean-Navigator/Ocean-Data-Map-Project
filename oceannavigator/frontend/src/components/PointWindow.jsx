@@ -6,6 +6,7 @@ import TimePicker from './TimePicker.jsx';
 import LocationInput from './LocationInput.jsx';
 import Range from './Range.jsx';
 import ImageSize from './ImageSize.jsx';
+var i18n = require('../i18n.js');
 
 var TabEnum = {
     PROFILE: 1,
@@ -128,24 +129,34 @@ class PointWindow extends React.Component {
     }
 
     render() {
-        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title='Dataset' onUpdate={this.props.onUpdate} />;
-        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Time' onUpdate={this.props.onUpdate} />;
-        var point = <LocationInput key='point' id='point' state={this.props.point} title='Location' onUpdate={this.onLocalUpdate.bind(this)} />;
-        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Start Time' onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
-        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='End Time' onUpdate={this.props.onUpdate} min={this.state.starttime} />;
-        var depth = <ComboBox key='depth' id='depth' state={this.state.depth} def={''} onUpdate={this.onLocalUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset + '&all=True'} title='Depth'></ComboBox>;
-        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset} title='Variable'><h1>Variable</h1></ComboBox>;
-        var profilevariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?3d_only&dataset='+this.props.dataset + '&anom'} title='Variable'><h1>Variable</h1></ComboBox>;
-        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title='Variable Range' />;
-        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
-        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
+        _("Dataset");
+        _("Time");
+        _("Location");
+        _("Start Time");
+        _("End Time");
+        _("Depth");
+        _("Variable");
+        _("Variable Range");
+        _("Colourmap");
+        _("Saved Image Size");
+        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title={_('Dataset')} onUpdate={this.props.onUpdate} />;
+        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Time')} onUpdate={this.props.onUpdate} />;
+        var point = <LocationInput key='point' id='point' state={this.props.point} title={_('Location')} onUpdate={this.onLocalUpdate.bind(this)} />;
+        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
+        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('End Time')} onUpdate={this.props.onUpdate} min={this.state.starttime} />;
+        var depth = <ComboBox key='depth' id='depth' state={this.state.depth} def={''} onUpdate={this.onLocalUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset + '&all=True'} title={_('Depth')}></ComboBox>;
+        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
+        var profilevariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?3d_only&dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>Variable</h1></ComboBox>;
+        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
+        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
         var observation_data = [];
         if (this.props.point[0][2] !== undefined) {
             observation_data = this.props.point[0][2].datatypes.map(function (o, i) {
                 return { id: i, value: o.replace(/ \[.*\]/, "") };
             });
         }
-        var observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} data={observation_data} title='Observation Variable' multiple onUpdate={this.onLocalUpdate.bind(this)} />
+        var observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} data={observation_data} title={_('Observation Variable')} multiple onUpdate={this.onLocalUpdate.bind(this)} />
 
         var hasTempSalinity = $.inArray('votemper', this.state.variables) != -1  &&
             $.inArray('vosaline', this.state.variables) != -1;
@@ -161,7 +172,7 @@ class PointWindow extends React.Component {
         };
 
         var active = this.state.selected;
-        if (!hasTempSalinity && (active != 1 && active != 6)) {
+        if (!hasTempSalinity && (active == TabEnum.CTD || active == TabEnum.TS || active == TabEnum.SOUND)) {
             active = 1;
         }
 
@@ -240,12 +251,12 @@ class PointWindow extends React.Component {
         return (
             <div className='PointWindow Window'>
                 <Nav bsStyle="tabs" activeKey={active} onSelect={this.onSelect.bind(this)}>
-                    <NavItem eventKey={TabEnum.PROFILE}>Profile</NavItem>
-                    <NavItem eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>CTD Profile</NavItem>
-                    <NavItem eventKey={TabEnum.TS} disabled={!hasTempSalinity}>T/S Diagram</NavItem>
-                    <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>Sound Speed Profile</NavItem>
-                    <NavItem eventKey={TabEnum.OBSERVATION} disabled={this.props.point[0][2] === undefined}>Observation</NavItem>
-                    <NavItem eventKey={TabEnum.MOORING}>Virtual Mooring</NavItem>
+                    <NavItem eventKey={TabEnum.PROFILE}>{_("Profile")}</NavItem>
+                    <NavItem eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>{_("CTD Profile")}</NavItem>
+                    <NavItem eventKey={TabEnum.TS} disabled={!hasTempSalinity}>{_("T/S Diagram")}</NavItem>
+                    <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>{_("Sound Speed Profile")}</NavItem>
+                    <NavItem eventKey={TabEnum.OBSERVATION} disabled={this.props.point[0][2] === undefined}>{_("Observation")}</NavItem>
+                    <NavItem eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
                 </Nav>
                 <div className='content'>
                     <div className='inputs'>

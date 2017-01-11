@@ -19,6 +19,7 @@ from pyproj import Proj
 import pyproj
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
+from flask.ext.babel import gettext
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -126,7 +127,7 @@ def scale(args):
 
     if anom:
         cmap = colormap.colormaps['anomaly']
-        variable_name = variable_name + " Anomaly"
+        variable_name = gettext("%s Anomaly") % variable_name
     else:
         cmap = colormap.find_colormap(variable_name)
 

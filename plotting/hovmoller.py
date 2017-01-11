@@ -11,6 +11,7 @@ import colormap
 import utils
 from oceannavigator.util import get_dataset_url
 import line
+from flask.ext.babel import gettext
 
 
 class HovmollerPlotter(line.LinePlotter):
@@ -136,7 +137,7 @@ class HovmollerPlotter(line.LinePlotter):
         ax.yaxis.grid(True)
         ax.set_axis_bgcolor('dimgray')
 
-        plt.xlabel("Distance (km)")
+        plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])
 
         divider = make_axes_locatable(plt.gca())
@@ -150,7 +151,7 @@ class HovmollerPlotter(line.LinePlotter):
         else:
             depth_label = " at %d %s" % (self.depth_value, self.depth_unit)
 
-        fig.suptitle(u"Hovm\xf6ller Diagram for %s%s,\n%s" % (
+        fig.suptitle(gettext(u"Hovm\xf6ller Diagram for %s%s,\n%s") % (
             self.variable_name,
             depth_label,
             self.name

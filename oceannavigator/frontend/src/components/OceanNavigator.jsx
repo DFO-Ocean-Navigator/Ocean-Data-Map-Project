@@ -9,6 +9,7 @@ import DrifterWindow from './DrifterWindow.jsx';
 import Class4Window from './Class4Window.jsx';
 import {Button, Modal} from 'react-bootstrap';
 import Icon from './Icon.jsx';
+var i18n = require('../i18n.js');
 
 var LOADING_IMAGE = require('../images/bar_loader.gif');
 
@@ -365,6 +366,8 @@ class OceanNavigator extends React.Component {
             this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + 'px';
             this.permalinkbox.select();
         }.bind(this);
+
+        _("Loading");
         return (
             <div className='OceanNavigator'>
                 <MapInputs state={this.state} changeHandler={this.updateState.bind(this)} />
@@ -381,29 +384,29 @@ class OceanNavigator extends React.Component {
                     {modalContent}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeModal.bind(this)}><Icon icon="close" /> Close</Button>
+                        <Button onClick={this.closeModal.bind(this)}><Icon icon="close" /> {_("Close")}</Button>
                     </Modal.Footer>
                 </Modal>
 
                 <Modal show={this.state.showPermalink} onHide={() => this.setState({showPermalink: false})} dialogClassName='permalink-modal' onEntered={permalinkModalEntered}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Share Link</Modal.Title>
+                        <Modal.Title>{_("Share Link")}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <textarea ref={(t) => this.permalinkbox = t} type="text" id="permalink_area" readOnly value={this.generatePermLink()} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> Copy</Button>
-                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> Close</Button>
+                        <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+                        <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> {_("Close")}</Button>
                     </Modal.Footer>
                 </Modal>
 
                 <Modal show={this.state.busy} dialogClassName='busy-modal'>
                     <Modal.Header>
-                        <Modal.Title>Please Wait&hellip;</Modal.Title>
+                        <Modal.Title>{_("Please Wait…")}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <img src={LOADING_IMAGE} alt='Loading' />
+                        <img src={LOADING_IMAGE} alt={_('Loading')} />
                     </Modal.Body>
                 </Modal>
             </div>

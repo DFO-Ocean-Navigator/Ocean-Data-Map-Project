@@ -8,6 +8,7 @@ import colormap
 import re
 import pint
 from oceannavigator.util import get_variable_unit, get_variable_name
+from flask.ext.babel import format_date, format_datetime
 
 
 class Plotter:
@@ -45,15 +46,15 @@ class Plotter:
 
     @abstractmethod
     def parse_query(self, query):
-        quantum = query.get('dataset_quantum')
+        quantum = query.get('quantum')
         if quantum == 'month':
-            self.dformat = "%B %Y"
+            self.date_formatter = lambda x: format_date(x, "MMMM yyyy")
         elif quantum == 'day':
-            self.dformat = "%d %B %Y"
+            self.date_formatter = lambda x: format_date(x, "long")
         elif quantum == 'hour':
-            self.dformat = "%H:%M %d %B %Y"
+            self.date_formatter = lambda x: format_datetime(x)
         else:
-            self.dformat = "%d %B %Y"
+            self.date_formatter = lambda x: format_date(x, "long")
 
         def get_time(param):
             if query.get(param) is None or len(str(query.get(param))) == 0:

@@ -10,6 +10,7 @@ import NumberBox from './NumberBox.jsx';
 import ContourSelector from './ContourSelector.jsx';
 import StatsTable from './StatsTable.jsx';
 import ImageSize from './ImageSize.jsx';
+var i18n = require('../i18n.js');
 
 class AreaWindow extends React.Component {
     constructor(props) {
@@ -84,20 +85,33 @@ class AreaWindow extends React.Component {
     }
 
     render() {
-        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title='Dataset' onUpdate={this.props.onUpdate} />;
-        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Time' onUpdate={this.props.onUpdate} />;
-        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Start Time' onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
-        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='End Time' onUpdate={this.props.onUpdate} min={this.state.starttime} />;
-        var depth = <ComboBox key='depth' id='depth' state={this.props.depth} def={''} onUpdate={this.props.onUpdate.bind(this)} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.props.dataset} title='Depth'></ComboBox>;
-        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&anom'} title='Variable'><h1>Variable</h1></ComboBox>;
-        var multivariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?dataset='+this.props.dataset + '&anom'} title='Variable'><h1>Variable</h1></ComboBox>;
-        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title='Variable Range' />;
-        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
-        var bathymetry = <SelectBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onLocalUpdate.bind(this)} title='Show Bathymetry Contours' />;
-        var quiver = <ComboBox key='quiver' id='quiver' state={this.state.quiver} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors_only&dataset=' + this.props.dataset} title='Arrows'>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>;
-        var contour = <ContourSelector key='contour' id='contour' state={this.state.contour} def='' onUpdate={this.onLocalUpdate.bind(this)} dataset={this.props.dataset} title='Additional Contours'>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>;
-        var showarea = <SelectBox key='showarea' id='showarea' state={this.state.showarea} onUpdate={this.onLocalUpdate.bind(this)} title='Show Selected Area(s)'>Shows the selected areas on the map.</SelectBox>;
-        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
+        _('Dataset');
+        _('Time');
+        _('Start Time');
+        _('End Time');
+        _('Depth');
+        _("Variable");
+        _('Variable Range');
+        _('Colourmap');
+        _('Show Bathymetry Contours');
+        _('Arrows');
+        _('Additional Contours');
+        _('Show Selected Area(s)');
+        _('Saved Image Size');
+        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title={_('Dataset')} onUpdate={this.props.onUpdate} />;
+        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Time')} onUpdate={this.props.onUpdate} />;
+        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
+        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('End Time')} onUpdate={this.props.onUpdate} min={this.state.starttime} />;
+        var depth = <ComboBox key='depth' id='depth' state={this.props.depth} def={''} onUpdate={this.props.onUpdate.bind(this)} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.props.dataset} title={_('Depth')}></ComboBox>;
+        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
+        var multivariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
+        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
+        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
+        var bathymetry = <SelectBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Bathymetry Contours')} />;
+        var quiver = <ComboBox key='quiver' id='quiver' state={this.state.quiver} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors_only&dataset=' + this.props.dataset} title={_('Arrows')}>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>;
+        var contour = <ContourSelector key='contour' id='contour' state={this.state.contour} def='' onUpdate={this.onLocalUpdate.bind(this)} dataset={this.props.dataset} title={_('Additional Contours')}>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>;
+        var showarea = <SelectBox key='showarea' id='showarea' state={this.state.showarea} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Selected Area(s)')}>Shows the selected areas on the map.</SelectBox>;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
 
         var inputs = [];
         var plot_query = {
@@ -141,8 +155,8 @@ class AreaWindow extends React.Component {
         return (
             <div className='AreaWindow Window'>
                 <Nav bsStyle="tabs" activeKey={this.state.selected} onSelect={this.onSelect.bind(this)}>
-                    <NavItem eventKey={1}>Map</NavItem>
-                    <NavItem eventKey={2}>Statistics</NavItem>
+                    <NavItem eventKey={1}>{_("Map")}</NavItem>
+                    <NavItem eventKey={2}>{_("Statistics")}</NavItem>
                 </Nav>
                 <div className='content'>
                     <div className='inputs'>

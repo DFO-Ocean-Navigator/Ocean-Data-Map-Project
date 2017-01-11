@@ -4,6 +4,7 @@ import {Button, SplitButton, DropdownButton, MenuItem, Modal} from 'react-bootst
 import Papa from 'papaparse';
 import Icon from './Icon.jsx';
 import DrifterSelector from './DrifterSelector.jsx';
+var i18n = require('../i18n.js');
 
 import 'jquery-ui-css/base.css';
 import 'jquery-ui-css/datepicker.css';
@@ -207,7 +208,7 @@ class MapToolbar extends React.Component {
                     var lat = findKey(["latitude", "lat"]);
                     var lon = findKey(["longitude", "lon"]);
                     if (lat == -1 || lon == -1) {
-                        alert("Error: Could not find latitude or longitude column");
+                        alert(_("Error: Could not find latitude or longitude column"));
                         return;
                     }
 
@@ -236,7 +237,11 @@ class MapToolbar extends React.Component {
                 skipEmptyLines: true,
                 header: false,
                 encoding: "ascii",
+                error: function(err, file, inputElem, reason) {
+                    console.error(err, reason);
+                },
                 complete: function(results) {
+                    var headerLine = results.data[0];
                     function findColumn(prefix) {
                         for (var i = 0; i < headerLine.length; i++) {
                             if (headerLine[i].toLowerCase().startsWith(prefix.toLowerCase())) {
@@ -245,7 +250,6 @@ class MapToolbar extends React.Component {
                         }
                         return -1;
                     }
-                    var headerLine = results.data[0];
                     var latCol = jQuery.inArray("Latitude [degrees_north]", headerLine);
                     var lonCol = jQuery.inArray("Longitude [degrees_east]", headerLine);
                     var staCol = jQuery.inArray("Station", headerLine);
@@ -294,7 +298,7 @@ class MapToolbar extends React.Component {
                                 results.data[i][dateCol] = results.data[i][yearcol] + "-" + results.data[i][monthcol] + "-" + results.data[i][daycol] + " ";
                             }
                         } else {
-                            alert("Error: Unknown Date/Time format");
+                            alert(_("Error: Unknown Date/Time format"));
                             return;
                         }
 
@@ -325,15 +329,20 @@ class MapToolbar extends React.Component {
                         }
                     }
 
+                    var cruiseCol = findColumn("Cruise");
                     var points = [];
 
                     var station = "";
+                    var cruise = "";
                     var point = {};
                     for (var i = 1; i < results.data.length; i++) {
+                        if (results.data[i][cruiseCol] != "") {
+                            cruise = results.data[i][cruiseCol];
+                        }
                         if (String(results.data[i][staCol]) != "" && results.data[i][staCol] != station) {
                             station = results.data[i][staCol];
                             point = {
-                                station: station,
+                                station: cruise + " - " + station,
                                 latitude: results.data[i][latCol],
                                 longitude: results.data[i][lonCol],
                                 time: new Date(results.data[i][dateCol]),
@@ -372,39 +381,43 @@ class MapToolbar extends React.Component {
             return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
         });
 
+        _("Drifters");
+        _("Reset Map");
+        _("Link");
+
         return (
             <div className='MapToolbar'>
-                <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Point</span>} onSelect={this.pointSelect.bind(this)}>
+                <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Point")}</span>} onSelect={this.pointSelect.bind(this)}>
                     {pointFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
-                    <MenuItem eventKey='odv' key='odv'><Icon icon="upload" /> Upload ODV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+                    <MenuItem eventKey='odv' key='odv'><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
                 </SplitButton>
-                <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Line</span>} onSelect={this.lineSelect.bind(this)}>
+                <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Line")}</span>} onSelect={this.lineSelect.bind(this)}>
                     {lineFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
                 </SplitButton>
-                <SplitButton name="area" id="area" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> Area</span>} onSelect={this.areaSelect.bind(this)}>
+                <SplitButton name="area" id="area" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Area")}</span>} onSelect={this.areaSelect.bind(this)}>
                     {areaFiles}
                     <MenuItem divider />
-                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> Draw on Map</MenuItem>
-                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> Upload CSV&hellip;</MenuItem>
+                    <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+                    <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
                 </SplitButton>
-                <Button name="class4" onClick={this.class4ButtonHandler.bind(this)} ref={(b) => this.class4button = b}>Class4 <span className='caret'/></Button>
-                <DropdownButton name="drifter" id="drifter" title="Drifters" onSelect={this.drifterSelect.bind(this)}>
-                    <MenuItem eventKey='all' key='all'>All</MenuItem>
-                    <MenuItem eventKey='active' key='active'>Active</MenuItem>
-                    <MenuItem eventKey='not responding' key='not responding'>Not Responding</MenuItem>
-                    <MenuItem eventKey='inactive' key='inactive'>Inactive</MenuItem>
-                    <MenuItem eventKey='select' key='select'><Icon icon='list'/> Select&hellip;</MenuItem>
+                <Button name="class4" onClick={this.class4ButtonHandler.bind(this)} ref={(b) => this.class4button = b}>{_("Class4")} <span className='caret'/></Button>
+                <DropdownButton name="drifter" id="drifter" title={_('Drifters')} onSelect={this.drifterSelect.bind(this)}>
+                    <MenuItem eventKey='all' key='all'>{_("All")}</MenuItem>
+                    <MenuItem eventKey='active' key='active'>{_("Active")}</MenuItem>
+                    <MenuItem eventKey='not responding' key='not responding'>{_("Not Responding")}</MenuItem>
+                    <MenuItem eventKey='inactive' key='inactive'>{_("Inactive")}</MenuItem>
+                    <MenuItem eventKey='select' key='select'><Icon icon='list'/> {_("Select…")}</MenuItem>
                 </DropdownButton>
-                <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> Plot</Button>
-                <Button name="reset" onClick={this.buttonHandler.bind(this)}><Icon icon='undo' alt='Reset Map' /></Button>
+                <Button name="plot" onClick={this.buttonHandler.bind(this)} disabled={!this.props.plotEnabled}><Icon icon='line-chart' /> {_("Plot")}</Button>
+                <Button name="reset" onClick={this.buttonHandler.bind(this)}><Icon icon='undo' alt={_('Reset Map')} /></Button>
 
-                <span style={{'float': 'right'}} title="Permalink"><Button name="permalink" onClick={this.buttonHandler.bind(this)}><Icon icon='link' alt='Link' /></Button></span>
+                <span style={{'float': 'right'}} title={_('Permalink')}><Button name="permalink" onClick={this.buttonHandler.bind(this)}><Icon icon='link' alt={_('Link')} /></Button></span>
 
                 <form ref={(f) => this.fileform = f}>
                     <input type='file' style={{'display': 'none'}} onChange={this.parseCSV.bind(this)} ref={(f) => this.fileinput = f} accept=".csv,.CSV" />
@@ -418,14 +431,14 @@ class MapToolbar extends React.Component {
 
                 <Modal show={this.state.showDriftersSelect} onHide={() => this.setState({showDriftersSelect: false})} dialogClassName="drifter-modal">
                     <Modal.Header closeButton>
-                        <Modal.Title>Select Drifters</Modal.Title>
+                        <Modal.Title>{_("Select Drifters")}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <DrifterSelector select={this.drifterSelection.bind(this)}/>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={() => this.setState({showDriftersSelect: false})}><Icon icon="close" /> Close</Button>
-                        <Button onClick={function() {this.drifterSelect(this.state.drifterList.join(',')); this.setState({showDriftersSelect: false});}.bind(this)}><Icon icon="check" /> Apply</Button>
+                        <Button onClick={() => this.setState({showDriftersSelect: false})}><Icon icon="close" /> {_("Close")}</Button>
+                        <Button onClick={function() {this.drifterSelect(this.state.drifterList.join(',')); this.setState({showDriftersSelect: false});}.bind(this)}><Icon icon="check" /> {_("Apply")}</Button>
                     </Modal.Footer>
 
                 </Modal>

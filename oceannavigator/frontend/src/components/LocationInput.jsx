@@ -1,4 +1,5 @@
 import React from 'react';
+var i18n = require('../i18n.js');
 
 class LocationInput extends React.Component {
     constructor(props) {
@@ -35,7 +36,7 @@ class LocationInput extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <label htmlFor={this.props.id + '_lat'}>Lat:</label>
+                                <label htmlFor={this.props.id + '_lat'}>{_("Lat:")}</label>
                             </td>
                             <td>
                                 <input ref={(i) => this.latinput = i} id={this.props.id + '_lat'} type='number' step='0.0001' defaultValue={parseFloat(latlon[0]).toFixed(4)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
@@ -43,7 +44,7 @@ class LocationInput extends React.Component {
                         </tr>
                         <tr>
                             <td>
-                                <label htmlFor={this.props.id + '_lon'}>Lon:</label>
+                                <label htmlFor={this.props.id + '_lon'}>{_("Lon:")}</label>
                             </td>
                             <td>
                                 <input ref={(i) => this.loninput = i} id={this.props.id + '_lon'} type='number' step='0.0001' defaultValue={parseFloat(latlon[1]).toFixed(4)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />

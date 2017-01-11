@@ -1,5 +1,6 @@
 import React from 'react';
 import {Modal, Button} from 'react-bootstrap';
+var i18n = require('../i18n.js');
 
 class NumberBox extends React.Component {
     constructor(props) {
@@ -46,20 +47,28 @@ class NumberBox extends React.Component {
 
                 <Modal show={this.state.showHelp} onHide={this.closeHelp.bind(this)} bsSize="large" dialogClassName="helpdialog">
                     <Modal.Header closeButton>
-                        <Modal.Title>{this.props.title} Help</Modal.Title>
+                        <Modal.Title>{_("titlehelp", {title: this.props.title})}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         {this.props.children}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeHelp.bind(this)}>Close</Button>
+                        <Button onClick={this.closeHelp.bind(this)}>{_("Close")}</Button>
                     </Modal.Footer>
                 </Modal>
 
-                <div>
-                    <label htmlFor={this.props.id}>Value:</label>
-                    <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed.bind(this)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
-                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label htmlFor={this.props.id}>{_("Value:")}</label>
+                            </td>
+                            <td>
+                                <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed.bind(this)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         );
     }

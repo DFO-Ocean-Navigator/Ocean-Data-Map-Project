@@ -5,6 +5,7 @@ import utils
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
 import plotter
+from flask.ext.babel import gettext
 
 
 class Class4Plotter(plotter.Plotter):
@@ -151,7 +152,7 @@ class Class4Plotter(plotter.Plotter):
                 plt.legend(self.ids, loc='best')
 
         plot_label = ""
-        giops_name = "Model"
+        giops_name = gettext("Model")
         if len(self.additional_model_names) > 0:
             giops_name = "GIOPS"
 
@@ -173,7 +174,7 @@ class Class4Plotter(plotter.Plotter):
 
                 if self.error in ['climatology', 'observation']:
                     if self.error == 'climatology':
-                        plot_label = "Error wrt Climatology"
+                        plot_label = gettext("Error wrt Climatology")
                         handles.append(plt.plot(
                             self.observed_data[i, idx, :] -
                             self.climatology_data[i, idx, :],
@@ -181,11 +182,11 @@ class Class4Plotter(plotter.Plotter):
                             form
                         ))
                         legend.append(
-                            "%s %s" % (id_label, "Observed"))
+                            "%s %s" % (id_label, gettext("Observed")))
 
                         data = self.climatology_data
                     else:
-                        plot_label = "Error wrt Observation"
+                        plot_label = gettext("Error wrt Observation")
 
                         data = self.observed_data
 
@@ -215,14 +216,14 @@ class Class4Plotter(plotter.Plotter):
                             self.depths[i], form))
                         legend.append(
                             "%s %s" % (
-                                id_label, "Climatology"))
+                                id_label, gettext("Climatology")))
                     lim = np.abs(plt.xlim()).max()
                     plt.xlim([-lim, lim])
                 else:
-                    plot_label = "Class 4"
+                    plot_label = gettext("Class 4")
                     handles.append(plt.plot(self.observed_data[i, idx, :],
                                             self.depths[i], form))
-                    legend.append("%s %s" % (id_label, "Observed"))
+                    legend.append("%s %s" % (id_label, gettext("Observed")))
                     handles.append(plt.plot(self.forecast_data[i, idx, :],
                                             self.depths[i], form))
                     legend.append("%s %s" % (id_label, giops_name))
@@ -240,7 +241,8 @@ class Class4Plotter(plotter.Plotter):
                         handles.append(
                             plt.plot(self.climatology_data[i, idx, :],
                                      self.depths[i], form))
-                        legend.append("%s %s" % (id_label, "Climatology"))
+                        legend.append("%s %s" % (id_label,
+                                                 gettext("Climatology")))
 
             plt.xlim([np.floor(plt.xlim()[0]), np.ceil(plt.xlim()[1])])
 
@@ -249,7 +251,7 @@ class Class4Plotter(plotter.Plotter):
             plt.xlabel("%s (%s)" %
                        (v, utils.mathtext(self.variable_units[idx])))
             plt.gca().invert_yaxis()
-            plt.ylabel("Depth (%s)" % utils.mathtext(self.depth_unit))
+            plt.ylabel(gettext("Depth (%s)") % utils.mathtext(self.depth_unit))
             plt.grid(True)
 
         leg = fig.legend(

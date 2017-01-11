@@ -2,6 +2,7 @@ import React from 'react';
 import $ from 'jquery';
 import jQuery from 'jquery';
 import {Modal, Button} from 'react-bootstrap';
+var i18n = require('../i18n.js');
 
 class ComboBox extends React.Component {
     constructor(props) {
@@ -53,7 +54,7 @@ class ComboBox extends React.Component {
                             this.props.state == 'none'
                        ) {
                         if (jQuery.inArray('none', ids) == -1) {
-                            data.splice(0, 0, {'id': 'none', 'value': 'None'});
+                            data.splice(0, 0, {'id': 'none', 'value': _('None')});
                         }
                     }
                     this.setState({
@@ -180,14 +181,14 @@ class ComboBox extends React.Component {
 
                     <Modal show={this.state.showHelp} onHide={this.closeHelp.bind(this)} bsSize="large" dialogClassName="helpdialog">
                         <Modal.Header closeButton>
-                            <Modal.Title>{this.props.title} Help</Modal.Title>
+                            <Modal.Title>{_('titlehelp', {title: this.props.title})}</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             {this.props.children}
                             {helpOptions}
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button onClick={this.closeHelp.bind(this)}>Close</Button>
+                            <Button onClick={this.closeHelp.bind(this)}>{_("Close")}</Button>
                         </Modal.Footer>
                     </Modal>
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import ol from 'openlayers';
-// ol = require('openlayers/dist/ol-debug.js');
 require('openlayers/css/ol.css');
 var proj4 = require('proj4/lib/index.js');
+var i18n = require('../i18n.js');
 
 ol.proj.setProj4(proj4);
 
@@ -47,7 +47,7 @@ var MAX_ZOOM = {
 var drifter_color = {};
 
 var TOPO_ATTRIBUTION = new ol.Attribution({
-    html: 'Togographical Data from <a href="https://www.ngdc.noaa.gov/mgg/global/">ETOPO1</a>',
+    html: _('topoattribution'),
 });
 
 app.ScaleViewer = function(opt_options) {
@@ -95,7 +95,7 @@ class Map extends React.Component {
                             var id = feat.get("name");
                             feat.setId(id);
                             if (feat.get("error") != null) {
-                                feat.set("name", feat.get("name") + "<span>RMS Error: " + feat.get("error").toPrecision(3) + "</span>");
+                                feat.set("name", feat.get("name") + "<span>" + _("RMS Error: ") + feat.get("error").toPrecision(3) + "</span>");
                             }
                             var oldfeat = this.vectorSource.getFeatureById(id);
                             if (oldfeat != null && oldfeat.get("resolution") > feat.get("resolution")) {

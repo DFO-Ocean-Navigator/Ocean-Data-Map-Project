@@ -56,6 +56,12 @@ var config = {
             $: "jquery",
             jQuery: "jquery",
         }),
+        // new webpack.ProvidePlugin({
+        //     i18n: "i18next",
+        // }),
+        new webpack.DefinePlugin({
+            '_': "i18n.t",
+        }),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
         }),

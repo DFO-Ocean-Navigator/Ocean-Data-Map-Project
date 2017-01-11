@@ -10,6 +10,10 @@ import 'jquery-ui/datepicker';
 import 'jquery-ui/button';
 import 'jquery-ui-month-picker/MonthPicker.css';
 import 'jquery-ui-month-picker/MonthPicker.js';
+import 'jquery-ui/../i18n/datepicker-fr.js';
+import 'jquery-ui/../i18n/datepicker-fr-CA.js';
+
+var i18n = require('../i18n.js');
 
 class TimePicker extends React.Component {
     constructor(props) {
@@ -20,6 +24,7 @@ class TimePicker extends React.Component {
             revmap: {},
             times: [],
         };
+        $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
     }
     populate(props) {
         if ('url' in props && '' != props.url) {
@@ -45,8 +50,8 @@ class TimePicker extends React.Component {
                         }
                     }
                     for (var d in data) {
-                        map[data[d].id] = data[d].value;
-                        revmap[data[d].value] = data[d].id;
+                        map[data[d].id] = new Date(data[d].value);
+                        revmap[new Date(data[d].value).toUTCString()] = data[d].id;
                     }
                     this.setState({
                         data: data,
@@ -62,18 +67,32 @@ class TimePicker extends React.Component {
                                 Button: false,
                                 MonthFormat: "MM yy",
                                 OnAfterMenuClose: this.pickerChange.bind(this),
-                                MinMonth: map[min],
-                                MaxMonth: map[max],
+                                MinMonth: new Date(map[min].getTime() + map[min].getTimezoneOffset() * 60 * 1000),
+                                MaxMonth: new Date(map[max].getTime() + map[max].getTimezoneOffset() * 60 * 1000),
+                                i18n: {
+                                    year: _('Year'),
+                                    prevYear: _('Previous Year'),
+                                    nextYear: _('Next Year'),
+                                    next12Years: _('Jump Forward 12 Years'),
+                                    prev12Years: _('Jump Back 12 Years'),
+                                    nextLabel: _('Next'),
+                                    prevLabel: _('Prev'),
+                                    buttonText: _('Open Month Chooser'),
+                                    jumpYears: _('Jump Years'),
+                                    backTo: _('Back to'),
+                                    months: [_('Jan.'), _('Feb.'), _('Mar.'), _('Apr.'), _('May'), _('June'), _('July'), _('Aug.'), _('Sep.'), _('Oct.'), _('Nov.'), _('Dec.')]
+                                }
                             });
                             break;
                         case 'day':
-                            picker = $(this.refs.picker).datepicker({
+                            picker = $(this.refs.picker).datepicker( {
                                 Button: false,
                                 dateFormat: "dd MM yy",
                                 onClose: this.pickerChange.bind(this),
                                 minDate: new Date(map[min]),
                                 maxDate: new Date(map[max]),
                             });
+
                             $(this.refs.picker).datepicker("option", "minDate", new Date(map[min]));
                             $(this.refs.picker).datepicker("option", "maxDate", new Date(map[max]));
                             break;
@@ -124,8 +143,10 @@ class TimePicker extends React.Component {
 
         if (this.props.quantum == 'hour') {
             var times = [];
+            var d = $(this.refs.picker).datepicker("getDate");
+            var isodatestr = dateFormat(d, "yyyy-mm-dd");
             for (var i in this.state.data) {
-                if (this.state.data[i].value.indexOf(this.refs.picker.value) == 0) {
+                if (this.state.data[i].value.indexOf(isodatestr) == 0) {
                     if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
                         times.unshift({
                             id: this.state.data[i].id,
@@ -137,9 +158,31 @@ class TimePicker extends React.Component {
             this.setState({
                 times: times,
             });
-            this.props.onUpdate(this.props.id, times[0].id);
+            if (times.length > 0) {
+                this.props.onUpdate(this.props.id, times[0].id);
+            }
         } else if (this.refs.picker != null) {
-            this.props.onUpdate(this.props.id, this.state.revmap[this.refs.picker.value]);
+            if (this.props.quantum == "month" && $.data(this.refs.picker, "KidSysco-MonthPicker")) {
+                var d = $(this.refs.picker).MonthPicker("GetSelectedDate");
+            } else {
+                var d = $(this.refs.picker).datepicker("getDate");
+            }
+            if (d != null) {
+                var utcDate = new Date(Date.UTC(
+                    d.getFullYear(),
+                    d.getMonth(),
+                    (this.props.quantum == "month") ? 15 : d.getDate(),
+                    d.getHours(),
+                    d.getMinutes(),
+                    d.getSeconds(),
+                    d.getMilliseconds()
+                ));
+                this.props.onUpdate(this.props.id, this.state.revmap[utcDate.toUTCString()]);
+            } else {
+                if (this.props.state < 0) {
+                    this.props.onUpdate(this.props.id, this.state.data.length + this.props.state);
+                }
+            }
         }
     }
     timeChange(e) {
@@ -164,13 +207,6 @@ class TimePicker extends React.Component {
             value = 0;
         }
 
-        // if (Object.keys(this.state.map).length == 0) {
-        //     console.log("No map");
-        //     return null;
-        // } else {
-        //     console.log(Object.keys(this.state.map).length, this.state.map);
-        // }
-        // console.log(this.props.state, value, this.state.map[value]);
         date = new Date(this.state.map[value]);
         var input = "";
         switch(this.props.quantum) {

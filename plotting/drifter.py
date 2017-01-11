@@ -10,6 +10,7 @@ import pytz
 import dateutil.parser
 from oceannavigator import app
 import plotter
+from flask.ext.babel import gettext
 
 
 class DrifterPlotter(plotter.Plotter):
@@ -188,7 +189,7 @@ class DrifterPlotter(plotter.Plotter):
                 legend = legend + ["%s (Modelled)" % self.name]
 
             if 'votemper' in self.variables and v == 'sst':
-                legend = ["Observed", "Modelled"]
+                legend = [gettext("Observed"), gettext("Modelled")]
 
             if len(legend) > 1:
                 leg = plt.legend(legend, loc='best')
@@ -219,8 +220,8 @@ class DrifterPlotter(plotter.Plotter):
 
         # latlon
         if self.latlon:
-            for j, label in enumerate(["Latitude (degrees)",
-                                      "Longitude (degrees)"]):
+            for j, label in enumerate([gettext("Latitude (degrees)"),
+                                      gettext("Longitude (degrees)")]):
                 plt.subplot(gs[subplot])
                 subplot += subplot_inc
 

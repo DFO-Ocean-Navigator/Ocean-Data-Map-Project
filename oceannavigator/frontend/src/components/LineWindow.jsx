@@ -8,6 +8,7 @@ import Range from './Range.jsx';
 import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
 import ImageSize from './ImageSize.jsx';
+var i18n = require('../i18n.js');
 
 class LineWindow extends React.Component {
     constructor(props) {
@@ -55,19 +56,31 @@ class LineWindow extends React.Component {
     }
 
     render() {
-        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title='Dataset' onUpdate={this.props.onUpdate} />;
-        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Time' onUpdate={this.props.onUpdate} />;
-        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='Start Time' onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
-        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title='End Time' onUpdate={this.props.onUpdate} min={this.state.starttime} />;
-        var depth = <ComboBox key='depth' id='depth' state={this.props.depth} def={''} onUpdate={this.props.onUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset} title='Depth'></ComboBox>;
-        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&3d_only&anom'} title='Variable'><h1>Variable</h1></ComboBox>;
-        var hovmoller_variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset} title='Variable'><h1>Variable</h1></ComboBox>;
-        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title='Variable Range' />;
-        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title='Colourmap'>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
-        var showmap = <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title='Show Location'>Shows the mini map of the location in the plot.</SelectBox>;
-        var linearthreshold = <NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onLocalUpdate.bind(this)} title='Linear Threshold'>The depth axis is broken into two parts at the linear threshold. Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.</NumberBox>;
-        var surfacevariable = <ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} onUpdate={this.onLocalUpdate.bind(this)} title='Surface Variable' url={'/api/variables/?dataset=' + this.props.dataset}>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>;
-        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />;
+        _('Dataset');
+        _('Time');
+        _('Start Time');
+        _('End Time');
+        _('Depth');
+        _('Variable');
+        _('Variable Range');
+        _('Colourmap');
+        _('Show Location');
+        _('Linear Threshold');
+        _('Surface Variable');
+        _('Saved Image Size');
+        var dataset = <ComboBox key='dataset' id='dataset' state={this.props.dataset} def='' url='/api/datasets/' title={_('Dataset')} onUpdate={this.props.onUpdate} />;
+        var time = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Time')} onUpdate={this.props.onUpdate} />;
+        var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
+        var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('End Time')} onUpdate={this.props.onUpdate} min={this.state.starttime} />;
+        var depth = <ComboBox key='depth' id='depth' state={this.props.depth} def={''} onUpdate={this.props.onUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset} title={_('Depth')}></ComboBox>;
+        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&3d_only&anom'} title={_('Variable')}><h1>Variable</h1></ComboBox>;
+        var hovmoller_variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset} title={_('Variable')}><h1>Variable</h1></ComboBox>;
+        var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
+        var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
+        var showmap = <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Location')}>Shows the mini map of the location in the plot.</SelectBox>;
+        var linearthreshold = <NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onLocalUpdate.bind(this)} title={_('Linear Threshold')}>The depth axis is broken into two parts at the linear threshold. Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.</NumberBox>;
+        var surfacevariable = <ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} onUpdate={this.onLocalUpdate.bind(this)} title={_('Surface Variable')} url={'/api/variables/?dataset=' + this.props.dataset}>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>;
+        var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
 
         var inputs = [];
         var plot_query = {
@@ -105,8 +118,8 @@ class LineWindow extends React.Component {
         return (
             <div className='LineWindow Window'>
                 <Nav bsStyle="tabs" activeKey={this.state.selected} onSelect={this.onSelect.bind(this)}>
-                    <NavItem eventKey={1}>Transect</NavItem>
-                    <NavItem eventKey={2}>Hovmöller Diagram</NavItem>
+                    <NavItem eventKey={1}>{_("Transect")}</NavItem>
+                    <NavItem eventKey={2}>{_("Hovmöller Diagram")}</NavItem>
                 </Nav>
                 <div className='content'>
                     <div className='inputs'>

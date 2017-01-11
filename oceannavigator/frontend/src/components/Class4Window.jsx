@@ -4,6 +4,7 @@ import PlotImage from './PlotImage.jsx';
 import ComboBox from './ComboBox.jsx';
 import SelectBox from './SelectBox.jsx';
 import ImageSize from './ImageSize.jsx';
+var i18n = require('../i18n.js');
 
 class Class4Window extends React.Component {
     constructor(props) {
@@ -50,28 +51,34 @@ class Class4Window extends React.Component {
         var error_options = [
             {
                 id: 'none',
-                value: 'None',
+                value: _('None'),
             },
             {
                 id: 'observation',
-                value: 'Value - Observation',
+                value: _('Value - Observation'),
             },
             {
                 id: 'climatology',
-                value: 'Value - Climatology',
+                value: _('Value - Climatology'),
             },
         ]
 
+        _('Forecast');
+        _('Show Location');
+        _('Show Climatology');
+        _('Additional Models');
+        _('Show Error');
+        _('Saved Image Size');
         return (
             <div className='Class4Window Window'>
                 <div className='content'>
                     <div className='inputs'>
-                        <ComboBox key='forecast' id='forecast' state={this.state.forecast} def='' url={'/api/class4/forecasts/' + this.props.class4id} title='Forecast' onUpdate={this.onLocalUpdate.bind(this)} />
-                        <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title='Show Location'>Shows the mini map of the location in the plot.</SelectBox>
-                        <SelectBox key='climatology' id='climatology' state={this.state.climatology} onUpdate={this.onLocalUpdate.bind(this)} title='Show Climatology'>Shows the climatology data.</SelectBox>
-                        <ComboBox key='models' id='models' state={this.state.models} multiple onUpdate={this.onLocalUpdate.bind(this)} url={'/api/class4/models/' + this.props.class4id} title='Additional Models' />
-                        <ComboBox key='error' id='error' state={this.state.error} def='' data={error_options} title='Show Error' onUpdate={this.onLocalUpdate.bind(this)} />
-                        <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title='Saved Image Size' />
+                        <ComboBox key='forecast' id='forecast' state={this.state.forecast} def='' url={'/api/class4/forecasts/' + this.props.class4id} title={_('Forecast')} onUpdate={this.onLocalUpdate.bind(this)} />
+                        <SelectBox key='showmap' id='showmap' state={this.state.showmap} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Location')}>Shows the mini map of the location in the plot.</SelectBox>
+                        <SelectBox key='climatology' id='climatology' state={this.state.climatology} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Climatology')}>Shows the climatology data.</SelectBox>
+                        <ComboBox key='models' id='models' state={this.state.models} multiple onUpdate={this.onLocalUpdate.bind(this)} url={'/api/class4/models/' + this.props.class4id} title={_('Additional Models')} />
+                        <ComboBox key='error' id='error' state={this.state.error} def='' data={error_options} title={_('Show Error')} onUpdate={this.onLocalUpdate.bind(this)} />
+                        <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />
                     </div>
                     <PlotImage query={plot_query} permlink={this.props.generatePermLink(this.state)}/>
                     <br className='clear' />

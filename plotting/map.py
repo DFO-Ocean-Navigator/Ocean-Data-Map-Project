@@ -602,7 +602,7 @@ class MapPlotter(area.AreaPlotter):
             area_title,
             self.variable_name.title(),
             self.depth_label,
-            self.timestamp.strftime(self.dformat)
+            self.date_formatter(self.timestamp)
         )
         plt.title(title.strip())
         ax = plt.gca()

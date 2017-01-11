@@ -1,4 +1,5 @@
 import React from 'react';
+var i18n = require('../i18n.js');
 
 class Range extends React.Component {
     constructor(props) {
@@ -49,7 +50,7 @@ class Range extends React.Component {
             <div>
                 <label className='forcheckbox'>
                     <input type='checkbox' id={this.props.id + '_auto'} checked={this.state.auto} onChange={this.autoChanged.bind(this)} />
-                    Auto Range
+                    {_("Auto Range")}
                 </label>
             </div>
         );
@@ -62,7 +63,7 @@ class Range extends React.Component {
                     <tbody>
                         <tr>
                             <td>
-                                <label htmlFor={this.props.id + '_min'}>Min:</label>
+                                <label htmlFor={this.props.id + '_min'}>{_("Min:")}</label>
                             </td>
                             <td>
                                 <input ref={(x) => this.min = x} id={this.props.id + '_min'} type='number' defaultValue={min} onChange={this.rangeChanged} onBlur={this.updateParent.bind(this)} disabled={this.state.auto} />
@@ -70,7 +71,7 @@ class Range extends React.Component {
                         </tr>
                         <tr>
                             <td>
-                                <label htmlFor={this.props.id + '_max'}>Max:</label>
+                                <label htmlFor={this.props.id + '_max'}>{_("Max:")}</label>
                             </td>
                             <td>
                                 <input ref={(x) => this.max = x} id={this.props.id + '_max'} type='number' defaultValue={max} onChange={this.rangeChanged} onBlur={this.updateParent.bind(this)} disabled={this.state.auto} />

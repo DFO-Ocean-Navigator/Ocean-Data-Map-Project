@@ -5,6 +5,7 @@ import utils
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
 import point
+from flask.ext.babel import gettext
 
 
 class ProfilePlotter(point.PointPlotter):
@@ -84,7 +85,8 @@ class ProfilePlotter(point.PointPlotter):
                 ax[idx].set_xlim([-xlim, xlim])
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel("Depth (%s)" % utils.mathtext(self.depth_unit))
+        ax[0].set_ylabel(gettext("Depth (%s)") %
+                         utils.mathtext(self.depth_unit))
 
         self.plot_legend(fig, self.names)
 
@@ -92,7 +94,7 @@ class ProfilePlotter(point.PointPlotter):
             "%s Profile for %s (%s)" % (
                 ", ".join(self.variable_names),
                 ", ".join(self.names),
-                self.timestamp.strftime(self.dformat)
+                self.date_formatter(self.timestamp)
             ), 80)
         plt.suptitle("\n".join(wrapped_title))
         fig.tight_layout()

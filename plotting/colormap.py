@@ -6,6 +6,7 @@ import plotting
 import os
 import numpy as np
 from StringIO import StringIO
+from flask.ext.babel import gettext
 
 
 def make_colormap(seq):
@@ -132,6 +133,31 @@ colormaps = {
 }
 colormaps['wind'] = colormaps['velocity']
 
+gettext('Anomaly')
+gettext('Bathymetry')
+gettext('Chlorophyll')
+gettext('Sea Surface Height (Free Surface)')
+gettext('Greyscale')
+gettext('Ice')
+gettext('Iron')
+gettext('Mercator Ocean Current')
+gettext('Mercator')
+gettext('Nitrate')
+gettext('Oxygen')
+gettext('Phosphate')
+gettext('Phytoplankton')
+gettext('Salinity')
+gettext('Silicate')
+gettext('Speed')
+gettext('Temperature')
+gettext('Velocity')
+gettext('Wave Height')
+gettext('Wave Period')
+gettext('Thermal')
+gettext('NEO SST')
+gettext('Color Brewer Blue-Yellow-Red')
+gettext('Temperature (old)')
+
 colormap_names = {
     'anomaly': 'Anomaly',
     'bathymetry': 'Bathymetry',
@@ -160,6 +186,14 @@ colormap_names = {
 }
 
 
+def get_colormap_names():
+    result = {}
+    for key, value in colormap_names.iteritems():
+        result[key] = gettext(value)
+
+    return result
+
+
 def plot_colormaps():
     fig, axes = plt.subplots(
         nrows=len(colormap_names),
@@ -170,14 +204,15 @@ def plot_colormaps():
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
-    fig.suptitle("Ocean Navigator Colourmaps", fontsize=14)
-    for ax, cmap in zip(axes, sorted(colormap_names.keys(),
-                                     key=colormap_names.get)):
+    fig.suptitle(gettext("Ocean Navigator Colourmaps"), fontsize=14)
+    names = get_colormap_names()
+    for ax, cmap in zip(axes, sorted(names.keys(),
+                                     key=names.get)):
         ax.imshow(gradient, aspect='auto', cmap=colormaps.get(cmap))
         pos = list(ax.get_position().bounds)
         x_text = pos[2] + 0.025
         y_text = pos[1] + pos[3] / 2.
-        fig.text(x_text, y_text, colormap_names[
+        fig.text(x_text, y_text, names[
                  cmap], va='center', ha='left', fontsize=12)
 
     for ax in axes:

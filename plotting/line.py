@@ -1,5 +1,6 @@
 import plotter
 import geopy
+from flask.ext.babel import gettext
 
 
 class LinePlotter(plotter.Plotter):
@@ -24,7 +25,7 @@ class LinePlotter(plotter.Plotter):
 
         name = query.get('name')
         if name is None or name == '':
-            name = "%s to %s" % (
+            name = gettext("%s to %s") % (
                 geopy.Point(points[0]),
                 geopy.Point(points[-1])
             )

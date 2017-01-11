@@ -2,6 +2,7 @@
 # vim: set fileencoding=utf-8 :
 
 from flask import Response, request, redirect, send_file
+from flask.ext.babel import gettext
 import json
 from netCDF4 import Dataset, netcdftime
 import datetime
@@ -112,38 +113,22 @@ def query_datasets():
     return resp
 
 
-# @app.route('/api/overlays/')
-# def overlays():
-#     if 'file' in request.args:
-#         f = request.args.get('file')
-#         if f is None or f == 'none' or f == '':
-#             data = []
-#         else:
-#             data = list_overlays_in_file(request.args.get('file'))
-#     else:
-#         data = list_overlays()
-#     data = sorted(data, key=lambda k: k['value'])
-#     js = json.dumps(data)
-#     resp = Response(js, status=200, mimetype='application/json')
-#     return resp
-
-
 @app.route('/api/colors/')
 def colors():
     data = [
-        {'id': 'k', 'value': 'Black'},
-        {'id': 'b', 'value': 'Blue'},
-        {'id': 'g', 'value': 'Green'},
-        {'id': 'r', 'value': 'Red'},
-        {'id': 'c', 'value': 'Cyan'},
-        {'id': 'm', 'value': 'Magenta'},
-        {'id': 'y', 'value': 'Yellow'},
-        {'id': 'w', 'value': 'White'},
+        {'id': 'k', 'value': gettext('Black')},
+        {'id': 'b', 'value': gettext('Blue')},
+        {'id': 'g', 'value': gettext('Green')},
+        {'id': 'r', 'value': gettext('Red')},
+        {'id': 'c', 'value': gettext('Cyan')},
+        {'id': 'm', 'value': gettext('Magenta')},
+        {'id': 'y', 'value': gettext('Yellow')},
+        {'id': 'w', 'value': gettext('White')},
     ]
     if request.args.get('random'):
-        data.insert(0, {'id': 'rnd', 'value': 'Randomize'})
+        data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
     if request.args.get('none'):
-        data.insert(0, {'id': 'none', 'value': 'None'})
+        data.insert(0, {'id': 'none', 'value': gettext('None')})
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
@@ -156,9 +141,9 @@ def colormaps():
             'id': i,
             'value': n
         }
-        for i, n in plotting.colormap.colormap_names.iteritems()
+        for i, n in plotting.colormap.get_colormap_names().iteritems()
     ], key=lambda k: k['value'])
-    data.insert(0, {'id': 'default', 'value': 'Default for Variable'})
+    data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -193,7 +178,8 @@ def depth():
                     if str(request.args.get('all')).lower() in ['true',
                                                                 'yes',
                                                                 'on']:
-                        data.append({'id': 'all', 'value': 'All Depths'})
+                        data.append(
+                            {'id': 'all', 'value': gettext('All Depths')})
 
                     if 'deptht' in ds.variables:
                         depth_var = ds.variables['deptht']
@@ -206,7 +192,7 @@ def depth():
                             'value': "%d " % (value) + depth_var.units % value
                         })
 
-                data.insert(0, {'id': 'bottom', 'value': 'Bottom'})
+                data.insert(0, {'id': 'bottom', 'value': gettext('Bottom')})
     data = [
         e for i, e in enumerate(data) if data.index(e) == i
     ]
@@ -214,37 +200,6 @@ def depth():
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
-
-
-@app.route('/api/locations/')
-def locations():
-    data = [
-        {
-            'id': 'nwatlantic',
-            'value': 'Northwest Atlantic',
-            'help': 'Predefined Northwest Atlantic area, ' +
-                    'Lambert Conformal Conic Projection',
-        },
-        {
-            'id': 'arctic',
-            'value': 'Arctic Circle',
-            'help': 'Predefined Arctic area, ' +
-                    'Polar Stereographic Projection',
-        },
-        {
-            'id': 'nwpassage',
-            'value': 'Northwest Passage',
-            'help': 'Predefined Northwest Passage area, ' +
-                    'Lambert Conformal Conic Projection',
-        },
-        {
-            'id': 'pacific',
-            'value': 'Northeast Pacific',
-            'help': 'Predefined Northeast Pacific area, ' +
-                    'Lambert Conformal Conic Projection',
-        },
-    ]
-    return Response(json.dumps(data), status=200, mimetype='application/json')
 
 
 @app.route('/api/variables/')
@@ -324,22 +279,17 @@ def time_query():
     if 'dataset' in request.args:
         dataset = request.args['dataset']
         quantum = request.args.get('quantum')
-        if quantum == 'month':
-            dformat = "%B %Y"
-        elif quantum == 'day':
-            dformat = "%d %B %Y"
-        elif quantum == 'hour':
-            dformat = "%d %B %Y %H:%M"
-        else:
-            if 'month' in dataset:
-                dformat = "%B %Y"
-            else:
-                dformat = "%d %B %Y"
         with Dataset(get_dataset_url(dataset), 'r') as ds:
             time_var = _get_time_var(ds)
             t = netcdftime.utime(time_var.units)
             for idx, date in \
                     enumerate(t.num2date(time_var[:])):
+                if quantum == 'month':
+                    date = datetime.datetime(
+                        date.year,
+                        date.month,
+                        15
+                    )
                 data.append({'id': idx, 'value': date})
 
     data = sorted(data, key=lambda k: k['id'])
@@ -348,7 +298,9 @@ def time_query():
 
         def default(self, o):
             if isinstance(o, datetime.datetime):
-                return o.strftime(dformat)
+                return o.isoformat()
+                # return o.strftime(dformat)
+                # return format_datetime(o, dformat)
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)

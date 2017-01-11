@@ -1,4 +1,5 @@
 import React from 'react';
+var i18n = require('../i18n.js');
 
 var LOADING_IMAGE = require('../images/spinner.gif');
 var FAIL_IMAGE = require('../images/failure.gif');
@@ -113,13 +114,13 @@ class StatsTable extends React.Component {
             <table className='StatsTable'>
                 <thead>
                     <tr>
-                        <th>Variable</th>
-                        <th title="Minimum Value">Min</th>
-                        <th title="Maximum Value">Max</th>
-                        <th title="Median Value">Median</th>
-                        <th title="Average Value">Mean</th>
-                        <th title="Standard Deviation">Std Dev</th>
-                        <th title="Number of Valid Points in Area">Num</th>
+                        <th>{_("Variable")}</th>
+                        <th title={_('Minimum Value')}>{_("Min")}</th>
+                        <th title={_('Maximum Value')}>{_("Max")}</th>
+                        <th title={_('Median Value')}>{_("Median")}</th>
+                        <th title={_('Average Value')}>{_("Mean")}</th>
+                        <th title={_('Standard Deviation')}>{_("Std Dev")}</th>
+                        <th title={_('Number of Valid Points in Area')}>{_("Num")}</th>
                     </tr>
                 </thead>
                 {content}
