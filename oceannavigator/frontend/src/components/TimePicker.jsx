@@ -155,7 +155,7 @@ class TimePicker extends React.Component {
                     if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
                         times.unshift({
                             id: this.state.data[i].id,
-                            value: dateFormat(new Date(this.state.data[i].value), "HH:MM")
+                            value: dateFormat(this.state.map[i], "HH:MM")
                         });
                     }
                 }
