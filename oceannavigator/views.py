@@ -28,6 +28,7 @@ import oceannavigator.misc
 import os
 import plotting.colormap
 import base64
+import pytz
 
 
 @app.route('/api/<string:q>/')
@@ -306,7 +307,8 @@ def time_query():
                         date.month,
                         15
                     )
-                data.append({'id': idx, 'value': date})
+                data.append(
+                    {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
 
     data = sorted(data, key=lambda k: k['id'])
 

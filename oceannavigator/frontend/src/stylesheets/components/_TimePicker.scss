@@ -222,3 +222,23 @@
 .react-datepicker .react-datepicker-button:hover {
   background-color: #DDDDDD;
 }
+
+div.TimePicker {
+    button {
+        height: 100%;
+        padding: 0;
+        margin: 8px 0;
+    }
+
+    div {
+        display: flex;
+
+        button, div {
+            flex: 1 1 auto;
+        }
+
+        div {
+            padding: 8px 1px;
+        }
+    }
+}

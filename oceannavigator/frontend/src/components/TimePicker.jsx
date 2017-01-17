@@ -2,6 +2,8 @@ import React from 'react';
 import $ from 'jquery';
 import jQuery from 'jquery';
 import dateFormat from 'dateformat';
+import {Button} from 'react-bootstrap';
+import Icon from './Icon.jsx';
 
 import 'jquery-ui-css/base.css';
 import 'jquery-ui-css/datepicker.css';
@@ -50,13 +52,16 @@ class TimePicker extends React.Component {
                         }
                     }
                     for (var d in data) {
-                        map[data[d].id] = new Date(data[d].value);
+                        var da = new Date(data[d].value);
+                        map[data[d].id] = new Date(da.getTime() + da.getTimezoneOffset() * 60000);
                         revmap[new Date(data[d].value).toUTCString()] = data[d].id;
                     }
                     this.setState({
                         data: data,
                         map: map,
                         revmap: revmap,
+                        min: min,
+                        max: max,
                     });
                     this.pickerChange();
 
@@ -192,8 +197,25 @@ class TimePicker extends React.Component {
         });
         this.props.onUpdate(this.props.id, value);
     }
-    datePickerChange(jsDate, dateString) {
-        console.log(jsDate, dateString);
+    nextTime() {
+        var value = parseInt(this.props.state) + 1;
+        this.setState({
+            value: value
+        });
+        this.props.onUpdate(this.props.id, value);
+    }
+    prevTime() {
+        var value = parseInt(this.props.state) - 1;
+        this.setState({
+            value: value
+        });
+        this.props.onUpdate(this.props.id, value);
+    }
+    isFirstTime() {
+        return parseInt(this.props.state) == this.state.min;
+    }
+    isLastTime() {
+        return parseInt(this.props.state) == this.state.max;
     }
     render() {
         var date;
@@ -239,8 +261,14 @@ class TimePicker extends React.Component {
             <div key={this.props.url} className='TimePicker input'>
                 <h1>{this.props.title}</h1>
 
-                {input}
-                {timeinput}
+                <div>
+                    <Button onClick={() => this.prevTime()} disabled={this.isFirstTime()}><Icon icon='caret-left' alt="<" /></Button>
+                    <div>
+                        {input}
+                        {timeinput}
+                    </div>
+                    <Button onClick={() => this.nextTime()} disabled={this.isLastTime()}><Icon icon='caret-right' alt=">" /></Button>
+                </div>
 
             </div>
         );
