@@ -4,7 +4,7 @@ import Icon from './Icon.jsx';
 var i18n = require('../i18n.js');
 
 var LOADING_IMAGE = require('../images/spinner.gif');
-var FAIL_IMAGE = require('../images/failure.gif');
+var FAIL_IMAGE = require('./fail.js');
 
 class PlotImage extends React.Component {
     constructor(props) {

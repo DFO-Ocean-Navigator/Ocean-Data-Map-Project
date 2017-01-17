@@ -151,12 +151,17 @@ class PointWindow extends React.Component {
         var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
         var observation_data = [];
+        var observation_variable = <div></div>;
         if (this.props.point[0][2] !== undefined) {
-            observation_data = this.props.point[0][2].datatypes.map(function (o, i) {
-                return { id: i, value: o.replace(/ \[.*\]/, "") };
-            });
+            if (typeof(this.props.point[0][2]) == "number") {
+                observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} url='/api/observationvariables/' title={_('Observation Variable')} multiple onUpdate={this.onLocalUpdate.bind(this)} />
+            } else {
+                observation_data = this.props.point[0][2].datatypes.map(function (o, i) {
+                    return { id: i, value: o.replace(/ \[.*\]/, "") };
+                });
+                observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} data={observation_data} title={_('Observation Variable')} multiple onUpdate={this.onLocalUpdate.bind(this)} />
+            }
         }
-        var observation_variable = <ComboBox key='observation_variable' id='observation_variable' state={this.state.observation_variable} data={observation_data} title={_('Observation Variable')} multiple onUpdate={this.onLocalUpdate.bind(this)} />
 
         var hasTempSalinity = $.inArray('votemper', this.state.variables) != -1  &&
             $.inArray('vosaline', this.state.variables) != -1;

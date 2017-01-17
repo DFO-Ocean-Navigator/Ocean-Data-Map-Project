@@ -4,6 +4,7 @@ import {Button, SplitButton, DropdownButton, MenuItem, Modal} from 'react-bootst
 import Papa from 'papaparse';
 import Icon from './Icon.jsx';
 import DrifterSelector from './DrifterSelector.jsx';
+import ObservationSelector from './ObservationSelector.jsx';
 var i18n = require('../i18n.js');
 
 import 'jquery-ui-css/base.css';
@@ -21,6 +22,9 @@ class MapToolbar extends React.Component {
             class4Files: {},
             parser: null,
             showDriftersSelect: false,
+            showObservationSelect: false,
+            observationSelection: {ship:[],trip:[]},
+            drifterList: [],
         };
     }
 
@@ -132,6 +136,10 @@ class MapToolbar extends React.Component {
             this.odvinput.click();
         } else if (key == "draw") {
             this.props.action("point");
+        } else if (key == "observation") {
+            this.setState({
+                showObservationSelect: true,
+            });
         } else {
             this.props.action("show", "points", key);
         }
@@ -175,6 +183,28 @@ class MapToolbar extends React.Component {
 
     drifterSelection(list) {
         this.setState({drifterList: list});
+    }
+
+    observationSelect(selection) {
+        var result = ""
+        if (selection.ship.length > 0) {
+            result += "ship:";
+            result += selection.ship.join(",");
+        }
+
+        if (selection.trip.length > 0) {
+            if (selection.ship.length > 0) {
+                result += ";";
+            }
+
+            result += "trip:";
+            result += selection.trip.join(",");
+        }
+        this.props.action("show", "observations", result);
+    }
+
+    observationSelection(list) {
+        this.setState({observationSelection: list});
     }
 
     class4Select(key) {
@@ -390,6 +420,8 @@ class MapToolbar extends React.Component {
                 <SplitButton name="point" id="point" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Point")}</span>} onSelect={this.pointSelect.bind(this)}>
                     {pointFiles}
                     <MenuItem divider />
+                    <MenuItem eventKey='observation' key='observation'><Icon icon='list'/> {_("Observations…")}</MenuItem>
+                    <MenuItem divider />
                     <MenuItem eventKey='draw' key='draw'><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
                     <MenuItem eventKey='custom' key='custom'><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
                     <MenuItem eventKey='odv' key='odv'><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
@@ -434,11 +466,25 @@ class MapToolbar extends React.Component {
                         <Modal.Title>{_("Select Drifters")}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <DrifterSelector select={this.drifterSelection.bind(this)}/>
+                        <DrifterSelector select={this.drifterSelection.bind(this)} state={this.state.drifterList}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={() => this.setState({showDriftersSelect: false})}><Icon icon="close" /> {_("Close")}</Button>
                         <Button onClick={function() {this.drifterSelect(this.state.drifterList.join(',')); this.setState({showDriftersSelect: false});}.bind(this)}><Icon icon="check" /> {_("Apply")}</Button>
+                    </Modal.Footer>
+
+                </Modal>
+
+                <Modal show={this.state.showObservationSelect} onHide={() => this.setState({showObservationSelect: false})} dialogClassName="observation-modal">
+                    <Modal.Header closeButton>
+                        <Modal.Title>{_("Select Observations")}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <ObservationSelector select={this.observationSelection.bind(this)} state={this.state.observationSelection} />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={() => this.setState({showObservationSelect: false})}><Icon icon="close" /> {_("Close")}</Button>
+                        <Button onClick={function() {this.observationSelect(this.state.observationSelection); this.setState({showObservationSelect: false});}.bind(this)}><Icon icon="check" /> {_("Apply")}</Button>
                     </Modal.Footer>
 
                 </Modal>

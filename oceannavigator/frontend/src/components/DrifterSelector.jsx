@@ -7,6 +7,7 @@ class DrifterSelector extends React.Component {
     constructor(props) {
         super(props);
 
+        console.log(props.state);
         this.state = {
             imei: [],
             wmo: [],
@@ -18,15 +19,38 @@ class DrifterSelector extends React.Component {
     }
 
     componentDidMount() {
+        console.log("Did mount");
         $.ajax({
             url: '/api/drifters/meta/',
             dataType: 'json',
             success: function(data) {
+                var imei = Object.keys(data.imei).filter(function (k) {
+                    var list = data.imei[k];
+                    return list.every(function (e) {
+                        return $.inArray(e, this.props.state) != -1;
+                    }.bind(this));
+                }.bind(this));
+                var wmo = Object.keys(data.wmo).filter(function (k) {
+                    var list = data.wmo[k];
+                    return list.every(function (e) {
+                        return $.inArray(e, this.props.state) != -1;
+                    }.bind(this));
+                }.bind(this));
+                var deployment = Object.keys(data.deployment).filter(function (k) {
+                    var list = data.deployment[k];
+                    return list.every(function (e) {
+                        return $.inArray(e, this.props.state) != -1;
+                    }.bind(this));
+                }.bind(this));
                 this.setState({
                     imei_map: data['imei'],
                     wmo_map: data['wmo'],
-                    deployment_map: data['deployment']
+                    deployment_map: data['deployment'],
+                    imei: imei,
+                    wmo: wmo,
+                    deployment: deployment,
                 });
+
             }.bind(this),
             error: function(r, status, err) {
                 console.error('/api/drifter/meta.json', status, err.toString());

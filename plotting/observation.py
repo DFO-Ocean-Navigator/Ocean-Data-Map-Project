@@ -9,6 +9,7 @@ import re
 import dateutil.parser
 import pytz
 import point
+import numbers
 from flask.ext.babel import gettext, format_datetime
 
 
@@ -19,6 +20,50 @@ class ObservationPlotter(point.PointPlotter):
         super(ObservationPlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):
+        if isinstance(self.observation[0], numbers.Number):
+            self.observation_variable_names = []
+            self.observation_variable_units = []
+            with Dataset(
+                'http://127.0.0.1:8080/thredds/dodsC/misc/observations/aggregated.ncml',
+                'r'
+            ) as ds:
+                t = netcdftime.utime(ds['time'].units)
+                for idx, o in enumerate(self.observation):
+                    observation = {}
+                    ts = t.num2date(ds['time'][o]).replace(tzinfo=pytz.UTC)
+                    observation['time'] = ts.isoformat()
+                    observation['longitude'] = ds['lon'][o]
+                    observation['latitude'] = ds['lat'][o]
+
+                    observation['depth'] = ds['z'][:]
+                    observation['depthunit'] = ds['z'].units
+
+                    observation['datatypes'] = []
+                    data = []
+                    for v in sorted(ds.variables):
+                        if v in ['z', 'lat', 'lon', 'profile', 'time']:
+                            continue
+                        var = ds[v]
+                        if var.datatype == '|S1':
+                            continue
+
+                        observation['datatypes'].append("%s [%s]" % (
+                            var.long_name,
+                            var.units
+                        ))
+                        data.append(var[o, :])
+
+                        if idx == 0:
+                            self.observation_variable_names.append(
+                                var.long_name)
+                            self.observation_variable_units.append(var.units)
+
+                    observation['data'] = np.ma.array(data).transpose()
+                    self.observation[idx] = observation
+
+                self.points = map(lambda o: [o['latitude'], o['longitude']],
+                                  self.observation)
+
         with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
             time_var = utils.get_time_var(dataset)
 
@@ -61,22 +106,24 @@ class ObservationPlotter(point.PointPlotter):
 
         observation_variable = map(int, query.get("observation_variable"))
         observation = query.get("observation")
+        if not isinstance(observation[0], numbers.Number):
+            observation_variable_names = map(
+                lambda x: re.sub(r" \[.*\]", "", x),
+                observation[0]['datatypes'])
+            observation_variable_units = map(
+                lambda x: re.match(r".*\[(.*)\]", x).group(1),
+                observation[0]['datatypes'])
 
-        observation_variable_names = map(lambda x: re.sub(r" \[.*\]", "", x),
-                                         observation[0]['datatypes'])
-        observation_variable_units = map(
-            lambda x: re.match(r".*\[(.*)\]", x).group(1),
-            observation[0]['datatypes'])
+            self.parse_names_points(
+                [str(o.get('station')) for o in observation],
+                [[o.get('latitude'), o.get('longitude')] for o in observation]
+            )
 
-        self.parse_names_points(
-            [str(o.get('station')) for o in observation],
-            [[o.get('latitude'), o.get('longitude')] for o in observation]
-        )
+            self.observation_variable_names = observation_variable_names
+            self.observation_variable_units = observation_variable_units
 
-        self.observation_variable = observation_variable
         self.observation = observation
-        self.observation_variable_names = observation_variable_names
-        self.observation_variable_units = observation_variable_units
+        self.observation_variable = observation_variable
 
     def plot(self):
         v = set([])
@@ -117,10 +164,17 @@ class ObservationPlotter(point.PointPlotter):
             axis_map[self.observation_variable_names[idx]] = ax[ax_idx]
 
             try:
-                unit_map[self.observation_variable_names[idx]] = \
-                    ureg.parse_units(
-                        self.observation_variable_units[idx].lower())
-            except pint.UndefinedUnitError:
+                if "_" in self.observation_variable_units[idx]:
+                    u = self.observation_variable_units[idx].lower().split(
+                        "_",
+                        1
+                    )[1]
+                else:
+                    u = self.observation_variable_units[idx].lower()
+                unit_map[
+                    self.observation_variable_names[idx]] = ureg.parse_units(u)
+
+            except:
                 unit_map[
                     self.observation_variable_names[idx]] = ureg.dimensionless
 

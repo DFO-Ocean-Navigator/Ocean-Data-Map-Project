@@ -269,6 +269,105 @@ def drifter_meta():
     }
 
 
+def observation_vars():
+    result = []
+    with Dataset(
+        'http://127.0.0.1:8080/thredds/dodsC/misc/observations/aggregated.ncml',
+        'r'
+    ) as ds:
+        for v in sorted(ds.variables):
+            if v in ['z', 'lat', 'lon', 'profile', 'time']:
+                continue
+            var = ds[v]
+            if var.datatype == '|S1':
+                continue
+
+            result.append(var.long_name)
+    return result
+
+
+def observation_meta():
+    with Dataset(
+        'http://127.0.0.1:8080/thredds/dodsC/misc/observations/aggregated.ncml',
+        'r'
+    ) as ds:
+        ship = chartostring(ds['ship'][:])
+        trip = chartostring(ds['trip'][:])
+
+        data = {
+            'ship': sorted(np.unique(ship).tolist()),
+            'trip': sorted(np.unique(trip).tolist()),
+        }
+
+        return data
+
+
+def observations(observation_id, projection, resolution, extent):
+    selected_ships = None
+    selected_trips = None
+    for i in observation_id.split(";"):
+        k, v = i.split(":")
+        if k == "ship":
+            selected_ships = v.split(",")
+        elif k == "trip":
+            selected_trips = v.split(",")
+
+    proj = pyproj.Proj(init=projection)
+    view = _get_view(extent)
+
+    points = []
+    with Dataset(
+        'http://127.0.0.1:8080/thredds/dodsC/misc/observations/aggregated.ncml',
+        'r'
+    ) as ds:
+        lat = ds['lat'][:].astype(float)
+        lon = ds['lon'][:].astype(float)
+        profile = chartostring(ds['profile'][:])
+        ship = None
+        if 'ship' in ds.variables:
+            ship = chartostring(ds['ship'][:])
+            trip = chartostring(ds['trip'][:])
+            cast = chartostring(ds['cast'][:])
+            profile = np.array(
+                ["%s %s %s" % tuple(stc)
+                 for stc in np.array([ship,
+                                      trip,
+                                      cast
+                                      ]).transpose()
+                 ])
+
+    for idx, name in enumerate(profile):
+        x, y = proj(lon[idx], lat[idx])
+        p = Point(y, x)
+
+        if ship is not None:
+            if selected_ships is not None and ship[idx] not in selected_ships:
+                continue
+            if selected_trips is not None and trip[idx] not in selected_trips:
+                continue
+
+        if view.envelope.intersects(p):
+            points.append({
+                'type': "Feature",
+                'geometry': {
+                    'type': "Point",
+                    'coordinates': [lon[idx], lat[idx]]
+                },
+                'properties': {
+                    'name': str(profile[idx]),
+                    'observation': idx,
+                    'type': 'point',
+                    'resolution': 0,
+                }
+            })
+
+    result = {
+        'type': "FeatureCollection",
+        'features': points,
+    }
+    return result
+
+
 def drifters(drifter_id, projection, resolution, extent):
     buoy_id = []
     lat = []

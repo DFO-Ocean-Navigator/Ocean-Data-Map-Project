@@ -60,6 +60,8 @@ def query_id(q, q_id):
         data = oceannavigator.misc.list_class4(q_id)
     elif q == 'drifters' and q_id == 'meta':
         data = oceannavigator.misc.drifter_meta()
+    elif q == 'observation' and q_id == 'meta':
+        data = oceannavigator.misc.observation_meta()
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -88,6 +90,9 @@ def query_file(q, projection, resolution, extent, file_id):
         data = oceannavigator.misc.drifters(
             file_id, projection, resolution, extent)
         max_age = 3600
+    elif q == 'observations':
+        data = oceannavigator.misc.observations(
+            file_id, projection, resolution, extent)
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -196,6 +201,17 @@ def depth():
     data = [
         e for i, e in enumerate(data) if data.index(e) == i
     ]
+
+    js = json.dumps(data)
+    resp = Response(js, status=200, mimetype='application/json')
+    return resp
+
+
+@app.route('/api/observationvariables/')
+def obs_vars_query():
+    data = []
+    for idx, v in enumerate(oceannavigator.misc.observation_vars()):
+        data.append({'id': idx, 'value': v})
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
