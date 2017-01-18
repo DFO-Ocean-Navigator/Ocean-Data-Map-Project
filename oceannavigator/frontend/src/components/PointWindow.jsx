@@ -28,7 +28,7 @@ class PointWindow extends React.Component {
             starttime: Math.max(props.time - 24, 0),
             variables: [],
             variable: [props.variable],
-            observation_variable: [0],
+            observation_variable: [7],
             size: "10x7",
             dpi: 72,
         }
