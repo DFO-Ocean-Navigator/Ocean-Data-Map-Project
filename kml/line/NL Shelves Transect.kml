@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>NL Shelves Transect.kml</name>
+	<open>1</open>
+	<Style id="s_ylw-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="m_ylw-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#s_ylw-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#s_ylw-pushpin_hl</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="s_ylw-pushpin_hl">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Folder>
+		<name>NL Shelves Transect</name>
+		<open>1</open>
+		<Placemark>
+			<name>NL Shelves Transect</name>
+			<styleUrl>#m_ylw-pushpin</styleUrl>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+					-61.68750235148723,63.47558556960229,0 -62.13398993669456,62.43375947264345,0 -62.59154149235501,61.15913025406154,0 -62.50493487502794,60.09389965239432,0 -61.71644444061074,58.96884706222176,0 -60.66698985769681,57.56107331398908,0 -59.63300551935491,56.42882345401587,0 -58.29469854212385,55.53994621360852,0 -56.93205763380295,54.90632218049309,0 -55.38939387352546,54.03182295085655,0 -54.00705689226947,53.01390990197555,0 -53.32808014419506,51.58905264925608,0 -52.39108064841592,50.18232021498889,0 -51.34019579088673,48.28077543357972,0 -50.79134356365509,46.35771585824963,0 -50.95152273214791,45.07362358642444,0 -51.05390205658202,43.90889453544335,0 
+				</coordinates>
+			</LineString>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>
