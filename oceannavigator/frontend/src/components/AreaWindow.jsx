@@ -69,14 +69,21 @@ class AreaWindow extends React.Component {
         var parentKeys = [];
         var parentValues = [];
 
-        if (newState.hasOwnProperty('variable_scale') && this.state.variable.length == 1) {
-            parentKeys.push('variable_scale');
-            parentValues.push(newState.variable_scale);
+        if (newState.hasOwnProperty('variable_scale')) {
+            if (typeof(this.state.variable) === "string" || this.state.variable.length == 1) {
+                parentKeys.push('variable_scale');
+                parentValues.push(newState.variable_scale);
+            }
         }
 
-        if (newState.hasOwnProperty('variable') && newState.variable.length == 1) {
-            parentKeys.push('variable');
-            parentValues.push(newState.variable[0]);
+        if (newState.hasOwnProperty('variable')) {
+            if (typeof(this.state.variable) === "string") {
+                parentKeys.push('variable');
+                parentValues.push(newState.variable);
+            } else if (this.state.variable.length == 1) {
+                parentKeys.push('variable');
+                parentValues.push(newState.variable[0]);
+            }
         }
 
         if (parentKeys.length > 0) {
@@ -109,7 +116,7 @@ class AreaWindow extends React.Component {
         var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
         var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('End Time')} onUpdate={this.props.onUpdate} min={this.state.starttime} />;
         var depth = <ComboBox key='depth' id='depth' state={this.props.depth} def={''} onUpdate={this.props.onUpdate.bind(this)} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.props.dataset} title={_('Depth')}></ComboBox>;
-        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
+        var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors&dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
         var multivariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
         var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
         var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
