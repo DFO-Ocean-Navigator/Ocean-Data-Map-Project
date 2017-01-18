@@ -11,9 +11,10 @@ var i18n = require('../i18n.js');
 class DrifterWindow extends React.Component {
     constructor(props) {
         super(props);
+
         this.state = {
             showmap: true,
-            variable: [props.variable],
+            variable: props.variable.indexOf(',') == -1 ? [props.variable] : props.variable.split(','),
             latlon: false,
             buoyvariable: ['sst'],
             starttime: null,

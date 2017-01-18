@@ -42,6 +42,20 @@ class TransectPlotter(line.LinePlotter):
             time_var = utils.get_time_var(dataset)
             time = self.clip_value(self.time, time_var)
 
+            for idx, v in enumerate(self.variables):
+                var = dataset.variables[v]
+                if not 'deptht' in var.dimensions and \
+                   not 'depth' in var.dimensions:
+
+                    for potential in dataset.variables:
+                        if potential in self.variables:
+                            continue
+                        pot = dataset.variables[potential]
+                        if 'deptht' in pot.dimensions or 'depth' in pot.dimensions:
+                            if len(pot.shape) > 3:
+                                self.variables[idx] = potential
+                                self.variables_anom[idx] = potential
+
             value = parallel = perpendicular = None
             if len(self.variables) > 1:
                 v = []
