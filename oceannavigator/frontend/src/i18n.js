@@ -8,6 +8,7 @@ i18n
         nsSeparator: false,
         keySeparator: false,
         whitelist: ['en', 'fr'],
+        fallbackLng: 'en',
         resources: {
             fr: {
                 translation: require('../../translations/fr.json'),
