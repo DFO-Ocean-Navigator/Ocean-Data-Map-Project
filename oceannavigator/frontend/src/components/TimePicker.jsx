@@ -52,9 +52,19 @@ class TimePicker extends React.Component {
                         }
                     }
                     for (var d in data) {
-                        var da = new Date(data[d].value);
-                        map[data[d].id] = new Date(da.getTime() + da.getTimezoneOffset() * 60000);
-                        revmap[new Date(data[d].value).toUTCString()] = data[d].id;
+                        var d1 = new Date(data[d].value);
+                        var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
+                        var d3 = d2;
+                        if (this.props.quantum != "hour") {
+                            d3 = new Date(Date.UTC(
+                                d1.getUTCFullYear(),
+                                d1.getUTCMonth(),
+                                d1.getUTCDate(),
+                                0, 0, 0, 0
+                            ));
+                        }
+                        map[data[d].id] = d2;
+                        revmap[d3.toUTCString()] = data[d].id;
                     }
                     this.setState({
                         data: data,
