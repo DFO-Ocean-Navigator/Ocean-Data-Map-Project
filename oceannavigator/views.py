@@ -198,7 +198,9 @@ def depth():
                             'value': "%d " % (value) + depth_var.units % value
                         })
 
-                data.insert(0, {'id': 'bottom', 'value': gettext('Bottom')})
+                if len(data) > 0:
+                    data.insert(
+                        0, {'id': 'bottom', 'value': gettext('Bottom')})
     data = [
         e for i, e in enumerate(data) if data.index(e) == i
     ]

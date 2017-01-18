@@ -94,7 +94,11 @@ class ComboBox extends React.Component {
                         }
                     }
                     if (data.length > 0 && !props.multiple && jQuery.inArray(value, a) == -1 && jQuery.inArray(floatValue, a) == -1) {
-                        value = data[0].id;
+                        if (jQuery.inArray(0, a) != -1) {
+                            value = 0;
+                        } else {
+                            value = data[0].id;
+                        }
                     }
                     if (typeof(this.props.onUpdate) === "function") {
                         props.onUpdate(props.id, value);
