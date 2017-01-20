@@ -31,10 +31,16 @@ class LineWindow extends React.Component {
     }
 
     componentWillReceiveProps(props) {
-        this.setState({
-            depth: props.depth,
-            scale: (this.state.scale.indexOf('auto') != -1) ? props.scale + ",auto" : props.scale,
-        });
+        if (props.depth != this.props.depth) {
+            this.setState({
+                depth: props.depth,
+            });
+        }
+        if (props.scale != this.props.scale) {
+            this.setState({
+                scale: (this.state.scale.indexOf('auto') != -1) ? props.scale + ",auto" : props.scale,
+            });
+        }
     }
 
     onLocalUpdate(key, value) {

@@ -1,15 +1,26 @@
 import React from 'react';
+import NumericInput from 'react-numeric-input';
+
 var i18n = require('../i18n.js');
 
 class Range extends React.Component {
     constructor(props) {
         super(props);
+        var scale = this.props.state;
+        if (typeof(this.props.state.split) === "function") {
+            scale = this.props.state.split(",");
+        }
+        var min = parseFloat(scale[0]);
+        var max = parseFloat(scale[1]);
         this.state = {
-            auto: this.props.auto
+            auto: this.props.auto,
+            min: min,
+            max: max,
         }
     }
     updateParent() {
-        var range = this.min.value.toString() + ',' + this.max.value.toString();
+        clearTimeout(this.timeout);
+        var range = this.state.min.toString() + ',' + this.state.max.toString() + (this.state.auto ? ",auto" : '');
         this.props.onUpdate(this.props.id, range);
     }
     componentWillReceiveProps(nextProps) {
@@ -18,8 +29,26 @@ class Range extends React.Component {
             scale = nextProps.state.split(",");
         }
         if (scale.length > 1) {
-            this.min.value = parseFloat(scale[0]);
-            this.max.value = parseFloat(scale[1]);
+            this.setState({
+                min: parseFloat(scale[0]),
+                max: parseFloat(scale[1]),
+            });
+        }
+    }
+    changed(key, value) {
+        clearTimeout(this.timeout);
+        var state = {}
+        state[key] = value;
+        this.setState(state);
+        this.timeout = setTimeout(this.updateParent.bind(this), 500);
+    }
+    keyPress(e) {
+        var key = e.which || e.keyCode;
+        if (key == 13) {
+            this.updateParent();
+            return false;
+        } else {
+            return true;
         }
     }
     autoChanged(e) {
@@ -66,7 +95,15 @@ class Range extends React.Component {
                                 <label htmlFor={this.props.id + '_min'}>{_("Min:")}</label>
                             </td>
                             <td>
-                                <input ref={(x) => this.min = x} id={this.props.id + '_min'} type='number' defaultValue={min} onChange={this.rangeChanged} onBlur={this.updateParent.bind(this)} disabled={this.state.auto} />
+                                <NumericInput
+                                    value={this.state.min}
+                                    onChange={(n,s) => this.changed('min', n)}
+                                    step={0.1}
+                                    precision={1}
+                                    onBlur={this.updateParent.bind(this)}
+                                    disabled={this.state.auto}
+                                    onKeyPress={this.keyPress.bind(this)}
+                                />
                             </td>
                         </tr>
                         <tr>
@@ -74,7 +111,15 @@ class Range extends React.Component {
                                 <label htmlFor={this.props.id + '_max'}>{_("Max:")}</label>
                             </td>
                             <td>
-                                <input ref={(x) => this.max = x} id={this.props.id + '_max'} type='number' defaultValue={max} onChange={this.rangeChanged} onBlur={this.updateParent.bind(this)} disabled={this.state.auto} />
+                                <NumericInput
+                                    value={this.state.max}
+                                    onChange={(n,s) => this.changed('max', n)}
+                                    step={0.1}
+                                    precision={1}
+                                    onBlur={this.updateParent.bind(this)}
+                                    disabled={this.state.auto}
+                                    onKeyPress={this.keyPress.bind(this)}
+                                />
                             </td>
                         </tr>
                     </tbody>

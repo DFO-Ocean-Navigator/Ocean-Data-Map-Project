@@ -1,5 +1,6 @@
 import React from 'react';
 import {Modal, Button} from 'react-bootstrap';
+import NumericInput from 'react-numeric-input';
 var i18n = require('../i18n.js');
 
 class NumberBox extends React.Component {
@@ -12,10 +13,12 @@ class NumberBox extends React.Component {
     updateParent() {
         this.props.onUpdate(this.props.id, this.state.value);
     }
-    changed(e) {
+    changed(num, str) {
+        clearTimeout(this.timeout);
         this.setState({
-            value: this.refs.number.value,
+            value: num,
         });
+        this.timeout = setTimeout(this.updateParent.bind(this), 500);
     }
     keyPress(e) {
         var key = e.which || e.keyCode;
@@ -64,7 +67,12 @@ class NumberBox extends React.Component {
                                 <label htmlFor={this.props.id}>{_("Value:")}</label>
                             </td>
                             <td>
-                                <input ref='number' id={this.props.id} type='number' value={this.state.value} onChange={this.changed.bind(this)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
+                                <NumericInput
+                                    value={this.state.value}
+                                    onChange={this.changed.bind(this)}
+                                    onBlur={this.updateParent.bind(this)}
+                                    onKeyPress={this.keyPress.bind(this)}
+                                />
                             </td>
                         </tr>
                     </tbody>

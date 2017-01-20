@@ -30,12 +30,15 @@ class ContourSelector extends React.Component {
     }
 
     levelsChanged(e) {
+        clearTimeout(this.timeout);
         this.setState({
             levels: e.target.value,
         });
+        this.timeout = setTimeout(this.updateLevels.bind(this), 500);
     }
 
     updateLevels() {
+        clearTimeout(this.timeout);
         this.onUpdate('levels', this.state.levels);
     }
 

@@ -1,4 +1,6 @@
 import React from 'react'
+import NumericInput from 'react-numeric-input';
+
 var i18n = require('../i18n.js');
 
 class ImageSize extends React.Component {
@@ -20,14 +22,15 @@ class ImageSize extends React.Component {
         }
         p.children("div").slideToggle("fast");
     }
-    changed() {
-        this.setState({
-            width: parseFloat(this.refs.width.value),
-            height: parseFloat(this.refs.height.value),
-            dpi: parseFloat(this.refs.dpi.value),
-        });
-        this.props.onUpdate('size', parseFloat(this.refs.width.value) + 'x' + parseFloat(this.refs.height.value));
-        this.props.onUpdate('dpi', parseFloat(this.refs.dpi.value));
+    changed(key, value) {
+        var newstate = {};
+        newstate[key] = value;
+        this.setState(newstate);
+        if (key == "width" || key == "height") {
+            this.props.onUpdate('size', this.state.width + 'x' + this.state.height);
+        } else if (key == "dpi") {
+            this.props.onUpdate('dpi', this.state.dpi);
+        }
     }
     render() {
         _("inches");
@@ -38,17 +41,41 @@ class ImageSize extends React.Component {
                     <tbody>
                         <tr>
                             <td><label htmlFor={this.props.id + '_width'}>{_("Width:")}</label></td>
-                            <td><input ref='width' id={this.props.id + '_width'} type='number' step='0.25' defaultValue={parseFloat(this.state.width).toFixed(2)} onBlur={this.changed.bind(this)} /></td>
+                            <td>
+                                <NumericInput
+                                    id={this.props.id + '_width'}
+                                    step={0.25}
+                                    value={this.state.width}
+                                    precision={2}
+                                    onChange={(n, s) => this.changed('width', n)}
+                                />
+                            </td>
                             <td>{_("inches")}</td>
                         </tr>
                         <tr>
                             <td><label htmlFor={this.props.id + '_height'}>{_("Height:")}</label></td>
-                            <td><input ref='height' id={this.props.id + '_height'} type='number' step='0.25' defaultValue={parseFloat(this.state.height).toFixed(2)} onBlur={this.changed.bind(this)} /></td>
+                            <td>
+                                <NumericInput
+                                    id={this.props.id + '_height'}
+                                    step={0.25}
+                                    value={this.state.height}
+                                    precision={2}
+                                    onChange={(n, s) => this.changed('height', n)}
+                                />
+                            </td>
                             <td>{_("inches")}</td>
                         </tr>
                         <tr>
                             <td><label htmlFor={this.props.id + '_dpi'}>{_("DPI:")}</label></td>
-                            <td><input ref='dpi' id={this.props.id + '_dpi'} type='number' step='1' defaultValue={parseFloat(this.state.dpi).toFixed(0)} onBlur={this.changed.bind(this)} /></td>
+                            <td>
+                                <NumericInput
+                                    id={this.props.id + '_dpi'}
+                                    step={1}
+                                    value={this.state.dpi}
+                                    precision={0}
+                                    onChange={(n, s) => this.changed('dpi', n)}
+                                />
+                            </td>
                             <td></td>
                         </tr>
                     </tbody>

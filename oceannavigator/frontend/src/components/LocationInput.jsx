@@ -1,16 +1,20 @@
 import React from 'react';
+import NumericInput from 'react-numeric-input';
+
 var i18n = require('../i18n.js');
 
 class LocationInput extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            latitude: parseFloat(this.props.state[0][0]),
+            longitude: parseFloat(this.props.state[0][1]),
+        }
     }
 
     updateParent() {
-        var lat = parseFloat(this.latinput.value);
-        var lon = parseFloat(this.loninput.value);
-
-        this.props.onUpdate(this.props.id, [[lat, lon]]);
+        clearTimeout(this.timeout);
+        this.props.onUpdate(this.props.id, [[this.state.latitude, this.state.longitude]]);
     }
 
     keyPress(e) {
@@ -21,6 +25,14 @@ class LocationInput extends React.Component {
         } else {
             return true;
         }
+    }
+
+    changed(key, value) {
+        clearTimeout(this.timeout);
+        var state = {}
+        state[key] = value;
+        this.setState(state);
+        this.timeout = setTimeout(this.updateParent.bind(this), 500);
     }
 
     render() {
@@ -39,7 +51,15 @@ class LocationInput extends React.Component {
                                 <label htmlFor={this.props.id + '_lat'}>{_("Lat:")}</label>
                             </td>
                             <td>
-                                <input ref={(i) => this.latinput = i} id={this.props.id + '_lat'} type='number' step='0.0001' defaultValue={parseFloat(latlon[0]).toFixed(4)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
+                                <NumericInput
+                                    value={this.state.latitude}
+                                    precision={4}
+                                    step={0.01}
+                                    onChange={(n,s) => this.changed('latitude', n)}
+                                    onBlur={this.updateParent.bind(this)}
+                                    onKeyPress={this.keyPress.bind(this)}
+                                    id={this.props.id + '_lat'}
+                                />
                             </td>
                         </tr>
                         <tr>
@@ -47,7 +67,15 @@ class LocationInput extends React.Component {
                                 <label htmlFor={this.props.id + '_lon'}>{_("Lon:")}</label>
                             </td>
                             <td>
-                                <input ref={(i) => this.loninput = i} id={this.props.id + '_lon'} type='number' step='0.0001' defaultValue={parseFloat(latlon[1]).toFixed(4)} onBlur={this.updateParent.bind(this)} onKeyPress={this.keyPress.bind(this)} />
+                                <NumericInput
+                                    value={this.state.longitude}
+                                    precision={4}
+                                    step={0.01}
+                                    onChange={(n,s) => this.changed('longitude', n)}
+                                    onBlur={this.updateParent.bind(this)}
+                                    onKeyPress={this.keyPress.bind(this)}
+                                    id={this.props.id + '_lon'}
+                                />
                             </td>
                         </tr>
                     </tbody>
