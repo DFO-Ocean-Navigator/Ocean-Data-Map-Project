@@ -1,2 +1,7 @@
 import matplotlib
-matplotlib.use('AGG')  # Force the non-interactive PNG backend
+
+# Force the non-interactive PNG backend
+matplotlib.use('AGG')
+
+# Use a font that supports unicode glyphs
+matplotlib.rc('font', family='DejaVu Sans')
