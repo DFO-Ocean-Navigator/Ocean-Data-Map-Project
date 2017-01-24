@@ -99,7 +99,7 @@ class Range extends React.Component {
                                     value={this.state.min}
                                     onChange={(n,s) => this.changed('min', n)}
                                     step={0.1}
-                                    precision={1}
+                                    precision={3}
                                     onBlur={this.updateParent.bind(this)}
                                     disabled={this.state.auto}
                                     onKeyPress={this.keyPress.bind(this)}
@@ -115,7 +115,7 @@ class Range extends React.Component {
                                     value={this.state.max}
                                     onChange={(n,s) => this.changed('max', n)}
                                     step={0.1}
-                                    precision={1}
+                                    precision={3}
                                     onBlur={this.updateParent.bind(this)}
                                     disabled={this.state.auto}
                                     onKeyPress={this.keyPress.bind(this)}
