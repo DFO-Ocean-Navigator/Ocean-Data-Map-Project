@@ -359,7 +359,7 @@ def scale(dataset, variable, scale):
         'scale': scale,
     })
     resp = Response(img, status=200, mimetype='image/png')
-    resp.cache_control.max_age = 86400
+    resp.cache_control.max_age = MAX_CACHE
     return resp
 
 
