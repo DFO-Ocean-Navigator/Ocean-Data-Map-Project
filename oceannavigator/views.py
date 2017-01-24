@@ -30,6 +30,8 @@ import plotting.colormap
 import base64
 import pytz
 
+MAX_CACHE = 315360000
+
 
 @app.route('/api/<string:q>/')
 def query(q):
@@ -370,7 +372,7 @@ def _cache_and_send_img(img, f):
         out.write(img)
 
     resp = Response(img, status=200, mimetype='image/png')
-    resp.cache_control.max_age = 86400
+    resp.cache_control.max_age = MAX_CACHE
     return resp
 
 
@@ -379,7 +381,7 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     if os.path.isfile(f):
-        return send_file(f, mimetype='image/png', cache_timeout=86400)
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
         if depth != "bottom" and depth != "all":
             depth = int(depth)
@@ -400,7 +402,7 @@ def topo(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     if os.path.isfile(f):
-        return send_file(f, mimetype='image/png', cache_timeout=86400)
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
         img = plotting.tile.topo(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
