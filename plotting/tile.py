@@ -276,7 +276,7 @@ def plot(projection, x, y, z, args):
     img = sm.to_rgba(np.squeeze(data))
 
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-    im.save(fname, format='png')
+    im.save(fname, format='png', optimize=True)
     with open(fname, 'r') as f:
         buf = f.read()
         os.remove(fname)
@@ -333,7 +333,7 @@ def topo(projection, x, y, z, args):
     f, fname = tempfile.mkstemp()
     os.close(f)
 
-    im.save(fname, format='png')
+    im.save(fname, format='png', optimize=True)
     with open(fname, 'r') as f:
         buf = f.read()
         os.remove(fname)
