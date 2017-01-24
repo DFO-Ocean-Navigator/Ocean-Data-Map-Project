@@ -8,6 +8,7 @@ import Range from './Range.jsx';
 import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
 import ImageSize from './ImageSize.jsx';
+import DepthLimit from './DepthLimit.jsx';
 var i18n = require('../i18n.js');
 
 class LineWindow extends React.Component {
@@ -23,6 +24,7 @@ class LineWindow extends React.Component {
             linearthresh: 200,
             size: "10x7",
             dpi: 72,
+            depth_limit: false,
         }
 
         if (props.init != null) {
@@ -87,6 +89,7 @@ class LineWindow extends React.Component {
         var linearthreshold = <NumberBox key='linearthresh' id='linearthresh' state={this.state.linearthresh} onUpdate={this.onLocalUpdate.bind(this)} title={_('Linear Threshold')}>The depth axis is broken into two parts at the linear threshold. Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.</NumberBox>;
         var surfacevariable = <ComboBox key='surfacevariable' id='surfacevariable' state={this.state.surfacevariable} onUpdate={this.onLocalUpdate.bind(this)} title={_('Surface Variable')} url={'/api/variables/?dataset=' + this.props.dataset}>Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition. If the variable selected has multiple depths, the surface depth will be used.</ComboBox>;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
+        var depthlimit = <DepthLimit key='depth_limit' id='depth_limit' state={this.state.depth_limit} onUpdate={this.onLocalUpdate.bind(this)} />;
 
         var inputs = [];
         var plot_query = {
@@ -108,7 +111,8 @@ class LineWindow extends React.Component {
                 plot_query.time = this.props.time;
                 plot_query.surfacevariable = this.state.surfacevariable;
                 plot_query.linearthresh = this.state.linearthresh;
-                inputs = [dataset, time, variable, showmap, scale, linearthreshold, colormap, surfacevariable];
+                plot_query.depth_limit = this.state.depth_limit;
+                inputs = [dataset, time, variable, showmap, scale, linearthreshold, depthlimit, colormap, surfacevariable];
                 break;
             case 2:
                 plot_query.type = 'hovmoller';

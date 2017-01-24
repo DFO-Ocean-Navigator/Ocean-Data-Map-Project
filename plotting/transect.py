@@ -23,6 +23,14 @@ class TransectPlotter(line.LinePlotter):
         super(TransectPlotter, self).__init__(dataset_name, query, format)
         self.size = '11x5'
 
+    def parse_query(self, query):
+        super(TransectPlotter, self).parse_query(query)
+        depth_limit = query.get("depth_limit")
+        if depth_limit is None or depth_limit == '' or depth_limit is False:
+            self.depth_limit = None
+        else:
+            self.depth_limit = int(depth_limit)
+
     def load_data(self):
         interp = utils.get_interpolation(self.query)
         with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
@@ -416,7 +424,11 @@ class TransectPlotter(line.LinePlotter):
                            vmax=vmax)
         ax = plt.gca()
         ax.invert_yaxis()
-        plt.yscale('symlog', linthreshy=self.linearthresh)
+        if self.depth_limit is None or (
+            self.depth_limit is not None and
+            self.linearthresh < self.depth_limit
+        ):
+            plt.yscale('symlog', linthreshy=self.linearthresh)
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         # Mask out the bottom
@@ -435,10 +447,19 @@ class TransectPlotter(line.LinePlotter):
                   self.transect_data['distance'][-1]])
 
         # Tighten the y-limits
-        deep = np.amax(self.bathymetry['y'] * -1)
-        l = 10 ** np.floor(np.log10(deep))
-        plt.ylim(np.ceil(deep / l) * l, 0)
-        plt.yticks(list(plt.yticks()[0]) + [self.linearthresh, plt.ylim()[0]])
+        if self.depth_limit:
+            plt.ylim(self.depth_limit, 0)
+        else:
+            deep = np.amax(self.bathymetry['y'] * -1)
+            l = 10 ** np.floor(np.log10(deep))
+            plt.ylim(np.ceil(deep / l) * l, 0)
+
+        ticks = sorted(set(list(plt.yticks()[0]) + [self.linearthresh,
+                                                    plt.ylim()[0]]))
+        if self.depth_limit is not None:
+            ticks = filter(lambda y: y <= self.depth_limit, ticks)
+
+        plt.yticks(ticks)
 
         # Show the linear threshold
         plt.plot([self.transect_data['distance'][0],

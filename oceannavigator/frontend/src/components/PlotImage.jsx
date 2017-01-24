@@ -95,6 +95,7 @@ class PlotImage extends React.Component {
                 query.surfacevariable = q.surfacevariable;
                 query.linearthresh = q.linearthresh;
                 query.name = q.name;
+                query.depth_limit = q.depth_limit;
                 break;
             case "hovmoller":
                 query.variable = q.variable;
