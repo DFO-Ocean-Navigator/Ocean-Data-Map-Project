@@ -5,6 +5,7 @@ var BUILD_DIR = path.resolve(__dirname, 'public');
 var APP_DIR = path.resolve(__dirname, 'src');
 
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var config = {
     entry: [
@@ -65,7 +66,14 @@ var config = {
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
         }),
-        new ExtractTextPlugin("oceannavigator.css")
+        new ExtractTextPlugin("oceannavigator.css"),
+        new HtmlWebpackPlugin({
+            'filename': '../index.html',
+            'hash': true,
+            'title': "Ocean Navigator",
+            'xhtml': true,
+            'template': 'src/index.ejs'
+        })
     ]
 };
 
