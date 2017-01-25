@@ -3,6 +3,7 @@ import ol from 'openlayers';
 require('openlayers/css/ol.css');
 var proj4 = require('proj4/lib/index.js');
 var i18n = require('../i18n.js');
+var SmartPhone = require('detect-mobile-browser')(false);
 
 ol.proj.setProj4(proj4);
 
@@ -188,7 +189,7 @@ class Map extends React.Component {
                                 });
                             } else {
                                 endImage = new ol.style.Circle({
-                                    radius: 4,
+                                    radius: SmartPhone.isAny() ? 6 : 4,
                                     fill: new ol.style.Fill({
                                         color: '#ff0000',
                                     }),
@@ -203,7 +204,7 @@ class Map extends React.Component {
                                 new ol.style.Style({
                                     stroke: new ol.style.Stroke({
                                         color: color,
-                                        width: 2
+                                        width: SmartPhone.isAny() ? 4 : 2,
                                     })
                                 }),
                                 new ol.style.Style({
@@ -213,7 +214,7 @@ class Map extends React.Component {
                                 new ol.style.Style({
                                     geometry: new ol.geom.Point(start),
                                     image: new ol.style.Circle({
-                                        radius: 4,
+                                        radius: SmartPhone.isAny() ? 6 : 4,
                                         fill: new ol.style.Fill({
                                             color: '#008000',
                                         }),
@@ -231,7 +232,7 @@ class Map extends React.Component {
                             var green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
                             return new ol.style.Style({
                                 image: new ol.style.Circle({
-                                    radius: 4,
+                                    radius: SmartPhone.isAny() ? 6 : 4,
                                     fill: new ol.style.Fill({
                                         color: [red, green, 0, 1],
                                     }),
@@ -245,10 +246,10 @@ class Map extends React.Component {
                             return new ol.style.Style({
                                 stroke: new ol.style.Stroke({
                                     color: '#ff0000',
-                                    width: 4
+                                    width: SmartPhone.isAny() ? 8 : 4,
                                 }),
                                 image: new ol.style.Circle({
-                                    radius: 4,
+                                    radius: SmartPhone.isAny() ? 6 : 4,
                                     fill: new ol.style.Fill({
                                         color: '#ff0000',
                                     }),
@@ -353,7 +354,7 @@ class Map extends React.Component {
                             width: 4
                         }),
                         image: new ol.style.Circle({
-                            radius: 4,
+                            radius: SmartPhone.isAny() ? 6 : 4,
                             fill: new ol.style.Fill({
                                 color: '#0099ff',
                             }),

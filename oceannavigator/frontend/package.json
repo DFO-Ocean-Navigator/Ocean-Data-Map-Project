@@ -18,6 +18,7 @@
     "bootstrap": "^3.3.7",
     "dateformat": "^1.0.12",
     "detect-browser": "^1.5.0",
+    "detect-mobile-browser": "^5.0.0",
     "es6-promise": "~3.3.1",
     "font-awesome": "^4.6.3",
     "i18next": "^4.1.4",
