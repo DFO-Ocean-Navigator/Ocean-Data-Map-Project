@@ -112,6 +112,7 @@ def query_datasets():
             'value': ds['name'],
             'quantum': ds['quantum'],
             'help': ds.get('help'),
+            'attribution': ds.get('attribution'),
         })
 
     data = sorted(data, key=lambda k: k['value'])

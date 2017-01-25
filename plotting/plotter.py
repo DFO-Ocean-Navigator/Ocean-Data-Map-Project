@@ -7,8 +7,14 @@ import utils
 import colormap
 import re
 import pint
-from oceannavigator.util import get_variable_unit, get_variable_name
+from oceannavigator.util import (
+    get_variable_unit,
+    get_variable_name,
+    get_dataset_attribution
+)
 from flask.ext.babel import format_date, format_datetime
+import contextlib
+from PIL import Image
 
 
 class Plotter:
@@ -126,8 +132,10 @@ class Plotter:
         if fig is None:
             fig = plt.gcf()
 
-        buf = StringIO()
-        try:
+        fig.text(0.9, 0, get_dataset_attribution(self.dataset_name),
+                 ha='right', size='small', va='top')
+
+        with contextlib.closing(StringIO()) as buf:
             plt.savefig(
                 buf,
                 format=self.filetype,
@@ -136,13 +144,18 @@ class Plotter:
                 pad_inches=0.5,
             )
             plt.close(fig)
+
+            if self.filetype == 'png':
+                buf.seek(0)
+                im = Image.open(buf)
+                with contextlib.closing(StringIO()) as buf2:
+                    im.save(buf2, format='PNG', optimize=True)
+                    return (buf2.getvalue(), self.mime, self.filename)
+
             return (buf.getvalue(), self.mime, self.filename)
-        finally:
-            buf.close()
 
     def csv(self, header=[], columns=[], data=[]):
-        buf = StringIO()
-        try:
+        with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(
                 map(lambda h: "// %s: %s" % (h[0], h[1]), header)
             ))
@@ -155,14 +168,11 @@ class Plotter:
                 buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
-        finally:
-            buf.close()
 
     def odv_ascii(self, cruise="", variables=[], variable_units=[],
                   station=[], latitude=[], longitude=[], depth=[], time=[],
                   data=[]):
-        buf = StringIO()
-        try:
+        with contextlib.closing(StringIO()) as buf:
             buf.write("//<CreateTime>%s</CreateTime>\n" % (
                 datetime.datetime.now().isoformat()
             ))
@@ -207,8 +217,6 @@ class Plotter:
                 buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
-        finally:
-            buf.close()
 
     def get_variable_names(self, dataset, variables):
         names = []

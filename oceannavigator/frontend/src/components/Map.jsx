@@ -266,7 +266,8 @@ class Map extends React.Component {
             controls: ol.control.defaults({
                 zoom: true,
                 attributionOptions: ({
-                    collapsible: true
+                    collapsible: true,
+                    collapsed: false,
                 })
             }).extend([
                 new ol.control.MousePosition({
@@ -577,6 +578,11 @@ class Map extends React.Component {
         var props = old.getProperties();
         props['url'] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.state.scale}/{z}/{x}/{y}.png`;
         props['projection'] = this.props.state.projection;
+        props['attributions'] = [
+            new ol.Attribution({
+                html: this.props.state.dataset_attribution,
+            }),
+        ];
 
         var newSource = new ol.source.XYZ(props);
 

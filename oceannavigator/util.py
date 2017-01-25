@@ -2,6 +2,7 @@ import os
 import ConfigParser
 import json
 import oceannavigator
+import re
 
 
 _config = None
@@ -34,6 +35,15 @@ def get_dataset_url(dataset):
 
 def get_dataset_climatology(dataset):
     return get_datasets().get(dataset).get("climatology")
+
+
+def get_dataset_attribution(dataset):
+    # Strip any HTML from this
+    return re.sub(
+        r"<[^>]*>",
+        "",
+        get_datasets().get(dataset).get("attribution")
+    )
 
 
 def get_variables(dataset):
