@@ -89,6 +89,8 @@ class ComboBox extends React.Component {
                             value = props.def;
                         } else if (data.length == 1) {
                             value = props.def;
+                        } else if (props.multiple && !Array.isArray(this.props.state)) {
+                            value = [this.props.state];
                         } else {
                             value = this.props.state;
                         }

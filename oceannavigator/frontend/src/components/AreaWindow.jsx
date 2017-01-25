@@ -159,7 +159,11 @@ class AreaWindow extends React.Component {
                 plot_query.time = this.props.time;
                 plot_query.area = this.props.area;
                 plot_query.depth = this.props.depth;
-                plot_query.variable = this.state.variable.join(",");
+                if (this.state.variable.join != undefined) {
+                    plot_query.variable = this.state.variable.join(",");
+                } else {
+                    plot_query.variable = this.state.variable;
+                }
                 inputs = [dataset, time, multivariable, depth];
                 content = <StatsTable query={plot_query}/>;
                 break;
