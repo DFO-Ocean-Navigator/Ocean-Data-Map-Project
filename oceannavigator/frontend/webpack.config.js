@@ -68,7 +68,7 @@ var config = {
         }),
         new ExtractTextPlugin("oceannavigator.css"),
         new HtmlWebpackPlugin({
-            'filename': '../index.html',
+            'filename': 'index.html',
             'hash': true,
             'title': "Ocean Navigator",
             'xhtml': true,

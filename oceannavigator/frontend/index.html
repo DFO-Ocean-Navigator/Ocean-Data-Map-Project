@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Ocean Navigator</title>
+        <link rel="apple-touch-icon" sizes="57x57" href="/static/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/static/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/static/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/static/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/static/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/static/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/static/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/static/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="/static/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+        <link rel="manifest" href="/static/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/static/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Ocean Navigator</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <style>
+            body {
+                padding: 1em;
+            }
+            h1 {
+                font-variant: small-caps;
+            }
+            h2 {
+                font-size: 100%;
+                text-transform: uppercase;
+                font-weight: bold;
+                display: inline-block;
+            }
+            ol {
+                counter-reset: item;
+                margin: 0 0 1.5em;
+                padding: 0;
+            }
+            ol > li {
+                list-style-type: none;
+                margin: 0;
+                padding: 0 0 0 2em;
+                counter-increment: item;
+            }
+            ol > li:before {
+                display: inline-block;
+                width: 1em;
+                padding-right: 0.5em;
+                content: counter(item) ". ";
+                font-weight: bold;
+                text-align: right;
+            }
+            ol > li > p {
+                padding-left: 2em;
+            }
+        </style>
+    <body>
+        <div class="container">
+            <h1>Ocean Navigator</h1>
+            <ol>
+                <li>
+                    <h2>Objective of Portal</h2>
+                    <p>
+                        The Ocean Navigator prototype portal is intended for
+                        the discovery and accessibility of ocean data from
+                        ocean prediction systems. Quasi-operational and
+                        operational prediction systems from Canada and other
+                        global systems are available via this tool. Several
+                        other sources of data are available, including,
+                        validation data sources and limited observational data.
+                        More information on the data available can be found
+                        within the Ocean Navigator.
+                    </p>
+                </li>
+
+                <li>
+                    <h2>Recommended Use of Data</h2>
+                    <p>
+                        These datasets are not intended for navigational
+                        purposes.  It is expected that users of this portal
+                        will have an interest in oceanographic data and the
+                        intention is to provide oceanographic context for a
+                        wide range of users.
+                    </p>
+                </li>
+
+                <li>
+                    <h2>Data Producer Responsibility</h2>
+                    <p>
+                        The developers are not responsible for the use made of
+                        the data made accessible via this portal, or errors or
+                        omissions that potentially may occur in the data sets.
+                        While we aim to make accessible the most recent and up
+                        to date data, occasionally a delay in the data feed to
+                        the portal may be experienced.
+                    </p>
+                </li>
+
+                <li>
+                    <h2>Identification of Data Sources</h2>
+                    <p>
+                        Use of the downloaded data should identify the source
+                        of the data. Plots downloaded from the portal will have
+                        a reference to the data source. 
+                    </p>
+                    <p>
+                        Suggested citation: Dataset, http://navigator.oceansdata.ca (year)
+                        <br />
+                        Example: GIOPS daily averages, http://navigator.oceansdata.ca, 2017
+                    </p>
+                </li>
+
+                <li>
+                    <h2>For Inquiries Contact</h2>
+                    <p>
+                        Vanessa Sutton-Pande e-mail: <a href="mailto:vanessa.sutton-pande@dfo-mpo.gc.ca">vanessa.sutton-pande@dfo-mpo.gc.ca</a>
+                    </p>
+                </li>
+
+            </ol>
+
+            <div style="text-align: center; margin-top: 2em;">
+                <form action="/public/" method="get">
+                    <button class="btn btn-primary btn-lg">Access Ocean Navigator</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
