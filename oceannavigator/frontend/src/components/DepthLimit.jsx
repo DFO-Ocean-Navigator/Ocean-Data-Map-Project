@@ -6,7 +6,6 @@ class DepthLimit extends React.Component {
     constructor(props) {
         super(props);
         
-        console.log(isNaN(this.props.state), this.props.state);
         if (isNaN(this.props.state) || this.props.state == false) {
             this.state = {
                 limit: false,
