@@ -38,6 +38,7 @@ class OceanNavigator extends React.Component {
             vectortype: null,
             vectorid: null,
             busy: false,
+            basemap: 'topo',
         };
         this.mapComponent = null;
 
@@ -72,6 +73,10 @@ class OceanNavigator extends React.Component {
     updateState(key, value) {
         var newState = {};
         if (typeof(key) === "string") {
+            if (this.state[key] == value) {
+                return;
+            }
+
             newState[key] = value;
 
             if (key == 'time') {

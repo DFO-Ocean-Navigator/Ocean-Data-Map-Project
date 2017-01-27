@@ -80,6 +80,50 @@ proj3031.setExtent([-3087442.3458218463, -3087442.3458218463, 3087442.345821846,
 
 
 class Map extends React.Component {
+    getBasemap(source, projection, attribution) {
+        switch(source) {
+            case 'topo':
+                return new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
+                        projection: projection,
+                        attributions: [
+                            new ol.Attribution({
+                                html: attribution,
+                            })
+                        ],
+                    })
+                });
+                break;
+            case 'ocean':
+                return new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url: 'http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}',
+                        projection: 'EPSG:3857',
+                        attributions: [
+                            new ol.Attribution({
+                                html: attribution,
+                            })
+                        ],
+                    })
+                });
+                break;
+            case 'world':
+                return new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        projection: 'EPSG:3857',
+                        attributions: [
+                            new ol.Attribution({
+                                html: attribution,
+                            })
+                        ],
+                    })
+                });
+                break;
+        }
+    }
+
     constructor(props) {
         super(props);
 
@@ -123,26 +167,7 @@ class Map extends React.Component {
 
         this.map = new ol.Map({
             layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.XYZ({
-                        url: `/tiles/topo/${this.props.state.projection}/{z}/{x}/{y}.png`,
-                        projection: this.props.state.projection,
-                        attributions: [
-                            TOPO_ATTRIBUTION,
-                        ],
-                    })
-                    // source: new ol.source.XYZ({
-                    //     attributions: [
-                    //         new ol.Attribution({
-                    //             html: 'Tiles &copy; <a href="http://services.arcgisonline.com/ArcGIS/' +
-                    //                 'rest/services/Ocean_Basemap/MapServer">ArcGIS</a>'
-                    //         })
-                    //     ],
-                    //     url: 'http://server.arcgisonline.com/ArcGIS/rest/services/' +
-                    //         'Ocean_Basemap/MapServer/tile/{z}/{y}/{x}',
-                    //     projection: 'EPSG:3857',
-                    // })
-                }),
+                this.getBasemap(this.props.state.basemap, this.props.state.projection, this.props.state.basemap_attribution),
                 new ol.layer.Tile({
                     source: new ol.source.XYZ({
                         attributions: [
@@ -266,7 +291,7 @@ class Map extends React.Component {
             controls: ol.control.defaults({
                 zoom: true,
                 attributionOptions: ({
-                    collapsible: true,
+                    collapsible: false,
                     collapsed: false,
                 })
             }).extend([
@@ -597,14 +622,7 @@ class Map extends React.Component {
         this.map.addControl(this.scaleViewer);
         if (prevProps.state.projection != this.props.state.projection) {
             this.resetMap();
-            var baselayer = this.map.getLayers().getArray()[0];
-            baselayer.setSource(new ol.source.XYZ({
-                url: `/tiles/topo/${this.props.state.projection}/{z}/{x}/{y}.png`,
-                projection: this.props.state.projection,
-                attributions: [
-                    TOPO_ATTRIBUTION,
-                ],
-            }));
+            this.map.getLayers().setAt(0, this.getBasemap(this.props.state.basemap, this.props.state.projection, this.props.state.basemap_attribution));
             this.mapView = new ol.View({
                 projection: this.props.state.projection,
                 center: ol.proj.transform(DEF_CENTER[this.props.state.projection], 'EPSG:4326', this.props.state.projection),
@@ -616,6 +634,11 @@ class Map extends React.Component {
             this.mapView.on('change:resolution', this.constrainPan.bind(this));
             this.mapView.on('change:center', this.constrainPan.bind(this));
             this.map.setView(this.mapView);
+        }
+
+        if (prevProps.state.basemap != this.props.state.basemap ||
+            prevProps.state.basemap_attribution != this.props.state.basemap_attribution) {
+            this.map.getLayers().setAt(0, this.getBasemap(this.props.state.basemap, this.props.state.projection, this.props.state.basemap_attribution));
         }
 
         this.map.render();

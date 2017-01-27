@@ -122,6 +122,20 @@ class ComboBox extends React.Component {
             this.setState({
                 data: props.data
             });
+            var value = this.props.state;
+
+            if (typeof(props.onUpdate) === "function") {
+                for (var i = 0; i < props.data.length; i++) {
+                    var d = props.data[i];
+                    if (d.id == value) {
+                        for (var key in d) {
+                            if (d.hasOwnProperty(key) && key != 'id' && key != 'value') {
+                                props.onUpdate(props.id + '_' + key, d[key]);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     componentDidMount() {

@@ -39,11 +39,14 @@ def get_dataset_climatology(dataset):
 
 def get_dataset_attribution(dataset):
     # Strip any HTML from this
-    return re.sub(
-        r"<[^>]*>",
-        "",
-        get_datasets().get(dataset).get("attribution")
-    )
+    try:
+        return re.sub(
+            r"<[^>]*>",
+            "",
+            get_datasets().get(dataset).get("attribution")
+        )
+    except:
+        return ""
 
 
 def get_variables(dataset):
