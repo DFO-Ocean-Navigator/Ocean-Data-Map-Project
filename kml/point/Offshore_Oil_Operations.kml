@@ -2,170 +2,103 @@
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 <Document>
 	<name>Offshore_Oil_Operations.kml</name>
-	<Style id="sh_167-red-pushpin">
+	<Style id="s_ylw-pushpin_hl">
 		<IconStyle>
-			<scale>1.1</scale>
+			<scale>1.3</scale>
 			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/167-red-pushpin.png</href>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
 			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
 		</IconStyle>
-		<LabelStyle>
-			<scale>1.1</scale>
-		</LabelStyle>
 	</Style>
-	<Style id="sn_164-ltblu-pushpin">
-		<IconStyle>
-			<scale>1.1</scale>
-			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/164-ltblu-pushpin.png</href>
-			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
-		</IconStyle>
-		<LabelStyle>
-			<scale>0</scale>
-		</LabelStyle>
-	</Style>
-	<Style id="icon-167-normal">
-		<IconStyle>
-			<scale>1.1</scale>
-			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/167-red-pushpin.png</href>
-			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
-		</IconStyle>
-		<LabelStyle>
-			<scale>0</scale>
-		</LabelStyle>
-	</Style>
-	<StyleMap id="msn_167-red-pushpin">
+	<StyleMap id="m_ylw-pushpin">
 		<Pair>
 			<key>normal</key>
-			<styleUrl>#sn_167-red-pushpin</styleUrl>
+			<styleUrl>#s_ylw-pushpin</styleUrl>
 		</Pair>
 		<Pair>
 			<key>highlight</key>
-			<styleUrl>#sh_167-red-pushpin</styleUrl>
+			<styleUrl>#s_ylw-pushpin_hl</styleUrl>
 		</Pair>
 	</StyleMap>
-	<Style id="sh_164-ltblu-pushpin">
+	<Style id="s_ylw-pushpin">
 		<IconStyle>
 			<scale>1.1</scale>
 			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/164-ltblu-pushpin.png</href>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
 			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
 		</IconStyle>
-		<LabelStyle>
-			<scale>1.1</scale>
-		</LabelStyle>
-	</Style>
-	<Style id="sn_167-red-pushpin">
-		<IconStyle>
-			<scale>1.1</scale>
-			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/167-red-pushpin.png</href>
-			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
-		</IconStyle>
-		<LabelStyle>
-			<scale>0</scale>
-		</LabelStyle>
-	</Style>
-	<StyleMap id="msn_164-ltblu-pushpin">
-		<Pair>
-			<key>normal</key>
-			<styleUrl>#sn_164-ltblu-pushpin</styleUrl>
-		</Pair>
-		<Pair>
-			<key>highlight</key>
-			<styleUrl>#sh_164-ltblu-pushpin</styleUrl>
-		</Pair>
-	</StyleMap>
-	<StyleMap id="icon-167">
-		<Pair>
-			<key>normal</key>
-			<styleUrl>#icon-167-normal</styleUrl>
-		</Pair>
-		<Pair>
-			<key>highlight</key>
-			<styleUrl>#icon-167-highlight</styleUrl>
-		</Pair>
-	</StyleMap>
-	<Style id="icon-167-highlight">
-		<IconStyle>
-			<scale>1.1</scale>
-			<Icon>
-				<href>http://www.gstatic.com/mapspro/images/stock/167-red-pushpin.png</href>
-			</Icon>
-			<hotSpot x="10" y="31" xunits="pixels" yunits="insetPixels"/>
-		</IconStyle>
-		<LabelStyle>
-			<scale>1.1</scale>
-		</LabelStyle>
 	</Style>
 	<Folder>
 		<name>Offshore Oil Operations</name>
 		<open>1</open>
 		<Placemark>
 			<name>Hibernia</name>
-			<styleUrl>#icon-167</styleUrl>
-			<ExtendedData>
-				<Data name="gx_media_links">
-					<value>https://lh4.googleusercontent.com/proxy/l8Y3hbF-clYZ2Or2LH_5nmiCmccxepo4YbqrczoNP7PDYaEwpmC_YTQllVUYjI5jNZCzchWb9rglASydjxxoWA-ALJat_0X3YQuJZZE</value>
-				</Data>
-			</ExtendedData>
+			<LookAt>
+				<longitude>-94.99999790916823</longitude>
+				<latitude>59.99999606701344</latitude>
+				<altitude>0</altitude>
+				<heading>1.810713307515297e-06</heading>
+				<tilt>0</tilt>
+				<range>11008610.2279107</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#m_ylw-pushpin</styleUrl>
 			<Point>
-				<coordinates>-46.01074200000001,46.103709,0</coordinates>
-			</Point>
-		</Placemark>
-		<Placemark>
-			<name>Sable Offshore Energy</name>
-			<styleUrl>#msn_167-red-pushpin</styleUrl>
-			<ExtendedData>
-				<Data name="gx_media_links">
-					<value>https://lh6.googleusercontent.com/proxy/t0DURGi4ActEiQmICAFv2bWh9QuJfuyR0cGO6BqTwC-LIz5e9-tA5W6W6aWaggpcn0aRFP71EvD1DNMifFJJFu-HVOPiAExdE2qcZcM</value>
-				</Data>
-			</ExtendedData>
-			<Point>
-				<coordinates>-59.79309099999998,44.057986,0</coordinates>
+				<gx:drawOrder>1</gx:drawOrder>
+				<coordinates>-48.78305556,46.750556,0</coordinates>
 			</Point>
 		</Placemark>
 		<Placemark>
 			<name>Terra Nova</name>
-			<description><![CDATA[<img src="https://lh4.googleusercontent.com/proxy/D8iNLIJuwvukpxPQrrJxVqD0Z8I3VhNXgBSWsxVcwvFBnQrFd6liLFnl4bFGELICPD7OeyEqPzi_a2GzoK3rRp0qcDV2b6TIQkg2I7h8w9pbjdqXsjub2qYX2puT2flO" height="200" width="auto" /><br><br>The Terra Nova Floating Production Storage and Offloading (FPSO) vessel is currently operating in the Terra Nova oil field. There are an estimated 406 million barrels of oil in the field. <br>In 2004, Terra Nova spilled about 1,000 barrels of oil. View the CBC archived story (http://www.cbc.ca/canada/story/2004/11/26/oil-spill-041126.html).]]></description>
-			<styleUrl>#icon-167</styleUrl>
-			<ExtendedData>
-				<Data name="gx_media_links">
-					<value>https://lh4.googleusercontent.com/proxy/D8iNLIJuwvukpxPQrrJxVqD0Z8I3VhNXgBSWsxVcwvFBnQrFd6liLFnl4bFGELICPD7OeyEqPzi_a2GzoK3rRp0qcDV2b6TIQkg2I7h8w9pbjdqXsjub2qYX2puT2flO</value>
-				</Data>
-			</ExtendedData>
+			<LookAt>
+				<longitude>-47.98487220826905</longitude>
+				<latitude>46.22804859646565</latitude>
+				<altitude>0</altitude>
+				<heading>-8.778807817565832</heading>
+				<tilt>0</tilt>
+				<range>1224863.475486017</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#m_ylw-pushpin</styleUrl>
 			<Point>
-				<coordinates>-45.74707,45.429299,0</coordinates>
+				<gx:drawOrder>1</gx:drawOrder>
+				<coordinates>-48.47944444,46.475,0</coordinates>
 			</Point>
 		</Placemark>
 		<Placemark>
 			<name>White Rose</name>
-			<styleUrl>#icon-167</styleUrl>
-			<ExtendedData>
-				<Data name="gx_media_links">
-					<value>https://lh3.googleusercontent.com/proxy/XO8PF-ZlzjkM5dUYLcegaie2-ibwV4sqbSao9R1wpQ_1yXYeCT3XQOc00EogbJ7V74EEVJmM16alsa8gkQ7ntlXT9ToaH6erAT4</value>
-				</Data>
-			</ExtendedData>
+			<LookAt>
+				<longitude>-47.98487220826905</longitude>
+				<latitude>46.22804859646565</latitude>
+				<altitude>0</altitude>
+				<heading>-8.778807817565832</heading>
+				<tilt>0</tilt>
+				<range>1224863.475486017</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#m_ylw-pushpin</styleUrl>
 			<Point>
-				<coordinates>-45,45.828799,0</coordinates>
+				<gx:drawOrder>1</gx:drawOrder>
+				<coordinates>-48.015,46.78861100000001,0</coordinates>
 			</Point>
 		</Placemark>
 		<Placemark>
-			<name>Deep Panuke</name>
-			<styleUrl>#msn_164-ltblu-pushpin</styleUrl>
-			<ExtendedData>
-				<Data name="gx_media_links">
-					<value>https://lh6.googleusercontent.com/proxy/3syPiGv4SGS75ogejrLtf0xTFve3xqqVdWdCp9WqDs53yuJHmcSiawtD7jFMJChrdi1JZtfgsKS1uBiu6iztY15n91-t0Dc</value>
-				</Data>
-			</ExtendedData>
+			<name>ESRF Reference Station</name>
+			<LookAt>
+				<longitude>-47.98487038365727</longitude>
+				<latitude>46.22805125493088</latitude>
+				<altitude>0</altitude>
+				<heading>-8.778806500015504</heading>
+				<tilt>0</tilt>
+				<range>1224997.006138645</range>
+				<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+			</LookAt>
+			<styleUrl>#m_ylw-pushpin</styleUrl>
 			<Point>
-				<coordinates>-60.60058599999999,42.5207,0</coordinates>
+				<gx:drawOrder>1</gx:drawOrder>
+				<coordinates>-48.25849999999999,46.97996,0</coordinates>
 			</Point>
 		</Placemark>
 	</Folder>
