@@ -693,10 +693,7 @@ class Map extends React.Component {
 
     show(type, key) {
         this.resetMap();
-        this.props.updateState("vectorid", key);
-        this.props.updateState("vectortype", type);
-        this.vectorSource.vectortype = type;
-        this.vectorSource.vectorid = key;
+        this.props.updateState(["vectorid", "vectortype"], [key, type]);
     }
 
     add(type, data, name) {
