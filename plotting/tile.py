@@ -20,6 +20,8 @@ import pyproj
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 from flask.ext.babel import gettext
+from skimage import measure
+import contextlib
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -339,3 +341,61 @@ def topo(projection, x, y, z, args):
         os.remove(fname)
 
     return buf
+
+
+def bathymetry(projection, x, y, z, args):
+    lat, lon = get_latlon_coords(projection, x, y, z)
+    if len(lat.shape) == 1:
+        lat, lon = np.meshgrid(lat, lon)
+
+    xpx = x * 256
+    ypx = y * 256
+
+    with Dataset("/stores/misc/etopo_%s_z%d.nc" %
+                 (projection, z), 'r') as dataset:
+        data = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
+        data = data[::-1, :]
+
+    LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
+
+    normalized = matplotlib.colors.LogNorm(vmin=1, vmax=6000)(LEVELS)
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+        'transparent_gray',
+        [(0, 0, 0, 1), (0, 0, 0, 0.5)]
+    )
+    colors = cmap(normalized)
+
+    fig = plt.figure()
+    fig.set_size_inches(4, 4)
+    ax = plt.Axes(fig, [0, 0, 1, 1])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    for i, l in enumerate(LEVELS):
+        contours = measure.find_contours(data, l)
+        print contours
+
+        for n, contour in enumerate(contours):
+            ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
+
+    plt.xlim([0, 255])
+    plt.ylim([0, 255])
+
+    with contextlib.closing(StringIO()) as buf:
+        plt.savefig(
+            buf,
+            format='png',
+            dpi=64,
+            transparent=True,
+        )
+        plt.close(fig)
+        buf.seek(0)
+        im = Image.open(buf)
+
+        with contextlib.closing(StringIO()) as buf2:
+            im.save(buf2, format='PNG', optimize=True)
+            return buf2.getvalue()
+
+        return buf.getvalue()
+
+    return None

@@ -2,6 +2,7 @@ import React from 'react';
 import ComboBox from './ComboBox.jsx'
 import TimePicker from './TimePicker.jsx'
 import Range from './Range.jsx'
+import SelectBox from './SelectBox.jsx'
 var i18n = require('../i18n.js');
 
 class MapInputs extends React.Component {
@@ -15,6 +16,7 @@ class MapInputs extends React.Component {
         _("Depth");
         _("Time");
         _("Variable Range");
+        _('Show Bathymetry Contours');
 
         return (
             <div className='MapInputs'>
@@ -28,6 +30,7 @@ class MapInputs extends React.Component {
                     {id: 'ocean', value: _('Esri Ocean Basemap'), attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'},
                     {id: 'world', value: _('Esri World Imagery'), attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'},
                 ]} title={_('Basemap')} />
+                <SelectBox key='bathymetry' id='bathymetry' state={this.props.state.bathymetry} onUpdate={this.props.changeHandler} title={_('Show Bathymetry Contours')} />
                 <ComboBox key='dataset' id='dataset' state={this.props.state.dataset} def={'defaults.dataset'} onUpdate={this.props.changeHandler} url='/api/datasets/' title={_('Dataset')}></ComboBox>
                 <ComboBox key='variable' id='variable' state={this.props.state.variable} def={'defaults.dataset'} onUpdate={this.props.changeHandler} url={'/api/variables/?vectors&dataset='+this.props.state.dataset + '&anom'} title={_('Variable')}><h1>{_('Variable')}</h1></ComboBox>
                 <ComboBox key='depth' id='depth' state={this.props.state.depth} def={'defaults[this.state.type].depth'} onUpdate={this.props.changeHandler} url={'/api/depth/?variable=' + this.props.state.variable + '&dataset=' + this.props.state.dataset} title={_('Depth')}></ComboBox>

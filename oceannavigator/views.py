@@ -409,6 +409,17 @@ def topo(projection, zoom, x, y):
         return _cache_and_send_img(img, f)
 
 
+@app.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
+def bathymetry(projection, zoom, x, y):
+    cache_dir = app.config['CACHE_DIR']
+    f = os.path.join(cache_dir, request.path[1:])
+    if os.path.isfile(f):
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    else:
+        img = plotting.tile.bathymetry(projection, x, y, zoom, {})
+        return _cache_and_send_img(img, f)
+
+
 @app.route('/api/drifters/<string:q>/<string:drifter_id>')
 def drifter_query(q, drifter_id):
     if q == 'vars':
