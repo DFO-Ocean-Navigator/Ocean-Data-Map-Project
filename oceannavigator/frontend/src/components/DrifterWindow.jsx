@@ -112,8 +112,13 @@ class DrifterWindow extends React.Component {
             dpi: this.state.dpi,
         }
         if (this.state.starttime) {
-            plot_query.starttime = this.state.starttime.toISOString();
-            plot_query.endtime = this.state.endtime.toISOString();
+            if (plot_query.starttime instanceof Date) {
+                plot_query.starttime = this.state.starttime.toISOString();
+                plot_query.endtime = this.state.endtime.toISOString();
+            } else {
+                plot_query.starttime = this.state.starttime;
+                plot_query.endtime = this.state.endtime;
+            }
         }
         inputs = [dataset, showmap, latlon, starttime, endtime, buoyvariable, variable, size];
 

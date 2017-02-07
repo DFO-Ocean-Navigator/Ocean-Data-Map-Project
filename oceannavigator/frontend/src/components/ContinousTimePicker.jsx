@@ -51,6 +51,8 @@ class ContinousTimePicker extends React.Component {
         var date = this.props.state;
         if (date == undefined || date == null) {
             date = new Date();
+        } else if (!(date instanceof Date)) {
+            date = new Date(date);
         }
 
         return (
