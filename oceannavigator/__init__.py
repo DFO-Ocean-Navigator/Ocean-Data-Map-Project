@@ -1,6 +1,6 @@
 #!env python
 
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_compress import Compress
 from flask.ext.babel import Babel
 
@@ -19,3 +19,9 @@ import oceannavigator.views
 @babel.localeselector
 def get_locale():
     return request.accept_languages.best_match(['en', 'fr'])
+
+
+@app.route('/public/')
+def public_index():
+    res = send_file('frontend/public/index.html')
+    return res
