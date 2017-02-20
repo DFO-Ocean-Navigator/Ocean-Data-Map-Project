@@ -248,6 +248,9 @@ class DrifterPlotter(plotter.Plotter):
 
         data = []
         for idx, t in enumerate(self.times):
+            if idx < self.start or idx > self.end:
+                continue
+
             entry = [
                 t.isoformat(),
                 "%0.4f" % self.points[idx][0],
