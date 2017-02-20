@@ -21,6 +21,7 @@ class DrifterWindow extends React.Component {
             endtime: null,
             size: "10x7",
             dpi: 72,
+            depth: 0,
         }
 
         if (props.init != null) {
@@ -95,6 +96,7 @@ class DrifterWindow extends React.Component {
         var starttime = <ContinousTimePicker key='starttime' id='starttime' state={this.state.starttime} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.state.endtime} min={this.state.mindate} />;
         var endtime = <ContinousTimePicker key='endtime' id='endtime' state={this.state.endtime} title={_('End Time')} onUpdate={this.onLocalUpdate.bind(this)} min={this.state.starttime} max={this.state.maxdate} />;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
+        var depth = <ComboBox key='depth' id='depth' state={this.state.depth} def={''} onUpdate={this.onLocalUpdate.bind(this)} url={'/api/depth/?variable=' + this.state.variable + '&dataset=' + this.props.dataset} title={_('Depth')}></ComboBox>;
 
         var inputs = [];
         var plot_query = {
@@ -110,6 +112,7 @@ class DrifterWindow extends React.Component {
             buoyvariable: this.state.buoyvariable,
             size: this.state.size,
             dpi: this.state.dpi,
+            depth: this.state.depth,
         }
         if (this.state.starttime) {
             if (plot_query.starttime instanceof Date) {
@@ -120,7 +123,7 @@ class DrifterWindow extends React.Component {
                 plot_query.endtime = this.state.endtime;
             }
         }
-        inputs = [dataset, showmap, latlon, starttime, endtime, buoyvariable, variable, size];
+        inputs = [dataset, showmap, latlon, starttime, endtime, buoyvariable, variable, depth, size];
 
         return (
             <div className='DrifterWindow Window'>
