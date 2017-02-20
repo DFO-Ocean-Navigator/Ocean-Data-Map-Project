@@ -102,14 +102,7 @@ class DrifterPlotter(plotter.Plotter):
             latvar, lonvar = utils.get_latlon_vars(dataset)
             grid = Grid(dataset, latvar.name, lonvar.name)
 
-            depth_var = utils.get_depth_var(dataset)
-
-            if depth_var is None:
-                depth = [0]
-            else:
-                depth = depth_var[:]
-
-            depth = 0
+            depth = int(self.depth)
 
             d = []
             for v in self.variables:
@@ -164,7 +157,8 @@ class DrifterPlotter(plotter.Plotter):
             else:
                 plt.subplot(gs[0])
 
-            utils.path_plot(self.points.transpose(), False)
+            utils.path_plot(
+                self.points[self.start:self.end].transpose(), False)
 
         # Plot observed
         if self.showmap:
