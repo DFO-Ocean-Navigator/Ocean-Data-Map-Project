@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-01-24 11:08-0530\n"
-"PO-Revision-Date: 2017-01-24 11:22-0330\n"
+"POT-Creation-Date: 2017-02-21 10:40-0530\n"
+"PO-Revision-Date: 2017-02-21 10:45-0330\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -19,57 +19,57 @@ msgstr ""
 "Generated-By: Babel 2.3.4\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: oceannavigator/views.py:127
+#: oceannavigator/views.py:144
 msgid "Black"
 msgstr "Noir"
 
-#: oceannavigator/views.py:128
+#: oceannavigator/views.py:145
 msgid "Blue"
 msgstr "Bleu"
 
-#: oceannavigator/views.py:129
+#: oceannavigator/views.py:146
 msgid "Green"
 msgstr "Vert"
 
-#: oceannavigator/views.py:130
+#: oceannavigator/views.py:147
 msgid "Red"
 msgstr "Rouge"
 
-#: oceannavigator/views.py:131
+#: oceannavigator/views.py:148
 msgid "Cyan"
 msgstr "Cyan"
 
-#: oceannavigator/views.py:132
+#: oceannavigator/views.py:149
 msgid "Magenta"
 msgstr "Magenta"
 
-#: oceannavigator/views.py:133
+#: oceannavigator/views.py:150
 msgid "Yellow"
 msgstr "Jaune"
 
-#: oceannavigator/views.py:134
+#: oceannavigator/views.py:151
 msgid "White"
 msgstr "Blanc"
 
-#: oceannavigator/views.py:137
+#: oceannavigator/views.py:154
 msgid "Randomize"
 msgstr "Randomiser"
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:54
 #: oceannavigator/frontend/src/components/ComboBox.jsx:57
-#: oceannavigator/views.py:139
+#: oceannavigator/views.py:156
 msgid "None"
 msgstr "Acun"
 
-#: oceannavigator/views.py:154
+#: oceannavigator/views.py:171
 msgid "Default for Variable"
 msgstr "Par défaut pour la variable"
 
-#: oceannavigator/views.py:190
+#: oceannavigator/views.py:207
 msgid "All Depths"
 msgstr "Toutes les profondeurs"
 
-#: oceannavigator/views.py:205
+#: oceannavigator/views.py:222
 msgid "Bottom"
 msgstr "Fond"
 
@@ -78,29 +78,29 @@ msgid "Ocean Navigator"
 msgstr "Océan navigateur"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:101
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:80
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:81
 #: oceannavigator/frontend/src/components/LineWindow.jsx:67
-#: oceannavigator/frontend/src/components/MapInputs.jsx:13
+#: oceannavigator/frontend/src/components/MapInputs.jsx:14
 #: oceannavigator/frontend/src/components/PointWindow.jsx:132
 msgid "Dataset"
 msgstr "Ensemble de données"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:102
 #: oceannavigator/frontend/src/components/LineWindow.jsx:68
-#: oceannavigator/frontend/src/components/MapInputs.jsx:16
+#: oceannavigator/frontend/src/components/MapInputs.jsx:17
 #: oceannavigator/frontend/src/components/PointWindow.jsx:133
 msgid "Time"
 msgstr "Temps"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:103
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:86
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:87
 #: oceannavigator/frontend/src/components/LineWindow.jsx:69
 #: oceannavigator/frontend/src/components/PointWindow.jsx:135
 msgid "Start Time"
 msgstr "Heure de départ"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:104
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:87
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:88
 #: oceannavigator/frontend/src/components/LineWindow.jsx:70
 #: oceannavigator/frontend/src/components/PointWindow.jsx:136
 msgid "End Time"
@@ -108,23 +108,23 @@ msgstr "Heure de fin"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:105
 #: oceannavigator/frontend/src/components/LineWindow.jsx:71
-#: oceannavigator/frontend/src/components/MapInputs.jsx:15
+#: oceannavigator/frontend/src/components/MapInputs.jsx:16
 #: oceannavigator/frontend/src/components/PointWindow.jsx:137
 msgid "Depth"
 msgstr "Profond"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:106
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:82
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:83
 #: oceannavigator/frontend/src/components/LineWindow.jsx:72
-#: oceannavigator/frontend/src/components/MapInputs.jsx:14
+#: oceannavigator/frontend/src/components/MapInputs.jsx:15
 #: oceannavigator/frontend/src/components/PointWindow.jsx:138
 msgid "Variable"
 msgstr "Variable"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:107
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:83
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:84
 #: oceannavigator/frontend/src/components/LineWindow.jsx:73
-#: oceannavigator/frontend/src/components/MapInputs.jsx:17
+#: oceannavigator/frontend/src/components/MapInputs.jsx:18
 #: oceannavigator/frontend/src/components/PointWindow.jsx:139
 msgid "Variable Range"
 msgstr "Gamme Variable"
@@ -137,6 +137,7 @@ msgid "Colourmap"
 msgstr "Carte couleur"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:109
+#: oceannavigator/frontend/src/components/MapInputs.jsx:19
 msgid "Show Bathymetry Contours"
 msgstr "Afficher les contours de bathymétrie"
 
@@ -154,17 +155,17 @@ msgstr "Afficher la (les) région (s) sélectionnée (s)"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:113
 #: oceannavigator/frontend/src/components/Class4Window.jsx:71
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:88
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:89
 #: oceannavigator/frontend/src/components/LineWindow.jsx:78
 #: oceannavigator/frontend/src/components/PointWindow.jsx:141
 msgid "Saved Image Size"
 msgstr "Taille de l'image enregistrée"
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:171
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:175
 msgid "Map"
 msgstr "Carte"
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:172
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:176
 msgid "Statistics"
 msgstr "Statistiques"
 
@@ -197,17 +198,17 @@ msgstr "Modèles additionnels"
 msgid "Show Error"
 msgstr "Afficher l'erreur"
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:188
+#: oceannavigator/frontend/src/components/ComboBox.jsx:204
 #: oceannavigator/frontend/src/components/NumberBox.jsx:53
 msgid "titlehelp"
 msgstr "Aide pour {{title}}"
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:195
+#: oceannavigator/frontend/src/components/ComboBox.jsx:211
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:472
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:486
 #: oceannavigator/frontend/src/components/NumberBox.jsx:59
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:387
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:394
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:407
 #: oceannavigator/frontend/src/components/PlotImage.jsx:204
 msgid "Close"
 msgstr "Fermer"
@@ -224,12 +225,12 @@ msgstr "Afficher la légende"
 msgid "Auto Levels"
 msgstr "Niveaux auto"
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:40
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:39
 msgid "Depth Limit"
 msgstr "Limite de profondeur"
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:41
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:48
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:40
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:47
 msgid "Limit Depth"
 msgstr "Limiter la profondeur"
 
@@ -245,15 +246,15 @@ msgstr "WMO"
 msgid "Deployment"
 msgstr "Déploiement"
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:81
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:82
 msgid "Buoy Variable"
 msgstr "Variable de la bouée"
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:84
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:85
 msgid "Show Map"
 msgstr "Montrer carte"
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:85
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:86
 msgid "Show Latitude/Longitude Plots"
 msgstr "Afficher les profils de latitude et de longitude"
 
@@ -297,31 +298,47 @@ msgstr "Lat:"
 msgid "Lon:"
 msgstr "Lon:"
 
-#: oceannavigator/frontend/src/components/Map.jsx:50
+#: oceannavigator/frontend/src/components/Map.jsx:51
 msgid "topoattribution"
 msgstr ""
 "Données topographiques de <a href='https://www.ngdc.noaa.gov/mgg/global/'> "
 "ETOPO1</a>"
 
-#: oceannavigator/frontend/src/components/Map.jsx:98
+#: oceannavigator/frontend/src/components/Map.jsx:143
 msgid "RMS Error: "
 msgstr "Errur RMS: "
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:22
+#: oceannavigator/frontend/src/components/MapInputs.jsx:24
 msgid "Global"
 msgstr "Global"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:23
+#: oceannavigator/frontend/src/components/MapInputs.jsx:25
 msgid "Arctic"
 msgstr "Arctique"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:24
+#: oceannavigator/frontend/src/components/MapInputs.jsx:26
 msgid "Antarctic"
 msgstr "Antarctique"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:25
+#: oceannavigator/frontend/src/components/MapInputs.jsx:27
 msgid "Projection"
 msgstr "Projection de la carte"
+
+#: oceannavigator/frontend/src/components/MapInputs.jsx:29
+msgid "ETOPO1 Topography"
+msgstr "ETOPO1 Topographie"
+
+#: oceannavigator/frontend/src/components/MapInputs.jsx:30
+msgid "Esri Ocean Basemap"
+msgstr "Fond d'océan de l'Esri"
+
+#: oceannavigator/frontend/src/components/MapInputs.jsx:31
+msgid "Esri World Imagery"
+msgstr "Les images du monde d'Esri"
+
+#: oceannavigator/frontend/src/components/MapInputs.jsx:32
+msgid "Basemap"
+msgstr "Fond de carte"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:241
 msgid "Error: Could not find latitude or longitude column"
@@ -428,21 +445,21 @@ msgstr "Navire"
 msgid "Trip"
 msgstr "Voyage"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:370
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:377
 msgid "Loading"
 msgstr "Chargement"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:393
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
 #: oceannavigator/frontend/src/components/PlotImage.jsx:197
 msgid "Share Link"
 msgstr "Partager le site"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:399
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
 #: oceannavigator/frontend/src/components/PlotImage.jsx:203
 msgid "Copy"
 msgstr "Copier"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:413
 msgid "Please Wait…"
 msgstr "S'il vous plaît, attendez…"
 
@@ -482,15 +499,23 @@ msgstr "Observation"
 msgid "Virtual Mooring"
 msgstr "Amarrage virtuel"
 
-#: oceannavigator/frontend/src/components/Range.jsx:82
+#: oceannavigator/frontend/src/components/Range.jsx:96
 msgid "Auto Range"
 msgstr "Gamme automatique"
 
-#: oceannavigator/frontend/src/components/Range.jsx:95
+#: oceannavigator/frontend/src/components/Range.jsx:105
+msgid "Default"
+msgstr "Défaut"
+
+#: oceannavigator/frontend/src/components/Range.jsx:106
+msgid "Auto"
+msgstr "Automatiquement"
+
+#: oceannavigator/frontend/src/components/Range.jsx:119
 msgid "Min:"
 msgstr "Min:"
 
-#: oceannavigator/frontend/src/components/Range.jsx:111
+#: oceannavigator/frontend/src/components/Range.jsx:135
 msgid "Max:"
 msgstr "Max:"
 
@@ -614,7 +639,7 @@ msgstr "Modèle"
 msgid "Error wrt Climatology"
 msgstr "Erreur concernant la climatologie"
 
-#: plotting/class4.py:185 plotting/class4.py:226 plotting/drifter.py:195
+#: plotting/class4.py:185 plotting/class4.py:226 plotting/drifter.py:189
 #: plotting/observation.py:227
 msgid "Observed"
 msgstr "Observé"
@@ -736,15 +761,15 @@ msgstr "Température (ancienne)"
 msgid "Ocean Navigator Colourmaps"
 msgstr "Cartes couleur océan navigateur"
 
-#: plotting/drifter.py:195 plotting/observation.py:228
+#: plotting/drifter.py:189 plotting/observation.py:228
 msgid "Modelled"
 msgstr "Modélisé"
 
-#: plotting/drifter.py:226
+#: plotting/drifter.py:220
 msgid "Latitude (degrees)"
 msgstr "Latitude (degrés)"
 
-#: plotting/drifter.py:227
+#: plotting/drifter.py:221
 msgid "Longitude (degrees)"
 msgstr "Longitude (degrés)"
 
@@ -798,7 +823,7 @@ msgstr "Profondeur (pieds)"
 msgid "No Data"
 msgstr "Pas de données"
 
-#: plotting/tile.py:130
+#: plotting/tile.py:132
 #, python-format
 msgid "%s Anomaly"
 msgstr "Anomalie de %s"

@@ -1,4 +1,5 @@
 import React from 'react';
+import {Button, ButtonToolbar} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
 
 var i18n = require('../i18n.js');
@@ -67,6 +68,19 @@ class Range extends React.Component {
             this.props.onUpdate(this.props.id, scale[0] + "," + scale[1]);
         }
     }
+    getAutoScale() {
+        $.ajax({
+            url: this.props.autourl,
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
+                this.props.onUpdate(this.props.id, data.min + "," + data.max);
+            }.bind(this),
+            error: function(r, status, err) {
+                console.error(this.props.autourl, status, err.toString());
+            }
+        });
+    }
     render() {
         var scale = this.props.state;
         if (typeof(this.props.state.split) === "function") {
@@ -83,6 +97,16 @@ class Range extends React.Component {
                 </label>
             </div>
         );
+
+        var autobuttons = <div></div>;
+        if (this.props.autourl) {
+            autobuttons = (
+                <ButtonToolbar style={{'display': 'inline-block', 'float': 'right'}}>
+                    <Button name='default' onClick={() => this.props.onUpdate(this.props.id, this.props.default_scale.join(","))}>{_("Default")}</Button>
+                    <Button name='auto' onClick={this.getAutoScale.bind(this)}>{_("Auto")}</Button>
+                </ButtonToolbar>
+            );
+        }
 
         return (
             <div className='Range input'>
@@ -124,6 +148,7 @@ class Range extends React.Component {
                         </tr>
                     </tbody>
                 </table>
+                {autobuttons}
             </div>
         );
     }

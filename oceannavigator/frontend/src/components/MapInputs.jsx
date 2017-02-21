@@ -35,7 +35,7 @@ class MapInputs extends React.Component {
                 <ComboBox key='variable' id='variable' state={this.props.state.variable} def={'defaults.dataset'} onUpdate={this.props.changeHandler} url={'/api/variables/?vectors&dataset='+this.props.state.dataset + '&anom'} title={_('Variable')}><h1>{_('Variable')}</h1></ComboBox>
                 <ComboBox key='depth' id='depth' state={this.props.state.depth} def={'defaults[this.state.type].depth'} onUpdate={this.props.changeHandler} url={'/api/depth/?variable=' + this.props.state.variable + '&dataset=' + this.props.state.dataset} title={_('Depth')}></ComboBox>
                 <TimePicker key='time' id='time' state={this.props.state.time} def={'defaults[this.state.type].time'} quantum={this.props.state.dataset_quantum} onUpdate={this.props.changeHandler} url={'/api/timestamps/?dataset=' + this.props.state.dataset + '&quantum=' + this.props.state.dataset_quantum} title={_('Time')}></TimePicker>
-                <Range key='scale' id='scale' state={this.props.state.scale} def='' onUpdate={this.props.changeHandler} title={_('Variable Range')}></Range>
+                <Range key='scale' id='scale' state={this.props.state.scale} def='' onUpdate={this.props.changeHandler} title={_('Variable Range')} autourl={'/api/range/' + this.props.state.dataset + '/' + this.props.state.projection + '/' + this.props.state.extent.join(",") + '/' + this.props.state.depth + '/' + this.props.state.time + '/' + this.props.state.variable + '.json'} default_scale={this.props.state.variable_scale}></Range>
             </div>
         );
     }

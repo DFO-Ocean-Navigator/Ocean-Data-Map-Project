@@ -22,6 +22,7 @@ from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stats import stats as areastats
 import plotting.tile
+import plotting.scale
 import numpy as np
 import re
 import oceannavigator.misc
@@ -31,6 +32,21 @@ import base64
 import pytz
 
 MAX_CACHE = 315360000
+
+
+@app.route('/api/range/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query(dataset, projection, extent, variable, depth, time):
+    extent = map(float, extent.split(","))
+    min, max = plotting.scale.get_scale(
+        dataset, variable, depth, time, projection, extent)
+
+    js = json.dumps({
+        'min': min,
+        'max': max,
+    })
+    resp = Response(js, status=200, mimetype='application/json')
+    resp.cache_control.max_age = MAX_CACHE
+    return resp
 
 
 @app.route('/api/<string:q>/')

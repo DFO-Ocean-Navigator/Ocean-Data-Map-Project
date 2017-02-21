@@ -330,6 +330,8 @@ class Map extends React.Component {
             var c = ol.proj.transform(this.mapView.getCenter(), this.props.state.projection, 'EPSG:4326').map(function(c) {return c.toFixed(4);});
             this.props.updateState("center", c);
             this.props.updateState("zoom", this.mapView.getZoom());
+            var extent = this.mapView.calculateExtent(this.map.getSize());
+            this.props.updateState("extent", extent);
             this.map.render();
         }.bind(this));
 

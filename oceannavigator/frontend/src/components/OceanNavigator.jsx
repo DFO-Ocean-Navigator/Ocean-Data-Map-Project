@@ -40,6 +40,7 @@ class OceanNavigator extends React.Component {
             busy: false,
             basemap: 'topo',
             bathymetry: true,
+            extent: [],
         };
         this.mapComponent = null;
 
