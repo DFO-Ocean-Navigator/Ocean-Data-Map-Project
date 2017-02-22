@@ -373,7 +373,6 @@ def bathymetry(projection, x, y, z, args):
 
     for i, l in enumerate(LEVELS):
         contours = measure.find_contours(data, l)
-        print contours
 
         for n, contour in enumerate(contours):
             ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
