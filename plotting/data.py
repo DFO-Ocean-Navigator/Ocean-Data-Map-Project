@@ -134,7 +134,6 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
                   str(lat) +
                   str(lon)).hexdigest()
 
-    timestep = int(np.ceil(len(time) / 100.0))
     if _timeseries_cache.get(hashed) is None:
         path = os.path.join(CACHE_DIR, "ts_" + hashed + ".npy")
         try:
@@ -183,18 +182,18 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             if 'deptht' in var.dimensions or 'depth' in var.dimensions:
                 if depth == 'all':
                     depthall = True
-                    d = var[time[0]:(time[-1] + 1):timestep,
+                    d = var[time[0]:(time[-1] + 1),
                             :,
                             miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 4)
                     d = np.rollaxis(d, 0, 4)
                 else:
-                    d = var[time[0]:(time[-1] + 1):timestep,
+                    d = var[time[0]:(time[-1] + 1),
                             int(depth),
                             miny:maxy, minx:maxx]
                     d = np.rollaxis(d, 0, 3)
             else:
-                d = var[time[0]:(time[-1] + 1):timestep, miny:maxy, minx:maxx]
+                d = var[time[0]:(time[-1] + 1), miny:maxy, minx:maxx]
                 d = np.rollaxis(d, 0, 3)
 
             lons = dataset.variables[lonvar.name][miny:maxy, minx:maxx]
@@ -250,7 +249,7 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
     time_var = utils.get_time_var(dataset)
 
     t = netcdftime.utime(time_var.units)
-    times = t.num2date(time_var[time[0]:(time[-1] + 1):timestep])
+    times = t.num2date(time_var[time[0]:(time[-1] + 1)])
 
     return np.squeeze(d), times
 
