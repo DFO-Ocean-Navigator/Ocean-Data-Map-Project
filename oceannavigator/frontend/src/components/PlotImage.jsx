@@ -144,6 +144,13 @@ class PlotImage extends React.Component {
                 query.observation_variable = q.observation_variable;
                 query.variable = q.variable;
                 break;
+            case "stick":
+                query.station = q.point;
+                query.variable = q.variable;
+                query.depth = q.depth;
+                query.starttime = q.starttime;
+                query.endtime = q.endtime;
+                break;
         }
         return query;
     }

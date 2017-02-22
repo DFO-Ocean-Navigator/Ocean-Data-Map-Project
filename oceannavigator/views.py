@@ -20,6 +20,7 @@ from plotting.profile import ProfilePlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
+from plotting.stick import StickPlotter
 from plotting.stats import stats as areastats
 import plotting.tile
 import plotting.scale
@@ -545,6 +546,9 @@ def plot():
             dataset, query, request.args.get('format'))
     elif plottype == 'class4':
         plotter = Class4Plotter(
+            dataset, query, request.args.get('format'))
+    elif plottype == 'stick':
+        plotter = StickPlotter(
             dataset, query, request.args.get('format'))
 
     img, mime, filename = plotter.run(size=size,

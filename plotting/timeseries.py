@@ -190,6 +190,9 @@ class TimeseriesPlotter(point.PointPlotter):
 
         depth = 0
         qdepth = query.get('depth')
+        if isinstance(qdepth, list):
+            qdepth = qdepth[0]
+
         if qdepth and len(qdepth) > 0:
             if qdepth == 'all':
                 depth = 'all'

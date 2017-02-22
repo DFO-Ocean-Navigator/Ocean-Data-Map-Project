@@ -12,9 +12,10 @@ var TabEnum = {
     PROFILE: 1,
     CTD: 2,
     TS: 3,
-    SOUND: 4,
-    OBSERVATION: 5,
-    MOORING: 6,
+    STICK: 4,
+    SOUND: 5,
+    OBSERVATION: 6,
+    MOORING: 7,
 };
 
 class PointWindow extends React.Component {
@@ -71,10 +72,17 @@ class PointWindow extends React.Component {
     }
 
     componentWillReceiveProps(props) {
-        this.setState({
-            depth: props.depth,
-            scale: (this.state.scale.indexOf('auto') != -1) ? props.scale + ",auto" : props.scale,
-        });
+        var state = {
+        };
+        if (!Array.isArray(this.state.depth)) {
+            state.depth = props.depth;
+        }
+        if (this.state.scale.indexOf('auto') != -1) {
+            state.scale = props.scale + ",auto";
+        } else {
+            state.scale = props.scale;
+        }
+        this.setState(state);
         if (this.props.dataset != props.dataset) {
             this.populateVariables(props.dataset);
         }
@@ -95,8 +103,13 @@ class PointWindow extends React.Component {
         var parentValues = [];
 
         if (newState.hasOwnProperty('depth') && newState.depth != 'all') {
-            parentKeys.push('depth');
-            parentValues.push(newState.depth);
+            if (!Array.isArray(newState.depth)) {
+                parentKeys.push('depth');
+                parentValues.push(newState.depth);
+            } else if (newState.depth.length > 1) {
+                parentKeys.push('depth');
+                parentValues.push(newState.depth[0]);
+            }
         }
 
         if (newState.hasOwnProperty('point')) {
@@ -145,8 +158,10 @@ class PointWindow extends React.Component {
         var starttime = <TimePicker key='starttime' id='starttime' state={this.state.starttime} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('Start Time')} onUpdate={this.onLocalUpdate.bind(this)} max={this.props.time} />;
         var endtime = <TimePicker key='time' id='time' state={this.props.time} def='' quantum={this.props.quantum} url={'/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum} title={_('End Time')} onUpdate={this.props.onUpdate} min={this.state.starttime} />;
         var depth = <ComboBox key='depth' id='depth' state={this.state.depth} def={''} onUpdate={this.onLocalUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset + '&all=True'} title={_('Depth')}></ComboBox>;
+        var multidepth = <ComboBox key='depth' id='depth' multiple state={this.state.depth} def={''} onUpdate={this.onLocalUpdate.bind(this)} url={'/api/depth/?variable=' + this.props.variable + '&dataset=' + this.props.dataset} title={_('Depth')}></ComboBox>;
         var variable = <ComboBox key='variable' id='variable' state={this.props.variable} def='' onUpdate={this.props.onUpdate} url={'/api/variables/?vectors&dataset='+this.props.dataset} title={_('Variable')}><h1>{_("Variable")}</h1></ComboBox>;
         var profilevariable = <ComboBox key='variable' id='variable' multiple state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?3d_only&dataset='+this.props.dataset + '&anom'} title={_('Variable')}><h1>Variable</h1></ComboBox>;
+        var vectorvariable = <ComboBox key='variable' id='variable' state={this.state.variable} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors_only&dataset='+this.props.dataset} title={_('Variable')}><h1>Variable</h1></ComboBox>;
         var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
         var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;
@@ -241,6 +256,16 @@ class PointWindow extends React.Component {
                 }
 
                 break;
+            case TabEnum.STICK:
+                plot_query.type = 'stick';
+                plot_query.variable = this.state.variable;
+                plot_query.starttime = this.state.starttime;
+                plot_query.endtime = this.props.time;
+                plot_query.depth = this.state.depth;
+
+                inputs = [dataset, starttime, endtime, vectorvariable, point, multidepth];
+
+                break;
         }
 
         inputs.push(size);
@@ -260,6 +285,7 @@ class PointWindow extends React.Component {
                     <NavItem eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>{_("CTD Profile")}</NavItem>
                     <NavItem eventKey={TabEnum.TS} disabled={!hasTempSalinity}>{_("T/S Diagram")}</NavItem>
                     <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>{_("Sound Speed Profile")}</NavItem>
+                    <NavItem eventKey={TabEnum.STICK}>{_("Stick Plot")}</NavItem>
                     <NavItem eventKey={TabEnum.OBSERVATION} disabled={this.props.point[0][2] === undefined}>{_("Observation")}</NavItem>
                     <NavItem eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
                 </Nav>
