@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-02-21 10:40-0430\n"
+"POT-Creation-Date: 2017-02-22 11:16-0430\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,57 +17,57 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: oceannavigator/views.py:144
+#: oceannavigator/views.py:145
 msgid "Black"
 msgstr ""
 
-#: oceannavigator/views.py:145
+#: oceannavigator/views.py:146
 msgid "Blue"
 msgstr ""
 
-#: oceannavigator/views.py:146
+#: oceannavigator/views.py:147
 msgid "Green"
 msgstr ""
 
-#: oceannavigator/views.py:147
+#: oceannavigator/views.py:148
 msgid "Red"
 msgstr ""
 
-#: oceannavigator/views.py:148
+#: oceannavigator/views.py:149
 msgid "Cyan"
 msgstr ""
 
-#: oceannavigator/views.py:149
+#: oceannavigator/views.py:150
 msgid "Magenta"
 msgstr ""
 
-#: oceannavigator/views.py:150
+#: oceannavigator/views.py:151
 msgid "Yellow"
 msgstr ""
 
-#: oceannavigator/views.py:151
+#: oceannavigator/views.py:152
 msgid "White"
 msgstr ""
 
-#: oceannavigator/views.py:154
+#: oceannavigator/views.py:155
 msgid "Randomize"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:54
 #: oceannavigator/frontend/src/components/ComboBox.jsx:57
-#: oceannavigator/views.py:156
+#: oceannavigator/views.py:157
 msgid "None"
 msgstr ""
 
-#: oceannavigator/views.py:171
+#: oceannavigator/views.py:172
 msgid "Default for Variable"
 msgstr ""
 
-#: oceannavigator/views.py:207
+#: oceannavigator/views.py:208
 msgid "All Depths"
 msgstr ""
 
-#: oceannavigator/views.py:222
+#: oceannavigator/views.py:223
 msgid "Bottom"
 msgstr ""
 
@@ -79,35 +79,35 @@ msgstr ""
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:81
 #: oceannavigator/frontend/src/components/LineWindow.jsx:67
 #: oceannavigator/frontend/src/components/MapInputs.jsx:14
-#: oceannavigator/frontend/src/components/PointWindow.jsx:132
+#: oceannavigator/frontend/src/components/PointWindow.jsx:145
 msgid "Dataset"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:102
 #: oceannavigator/frontend/src/components/LineWindow.jsx:68
 #: oceannavigator/frontend/src/components/MapInputs.jsx:17
-#: oceannavigator/frontend/src/components/PointWindow.jsx:133
+#: oceannavigator/frontend/src/components/PointWindow.jsx:146
 msgid "Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:103
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:87
 #: oceannavigator/frontend/src/components/LineWindow.jsx:69
-#: oceannavigator/frontend/src/components/PointWindow.jsx:135
+#: oceannavigator/frontend/src/components/PointWindow.jsx:148
 msgid "Start Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:104
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:88
 #: oceannavigator/frontend/src/components/LineWindow.jsx:70
-#: oceannavigator/frontend/src/components/PointWindow.jsx:136
+#: oceannavigator/frontend/src/components/PointWindow.jsx:149
 msgid "End Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:105
 #: oceannavigator/frontend/src/components/LineWindow.jsx:71
 #: oceannavigator/frontend/src/components/MapInputs.jsx:16
-#: oceannavigator/frontend/src/components/PointWindow.jsx:137
+#: oceannavigator/frontend/src/components/PointWindow.jsx:150
 msgid "Depth"
 msgstr ""
 
@@ -115,7 +115,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:83
 #: oceannavigator/frontend/src/components/LineWindow.jsx:72
 #: oceannavigator/frontend/src/components/MapInputs.jsx:15
-#: oceannavigator/frontend/src/components/PointWindow.jsx:138
+#: oceannavigator/frontend/src/components/PointWindow.jsx:151
 msgid "Variable"
 msgstr ""
 
@@ -123,14 +123,14 @@ msgstr ""
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:84
 #: oceannavigator/frontend/src/components/LineWindow.jsx:73
 #: oceannavigator/frontend/src/components/MapInputs.jsx:18
-#: oceannavigator/frontend/src/components/PointWindow.jsx:139
+#: oceannavigator/frontend/src/components/PointWindow.jsx:152
 msgid "Variable Range"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:108
 #: oceannavigator/frontend/src/components/ContourSelector.jsx:56
 #: oceannavigator/frontend/src/components/LineWindow.jsx:74
-#: oceannavigator/frontend/src/components/PointWindow.jsx:140
+#: oceannavigator/frontend/src/components/PointWindow.jsx:153
 msgid "Colourmap"
 msgstr ""
 
@@ -155,7 +155,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/Class4Window.jsx:71
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:89
 #: oceannavigator/frontend/src/components/LineWindow.jsx:78
-#: oceannavigator/frontend/src/components/PointWindow.jsx:141
+#: oceannavigator/frontend/src/components/PointWindow.jsx:154
 msgid "Saved Image Size"
 msgstr ""
 
@@ -196,18 +196,18 @@ msgstr ""
 msgid "Show Error"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:204
+#: oceannavigator/frontend/src/components/ComboBox.jsx:210
 #: oceannavigator/frontend/src/components/NumberBox.jsx:53
 msgid "titlehelp"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:211
+#: oceannavigator/frontend/src/components/ComboBox.jsx:217
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:472
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:486
 #: oceannavigator/frontend/src/components/NumberBox.jsx:59
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:394
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:407
-#: oceannavigator/frontend/src/components/PlotImage.jsx:204
+#: oceannavigator/frontend/src/components/PlotImage.jsx:211
 msgid "Close"
 msgstr ""
 
@@ -446,12 +446,12 @@ msgid "Loading"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
-#: oceannavigator/frontend/src/components/PlotImage.jsx:197
+#: oceannavigator/frontend/src/components/PlotImage.jsx:204
 msgid "Share Link"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
-#: oceannavigator/frontend/src/components/PlotImage.jsx:203
+#: oceannavigator/frontend/src/components/PlotImage.jsx:210
 msgid "Copy"
 msgstr ""
 
@@ -459,39 +459,43 @@ msgstr ""
 msgid "Please Wait…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:180
+#: oceannavigator/frontend/src/components/PlotImage.jsx:187
 msgid "Save…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:192
+#: oceannavigator/frontend/src/components/PlotImage.jsx:199
 msgid "Get Link"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:134
+#: oceannavigator/frontend/src/components/PointWindow.jsx:147
 msgid "Location"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:259
+#: oceannavigator/frontend/src/components/PointWindow.jsx:284
 msgid "Profile"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:260
+#: oceannavigator/frontend/src/components/PointWindow.jsx:285
 msgid "CTD Profile"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:261
+#: oceannavigator/frontend/src/components/PointWindow.jsx:286
 msgid "T/S Diagram"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:262
+#: oceannavigator/frontend/src/components/PointWindow.jsx:287
 msgid "Sound Speed Profile"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:263
+#: oceannavigator/frontend/src/components/PointWindow.jsx:288
+msgid "Stick Plot"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/PointWindow.jsx:289
 msgid "Observation"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:264
+#: oceannavigator/frontend/src/components/PointWindow.jsx:290
 msgid "Virtual Mooring"
 msgstr ""
 
@@ -815,6 +819,11 @@ msgstr ""
 #: plotting/stats.py:204 plotting/stats.py:205 plotting/stats.py:206
 #: plotting/stats.py:207 plotting/stats.py:208
 msgid "No Data"
+msgstr ""
+
+#: plotting/stick.py:120
+#, python-format
+msgid "%s at %s (%s)"
 msgstr ""
 
 #: plotting/tile.py:132
