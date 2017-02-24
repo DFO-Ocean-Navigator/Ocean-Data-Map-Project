@@ -558,6 +558,7 @@ def class4(class4_id, projection, resolution, extent):
     lat = []
     lon = []
     point_id = []
+    identifiers = []
     with Dataset(dataset_url, 'r') as ds:
         lat_in = ds['latitude'][:]
         lon_in = ds['longitude'][:]
@@ -569,6 +570,7 @@ def class4(class4_id, projection, resolution, extent):
             if view.envelope.intersects(p):
                 lat.append(float(lat_in[i]))
                 lon.append(float(lon_in[i]))
+                identifiers.append(ids[i])
                 best = ds['best_estimate'][i, 0, :]
                 obsv = ds['observation'][i, 0, :]
                 point_id.append(i)
@@ -591,7 +593,7 @@ def class4(class4_id, projection, resolution, extent):
                 'coordinates': ll,
             },
             'properties': {
-                'name': "%s" % ids[idx],
+                'name': "%s" % identifiers[idx],
                 'id': "%s/%d" % (class4_id, point_id[idx]),
                 'error': float(rmse[idx]),
                 'error_norm': float(rmse_norm[idx]),
