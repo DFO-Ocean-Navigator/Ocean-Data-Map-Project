@@ -165,6 +165,17 @@ class PlotImage extends React.Component {
         window.location.href = url;
     }
 
+    getLink(key) {
+        switch(key) {
+            case "web":
+                this.setState({showPermalink: true});
+                break;
+            case "image":
+                this.setState({showImagelink: true});
+                break;
+        }
+    }
+
     render() {
         var src = '';
         if (this.state.fail) {
@@ -178,6 +189,10 @@ class PlotImage extends React.Component {
         var permalinkModalEntered = function() {
             this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + 'px';
             this.permalinkbox.select();
+        }.bind(this);
+        var imagelinkModalEntered = function() {
+            this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + 'px';
+            this.imagelinkbox.select();
         }.bind(this);
 
         return (
@@ -196,7 +211,10 @@ class PlotImage extends React.Component {
                         <MenuItem eventKey="geotiff" disabled={this.props.query.type != 'map'}><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
                     </DropdownButton>
 
-                    <Button onClick={() => this.setState({showPermalink: true})}><Icon icon="link" /> {_("Get Link")}</Button>
+                    <DropdownButton id="link" title={<span><Icon icon="link" /> {_("Get Link")}</span>} dropup onSelect={this.getLink.bind(this)}>
+                        <MenuItem eventKey="web"><Icon icon="globe" /> Web</MenuItem>
+                        <MenuItem eventKey="image"><Icon icon="file-image-o" /> Image</MenuItem>
+                    </DropdownButton>
                 </ButtonToolbar>
 
                 <Modal show={this.state.showPermalink} onHide={() => this.setState({showPermalink: false})} dialogClassName='permalink-modal' onEntered={permalinkModalEntered}>
@@ -209,6 +227,21 @@ class PlotImage extends React.Component {
                     <Modal.Footer>
                         <Button onClick={function() {this.permalinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
                         <Button onClick={() => this.setState({showPermalink: false})}><Icon icon="close" /> {_("Close")}</Button>
+                    </Modal.Footer>
+                </Modal>
+
+                <Modal show={this.state.showImagelink} onHide={() => this.setState({showImagelink: false})} dialogClassName='permalink-modal' onEntered={imagelinkModalEntered}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{_("Share Link")}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <textarea ref={(t) => this.imagelinkbox = t} type="text" id="imagelink_area" readOnly value={
+                            window.location.origin + this.urlFromQuery(this.props.query) + "&format=png&size=" + this.props.query.size + "&dpi=" + this.props.query.dpi
+                        } />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={function() {this.imagelinkbox.select(); document.execCommand('copy');}.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+                        <Button onClick={() => this.setState({showImagelink: false})}><Icon icon="close" /> {_("Close")}</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
