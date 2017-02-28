@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-02-22 11:16-0530\n"
-"PO-Revision-Date: 2017-02-22 11:22-0330\n"
+"POT-Creation-Date: 2017-02-28 10:27-0530\n"
+"PO-Revision-Date: 2017-02-28 10:29-0330\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -209,7 +209,8 @@ msgstr "Aide pour {{title}}"
 #: oceannavigator/frontend/src/components/NumberBox.jsx:59
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:394
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:407
-#: oceannavigator/frontend/src/components/PlotImage.jsx:211
+#: oceannavigator/frontend/src/components/PlotImage.jsx:229
+#: oceannavigator/frontend/src/components/PlotImage.jsx:244
 msgid "Close"
 msgstr "Fermer"
 
@@ -450,12 +451,14 @@ msgid "Loading"
 msgstr "Chargement"
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
-#: oceannavigator/frontend/src/components/PlotImage.jsx:204
+#: oceannavigator/frontend/src/components/PlotImage.jsx:222
+#: oceannavigator/frontend/src/components/PlotImage.jsx:235
 msgid "Share Link"
 msgstr "Partager le site"
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
-#: oceannavigator/frontend/src/components/PlotImage.jsx:210
+#: oceannavigator/frontend/src/components/PlotImage.jsx:228
+#: oceannavigator/frontend/src/components/PlotImage.jsx:243
 msgid "Copy"
 msgstr "Copier"
 
@@ -463,11 +466,11 @@ msgstr "Copier"
 msgid "Please Wait…"
 msgstr "S'il vous plaît, attendez…"
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:187
+#: oceannavigator/frontend/src/components/PlotImage.jsx:202
 msgid "Save…"
 msgstr "Sauvegarder…"
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:199
+#: oceannavigator/frontend/src/components/PlotImage.jsx:214
 msgid "Get Link"
 msgstr "Obtenir le lien"
 
@@ -776,6 +779,11 @@ msgstr "Latitude (degrés)"
 #: plotting/drifter.py:221
 msgid "Longitude (degrees)"
 msgstr "Longitude (degrés)"
+
+#: plotting/drifter.py:231
+#, python-format
+msgid "Drifter Plot (IMEI: %s, WMO: %s)"
+msgstr "Plot de dérivateur (IMEI: %s, WMO: %s)"
 
 #: plotting/hovmoller.py:140 plotting/transect.py:444
 msgid "Distance (km)"

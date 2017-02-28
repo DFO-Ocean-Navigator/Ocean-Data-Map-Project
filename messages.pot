@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-02-22 11:16-0430\n"
+"POT-Creation-Date: 2017-02-28 10:27-0430\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -207,7 +207,8 @@ msgstr ""
 #: oceannavigator/frontend/src/components/NumberBox.jsx:59
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:394
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:407
-#: oceannavigator/frontend/src/components/PlotImage.jsx:211
+#: oceannavigator/frontend/src/components/PlotImage.jsx:229
+#: oceannavigator/frontend/src/components/PlotImage.jsx:244
 msgid "Close"
 msgstr ""
 
@@ -446,12 +447,14 @@ msgid "Loading"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
-#: oceannavigator/frontend/src/components/PlotImage.jsx:204
+#: oceannavigator/frontend/src/components/PlotImage.jsx:222
+#: oceannavigator/frontend/src/components/PlotImage.jsx:235
 msgid "Share Link"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
-#: oceannavigator/frontend/src/components/PlotImage.jsx:210
+#: oceannavigator/frontend/src/components/PlotImage.jsx:228
+#: oceannavigator/frontend/src/components/PlotImage.jsx:243
 msgid "Copy"
 msgstr ""
 
@@ -459,11 +462,11 @@ msgstr ""
 msgid "Please Wait…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:187
+#: oceannavigator/frontend/src/components/PlotImage.jsx:202
 msgid "Save…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:199
+#: oceannavigator/frontend/src/components/PlotImage.jsx:214
 msgid "Get Link"
 msgstr ""
 
@@ -771,6 +774,11 @@ msgstr ""
 
 #: plotting/drifter.py:221
 msgid "Longitude (degrees)"
+msgstr ""
+
+#: plotting/drifter.py:231
+#, python-format
+msgid "Drifter Plot (IMEI: %s, WMO: %s)"
 msgstr ""
 
 #: plotting/hovmoller.py:140 plotting/transect.py:444

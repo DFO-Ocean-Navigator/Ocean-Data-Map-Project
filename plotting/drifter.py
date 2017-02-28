@@ -228,7 +228,8 @@ class DrifterPlotter(plotter.Plotter):
                 plt.ylabel(label)
                 plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
-        fig.suptitle("IMEI: %s, WMO: %s" % (self.imei, self.wmo))
+        fig.suptitle(gettext("Drifter Plot (IMEI: %s, WMO: %s)") %
+                     (self.imei, self.wmo))
         fig.tight_layout(pad=3, w_pad=4)
         return super(DrifterPlotter, self).plot(fig)
 
