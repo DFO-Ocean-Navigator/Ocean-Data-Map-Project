@@ -19,7 +19,14 @@ def load_interpolated(basemap, gridsize, dataset, variable, depth, time,
                       interpolation):
     CACHE_DIR = app.config['CACHE_DIR']
 
-    target_lon, target_lat = basemap.makegrid(gridsize, gridsize)
+    if basemap.aspect < 1:
+        gridx = gridsize
+        gridy = int(gridsize * basemap.aspect)
+    else:
+        gridy = gridsize
+        gridx = int(gridsize / basemap.aspect)
+
+    target_lon, target_lat = basemap.makegrid(gridx, gridy)
 
     lat_hash = str(target_lat[0, 0]) + str(
         target_lat[-1, -1]) + str(np.median(target_lat.ravel()))

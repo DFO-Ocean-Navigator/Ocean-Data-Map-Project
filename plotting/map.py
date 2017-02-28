@@ -82,7 +82,14 @@ class MapPlotter(area.AreaPlotter):
                 'lcc', self.centroid, height, width
             )
 
-        self.longitude, self.latitude = self.basemap.makegrid(500, 500)
+        if self.basemap.aspect < 1:
+            gridx = 500
+            gridy = int(500 * self.basemap.aspect)
+        else:
+            gridy = 500
+            gridx = int(500 / self.basemap.aspect)
+
+        self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
         with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
             time_var = utils.get_time_var(dataset)
