@@ -8,6 +8,7 @@ import Range from './Range.jsx';
 import SelectBox from './SelectBox.jsx';
 import NumberBox from './NumberBox.jsx';
 import ContourSelector from './ContourSelector.jsx';
+import QuiverSelector from './QuiverSelector.jsx';
 import StatsTable from './StatsTable.jsx';
 import ImageSize from './ImageSize.jsx';
 var i18n = require('../i18n.js');
@@ -24,7 +25,11 @@ class AreaWindow extends React.Component {
             surfacevariable: 'none',
             linearthresh: 200,
             bathymetry: true,
-            quiver: 'none',
+            quiver: {
+                variable: '',
+                magnitude: 'length',
+                colormap: 'default',
+            },
             contour: {
                 variable: '',
                 colormap: 'default',
@@ -121,7 +126,7 @@ class AreaWindow extends React.Component {
         var scale = <Range auto key='scale' id='scale' state={this.state.scale} def={''} onUpdate={this.onLocalUpdate.bind(this)} title={_('Variable Range')} />;
         var colormap = <ComboBox key='colormap' id='colormap' state={this.state.colormap} def='default' onUpdate={this.onLocalUpdate.bind(this)} url='/api/colormaps/' title={_('Colourmap')}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>;
         var bathymetry = <SelectBox key='bathymetry' id='bathymetry' state={this.state.bathymetry} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Bathymetry Contours')} />;
-        var quiver = <ComboBox key='quiver' id='quiver' state={this.state.quiver} def='' onUpdate={this.onLocalUpdate.bind(this)} url={'/api/variables/?vectors_only&dataset=' + this.props.dataset} title={_('Arrows')}>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers. If the variable is the same as the main variable, the arrows will all be of unit length and are used for direction only, otherwise the length of the arrow will indicate magnitude.</ComboBox>;
+        var quiver = <QuiverSelector key='quiver' id='quiver' state={this.state.quiver} def='' onUpdate={this.onLocalUpdate.bind(this)} dataset={this.props.dataset} title={_('Arrows')}>Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers.</QuiverSelector>;
         var contour = <ContourSelector key='contour' id='contour' state={this.state.contour} def='' onUpdate={this.onLocalUpdate.bind(this)} dataset={this.props.dataset} title={_('Additional Contours')}>Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.</ContourSelector>;
         var showarea = <SelectBox key='showarea' id='showarea' state={this.state.showarea} onUpdate={this.onLocalUpdate.bind(this)} title={_('Show Selected Area(s)')}>Shows the selected areas on the map.</SelectBox>;
         var size = <ImageSize key='size' id='size' state={this.state.size} onUpdate={this.onLocalUpdate.bind(this)} title={_('Saved Image Size')} />;

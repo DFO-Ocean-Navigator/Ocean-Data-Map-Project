@@ -155,8 +155,11 @@ class MapPlotter(area.AreaPlotter):
             self.data = data[0]
 
             quiver_data = []
-            if self.quiver_variables:
-                for v in self.quiver_variables:
+
+            if self.quiver is not None and \
+                self.quiver['variable'] != '' and \
+                    self.quiver['variable'] != 'none':
+                for v in self.quiver['variable'].split(','):
                     allvars.append(v)
                     var = dataset.variables[v]
                     quiver_unit = get_variable_unit(self.dataset_name, var)
@@ -313,13 +316,7 @@ class MapPlotter(area.AreaPlotter):
         self.show_bathymetry = bool(query.get('bathymetry'))
         self.show_area = bool(query.get('showarea'))
 
-        quiver_variables = query.get('quiver')
-        if quiver_variables is not None:
-            quiver_variables = quiver_variables.split(",")
-            if len(quiver_variables) != 2:
-                quiver_variables = None
-
-        self.quiver_variables = quiver_variables
+        self.quiver = query.get('quiver')
 
         self.contour = query.get('contour')
 
@@ -362,6 +359,7 @@ class MapPlotter(area.AreaPlotter):
         # Figure size
         figuresize = map(float, self.size.split("x"))
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
+        ax = plt.gca()
 
         if self.scale:
             vmin = self.scale[0]
@@ -380,23 +378,41 @@ class MapPlotter(area.AreaPlotter):
             qx, qy = self.quiver_data
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
-            if self.variables == self.quiver_variables:
-                qx /= quiver_mag
-                qy /= quiver_mag
-                qscale = 100
+            if self.quiver['magnitude'] != 'length':
+                qx = qx / quiver_mag
+                qy = qy / quiver_mag
+                qscale = 50
             else:
                 qscale = None
 
-            q = self.basemap.quiver(
-                self.quiver_longitude, self.quiver_latitude,
-                qx, qy,
-                latlon=True, width=0.0025,
-                headaxislength=4, headlength=4,
-                scale=qscale,
-                pivot='mid'
-            )
+            if self.quiver['magnitude'] == 'color':
+                if self.quiver['colormap'] is None or \
+                   self.quiver['colormap'] == 'default':
+                    qcmap = colormap.colormaps.get('speed')
+                else:
+                    qcmap = colormap.colormaps.get(self.quiver['colormap'])
 
-            if self.variables != self.quiver_variables:
+                q = self.basemap.quiver(
+                    self.quiver_longitude, self.quiver_latitude,
+                    qx, qy,
+                    quiver_mag,
+                    latlon=True, width=0.0035,
+                    headaxislength=4, headlength=4,
+                    scale=qscale,
+                    pivot='mid',
+                    cmap=qcmap,
+                )
+            else:
+                q = self.basemap.quiver(
+                    self.quiver_longitude, self.quiver_latitude,
+                    qx, qy,
+                    latlon=True, width=0.0025,
+                    headaxislength=4, headlength=4,
+                    scale=qscale,
+                    pivot='mid',
+                )
+
+            if self.quiver['magnitude'] == 'length':
                 unit_length = np.mean(quiver_mag) * 2
                 unit_length = np.round(unit_length,
                                        -int(np.floor(np.log10(unit_length))))
@@ -618,6 +634,16 @@ class MapPlotter(area.AreaPlotter):
         bar = plt.colorbar(c, cax=cax)
         bar.set_label("%s (%s)" % (self.variable_name.title(),
                                    utils.mathtext(self.variable_unit)))
+
+        if self.quiver is not None and \
+            self.quiver['variable'] != '' and \
+            self.quiver['variable'] != 'none' and \
+                self.quiver['magnitude'] == 'color':
+            bax = divider.append_axes("bottom", size="5%", pad=0.05)
+            qbar = plt.colorbar(q, orientation='horizontal', cax=bax)
+            qbar.set_label(
+                self.quiver_name.title() + " " +
+                utils.mathtext(self.quiver_unit))
 
         fig.tight_layout(pad=3, w_pad=4)
 
