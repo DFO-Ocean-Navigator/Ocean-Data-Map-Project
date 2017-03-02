@@ -10,6 +10,13 @@ from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
 from operator import itemgetter
+from plotting.data import load_timeseries
+from oceannavigator.util import (
+    get_dataset_url, get_variable_name,
+    get_variable_unit, get_dataset_climatology
+)
+import re
+import plotting.utils
 
 
 def list_kml_files(subdir):
@@ -182,14 +189,22 @@ def areas(area_id, projection, resolution, extent):
         polys = []
 
         for p in place.iterfind('.//k:Polygon', nsmap):
-            lonlat = np.array(map(lambda c: c.split(','),
-                                  p.outerBoundaryIs.LinearRing.coordinates.text.split())).astype(float)
+            lonlat = np.array(
+                map(
+                    lambda c: c.split(','),
+                    p.outerBoundaryIs.LinearRing.coordinates.text.split()
+                )
+            ).astype(float)
             ox, oy = proj(lonlat[:, 0], lonlat[:, 1])
 
             holes = []
             for i in p.iterfind('.//k:innerBoundaryIs/k:LinearRing', nsmap):
-                lonlat_inner = np.array(map(lambda c: c.split(','),
-                                            i.coordinates.text.split())).astype(float)
+                lonlat_inner = np.array(
+                    map(
+                        lambda c: c.split(','),
+                        i.coordinates.text.split()
+                    )
+                ).astype(float)
                 ix, iy = proj(lonlat_inner[:, 0], lonlat_inner[:, 1])
                 holes.append(zip(iy, ix))
 
@@ -247,7 +262,9 @@ def drifter_meta():
     wmo = {}
     deployment = {}
 
-    with Dataset('http://localhost:8080/thredds/dodsC/misc/output/test.ncml', 'r') as ds:
+    with Dataset(
+        'http://localhost:8080/thredds/dodsC/misc/output/test.ncml', 'r'
+    ) as ds:
         for idx, b in enumerate(ds.variables['buoy'][:]):
             bid = str(chartostring(b))[:-3]
 
@@ -522,8 +539,8 @@ def list_class4(d):
         rmse = []
 
         for i in range(0, lat.shape[0]):
-            best = ds['best_estimate'][i, 0, :]
-            obsv = ds['observation'][i, 0, :]
+            best = ds['best_estimate'][i, 0,:]
+            obsv = ds['observation'][i, 0,:]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
     rmse = np.ma.hstack(rmse)
@@ -571,8 +588,8 @@ def class4(class4_id, projection, resolution, extent):
                 lat.append(float(lat_in[i]))
                 lon.append(float(lon_in[i]))
                 identifiers.append(ids[i])
-                best = ds['best_estimate'][i, 0, :]
-                obsv = ds['observation'][i, 0, :]
+                best = ds['best_estimate'][i, 0,:]
+                obsv = ds['observation'][i, 0,:]
                 point_id.append(i)
                 rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
@@ -652,4 +669,49 @@ def list_class4_models(class4_id):
                 'id': value
             })
 
+    return result
+
+
+def get_point_data(dataset, variable, time, depth, location):
+    variables_anom = variable.split(",")
+    variables = [re.sub('_anom$', '', v) for v in variables_anom]
+
+    data = []
+    names = []
+    units = []
+    with Dataset(get_dataset_url(dataset), 'r') as ds:
+        time_var = plotting.utils.get_time_var(ds)
+        t = netcdftime.utime(time_var.units)
+        timestamp = t.num2date(time_var[time])
+
+        for v in variables:
+            d, t = load_timeseries(
+                ds, v, range(time, time + 1), depth, location[0], location[1])
+            variable_name = get_variable_name(dataset, ds.variables[v])
+            variable_unit = get_variable_unit(dataset, ds.variables[v])
+
+            if variable_unit.startswith("Kelvin"):
+                variable_unit = "Celsius"
+                d = np.add(d, -273.15)
+
+            data.append(d)
+            names.append(variable_name)
+            units.append(variable_unit)
+
+    if variables != variables_anom:
+        with Dataset(get_dataset_climatology(dataset), 'r') as ds:
+            for idx, v in enumerate(variables):
+                d, t = load_timeseries(
+                    ds, v, range(timestamp.month + 1, timestamp.month + 2),
+                    depth, location[0], location[1])
+
+                data[idx] = data[idx] - d
+                names[idx] = names[idx] + " Anomaly"
+
+    result = {
+        'value': map(lambda f: '%s' % float('%.4g' % f), data),
+        'location': map(lambda f: round(f, 4), location),
+        'name': names,
+        'units': units,
+    }
     return result

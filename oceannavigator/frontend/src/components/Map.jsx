@@ -374,6 +374,31 @@ class Map extends React.Component {
             }
         }.bind(this));
 
+        this.map.on('singleclick', function(e) {
+            var coord = e.coordinate;
+            this.infoPopupContent.innerHTML = 'Loading...';
+            if (this.infoRequest != undefined) {
+                this.infoRequest.abort();
+            }
+            var location = ol.proj.transform(coord, this.props.state.projection, 'EPSG:4326');
+            this.infoRequest = $.ajax({
+                url: `/api/data/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${location[1]},${location[0]}.json`,
+                success: function(response) {
+                    var text = '<p>' + 
+                        'Location: ' + response.location[0].toFixed(4) + ", " + response.location[1].toFixed(4);
+                    for (var i = 0; i < response.name.length; i++) {
+                        if (response.value[i] != "nan") {
+                            text += '<br />' +
+                            response.name[i] + ": " + response.value[i] + " " + response.units[i];
+                        }
+                    }
+                    text += '</p>';
+                    this.infoPopupContent.innerHTML = text;
+                    this.infoOverlay.setPosition(coord);
+                }.bind(this),
+            });
+        }.bind(this));
+
         var select = new ol.interaction.Select({
             style: function(feat, res) {
                 if (feat.get("type") == "area") {
@@ -494,6 +519,10 @@ class Map extends React.Component {
             if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
                 this.props.action("plot");
             }
+            if (this.infoRequest != undefined) {
+                this.infoRequest.abort();
+            }
+            this.infoOverlay.setPosition(undefined);
         }.bind(this));
 
         dragBox.on('boxend', function() {
@@ -520,8 +549,22 @@ class Map extends React.Component {
             offset: [0, -10],
             positioning: 'bottom-center',
         });
-
         this.map.addOverlay(this.overlay);
+
+        this.infoOverlay = new ol.Overlay({
+            element: this.infoPopup,
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250,
+            },
+        });
+        this.map.addOverlay(this.infoOverlay);
+
+        this.infoPopupCloser.onclick = function() {
+            this.infoOverlay.setPosition(undefined);
+            this.infoPopupCloser.blur();
+            return false;
+        }.bind(this);
     }
 
     resetMap() {
@@ -531,6 +574,7 @@ class Map extends React.Component {
         this.selectedFeatures.clear();
         this.vectorSource.clear();
         this.overlay.setPosition(undefined);
+        this.infoOverlay.setPosition(undefined);
     }
 
     removeMapInteractions(type) {
@@ -670,6 +714,13 @@ class Map extends React.Component {
             this.map.getLayers().setAt(0, this.layer_basemap);
         }
 
+        for (var prop of ["projection", "dataset", "variable", "depth", "time"]) {
+            if (prevProps.state[prop] != this.props.state[prop]) {
+                this.infoOverlay.setPosition(undefined);
+                break;
+            }
+        }
+
         this.layer_bath.setVisible(this.props.state.bathymetry);
 
         this.map.render();
@@ -794,7 +845,11 @@ class Map extends React.Component {
         return (
             <div className='Map'>
                 <div ref={(c) => this.map.setTarget(c)} />
-                <div className='ol-popup' ref={(c) => this.popupElement = c}>Empty</div>
+                <div className='title ol-popup' ref={(c) => this.popupElement = c}>Empty</div>
+                <div className='ballon ol-popup' ref={(c) => this.infoPopup = c}>
+                    <a href="#" ref={(c) => this.infoPopupCloser = c}></a>
+                    <div ref={(c) => this.infoPopupContent = c}></div>
+                </div>
             </div>
         );
     }

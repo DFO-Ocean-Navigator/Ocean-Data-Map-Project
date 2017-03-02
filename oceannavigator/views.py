@@ -89,6 +89,19 @@ def query_id(q, q_id):
     return resp
 
 
+@app.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
+def get_data(dataset, variable, time, depth, location):
+    data = oceannavigator.misc.get_point_data(
+        dataset, variable, time, depth,
+        map(float, location.split(","))
+    )
+    js = json.dumps(data)
+    resp = Response(js, status=200, mimetype='application/json')
+    # resp.cache_control.max_age = MAX_CACHE
+    resp.cache_control.max_age = 2
+    return resp
+
+
 @app.route('/api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file(q, projection, resolution, extent, file_id):
     data = []

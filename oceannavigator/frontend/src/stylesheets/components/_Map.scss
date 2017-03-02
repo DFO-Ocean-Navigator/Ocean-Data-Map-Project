@@ -33,34 +33,95 @@
     }
 
     .ol-popup {
-        position: relative;
-        background-color: $tooltip-color;
-        filter: drop-shadow(1px 1px 4px rgba(0,0,0,0.4));
-        padding: 0.25em;
-        color: white;
-        min-height: $tooltip-height;
-        border-radius: 5px;
-        text-align: center;
+        &.title {
+            position: relative;
+            background-color: $tooltip-color;
+            filter: drop-shadow(1px 1px 4px rgba(0,0,0,0.4));
+            padding: 0.25em;
+            color: white;
+            min-height: $tooltip-height;
+            border-radius: 5px;
+            text-align: center;
 
-        span {
-            display: block;
-            font-size: x-small;
-            margin-top: 0.3em;
+            span {
+                display: block;
+                font-size: x-small;
+                margin-top: 0.3em;
+            }
+
+            &:before {
+                content: '';
+                display: block;
+                width: 0;
+                height: 0;
+                position: absolute;
+
+                border-left: $tooltip-arrow-size solid transparent;
+                border-right: $tooltip-arrow-size solid transparent;
+                border-top:$tooltip-arrow-size solid $tooltip-color;
+                bottom: -$tooltip-arrow-size;
+                right: calc(50% - #{$tooltip-arrow-size});
+            }
         }
+
+        &.ballon {
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+
+            &:before, &:after {
+				top: 100%;
+				border: solid transparent;
+				content: " ";
+				height: 0;
+				width: 0;
+				position: absolute;
+				pointer-events: none;
+            }
+
+            &:before {
+                border-top-color: #cccccc;
+                border-width: 11px;
+                left: 48px;
+                margin-left: -11px;
+            }
+
+            &:after {
+                border-top-color: white;
+                border-width: 10px;
+                left: 48px;
+                margin-left: -10px;
+            }
+
+            a {
+                text-decoration: none;
+                position: absolute;
+                top: 2px;
+                right: 8px;
+
+                &:after {
+                    content: "✖";
+                }
+            }
+
+            p {
+                white-space: nowrap;
+                font-size: 90%;
+                margin-right: 1em;
+            }
+
+        }
+    }
+    .ol-popup {
     }
 
     .ol-popup:before {
-        content: '';
-        display: block;
-        width: 0;
-        height: 0;
-        position: absolute;
-
-        border-left: $tooltip-arrow-size solid transparent;
-        border-right: $tooltip-arrow-size solid transparent;
-        border-top:$tooltip-arrow-size solid $tooltip-color;
-        bottom: -$tooltip-arrow-size;
-        right: calc(50% - #{$tooltip-arrow-size});
     }
 
     .ol-attribution {
