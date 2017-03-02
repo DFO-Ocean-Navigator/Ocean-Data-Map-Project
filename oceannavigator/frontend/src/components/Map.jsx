@@ -241,6 +241,12 @@ class Map extends React.Component {
                         var styles = [
                             new ol.style.Style({
                                 stroke: new ol.style.Stroke({
+                                    color: [color[0], color[1], color[2], 0.004],
+                                    width: 8,
+                                }),
+                            }),
+                            new ol.style.Style({
+                                stroke: new ol.style.Stroke({
                                     color: color,
                                     width: SmartPhone.isAny() ? 4 : 2,
                                 })
