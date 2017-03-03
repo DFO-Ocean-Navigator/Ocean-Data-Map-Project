@@ -149,12 +149,7 @@ def load_timeseries(dataset, variable, time, depth, lat, lon):
             latvar, lonvar = utils.get_latlon_vars(dataset)
 
             grid = g.Grid(dataset, latvar.name, lonvar.name)
-            y, x = grid.find_index([lat], [lon], 10)
-
-            miny = np.amin(y)
-            maxy = np.amax(y)
-            minx = np.amin(x)
-            maxx = np.amax(x)
+            miny, maxy, minx, maxx = grid.bounding_box([lat], [lon])
 
             var = dataset.variables[variable]
 
