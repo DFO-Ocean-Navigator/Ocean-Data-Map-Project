@@ -23,13 +23,16 @@ class ImageSize extends React.Component {
         p.children("div").slideToggle("fast");
     }
     changed(key, value) {
-        var newstate = {};
+        var newstate = {
+            "width": this.state.width,
+            "height": this.state.height,
+        };
         newstate[key] = value;
         this.setState(newstate);
         if (key == "width" || key == "height") {
-            this.props.onUpdate('size', this.state.width + 'x' + this.state.height);
+            this.props.onUpdate('size', newstate.width + 'x' + newstate.height);
         } else if (key == "dpi") {
-            this.props.onUpdate('dpi', this.state.dpi);
+            this.props.onUpdate('dpi', value);
         }
     }
     render() {
