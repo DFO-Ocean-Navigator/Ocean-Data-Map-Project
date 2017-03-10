@@ -2,6 +2,7 @@ import unittest
 import nemo
 import numpy as np
 import datetime
+import pytz
 
 
 class TestNemo(unittest.TestCase):
@@ -17,14 +18,25 @@ class TestNemo(unittest.TestCase):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             self.assertAlmostEqual(
                 n.get_point(13.0, -149.0, 0, 0, 'votemper'),
-                299.19, places=2
+                299.18, places=2
             )
+
+    def test_get_raw_point(self):
+        with nemo.Nemo('data/testdata/nemo_test.nc') as n:
+            lat, lon, data = n.get_raw_point(
+                13.0, -149.0, 0, 0, 'votemper'
+            )
+
+        self.assertEqual(len(lat.ravel()), 12)
+        self.assertEqual(len(lon.ravel()), 12)
+        self.assertEqual(len(data.ravel()), 12)
+        self.assertAlmostEqual(data[1, 1], 299.3, places=1)
 
     def test_get_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             p = n.get_profile(13.0, -149.0, 0, 'votemper')
-            self.assertAlmostEqual(p[0], 299.19, places=2)
-            self.assertAlmostEqual(p[10], 299.17, places=2)
+            self.assertAlmostEqual(p[0], 299.18, places=2)
+            self.assertAlmostEqual(p[10], 299.16, places=2)
             self.assertAlmostEqual(p[20], 296.46, places=2)
             self.assertTrue(np.ma.is_masked(p[49]))
 
@@ -48,23 +60,26 @@ class TestNemo(unittest.TestCase):
 
     def test_get_path_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
-            r = n.get_path_profile(
+            p, d, r = n.get_path_profile(
                 [[13, -149], [14, -140], [15, -130]], 0, 'votemper', 10)
 
-            self.assertGreater(r.shape[0], 10)
-            self.assertEqual(r.shape[1], 50)
+            self.assertEqual(r.shape[0], 50)
+            self.assertGreater(r.shape[1], 10)
+            self.assertEqual(r.shape[1], p.shape[1])
+            self.assertEqual(r.shape[1], len(d))
+            self.assertEqual(d[0], 0)
 
     def test_get_timeseries_point(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             r = n.get_timeseries_point(13.0, -149.0, 0, 0, 1, 'votemper')
-            self.assertAlmostEqual(r[0], 299.19, places=2)
+            self.assertAlmostEqual(r[0], 299.18, places=2)
             self.assertAlmostEqual(r[1], 299.72, places=2)
 
     def test_get_timeseries_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             r = n.get_timeseries_profile(13.0, -149.0, 0, 1, 'votemper')
-            self.assertAlmostEqual(r[0, 0], 299.19, places=2)
-            self.assertAlmostEqual(r[0, 10], 299.17, places=2)
+            self.assertAlmostEqual(r[0, 0], 299.18, places=2)
+            self.assertAlmostEqual(r[0, 10], 299.16, places=2)
             self.assertAlmostEqual(r[0, 20], 296.46, places=2)
             self.assertTrue(np.ma.is_masked(r[0, 49]))
 
@@ -75,7 +90,8 @@ class TestNemo(unittest.TestCase):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             self.assertEqual(len(n.timestamps), 2)
             self.assertEqual(n.timestamps[0],
-                             datetime.datetime(2014, 5, 17, 0, 0))
+                             datetime.datetime(2014, 5, 17, 0, 0, 0, 0,
+                                               pytz.UTC))
 
             # Property is read-only
             with self.assertRaises(AttributeError):

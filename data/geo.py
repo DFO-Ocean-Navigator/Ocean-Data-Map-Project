@@ -35,7 +35,7 @@ def path_to_points(points, n=100, times=None):
         n_pts = int(np.ceil(n * (distance_between[index] /
                                  total_distance)))
         n_pts = np.clip(n_pts, 2, n)
-        p = map(geopy.Point, pair)
+        p = map(geopy.Point, pair[0:2])
 
         p_dist, p_lat, p_lon, b = points_between(p[0], p[1], n_pts)
         if len(distance) > 0:

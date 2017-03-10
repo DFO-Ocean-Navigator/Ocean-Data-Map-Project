@@ -3,28 +3,50 @@ import pyresample
 import numpy as np
 import warnings
 from netcdf_data import NetCDFData
-from netCDF4 import netcdftime
+from pint import UnitRegistry
+from data import Variable, VariableList
 
 RAD_FACTOR = np.pi / 180.0
+EARTH_RADIUS = 6378137.0
 
 
 class Nemo(NetCDFData):
-    _timestamps = None
+    __depths = None
 
     @property
-    def timestamps(self):
-        if self._timestamps is None:
+    def depths(self):
+        if self.__depths is None:
             var = None
-            for v in ['time', 'time_counter']:
+            for v in ['depth', 'deptht']:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break
 
-            t = netcdftime.utime(var.units)
-            self._timestamps = np.array(map(t.num2date, var[:]))
-            self._timestamps.flags.writeable = False
+            ureg = UnitRegistry()
+            unit = ureg.parse_units(var.units.lower())
+            self.__depths = ureg.Quantity(
+                var[:], unit
+            ).to(ureg.meters).magnitude
+            self.__depths.flags.writeable = False
 
-        return self._timestamps
+        return self.__depths
+
+    @property
+    def variables(self):
+        l = []
+        for name in self._dataset.variables:
+            var = self._dataset.variables[name]
+            if 'long_name' in var.ncattrs():
+                long_name = var.long_name
+            else:
+                long_name = name
+            if 'units' in var.ncattrs():
+                units = var.units
+            else:
+                units = None
+            l.append(Variable(name, long_name, units, var.dimensions))
+
+        return VariableList(l)
 
     def __find_var(self, candidates):
         for c in candidates:
@@ -34,7 +56,7 @@ class Nemo(NetCDFData):
         return None
 
     def __find_index(self, lat, lon, n=1):
-        if self.kdt is None:
+        if self._kdt is None:
             latvals = self.latvar[:] * RAD_FACTOR
             lonvals = self.lonvar[:] * RAD_FACTOR
             clat, clon = np.cos(latvals), np.cos(lonvals)
@@ -42,7 +64,7 @@ class Nemo(NetCDFData):
             triples = np.array(list(zip(np.ravel(clat * clon),
                                         np.ravel(clat * slon),
                                         np.ravel(slat))))
-            self.kdt = KDTree(triples)
+            self._kdt = KDTree(triples)
             del clat, clon
             del slat, slon
             del triples
@@ -60,12 +82,12 @@ class Nemo(NetCDFData):
         slat, slon = np.sin(lat_rad), np.sin(lon_rad)
         q = np.array([clat * clon, clat * slon, slat]).transpose()
 
-        dist_sq_min, minindex_1d = self.kdt.query(np.float32(q), k=n)
+        dist_sq_min, minindex_1d = self._kdt.query(np.float32(q), k=n)
         iy_min, ix_min = np.unravel_index(minindex_1d, self.latvar.shape)
-        return iy_min, ix_min
+        return iy_min, ix_min, dist_sq_min * EARTH_RADIUS
 
     def __bounding_box(self, lat, lon, n=10):
-        y, x = self.__find_index(lat, lon, n)
+        y, x, d = self.__find_index(lat, lon, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -87,18 +109,9 @@ class Nemo(NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.latvar.shape[1])
 
-        return miny, maxy, minx, maxx
+        return miny, maxy, minx, maxx, np.amax(d)
 
-    def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
-        input_def = pyresample.geometry.SwathDefinition(
-            lons=np.ma.array(lon_in),
-            lats=np.ma.array(lat_in)
-        )
-        output_def = pyresample.geometry.SwathDefinition(
-            lons=np.ma.array(lon_out),
-            lats=np.ma.array(lat_out)
-        )
-
+    def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
         elif len(var.shape) == 4:
@@ -108,37 +121,64 @@ class Nemo(NetCDFData):
         origshape = var.shape
         var = var.reshape([var.shape[0], var.shape[1], -1])
 
-        radius = 500000
-        wf = [lambda r: 1 / r ** 2] * var[:].shape[-1]
-        wf = lambda r: 1.0 / r ** 2
-
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
             return 1. / r ** 2
 
-        if len(var.shape) == 3:
-            wf = [weight] * var.shape[-1]
-        else:
-            wf = weight
+        data = var[:]
 
+        masked_lon_in = np.ma.array(lon_in)
+        masked_lat_in = np.ma.array(lat_in)
+
+        output_def = pyresample.geometry.SwathDefinition(
+            lons=np.ma.array(lon_out),
+            lats=np.ma.array(lat_out)
+        )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            resampled = pyresample.kd_tree.resample_custom(
-                input_def, var[:], output_def,
-                radius_of_influence=radius,
-                neighbours=10,
-                weight_funcs=wf,
-                fill_value=None, nprocs=4
-            )
+
+            if len(data.shape) == 3:
+                output = []
+                # multiple depths
+                for d in range(0, data.shape[2]):
+                    masked_lon_in.mask = masked_lat_in.mask = \
+                        data[:, :, d].view(np.ma.MaskedArray).mask
+                    input_def = pyresample.geometry.SwathDefinition(
+                        lons=masked_lon_in,
+                        lats=masked_lat_in
+                    )
+                    output.append(pyresample.kd_tree.resample_custom(
+                        input_def, data[:, :, d], output_def,
+                        radius_of_influence=float(radius),
+                        neighbours=10,
+                        weight_funcs=weight,
+                        fill_value=None, nprocs=4
+                    ))
+
+                output = np.ma.array(output).transpose()
+            else:
+                masked_lon_in.mask = masked_lat_in.mask = \
+                    var[:].view(np.ma.MaskedArray).mask
+                input_def = pyresample.geometry.SwathDefinition(
+                    lons=masked_lon_in,
+                    lats=masked_lat_in
+                )
+                output = pyresample.kd_tree.resample_custom(
+                    input_def, data, output_def,
+                    radius_of_influence=float(radius),
+                    neighbours=10,
+                    weight_funcs=weight,
+                    fill_value=None, nprocs=4
+                )
 
         if len(origshape) == 4:
-            resampled = resampled.reshape(origshape[2:])
+            output = output.reshape(origshape[2:])
 
-        return np.squeeze(resampled)
+        return np.squeeze(output)
 
     def __init__(self, url):
         super(Nemo, self).__init__(url)
-        self.kdt = None
+        self._kdt = None
 
     def __enter__(self):
         super(Nemo, self).__enter__()
@@ -148,8 +188,9 @@ class Nemo(NetCDFData):
 
         return self
 
-    def get_point(self, latitude, longitude, depth, time, variable):
-        miny, maxy, minx, maxx = self.__bounding_box(latitude, longitude, 10)
+    def get_raw_point(self, latitude, longitude, depth, time, variable):
+        miny, maxy, minx, maxx, radius = self.__bounding_box(
+            latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -158,36 +199,107 @@ class Nemo(NetCDFData):
         var = self._dataset.variables[variable]
 
         if depth == 'bottom':
-            d = var[time, :, miny:maxy, minx:maxx]
+            if hasattr(time, "__len__"):
+                d = var[time[0], :, miny:maxy, minx:maxx]
+            else:
+                d = var[time, :, miny:maxy, minx:maxx]
+
             reshaped = d.reshape([d.shape[0], -1])
+
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
             depths = edges[1, 0, :]
             indices = edges[1, 1, :]
 
-            data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
-                                     mask=True,
-                                     dtype=d.dtype)
-            data[np.unravel_index(indices, data.shape)] = d.reshape(
-                [d.shape[0], -1])[depths, indices]
+            if hasattr(time, "__len__"):
+                data_in = var[time, :, miny:maxy, minx:maxx]
+                data_in = data_in.reshape(
+                    [data_in.shape[0], data_in.shape[1], -1])
+                data = []
+                for i, t in enumerate(time):
+                    data.append(data_in[i, depths, indices])
+                data = np.ma.array(data).reshape([len(time), d.shape[-2],
+                                                  d.shape[-1]])
+            else:
+                data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                                         mask=True,
+                                         dtype=d.dtype)
+                data[np.unravel_index(indices, data.shape)] = \
+                    reshaped[depths, indices]
+        else:
+            if len(var.shape) == 4:
+                data = var[time, depth, miny:maxy, minx:maxx]
+            else:
+                data = var[time, miny:maxy, minx:maxx]
+
+        return (
+            self.latvar[miny:maxy, minx:maxx],
+            self.lonvar[miny:maxy, minx:maxx],
+            data
+        )
+
+    def get_point(self, latitude, longitude, depth, time, variable):
+        miny, maxy, minx, maxx, radius = self.__bounding_box(
+            latitude, longitude, 10)
+
+        if not hasattr(latitude, "__len__"):
+            latitude = np.array([latitude])
+            longitude = np.array([longitude])
+
+        var = self._dataset.variables[variable]
+
+        if depth == 'bottom':
+            if hasattr(time, "__len__"):
+                d = var[time[0], :, miny:maxy, minx:maxx]
+            else:
+                d = var[time, :, miny:maxy, minx:maxx]
+
+            reshaped = d.reshape([d.shape[0], -1])
+
+            edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
+            depths = edges[1, 0, :]
+            indices = edges[1, 1, :]
+
+            if hasattr(time, "__len__"):
+                data_in = var[time, :, miny:maxy, minx:maxx]
+                data_in = data_in.reshape(
+                    [data_in.shape[0], data_in.shape[1], -1])
+                data = []
+                for i, t in enumerate(time):
+                    data.append(data_in[i, depths, indices])
+                data = np.ma.array(data).reshape([len(time), d.shape[-2],
+                                                  d.shape[-1]])
+            else:
+                data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                                         mask=True,
+                                         dtype=d.dtype)
+                data[np.unravel_index(indices, data.shape)] = \
+                    reshaped[depths, indices]
 
             res = self.__resample(
                 self.latvar[miny:maxy, minx:maxx],
                 self.lonvar[miny:maxy, minx:maxx],
                 [latitude], [longitude],
-                data
+                data,
+                radius
             )
         else:
+            if len(var.shape) == 4:
+                data = var[time, depth, miny:maxy, minx:maxx]
+            else:
+                data = var[time, miny:maxy, minx:maxx]
             res = self.__resample(
                 self.latvar[miny:maxy, minx:maxx],
                 self.lonvar[miny:maxy, minx:maxx],
                 [latitude], [longitude],
-                var[time, depth, miny:maxy, minx:maxx]
+                data,
+                radius
             )
 
         return res
 
     def get_profile(self, latitude, longitude, time, variable):
-        miny, maxy, minx, maxx = self.__bounding_box(latitude, longitude, 10)
+        miny, maxy, minx, maxx, radius = self.__bounding_box(
+            latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -198,7 +310,8 @@ class Nemo(NetCDFData):
             self.latvar[miny:maxy, minx:maxx],
             self.lonvar[miny:maxy, minx:maxx],
             [latitude], [longitude],
-            var[time, :, miny:maxy, minx:maxx]
+            var[time, :, miny:maxy, minx:maxx],
+            radius
         )
 
         return res
