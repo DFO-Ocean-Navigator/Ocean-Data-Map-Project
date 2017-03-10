@@ -63,38 +63,29 @@ def get_variables(dataset):
 
 
 def get_variable_name(dataset_name, variable):
-    var_name = variable
-    if "short_name" in dir(variable):
-        var_name = variable.short_name
-    from_config = get_variables(dataset_name).get(var_name.lower())
+    from_config = get_variables(dataset_name).get(variable.key)
 
     if from_config is not None:
         return from_config.get("name")
-    elif "long_name" in dir(variable):
-        return variable.long_name
+    elif variable.name is not None:
+        return variable.name
     else:
-        return str(var_name).title()
+        return str(variable.key).title()
 
 
 def get_variable_unit(dataset_name, variable):
-    var_name = variable
-    if "short_name" in dir(variable):
-        var_name = variable.short_name
-    from_config = get_variables(dataset_name).get(var_name.lower())
+    from_config = get_variables(dataset_name).get(variable.key)
 
     if from_config is not None:
         return from_config.get("unit")
-    elif "units" in dir(variable):
+    elif variable.units is not None:
         return variable.units
     else:
         return "Unknown"
 
 
 def get_variable_scale(dataset_name, variable):
-    var_name = variable
-    if "short_name" in dir(variable):
-        var_name = variable.short_name
-    from_config = get_variables(dataset_name).get(var_name.lower())
+    from_config = get_variables(dataset_name).get(variable.key)
 
     if from_config is not None:
         scale = from_config.get("scale")

@@ -1,4 +1,4 @@
-from netCDF4 import Dataset, netcdftime
+from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.colors
@@ -9,7 +9,6 @@ import re
 import colormap
 from StringIO import StringIO
 import utils
-from data import load_interpolated_grid
 import tempfile
 import os
 import math
@@ -22,6 +21,7 @@ from PIL import Image
 from flask.ext.babel import gettext
 from skimage import measure
 import contextlib
+from data import open_dataset
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -118,7 +118,7 @@ def scale(args):
 
     variable = variable.split(',')
 
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
+    with open_dataset(get_dataset_url(dataset_name)) as dataset:
         variable_unit = get_variable_unit(dataset_name,
                                           dataset.variables[variable[0]])
         variable_name = get_variable_name(dataset_name,
@@ -184,51 +184,29 @@ def plot(projection, x, y, z, args):
     scale = [float(component) for component in scale.split(',')]
 
     data = []
-    with Dataset(get_dataset_url(dataset_name), 'r') as dataset:
+    with open_dataset(get_dataset_url(dataset_name)) as dataset:
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
             time = -1
         else:
             time = int(args.get('time'))
 
-        time_var = utils.get_time_var(dataset)
-        if time >= time_var.shape[0]:
-            time = -1
+        t_len = len(dataset.timestamps)
+        while time >= t_len:
+            time -= t_len
 
-        if time < 0:
-            time += time_var.shape[0]
+        while time < 0:
+            time += len(dataset.timestamps)
 
-        timestamp = netcdftime.utime(time_var.units).num2date(time_var[time])
-
-        interp = {
-            'method': 'inv_square',
-            'neighbours': 8,
-        }
-
-        depth_var = utils.get_depth_var(dataset)
-
-        depth = 0
-        depthm = 0
-        if depth_var is not None and args.get('depth'):
-            if args.get('depth') == 'bottom' or args.get('depth') == 'all':
-                depth = 'bottom'
-                depthm = 0
-            else:
-                depth = int(args.get('depth'))
-
-                if depth >= depth_var.shape[0]:
-                    depth = 0
-                    depthm = 0
-                else:
-                    depthm = depth_var[int(depth)]
-
-        if len(dataset.variables[variable[0]].shape) < 4:
-            depthm = 0
+        timestamp = dataset.timestamps[time]
 
         for v in variable:
-            data.append(load_interpolated_grid(
-                lat, lon, dataset, v,
-                depth, time, interpolation=interp))
+            data.append(dataset.get_area(
+                np.array([lat, lon]),
+                depth,
+                time,
+                v
+            ))
 
         variable_name = get_variable_name(dataset_name,
                                           dataset.variables[variable[0]])
@@ -238,6 +216,11 @@ def plot(projection, x, y, z, args):
             cmap = colormap.colormaps['anomaly']
         else:
             cmap = colormap.find_colormap(variable_name)
+
+        if depth != 'bottom':
+            depthm = dataset.depths[depth]
+        else:
+            depthm = 10000
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
@@ -253,10 +236,13 @@ def plot(projection, x, y, z, args):
             cmap = colormap.colormaps.get('speed')
 
     if anom:
-        with Dataset(get_dataset_climatology(dataset_name), 'r') as dataset:
-            a = load_interpolated_grid(
-                lat, lon, dataset, v,
-                depth, timestamp.month - 1, interpolation=interp)
+        with open_dataset(get_dataset_climatology(dataset_name)) as dataset:
+            a = dataset.get_area(
+                np.array([lat, lon]),
+                depth,
+                timestamp.month - 1,
+                v
+            )
             data = data - a
 
     f, fname = tempfile.mkstemp()

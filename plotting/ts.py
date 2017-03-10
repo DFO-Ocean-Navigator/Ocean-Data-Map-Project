@@ -1,4 +1,3 @@
-from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
 import utils
@@ -6,6 +5,7 @@ from oceannavigator.util import get_dataset_url
 import seawater
 import point
 from flask.ext.babel import gettext
+from data import open_dataset
 
 
 class TemperatureSalinityPlotter(point.PointPlotter):
@@ -61,8 +61,8 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         tmax = np.amax(self.temperature) + (
             np.abs(np.amax(self.temperature) * 0.1))
 
-        xdim = round((smax - smin) / 0.1 + 1, 0)
-        ydim = round((tmax - tmin) + 1, 0)
+        xdim = int(round((smax - smin) / 0.1 + 1, 0))
+        ydim = int(round((tmax - tmin) + 1, 0))
 
         dens = np.zeros((ydim, xdim))
         ti = np.linspace(0, ydim - 1, ydim) + tmin
@@ -108,12 +108,10 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def load_data(self):
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            time_var = utils.get_time_var(dataset)
-            time = self.clip_value(self.time, time_var)
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
-            t = netcdftime.utime(time_var.units)
-            self.timestamp = t.num2date(time_var[time])
+            self.timestamp = dataset.timestamps[time]
 
             self.load_misc(dataset, ["votemper"])
             self.load_temp_sal(dataset, time)

@@ -1,4 +1,3 @@
-from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.ticker import ScalarFormatter
@@ -7,12 +6,12 @@ import numpy as np
 import re
 from textwrap import wrap
 import colormap
-from data import load_timeseries
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url
 import datetime
 import point
+from data import open_dataset
 
 LINEAR = 200
 
@@ -146,7 +145,7 @@ class TimeseriesPlotter(point.PointPlotter):
                 else:
                     ax[idx].set_ylim(maxdepth, self.depths[0])
                 ax[idx].set_ylabel("Depth (%s)" %
-                                   utils.mathtext(self.depth_units))
+                                   utils.mathtext(self.depth_unit))
 
                 ax[idx].xaxis_date()
                 ax[idx].set_xlim(datenum[0], datenum[-1])
@@ -204,7 +203,7 @@ class TimeseriesPlotter(point.PointPlotter):
         self.depth = depth
 
     def load_data(self):
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             self.fix_startend_times(dataset)
 
             self.variable_unit = get_variable_unit(
@@ -216,23 +215,17 @@ class TimeseriesPlotter(point.PointPlotter):
                 dataset.variables[self.variables[0]]
             )
 
-            depth_var = utils.get_depth_var(dataset)
-            if depth_var is None:
-                self.depth_units = ''
-            else:
-                self.depth_units = depth_var.units
-
-            if self.depth != 'all' and self.depth != 'bottom' and \
-                    (depth_var is None or self.depth >= depth_var.shape[0]):
-                self.depth = 0
+            # if self.depth != 'all' and self.depth != 'bottom' and \
+            #         (depth_var is None or self.depth >= depth_var.shape[0]):
+            #     self.depth = 0
 
             var = self.variables[0]
             if ('deptht' in dataset.variables or 'depth' in dataset.variables):
                 if self.depth != 'all' and self.depth != 'bottom' and \
                     ('deptht' in dataset.variables[var].dimensions or
                      'depth' in dataset.variables[var].dimensions):
-                    self.depth_label = " at %d%s" % (depth_var[self.depth],
-                                                     self.depth_units)
+                    self.depth_label = " at %dm" % (dataset.depths[self.depth])
+
                 elif self.depth == 'bottom':
                     self.depth_label = ' at Bottom'
                 else:
@@ -249,31 +242,34 @@ class TimeseriesPlotter(point.PointPlotter):
             for p in self.points:
                 data = []
                 for v in self.variables:
-                    d, t = load_timeseries(
-                        dataset,
-                        v,
-                        range(self.starttime, self.endtime + 1),
-                        self.depth,
-                        float(p[0]),
-                        float(p[1])
-                    )
-                    if times is None:
-                        if self.query.get('dataset_quantum') == 'month':
-                            t = [datetime.date(x.year, x.month, 1) for x in t]
-                        times = t
+                    if self.depth == 'all':
+                        d = dataset.get_timeseries_profile(
+                            float(p[0]),
+                            float(p[1]),
+                            self.starttime,
+                            self.endtime,
+                            v
+                        )
+                    else:
+                        d = dataset.get_timeseries_point(
+                            float(p[0]),
+                            float(p[1]),
+                            self.depth,
+                            self.starttime,
+                            self.endtime,
+                            v
+                        )
 
                     data.append(d)
 
                 point_data.append(np.ma.array(data))
 
             point_data = np.ma.array(point_data)
+            times = dataset.timestamps[self.starttime:self.endtime + 1]
+            if self.query.get('dataset_quantum') == 'month':
+                times = [datetime.date(x.year, x.month, 1) for x in times]
 
-            if depth_var is not None:
-                depths = depth_var[:]
-                depth_unit = depth_var.units
-            else:
-                depths = [0]
-                depth_unit = "m"
+            depths = dataset.depths
 
         # TODO: pint
         if self.variable_unit.startswith("Kelvin"):
@@ -291,4 +287,4 @@ class TimeseriesPlotter(point.PointPlotter):
         self.times = times
         self.data = point_data
         self.depths = depths
-        self.depth_unit = depth_unit
+        self.depth_unit = "m"

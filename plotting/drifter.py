@@ -1,4 +1,3 @@
-from grid import Grid
 from netCDF4 import Dataset, netcdftime, chartostring
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -11,6 +10,10 @@ import dateutil.parser
 from oceannavigator import app
 import plotter
 from flask.ext.babel import gettext
+from data import open_dataset
+import time
+import datetime
+from scipy.interpolate import interp1d
 
 
 class DrifterPlotter(plotter.Plotter):
@@ -98,19 +101,42 @@ class DrifterPlotter(plotter.Plotter):
         else:
             self.end = len(self.times)
 
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            latvar, lonvar = utils.get_latlon_vars(dataset)
-            grid = Grid(dataset, latvar.name, lonvar.name)
-
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             depth = int(self.depth)
 
+            model_start = np.where(
+                dataset.timestamps <= self.times[self.start]
+            )[0][-1]
+            model_end = np.where(
+                dataset.timestamps >= self.times[self.end]
+            )[0][0]
+
+            model_times = map(
+                lambda t: time.mktime(t.timetuple()),
+                dataset.timestamps[model_start:model_end + 1]
+            )
+            output_times = map(
+                lambda t: time.mktime(t.timetuple()),
+                self.times[self.start:self.end + 1]
+            )
             d = []
             for v in self.variables:
-                md = grid.path(
-                    dataset.variables[v],
-                    depth, self.points, self.times,
-                    interpolation=utils.get_interpolation(self.query))
-                d.append(md)
+                pts, dist, mt, md = dataset.get_path(
+                    self.points,
+                    depth,
+                    range(model_start, model_end + 1),
+                    v,
+                    times=output_times
+                )
+
+                f = interp1d(
+                    model_times,
+                    md,
+                    assume_sorted=True
+                )
+
+                d.append(np.diag(f(mt)))
+
             model_data = np.ma.array(d)
 
             variable_names = []
@@ -127,6 +153,7 @@ class DrifterPlotter(plotter.Plotter):
                     self.kelvin_to_celsius(u, model_data[idx, :])
 
             self.model_data = model_data
+            self.model_times = map(datetime.datetime.utcfromtimestamp, mt)
             self.variable_names = variable_names
             self.variable_units = variable_units
 
@@ -178,8 +205,9 @@ class DrifterPlotter(plotter.Plotter):
             if v == 'sst' and 'votemper' in self.variables:
                 i = self.variables.index('votemper')
                 plt.plot(
-                    self.times[self.start:self.end],
-                    self.model_data[i][self.start:self.end])
+                    self.model_times,
+                    self.model_data[i]
+                )
 
             legend = [self.name]
             if v == 'sst' and 'votemper' in self.variables:
@@ -208,8 +236,10 @@ class DrifterPlotter(plotter.Plotter):
             plt.subplot(gs[subplot])
             subplot += subplot_inc
 
-            plt.plot(self.times[self.start:self.end],
-                     self.model_data[idx][self.start:self.end])
+            plt.plot(
+                self.model_times,
+                self.model_data[idx]
+            )
 
             plt.ylabel("%s (%s)" % (self.variable_names[idx],
                                     utils.mathtext(self.variable_units[idx])))

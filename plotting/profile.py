@@ -1,4 +1,3 @@
-from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
 import utils
@@ -6,6 +5,7 @@ from textwrap import wrap
 from oceannavigator.util import get_dataset_url
 import point
 from flask.ext.babel import gettext
+from data import open_dataset
 
 
 class ProfilePlotter(point.PointPlotter):
@@ -105,15 +105,12 @@ class ProfilePlotter(point.PointPlotter):
         return super(ProfilePlotter, self).plot(fig)
 
     def load_data(self):
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            time_var = utils.get_time_var(dataset)
-            time = self.clip_value(self.time, time_var)
+        with open_dataset(get_dataset_url(self.dataset_name)) as d:
+            time = np.clip(self.time, 0, len(d.timestamps) - 1)
+            timestamp = d.timestamps[time]
 
-            t = netcdftime.utime(time_var.units)
-            timestamp = t.num2date(time_var[time])
-
-            self.load_misc(dataset, self.variables)
-            point_data = self.get_data(dataset, self.variables, time)
+            self.load_misc(d, self.variables)
+            point_data = self.get_data(d, self.variables, time)
 
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,

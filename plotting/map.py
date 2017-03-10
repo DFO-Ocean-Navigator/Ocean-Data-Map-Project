@@ -1,4 +1,3 @@
-from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -9,7 +8,6 @@ import colormap
 import basemap
 import overlays
 import utils
-from data import load_interpolated, load_interpolated_grid
 import gdal
 import osr
 import tempfile
@@ -26,6 +24,7 @@ from oceannavigator.misc import list_areas
 import pyresample.utils
 import area
 from geopy.distance import VincentyDistance
+from data import open_dataset
 
 
 class MapPlotter(area.AreaPlotter):
@@ -91,13 +90,8 @@ class MapPlotter(area.AreaPlotter):
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            time_var = utils.get_time_var(dataset)
-            if self.time >= time_var.shape[0]:
-                self.time = -1
-
-            if self.time < 0:
-                self.time += time_var.shape[0]
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
             self.variable_unit = get_variable_unit(
                 self.dataset_name,
@@ -115,39 +109,36 @@ class MapPlotter(area.AreaPlotter):
             if len(self.variables) == 2:
                 self.variable_name = self.vector_name(self.variable_name)
 
-            depth_var = utils.get_depth_var(dataset)
-
-            depth_value = 0
-            if depth_var is not None:
-                if self.depth == 'bottom':
-                    depth_value = 'Bottom'
-                else:
-                    if int(self.depth) >= depth_var.shape[0]:
-                        self.depth = 0
-                    self.depth = int(self.depth)
-                    depth_value = depth_var[int(self.depth)]
+            if self.depth == 'bottom':
+                depth_value = 'Bottom'
+            else:
+                self.depth = np.clip(
+                    int(self.depth), 0, len(dataset.depths) - 1)
+                depth_value = dataset.depths[self.depth]
 
             data = []
             allvars = []
             for v in self.variables:
                 var = dataset.variables[v]
                 allvars.append(v)
-                d = load_interpolated_grid(
-                    self.latitude, self.longitude, dataset, v,
-                    self.depth, self.time,
-                    interpolation=utils.get_interpolation(self.query))
+                d = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    v
+                )
 
                 self.variable_unit, d = self.kelvin_to_celsius(
                     self.variable_unit, d)
 
                 data.append(d)
-                if len(var.shape) == 3:
+                if len(var.dimensions) == 3:
                     self.depth_label = ""
                 elif self.depth == 'bottom':
                     self.depth_label = " at Bottom"
                 else:
                     self.depth_label = " at " + \
-                        str(int(np.round(depth_value))) + " " + depth_var.units
+                        str(int(np.round(depth_value))) + " m"
 
             if len(data) == 2:
                 data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
@@ -164,9 +155,13 @@ class MapPlotter(area.AreaPlotter):
                     var = dataset.variables[v]
                     quiver_unit = get_variable_unit(self.dataset_name, var)
                     quiver_name = get_variable_name(self.dataset_name, var)
-                    quiver_lat, quiver_lon, d = load_interpolated(
-                        self.basemap, 50, dataset, v, self.depth, self.time,
-                        interpolation=utils.get_interpolation(self.query))
+                    quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
+                    d = dataset.get_area(
+                        np.array([quiver_lat, quiver_lon]),
+                        self.depth,
+                        self.time,
+                        v
+                    )
                     quiver_data.append(d)
 
                 self.quiver_name = self.vector_name(quiver_name)
@@ -175,7 +170,7 @@ class MapPlotter(area.AreaPlotter):
                 self.quiver_unit = quiver_unit
             self.quiver_data = quiver_data
 
-            if all(map(lambda v: len(dataset.variables[v].shape) == 3,
+            if all(map(lambda v: len(dataset.variables[v].dimensions) == 3,
                        allvars)):
                 self.depth = 0
 
@@ -183,15 +178,18 @@ class MapPlotter(area.AreaPlotter):
             if self.contour is not None and \
                 self.contour['variable'] != '' and \
                     self.contour['variable'] != 'none':
-                lat, lon, d = load_interpolated(
-                    self.basemap, 500, dataset,
-                    self.contour['variable'],
-                    self.depth, self.time,
-                    interpolation=utils.get_interpolation(self.query))
+                d = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    self.contour['variable']
+                )
                 contour_unit = get_variable_unit(
-                    self.dataset_name, self.contour['variable'])
+                    self.dataset_name,
+                    dataset.variables[self.contour['variable']])
                 contour_name = get_variable_name(
-                    self.dataset_name, self.contour['variable'])
+                    self.dataset_name,
+                    dataset.variables[self.contour['variable']])
                 contour_unit, d = self.kelvin_to_celsius(contour_unit, d)
                 contour_data.append(d)
                 self.contour_unit = contour_unit
@@ -199,22 +197,22 @@ class MapPlotter(area.AreaPlotter):
 
             self.contour_data = contour_data
 
-            t = netcdftime.utime(time_var.units)
-            self.timestamp = t.num2date(time_var[self.time])
+            self.timestamp = dataset.timestamps[self.time]
 
         if self.variables != self.variables_anom:
             self.variable_name += " Anomaly"
-            with Dataset(
-                get_dataset_climatology(self.dataset_name),
-                'r'
+            with open_dataset(
+                get_dataset_climatology(self.dataset_name)
             ) as dataset:
                 data = []
                 for v in self.variables:
                     var = dataset.variables[v]
-                    d = load_interpolated_grid(
-                        self.latitude, self.longitude, dataset, v,
-                        self.depth, self.timestamp.month - 1,
-                        interpolation=utils.get_interpolation(self.query))
+                    d = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.timestamp.month - 1,
+                        v
+                    )
                     data.append(d)
 
                 if len(data) == 2:
@@ -223,7 +221,7 @@ class MapPlotter(area.AreaPlotter):
                     data = data[0]
 
                 u, data = self.kelvin_to_celsius(
-                    dataset.variables[self.variables[0]].units,
+                    dataset.variables[self.variables[0]].unit,
                     data)
 
                 self.data -= data
@@ -639,7 +637,7 @@ class MapPlotter(area.AreaPlotter):
             self.quiver['variable'] != '' and \
             self.quiver['variable'] != 'none' and \
                 self.quiver['magnitude'] == 'color':
-            bax = divider.append_axes("bottom", size="5%", pad=0.05)
+            bax = divider.append_axes("bottom", size="5%", pad=0.35)
             qbar = plt.colorbar(q, orientation='horizontal', cax=bax)
             qbar.set_label(
                 self.quiver_name.title() + " " +

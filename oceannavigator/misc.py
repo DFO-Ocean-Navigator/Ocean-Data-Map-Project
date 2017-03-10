@@ -10,13 +10,12 @@ from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
 from operator import itemgetter
-from plotting.data import load_timeseries
 from oceannavigator.util import (
     get_dataset_url, get_variable_name,
     get_variable_unit, get_dataset_climatology
 )
 import re
-import plotting.utils
+from data import open_dataset
 
 
 def list_kml_files(subdir):
@@ -679,14 +678,23 @@ def get_point_data(dataset, variable, time, depth, location):
     data = []
     names = []
     units = []
-    with Dataset(get_dataset_url(dataset), 'r') as ds:
-        time_var = plotting.utils.get_time_var(ds)
-        t = netcdftime.utime(time_var.units)
-        timestamp = t.num2date(time_var[time])
+    with open_dataset(get_dataset_url(dataset)) as ds:
+    # with Dataset(get_dataset_url(dataset), 'r') as ds:
+        # time_var = plotting.utils.get_time_var(ds)
+        # t = netcdftime.utime(time_var.units)
+        # timestamp = t.num2date(time_var[time])
+        timestamp = ds.timestamps[time]
 
         for v in variables:
-            d, t = load_timeseries(
-                ds, v, range(time, time + 1), depth, location[0], location[1])
+            d = ds.get_point(
+                location[0],
+                location[1],
+                depth,
+                time,
+                v
+            )
+            # d, t = load_timeseries(
+                # ds, v, range(time, time + 1), depth, location[0], location[1])
             variable_name = get_variable_name(dataset, ds.variables[v])
             variable_unit = get_variable_unit(dataset, ds.variables[v])
 
@@ -699,11 +707,19 @@ def get_point_data(dataset, variable, time, depth, location):
             units.append(variable_unit)
 
     if variables != variables_anom:
-        with Dataset(get_dataset_climatology(dataset), 'r') as ds:
+        with open_dataset(get_dataset_climatology(dataset)) as ds:
+        # with Dataset(get_dataset_climatology(dataset), 'r') as ds:
             for idx, v in enumerate(variables):
-                d, t = load_timeseries(
-                    ds, v, range(timestamp.month + 1, timestamp.month + 2),
-                    depth, location[0], location[1])
+                d = ds.get_point(
+                    location[0],
+                    location[1],
+                    depth,
+                    timestamp.month,
+                    v
+                )
+                # d, t = load_timeseries(
+                #     ds, v, range(timestamp.month + 1, timestamp.month + 2),
+                #     depth, location[0], location[1])
 
                 data[idx] = data[idx] - d
                 names[idx] = names[idx] + " Anomaly"

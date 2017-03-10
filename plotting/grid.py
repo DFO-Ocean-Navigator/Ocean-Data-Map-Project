@@ -12,7 +12,6 @@ import pytz
 from netCDF4 import netcdftime
 from bisect import bisect_left
 import utils
-from data import get_data_depth
 
 _data_cache = LRUCache(maxsize=16)
 
@@ -212,77 +211,6 @@ class Grid(object):
 
         return latlon, distances, parallel, perpendicular
 
-    def hovmoller(self, variable, points, timestep, depth, n=100,
-                  interpolation={'method': 'inv_square',
-                                 'neighbours': 8
-                                 }):
-        distances, times, target_lat, target_lon, b = _path_to_points(
-            points, n)
-
-        miny, maxy, minx, maxx = self.bounding_box(target_lat, target_lon, 10)
-
-        lat = self.latvar[miny:maxy, minx:maxx]
-        lon = self.lonvar[miny:maxy, minx:maxx]
-
-        data = get_data_depth(
-            variable,
-            timestep[0],
-            timestep[-1] + 1,
-            depth,
-            miny, maxy,
-            minx, maxx,
-        )
-        # if len(variable.shape) == 3:
-        #     data = variable[
-        #         timestep[0]:(timestep[-1] + 1), miny:maxy, minx:maxx]
-        # elif depth == 'bottom':
-        #     data = []
-        #     for t in timestep:
-        #         fulldata = variable[t, :, miny:maxy, minx:maxx]
-
-        #         reshaped = fulldata.reshape([fulldata.shape[0], -1])
-        #         edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
-
-        #         depths = edges[1, 0, :]
-        #         indices = edges[1, 1, :]
-
-        #         data_t = np.ma.MaskedArray(np.zeros([fulldata.shape[1],
-        #                                              fulldata.shape[2]]),
-        #                                    mask=True,
-        #                                    dtype=fulldata.dtype)
-
-        #         data_t[np.unravel_index(indices, data_t.shape)] = \
-        # fulldata.reshape([fulldata.shape[0], -1])[depths, indices]
-
-        #         data.append(data_t)
-        #     data = np.ma.MaskedArray(data)
-        # else:
-        #     data = variable[timestep[0]:(timestep[
-        #         -1] + 1), int(depth), miny:maxy, minx:maxx]
-
-        masked_lon = lon.view(np.ma.MaskedArray)
-        masked_lat = lat.view(np.ma.MaskedArray)
-        masked_lon.mask = masked_lat.mask = data.view(np.ma.MaskedArray).mask
-
-        method, neighbours, radius = self._get_interpolation(interpolation,
-                                                             target_lat,
-                                                             target_lon)
-        resampled = []
-        for t in range(0, data.shape[0]):
-            resampled.append(resample(lat,
-                                      lon,
-                                      np.array(target_lat),
-                             np.array(target_lon),
-                                      data[t, :, :],
-                                      method=method,
-                                      neighbours=neighbours,
-                                      radius_of_influence=radius,
-                                      nprocs=4))
-
-        resampled = np.ma.vstack(resampled)
-
-        return np.array([target_lat, target_lon]), distances, resampled
-
     def path(self, variable, depth, points, times, n=100,
              interpolation={'method': 'inv_square', 'neighbours': 8}):
 
@@ -344,6 +272,7 @@ class Grid(object):
             deltas[
                 np.where(np.array(times) < ts[0] - model_td / 2)
             ] = np.ma.masked
+            print abcd
 
             # This is a slight modification on scipy's interp1d
             # https://github.com/scipy/scipy/blob/v0.17.1/scipy/interpolate/interpolate.py#L534-L561

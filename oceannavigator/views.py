@@ -4,7 +4,6 @@
 from flask import Response, request, redirect, send_file
 from flask.ext.babel import gettext
 import json
-from netCDF4 import Dataset, netcdftime
 import datetime
 
 from oceannavigator import app
@@ -31,6 +30,7 @@ import os
 import plotting.colormap
 import base64
 import pytz
+from data import open_dataset
 
 MAX_CACHE = 315360000
 
@@ -208,7 +208,7 @@ def depth():
     if 'dataset' in request.args:
         dataset = request.args['dataset']
 
-        with Dataset(get_dataset_url(dataset), 'r') as ds:
+        with open_dataset(get_dataset_url(dataset)) as ds:
             for variable in variables:
                 if variable and \
                     variable in ds.variables and \
@@ -220,15 +220,10 @@ def depth():
                         data.append(
                             {'id': 'all', 'value': gettext('All Depths')})
 
-                    if 'deptht' in ds.variables:
-                        depth_var = ds.variables['deptht']
-                    elif 'depth' in ds.variables:
-                        depth_var = ds.variables['depth']
-
-                    for idx, value in enumerate(np.round(depth_var)):
+                    for idx, value in enumerate(np.round(ds.depths)):
                         data.append({
                             'id': idx,
-                            'value': "%d " % (value) + depth_var.units % value
+                            'value': "%d m" % (value)
                         })
 
                 if len(data) > 0:
@@ -261,15 +256,15 @@ def vars_query():
         dataset = request.args['dataset']
 
         if get_dataset_climatology(dataset) != "" and 'anom' in request.args:
-            with Dataset(get_dataset_climatology(dataset), 'r') as ds:
+            with open_dataset(get_dataset_climatology(dataset)) as ds:
                 climatology_variables = map(str, ds.variables)
         else:
             climatology_variables = []
 
         three_d = '3d_only' in request.args
-        with Dataset(get_dataset_url(dataset), 'r') as ds:
+        with open_dataset(get_dataset_url(dataset)) as ds:
             if 'vectors_only' not in request.args:
-                for k, v in ds.variables.iteritems():
+                for v in ds.variables:
                     if ('time_counter' in v.dimensions or
                         'time' in v.dimensions) \
                             and ('y' in v.dimensions or 'yc' in v.dimensions):
@@ -278,13 +273,13 @@ def vars_query():
                             continue
                         else:
                             data.append({
-                                'id': k,
+                                'id': v.key,
                                 'value': get_variable_name(dataset, v),
                                 'scale': get_variable_scale(dataset, v)
                             })
-                            if k in climatology_variables:
+                            if v.key in climatology_variables:
                                 data.append({
-                                    'id': k + "_anom",
+                                    'id': v.key + "_anom",
                                     'value': get_variable_name(dataset, v) + " Anomaly",
                                     'scale': [-10, 10]
                                 })
@@ -305,7 +300,10 @@ def vars_query():
                         data.append({
                             'id': value,
                             'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                            'scale': [0, get_variable_scale(dataset, key)[1]]
+                            'scale': [0, get_variable_scale(
+                                dataset,
+                                ds.variables[key]
+                            )[1]]
                         })
 
     data = sorted(data, key=lambda k: k['value'])
@@ -331,11 +329,8 @@ def time_query():
     if 'dataset' in request.args:
         dataset = request.args['dataset']
         quantum = request.args.get('quantum')
-        with Dataset(get_dataset_url(dataset), 'r') as ds:
-            time_var = _get_time_var(ds)
-            t = netcdftime.utime(time_var.units)
-            for idx, date in \
-                    enumerate(t.num2date(time_var[:])):
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for idx, date in enumerate(ds.timestamps):
                 if quantum == 'month':
                     date = datetime.datetime(
                         date.year,
@@ -352,8 +347,6 @@ def time_query():
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
-                # return o.strftime(dformat)
-                # return format_datetime(o, dformat)
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
@@ -363,15 +356,11 @@ def time_query():
 
 @app.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date(old_dataset, date, new_dataset):
-    with Dataset(get_dataset_url(old_dataset), 'r') as ds:
-        time_var = _get_time_var(ds)
-        t = netcdftime.utime(time_var.units)
-        timestamp = t.num2date(time_var[date])
+    with open_dataset(get_dataset_url(old_dataset)) as ds:
+        timestamp = ds.timestamps[date]
 
-    with Dataset(get_dataset_url(new_dataset), 'r') as ds:
-        time_var = _get_time_var(ds)
-        t = netcdftime.utime(time_var.units)
-        timestamps = t.num2date(time_var[:])
+    with open_dataset(get_dataset_url(new_dataset)) as ds:
+        timestamps = ds.timestamps
 
     diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
     idx = np.where(diffs <= 0)[0]

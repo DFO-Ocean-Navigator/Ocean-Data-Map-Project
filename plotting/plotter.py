@@ -120,13 +120,14 @@ class Plotter:
     def load_data(self):
         pass
 
-    def load_misc(self, dataset, variables):
-        self.variable_names = self.get_variable_names(dataset, variables)
-        self.variable_units = self.get_variable_units(dataset, variables)
+    def load_misc(self, data, variables):
+        self.variable_names = self.get_variable_names(data, variables)
+        self.variable_units = self.get_variable_units(data, variables)
 
-        depth_var = utils.get_depth_var(dataset)
-        self.depths = depth_var[:]
-        self.depth_unit = depth_var.units
+        # depth_var = utils.get_depth_var(data)
+        # self.depths = depth_var[:]
+        self.depths = data.depths
+        self.depth_unit = "m"
 
     def plot(self, fig=None):
         if fig is None:
@@ -250,9 +251,9 @@ class Plotter:
         return output
 
     def fix_startend_times(self, dataset):
-        time_var = utils.get_time_var(dataset)
-        self.starttime = self.clip_value(self.starttime, time_var)
-        self.endtime = self.clip_value(self.endtime, time_var)
+        self.starttime = np.clip(
+            self.starttime, 0, len(dataset.timestamps) - 1)
+        self.endtime = np.clip(self.endtime, 0, len(dataset.timestamps) - 1)
 
         if self.starttime > self.endtime:
             self.starttime = self.endtime - 1

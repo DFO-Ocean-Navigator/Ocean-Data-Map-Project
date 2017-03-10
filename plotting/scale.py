@@ -1,12 +1,10 @@
 import numpy as np
 from pyproj import Proj
-from data import load_interpolated_grid
 from oceannavigator.util import (
     get_dataset_url, get_dataset_climatology, get_variable_unit
 )
-from netCDF4 import Dataset, netcdftime
 import re
-import utils
+from data import open_dataset
 
 
 def get_scale(dataset, variable, depth, time, projection, extent):
@@ -19,28 +17,25 @@ def get_scale(dataset, variable, depth, time, projection, extent):
     variables_anom = variable.split(",")
     variables = [re.sub('_anom$', '', v) for v in variables_anom]
 
-    interp = {
-        'method': 'inv_square',
-        'neighbours': 8,
-    }
-    with Dataset(get_dataset_url(dataset), 'r') as ds:
-        time_var = utils.get_time_var(ds)
-        t = netcdftime.utime(time_var.units)
-        timestamp = t.num2date(time_var[time])
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        timestamp = ds.timestamps[time]
 
+        d = ds.get_area(
+            np.array([lat, lon]),
+            depth,
+            time,
+            variables[0]
+        )
         if len(variables) > 1:
-            d0 = load_interpolated_grid(
-                lat, lon,
-                ds, variables[0], depth, time, interpolation=interp)
-            d1 = load_interpolated_grid(
-                lat, lon,
-                ds, variables[1], depth, time, interpolation=interp)
+            d0 = d
+            d1 = ds.get_area(
+                np.array([lat, lon]),
+                depth,
+                time,
+                variables[1]
+            )
             d = np.sqrt(d0 ** 2 + d1 ** 2)
 
-        else:
-            d = load_interpolated_grid(
-                lat, lon,
-                ds, variables[0], depth, time, interpolation=interp)
         variable_unit = get_variable_unit(dataset,
                                           ds.variables[variables[0]])
         if variable_unit.startswith("Kelvin"):
@@ -48,23 +43,24 @@ def get_scale(dataset, variable, depth, time, projection, extent):
             d = np.add(d, -273.15)
 
     if variables != variables_anom:
-        with Dataset(get_dataset_climatology(dataset), 'r') as ds:
-            if len(variables) > 1:
-                d0 = load_interpolated_grid(
-                    lat, lon,
-                    ds, variables[0], depth,
-                    timestamp.month - 1, interpolation=interp)
-                d1 = load_interpolated_grid(
-                    lat, lon,
-                    ds, variables[1], depth,
-                    timestamp.month - 1, interpolation=interp)
-                c = np.sqrt(d0 ** 2 + d1 ** 2)
+        with open_dataset(get_dataset_climatology(dataset), 'r') as ds:
+            c = ds.get_area(
+                np.array([lat, lon]),
+                depth,
+                timestamp.month - 1,
+                variables[0]
+            )
 
-            else:
-                c = load_interpolated_grid(
-                    lat, lon,
-                    ds, variables[0], depth,
-                    timestamp.month - 1, interpolation=interp)
+            if len(variables) > 1:
+                c0 = c
+                c1 = ds.get_area(
+                    np.array([lat, lon]),
+                    depth,
+                    timestamp.month - 1,
+                    variables[1]
+                )
+                c = np.sqrt(c0 ** 2 + c1 ** 2)
+
             d = d - c
 
             m = max(abs(d.min()), abs(d.max()))

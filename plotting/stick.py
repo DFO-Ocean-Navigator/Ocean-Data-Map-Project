@@ -1,12 +1,11 @@
-from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
 import utils
 from oceannavigator.util import get_dataset_url
 import point
 from flask.ext.babel import gettext
-from data import load_timeseries
 from matplotlib.dates import date2num
+from data import open_dataset
 
 
 class StickPlotter(point.PointPlotter):
@@ -134,13 +133,11 @@ class StickPlotter(point.PointPlotter):
 
         self.depth = sorted(self.depth)
 
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            time_var = utils.get_time_var(dataset)
-            start = self.clip_value(self.starttime, time_var)
-            end = self.clip_value(self.endtime, time_var)
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            start = np.clip(self.starttime, 0, len(dataset.timestamps) - 1)
+            end = np.clip(self.endtime, 0, len(dataset.timestamps) - 1)
 
-            t = netcdftime.utime(time_var.units)
-            timestamp = t.num2date(time_var[start:end + 1])
+            timestamp = dataset.timestamps[start:end + 1]
 
             self.load_misc(dataset, self.variables)
 
@@ -150,13 +147,13 @@ class StickPlotter(point.PointPlotter):
                 for v in self.variables:
                     dd = []
                     for d in self.depth:
-                        da, t = load_timeseries(
-                            dataset,
-                            v,
-                            range(start, end + 1),
-                            d,
+                        da = dataset.get_timeseries_point(
                             float(p[0]),
-                            float(p[1])
+                            float(p[1]),
+                            d,
+                            start,
+                            end,
+                            v
                         )
                         dd.append(da)
                     data.append(np.ma.array(dd))

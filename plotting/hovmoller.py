@@ -1,8 +1,6 @@
 # vim: set fileencoding=utf-8 :
 
-from grid import Grid
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from netCDF4 import Dataset, netcdftime
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +10,7 @@ import utils
 from oceannavigator.util import get_dataset_url
 import line
 from flask.ext.babel import gettext
+from data import open_dataset
 
 
 class HovmollerPlotter(line.LinePlotter):
@@ -22,20 +21,18 @@ class HovmollerPlotter(line.LinePlotter):
 
     def load_data(self):
         interp = utils.get_interpolation(self.query)
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             latvar, lonvar = utils.get_latlon_vars(dataset)
 
-            grid = Grid(dataset, latvar.name, lonvar.name)
-
-            depth_var = utils.get_depth_var(dataset)
-            if depth_var is not None and self.depth:
+            if self.depth:
                 if self.depth == 'bottom':
                     self.depth_value = 'Bottom'
                     self.depth_unit = ''
                 else:
-                    self.depth = self.clip_value(int(self.depth), depth_var)
-                    self.depth_value = depth_var[self.depth]
-                    self.depth_unit = depth_var.units
+                    self.depth = np.clip(int(self.depth), 0,
+                                         len(dataset.depths) - 1)
+                    self.depth_value = dataset.depths[self.depth]
+                    self.depth_unit = "m"
             else:
                 self.depth_value = 0
                 self.depth_unit = "m"
@@ -46,19 +43,21 @@ class HovmollerPlotter(line.LinePlotter):
             if len(self.variables) > 1:
                 v = []
                 for name in self.variables:
-                    pts, distance, value = grid.hovmoller(
-                        dataset.variables[name],
-                        self.points, time, self.depth,
-                        interpolation=interp
+                    pts, distance, value = dataset.get_path(
+                        self.points,
+                        self.depth,
+                        time,
+                        name
                     )
                     v.append(value ** 2)
 
                 value = np.sqrt(np.ma.sum(v, axis=0))
             else:
-                pts, distance, value = grid.hovmoller(
-                    dataset.variables[self.variables[0]],
-                    self.points, time, self.depth,
-                    interpolation=interp
+                pts, distance, value = dataset.get_path(
+                    self.points,
+                    self.depth,
+                    time,
+                    self.variables[0]
                 )
 
             self.path_points = pts
@@ -72,15 +71,12 @@ class HovmollerPlotter(line.LinePlotter):
                 value
             )
             self.variable_name = variable_names[0]
+            self.data = self.data.transpose()
 
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(self.variable_name)
 
-            time_var = utils.get_time_var(dataset)
-            t = netcdftime.utime(time_var.units)
-            self.times = t.num2date(
-                time_var[self.starttime:self.endtime + 1]
-            ).tolist()
+            self.times = dataset.timestamps[self.starttime:self.endtime + 1]
 
     def plot(self):
         # Figure size

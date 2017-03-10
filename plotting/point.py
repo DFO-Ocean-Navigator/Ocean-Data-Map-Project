@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotter
 from netCDF4 import Dataset
-from data import load_timeseries
 from oceannavigator.util import get_dataset_climatology
 import pint
 
@@ -44,18 +43,16 @@ class PointPlotter(plotter.Plotter):
 
     def get_data(self, dataset, variables, time):
         point_data = []
+
         for p in self.points:
             data = []
             for v in variables:
-                d, t = load_timeseries(
-                    dataset,
-                    v,
-                    range(time, time + 1),
-                    'all',
+                data.append(dataset.get_profile(
                     float(p[0]),
-                    float(p[1])
-                )
-                data.append(d)
+                    float(p[1]),
+                    time,
+                    v
+                ))
             point_data.append(np.ma.array(data))
 
         return np.ma.array(point_data)

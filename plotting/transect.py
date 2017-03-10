@@ -1,6 +1,6 @@
-from grid import Grid, bathymetry
+from grid import bathymetry
+from netCDF4 import Dataset
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from netCDF4 import Dataset, netcdftime
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
@@ -14,6 +14,7 @@ from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
 import line
 from flask.ext.babel import gettext
+from data import open_dataset
 
 
 class TransectPlotter(line.LinePlotter):
@@ -33,22 +34,8 @@ class TransectPlotter(line.LinePlotter):
 
     def load_data(self):
         interp = utils.get_interpolation(self.query)
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            latvar, lonvar = utils.get_latlon_vars(dataset)
-
-            grid = Grid(dataset, latvar.name, lonvar.name)
-
-            depth_var = utils.get_depth_var(dataset)
-
-            if depth_var is None:
-                depth = [0]
-                depth_unit = "m"
-            else:
-                depth = depth_var[:]
-                depth_unit = depth_var.units
-
-            time_var = utils.get_time_var(dataset)
-            time = self.clip_value(self.time, time_var)
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
             for idx, v in enumerate(self.variables):
                 var = dataset.variables[v]
@@ -59,7 +46,8 @@ class TransectPlotter(line.LinePlotter):
                         if potential in self.variables:
                             continue
                         pot = dataset.variables[potential]
-                        if 'deptht' in pot.dimensions or 'depth' in pot.dimensions:
+                        if 'deptht' in pot.dimensions or 'depth' \
+                           in pot.dimensions:
                             if len(pot.shape) > 3:
                                 self.variables[idx] = potential
                                 self.variables_anom[idx] = potential
@@ -75,10 +63,8 @@ class TransectPlotter(line.LinePlotter):
                         v[0], v[1], self.points, time,
                         interpolation=interp)
             else:
-                transect_pts, distance, value = grid.transect(
-                    dataset.variables[self.variables[0]],
-                    self.points, time,
-                    interpolation=interp)
+                transect_pts, distance, value = dataset.get_path_profile(
+                    self.points, time, self.variables[0])
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
@@ -94,11 +80,10 @@ class TransectPlotter(line.LinePlotter):
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(variable_names[0])
 
-            t = netcdftime.utime(time_var.units)
-            self.timestamp = t.num2date(time_var[int(time)])
+            self.timestamp = dataset.timestamps[int(time)]
 
-            self.depth = depth
-            self.depth_unit = depth_unit
+            self.depth = dataset.depths
+            self.depth_unit = "m"
 
             self.transect_data = {
                 "points": transect_pts,
@@ -112,10 +97,11 @@ class TransectPlotter(line.LinePlotter):
 
             if self.surface is not None:
                 surface_pts, surface_dist, surface_value = \
-                    grid.surfacetransect(
-                        dataset.variables[self.surface],
-                        self.points, time,
-                        interpolation=interp
+                    dataset.get_path(
+                        self.points,
+                        0,
+                        time,
+                        self.surface,
                     )
                 surface_unit = get_variable_unit(
                     self.dataset_name,
@@ -139,21 +125,15 @@ class TransectPlotter(line.LinePlotter):
                 }
 
         if self.variables != self.variables_anom:
-            with Dataset(
-                get_dataset_climatology(self.dataset_name),
-                'r'
-            ) as dataset:
-                latvar, lonvar = utils.get_latlon_vars(dataset)
-                grid = Grid(dataset, latvar.name, lonvar.name)
+            with open_dataset(get_dataset_climatology(self.dataset_name)) as dataset:
                 if self.variables[0] in dataset.variables:
                     if len(self.variables) == 1:
                         climate_points, climate_distance, climate_data = \
-                            grid.transect(
-                                dataset.variables[self.variables[0]],
-                                self.points, self.timestamp.month - 1,
-                                interpolation=interp)
+                            dataset.get_path_profile(self.points,
+                                                     self.timestamp.month - 1,
+                                                     self.variables[0])
                         u, climate_data = self.kelvin_to_celsius(
-                            dataset.variables[self.variables[0]].units,
+                            dataset.variables[self.variables[0]].unit,
                             climate_data
                         )
                         self.transect_data['data'] -= - climate_data
