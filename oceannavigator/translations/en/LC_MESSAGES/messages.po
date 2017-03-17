@@ -7,68 +7,69 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-01 11:26-0530\n"
-"PO-Revision-Date: 2017-01-06 14:53-2230\n"
+"POT-Creation-Date: 2017-03-17 13:51-0430\n"
+"PO-Revision-Date: 2017-03-17 14:13-0330\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
+"X-Generator: Poedit 1.5.4\n"
 
-#: oceannavigator/views.py:145
+#: oceannavigator/views.py:158
 msgid "Black"
 msgstr ""
 
-#: oceannavigator/views.py:146
+#: oceannavigator/views.py:159
 msgid "Blue"
 msgstr ""
 
-#: oceannavigator/views.py:147
+#: oceannavigator/views.py:160
 msgid "Green"
 msgstr ""
 
-#: oceannavigator/views.py:148
+#: oceannavigator/views.py:161
 msgid "Red"
 msgstr ""
 
-#: oceannavigator/views.py:149
+#: oceannavigator/views.py:162
 msgid "Cyan"
 msgstr ""
 
-#: oceannavigator/views.py:150
+#: oceannavigator/views.py:163
 msgid "Magenta"
 msgstr ""
 
-#: oceannavigator/views.py:151
+#: oceannavigator/views.py:164
 msgid "Yellow"
 msgstr ""
 
-#: oceannavigator/views.py:152
+#: oceannavigator/views.py:165
 msgid "White"
 msgstr ""
 
-#: oceannavigator/views.py:155
+#: oceannavigator/views.py:168
 msgid "Randomize"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:54
+#: oceannavigator/frontend/src/components/Class4Window.jsx:53
 #: oceannavigator/frontend/src/components/ComboBox.jsx:57
-#: oceannavigator/views.py:157
+#: oceannavigator/views.py:170
 msgid "None"
 msgstr "None"
 
-#: oceannavigator/views.py:172
+#: oceannavigator/views.py:185
 msgid "Default for Variable"
 msgstr ""
 
-#: oceannavigator/views.py:208
+#: oceannavigator/views.py:221
 msgid "All Depths"
 msgstr ""
 
-#: oceannavigator/views.py:223
+#: oceannavigator/views.py:231
 msgid "Bottom"
 msgstr ""
 
@@ -76,141 +77,229 @@ msgstr ""
 msgid "Ocean Navigator"
 msgstr "Ocean Navigator"
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:106
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:81
-#: oceannavigator/frontend/src/components/LineWindow.jsx:67
-#: oceannavigator/frontend/src/components/MapInputs.jsx:14
-#: oceannavigator/frontend/src/components/PointWindow.jsx:145
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:110
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:129
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:79
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:93
+#: oceannavigator/frontend/src/components/LineWindow.jsx:72
+#: oceannavigator/frontend/src/components/LineWindow.jsx:90
+#: oceannavigator/frontend/src/components/MapInputs.jsx:13
+#: oceannavigator/frontend/src/components/MapInputs.jsx:72
+#: oceannavigator/frontend/src/components/PointWindow.jsx:146
+#: oceannavigator/frontend/src/components/PointWindow.jsx:162
 msgid "Dataset"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:107
-#: oceannavigator/frontend/src/components/LineWindow.jsx:68
-#: oceannavigator/frontend/src/components/MapInputs.jsx:17
-#: oceannavigator/frontend/src/components/PointWindow.jsx:146
-msgid "Time"
-msgstr ""
-
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:108
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:87
-#: oceannavigator/frontend/src/components/LineWindow.jsx:69
-#: oceannavigator/frontend/src/components/PointWindow.jsx:148
-msgid "Start Time"
-msgstr ""
-
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:109
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:88
-#: oceannavigator/frontend/src/components/LineWindow.jsx:70
-#: oceannavigator/frontend/src/components/PointWindow.jsx:149
-msgid "End Time"
-msgstr ""
-
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:110
-#: oceannavigator/frontend/src/components/LineWindow.jsx:71
-#: oceannavigator/frontend/src/components/MapInputs.jsx:16
-#: oceannavigator/frontend/src/components/PointWindow.jsx:150
-msgid "Depth"
-msgstr ""
-
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:111
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:83
-#: oceannavigator/frontend/src/components/LineWindow.jsx:72
-#: oceannavigator/frontend/src/components/MapInputs.jsx:15
-#: oceannavigator/frontend/src/components/PointWindow.jsx:151
-msgid "Variable"
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:142
+#: oceannavigator/frontend/src/components/LineWindow.jsx:73
+#: oceannavigator/frontend/src/components/LineWindow.jsx:100
+#: oceannavigator/frontend/src/components/MapInputs.jsx:16
+#: oceannavigator/frontend/src/components/MapInputs.jsx:110
+#: oceannavigator/frontend/src/components/PointWindow.jsx:147
+#: oceannavigator/frontend/src/components/PointWindow.jsx:172
+msgid "Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:112
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:84
-#: oceannavigator/frontend/src/components/LineWindow.jsx:73
-#: oceannavigator/frontend/src/components/MapInputs.jsx:18
-#: oceannavigator/frontend/src/components/PointWindow.jsx:152
-msgid "Variable Range"
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:134
+#: oceannavigator/frontend/src/components/LineWindow.jsx:74
+#: oceannavigator/frontend/src/components/LineWindow.jsx:110
+#: oceannavigator/frontend/src/components/PointWindow.jsx:149
+#: oceannavigator/frontend/src/components/PointWindow.jsx:189
+msgid "Start Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:113
-#: oceannavigator/frontend/src/components/ContourSelector.jsx:56
-#: oceannavigator/frontend/src/components/LineWindow.jsx:74
-#: oceannavigator/frontend/src/components/PointWindow.jsx:153
-#: oceannavigator/frontend/src/components/QuiverSelector.jsx:29
-msgid "Colourmap"
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:85
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:143
+#: oceannavigator/frontend/src/components/LineWindow.jsx:75
+#: oceannavigator/frontend/src/components/LineWindow.jsx:121
+#: oceannavigator/frontend/src/components/PointWindow.jsx:150
+#: oceannavigator/frontend/src/components/PointWindow.jsx:199
+msgid "End Time"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:114
-#: oceannavigator/frontend/src/components/MapInputs.jsx:19
-msgid "Show Bathymetry Contours"
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:155
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:166
+#: oceannavigator/frontend/src/components/LineWindow.jsx:76
+#: oceannavigator/frontend/src/components/LineWindow.jsx:132
+#: oceannavigator/frontend/src/components/MapInputs.jsx:15
+#: oceannavigator/frontend/src/components/MapInputs.jsx:96
+#: oceannavigator/frontend/src/components/PointWindow.jsx:151
+#: oceannavigator/frontend/src/components/PointWindow.jsx:210
+#: oceannavigator/frontend/src/components/PointWindow.jsx:219
+msgid "Depth"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:115
-msgid "Arrows"
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:163
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:172
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:81
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:114
+#: oceannavigator/frontend/src/components/LineWindow.jsx:77
+#: oceannavigator/frontend/src/components/LineWindow.jsx:142
+#: oceannavigator/frontend/src/components/LineWindow.jsx:150
+#: oceannavigator/frontend/src/components/MapInputs.jsx:14
+#: oceannavigator/frontend/src/components/MapInputs.jsx:83
+#: oceannavigator/frontend/src/components/PointWindow.jsx:152
+#: oceannavigator/frontend/src/components/PointWindow.jsx:227
+#: oceannavigator/frontend/src/components/PointWindow.jsx:236
+#: oceannavigator/frontend/src/components/PointWindow.jsx:244
+msgid "Variable"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:116
-msgid "Additional Contours"
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:180
+#: oceannavigator/frontend/src/components/LineWindow.jsx:78
+#: oceannavigator/frontend/src/components/LineWindow.jsx:158
+#: oceannavigator/frontend/src/components/MapInputs.jsx:17
+#: oceannavigator/frontend/src/components/MapInputs.jsx:118
+#: oceannavigator/frontend/src/components/PointWindow.jsx:153
+#: oceannavigator/frontend/src/components/PointWindow.jsx:252
+msgid "Variable Range"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:117
-msgid "Show Selected Area(s)"
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:188
+#: oceannavigator/frontend/src/components/ContourSelector.jsx:56
+#: oceannavigator/frontend/src/components/LineWindow.jsx:79
+#: oceannavigator/frontend/src/components/LineWindow.jsx:167
+#: oceannavigator/frontend/src/components/PointWindow.jsx:154
+#: oceannavigator/frontend/src/components/PointWindow.jsx:260
+#: oceannavigator/frontend/src/components/QuiverSelector.jsx:28
+msgid "Colourmap"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:118
-#: oceannavigator/frontend/src/components/Class4Window.jsx:71
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:89
-#: oceannavigator/frontend/src/components/LineWindow.jsx:78
-#: oceannavigator/frontend/src/components/PointWindow.jsx:154
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:194
+#: oceannavigator/frontend/src/components/MapInputs.jsx:18
+#: oceannavigator/frontend/src/components/MapInputs.jsx:63
+msgid "Show Bathymetry Contours"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:119
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:202
+msgid "Arrows"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:120
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:210
+msgid "Additional Contours"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:121
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:216
+msgid "Show Selected Area(s)"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:122
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:222
+#: oceannavigator/frontend/src/components/Class4Window.jsx:70
+#: oceannavigator/frontend/src/components/Class4Window.jsx:119
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:86
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:153
+#: oceannavigator/frontend/src/components/LineWindow.jsx:83
+#: oceannavigator/frontend/src/components/LineWindow.jsx:195
+#: oceannavigator/frontend/src/components/PointWindow.jsx:155
+#: oceannavigator/frontend/src/components/PointWindow.jsx:266
 msgid "Saved Image Size"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:180
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:188
+#: oceannavigator/frontend/src/components/LineWindow.jsx:167
+#: oceannavigator/frontend/src/components/PointWindow.jsx:260
+msgid "colourmap_help"
+msgstr ""
+"There are several colourmaps available. This tool tries to pick an "
+"appropriate default based on the variable type (Default For Variable). If "
+"you want to use any of the others, they are all selectable."
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:202
+msgid "arrows_help"
+msgstr ""
+"Arrows lets you select an additional vector variable to be overlayed on top "
+"of the plot as arrows or quivers."
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:210
+msgid "contour_help"
+msgstr ""
+"Additional contours lets you select an additional variable to be overlayed "
+"on top of the plot as contour lines. You can choose the colourmap for the "
+"contours, as well as define the contour levels in a comma-seperated list."
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:216
+msgid "showarea_help"
+msgstr "Shows the selected areas on the map."
+
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:279
 msgid "Map"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/AreaWindow.jsx:181
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:280
 msgid "Statistics"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:58
+#: oceannavigator/frontend/src/components/Class4Window.jsx:57
 msgid "Value - Observation"
 msgstr "Value - Observation"
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:62
+#: oceannavigator/frontend/src/components/Class4Window.jsx:61
 msgid "Value - Climatology"
 msgstr "Value - Climatology"
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:66
+#: oceannavigator/frontend/src/components/Class4Window.jsx:65
+#: oceannavigator/frontend/src/components/Class4Window.jsx:83
 msgid "Forecast"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:67
-#: oceannavigator/frontend/src/components/LineWindow.jsx:75
+#: oceannavigator/frontend/src/components/Class4Window.jsx:66
+#: oceannavigator/frontend/src/components/Class4Window.jsx:91
+#: oceannavigator/frontend/src/components/LineWindow.jsx:80
+#: oceannavigator/frontend/src/components/LineWindow.jsx:174
 msgid "Show Location"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:68
+#: oceannavigator/frontend/src/components/Class4Window.jsx:67
+#: oceannavigator/frontend/src/components/Class4Window.jsx:97
 msgid "Show Climatology"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:69
+#: oceannavigator/frontend/src/components/Class4Window.jsx:68
+#: oceannavigator/frontend/src/components/Class4Window.jsx:105
 msgid "Additional Models"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Class4Window.jsx:70
+#: oceannavigator/frontend/src/components/Class4Window.jsx:69
+#: oceannavigator/frontend/src/components/Class4Window.jsx:112
 msgid "Show Error"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:210
-#: oceannavigator/frontend/src/components/NumberBox.jsx:53
+#: oceannavigator/frontend/src/components/Class4Window.jsx:91
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:122
+#: oceannavigator/frontend/src/components/LineWindow.jsx:174
+msgid "showmap_help"
+msgstr "Shows the mini map of the location in the plot."
+
+#: oceannavigator/frontend/src/components/Class4Window.jsx:97
+msgid "climatology_help"
+msgstr "Shows the climatology data."
+
+#: oceannavigator/frontend/src/components/ComboBox.jsx:240
+#: oceannavigator/frontend/src/components/NumberBox.jsx:65
 msgid "titlehelp"
 msgstr "{{title}} Help"
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:217
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:472
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:486
-#: oceannavigator/frontend/src/components/NumberBox.jsx:59
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:394
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:407
-#: oceannavigator/frontend/src/components/PlotImage.jsx:229
-#: oceannavigator/frontend/src/components/PlotImage.jsx:244
+#: oceannavigator/frontend/src/components/ComboBox.jsx:248
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:594
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:620
+#: oceannavigator/frontend/src/components/NumberBox.jsx:72
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:414
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:443
+#: oceannavigator/frontend/src/components/PlotImage.jsx:293
+#: oceannavigator/frontend/src/components/PlotImage.jsx:327
 msgid "Close"
 msgstr "Close"
 
@@ -226,118 +315,139 @@ msgstr ""
 msgid "Auto Levels"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:39
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:38
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:54
 msgid "Depth Limit"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:40
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:47
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:39
+#: oceannavigator/frontend/src/components/DepthLimit.jsx:46
 msgid "Limit Depth"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterSelector.jsx:89
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:113
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:124
 msgid "IMEI"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterSelector.jsx:90
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:114
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:133
 msgid "WMO"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterSelector.jsx:91
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:115
+#: oceannavigator/frontend/src/components/DrifterSelector.jsx:142
 msgid "Deployment"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:82
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:80
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:104
 msgid "Buoy Variable"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:85
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:82
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:121
 msgid "Show Map"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/DrifterWindow.jsx:86
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:83
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:128
 msgid "Show Latitude/Longitude Plots"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ImageSize.jsx:36
+#: oceannavigator/frontend/src/components/DrifterWindow.jsx:129
+msgid "latlon_help"
+msgstr "Generates plots of the latitude and longitude vs time."
+
+#: oceannavigator/frontend/src/components/ImageSize.jsx:39
 msgid "inches"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ImageSize.jsx:43
+#: oceannavigator/frontend/src/components/ImageSize.jsx:46
 msgid "Width:"
 msgstr "Width:"
 
-#: oceannavigator/frontend/src/components/ImageSize.jsx:56
+#: oceannavigator/frontend/src/components/ImageSize.jsx:59
 msgid "Height:"
 msgstr "Height:"
 
-#: oceannavigator/frontend/src/components/ImageSize.jsx:69
+#: oceannavigator/frontend/src/components/ImageSize.jsx:72
 msgid "DPI:"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/LineWindow.jsx:76
+#: oceannavigator/frontend/src/components/LineWindow.jsx:81
+#: oceannavigator/frontend/src/components/LineWindow.jsx:180
 msgid "Linear Threshold"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/LineWindow.jsx:77
+#: oceannavigator/frontend/src/components/LineWindow.jsx:82
+#: oceannavigator/frontend/src/components/LineWindow.jsx:187
 msgid "Surface Variable"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/LineWindow.jsx:131
+#: oceannavigator/frontend/src/components/LineWindow.jsx:181
+msgid "linearthresh_help"
+msgstr ""
+"The depth axis is broken into two parts at the linear threshold.  Values "
+"above this value are plotted on a linear scale, and values below are plotted "
+"on a logarithmic scale."
+
+#: oceannavigator/frontend/src/components/LineWindow.jsx:189
+msgid "surfacevariable_help"
+msgstr ""
+"Surface variable lets you select an additional variable to be plotted above "
+"the transect plot indicating some surface condition.  If the variable "
+"selected has multiple depths, the surface depth will be used."
+
+#: oceannavigator/frontend/src/components/LineWindow.jsx:251
 msgid "Transect"
 msgstr "Transect"
 
-#: oceannavigator/frontend/src/components/LineWindow.jsx:132
+#: oceannavigator/frontend/src/components/LineWindow.jsx:252
 msgid "Hovmöller Diagram"
 msgstr "Hovmöller Diagram"
 
-#: oceannavigator/frontend/src/components/LocationInput.jsx:51
+#: oceannavigator/frontend/src/components/LocationInput.jsx:52
 msgid "Lat:"
 msgstr "Lat:"
 
-#: oceannavigator/frontend/src/components/LocationInput.jsx:67
+#: oceannavigator/frontend/src/components/LocationInput.jsx:68
 msgid "Lon:"
 msgstr "Lon:"
 
-#: oceannavigator/frontend/src/components/Map.jsx:51
-msgid "topoattribution"
-msgstr ""
-"Togographical Data from <a "
-"href='https://www.ngdc.noaa.gov/mgg/global/'>ETOPO1</a>"
-
-#: oceannavigator/frontend/src/components/Map.jsx:143
+#: oceannavigator/frontend/src/components/Map.jsx:154
 msgid "RMS Error: "
 msgstr "RMS Error: "
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:24
+#: oceannavigator/frontend/src/components/MapInputs.jsx:28
 msgid "Global"
 msgstr "Global"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:25
+#: oceannavigator/frontend/src/components/MapInputs.jsx:29
 msgid "Arctic"
 msgstr "Arctic"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:26
+#: oceannavigator/frontend/src/components/MapInputs.jsx:30
 msgid "Antarctic"
 msgstr "Antarctic"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:27
+#: oceannavigator/frontend/src/components/MapInputs.jsx:32
 msgid "Projection"
 msgstr "Projection"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:29
+#: oceannavigator/frontend/src/components/MapInputs.jsx:42
 msgid "ETOPO1 Topography"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:30
+#: oceannavigator/frontend/src/components/MapInputs.jsx:47
 msgid "Esri Ocean Basemap"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:31
+#: oceannavigator/frontend/src/components/MapInputs.jsx:52
 msgid "Esri World Imagery"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:32
+#: oceannavigator/frontend/src/components/MapInputs.jsx:56
 msgid "Basemap"
 msgstr ""
 
@@ -345,200 +455,209 @@ msgstr ""
 msgid "Error: Could not find latitude or longitude column"
 msgstr "Error: Could not find latitude or longitude column"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:331
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:355
 msgid "Error: Unknown Date/Time format"
 msgstr "Error: Unknown Date/Time format"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:414
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:441
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:513
 msgid "Drifters"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:415
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:442
 msgid "Reset Map"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:416
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:443
 msgid "Link"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:420
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:452
 msgid "Point"
 msgstr "Point"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:423
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:460
 msgid "Observations…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:425
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:432
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:438
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:465
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:481
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:499
 msgid "Draw on Map"
 msgstr "Draw on Map"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:426
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:433
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:439
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:469
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:485
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:503
 msgid "Upload CSV…"
 msgstr "Upload CSV…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:427
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:473
 msgid "Upload ODV…"
 msgstr "Upload ODV…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:429
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:475
 msgid "Line"
 msgstr "Line"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:435
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:491
 msgid "Area"
 msgstr "Area"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:441
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:509
 msgid "Class4"
 msgstr "Class4"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:443
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:519
 msgid "All"
 msgstr "All"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:444
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:523
 msgid "Active"
 msgstr "Active"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:445
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:527
 msgid "Not Responding"
 msgstr "Not Responding"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:446
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:531
 msgid "Inactive"
 msgstr "Inactive"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:447
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:535
 msgid "Select…"
 msgstr "Select…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:449
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:541
 msgid "Plot"
 msgstr "Plot"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:466
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:584
 msgid "Select Drifters"
 msgstr "Select Drifters"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:473
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:487
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:600
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:626
 msgid "Apply"
 msgstr "Apply"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:480
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:609
 msgid "Select Observations"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/NumberBox.jsx:67
+#: oceannavigator/frontend/src/components/NumberBox.jsx:80
 msgid "Value:"
 msgstr "Value:"
 
-#: oceannavigator/frontend/src/components/ObservationSelector.jsx:51
+#: oceannavigator/frontend/src/components/ObservationSelector.jsx:54
+#: oceannavigator/frontend/src/components/ObservationSelector.jsx:64
 msgid "Ship"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/ObservationSelector.jsx:52
+#: oceannavigator/frontend/src/components/ObservationSelector.jsx:55
+#: oceannavigator/frontend/src/components/ObservationSelector.jsx:73
 msgid "Trip"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:377
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:384
 msgid "Loading"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:400
-#: oceannavigator/frontend/src/components/PlotImage.jsx:222
-#: oceannavigator/frontend/src/components/PlotImage.jsx:235
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:424
+#: oceannavigator/frontend/src/components/PlotImage.jsx:273
+#: oceannavigator/frontend/src/components/PlotImage.jsx:303
 msgid "Share Link"
 msgstr "Share Link"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:406
-#: oceannavigator/frontend/src/components/PlotImage.jsx:228
-#: oceannavigator/frontend/src/components/PlotImage.jsx:243
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:440
+#: oceannavigator/frontend/src/components/PlotImage.jsx:290
+#: oceannavigator/frontend/src/components/PlotImage.jsx:324
 msgid "Copy"
 msgstr "Copy"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:413
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:449
 msgid "Please Wait…"
 msgstr "Please Wait…"
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:202
+#: oceannavigator/frontend/src/components/PlotImage.jsx:210
 msgid "Save…"
 msgstr "Save…"
 
-#: oceannavigator/frontend/src/components/PlotImage.jsx:214
+#: oceannavigator/frontend/src/components/PlotImage.jsx:254
 msgid "Get Link"
 msgstr "Get Link"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:147
+#: oceannavigator/frontend/src/components/PointWindow.jsx:148
+#: oceannavigator/frontend/src/components/PointWindow.jsx:179
 msgid "Location"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:284
+#: oceannavigator/frontend/src/components/PointWindow.jsx:276
+#: oceannavigator/frontend/src/components/PointWindow.jsx:291
+msgid "Observation Variable"
+msgstr ""
+
+#: oceannavigator/frontend/src/components/PointWindow.jsx:429
 msgid "Profile"
 msgstr "Profile"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:285
+#: oceannavigator/frontend/src/components/PointWindow.jsx:432
 msgid "CTD Profile"
 msgstr "CTD Profile"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:286
+#: oceannavigator/frontend/src/components/PointWindow.jsx:435
 msgid "T/S Diagram"
 msgstr "T/S Diagram"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:287
+#: oceannavigator/frontend/src/components/PointWindow.jsx:438
 msgid "Sound Speed Profile"
 msgstr "Sound Speed Profile"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:288
+#: oceannavigator/frontend/src/components/PointWindow.jsx:440
 msgid "Stick Plot"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:289
+#: oceannavigator/frontend/src/components/PointWindow.jsx:444
 msgid "Observation"
 msgstr "Observation"
 
-#: oceannavigator/frontend/src/components/PointWindow.jsx:290
+#: oceannavigator/frontend/src/components/PointWindow.jsx:446
 msgid "Virtual Mooring"
 msgstr "Virtual Mooring"
 
-#: oceannavigator/frontend/src/components/QuiverSelector.jsx:30
+#: oceannavigator/frontend/src/components/QuiverSelector.jsx:29
 msgid "Show Magnitude"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/QuiverSelector.jsx:31
+#: oceannavigator/frontend/src/components/QuiverSelector.jsx:30
 msgid "No"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/QuiverSelector.jsx:32
+#: oceannavigator/frontend/src/components/QuiverSelector.jsx:31
 msgid "Length"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/QuiverSelector.jsx:33
+#: oceannavigator/frontend/src/components/QuiverSelector.jsx:32
 msgid "Colour"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Range.jsx:96
+#: oceannavigator/frontend/src/components/Range.jsx:89
 msgid "Auto Range"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Range.jsx:105
+#: oceannavigator/frontend/src/components/Range.jsx:98
 msgid "Default"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Range.jsx:106
+#: oceannavigator/frontend/src/components/Range.jsx:99
 msgid "Auto"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/Range.jsx:119
+#: oceannavigator/frontend/src/components/Range.jsx:112
 msgid "Min:"
 msgstr "Min:"
 
-#: oceannavigator/frontend/src/components/Range.jsx:135
+#: oceannavigator/frontend/src/components/Range.jsx:128
 msgid "Max:"
 msgstr "Max:"
 
@@ -566,91 +685,91 @@ msgstr "Std Dev"
 msgid "Num"
 msgstr "Num"
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:88
+#: oceannavigator/frontend/src/components/TimePicker.jsx:92
 msgid "Year"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:89
+#: oceannavigator/frontend/src/components/TimePicker.jsx:93
 msgid "Previous Year"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:90
+#: oceannavigator/frontend/src/components/TimePicker.jsx:94
 msgid "Next Year"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:91
+#: oceannavigator/frontend/src/components/TimePicker.jsx:95
 msgid "Jump Forward 12 Years"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:92
+#: oceannavigator/frontend/src/components/TimePicker.jsx:96
 msgid "Jump Back 12 Years"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:93
+#: oceannavigator/frontend/src/components/TimePicker.jsx:97
 msgid "Next"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:94
+#: oceannavigator/frontend/src/components/TimePicker.jsx:98
 msgid "Prev"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:95
+#: oceannavigator/frontend/src/components/TimePicker.jsx:99
 msgid "Open Month Chooser"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:96
+#: oceannavigator/frontend/src/components/TimePicker.jsx:100
 msgid "Jump Years"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:97
+#: oceannavigator/frontend/src/components/TimePicker.jsx:101
 msgid "Back to"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:103
 msgid "Jan."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:103
 msgid "Feb."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:103
 msgid "Mar."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:103
 msgid "Apr."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:103
 msgid "May"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:104
 msgid "June"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:104
 msgid "July"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:104
 msgid "Aug."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:104
 msgid "Sep."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:104
 msgid "Oct."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:105
 msgid "Nov."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/TimePicker.jsx:98
+#: oceannavigator/frontend/src/components/TimePicker.jsx:105
 msgid "Dec."
 msgstr ""
 
@@ -662,8 +781,8 @@ msgstr ""
 msgid "Error wrt Climatology"
 msgstr ""
 
-#: plotting/class4.py:185 plotting/class4.py:226 plotting/drifter.py:189
-#: plotting/observation.py:227
+#: plotting/class4.py:185 plotting/class4.py:226 plotting/drifter.py:238
+#: plotting/observation.py:226
 msgid "Observed"
 msgstr ""
 
@@ -679,133 +798,133 @@ msgstr ""
 msgid "Class 4"
 msgstr ""
 
-#: plotting/class4.py:254 plotting/observation.py:248 plotting/profile.py:88
+#: plotting/class4.py:254
 #, python-format
 msgid "Depth (%s)"
 msgstr ""
 
-#: plotting/colormap.py:136
+#: plotting/colormap.py:137
 msgid "Anomaly"
 msgstr "Anomaly"
 
-#: plotting/colormap.py:137
+#: plotting/colormap.py:138
 msgid "Bathymetry"
 msgstr "Bathymetry"
 
-#: plotting/colormap.py:138
+#: plotting/colormap.py:139
 msgid "Chlorophyll"
 msgstr "Chlorophyll"
 
-#: plotting/colormap.py:139
+#: plotting/colormap.py:140
 msgid "Sea Surface Height (Free Surface)"
 msgstr "Sea Surface Height (Free Surface)"
 
-#: plotting/colormap.py:140
+#: plotting/colormap.py:141
 msgid "Greyscale"
 msgstr "Greyscale"
 
-#: plotting/colormap.py:141
+#: plotting/colormap.py:142
 msgid "Ice"
 msgstr "Ice"
 
-#: plotting/colormap.py:142
+#: plotting/colormap.py:143
 msgid "Iron"
 msgstr "Iron"
 
-#: plotting/colormap.py:143
+#: plotting/colormap.py:144
 msgid "Mercator Ocean Current"
 msgstr "Mercator Ocean Current"
 
-#: plotting/colormap.py:144
+#: plotting/colormap.py:145
 msgid "Mercator"
 msgstr "Mercator"
 
-#: plotting/colormap.py:145
+#: plotting/colormap.py:146
 msgid "Nitrate"
 msgstr "Nitrate"
 
-#: plotting/colormap.py:146
+#: plotting/colormap.py:147
 msgid "Oxygen"
 msgstr "Oxygen"
 
-#: plotting/colormap.py:147
+#: plotting/colormap.py:148
 msgid "Phosphate"
 msgstr "Phosphate"
 
-#: plotting/colormap.py:148
+#: plotting/colormap.py:149
 msgid "Phytoplankton"
 msgstr "Phytoplankton"
 
-#: plotting/colormap.py:149
+#: plotting/colormap.py:150
 msgid "Salinity"
 msgstr "Salinity"
 
-#: plotting/colormap.py:150
+#: plotting/colormap.py:151
 msgid "Silicate"
 msgstr "Silicate"
 
-#: plotting/colormap.py:151
+#: plotting/colormap.py:152
 msgid "Speed"
 msgstr "Speed"
 
-#: plotting/colormap.py:152
+#: plotting/colormap.py:153
 msgid "Temperature"
 msgstr "Temperature"
 
-#: plotting/colormap.py:153
+#: plotting/colormap.py:154
 msgid "Velocity"
 msgstr "Velocity"
 
-#: plotting/colormap.py:154
+#: plotting/colormap.py:155
 msgid "Wave Height"
 msgstr "Wave Height"
 
-#: plotting/colormap.py:155
+#: plotting/colormap.py:156
 msgid "Wave Period"
 msgstr "Wave Period"
 
-#: plotting/colormap.py:156
+#: plotting/colormap.py:157
 msgid "Thermal"
 msgstr "Thermal"
 
-#: plotting/colormap.py:157
+#: plotting/colormap.py:158
 msgid "NEO SST"
 msgstr "NEO SST"
 
-#: plotting/colormap.py:158
+#: plotting/colormap.py:159
 msgid "Color Brewer Blue-Yellow-Red"
 msgstr "Color Brewer Blue-Yellow-Red"
 
-#: plotting/colormap.py:159
+#: plotting/colormap.py:160
 msgid "Temperature (old)"
 msgstr "Temperature (old)"
 
-#: plotting/colormap.py:207
+#: plotting/colormap.py:208
 msgid "Ocean Navigator Colourmaps"
 msgstr "Ocean Navigator Colourmaps"
 
-#: plotting/drifter.py:189 plotting/observation.py:228
+#: plotting/drifter.py:238 plotting/observation.py:227
 msgid "Modelled"
 msgstr ""
 
-#: plotting/drifter.py:220
+#: plotting/drifter.py:274
 msgid "Latitude (degrees)"
 msgstr ""
 
-#: plotting/drifter.py:221
+#: plotting/drifter.py:275
 msgid "Longitude (degrees)"
 msgstr ""
 
-#: plotting/drifter.py:231
+#: plotting/drifter.py:285
 #, python-format
 msgid "Drifter Plot (IMEI: %s, WMO: %s)"
 msgstr ""
 
-#: plotting/hovmoller.py:140 plotting/transect.py:444
+#: plotting/hovmoller.py:135 plotting/transect.py:448
 msgid "Distance (km)"
 msgstr ""
 
-#: plotting/hovmoller.py:154
+#: plotting/hovmoller.py:149
 #, python-format
 msgid ""
 "Hovmöller Diagram for %s%s,\n"
@@ -817,22 +936,23 @@ msgstr ""
 msgid "%s to %s"
 msgstr ""
 
-#: plotting/observation.py:254
+#: plotting/observation.py:247 plotting/profile.py:91 plotting/sound.py:33
+#: plotting/transect.py:449
+msgid "Depth (m)"
+msgstr ""
+
+#: plotting/observation.py:252
 #, python-format
 msgid "Profile for %s, Observed at %s, Modelled at %s"
 msgstr ""
 
-#: plotting/observation.py:264
+#: plotting/observation.py:262
 #, python-format
 msgid "Profile for %s (%s)"
 msgstr ""
 
 #: plotting/sound.py:32
 msgid "Sound Speed (m/s)"
-msgstr ""
-
-#: plotting/sound.py:33 plotting/transect.py:445
-msgid "Depth (m)"
 msgstr ""
 
 #: plotting/sound.py:39
@@ -844,12 +964,12 @@ msgstr ""
 msgid "Depth (ft)"
 msgstr ""
 
-#: plotting/stats.py:204 plotting/stats.py:205 plotting/stats.py:206
-#: plotting/stats.py:207 plotting/stats.py:208
+#: plotting/stats.py:172 plotting/stats.py:173 plotting/stats.py:174
+#: plotting/stats.py:175 plotting/stats.py:176
 msgid "No Data"
 msgstr ""
 
-#: plotting/stick.py:120
+#: plotting/stick.py:118
 #, python-format
 msgid "%s at %s (%s)"
 msgstr ""
@@ -859,33 +979,23 @@ msgstr ""
 msgid "%s Anomaly"
 msgstr ""
 
-#: plotting/transect.py:353
+#: plotting/transect.py:356
 msgid "Parallel"
 msgstr ""
 
-#: plotting/transect.py:358
+#: plotting/transect.py:361
 msgid "Perpendicular"
 msgstr ""
 
-#: plotting/ts.py:53
+#: plotting/ts.py:52
 #, python-format
 msgid "T/S Diagram for %s (%s)"
 msgstr ""
 
-#: plotting/ts.py:83
+#: plotting/ts.py:82
 msgid "Salinity (PSU)"
 msgstr ""
 
-#: plotting/ts.py:84
+#: plotting/ts.py:83
 msgid "Temperature (Celsius)"
 msgstr ""
-
-#~ msgid "Map"
-#~ msgstr "Map"
-
-#~ msgid "Statistics"
-#~ msgstr "Statistics"
-
-#~ msgid ""
-#~ msgstr ""
-

@@ -115,6 +115,7 @@
     "Nov.": "nov.",
     "Num": "Nombre",
     "Observation": "Observation",
+    "Observation Variable": "Variable d'observation",
     "Observations…": "Observations…",
     "Observed": "Observé",
     "Ocean Navigator": "Océan navigateur",
@@ -194,7 +195,15 @@
     "Width:": "Largeur:",
     "Year": "année",
     "Yellow": "Jaune",
+    "arrows_help": "Les flèches vous permettent de sélectionner une variable vectorielle supplémentaire à superposer au sommet de l'intrigue sous forme de flèches ou de frissons.",
+    "climatology_help": "Montre les données climatologiques.",
+    "colourmap_help": "Il y a plusieurs colourmaps disponibles. Cet outil essaie de choisir une valeur par défaut appropriée en fonction du type de variable (Default For Variable). Si vous voulez utiliser l'un des autres, ils sont tous sélectionnables.",
+    "contour_help": "Contours supplémentaires vous permet de sélectionner une variable supplémentaire à superposer en haut de la courbe comme lignes de contour. Vous pouvez choisir la couleur pour les contours, ainsi que définir les niveaux de contour dans une liste séparée par des virgules.",
     "inches": "pouces",
-    "titlehelp": "Aide pour {{title}}",
-    "topoattribution": "Données topographiques de <a href='https://www.ngdc.noaa.gov/mgg/global/'> ETOPO1</a>"
+    "latlon_help": "Génère des tracés de la latitude et de longitude par rapport au temps.",
+    "linearthresh_help": "L'axe de profondeur est divisé en deux parties au seuil linéaire. Les valeurs au-dessus de cette valeur sont tracées sur une échelle linéaire, et les valeurs ci-dessous sont tracées sur une échelle logarithmique.",
+    "showarea_help": "Affiche les zones sélectionnées sur la carte.",
+    "showmap_help": "Affiche la mini carte de l'emplacement dans la parcelle.",
+    "surfacevariable_help": "La variable de surface permet de sélectionner une variable supplémentaire à tracer au-dessus du tracé du transect indiquant une condition de surface. Si la variable sélectionnée a plusieurs profondeurs, la profondeur de surface sera utilisée.",
+    "titlehelp": "Aide pour {{title}}"
 }

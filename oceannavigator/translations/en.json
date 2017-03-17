@@ -115,6 +115,7 @@
     "Nov.": "Nov.",
     "Num": "Num",
     "Observation": "Observation",
+    "Observation Variable": "Observation Variable",
     "Observations…": "Observations…",
     "Observed": "Observed",
     "Ocean Navigator": "Ocean Navigator",
@@ -194,7 +195,15 @@
     "Width:": "Width:",
     "Year": "Year",
     "Yellow": "Yellow",
+    "arrows_help": "Arrows lets you select an additional vector variable to be overlayed on top of the plot as arrows or quivers.",
+    "climatology_help": "Shows the climatology data.",
+    "colourmap_help": "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
+    "contour_help": "Additional contours lets you select an additional variable to be overlayed on top of the plot as contour lines. You can choose the colourmap for the contours, as well as define the contour levels in a comma-seperated list.",
     "inches": "inches",
-    "titlehelp": "{{title}} Help",
-    "topoattribution": "Togographical Data from <a href='https://www.ngdc.noaa.gov/mgg/global/'>ETOPO1</a>"
+    "latlon_help": "Generates plots of the latitude and longitude vs time.",
+    "linearthresh_help": "The depth axis is broken into two parts at the linear threshold.  Values above this value are plotted on a linear scale, and values below are plotted on a logarithmic scale.",
+    "showarea_help": "Shows the selected areas on the map.",
+    "showmap_help": "Shows the mini map of the location in the plot.",
+    "surfacevariable_help": "Surface variable lets you select an additional variable to be plotted above the transect plot indicating some surface condition.  If the variable selected has multiple depths, the surface depth will be used.",
+    "titlehelp": "{{title}} Help"
 }
