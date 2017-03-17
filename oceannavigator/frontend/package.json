@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack -d --watch",
-    "build": "NODE_ENV=production node --stack_size=1000000 node_modules/.bin/webpack --progress -p"
+    "build": "NODE_ENV=production node --stack_size=1000000 node_modules/.bin/webpack --progress -p",
+    "i18n": "i18next-conv -s ../translations/en/LC_MESSAGES/messages.mo -l en -t ../translations/en.json && i18next-conv -s ../translations/fr/LC_MESSAGES/messages.mo -l fr -t ../translations/fr.json",
+    "lint": "eslint --ext .jsx,.js src/",
+    "lint-html": "eslint --ext .jsx,.js src/ -o eslint.html -f html"
   },
   "author": "",
   "license": "BSD-2-Clause",
@@ -39,6 +42,8 @@
   "devDependencies": {
     "babel-polyfill": "^6.16.0",
     "css-loader": "~0.25.0",
+    "eslint": "^3.17.1",
+    "eslint-plugin-react": "^6.10.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",
     "html-webpack-plugin": "^2.26.0",
