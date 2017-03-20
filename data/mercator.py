@@ -5,7 +5,6 @@ from netcdf_data import NetCDFData
 from pint import UnitRegistry
 from data import Variable, VariableList
 import math
-from geopy.distance import vincenty
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
@@ -87,17 +86,10 @@ class Mercator(NetCDFData):
         iy_min = find_nearest(self.latvar[:], lat)
         ix_min = find_nearest(np.mod(self.lonvar[:] + 360, 360), lon)
 
-        points = zip(lat, lon)
-        closest = zip(self.latvar[iy_min], self.lonvar[ix_min])
-
-        dist_sq_min = [
-            vincenty(p, c).meters ** 2 for p, c in zip(points, closest)
-        ]
-
-        return iy_min, ix_min, dist_sq_min
+        return iy_min, ix_min, [50000]
 
     def __bounding_box(self, lat, lon, n=10):
-        y, x, d = self.__find_index(lat, lon, n)
+        y, x, d = self.__find_index(lat, np.mod(np.add(lon, 360), 360), n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -114,7 +106,7 @@ class Mercator(NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.lonvar.shape[0])
 
-        return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
+        return miny, maxy, minx, maxx, np.amax(d)
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
@@ -143,18 +135,18 @@ class Mercator(NetCDFData):
                 output = []
                 # multiple depths
                 for d in range(0, data.shape[2]):
-                    masked_lon_in.mask = masked_lat_in.mask = \
-                        data[:, :, d].view(np.ma.MaskedArray).mask
                     grid_lat, grid_lon = np.meshgrid(
                         masked_lat_in,
                         masked_lon_in
                     )
+                    grid_lat.mask = grid_lon.mask = \
+                        data[:, :, d].view(np.ma.MaskedArray).mask.transpose()
                     input_def = pyresample.geometry.SwathDefinition(
                         lons=grid_lon,
                         lats=grid_lat
                     )
                     output.append(pyresample.kd_tree.resample_custom(
-                        input_def, data[:, :, d], output_def,
+                        input_def, data[:, :, d].transpose(), output_def,
                         radius_of_influence=float(radius),
                         neighbours=10,
                         weight_funcs=weight,
@@ -163,13 +155,12 @@ class Mercator(NetCDFData):
 
                 output = np.ma.array(output).transpose()
             else:
-                masked_lon_in.mask = masked_lat_in.mask = \
-                    var[:].view(np.ma.MaskedArray).mask
-
                 grid_lat, grid_lon = np.meshgrid(
                     masked_lat_in,
                     masked_lon_in
                 )
+                grid_lat.mask = grid_lon.mask = \
+                    data.view(np.ma.MaskedArray).mask.transpose()
 
                 input_def = pyresample.geometry.SwathDefinition(
                     lons=grid_lon,
