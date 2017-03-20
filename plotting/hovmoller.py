@@ -20,7 +20,6 @@ class HovmollerPlotter(line.LinePlotter):
         super(HovmollerPlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):
-        interp = utils.get_interpolation(self.query)
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             latvar, lonvar = utils.get_latlon_vars(dataset)
 
@@ -43,7 +42,7 @@ class HovmollerPlotter(line.LinePlotter):
             if len(self.variables) > 1:
                 v = []
                 for name in self.variables:
-                    pts, distance, value = dataset.get_path(
+                    pts, distance, t, value = dataset.get_path(
                         self.points,
                         self.depth,
                         time,
@@ -53,7 +52,7 @@ class HovmollerPlotter(line.LinePlotter):
 
                 value = np.sqrt(np.ma.sum(v, axis=0))
             else:
-                pts, distance, value = dataset.get_path(
+                pts, distance, t, value = dataset.get_path(
                     self.points,
                     self.depth,
                     time,

@@ -73,80 +73,83 @@ class TimePicker extends React.Component {
             revmap: revmap,
             min: min,
             max: max,
-          });
-          this.pickerChange();
+          }, function() {
+            switch(props.quantum) {
+              case "month":
+                $(this.refs.picker).MonthPicker({
+                  Button: false,
+                  MonthFormat: "MM yy",
+                  OnAfterMenuClose: this.pickerChange.bind(this),
+                  MinMonth: new Date(
+                    map[min].getTime() + 
+                    map[min].getTimezoneOffset() * 60 * 1000
+                  ),
+                  MaxMonth: new Date(
+                    map[max].getTime() +
+                    map[max].getTimezoneOffset() * 60 * 1000
+                  ),
+                  i18n: {
+                    year: _("Year"),
+                    prevYear: _("Previous Year"),
+                    nextYear: _("Next Year"),
+                    next12Years: _("Jump Forward 12 Years"),
+                    prev12Years: _("Jump Back 12 Years"),
+                    nextLabel: _("Next"),
+                    prevLabel: _("Prev"),
+                    buttonText: _("Open Month Chooser"),
+                    jumpYears: _("Jump Years"),
+                    backTo: _("Back to"),
+                    months: [
+                      _("Jan."), _("Feb."), _("Mar."), _("Apr."), _("May"),
+                      _("June"), _("July"), _("Aug."), _("Sep."), _("Oct."),
+                      _("Nov."), _("Dec.")
+                    ]
+                  }
+                });
+                break;
+              case "day":
+                $(this.refs.picker).datepicker( {
+                  Button: false,
+                  dateFormat: "dd MM yy",
+                  onClose: this.pickerChange.bind(this),
+                  minDate: new Date(map[min]),
+                  maxDate: new Date(map[max]),
+                });
 
-          switch(props.quantum) {
-            case "month":
-              $(this.refs.picker).MonthPicker({
-                Button: false,
-                MonthFormat: "MM yy",
-                OnAfterMenuClose: this.pickerChange.bind(this),
-                MinMonth: new Date(
-                  map[min].getTime() + map[min].getTimezoneOffset() * 60 * 1000
-                ),
-                MaxMonth: new Date(
-                  map[max].getTime() + map[max].getTimezoneOffset() * 60 * 1000
-                ),
-                i18n: {
-                  year: _("Year"),
-                  prevYear: _("Previous Year"),
-                  nextYear: _("Next Year"),
-                  next12Years: _("Jump Forward 12 Years"),
-                  prev12Years: _("Jump Back 12 Years"),
-                  nextLabel: _("Next"),
-                  prevLabel: _("Prev"),
-                  buttonText: _("Open Month Chooser"),
-                  jumpYears: _("Jump Years"),
-                  backTo: _("Back to"),
-                  months: [
-                    _("Jan."), _("Feb."), _("Mar."), _("Apr."), _("May"),
-                    _("June"), _("July"), _("Aug."), _("Sep."), _("Oct."),
-                    _("Nov."), _("Dec.")
-                  ]
-                }
-              });
-              break;
-            case "day":
-              $(this.refs.picker).datepicker( {
-                Button: false,
-                dateFormat: "dd MM yy",
-                onClose: this.pickerChange.bind(this),
-                minDate: new Date(map[min]),
-                maxDate: new Date(map[max]),
-              });
+                $(this.refs.picker).datepicker(
+                  "option",
+                  "minDate",
+                  new Date(map[min])
+                );
+                $(this.refs.picker).datepicker(
+                  "option",
+                  "maxDate",
+                  new Date(map[max])
+                );
+                break;
+              case "hour":
+                $(this.refs.picker).datepicker({
+                  Button: false,
+                  dateFormat: "dd MM yy",
+                  onClose: this.pickerChange.bind(this),
+                  minDate: new Date(map[min]),
+                  maxDate: new Date(map[max]),
+                });
+                $(this.refs.picker).datepicker(
+                  "option",
+                  "minDate",
+                  new Date(map[min])
+                );
+                $(this.refs.picker).datepicker(
+                  "option",
+                  "maxDate",
+                  new Date(map[max])
+                );
+                break;
+            }
+            this.pickerChange();
 
-              $(this.refs.picker).datepicker(
-                "option",
-                "minDate",
-                new Date(map[min])
-              );
-              $(this.refs.picker).datepicker(
-                "option",
-                "maxDate",
-                new Date(map[max])
-              );
-              break;
-            case "hour":
-              $(this.refs.picker).datepicker({
-                Button: false,
-                dateFormat: "dd MM yy",
-                onClose: this.pickerChange.bind(this),
-                minDate: new Date(map[min]),
-                maxDate: new Date(map[max]),
-              });
-              $(this.refs.picker).datepicker(
-                "option",
-                "minDate",
-                new Date(map[min])
-              );
-              $(this.refs.picker).datepicker(
-                "option",
-                "maxDate",
-                new Date(map[max])
-              );
-              break;
-          }
+          }.bind(this));
         }.bind(this),
         error: function(xhr, status, err) {
           console.error(props.url, status, err.toString());

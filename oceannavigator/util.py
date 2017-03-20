@@ -78,8 +78,8 @@ def get_variable_unit(dataset_name, variable):
 
     if from_config is not None:
         return from_config.get("unit")
-    elif variable.units is not None:
-        return variable.units
+    elif variable.unit is not None:
+        return variable.unit
     else:
         return "Unknown"
 

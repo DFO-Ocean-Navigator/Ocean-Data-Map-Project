@@ -34,7 +34,7 @@ class TestNemo(unittest.TestCase):
 
     def test_get_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
-            p = n.get_profile(13.0, -149.0, 0, 'votemper')
+            p, d = n.get_profile(13.0, -149.0, 0, 'votemper')
             self.assertAlmostEqual(p[0], 299.18, places=2)
             self.assertAlmostEqual(p[10], 299.16, places=2)
             self.assertAlmostEqual(p[20], 296.46, places=2)
@@ -60,7 +60,7 @@ class TestNemo(unittest.TestCase):
 
     def test_get_path_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
-            p, d, r = n.get_path_profile(
+            p, d, r, dep = n.get_path_profile(
                 [[13, -149], [14, -140], [15, -130]], 0, 'votemper', 10)
 
             self.assertEqual(r.shape[0], 50)
@@ -77,7 +77,7 @@ class TestNemo(unittest.TestCase):
 
     def test_get_timeseries_profile(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
-            r = n.get_timeseries_profile(13.0, -149.0, 0, 1, 'votemper')
+            r, d = n.get_timeseries_profile(13.0, -149.0, 0, 1, 'votemper')
             self.assertAlmostEqual(r[0, 0], 299.18, places=2)
             self.assertAlmostEqual(r[0, 10], 299.16, places=2)
             self.assertAlmostEqual(r[0, 20], 296.46, places=2)

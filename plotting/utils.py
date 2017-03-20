@@ -99,8 +99,12 @@ def _map_plot(points, path=True, quiver=True):
     )
 
     if path:
+        marker = ''
+        if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
+                (np.round(points[0, :], 2) == np.round(points[0, 0], 2)).all():
+            marker = '.'
         m.plot(points[1, :], points[0, :],
-               latlon=True, color='r', linestyle='-')
+               latlon=True, color='r', linestyle='-', marker=marker)
         if quiver:
             qx, qy = m([points[1, -1]], [points[0, -1]])
             qu = points[1, -1] - points[1, -2]
@@ -161,13 +165,6 @@ def get_latlon_vars(dataset):
         _find_var(dataset, ['nav_lat', 'latitude']),
         _find_var(dataset, ['nav_lon', 'longitude']),
     )
-
-
-def get_depth_var(dataset):
-    return _find_var(dataset, [
-        'deptht',
-        'depth',
-    ])
 
 
 def get_interpolation(query):

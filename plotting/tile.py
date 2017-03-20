@@ -220,7 +220,7 @@ def plot(projection, x, y, z, args):
         if depth != 'bottom':
             depthm = dataset.depths[depth]
         else:
-            depthm = 10000
+            depthm = 0
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"

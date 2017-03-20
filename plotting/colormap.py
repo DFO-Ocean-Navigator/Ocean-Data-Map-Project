@@ -43,6 +43,7 @@ colormaps = {
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
+    'surface elevation': cmocean.cm.balance,
     'velocity': cmocean.cm.delta,
     'waveheight': cmocean.cm.amp,
     'waveperiod': cmocean.cm.tempo,

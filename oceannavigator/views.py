@@ -212,8 +212,8 @@ def depth():
             for variable in variables:
                 if variable and \
                     variable in ds.variables and \
-                    ('deptht' in ds.variables[variable].dimensions or
-                        'depth' in ds.variables[variable].dimensions):
+                        set(ds.depth_dimensions) & \
+                   set(ds.variables[variable].dimensions):
                     if str(request.args.get('all')).lower() in ['true',
                                                                 'yes',
                                                                 'on']:
@@ -267,9 +267,13 @@ def vars_query():
                 for v in ds.variables:
                     if ('time_counter' in v.dimensions or
                         'time' in v.dimensions) \
-                            and ('y' in v.dimensions or 'yc' in v.dimensions):
-                        if three_d and ('deptht' not in v.dimensions and
-                                        'depth' not in v.dimensions):
+                            and ('y' in v.dimensions or
+                                 'yc' in v.dimensions or
+                                 'node' in v.dimensions or
+                                 'nele' in v.dimensions):
+                        if three_d and not (
+                            set(ds.depth_dimensions) & set(v.dimensions)
+                        ):
                             continue
                         else:
                             data.append({
@@ -289,6 +293,8 @@ def vars_query():
                 'itzocrtx': 'itzocrtx,itmecrty',
                 'iicevelu': 'iicevelu,iicevelv',
                 'u_wind': 'u_wind,v_wind',
+                'u': 'u,v',
+                'ua': 'ua,va',
             }
 
             if 'vectors' in request.args or 'vectors_only' in request.args:

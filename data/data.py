@@ -22,7 +22,8 @@ class Data(object):
         pass
 
     @abc.abstractmethod
-    def get_point(self, latitude, longitude, depth, time, variable):
+    def get_point(self, latitude, longitude, depth, time, variable,
+                  return_depth=False):
         pass
 
     @abc.abstractmethod
@@ -41,11 +42,16 @@ class Data(object):
     def variables(self):
         pass
 
+    @abc.abstractproperty
+    def depth_dimensions(self):
+        pass
+
     @abc.abstractmethod
     def get_raw_point(self, latitude, longitude, depth, time, variable):
         pass
 
-    def get_path(self, path, depth, time, variable, numpoints=100, times=None):
+    def get_path(self, path, depth, time, variable, numpoints=100, times=None,
+                 return_depth=False):
         if times is None:
             if hasattr(time, "__len__"):
                 times = self.timestamps[time]
@@ -54,30 +60,41 @@ class Data(object):
         distances, times, lat, lon, bearings = \
             geo.path_to_points(path, numpoints, times=times)
 
-        result = self.get_point(lat, lon, depth, time, variable)
-
-        return np.array([lat, lon]), distances, times, result
+        if return_depth:
+            result, dep = self.get_point(lat, lon, depth, time, variable,
+                                         return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result, dep
+        else:
+            result = self.get_point(lat, lon, depth, time, variable,
+                                    return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result
 
     def get_path_profile(self, path, time, variable, numpoints=100):
         distances, times, lat, lon, bearings = \
             geo.path_to_points(path, numpoints)
 
-        result = self.get_profile(lat, lon, time, variable)
+        result, depth = self.get_profile(lat, lon, time, variable)
 
-        return np.array([lat, lon]), distances, result.transpose()
+        return np.array([lat, lon]), distances, result.transpose(), depth
 
-    def get_area(self, area, depth, time, variable):
+    def get_area(self, area, depth, time, variable, return_depth=False):
         latitude = area[0, :].ravel()
         longitude = area[1, :].ravel()
 
-        a = self.get_point(latitude, longitude, depth, time, variable)
-        return np.reshape(a, area.shape[1:])
+        if return_depth:
+            a, d = self.get_point(latitude, longitude, depth, time, variable,
+                                  return_depth=return_depth)
+            return np.reshape(a, area.shape[1:]), d
+        else:
+            a = self.get_point(latitude, longitude, depth, time, variable,
+                               return_depth=return_depth)
+            return np.reshape(a, area.shape[1:])
 
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
-                             endtime, variable):
+                             endtime, variable, return_depth=False):
         return self.get_point(latitude, longitude, depth,
                               range(starttime, endtime + 1),
-                              variable)
+                              variable, return_depth=return_depth)
 
     def get_timeseries_profile(self, latitude, longitude, starttime,
                                endtime, variable):

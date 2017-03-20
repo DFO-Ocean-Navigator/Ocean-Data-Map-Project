@@ -679,10 +679,6 @@ def get_point_data(dataset, variable, time, depth, location):
     names = []
     units = []
     with open_dataset(get_dataset_url(dataset)) as ds:
-    # with Dataset(get_dataset_url(dataset), 'r') as ds:
-        # time_var = plotting.utils.get_time_var(ds)
-        # t = netcdftime.utime(time_var.units)
-        # timestamp = t.num2date(time_var[time])
         timestamp = ds.timestamps[time]
 
         for v in variables:
@@ -693,8 +689,6 @@ def get_point_data(dataset, variable, time, depth, location):
                 time,
                 v
             )
-            # d, t = load_timeseries(
-                # ds, v, range(time, time + 1), depth, location[0], location[1])
             variable_name = get_variable_name(dataset, ds.variables[v])
             variable_unit = get_variable_unit(dataset, ds.variables[v])
 
@@ -708,7 +702,6 @@ def get_point_data(dataset, variable, time, depth, location):
 
     if variables != variables_anom:
         with open_dataset(get_dataset_climatology(dataset)) as ds:
-        # with Dataset(get_dataset_climatology(dataset), 'r') as ds:
             for idx, v in enumerate(variables):
                 d = ds.get_point(
                     location[0],
@@ -717,9 +710,6 @@ def get_point_data(dataset, variable, time, depth, location):
                     timestamp.month,
                     v
                 )
-                # d, t = load_timeseries(
-                #     ds, v, range(timestamp.month + 1, timestamp.month + 2),
-                #     depth, location[0], location[1])
 
                 data[idx] = data[idx] - d
                 names[idx] = names[idx] + " Anomaly"

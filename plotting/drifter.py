@@ -99,17 +99,37 @@ class DrifterPlotter(plotter.Plotter):
             d = dateutil.parser.parse(self.endtime)
             self.end = np.where(self.times <= d)[0].max() + 1
         else:
-            self.end = len(self.times)
+            self.end = len(self.times) - 1
+
+        self.start = np.clip(self.start, 0, len(self.times) - 1)
+        self.end = np.clip(self.end, 0, len(self.times) - 1)
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             depth = int(self.depth)
 
-            model_start = np.where(
-                dataset.timestamps <= self.times[self.start]
-            )[0][-1]
-            model_end = np.where(
-                dataset.timestamps >= self.times[self.end]
-            )[0][0]
+            try:
+                model_start = np.where(
+                    dataset.timestamps <= self.times[self.start]
+                )[0][-1]
+            except IndexError:
+                model_start = 0
+
+            model_start -= 1
+            model_start = np.clip(model_start, 0, len(dataset.timestamps) - 1)
+
+            try:
+                model_end = np.where(
+                    dataset.timestamps >= self.times[self.end]
+                )[0][0]
+            except IndexError:
+                model_end = len(dataset.timestamps) - 1
+
+            model_end += 1
+            model_end = np.clip(
+                model_end,
+                model_start,
+                len(dataset.timestamps) - 1
+            )
 
             model_times = map(
                 lambda t: time.mktime(t.timetuple()),
@@ -132,7 +152,8 @@ class DrifterPlotter(plotter.Plotter):
                 f = interp1d(
                     model_times,
                     md,
-                    assume_sorted=True
+                    assume_sorted=True,
+                    bounds_error=False,
                 )
 
                 d.append(np.diag(f(mt)))
@@ -196,11 +217,11 @@ class DrifterPlotter(plotter.Plotter):
             subplot_inc = 1
 
         for j, v in enumerate(self.buoyvariables):
-            plt.subplot(gs[subplot])
+            ax = plt.subplot(gs[subplot])
             subplot += subplot_inc
 
-            plt.plot(self.times[self.start:self.end],
-                     self.data[j][self.start:self.end])
+            ax.plot(self.times[self.start:self.end],
+                    self.data[j][self.start:self.end])
 
             if v == 'sst' and 'votemper' in self.variables:
                 i = self.variables.index('votemper')
@@ -227,23 +248,26 @@ class DrifterPlotter(plotter.Plotter):
             else:
                 plt.ylabel(self.data_names[j]),
 
-            plt.setp(plt.gca().get_xticklabels(), rotation=30)
+            plt.setp(ax.get_xticklabels(), rotation=30)
 
         for idx, v in enumerate(self.variables):
             if v == 'votemper' and 'sst' in self.buoyvariables:
                 continue
 
-            plt.subplot(gs[subplot])
+            if np.isnan(self.model_data[idx]).all():
+                continue
+
+            ax = plt.subplot(gs[subplot])
             subplot += subplot_inc
 
-            plt.plot(
+            ax.plot(
                 self.model_times,
                 self.model_data[idx]
             )
 
             plt.ylabel("%s (%s)" % (self.variable_names[idx],
                                     utils.mathtext(self.variable_units[idx])))
-            plt.setp(plt.gca().get_xticklabels(), rotation=30)
+            plt.setp(ax.get_xticklabels(), rotation=30)
 
         # latlon
         if self.latlon:

@@ -20,6 +20,14 @@ class TestMercator(unittest.TestCase):
                 n.get_point(13.0, -149.0, 0, 0, 'votemper'),
                 298.42, places=2
             )
+            self.assertAlmostEqual(
+                n.get_point(47.0, -47.0, 0, 0, 'votemper'),
+                273.66, places=2
+            )
+
+            p = n.get_point([13.0, 47.0], [-149.0, -47.0], 0, 0, 'votemper')
+            self.assertAlmostEqual(p[0], 298.42, places=2)
+            self.assertAlmostEqual(p[1], 273.66, places=2)
 
     def test_get_raw_point(self):
         with mercator.Mercator('data/testdata/mercator_test.nc') as n:
@@ -27,14 +35,14 @@ class TestMercator(unittest.TestCase):
                 13.0, -149.0, 0, 0, 'votemper'
             )
 
-        self.assertEqual(len(lat.ravel()), 12)
-        self.assertEqual(len(lon.ravel()), 12)
-        self.assertEqual(len(data.ravel()), 12)
-        self.assertAlmostEqual(data[1, 1], 298.7, places=1)
+        self.assertEqual(len(lat.ravel()), 100)
+        self.assertEqual(len(lon.ravel()), 100)
+        self.assertEqual(len(data.ravel()), 100)
+        self.assertAlmostEqual(data[4, 4], 298.6, places=1)
 
     def test_get_profile(self):
         with mercator.Mercator('data/testdata/mercator_test.nc') as n:
-            p = n.get_profile(13.0, -149.0, 0, 'votemper')
+            p, d = n.get_profile(13.0, -149.0, 0, 'votemper')
             self.assertAlmostEqual(p[0], 298.42, places=2)
             self.assertAlmostEqual(p[10], 298.42, places=2)
             self.assertTrue(np.ma.is_masked(p[49]))

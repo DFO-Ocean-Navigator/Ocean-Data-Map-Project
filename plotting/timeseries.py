@@ -126,7 +126,8 @@ class TimeseriesPlotter(point.PointPlotter):
             for idx, p in enumerate(self.points):
                 d = self.data[idx, 0, :]
                 dlim = np.ma.flatnotmasked_edges(d[0, :])
-                maxdepth = self.depths[dlim[1]]
+                maxdepth = self.depths[dlim[1]].max()
+                mindepth = self.depths[dlim[0]].min()
 
                 c = ax[idx].pcolormesh(
                     datenum, self.depths[:dlim[1] + 1], d[
@@ -139,11 +140,11 @@ class TimeseriesPlotter(point.PointPlotter):
 
                 if maxdepth > LINEAR:
                     l = 10 ** np.floor(np.log10(maxdepth))
-                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, self.depths[0])
+                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, mindepth)
                     ax[idx].set_yticks(
                         list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
                 else:
-                    ax[idx].set_ylim(maxdepth, self.depths[0])
+                    ax[idx].set_ylim(maxdepth, mindepth)
                 ax[idx].set_ylabel("Depth (%s)" %
                                    utils.mathtext(self.depth_unit))
 
@@ -215,26 +216,19 @@ class TimeseriesPlotter(point.PointPlotter):
                 dataset.variables[self.variables[0]]
             )
 
-            # if self.depth != 'all' and self.depth != 'bottom' and \
-            #         (depth_var is None or self.depth >= depth_var.shape[0]):
-            #     self.depth = 0
-
             var = self.variables[0]
-            if ('deptht' in dataset.variables or 'depth' in dataset.variables):
-                if self.depth != 'all' and self.depth != 'bottom' and \
-                    ('deptht' in dataset.variables[var].dimensions or
-                     'depth' in dataset.variables[var].dimensions):
-                    self.depth_label = " at %dm" % (dataset.depths[self.depth])
+            if self.depth != 'all' and self.depth != 'bottom' and \
+                (set(dataset.variables[var].dimensions) &
+                    set(dataset.depth_dimensions)):
+                self.depth_label = " at %dm" % (dataset.depths[self.depth])
 
-                elif self.depth == 'bottom':
-                    self.depth_label = ' at Bottom'
-                else:
-                    self.depth_label = ''
+            elif self.depth == 'bottom':
+                self.depth_label = ' at Bottom'
             else:
                 self.depth_label = ''
 
-            if ('deptht' not in dataset.variables[var].dimensions and
-                    'depth' not in dataset.variables[var].dimensions):
+            if not (set(dataset.variables[var].dimensions) &
+                    set(dataset.depth_dimensions)):
                 self.depth = 0
 
             times = None
@@ -243,7 +237,7 @@ class TimeseriesPlotter(point.PointPlotter):
                 data = []
                 for v in self.variables:
                     if self.depth == 'all':
-                        d = dataset.get_timeseries_profile(
+                        d, dep = dataset.get_timeseries_profile(
                             float(p[0]),
                             float(p[1]),
                             self.starttime,
@@ -251,13 +245,14 @@ class TimeseriesPlotter(point.PointPlotter):
                             v
                         )
                     else:
-                        d = dataset.get_timeseries_point(
+                        d, dep = dataset.get_timeseries_point(
                             float(p[0]),
                             float(p[1]),
                             self.depth,
                             self.starttime,
                             self.endtime,
-                            v
+                            v,
+                            return_depth=True
                         )
 
                     data.append(d)
@@ -269,7 +264,8 @@ class TimeseriesPlotter(point.PointPlotter):
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
 
-            depths = dataset.depths
+            # depths = dataset.depths
+            depths = dep
 
         # TODO: pint
         if self.variable_unit.startswith("Kelvin"):

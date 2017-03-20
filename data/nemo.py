@@ -14,6 +14,10 @@ class Nemo(NetCDFData):
     __depths = None
 
     @property
+    def depth_dimensions(self):
+        return ['depth', 'deptht']
+
+    @property
     def depths(self):
         if self.__depths is None:
             var = None
@@ -109,7 +113,7 @@ class Nemo(NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.latvar.shape[1])
 
-        return miny, maxy, minx, maxx, np.amax(d)
+        return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
@@ -237,7 +241,8 @@ class Nemo(NetCDFData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable):
+    def get_point(self, latitude, longitude, depth, time, variable,
+                  return_depth=False):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
 
@@ -282,6 +287,22 @@ class Nemo(NetCDFData):
                 data,
                 radius
             )
+
+            if return_depth:
+                d = self.depths[depths]
+                d = np.zeros(data.shape)
+                d[np.unravel_index(indices, d.shape)] = self.depths[depths]
+                if hasattr(time, "__len__"):
+                    d = [d] * len(time)
+
+                dep = self.__resample(
+                    self.latvar[miny:maxy, minx:maxx],
+                    self.lonvar[miny:maxy, minx:maxx],
+                    [latitude], [longitude],
+                    np.reshape(d, data.shape),
+                    radius
+                )
+
         else:
             if len(var.shape) == 4:
                 data = var[time, depth, miny:maxy, minx:maxx]
@@ -295,7 +316,15 @@ class Nemo(NetCDFData):
                 radius
             )
 
-        return res
+            if return_depth:
+                dep = self.depths[depth]
+                if hasattr(time, "__len__"):
+                    dep = np.array([dep] * len(time))
+
+        if return_depth:
+            return res, dep
+        else:
+            return res
 
     def get_profile(self, latitude, longitude, time, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -314,4 +343,4 @@ class Nemo(NetCDFData):
             radius
         )
 
-        return res
+        return res, np.squeeze([self.depths] * len(latitude))

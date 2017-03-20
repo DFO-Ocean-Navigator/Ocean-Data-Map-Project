@@ -14,7 +14,7 @@ from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
 import line
 from flask.ext.babel import gettext
-from data import open_dataset
+from data import open_dataset, geo
 
 
 class TransectPlotter(line.LinePlotter):
@@ -32,6 +32,15 @@ class TransectPlotter(line.LinePlotter):
         else:
             self.depth_limit = int(depth_limit)
 
+    def __fill_invalid_shift(self, z):
+        for s in range(1, z.shape[0]):
+            if z.mask.any():
+                z_shifted = np.roll(z, shift=s, axis=0)
+                idx = ~z_shifted.mask * z.mask
+                z[idx] = z_shifted[idx]
+            else:
+                break
+
     def load_data(self):
         interp = utils.get_interpolation(self.query)
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
@@ -39,15 +48,13 @@ class TransectPlotter(line.LinePlotter):
 
             for idx, v in enumerate(self.variables):
                 var = dataset.variables[v]
-                if not 'deptht' in var.dimensions and \
-                   not 'depth' in var.dimensions:
-
+                if not (set(var.dimensions) & set(dataset.depth_dimensions)):
                     for potential in dataset.variables:
                         if potential in self.variables:
                             continue
                         pot = dataset.variables[potential]
-                        if 'deptht' in pot.dimensions or 'depth' \
-                           in pot.dimensions:
+                        if (set(pot.dimensions) &
+                                set(dataset.depth_dimensions)):
                             if len(pot.shape) > 3:
                                 self.variables[idx] = potential
                                 self.variables_anom[idx] = potential
@@ -58,13 +65,29 @@ class TransectPlotter(line.LinePlotter):
                 for name in self.variables:
                     v.append(dataset.variables[name])
 
-                transect_pts, distance, parallel, perpendicular = \
-                    grid.velocitytransect(
-                        v[0], v[1], self.points, time,
-                        interpolation=interp)
+                distances, times, lat, lon, bearings = geo.path_to_points(
+                    self.points, 100
+                )
+                transect_pts, distance, x, dep = dataset.get_path_profile(
+                    self.points, time, self.variables[0], 100)
+                transect_pts, distance, y, dep = dataset.get_path_profile(
+                    self.points, time, self.variables[0], 100)
+
+                r = np.radians(np.subtract(90, bearings))
+                theta = np.arctan2(y, x) - r
+                mag = np.sqrt(x ** 2 + y ** 2)
+
+                parallel = mag * np.cos(theta)
+                perpendicular = mag * np.sin(theta)
+
+                self.__fill_invalid_shift(parallel)
+                self.__fill_invalid_shift(perpendicular)
+
             else:
-                transect_pts, distance, value = dataset.get_path_profile(
+                transect_pts, distance, value, dep = dataset.get_path_profile(
                     self.points, time, self.variables[0])
+
+                self.__fill_invalid_shift(value)
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
@@ -82,7 +105,7 @@ class TransectPlotter(line.LinePlotter):
 
             self.timestamp = dataset.timestamps[int(time)]
 
-            self.depth = dataset.depths
+            self.depth = dep
             self.depth_unit = "m"
 
             self.transect_data = {
@@ -309,7 +332,7 @@ class TransectPlotter(line.LinePlotter):
             else:
                 plt.subplot(nomap_subplot)
 
-            divider = self._transect_plot(data, name, vmin, vmax)
+            divider = self._transect_plot(data, self.depth, name, vmin, vmax)
 
             if self.surface:
                 self._surface_plot(divider)
@@ -395,9 +418,10 @@ class TransectPlotter(line.LinePlotter):
             ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
-    def _transect_plot(self, values, name, vmin, vmax):
+    def _transect_plot(self, values, depths, name, vmin, vmax):
 
-        c = plt.pcolormesh(self.transect_data['distance'], self.depth, values,
+        dist = np.tile(self.transect_data['distance'], (values.shape[0], 1))
+        c = plt.pcolormesh(dist, depths.transpose(), values,
                            cmap=self.cmap,
                            shading='gouraud',
                            vmin=vmin,

@@ -124,11 +124,6 @@ class Plotter:
         self.variable_names = self.get_variable_names(data, variables)
         self.variable_units = self.get_variable_units(data, variables)
 
-        # depth_var = utils.get_depth_var(data)
-        # self.depths = depth_var[:]
-        self.depths = data.depths
-        self.depth_unit = "m"
-
     def plot(self, fig=None):
         if fig is None:
             fig = plt.gcf()
@@ -290,7 +285,7 @@ class Plotter:
         ureg = pint.UnitRegistry()
         try:
             u = ureg.parse_units(unit.lower())
-        except pint.UndefinedUnitError:
+        except:
             u = ureg.dimensionless
 
         if u == ureg.kelvin:

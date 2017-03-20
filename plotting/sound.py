@@ -19,8 +19,8 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
         ax = plt.gca()
-        for ss in self.sspeed:
-            ax.plot(ss, self.depthm, '-')
+        for i, ss in enumerate(self.sspeed):
+            ax.plot(ss, self.temperature_depths[i], '-')
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
@@ -93,12 +93,8 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
     def load_data(self):
         super(SoundSpeedPlotter, self).load_data()
 
-        ureg = pint.UnitRegistry()
-        self.depthm = (
-            self.depths * ureg.parse_expression(self.depth_unit)
-        ).to(ureg.meter)
-        self.pressure = [seawater.pres(self.depthm, ll[0])
-                         for ll in self.points]
+        self.pressure = [seawater.pres(self.temperature_depths[idx], ll[0])
+                         for idx, ll in enumerate(self.points)]
 
         self.sspeed = seawater.svel(
             self.salinity, self.temperature, self.pressure

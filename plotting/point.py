@@ -43,19 +43,24 @@ class PointPlotter(plotter.Plotter):
 
     def get_data(self, dataset, variables, time):
         point_data = []
+        point_depths = []
 
         for p in self.points:
             data = []
+            depths = []
             for v in variables:
-                data.append(dataset.get_profile(
+                prof, d = dataset.get_profile(
                     float(p[0]),
                     float(p[1]),
                     time,
                     v
-                ))
+                )
+                data.append(prof)
+                depths.append(d)
             point_data.append(np.ma.array(data))
+            point_depths.append(np.ma.array(depths))
 
-        return np.ma.array(point_data)
+        return np.ma.array(point_data), np.ma.array(point_depths)
 
     def subtract_climatology(self, data, timestamp):
         if self.variables != self.variables_anom:
@@ -74,16 +79,34 @@ class PointPlotter(plotter.Plotter):
         return data
 
     def load_temp_sal(self, dataset, time):
-        data = self.get_data(dataset, ["votemper", "vosaline"], time)
+        temp_var = None
+        if "votemper" in dataset.variables:
+            temp_var = "votemper"
+        elif "temp" in dataset.variables:
+            temp_var = "temp"
+
+        sal_var = None
+        if "vosaline" in dataset.variables:
+            sal_var = "vosaline"
+        elif "salinity" in dataset.variables:
+            sal_var = "salinity"
+
+        self.variables = [temp_var, sal_var]
+        self.variables_anom = [temp_var, sal_var]
+
+        data, depths = self.get_data(dataset, [temp_var, sal_var], time)
         self.temperature = data[:, 0, :].view(np.ma.MaskedArray)
         self.salinity = data[:, 1, :].view(np.ma.MaskedArray)
+        self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
+        self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
+        self.load_misc(dataset, [temp_var, sal_var])
 
     def kelvin_to_celsius(self, units, data):
         ureg = pint.UnitRegistry()
         for idx, unit in enumerate(units):
             try:
                 u = ureg.parse_units(unit.lower())
-            except pint.UndefinedUnitError:
+            except:
                 u = ureg.dimensionless
 
             if u == ureg.kelvin:

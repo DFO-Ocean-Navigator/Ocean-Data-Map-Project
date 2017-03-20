@@ -111,10 +111,9 @@ class StickPlotter(point.PointPlotter):
                     if self.depth[idx2] == "bottom":
                         depth = "Bottom"
                     else:
-                        depth = "%d%s" % (
-                            self.depths[int(self.depth[idx2])],
-                            self.depth_unit
-                        )
+                        depth = "%dm" % self.data_depth[
+                            idx, 0, idx2, 0
+                        ]
 
                     a.set_title(gettext("%s at %s (%s)") % (
                         self.vector_name(self.variable_names[0]),
@@ -142,24 +141,32 @@ class StickPlotter(point.PointPlotter):
             self.load_misc(dataset, self.variables)
 
             point_data = []
+            point_depth = []
             for p in self.points:
                 data = []
+                depth = []
                 for v in self.variables:
                     dd = []
+                    jj = []
                     for d in self.depth:
-                        da = dataset.get_timeseries_point(
+                        da, dp = dataset.get_timeseries_point(
                             float(p[0]),
                             float(p[1]),
                             d,
                             start,
                             end,
-                            v
+                            v,
+                            return_depth=True
                         )
                         dd.append(da)
+                        jj.append(dp)
                     data.append(np.ma.array(dd))
+                    depth.append(np.ma.array(jj))
                 point_data.append(np.ma.array(data))
+                point_depth.append(np.ma.array(depth))
 
             point_data = np.ma.array(point_data)
+            point_depth = np.ma.array(point_depth)
 
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,
@@ -167,4 +174,5 @@ class StickPlotter(point.PointPlotter):
             )
 
         self.data = self.subtract_climatology(point_data, timestamp)
+        self.data_depth = point_depth
         self.timestamp = timestamp

@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
 from oceannavigator.util import get_dataset_url
 import seawater
 import point
@@ -86,7 +85,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         self.plot_legend(fig, self.names)
         if len(self.points) == 1:
             labels = []
-            for idx, d in enumerate(self.depths):
+            for idx, d in enumerate(self.temperature_depths[0]):
                 if np.ma.is_masked(self.temperature[0][idx]):
                     break
                 digits = max(np.ceil(np.log10(d)), 3)
@@ -95,8 +94,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
                     labels.append(d)
                     for idx2, _ in enumerate(self.temperature):
                         plt.annotate(
-                            '{:.0f}{:s}'.format(
-                                d, utils.mathtext(self.depth_unit)),
+                            '{:.0f}m'.format(d),
                             xy=(self.salinity[idx2][
                                 idx], self.temperature[idx2][idx]),
                             xytext=(15, -15),
@@ -113,7 +111,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
 
             self.timestamp = dataset.timestamps[time]
 
-            self.load_misc(dataset, ["votemper"])
+            # self.load_misc(dataset, ["votemper"])
             self.load_temp_sal(dataset, time)
 
             self.variable_units[0], self.temperature = \

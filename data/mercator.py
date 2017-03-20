@@ -1,10 +1,11 @@
-from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
 from netcdf_data import NetCDFData
 from pint import UnitRegistry
 from data import Variable, VariableList
+import math
+from geopy.distance import vincenty
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
@@ -12,6 +13,10 @@ EARTH_RADIUS = 6378137.0
 
 class Mercator(NetCDFData):
     __depths = None
+
+    @property
+    def depth_dimensions(self):
+        return ['depth', 'deptht', 'z']
 
     @property
     def depths(self):
@@ -56,41 +61,40 @@ class Mercator(NetCDFData):
         return None
 
     def __find_index(self, lat, lon, n=1):
-        if self._kdt is None:
-            lat_ = self.latvar[:] * RAD_FACTOR
-            lon_ = self.lonvar[:] * RAD_FACTOR
-            latvals, lonvals = np.meshgrid(lat_, lon_)
-            clat, clon = np.cos(latvals), np.cos(lonvals)
-            slat, slon = np.sin(latvals), np.sin(lonvals)
+        def find_nearest(array, value):
+            idx = np.searchsorted(array, value, side="left")
 
-            triples = np.array(list(zip(np.ravel(clat * clon),
-                                        np.ravel(clat * slon),
-                                        np.ravel(slat))))
-            self._kdt = KDTree(triples)
-            del clat, clon
-            del slat, slon
-            del triples
+            result = []
+            for i in range(0, len(value)):
+                if idx[i] > 0 and (
+                    idx[i] == len(array) or
+                    math.fabs(value[i] - array[idx[i] - 1]) < math.fabs(
+                        value[i] - array[idx[i]])
+                ):
+                    result.append(idx[i] - 1)
+                else:
+                    result.append(idx[i])
+
+            return np.array(result)
 
         if not hasattr(lat, "__len__"):
             lat = [lat]
             lon = [lon]
 
         lat = np.array(lat)
-        lon = np.array(lon)
+        lon = np.mod(np.array(lon) + 360, 360)
 
-        lat_rad = lat * RAD_FACTOR
-        lon_rad = lon * RAD_FACTOR
-        clat, clon = np.cos(lat_rad), np.cos(lon_rad)
-        slat, slon = np.sin(lat_rad), np.sin(lon_rad)
-        q = np.array([clat * clon, clat * slon, slat]).transpose()
+        iy_min = find_nearest(self.latvar[:], lat)
+        ix_min = find_nearest(np.mod(self.lonvar[:] + 360, 360), lon)
 
-        dist_sq_min, minindex_1d = self._kdt.query(np.float32(q), k=n)
-        ix_min, iy_min = np.unravel_index(
-            minindex_1d,
-            (len(self.lonvar), len(self.latvar))
-        )
+        points = zip(lat, lon)
+        closest = zip(self.latvar[iy_min], self.lonvar[ix_min])
 
-        return iy_min, ix_min, dist_sq_min * EARTH_RADIUS
+        dist_sq_min = [
+            vincenty(p, c).meters ** 2 for p, c in zip(points, closest)
+        ]
+
+        return iy_min, ix_min, dist_sq_min
 
     def __bounding_box(self, lat, lon, n=10):
         y, x, d = self.__find_index(lat, lon, n)
@@ -98,14 +102,9 @@ class Mercator(NetCDFData):
         def fix_limits(data, limit):
             mx = np.amax(data)
             mn = np.amin(data)
-            d = mx - mn
 
-            if d < 2:
-                mn -= 2
-                mx += 2
-
-            mn = int(mn - d / 4.0)
-            mx = int(mx + d / 4.0)
+            mn -= n / 2
+            mx += n / 2
 
             mn = np.clip(mn, 0, limit)
             mx = np.clip(mx, 0, limit)
@@ -115,17 +114,14 @@ class Mercator(NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.lonvar.shape[0])
 
-        return miny, maxy, minx, maxx, np.amax(d)
+        return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
-        elif len(var.shape) == 4:
-            var = np.rollaxis(var, 0, 4)
-            var = np.rollaxis(var, 0, 4)
 
         origshape = var.shape
-        var = var.reshape([var.shape[0], var.shape[1], -1])
+        # var = var.reshape([var.shape[0], var.shape[1], -1])
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
@@ -179,8 +175,9 @@ class Mercator(NetCDFData):
                     lons=grid_lon,
                     lats=grid_lat
                 )
+
                 output = pyresample.kd_tree.resample_custom(
-                    input_def, data, output_def,
+                    input_def, data.transpose(), output_def,
                     radius_of_influence=float(radius),
                     neighbours=10,
                     weight_funcs=weight,
@@ -255,7 +252,9 @@ class Mercator(NetCDFData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable):
+    def get_point(self, latitude, longitude, depth, time, variable,
+                  return_depth=False):
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
 
@@ -295,11 +294,25 @@ class Mercator(NetCDFData):
 
             res = self.__resample(
                 self.latvar[miny:maxy],
-                self.lonvar[minx:maxx],
+                np.mod(self.lonvar[minx:maxx] + 360, 360),
                 [latitude], [longitude],
                 data,
                 radius
             )
+
+            if return_depth:
+                d = self.depths[depths]
+                if hasattr(time, "__len__"):
+                    d = [d] * len(time)
+
+                dep = self.__resample(
+                    self.latvar[miny:maxy],
+                    self.lonvar[minx:maxx],
+                    [latitude], [longitude],
+                    np.reshape(d, data.shape),
+                    radius
+                )
+
         else:
             if len(var.shape) == 4:
                 data = var[time, depth, miny:maxy, minx:maxx]
@@ -314,7 +327,15 @@ class Mercator(NetCDFData):
                 radius
             )
 
-        return res
+            if return_depth:
+                dep = self.depths[depth]
+                if hasattr(time, "__len__"):
+                    dep = np.array([dep] * len(time))
+
+        if return_depth:
+            return res, dep
+        else:
+            return res
 
     def get_profile(self, latitude, longitude, time, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -333,4 +354,4 @@ class Mercator(NetCDFData):
             radius
         )
 
-        return res
+        return res, np.squeeze([self.depths] * len(latitude))

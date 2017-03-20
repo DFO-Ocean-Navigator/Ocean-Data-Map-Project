@@ -74,7 +74,10 @@ class ProfilePlotter(point.PointPlotter):
         fig, ax = self.setup_subplots(len(self.variables))
 
         for idx in range(0, len(self.variables)):
-            ax[idx].plot(self.data[:, idx, :].transpose(), self.depths)
+            ax[idx].plot(
+                self.data[:, idx, :].transpose(),
+                self.depths[:, idx, :].transpose()
+            )
             ax[idx].xaxis.set_label_position('top')
             ax[idx].xaxis.set_ticks_position('top')
             ax[idx].set_xlabel("%s (%s)" %
@@ -85,8 +88,7 @@ class ProfilePlotter(point.PointPlotter):
                 ax[idx].set_xlim([-xlim, xlim])
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (%s)") %
-                         utils.mathtext(self.depth_unit))
+        ax[0].set_ylabel(gettext("Depth (m)"))
 
         self.plot_legend(fig, self.names)
 
@@ -110,7 +112,7 @@ class ProfilePlotter(point.PointPlotter):
             timestamp = d.timestamps[time]
 
             self.load_misc(d, self.variables)
-            point_data = self.get_data(d, self.variables, time)
+            point_data, point_depths = self.get_data(d, self.variables, time)
 
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,
@@ -118,4 +120,5 @@ class ProfilePlotter(point.PointPlotter):
             )
 
         self.data = self.subtract_climatology(point_data, timestamp)
+        self.depths = point_depths
         self.timestamp = timestamp

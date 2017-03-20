@@ -11,6 +11,7 @@ import pytz
 import point
 import numbers
 from flask.ext.babel import gettext, format_datetime
+from data import open_dataset
 
 
 class ObservationPlotter(point.PointPlotter):
@@ -64,11 +65,8 @@ class ObservationPlotter(point.PointPlotter):
                 self.points = map(lambda o: [o['latitude'], o['longitude']],
                                   self.observation)
 
-        with Dataset(get_dataset_url(self.dataset_name), 'r') as dataset:
-            time_var = utils.get_time_var(dataset)
-
-            t = netcdftime.utime(time_var.units)
-            ts = t.num2date(time_var[:])
+        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            ts = dataset.timestamps
 
             observation_times = []
             timestamps = []
@@ -82,12 +80,13 @@ class ObservationPlotter(point.PointPlotter):
                     for x in ts]
 
                 time = np.abs(deltas).argmin()
-                timestamp = t.num2date(time_var[time])
+                timestamp = ts[time]
                 timestamps.append(timestamp)
 
             self.load_misc(dataset, self.variables)
 
-            point_data = self.get_data(dataset, self.variables, time)
+            point_data, self.depths = self.get_data(
+                dataset, self.variables, time)
             point_data = np.ma.array(point_data)
 
             self.variable_units, point_data = self.kelvin_to_celsius(
@@ -197,7 +196,7 @@ class ObservationPlotter(point.PointPlotter):
                     if destunit == ureg.speed_of_light:
                         destunit = ureg.celsius
 
-                except pint.UndefinedUnitError:
+                except:
                     destunit = ureg.dimensionless
 
             for j in range(0, self.data.shape[0]):
@@ -207,11 +206,11 @@ class ObservationPlotter(point.PointPlotter):
                         u = ureg.celsius
 
                     quan = ureg.Quantity(self.data[j, idx, :], u)
-                except pint.UndefinedUnitError:
+                except:
                     quan = ureg.Quantity(
                         self.data[j, idx, :], ureg.dimensionless)
 
-                axis.plot(quan.to(destunit).magnitude, self.depths)
+                axis.plot(quan.to(destunit).magnitude, self.depths[j, idx, :])
 
             showlegend = showlegend or len(self.observation) > 1
             if not showlegend:
@@ -245,8 +244,7 @@ class ObservationPlotter(point.PointPlotter):
                     legobj.set_linewidth(4.0)
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (%s)") %
-                         utils.mathtext(self.depth_unit))
+        ax[0].set_ylabel(gettext("Depth (m)"))
 
         if len(self.variables) > 0:
             plt.suptitle("\n".join(
