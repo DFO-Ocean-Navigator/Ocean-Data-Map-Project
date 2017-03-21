@@ -7,8 +7,11 @@ import json
 import datetime
 
 from oceannavigator import app
-from oceannavigator.util import get_variable_name, get_datasets, \
-    get_dataset_url, get_dataset_climatology, get_variable_scale
+from oceannavigator.util import (
+    get_variable_name, get_datasets,
+    get_dataset_url, get_dataset_climatology, get_variable_scale,
+    is_variable_hidden
+)
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -270,23 +273,26 @@ def vars_query():
                             and ('y' in v.dimensions or
                                  'yc' in v.dimensions or
                                  'node' in v.dimensions or
-                                 'nele' in v.dimensions):
+                                 'nele' in v.dimensions or
+                                 'latitude' in v.dimensions or
+                                 'lat' in v.dimensions):
                         if three_d and not (
                             set(ds.depth_dimensions) & set(v.dimensions)
                         ):
                             continue
                         else:
-                            data.append({
-                                'id': v.key,
-                                'value': get_variable_name(dataset, v),
-                                'scale': get_variable_scale(dataset, v)
-                            })
-                            if v.key in climatology_variables:
+                            if not is_variable_hidden(dataset, v):
                                 data.append({
-                                    'id': v.key + "_anom",
-                                    'value': get_variable_name(dataset, v) + " Anomaly",
-                                    'scale': [-10, 10]
+                                    'id': v.key,
+                                    'value': get_variable_name(dataset, v),
+                                    'scale': get_variable_scale(dataset, v)
                                 })
+                                if v.key in climatology_variables:
+                                    data.append({
+                                        'id': v.key + "_anom",
+                                        'value': get_variable_name(dataset, v) + " Anomaly",
+                                        'scale': [-10, 10]
+                                    })
 
             VECTOR_MAP = {
                 'vozocrtx': 'vozocrtx,vomecrty',
@@ -295,6 +301,7 @@ def vars_query():
                 'u_wind': 'u_wind,v_wind',
                 'u': 'u,v',
                 'ua': 'ua,va',
+                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground'
             }
 
             if 'vectors' in request.args or 'vectors_only' in request.args:
