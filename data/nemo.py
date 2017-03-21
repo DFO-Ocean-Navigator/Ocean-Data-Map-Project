@@ -52,23 +52,16 @@ class Nemo(NetCDFData):
 
         return VariableList(l)
 
-    def __find_var(self, candidates):
-        for c in candidates:
-            if c in self._dataset.variables:
-                return self._dataset.variables[c]
-
-        return None
-
-    def __find_index(self, lat, lon, n=1):
-        if self._kdt is None:
-            latvals = self.latvar[:] * RAD_FACTOR
-            lonvals = self.lonvar[:] * RAD_FACTOR
+    def __find_index(self, lat, lon, latvar, lonvar, n=1):
+        if self._kdt.get(latvar.name) is None:
+            latvals = latvar[:] * RAD_FACTOR
+            lonvals = lonvar[:] * RAD_FACTOR
             clat, clon = np.cos(latvals), np.cos(lonvals)
             slat, slon = np.sin(latvals), np.sin(lonvals)
             triples = np.array(list(zip(np.ravel(clat * clon),
                                         np.ravel(clat * slon),
                                         np.ravel(slat))))
-            self._kdt = KDTree(triples)
+            self._kdt[latvar.name] = KDTree(triples)
             del clat, clon
             del slat, slon
             del triples
@@ -86,12 +79,15 @@ class Nemo(NetCDFData):
         slat, slon = np.sin(lat_rad), np.sin(lon_rad)
         q = np.array([clat * clon, clat * slon, slat]).transpose()
 
-        dist_sq_min, minindex_1d = self._kdt.query(np.float32(q), k=n)
-        iy_min, ix_min = np.unravel_index(minindex_1d, self.latvar.shape)
+        dist_sq_min, minindex_1d = self._kdt[latvar.name].query(
+            np.float32(q),
+            k=n
+        )
+        iy_min, ix_min = np.unravel_index(minindex_1d, latvar.shape)
         return iy_min, ix_min, dist_sq_min * EARTH_RADIUS
 
-    def __bounding_box(self, lat, lon, n=10):
-        y, x, d = self.__find_index(lat, lon, n)
+    def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
+        y, x, d = self.__find_index(lat, lon, latvar, lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -110,8 +106,8 @@ class Nemo(NetCDFData):
 
             return mn, mx
 
-        miny, maxy = fix_limits(y, self.latvar.shape[0])
-        minx, maxx = fix_limits(x, self.latvar.shape[1])
+        miny, maxy = fix_limits(y, latvar.shape[0])
+        minx, maxx = fix_limits(x, latvar.shape[1])
 
         return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
 
@@ -182,19 +178,47 @@ class Nemo(NetCDFData):
 
     def __init__(self, url):
         super(Nemo, self).__init__(url)
-        self._kdt = None
+        self._kdt = {}
 
     def __enter__(self):
         super(Nemo, self).__enter__()
 
-        self.latvar = self.__find_var(['nav_lat', 'latitude'])
-        self.lonvar = self.__find_var(['nav_lon', 'longitude'])
-
         return self
 
+    def __latlon_vars(self, variable):
+        var = self._dataset.variables[variable]
+
+        pairs = [
+            ['nav_lat_u', 'nav_lon_u'],
+            ['nav_lat_v', 'nav_lon_v'],
+            ['nav_lat', 'nav_lon'],
+            ['latitude_u', 'longitude_u'],
+            ['latitude_v', 'longitude_v'],
+            ['latitude', 'longitude'],
+        ]
+
+        if 'coordinates' in var.ncattrs():
+            coordinates = var.coordinates.split()
+            for p in pairs:
+                if p[0] in coordinates:
+                    return (
+                        self._dataset.variables[p[0]],
+                        self._dataset.variables[p[1]]
+                    )
+        else:
+            for p in pairs:
+                if p[0] in self._dataset.variables:
+                    return (
+                        self._dataset.variables[p[0]],
+                        self._dataset.variables[p[1]]
+                    )
+
+        raise LookupError("Cannot find latitude & longitude variables")
+
     def get_raw_point(self, latitude, longitude, depth, time, variable):
+        latvar, lonvar = self.__latlon_vars(variable)
         miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+            latitude, longitude, latvar, lonvar, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -236,15 +260,16 @@ class Nemo(NetCDFData):
                 data = var[time, miny:maxy, minx:maxx]
 
         return (
-            self.latvar[miny:maxy, minx:maxx],
-            self.lonvar[miny:maxy, minx:maxx],
+            latvar[miny:maxy, minx:maxx],
+            lonvar[miny:maxy, minx:maxx],
             data
         )
 
     def get_point(self, latitude, longitude, depth, time, variable,
                   return_depth=False):
+        latvar, lonvar = self.__latlon_vars(variable)
         miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+            latitude, longitude, latvar, lonvar, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -281,8 +306,8 @@ class Nemo(NetCDFData):
                     reshaped[depths, indices]
 
             res = self.__resample(
-                self.latvar[miny:maxy, minx:maxx],
-                self.lonvar[miny:maxy, minx:maxx],
+                latvar[miny:maxy, minx:maxx],
+                lonvar[miny:maxy, minx:maxx],
                 [latitude], [longitude],
                 data,
                 radius
@@ -296,8 +321,8 @@ class Nemo(NetCDFData):
                     d = [d] * len(time)
 
                 dep = self.__resample(
-                    self.latvar[miny:maxy, minx:maxx],
-                    self.lonvar[miny:maxy, minx:maxx],
+                    latvar[miny:maxy, minx:maxx],
+                    lonvar[miny:maxy, minx:maxx],
                     [latitude], [longitude],
                     np.reshape(d, data.shape),
                     radius
@@ -309,8 +334,8 @@ class Nemo(NetCDFData):
             else:
                 data = var[time, miny:maxy, minx:maxx]
             res = self.__resample(
-                self.latvar[miny:maxy, minx:maxx],
-                self.lonvar[miny:maxy, minx:maxx],
+                latvar[miny:maxy, minx:maxx],
+                lonvar[miny:maxy, minx:maxx],
                 [latitude], [longitude],
                 data,
                 radius
@@ -327,8 +352,9 @@ class Nemo(NetCDFData):
             return res
 
     def get_profile(self, latitude, longitude, time, variable):
+        latvar, lonvar = self.__latlon_vars(variable)
         miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+            latitude, longitude, latvar, lonvar, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -336,8 +362,8 @@ class Nemo(NetCDFData):
 
         var = self._dataset.variables[variable]
         res = self.__resample(
-            self.latvar[miny:maxy, minx:maxx],
-            self.lonvar[miny:maxy, minx:maxx],
+            latvar[miny:maxy, minx:maxx],
+            lonvar[miny:maxy, minx:maxx],
             [latitude], [longitude],
             var[time, :, miny:maxy, minx:maxx],
             radius

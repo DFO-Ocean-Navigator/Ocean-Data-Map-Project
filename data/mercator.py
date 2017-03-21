@@ -1,7 +1,7 @@
 import pyresample
 import numpy as np
 import warnings
-from netcdf_data import NetCDFData
+import netcdf_data
 from pint import UnitRegistry
 from data import Variable, VariableList
 import math
@@ -10,7 +10,7 @@ RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
 
-class Mercator(NetCDFData):
+class Mercator(netcdf_data.NetCDFData):
     __depths = None
 
     @property
@@ -26,11 +26,15 @@ class Mercator(NetCDFData):
                     var = self._dataset.variables[v]
                     break
 
-            ureg = UnitRegistry()
-            unit = ureg.parse_units(var.units.lower())
-            self.__depths = ureg.Quantity(
-                var[:], unit
-            ).to(ureg.meters).magnitude
+            if var is not None:
+                ureg = UnitRegistry()
+                unit = ureg.parse_units(var.units.lower())
+                self.__depths = ureg.Quantity(
+                    var[:], unit
+                ).to(ureg.meters).magnitude
+            else:
+                self.__depths = np.array([0])
+
             self.__depths.flags.writeable = False
 
         return self.__depths
@@ -61,7 +65,8 @@ class Mercator(NetCDFData):
 
     def __find_index(self, lat, lon, n=1):
         def find_nearest(array, value):
-            idx = np.searchsorted(array, value, side="left")
+            a = np.argsort(array)
+            idx = np.searchsorted(array, value, side="left", sorter=a)
 
             result = []
             for i in range(0, len(value)):
@@ -74,7 +79,7 @@ class Mercator(NetCDFData):
                 else:
                     result.append(idx[i])
 
-            return np.array(result)
+            return a[result]
 
         if not hasattr(lat, "__len__"):
             lat = [lat]
@@ -113,7 +118,6 @@ class Mercator(NetCDFData):
             var = np.rollaxis(var, 0, 3)
 
         origshape = var.shape
-        # var = var.reshape([var.shape[0], var.shape[1], -1])
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
@@ -187,8 +191,8 @@ class Mercator(NetCDFData):
     def __enter__(self):
         super(Mercator, self).__enter__()
 
-        self.latvar = self.__find_var(['nav_lat', 'latitude'])
-        self.lonvar = self.__find_var(['nav_lon', 'longitude'])
+        self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
+        self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
 
         return self
 

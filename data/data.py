@@ -139,6 +139,8 @@ class VariableList(list):
                 if v.key == pos:
                     return v
             raise IndexError("%s not found in variable list" % pos)
+        elif isinstance(pos, Variable):
+            return self[pos.key]
         else:
             return super(VariableList, self).__getitem__(pos)
 
