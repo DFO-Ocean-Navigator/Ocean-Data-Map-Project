@@ -63,7 +63,7 @@ def get_variables(dataset):
 
 
 def get_variable_name(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key)
+    from_config = get_variables(dataset_name).get(variable.key.lower())
 
     if from_config is not None:
         return from_config.get("name")
@@ -74,7 +74,7 @@ def get_variable_name(dataset_name, variable):
 
 
 def get_variable_unit(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key)
+    from_config = get_variables(dataset_name).get(variable.key.lower())
 
     if from_config is not None:
         return from_config.get("unit")
@@ -85,7 +85,7 @@ def get_variable_unit(dataset_name, variable):
 
 
 def get_variable_scale(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key)
+    from_config = get_variables(dataset_name).get(variable.key.lower())
 
     if from_config is not None:
         scale = from_config.get("scale")
@@ -93,3 +93,13 @@ def get_variable_scale(dataset_name, variable):
             return scale
 
     return [0, 100]
+
+
+def is_variable_hidden(dataset_name, variable):
+    from_config = get_variables(dataset_name).get(variable.key.lower())
+
+    hidden = False
+    if from_config is not None:
+        hidden = bool(from_config.get("hide"))
+
+    return hidden
