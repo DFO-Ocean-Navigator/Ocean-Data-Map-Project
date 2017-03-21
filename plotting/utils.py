@@ -65,6 +65,7 @@ def mathtext(text):
     if re.search(r"-[0-9]", text):
         text = re.sub(r" ([^- ])-1", r"/\1", text)
         text = re.sub(r" ([^- ])-([2-9][0-9]*)", r"/\1^\2", text)
+        text = re.sub(r"([a-z]+)\^-([0-9]+)", r"/ \1^\2", text)
     if re.search(r"[/_\^\\]", text):
         return "$%s$" % text
     else:
