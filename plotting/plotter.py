@@ -89,6 +89,8 @@ class Plotter:
         if isinstance(variables, str) or isinstance(variables, unicode):
             variables = variables.split(',')
 
+        variables = filter(lambda v: v != '', variables)
+
         self.variables_anom = variables
         self.variables = [re.sub('_anom$', '', v) for v in variables]
 
