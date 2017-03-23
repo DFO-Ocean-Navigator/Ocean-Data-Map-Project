@@ -86,6 +86,8 @@ class OceanNavigator extends React.Component {
         if (typeof(value) == "undefined") {
           return;
         }
+      } else if (key == "variable_scale") {
+        newState.scale = value;
       }
     } else {
       for (i = 0; i < key.length; i++) {
