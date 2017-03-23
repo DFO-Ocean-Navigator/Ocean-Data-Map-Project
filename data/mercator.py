@@ -64,9 +64,9 @@ class Mercator(netcdf_data.NetCDFData):
         return None
 
     def __find_index(self, lat, lon, n=1):
-        def find_nearest(array, value):
-            a = np.argsort(array)
-            idx = np.searchsorted(array, value, side="left", sorter=a)
+        def find_nearest(array, value, sorter):
+            idx = np.searchsorted(array, value, side="left",
+                                  sorter=sorter)
 
             result = []
             for i in range(0, len(value)):
@@ -79,7 +79,7 @@ class Mercator(netcdf_data.NetCDFData):
                 else:
                     result.append(idx[i])
 
-            return a[result]
+            return sorter[result]
 
         if not hasattr(lat, "__len__"):
             lat = [lat]
@@ -88,8 +88,9 @@ class Mercator(netcdf_data.NetCDFData):
         lat = np.array(lat)
         lon = np.mod(np.array(lon) + 360, 360)
 
-        iy_min = find_nearest(self.latvar[:], lat)
-        ix_min = find_nearest(np.mod(self.lonvar[:] + 360, 360), lon)
+        iy_min = find_nearest(self.latvar[:], lat, self.__latsort)
+        ix_min = find_nearest(np.mod(self.lonvar[:] + 360, 360), lon,
+                              self.__lonsort)
 
         return iy_min, ix_min, [50000]
 
@@ -186,13 +187,19 @@ class Mercator(netcdf_data.NetCDFData):
 
     def __init__(self, url):
         super(Mercator, self).__init__(url)
-        self._kdt = None
+        self.latvar = None
+        self.lonvar = None
+        self.__latsort = None
+        self.__lonsort = None
 
     def __enter__(self):
         super(Mercator, self).__enter__()
 
-        self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
-        self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
+        if self.latvar is None:
+            self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
+            self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
+            self.__latsort = np.argsort(self.latvar[:])
+            self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
         return self
 
