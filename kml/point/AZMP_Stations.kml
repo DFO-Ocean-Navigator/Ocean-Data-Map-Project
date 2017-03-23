@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>AZMP_Stations.kml</name>
+	<Folder>
+		<name>AZMP Stations</name>
+        <Placemark><name>BB01</name><Point><coordinates>-52.967,48.800</coordinates></Point></Placemark>
+        <Placemark><name>BB02</name><Point><coordinates>-52.750,48.800</coordinates></Point></Placemark>
+        <Placemark><name>BB03</name><Point><coordinates>-52.650,48.833</coordinates></Point></Placemark>
+        <Placemark><name>BB04</name><Point><coordinates>-52.400,48.917</coordinates></Point></Placemark>
+        <Placemark><name>BB05</name><Point><coordinates>-52.067,49.025</coordinates></Point></Placemark>
+        <Placemark><name>BB06</name><Point><coordinates>-51.830,49.100</coordinates></Point></Placemark>
+        <Placemark><name>BB07</name><Point><coordinates>-51.542,49.190</coordinates></Point></Placemark>
+        <Placemark><name>BB08</name><Point><coordinates>-51.280,49.280</coordinates></Point></Placemark>
+        <Placemark><name>BB09</name><Point><coordinates>-51.017,49.367</coordinates></Point></Placemark>
+        <Placemark><name>BB10</name><Point><coordinates>-50.533,49.517</coordinates></Point></Placemark>
+        <Placemark><name>BB11</name><Point><coordinates>-50.017,49.683</coordinates></Point></Placemark>
+        <Placemark><name>BB12</name><Point><coordinates>-49.500,49.850</coordinates></Point></Placemark>
+        <Placemark><name>BB13</name><Point><coordinates>-49.000,50.000</coordinates></Point></Placemark>
+        <Placemark><name>BB14</name><Point><coordinates>-48.472,50.177</coordinates></Point></Placemark>
+        <Placemark><name>BB15</name><Point><coordinates>-47.947,50.332</coordinates></Point></Placemark>
+
+
+        <Placemark><name>BBL1</name><Point><coordinates>-65.480,43.250</coordinates></Point></Placemark>
+        <Placemark><name>BBL2</name><Point><coordinates>-65.480,43.000</coordinates></Point></Placemark>
+        <Placemark><name>BBL3</name><Point><coordinates>-65.483,42.760</coordinates></Point></Placemark>
+        <Placemark><name>BBL4</name><Point><coordinates>-65.483,42.450</coordinates></Point></Placemark>
+        <Placemark><name>BBL5</name><Point><coordinates>-65.500,42.133</coordinates></Point></Placemark>
+        <Placemark><name>BBL6</name><Point><coordinates>-65.510,42.000</coordinates></Point></Placemark>
+        <Placemark><name>BBL7</name><Point><coordinates>-65.350,41.867</coordinates></Point></Placemark>
+
+
+        <Placemark><name>FC01</name><Point><coordinates>-52.832,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC02</name><Point><coordinates>-52.705,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC03</name><Point><coordinates>-52.580,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC04</name><Point><coordinates>-52.322,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC05</name><Point><coordinates>-52.033,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC06</name><Point><coordinates>-51.485,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC07</name><Point><coordinates>-51.000,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC08</name><Point><coordinates>-50.667,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC09</name><Point><coordinates>-50.000,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC10</name><Point><coordinates>-49.117,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC11</name><Point><coordinates>-48.617,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC12</name><Point><coordinates>-48.117,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC13</name><Point><coordinates>-47.817,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC14</name><Point><coordinates>-47.500,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC15</name><Point><coordinates>-47.250,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC16</name><Point><coordinates>-47.168,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC17</name><Point><coordinates>-47.017,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC18</name><Point><coordinates>-46.833,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC19</name><Point><coordinates>-46.670,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC20</name><Point><coordinates>-46.483,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC21</name><Point><coordinates>-46.017,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC22</name><Point><coordinates>-45.730,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC23</name><Point><coordinates>-45.500,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC24</name><Point><coordinates>-45.213,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC25</name><Point><coordinates>-44.988,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC26</name><Point><coordinates>-44.772,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC27</name><Point><coordinates>-44.578,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC28</name><Point><coordinates>-44.433,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC29</name><Point><coordinates>-44.232,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC30</name><Point><coordinates>-44.083,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC31</name><Point><coordinates>-43.833,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC32</name><Point><coordinates>-43.750,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC33</name><Point><coordinates>-43.400,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC34</name><Point><coordinates>-43.250,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC35</name><Point><coordinates>-43.000,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC36</name><Point><coordinates>-42.750,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC37</name><Point><coordinates>-42.500,47.000</coordinates></Point></Placemark>
+        <Placemark><name>FC38</name><Point><coordinates>-42.000,47.000</coordinates></Point></Placemark>
+
+
+        <Placemark><name>HL1</name><Point><coordinates>-63.450,44.400</coordinates></Point></Placemark>
+        <Placemark><name>HL2</name><Point><coordinates>-63.317,44.267</coordinates></Point></Placemark>
+        <Placemark><name>HL3</name><Point><coordinates>-62.883,43.883</coordinates></Point></Placemark>
+        <Placemark><name>HL4</name><Point><coordinates>-62.451,43.479</coordinates></Point></Placemark>
+        <Placemark><name>HL5</name><Point><coordinates>-62.098,43.183</coordinates></Point></Placemark>
+        <Placemark><name>HL6</name><Point><coordinates>-61.733,42.850</coordinates></Point></Placemark>
+        <Placemark><name>HL7</name><Point><coordinates>-61.400,42.533</coordinates></Point></Placemark>
+
+        <Placemark><name>LL1</name><Point><coordinates>-59.850,45.825</coordinates></Point></Placemark>
+        <Placemark><name>LL2</name><Point><coordinates>-59.702,45.658</coordinates></Point></Placemark>
+        <Placemark><name>LL3</name><Point><coordinates>-59.517,45.492</coordinates></Point></Placemark>
+        <Placemark><name>LL4</name><Point><coordinates>-59.175,45.158</coordinates></Point></Placemark>
+        <Placemark><name>LL5</name><Point><coordinates>-58.850,44.817</coordinates></Point></Placemark>
+        <Placemark><name>LL6</name><Point><coordinates>-58.508,44.475</coordinates></Point></Placemark>
+        <Placemark><name>LL7</name><Point><coordinates>-58.175,44.133</coordinates></Point></Placemark>
+        <Placemark><name>LL8</name><Point><coordinates>-57.833,43.783</coordinates></Point></Placemark>
+        <Placemark><name>LL9</name><Point><coordinates>-57.527,43.473</coordinates></Point></Placemark>
+
+
+        <Placemark><name>SEGB01</name><Point><coordinates>-52.933,46.583</coordinates></Point></Placemark>
+        <Placemark><name>SEGB02</name><Point><coordinates>-52.850,46.500</coordinates></Point></Placemark>
+        <Placemark><name>SEGB03</name><Point><coordinates>-52.733,46.350</coordinates></Point></Placemark>
+        <Placemark><name>SEGB04</name><Point><coordinates>-52.608,46.208</coordinates></Point></Placemark>
+        <Placemark><name>SEGB05</name><Point><coordinates>-52.500,46.070</coordinates></Point></Placemark>
+        <Placemark><name>SEGB06</name><Point><coordinates>-52.267,45.788</coordinates></Point></Placemark>
+        <Placemark><name>SEGB07</name><Point><coordinates>-52.000,45.458</coordinates></Point></Placemark>
+        <Placemark><name>SEGB08</name><Point><coordinates>-51.700,45.095</coordinates></Point></Placemark>
+        <Placemark><name>SEGB09</name><Point><coordinates>-51.395,44.725</coordinates></Point></Placemark>
+        <Placemark><name>SEGB10</name><Point><coordinates>-51.103,44.363</coordinates></Point></Placemark>
+        <Placemark><name>SEGB11</name><Point><coordinates>-50.808,44.000</coordinates></Point></Placemark>
+        <Placemark><name>SEGB12</name><Point><coordinates>-50.517,43.633</coordinates></Point></Placemark>
+        <Placemark><name>SEGB13</name><Point><coordinates>-50.167,43.200</coordinates></Point></Placemark>
+        <Placemark><name>SEGB14</name><Point><coordinates>-49.942,42.920</coordinates></Point></Placemark>
+        <Placemark><name>SEGB15</name><Point><coordinates>-49.887,42.850</coordinates></Point></Placemark>
+        <Placemark><name>SEGB16</name><Point><coordinates>-49.828,42.775</coordinates></Point></Placemark>
+        <Placemark><name>SEGB17</name><Point><coordinates>-49.683,42.588</coordinates></Point></Placemark>
+        <Placemark><name>SEGB18</name><Point><coordinates>-49.518,42.395</coordinates></Point></Placemark>
+        <Placemark><name>SEGB19</name><Point><coordinates>-49.270,42.082</coordinates></Point></Placemark>
+        <Placemark><name>SEGB20</name><Point><coordinates>-48.950,41.700</coordinates></Point></Placemark>
+        <Placemark><name>SEGB21</name><Point><coordinates>-48.667,41.333</coordinates></Point></Placemark>
+
+
+        <Placemark><name>SI01</name><Point><coordinates>-55.650,53.233</coordinates></Point></Placemark>
+        <Placemark><name>SI02</name><Point><coordinates>-55.500,53.333</coordinates></Point></Placemark>
+        <Placemark><name>SI03</name><Point><coordinates>-55.357,53.410</coordinates></Point></Placemark>
+        <Placemark><name>SI04</name><Point><coordinates>-55.145,53.533</coordinates></Point></Placemark>
+        <Placemark><name>SI05</name><Point><coordinates>-55.000,53.617</coordinates></Point></Placemark>
+        <Placemark><name>SI06</name><Point><coordinates>-54.777,53.757</coordinates></Point></Placemark>
+        <Placemark><name>SI07</name><Point><coordinates>-54.500,53.917</coordinates></Point></Placemark>
+        <Placemark><name>SI08</name><Point><coordinates>-54.217,54.082</coordinates></Point></Placemark>
+        <Placemark><name>SI09</name><Point><coordinates>-54.000,54.200</coordinates></Point></Placemark>
+        <Placemark><name>SI10</name><Point><coordinates>-53.733,54.355</coordinates></Point></Placemark>
+        <Placemark><name>SI11</name><Point><coordinates>-53.500,54.500</coordinates></Point></Placemark>
+        <Placemark><name>SI12</name><Point><coordinates>-53.250,54.633</coordinates></Point></Placemark>
+        <Placemark><name>SI13</name><Point><coordinates>-53.000,54.783</coordinates></Point></Placemark>
+        <Placemark><name>SI14</name><Point><coordinates>-52.500,55.067</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TASO1</name><Point><coordinates>-64.800,49.217</coordinates></Point></Placemark>
+        <Placemark><name>TASO2</name><Point><coordinates>-64.717,49.317</coordinates></Point></Placemark>
+        <Placemark><name>TASO3</name><Point><coordinates>-64.617,49.433</coordinates></Point></Placemark>
+        <Placemark><name>TASO4</name><Point><coordinates>-64.517,49.550</coordinates></Point></Placemark>
+        <Placemark><name>TASO5</name><Point><coordinates>-64.417,49.667</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TBB1</name><Point><coordinates>-58.500,49.343</coordinates></Point></Placemark>
+        <Placemark><name>TBB2</name><Point><coordinates>-58.717,49.483</coordinates></Point></Placemark>
+        <Placemark><name>TBB3</name><Point><coordinates>-58.967,49.600</coordinates></Point></Placemark>
+        <Placemark><name>TBB4</name><Point><coordinates>-59.217,49.725</coordinates></Point></Placemark>
+        <Placemark><name>TBB5</name><Point><coordinates>-59.450,49.850</coordinates></Point></Placemark>
+        <Placemark><name>TBB6</name><Point><coordinates>-59.683,49.983</coordinates></Point></Placemark>
+        <Placemark><name>TBB7</name><Point><coordinates>-59.917,50.100</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TCEN1</name><Point><coordinates>-61.610,48.210</coordinates></Point></Placemark>
+        <Placemark><name>TCEN2</name><Point><coordinates>-61.450,48.355</coordinates></Point></Placemark>
+        <Placemark><name>TCEN3</name><Point><coordinates>-61.300,48.500</coordinates></Point></Placemark>
+        <Placemark><name>TCEN4</name><Point><coordinates>-61.133,48.647</coordinates></Point></Placemark>
+        <Placemark><name>TCEN5</name><Point><coordinates>-60.973,48.792</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TDC1</name><Point><coordinates>-60.217,46.958</coordinates></Point></Placemark>
+        <Placemark><name>TDC2</name><Point><coordinates>-60.117,47.023</coordinates></Point></Placemark>
+        <Placemark><name>TDC3</name><Point><coordinates>-59.992,47.100</coordinates></Point></Placemark>
+        <Placemark><name>TDC4</name><Point><coordinates>-59.783,47.272</coordinates></Point></Placemark>
+        <Placemark><name>TDC5</name><Point><coordinates>-59.558,47.433</coordinates></Point></Placemark>
+        <Placemark><name>TDC6</name><Point><coordinates>-59.342,47.583</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TESL1</name><Point><coordinates>-68.488,48.575</coordinates></Point></Placemark>
+        <Placemark><name>TESL2</name><Point><coordinates>-68.547,48.625</coordinates></Point></Placemark>
+        <Placemark><name>TESL3</name><Point><coordinates>-68.583,48.667</coordinates></Point></Placemark>
+        <Placemark><name>TESL4</name><Point><coordinates>-68.630,48.708</coordinates></Point></Placemark>
+        <Placemark><name>TESL5</name><Point><coordinates>-68.667,48.750</coordinates></Point></Placemark>
+        <Placemark><name>TESL6</name><Point><coordinates>-68.708,48.788</coordinates></Point></Placemark>
+        <Placemark><name>TESL7</name><Point><coordinates>-68.750,48.825</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TIDM01</name><Point><coordinates>-61.000,46.745</coordinates></Point></Placemark>
+        <Placemark><name>TIDM02</name><Point><coordinates>-61.250,46.830</coordinates></Point></Placemark>
+        <Placemark><name>TIDM03</name><Point><coordinates>-61.500,46.902</coordinates></Point></Placemark>
+        <Placemark><name>TIDM04</name><Point><coordinates>-61.750,47.000</coordinates></Point></Placemark>
+        <Placemark><name>TIDM05</name><Point><coordinates>-62.250,47.170</coordinates></Point></Placemark>
+        <Placemark><name>TIDM06</name><Point><coordinates>-62.750,47.330</coordinates></Point></Placemark>
+        <Placemark><name>TIDM07</name><Point><coordinates>-63.250,47.500</coordinates></Point></Placemark>
+        <Placemark><name>TIDM08</name><Point><coordinates>-63.750,47.660</coordinates></Point></Placemark>
+        <Placemark><name>TIDM09</name><Point><coordinates>-64.000,47.740</coordinates></Point></Placemark>
+        <Placemark><name>TIDM10</name><Point><coordinates>-64.250,47.830</coordinates></Point></Placemark>
+
+
+        <Placemark><name>TSI1</name><Point><coordinates>-66.200,49.242</coordinates></Point></Placemark>
+        <Placemark><name>TSI2</name><Point><coordinates>-66.217,49.400</coordinates></Point></Placemark>
+        <Placemark><name>TSI3</name><Point><coordinates>-66.233,49.550</coordinates></Point></Placemark>
+        <Placemark><name>TSI4</name><Point><coordinates>-66.250,49.717</coordinates></Point></Placemark>
+        <Placemark><name>TSI5</name><Point><coordinates>-66.267,49.882</coordinates></Point></Placemark>
+        <Placemark><name>TSI6</name><Point><coordinates>-66.283,50.050</coordinates></Point></Placemark>
+	</Folder>
+</Document>
+</kml>

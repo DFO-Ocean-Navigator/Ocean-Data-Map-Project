@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Maritimes_Stations.kml</name>
+	<Folder>
+		<name>Maritimes Stations</name>
+        <Placemark><name>HL_08</name><Point><coordinates>-61.3417,42.3633</coordinates></Point></Placemark>
+        <Placemark><name>HL_09</name><Point><coordinates>-61.1667,42.2</coordinates></Point></Placemark>
+        <Placemark><name>HL_10</name><Point><coordinates>-61.0633,42.03</coordinates></Point></Placemark>
+        <Placemark><name>HL_11</name><Point><coordinates>-60.9083,41.7783</coordinates></Point></Placemark>
+        <Placemark><name>HL_12</name><Point><coordinates>-60.6767,41.41</coordinates></Point></Placemark>
+        <Placemark><name>HL_13</name><Point><coordinates>-60.4433,41.0417</coordinates></Point></Placemark>
+        <Placemark><name>HL_14</name><Point><coordinates>-60.1817,40.675</coordinates></Point></Placemark>
+        <Placemark><name>SG_28</name><Point><coordinates>-59,43.71</coordinates></Point></Placemark>
+        <Placemark><name>GULD_03</name><Point><coordinates>-59.02,44</coordinates></Point></Placemark>
+        <Placemark><name>GULD_04</name><Point><coordinates>-58.9,43.79</coordinates></Point></Placemark>
+        <Placemark><name>SG_23</name><Point><coordinates>-58.73,43.86</coordinates></Point></Placemark>
+        <Placemark><name>STAB_05</name><Point><coordinates>-58.8833,46.4167</coordinates></Point></Placemark>
+        <Placemark><name>STAB_04</name><Point><coordinates>-59.065,46.3</coordinates></Point></Placemark>
+        <Placemark><name>STAB_03</name><Point><coordinates>-59.195,46.2167</coordinates></Point></Placemark>
+        <Placemark><name>STAB_02</name><Point><coordinates>-59.365,46.1083</coordinates></Point></Placemark>
+        <Placemark><name>STAB_01</name><Point><coordinates>-59.5333,46</coordinates></Point></Placemark>
+        <Placemark><name>PS_03</name><Point><coordinates>-65.84,42.3</coordinates></Point></Placemark>
+        <Placemark><name>PS_05</name><Point><coordinates>-65.9033,42.2333</coordinates></Point></Placemark>
+        <Placemark><name>PS_07</name><Point><coordinates>-65.9683,42.1633</coordinates></Point></Placemark>
+        <Placemark><name>PS_09</name><Point><coordinates>-66.0833,42.0617</coordinates></Point></Placemark>
+        <Placemark><name>PS_10</name><Point><coordinates>-66.1417,41.99</coordinates></Point></Placemark>
+        <Placemark><name>PS_08</name><Point><coordinates>-66.0374,42.1183</coordinates></Point></Placemark>
+        <Placemark><name>PS_06</name><Point><coordinates>-65.9383,42.2</coordinates></Point></Placemark>
+        <Placemark><name>PS_04</name><Point><coordinates>-65.87,42.2717</coordinates></Point></Placemark>
+        <Placemark><name>PS_02</name><Point><coordinates>-65.8083,42.3367</coordinates></Point></Placemark>
+        <Placemark><name>PS_01</name><Point><coordinates>-65.7433,42.4183</coordinates></Point></Placemark>
+        <Placemark><name>YL_01</name><Point><coordinates>-66.4003,43.7502</coordinates></Point></Placemark>
+        <Placemark><name>YL_02</name><Point><coordinates>-66.85131719,43.67987837</coordinates></Point></Placemark>
+        <Placemark><name>YL_03</name><Point><coordinates>-67.30233437,43.60955674</coordinates></Point></Placemark>
+        <Placemark><name>YL_04</name><Point><coordinates>-67.75335156,43.53923511</coordinates></Point></Placemark>
+        <Placemark><name>YL_05</name><Point><coordinates>-68.20436874,43.46891347</coordinates></Point></Placemark>
+        <Placemark><name>YL_06</name><Point><coordinates>-68.65538593,43.39859184</coordinates></Point></Placemark>
+        <Placemark><name>YL_07</name><Point><coordinates>-69.10640311,43.32827021</coordinates></Point></Placemark>
+        <Placemark><name>YL_08</name><Point><coordinates>-69.5574203,43.25794858</coordinates></Point></Placemark>
+        <Placemark><name>YL_09</name><Point><coordinates>-70.00843748,43.18762695</coordinates></Point></Placemark>
+        <Placemark><name>YL_10</name><Point><coordinates>-70.45945467,43.11730532</coordinates></Point></Placemark>
+        <Placemark><name>PL_01</name><Point><coordinates>-70.008437,43.033518</coordinates></Point></Placemark>
+        <Placemark><name>PL_02</name><Point><coordinates>-69.55742,42.954735</coordinates></Point></Placemark>
+        <Placemark><name>PL_03</name><Point><coordinates>-69.1064,42.87595</coordinates></Point></Placemark>
+        <Placemark><name>PL_04</name><Point><coordinates>-68.6554,42.7893</coordinates></Point></Placemark>
+        <Placemark><name>PL_05</name><Point><coordinates>-68.2044,42.7024</coordinates></Point></Placemark>
+        <Placemark><name>PL_06</name><Point><coordinates>-67.75335,42.62556</coordinates></Point></Placemark>
+        <Placemark><name>PL_07</name><Point><coordinates>-67.3023,42.55257</coordinates></Point></Placemark>
+        <Placemark><name>PL_08</name><Point><coordinates>-66.8513,42.4623</coordinates></Point></Placemark>
+        <Placemark><name>PL_09</name><Point><coordinates>-66.4003,42.3778</coordinates></Point></Placemark>
+	</Folder>
+</Document>
+</kml>
