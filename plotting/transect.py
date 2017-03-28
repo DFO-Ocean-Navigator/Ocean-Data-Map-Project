@@ -119,7 +119,7 @@ class TransectPlotter(line.LinePlotter):
             }
 
             if self.surface is not None:
-                surface_pts, surface_dist, surface_value = \
+                surface_pts, surface_dist, t, surface_value = \
                     dataset.get_path(
                         self.points,
                         0,
