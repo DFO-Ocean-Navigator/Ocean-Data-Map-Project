@@ -142,7 +142,7 @@ class DrifterPlotter(plotter.Plotter):
             d = []
             for v in self.variables:
                 pts, dist, mt, md = dataset.get_path(
-                    self.points,
+                    self.points[self.start:self.end + 1],
                     depth,
                     range(model_start, model_end + 1),
                     v,
