@@ -161,13 +161,34 @@ class TransectPlotter(line.LinePlotter):
                         )
                         self.transect_data['data'] -= - climate_data
                     else:
-                        climate_points, climate_distance, \
-                            climate_parallel, climate_perpendicular = \
-                            grid.velocitytransect(
-                                dataset.variables[self.variables[0]],
-                                dataset.variables[self.variables[1]],
-                                self.points, self.timestamp.month - 1,
-                                interpolation=interp)
+                        climate_pts, climate_distance, climate_x, cdep = \
+                            dataset.get_path_profile(
+                                self.points,
+                                self.timestamp.month - 1,
+                                self.variables[0],
+                                100
+                            )
+                        climate_pts, climate_distance, climate_y, cdep = \
+                            dataset.get_path_profile(
+                                self.points,
+                                self.timestamp.month - 1,
+                                self.variables[0],
+                                100
+                            )
+
+                        climate_distances, ctimes, clat, clon, bearings = \
+                            geo.path_to_points(self.points, 100)
+
+                        r = np.radians(np.subtract(90, bearings))
+                        theta = np.arctan2(y, x) - r
+                        mag = np.sqrt(x ** 2 + y ** 2)
+
+                        climate_parallel = mag * np.cos(theta)
+                        climate_perpendicular = mag * np.sin(theta)
+
+                        self.__fill_invalid_shift(climate_parallel)
+                        self.__fill_invalid_shift(climate_perpendicular)
+
                         self.transect_data['parallel'] -= climate_parallel
                         self.transect_data[
                             'perpendicular'] -= climate_perpendicular
