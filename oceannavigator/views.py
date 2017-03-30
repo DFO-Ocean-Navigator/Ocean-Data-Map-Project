@@ -484,7 +484,6 @@ def plot():
 
     if request.method == "GET":
         if 'query' not in request.args:
-            print request.args
             return FAILURE
 
         query = json.loads(request.args.get('query'))
@@ -583,13 +582,19 @@ def plot():
     return response
 
 
-@app.route('/stats/')
+@app.route('/stats/', methods=['GET', 'POST'])
 def stats():
     FAILURE = redirect("/", code=302)
-    if 'query' not in request.args:
-        return FAILURE
+    if request.method == "GET":
+        if 'query' not in request.args:
+            return FAILURE
 
-    query = json.loads(request.args.get('query'))
+        query = json.loads(request.args.get('query'))
+    else:
+        if 'query' not in request.form:
+            return FAILURE
+
+        query = json.loads(request.form.get('query'))
 
     dataset = query.get('dataset')
 

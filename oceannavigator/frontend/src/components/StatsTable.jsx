@@ -31,8 +31,14 @@ class StatsTable extends React.Component {
       fail: false,
     });
     var url = this.urlFromQuery(props.query);
+    var query = this.query(props.query);
+    var paramString = $.param({
+      query: JSON.stringify(query),
+    });
     $.ajax({
-      url: url,
+      url: "/stats/",
+      data: paramString,
+      method: (paramString.length < 1536) ? "GET" : "POST",
       dataType: "json",
       cache: true,
       success: function(data) {
@@ -50,6 +56,17 @@ class StatsTable extends React.Component {
         });
       }.bind(this)
     });
+  }
+
+  query(q) {
+    var query = {
+      dataset: q.dataset,
+      variable: q.variable,
+      time: q.time,
+      depth: q.depth,
+      area: q.area,
+    }
+    return query;
   }
 
   urlFromQuery(q) {
