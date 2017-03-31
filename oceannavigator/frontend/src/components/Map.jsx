@@ -627,6 +627,16 @@ class Map extends React.Component {
     return stat.ret;
   }
 
+  controlDoubleClickZoom(active) {
+    var interactions = this.map.getInteractions();
+    for (var i = 0; i < interactions.getLength(); i++) {
+      var interaction = interactions.item(i);
+      if (interaction instanceof ol.interaction.DoubleClickZoom) {
+        interaction.setActive(active);
+      }
+    }
+  }
+
   point() {
     if (this.removeMapInteractions("Point")) {
       return;
@@ -641,10 +651,15 @@ class Map extends React.Component {
     });
     draw.set("type", "Point");
     draw.on("drawend", function(e) {
+      this.controlDoubleClickZoom(false);
       var lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection,"EPSG:4326");
       this.props.action("point", lonlat);
       this.map.removeInteraction(draw);
       this.drawing = false;
+      setTimeout(
+        function() { this.controlDoubleClickZoom(true); }.bind(this),
+        251
+      );
     }.bind(this));
     this.map.addInteraction(draw);
   }
@@ -663,6 +678,7 @@ class Map extends React.Component {
     });
     draw.set("type", "LineString");
     draw.on("drawend", function(e) {
+      this.controlDoubleClickZoom(false);
       var points = e.feature.getGeometry().getCoordinates().map(function (c) {
         var lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
         return [lonlat[1], lonlat[0]];
@@ -670,6 +686,10 @@ class Map extends React.Component {
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
       this.drawing = false;
+      setTimeout(
+        function() { this.controlDoubleClickZoom(true); }.bind(this),
+        251
+      );
     }.bind(this));
     this.map.addInteraction(draw);
   }
@@ -688,6 +708,7 @@ class Map extends React.Component {
     });
     draw.set("type", "Polygon");
     draw.on("drawend", function(e) {
+      this.controlDoubleClickZoom(false);
       var points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
           var lonlat = ol.proj.transform(
@@ -705,6 +726,10 @@ class Map extends React.Component {
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
       this.drawing = false;
+      setTimeout(
+        function() {this.controlDoubleClickZoom(true); }.bind(this),
+        251
+      );
     }.bind(this));
     this.map.addInteraction(draw);
   }
