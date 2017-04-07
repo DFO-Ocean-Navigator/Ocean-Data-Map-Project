@@ -325,8 +325,8 @@ class MapPlotter(area.AreaPlotter):
 
             driver = gdal.GetDriverByName('GTiff')
             outRaster = driver.Create(fname,
-                                      self.longitude.shape[0],
                                       self.latitude.shape[1],
+                                      self.longitude.shape[0],
                                       1, gdal.GDT_Float64)
             x = [self.longitude[0, 0], self.longitude[-1, -1]]
             y = [self.latitude[0, 0], self.latitude[-1, -1]]
