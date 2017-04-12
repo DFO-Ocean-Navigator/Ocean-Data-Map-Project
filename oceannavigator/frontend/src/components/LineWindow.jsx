@@ -2,12 +2,12 @@ import React from "react";
 import {Nav, NavItem} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
-import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
+import DatasetSelector from "./DatasetSelector.jsx";
 var i18n = require("../i18n.js");
 
 class LineWindow extends React.Component {
@@ -81,73 +81,15 @@ class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
-    var dataset = <ComboBox
-      key='dataset'
-      id='dataset'
-      state={this.props.dataset}
-      def=''
-      url='/api/datasets/'
-      title={_("Dataset")}
+    var dataset = <DatasetSelector
+      key='dataset_0'
+      id='dataset_0'
+      state={this.props.dataset_0}
       onUpdate={this.props.onUpdate}
+      depth={this.state.selected == 2}
+      variables={this.state.selected == 2 ? "all" : "3d"}
+      time={this.state.selected == 2 ? "range" : "single"}
     />;
-    var time = <TimePicker
-      key='time'
-      id='time'
-      state={this.props.time}
-      def=''
-      quantum={this.props.quantum}
-      url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
-      title={_("Time")}
-      onUpdate={this.props.onUpdate}
-    />;
-    var starttime = <TimePicker
-      key='starttime'
-      id='starttime'
-      state={this.state.starttime}
-      def=''
-      quantum={this.props.quantum}
-      url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
-      title={_("Start Time")}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      max={this.props.time}
-    />;
-    var endtime = <TimePicker
-      key='time'
-      id='time'
-      state={this.props.time}
-      def=''
-      quantum={this.props.quantum}
-      url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
-      title={_("End Time")}
-      onUpdate={this.props.onUpdate}
-      min={this.state.starttime}
-    />;
-    var depth = <ComboBox
-      key='depth'
-      id='depth'
-      state={this.props.depth}
-      def={""}
-      onUpdate={this.props.onUpdate.bind(this)}
-      url={"/api/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset}
-      title={_("Depth")}></ComboBox>;
-    var variable = <ComboBox
-      key='variable'
-      id='variable'
-      state={this.props.variable}
-      def=''
-      onUpdate={this.props.onUpdate}
-      url={"/api/variables/?vectors&dataset="+this.props.dataset
-          +
-          "&3d_only&anom"}
-          title={_("Variable")}><h1>Variable</h1></ComboBox>;
-    var hovmoller_variable = <ComboBox
-      key='variable'
-      id='variable'
-      state={this.props.variable}
-      def=''
-      onUpdate={this.props.onUpdate}
-      url={"/api/variables/?vectors&dataset="+this.props.dataset}
-      title={_("Variable")}><h1>Variable</h1></ComboBox>;
     var scale = <Range
       auto
       key='scale'
@@ -185,7 +127,7 @@ class LineWindow extends React.Component {
       state={this.state.surfacevariable}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Surface Variable")}
-      url={"/api/variables/?dataset=" + this.props.dataset}
+      url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
     >{_("surfacevariable_help")}</ComboBox>;
     var size = <ImageSize
       key='size'
@@ -200,10 +142,28 @@ class LineWindow extends React.Component {
       state={this.state.depth_limit}
       onUpdate={this.onLocalUpdate.bind(this)}
     />;
+    var compare_dataset = <div key='compare_dataset'>
+      <SelectBox
+        key='dataset_compare'
+        id='dataset_compare'
+        state={this.props.dataset_compare}
+        onUpdate={this.props.onUpdate}
+        title={_("Compare Dataset")}
+      />
+      <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
+        <DatasetSelector
+          key='dataset_1'
+          id='dataset_1'
+          state={this.props.dataset_1}
+          onUpdate={this.props.onUpdate}
+          variables='3d'
+        />
+      </div>
+    </div>;
 
     var inputs = [];
     var plot_query = {
-      dataset: this.props.dataset,
+      dataset: this.props.dataset_0.dataset,
       quantum: this.props.quantum,
       variable: this.props.variable,
       path: this.props.line[0],
@@ -222,8 +182,11 @@ class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+        }
         inputs = [
-          dataset, time, variable, showmap, scale, linearthreshold,
+          dataset, compare_dataset, showmap, scale, linearthreshold,
           depthlimit, colormap, surfacevariable
         ];
         break;
@@ -233,8 +196,7 @@ class LineWindow extends React.Component {
         plot_query.starttime = this.state.starttime;
         plot_query.depth = this.props.depth;
         inputs = [
-          dataset, starttime, endtime, hovmoller_variable, showmap, depth,
-          scale, colormap
+          dataset, showmap, scale, colormap
         ];
         break;
     }

@@ -1,8 +1,8 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
+import DatasetSelector from "./DatasetSelector.jsx";
 var i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
@@ -10,10 +10,6 @@ class MapInputs extends React.Component {
     super(props);
   }
   render() {
-    _("Dataset");
-    _("Variable");
-    _("Depth");
-    _("Time");
     _("Variable Range");
     _("Show Bathymetry Contours");
 
@@ -62,53 +58,29 @@ class MapInputs extends React.Component {
           onUpdate={this.props.changeHandler}
           title={_("Show Bathymetry Contours")}
         />
-        <ComboBox
-          key='dataset'
-          id='dataset'
-          state={this.props.state.dataset}
-          def={"defaults.dataset"}
+        <DatasetSelector
+          key='dataset_0'
+          id='dataset_0'
+          state={this.props.state}
           onUpdate={this.props.changeHandler}
-          url='/api/datasets/'
-          title={_("Dataset")}></ComboBox>
-        <ComboBox
-          key='variable'
-          id='variable'
-          state={this.props.state.variable}
-          def={"defaults.dataset"}
+          depth={true}
+        />
+        <SelectBox
+          key='dataset_compare'
+          id='dataset_compare'
+          state={this.props.state.dataset_compare}
           onUpdate={this.props.changeHandler}
-          url={"/api/variables/?vectors&dataset=" +
-            this.props.state.dataset +
-            "&anom"
-          }
-          title={_("Variable")}
-        ><h1>{_("Variable")}</h1></ComboBox>
-        <ComboBox
-          key='depth'
-          id='depth'
-          state={this.props.state.depth}
-          def={"defaults[this.state.type].depth"}
-          onUpdate={this.props.changeHandler}
-          url={"/api/depth/?variable=" +
-            this.props.state.variable +
-            "&dataset=" +
-            this.props.state.dataset
-          }
-          title={_("Depth")}
-        ></ComboBox>
-        <TimePicker
-          key='time'
-          id='time'
-          state={this.props.state.time}
-          def={"defaults[this.state.type].time"}
-          quantum={this.props.state.dataset_quantum}
-          onUpdate={this.props.changeHandler}
-          url={"/api/timestamps/?dataset=" +
-            this.props.state.dataset +
-            "&quantum=" +
-            this.props.state.dataset_quantum
-          }
-          title={_("Time")}
-        ></TimePicker>
+          title={_("Compare Dataset")}
+        />
+        <div style={{"display": this.props.state.dataset_compare ? "block" : "none"}}>
+          <DatasetSelector
+            key='dataset_1'
+            id='dataset_1'
+            state={this.props.state.dataset_1}
+            onUpdate={this.props.changeHandler}
+            depth={true}
+          />
+        </div>
         <Range
           key='scale'
           id='scale'

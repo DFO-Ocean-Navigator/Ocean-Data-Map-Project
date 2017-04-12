@@ -65,7 +65,7 @@ class StatsTable extends React.Component {
       time: q.time,
       depth: q.depth,
       area: q.area,
-    }
+    };
     return query;
   }
 

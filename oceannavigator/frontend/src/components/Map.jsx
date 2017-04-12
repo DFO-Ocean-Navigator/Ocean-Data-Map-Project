@@ -350,6 +350,10 @@ class Map extends React.Component {
       var extent = this.mapView.calculateExtent(this.map.getSize());
       this.props.updateState("extent", extent);
       this.map.render();
+      if (this.props.partner) {
+        this.props.partner.mapView.setCenter(this.mapView.getCenter());
+        this.props.partner.mapView.setZoom(this.mapView.getZoom());
+      }
     }.bind(this));
 
     var center = [-50, 53];

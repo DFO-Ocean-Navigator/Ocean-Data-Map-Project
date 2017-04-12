@@ -13,7 +13,7 @@ import osr
 import tempfile
 import os
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_dataset_climatology, get_variable_scale_factor
+    get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
 from shapely.ops import cascaded_union
 from matplotlib.patches import Polygon
@@ -251,18 +251,18 @@ class MapPlotter(area.AreaPlotter):
 
             self.timestamp = dataset.timestamps[self.time]
 
-        if self.variables != self.variables_anom:
-            self.variable_name += " Anomaly"
+        if self.compare:
+            self.variable_name += " Difference"
             with open_dataset(
-                get_dataset_climatology(self.dataset_name)
+                get_dataset_url(self.compare['dataset'])
             ) as dataset:
                 data = []
-                for v in self.variables:
+                for v in self.compare['variables']:
                     var = dataset.variables[v]
                     d = dataset.get_area(
                         np.array([self.latitude, self.longitude]),
-                        self.depth,
-                        self.timestamp.month - 1,
+                        self.compare['depth'],
+                        self.compare['time'],
                         v
                     )
                     data.append(d)
@@ -273,7 +273,7 @@ class MapPlotter(area.AreaPlotter):
                     data = data[0]
 
                 u, data = self.kelvin_to_celsius(
-                    dataset.variables[self.variables[0]].unit,
+                    dataset.variables[self.compare['variables'][0]].unit,
                     data)
 
                 self.data -= data
@@ -451,7 +451,7 @@ class MapPlotter(area.AreaPlotter):
         else:
             vmin = np.amin(self.data)
             vmax = np.amax(self.data)
-            if self.variables != self.variables_anom:
+            if self.compare:
                 vmax = max(abs(vmax), abs(vmin))
                 vmin = -vmax
 

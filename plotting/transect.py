@@ -11,9 +11,10 @@ from oceannavigator import app
 from geopy.distance import VincentyDistance
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_dataset_climatology, get_variable_scale_factor
+    get_dataset_url, get_variable_scale_factor
 import line
 from flask_babel import gettext
+from scipy.interpolate import interp1d
 from data import open_dataset, geo
 
 
@@ -56,9 +57,8 @@ class TransectPlotter(line.LinePlotter):
                         pot = dataset.variables[potential]
                         if (set(pot.dimensions) &
                                 set(dataset.depth_dimensions)):
-                            if len(pot.shape) > 3:
-                                self.variables[idx] = potential
-                                self.variables_anom[idx] = potential
+                            if len(pot.dimensions) > 3:
+                                self.variables[idx] = potential.key
 
             value = parallel = perpendicular = None
 
@@ -156,47 +156,92 @@ class TransectPlotter(line.LinePlotter):
                     "unit": surface_unit
                 }
 
-        if self.variables != self.variables_anom:
+        if self.compare:
+            def interpolate_depths(data, depth_in, depth_out):
+                output = []
+                for i in range(0, depth_in.shape[0]):
+                    f = interp1d(
+                        depth_in[i],
+                        data[:, i],
+                        bounds_error=False,
+                        assume_sorted=True,
+                    )
+                    output.append(
+                        f(depth_out[i].view(np.ma.MaskedArray).filled())
+                    )
+
+                return np.ma.masked_invalid(output).transpose()
+
             with open_dataset(
-                get_dataset_climatology(self.dataset_name)
+                get_dataset_url(self.compare['dataset'])
             ) as dataset:
-                if self.variables[0] in dataset.variables:
-                    if len(self.variables) == 1:
-                        climate_points, climate_distance, climate_data = \
-                            dataset.get_path_profile(self.points,
-                                                     self.timestamp.month - 1,
-                                                     self.variables[0])
-                        u, climate_data = self.kelvin_to_celsius(
-                            dataset.variables[self.variables[0]].unit,
-                            climate_data
+                if len(self.compare['variables']) == 1:
+                    climate_points, climate_distance, climate_data, cdep = \
+                        dataset.get_path_profile(self.points,
+                                                 self.compare['time'],
+                                                 self.compare['variables'][0])
+                    u, climate_data = self.kelvin_to_celsius(
+                        dataset.variables[self.compare['variables'][0]].unit,
+                        climate_data
+                    )
+                    self.__fill_invalid_shift(climate_data)
+
+                    if (self.depth != cdep).any():
+                        # Need to interpolate the depths
+                        climate_data = interpolate_depths(
+                            climate_data,
+                            cdep,
+                            self.depth
                         )
-                        self.transect_data['data'] -= - climate_data
+
+                    if self.transect_data['data'] is None:
+                        self.transect_data['parallel'] -= climate_data
+                        self.transect_data['perpendicular'] -= climate_data
                     else:
-                        climate_pts, climate_distance, climate_x, cdep = \
-                            dataset.get_path_profile(
-                                self.points,
-                                self.timestamp.month - 1,
-                                self.variables[0],
-                                100
-                            )
-                        climate_pts, climate_distance, climate_y, cdep = \
-                            dataset.get_path_profile(
-                                self.points,
-                                self.timestamp.month - 1,
-                                self.variables[0],
-                                100
-                            )
+                        self.transect_data['data'] -= climate_data
+                else:
+                    climate_pts, climate_distance, climate_x, cdep = \
+                        dataset.get_path_profile(
+                            self.points,
+                            self.compare['time'],
+                            self.compare['variables'][0],
+                            100
+                        )
+                    climate_pts, climate_distance, climate_y, cdep = \
+                        dataset.get_path_profile(
+                            self.points,
+                            self.compare['time'],
+                            self.compare['variables'][0],
+                            100
+                        )
 
-                        climate_distances, ctimes, clat, clon, bearings = \
-                            geo.path_to_points(self.points, 100)
+                    climate_distances, ctimes, clat, clon, bearings = \
+                        geo.path_to_points(self.points, 100)
 
-                        r = np.radians(np.subtract(90, bearings))
-                        theta = np.arctan2(y, x) - r
-                        mag = np.sqrt(x ** 2 + y ** 2)
+                    r = np.radians(np.subtract(90, bearings))
+                    theta = np.arctan2(climate_y, climate_x) - r
+                    mag = np.sqrt(climate_x ** 2 + climate_y ** 2)
 
-                        climate_parallel = mag * np.cos(theta)
-                        climate_perpendicular = mag * np.sin(theta)
+                    if self.depth != cdep:
+                        theta = interpolate_depths(
+                            theta,
+                            cdep,
+                            self.depth
+                        )
+                        self.__fill_invalid_shift(theta)
+                        mag = interpolate_depths(
+                            mag,
+                            cdep,
+                            self.depth
+                        )
+                        self.__fill_invalid_shift(mag)
 
+                    climate_parallel = mag * np.cos(theta)
+                    climate_perpendicular = mag * np.sin(theta)
+
+                    if self.transect_data['parallel'] is None:
+                        self.transect_data['data'] -= mag
+                    else:
                         self.transect_data['parallel'] -= climate_parallel
                         self.transect_data[
                             'perpendicular'] -= climate_perpendicular
@@ -324,7 +369,7 @@ class TransectPlotter(line.LinePlotter):
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
         velocity = len(self.variables) == 2
-        anom = self.variables[0] != self.variables_anom[0]
+        anom = bool(self.compare)
 
         if self.showmap:
             width = 2
