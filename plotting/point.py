@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotter
 from netCDF4 import Dataset
-from oceannavigator.util import get_dataset_climatology
+from oceannavigator.util import get_dataset_url
 import pint
 
 
@@ -62,19 +62,18 @@ class PointPlotter(plotter.Plotter):
 
         return np.ma.array(point_data), np.ma.array(point_depths)
 
-    def subtract_climatology(self, data, timestamp):
-        if self.variables != self.variables_anom:
+    def subtract_other(self, data):
+        if self.compare:
             with Dataset(
-                get_dataset_climatology(self.dataset_name), 'r'
+                get_dataset_url(self.compare['dataset']), 'r'
             ) as dataset:
                 cli = self.get_data(
-                    dataset, self.variables, timestamp.month - 1
+                    dataset, self.compare['variables'], self.compare['time']
                 )
 
             for idx, v in enumerate(self.variables):
-                if v != self.variables_anom[idx]:
-                    data[:, idx, :] = \
-                        data[:, idx, :] - cli[:, idx, :]
+                data[:, idx, :] = \
+                    data[:, idx, :] - cli[:, idx, :]
 
         return data
 
@@ -92,7 +91,6 @@ class PointPlotter(plotter.Plotter):
             sal_var = "salinity"
 
         self.variables = [temp_var, sal_var]
-        self.variables_anom = [temp_var, sal_var]
 
         data, depths = self.get_data(dataset, [temp_var, sal_var], time)
         self.temperature = data[:, 0, :].view(np.ma.MaskedArray)

@@ -26,8 +26,8 @@ class Range extends React.Component {
   }
   componentWillReceiveProps(nextProps) {
     var scale = nextProps.state;
-    if (typeof(nextProps.state.split) === "function") {
-      scale = nextProps.state.split(",");
+    if (typeof(scale.split) === "function") {
+      scale = scale.split(",");
     }
     if (scale.length > 1) {
       this.setState({

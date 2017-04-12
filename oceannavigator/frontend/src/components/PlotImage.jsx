@@ -100,6 +100,15 @@ class PlotImage extends React.Component {
         query.linearthresh = q.linearthresh;
         query.name = q.name;
         query.depth_limit = q.depth_limit;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+          };
+        }
         break;
       case "hovmoller":
         query.variable = q.variable;
@@ -124,6 +133,16 @@ class PlotImage extends React.Component {
         query.quiver = q.quiver;
         query.contour = q.contour;
         query.showarea = q.showarea;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+            depth: q.compare_to.depth,
+          };
+        }
         break;
       case "drifter":
         query.variable = q.variable;

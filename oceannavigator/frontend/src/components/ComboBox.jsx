@@ -50,9 +50,9 @@ class ComboBox extends React.Component {
         success: function(data) {
           var ids = data.map(function(d) {return d.id;});
           if (
-                            (this.props.state == "" && typeof(this.props.state) == "string") ||
-                            this.props.state == "none"
-                        ) {
+            (this.props.state == "" && typeof(this.props.state) == "string") ||
+            this.props.state == "none"
+          ) {
             if (jQuery.inArray("none", ids) == -1) {
               data.splice(0, 0, {"id": "none", "value": _("None")});
             }
@@ -100,7 +100,7 @@ class ComboBox extends React.Component {
             if (data.length == 0) {
               value = props.def;
             } else if (data.length == 1) {
-              value = props.def;
+              value = ids[0];
             } else if (props.multiple && !Array.isArray(this.props.state)) {
               value = [this.props.state];
             } else {
