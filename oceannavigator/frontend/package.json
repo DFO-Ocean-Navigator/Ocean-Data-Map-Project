@@ -31,7 +31,7 @@
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "openlayers": "~3.18.2",
     "papaparse": "^4.1.2",
-    "proj4": "^2.3.15",
+    "proj4": "~2.3.15",
     "react": "~15.3.1",
     "react-bootstrap": "^0.30.3",
     "react-dom": "~15.3.1",
