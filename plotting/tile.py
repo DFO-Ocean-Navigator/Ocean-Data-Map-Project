@@ -22,6 +22,10 @@ from flask.ext.babel import gettext
 from skimage import measure
 import contextlib
 from data import open_dataset
+from oceannavigator import app
+
+
+ETOPO_FILE = app.config['ETOPO_FILE']
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -252,7 +256,7 @@ def plot(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
 
-    with Dataset("/stores/misc/etopo_%s_z%d.nc" % (projection, z), 'r') as dataset:
+    with Dataset(ETOPO_FILE % (projection, z), 'r') as dataset:
         bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
 
     bathymetry = gaussian_filter(bathymetry, 0.5)
@@ -288,8 +292,7 @@ def topo(projection, x, y, z, args):
     colors = np.vstack((water_colors, land_colors))
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list('topo', colors)
 
-    with Dataset("/stores/misc/etopo_%s_z%d.nc" %
-                 (projection, z), 'r') as dataset:
+    with Dataset(ETOPO_FILE % (projection, z), 'r') as dataset:
         data = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
 
     # Try shaded relief
@@ -337,8 +340,7 @@ def bathymetry(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
 
-    with Dataset("/stores/misc/etopo_%s_z%d.nc" %
-                 (projection, z), 'r') as dataset:
+    with Dataset(ETOPO_FILE % (projection, z), 'r') as dataset:
         data = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
         data = data[::-1, :]
 
