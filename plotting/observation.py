@@ -10,7 +10,7 @@ import dateutil.parser
 import pytz
 import point
 import numbers
-from flask.ext.babel import gettext, format_datetime
+from flask_babel import gettext, format_datetime
 from data import open_dataset
 
 

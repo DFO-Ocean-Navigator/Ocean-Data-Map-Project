@@ -13,7 +13,7 @@ import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
 import line
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from data import open_dataset, geo
 
 

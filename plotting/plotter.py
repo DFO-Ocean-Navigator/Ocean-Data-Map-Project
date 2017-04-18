@@ -12,7 +12,7 @@ from oceannavigator.util import (
     get_variable_name,
     get_dataset_attribution
 )
-from flask.ext.babel import format_date, format_datetime
+from flask_babel import format_date, format_datetime
 import contextlib
 from PIL import Image
 

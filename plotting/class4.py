@@ -5,7 +5,7 @@ import utils
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
 import plotter
-from flask.ext.babel import gettext
+from flask_babel import gettext
 
 
 class Class4Plotter(plotter.Plotter):
@@ -24,7 +24,7 @@ class Class4Plotter(plotter.Plotter):
         self.class4 = np.array([c.split("/") for c in class4])
         self.forecast = query.get('forecast')
         self.climatology = query.get('climatology') is None or \
-            bool(query.get('climatology'))
+                bool(query.get('climatology'))
         self.error = query.get('error')
 
         models = query.get("models")
@@ -60,12 +60,12 @@ class Class4Plotter(plotter.Plotter):
                         f_data.append(ds['forecast'][
                             i, j, int(self.forecast), :
                         ])
-                    o_data.append(ds['observation'][i, j, :])
-                    c_data.append(ds['climatology'][i, j, :])
-                forecast_data.append(np.ma.vstack(f_data))
-                observed_data.append(np.ma.vstack(o_data))
-                climatology_data.append(np.ma.vstack(c_data))
-                depths.append(ds['depth'][i, :])
+                        o_data.append(ds['observation'][i, j, :])
+                        c_data.append(ds['climatology'][i, j, :])
+                        forecast_data.append(np.ma.vstack(f_data))
+                        observed_data.append(np.ma.vstack(o_data))
+                        climatology_data.append(np.ma.vstack(c_data))
+                        depths.append(ds['depth'][i, :])
 
             self.depth_unit = ds['depth'].units
 
@@ -80,13 +80,13 @@ class Class4Plotter(plotter.Plotter):
             additional_model_names.append(m.split("_")[2])
             with Dataset(
                 "http://localhost:8080/thredds/dodsC/class4/%s.nc" % m,
-                    'r') as ds:
+                'r') as ds:
                 m_data = []
                 for i in indices:
                     data = []
                     for j in range(0, len(self.variables)):
                         data.append(ds['best_estimate'][i, j, :])
-                    m_data.append(np.ma.vstack(data))
+                        m_data.append(np.ma.vstack(data))
 
                 additional_model_data.append(np.ma.array(m_data))
 
@@ -217,25 +217,25 @@ class Class4Plotter(plotter.Plotter):
                         legend.append(
                             "%s %s" % (
                                 id_label, gettext("Climatology")))
-                    lim = np.abs(plt.xlim()).max()
-                    plt.xlim([-lim, lim])
-                else:
-                    plot_label = gettext("Class 4")
-                    handles.append(plt.plot(self.observed_data[i, idx, :],
-                                            self.depths[i], form))
-                    legend.append("%s %s" % (id_label, gettext("Observed")))
-                    handles.append(plt.plot(self.forecast_data[i, idx, :],
-                                            self.depths[i], form))
-                    legend.append("%s %s" % (id_label, giops_name))
-                    for j, m in enumerate(self.additional_model_names):
-                        handles.append(
-                            plt.plot(
-                                self.additional_model_data[j, i, idx, :],
-                                self.depths[i],
-                                form
+                        lim = np.abs(plt.xlim()).max()
+                        plt.xlim([-lim, lim])
+                    else:
+                        plot_label = gettext("Class 4")
+                        handles.append(plt.plot(self.observed_data[i, idx, :],
+                                                self.depths[i], form))
+                        legend.append("%s %s" % (id_label, gettext("Observed")))
+                        handles.append(plt.plot(self.forecast_data[i, idx, :],
+                                                self.depths[i], form))
+                        legend.append("%s %s" % (id_label, giops_name))
+                        for j, m in enumerate(self.additional_model_names):
+                            handles.append(
+                                plt.plot(
+                                    self.additional_model_data[j, i, idx, :],
+                                    self.depths[i],
+                                    form
+                                )
                             )
-                        )
-                        legend.append("%s %s" % (id_label, m))
+                            legend.append("%s %s" % (id_label, m))
 
                     if self.climatology:
                         handles.append(

@@ -9,7 +9,7 @@ import colormap
 import utils
 from oceannavigator.util import get_dataset_url
 import line
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from data import open_dataset
 
 

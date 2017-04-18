@@ -2,7 +2,7 @@
 
 from flask import Flask, request, send_file
 from flask_compress import Compress
-from flask.ext.babel import Babel
+from flask_babel import Babel
 
 app = Flask(__name__, static_url_path='', static_folder='frontend')
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))

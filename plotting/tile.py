@@ -18,7 +18,7 @@ from pyproj import Proj
 import pyproj
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from skimage import measure
 import contextlib
 from data import open_dataset

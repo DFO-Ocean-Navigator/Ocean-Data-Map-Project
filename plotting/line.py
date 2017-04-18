@@ -1,6 +1,6 @@
 import plotter
 import geopy
-from flask.ext.babel import gettext
+from flask_babel import gettext
 
 
 class LinePlotter(plotter.Plotter):

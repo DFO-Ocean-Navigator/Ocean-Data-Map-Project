@@ -7,7 +7,7 @@ from oceannavigator.misc import list_areas
 import json
 from operator import itemgetter
 import re
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from data import open_dataset
 
 

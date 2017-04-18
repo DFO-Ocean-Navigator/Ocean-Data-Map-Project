@@ -3,7 +3,7 @@ import numpy as np
 from oceannavigator.util import get_dataset_url
 import seawater
 import point
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from data import open_dataset
 
 

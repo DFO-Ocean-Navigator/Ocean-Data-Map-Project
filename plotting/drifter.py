@@ -9,7 +9,7 @@ import pytz
 import dateutil.parser
 from oceannavigator import app
 import plotter
-from flask.ext.babel import gettext
+from flask_babel import gettext
 from data import open_dataset
 import time
 import datetime

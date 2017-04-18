@@ -6,7 +6,7 @@ import plotting
 import os
 import numpy as np
 from StringIO import StringIO
-from flask.ext.babel import gettext
+from flask_babel import gettext
 
 
 def make_colormap(seq):

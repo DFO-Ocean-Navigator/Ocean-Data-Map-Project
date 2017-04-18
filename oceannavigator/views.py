@@ -2,7 +2,7 @@
 # vim: set fileencoding=utf-8 :
 
 from flask import Response, request, redirect, send_file
-from flask.ext.babel import gettext
+from flask_babel import gettext
 import json
 import datetime
 
@@ -169,11 +169,11 @@ def colors():
     ]
     if request.args.get('random'):
         data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
-    if request.args.get('none'):
-        data.insert(0, {'id': 'none', 'value': gettext('None')})
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
-    return resp
+        if request.args.get('none'):
+            data.insert(0, {'id': 'none', 'value': gettext('None')})
+            js = json.dumps(data)
+            resp = Response(js, status=200, mimetype='application/json')
+            return resp
 
 
 @app.route('/api/colormaps/')
@@ -214,8 +214,8 @@ def depth():
         with open_dataset(get_dataset_url(dataset)) as ds:
             for variable in variables:
                 if variable and \
-                    variable in ds.variables and \
-                        set(ds.depth_dimensions) & \
+                   variable in ds.variables and \
+                   set(ds.depth_dimensions) & \
                    set(ds.variables[variable].dimensions):
                     if str(request.args.get('all')).lower() in ['true',
                                                                 'yes',
@@ -232,9 +232,9 @@ def depth():
                 if len(data) > 0:
                     data.insert(
                         0, {'id': 'bottom', 'value': gettext('Bottom')})
-    data = [
-        e for i, e in enumerate(data) if data.index(e) == i
-    ]
+                    data = [
+                        e for i, e in enumerate(data) if data.index(e) == i
+                    ]
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -270,29 +270,29 @@ def vars_query():
                 for v in ds.variables:
                     if ('time_counter' in v.dimensions or
                         'time' in v.dimensions) \
-                            and ('y' in v.dimensions or
-                                 'yc' in v.dimensions or
-                                 'node' in v.dimensions or
-                                 'nele' in v.dimensions or
-                                 'latitude' in v.dimensions or
-                                 'lat' in v.dimensions):
+                       and ('y' in v.dimensions or
+                            'yc' in v.dimensions or
+                            'node' in v.dimensions or
+                            'nele' in v.dimensions or
+                            'latitude' in v.dimensions or
+                            'lat' in v.dimensions):
                         if three_d and not (
                             set(ds.depth_dimensions) & set(v.dimensions)
                         ):
                             continue
-                        else:
-                            if not is_variable_hidden(dataset, v):
+                    else:
+                        if not is_variable_hidden(dataset, v):
+                            data.append({
+                                'id': v.key,
+                                'value': get_variable_name(dataset, v),
+                                'scale': get_variable_scale(dataset, v)
+                            })
+                            if v.key in climatology_variables:
                                 data.append({
-                                    'id': v.key,
-                                    'value': get_variable_name(dataset, v),
-                                    'scale': get_variable_scale(dataset, v)
+                                    'id': v.key + "_anom",
+                                    'value': get_variable_name(dataset, v) + " Anomaly",
+                                    'scale': [-10, 10]
                                 })
-                                if v.key in climatology_variables:
-                                    data.append({
-                                        'id': v.key + "_anom",
-                                        'value': get_variable_name(dataset, v) + " Anomaly",
-                                        'scale': [-10, 10]
-                                    })
 
             VECTOR_MAP = {
                 'vozocrtx': 'vozocrtx,vomecrty',
@@ -350,8 +350,8 @@ def time_query():
                         date.month,
                         15
                     )
-                data.append(
-                    {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
+                    data.append(
+                        {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
 
     data = sorted(data, key=lambda k: k['id'])
 
@@ -519,8 +519,8 @@ def plot():
     if 'save' in request.args:
         if 'size' in request.args:
             size = request.args.get('size')
-        if 'dpi' in request.args:
-            opts['dpi'] = request.args.get('dpi')
+            if 'dpi' in request.args:
+                opts['dpi'] = request.args.get('dpi')
 
     if 'format' in request.args:
         opts['format'] = request.args.get('format')

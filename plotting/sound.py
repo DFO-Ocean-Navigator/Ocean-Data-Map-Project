@@ -4,7 +4,7 @@ import numpy as np
 import seawater
 import pint
 import ts
-from flask.ext.babel import gettext
+from flask_babel import gettext
 
 
 class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
