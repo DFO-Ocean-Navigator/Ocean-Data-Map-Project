@@ -42,7 +42,6 @@ class TransectPlotter(line.LinePlotter):
                 break
 
     def load_data(self):
-        interp = utils.get_interpolation(self.query)
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
@@ -80,14 +79,9 @@ class TransectPlotter(line.LinePlotter):
                 parallel = mag * np.cos(theta)
                 perpendicular = mag * np.sin(theta)
 
-                self.__fill_invalid_shift(parallel)
-                self.__fill_invalid_shift(perpendicular)
-
             else:
                 transect_pts, distance, value, dep = dataset.get_path_profile(
                     self.points, time, self.variables[0])
-
-                self.__fill_invalid_shift(value)
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
@@ -148,7 +142,9 @@ class TransectPlotter(line.LinePlotter):
                 }
 
         if self.variables != self.variables_anom:
-            with open_dataset(get_dataset_climatology(self.dataset_name)) as dataset:
+            with open_dataset(
+                get_dataset_climatology(self.dataset_name)
+            ) as dataset:
                 if self.variables[0] in dataset.variables:
                     if len(self.variables) == 1:
                         climate_points, climate_distance, climate_data = \
@@ -186,9 +182,6 @@ class TransectPlotter(line.LinePlotter):
                         climate_parallel = mag * np.cos(theta)
                         climate_perpendicular = mag * np.sin(theta)
 
-                        self.__fill_invalid_shift(climate_parallel)
-                        self.__fill_invalid_shift(climate_perpendicular)
-
                         self.transect_data['parallel'] -= climate_parallel
                         self.transect_data[
                             'perpendicular'] -= climate_perpendicular
@@ -216,6 +209,7 @@ class TransectPlotter(line.LinePlotter):
             "Latitude",
             "Longitude",
             "Distance (km)",
+            "Depth (m)",
         ]
 
         if self.surface is not None:
@@ -225,50 +219,42 @@ class TransectPlotter(line.LinePlotter):
             ))
 
         if len(self.variables) > 1:
-            for t in ["Parallel", "Perpendicular"]:
-                columns.extend(
-                    map(
-                        lambda d: "%s @ %s %s" % (
-                            t, np.round(d), self.depth_unit
-                        ),
-                        self.depth
-                    )
-                )
+            columns.append("Parallel %s (%s)" % (self.transect_data['name'],
+                                                 self.transect_data['unit']))
+            columns.append(
+                "Perpendicular %s (%s)" % (self.transect_data['name'],
+                                           self.transect_data['unit']))
+            values = ['parallel', 'perpendicular']
         else:
-            columns.extend(
-                map(
-                    lambda d: "%s (%s)" % (np.round(d), self.depth_unit),
-                    self.depth
-                )
-            )
+            columns.append("%s (%s)" % (self.transect_data['name'],
+                                        self.transect_data['unit']))
+            values = ['data']
 
         data = []
         for idx, dist in enumerate(self.transect_data['distance']):
             if dist == self.transect_data['distance'][idx - 1]:
                 continue
 
-            entry = [
-                "%0.4f" % self.transect_data['points'][0, idx],
-                "%0.4f" % self.transect_data['points'][1, idx],
-                "%0.1f" % dist
-            ]
-            if self.surface is not None:
-                entry.append("%0.4f" % self.surface_data['data'][idx])
+            for j in range(0, len(self.transect_data[values[0]][:, idx])):
+                entry = [
+                    "%0.4f" % self.transect_data['points'][0, idx],
+                    "%0.4f" % self.transect_data['points'][1, idx],
+                    "%0.1f" % dist,
+                    "%0.1f" % self.depth[idx, j]
+                ]
+                if self.surface is not None:
+                    if j == 0:
+                        entry.append("%0.4f" % self.surface_data['data'][idx])
+                    else:
+                        entry.append("-")
 
-            if len(self.variables) > 1:
-                values = ['parallel', 'perpendicular']
-            else:
-                values = ['data']
+                for t in values:
+                    entry.append("%0.4f" % self.transect_data[t][j, idx])
 
-            for t in values:
-                entry.extend(
-                    map(
-                        lambda v: "%0.4f" % v,
-                        self.transect_data[t][:, idx]
-                    )
-                )
+                if entry[-1] == "nan":
+                    continue
 
-            data.append(entry)
+                data.append(entry)
 
         return super(TransectPlotter, self).csv(header, columns, data)
 
@@ -278,7 +264,7 @@ class TransectPlotter(line.LinePlotter):
         station = range(1, 1 + numstations)
         station = map(
             lambda s: "%03d" % s,
-            np.repeat(station, len(self.depth))
+            np.repeat(station, self.depth.shape[1])
         )
 
         latitude = np.repeat(self.transect_data['points'][0, :],
@@ -286,7 +272,7 @@ class TransectPlotter(line.LinePlotter):
         longitude = np.repeat(self.transect_data['points'][1, :],
                               len(self.depth))
         time = np.repeat(self.timestamp, len(station))
-        depth = np.tile(self.depth, numstations)
+        depth = self.depth.ravel()
 
         if len(self.variables) > 1:
             variable_names = [
@@ -440,6 +426,7 @@ class TransectPlotter(line.LinePlotter):
         ax.axes.get_xaxis().set_visible(False)
 
     def _transect_plot(self, values, depths, name, vmin, vmax):
+        self.__fill_invalid_shift(values)
 
         dist = np.tile(self.transect_data['distance'], (values.shape[0], 1))
         c = plt.pcolormesh(dist, depths.transpose(), values,

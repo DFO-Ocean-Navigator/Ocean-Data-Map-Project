@@ -202,7 +202,11 @@ class Plotter:
                     "%0.4f" % longitude[idx],
                     "%0.4f" % latitude[idx],
                     "%0.1f" % depth[idx],
-                ] + map(str, data[idx])
+                ]
+                if len(data.shape) == 1:
+                    line.append(str(data[idx]))
+                else:
+                    line.append(map(str, data[idx]))
 
                 if idx > 0 and station[idx] == station[idx - 1]:
                     line[1] = ""
