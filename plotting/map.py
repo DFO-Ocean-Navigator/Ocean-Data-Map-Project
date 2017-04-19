@@ -14,7 +14,7 @@ import tempfile
 import os
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_dataset_climatology
-from shapely.geometry import LinearRing
+from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
 from shapely.ops import cascaded_union
 from matplotlib.patches import Polygon
 from matplotlib.bezier import concatenate_paths
@@ -35,16 +35,14 @@ class MapPlotter(area.AreaPlotter):
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
-        data = np.ma.expand_dims(float_to_str(self.data.ravel()[::5]), 1)
+        # data = np.ma.expand_dims(float_to_str(self.data.ravel()[::5]), 1)
+        data = float_to_str(self.data.ravel()[::5])
         station = map(lambda x: "%06d" % x, range(1, len(data) + 1))
 
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
         time = np.repeat(self.timestamp, data.shape[0])
-        if (self.depth != 'bottom'):
-            depth = np.repeat(self.depth_value, data.shape[0])
-        else:
-            depth = self.bathymetry.ravel()[::5]
+        depth = self.depth_value.ravel()[::5]
 
         return super(MapPlotter, self).odv_ascii(
             self.dataset_name,
@@ -57,6 +55,39 @@ class MapPlotter(area.AreaPlotter):
             time,
             data
         )
+
+    def csv(self):
+        header = [
+            ['Dataset', self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()]
+        ]
+
+        columns = [
+            "Latitude",
+            "Longitude",
+            "Depth (m)",
+            "%s (%s)" % (self.variable_name, self.variable_unit)
+        ]
+        data_in = self.data.ravel()[::5]
+
+        latitude = self.latitude.ravel()[::5]
+        longitude = self.longitude.ravel()[::5]
+        depth = self.depth_value.ravel()[::5]
+
+        data = []
+        for idx in range(0, len(latitude)):
+            if np.ma.is_masked(data_in[idx]):
+                continue
+
+            entry = [
+                "%0.4f" % latitude[idx],
+                "%0.4f" % longitude[idx],
+                "%0.1f" % depth[idx],
+                "%0.1f" % data_in[idx]
+            ]
+            data.append(entry)
+
+        return super(MapPlotter, self).csv(header, columns, data)
 
     def load_data(self):
         if self.projection == 'EPSG:32661':
@@ -121,24 +152,34 @@ class MapPlotter(area.AreaPlotter):
             for v in self.variables:
                 var = dataset.variables[v]
                 allvars.append(v)
-                d = dataset.get_area(
-                    np.array([self.latitude, self.longitude]),
-                    self.depth,
-                    self.time,
-                    v
-                )
+                if self.filetype in ['csv', 'odv', 'txt']:
+                    d, depth_value = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.time,
+                        v,
+                        return_depth=True
+                    )
+                else:
+                    d = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.time,
+                        v
+                    )
 
                 self.variable_unit, d = self.kelvin_to_celsius(
                     self.variable_unit, d)
 
                 data.append(d)
-                if len(var.dimensions) == 3:
-                    self.depth_label = ""
-                elif self.depth == 'bottom':
-                    self.depth_label = " at Bottom"
-                else:
-                    self.depth_label = " at " + \
-                        str(int(np.round(depth_value))) + " m"
+                if self.filetype not in ['csv', 'odv', 'txt']:
+                    if len(var.dimensions) == 3:
+                        self.depth_label = ""
+                    elif self.depth == 'bottom':
+                        self.depth_label = " at Bottom"
+                    else:
+                        self.depth_label = " at " + \
+                            str(int(np.round(depth_value))) + " m"
 
             if len(data) == 2:
                 data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
@@ -255,6 +296,40 @@ class MapPlotter(area.AreaPlotter):
                 mask = maskoceans(self.longitude, self.latitude, d).mask
                 d[~mask] = np.ma.masked
 
+        if self.area and self.filetype in ['csv', 'odv', 'txt', 'geotiff']:
+            area_polys = []
+            for a in self.area:
+                rings = [LinearRing(p) for p in a['polygons']]
+                innerrings = [LinearRing(p) for p in a['innerrings']]
+
+                polygons = []
+                for r in rings:
+                    inners = []
+                    for ir in innerrings:
+                        if r.contains(ir):
+                            inners.append(ir)
+
+                    polygons.append(Poly(r, inners))
+
+                area_polys.append(MultiPolygon(polygons))
+
+            points = [Point(p) for p in zip(self.latitude.ravel(),
+                                            self.longitude.ravel())]
+
+            indicies = []
+            for a in area_polys:
+                indicies.append(np.where(
+                    map(
+                        lambda p, poly=a: poly.contains(p),
+                        points
+                    )
+                )[0])
+
+            indicies = np.unique(np.array(indicies).ravel())
+            newmask = np.ones(self.data.shape, dtype=bool)
+            newmask[np.unravel_index(indicies, newmask.shape)] = False
+            self.data.mask |= newmask
+
         self.depth_value = depth_value
 
     def parse_query(self, query):
@@ -269,7 +344,7 @@ class MapPlotter(area.AreaPlotter):
         all_rings = []
         data = None
         for idx, a in enumerate(self.area):
-            if isinstance(a, str) or isinstance(a, unicode):
+            if isinstance(a, basestring):
                 a = a.encode("utf-8")
                 sp = a.split('/', 1)
                 if data is None:
@@ -284,7 +359,7 @@ class MapPlotter(area.AreaPlotter):
                 a['polygons'] = p.tolist()
                 del p
 
-            rings = [LinearRing(p) for p in a['polygons']]
+            rings = [LinearRing(po) for po in a['polygons']]
             if len(rings) > 1:
                 u = cascaded_union(rings)
             else:

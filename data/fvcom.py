@@ -281,33 +281,26 @@ class Fvcom(netcdf_data.NetCDFData):
         res = self.__resample(
             latvar[min_i:max_i],
             lonvar[min_i:max_i],
-            [latitude], [longitude],
+            latitude, longitude,
             data,
             radius
         )
 
         if return_depth:
-            # if 'nele' in self._dataset.variables[variable].dimensions:
-            #     dims = np.array(self._dataset.variables[variable].dimensions)
-            #     idx = np.where((dims == 'siglev') | (dims == 'siglay'))[0]
-            #     d_dim = 1
-            #     if len(idx) == 1:
-            #         shp = np.array(self._dataset.variables[variable].shape)
-            #         d_dim = shp[idx]
-
-            #     d = np.zeros((d_dim, data.shape[0], data.shape[1]))
-            # else:
             d = self.__get_depths(variable, time, min_i, max_i)
 
             res_d = self.__resample(
                 latvar[min_i:max_i],
                 lonvar[min_i:max_i],
-                [latitude], [longitude],
+                latitude, longitude,
                 d,
                 radius
             )
 
-            dep = res_d[depth]
+            if len(latitude) > 1:
+                dep = res_d[:, depth]
+            else:
+                dep = res_d[depth]
 
             return res, dep
         else:

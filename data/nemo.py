@@ -308,7 +308,7 @@ class Nemo(NetCDFData):
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
-                [latitude], [longitude],
+                latitude, longitude,
                 data,
                 radius
             )
@@ -323,7 +323,7 @@ class Nemo(NetCDFData):
                 dep = self.__resample(
                     latvar[miny:maxy, minx:maxx],
                     lonvar[miny:maxy, minx:maxx],
-                    [latitude], [longitude],
+                    latitude, longitude,
                     np.reshape(d, data.shape),
                     radius
                 )
@@ -336,13 +336,14 @@ class Nemo(NetCDFData):
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
-                [latitude], [longitude],
+                latitude, longitude,
                 data,
                 radius
             )
 
             if return_depth:
                 dep = self.depths[depth]
+                dep = np.tile(dep, len(latitude))
                 if hasattr(time, "__len__"):
                     dep = np.array([dep] * len(time))
 

@@ -303,14 +303,19 @@ class Mercator(netcdf_data.NetCDFData):
             )
 
             if return_depth:
-                d = self.depths[depths]
+                d = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                                      mask=True,
+                                      dtype=self.depths.dtype)
+
+                d[np.unravel_index(indices, d.shape)] = self.depths[depths]
+
                 if hasattr(time, "__len__"):
                     d = [d] * len(time)
 
                 dep = self.__resample(
                     self.latvar[miny:maxy],
                     self.lonvar[minx:maxx],
-                    [latitude], [longitude],
+                    latitude, longitude,
                     np.reshape(d, data.shape),
                     radius
                 )
@@ -324,13 +329,14 @@ class Mercator(netcdf_data.NetCDFData):
             res = self.__resample(
                 self.latvar[miny:maxy],
                 self.lonvar[minx:maxx],
-                [latitude], [longitude],
+                latitude, longitude,
                 data,
                 radius
             )
 
             if return_depth:
                 dep = self.depths[depth]
+                dep = np.tile(dep, len(latitude))
                 if hasattr(time, "__len__"):
                     dep = np.array([dep] * len(time))
 

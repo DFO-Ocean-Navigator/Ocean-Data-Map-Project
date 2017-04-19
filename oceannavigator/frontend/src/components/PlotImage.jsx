@@ -231,9 +231,8 @@ class PlotImage extends React.Component {
             ><Icon icon="file-image-o" /> TIFF</MenuItem>
             <MenuItem
               eventKey="csv"
-              disabled={this.props.query.type == "map" ||
-                  this.props.query.type == "hovmoller"
-              }><Icon icon="file-text-o" /> CSV</MenuItem>
+              disabled={this.props.query.type == "hovmoller"}
+            ><Icon icon="file-text-o" /> CSV</MenuItem>
             <MenuItem
               eventKey="odv"
               disabled={jQuery.inArray(this.props.query.type, [

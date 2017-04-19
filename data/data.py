@@ -84,7 +84,7 @@ class Data(object):
         if return_depth:
             a, d = self.get_point(latitude, longitude, depth, time, variable,
                                   return_depth=return_depth)
-            return np.reshape(a, area.shape[1:]), d
+            return np.reshape(a, area.shape[1:]), np.reshape(d, area.shape[1:])
         else:
             a = self.get_point(latitude, longitude, depth, time, variable,
                                return_depth=return_depth)
