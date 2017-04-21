@@ -113,6 +113,14 @@ class Plotter:
         if depth is None or len(str(depth)) == 0:
             depth = 0
 
+        if isinstance(depth, basestring) and depth.isdigit():
+            depth = int(depth)
+
+        if isinstance(depth, list):
+            for i in range(0, len(depth)):
+                if isinstance(depth[i], basestring) and depth[i].isdigit():
+                    depth[i] = int(depth[i])
+
         self.depth = depth
 
         self.showmap = query.get('showmap') is None or \
