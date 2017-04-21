@@ -333,11 +333,11 @@ class TransectPlotter(line.LinePlotter):
 
             utils.path_plot(self.transect_data['points'])
 
-        def do_plot(map_subplot, nomap_subplot, data, name):
+        def do_plot(subplots, map_subplot, nomap_subplot, data, name):
             if self.showmap:
-                plt.subplot(map_subplot)
+                plt.subplot(subplots[map_subplot])
             else:
-                plt.subplot(nomap_subplot)
+                plt.subplot(subplots[nomap_subplot])
 
             divider = self._transect_plot(data, self.depth, name, vmin, vmax)
 
@@ -358,12 +358,12 @@ class TransectPlotter(line.LinePlotter):
                 vmax = max(vmax, -vmin)
 
             do_plot(
-                gs[1], gs[0],
+                gs, 1, 0,
                 self.transect_data['parallel'],
                 gettext("Parallel")
             )
             do_plot(
-                gs[3], gs[1],
+                gs, 3, 1,
                 self.transect_data['perpendicular'],
                 gettext("Perpendicular")
             )
@@ -383,7 +383,7 @@ class TransectPlotter(line.LinePlotter):
                     vmax = max(vmax, -vmin)
 
             do_plot(
-                gs[1], gs[0],
+                gs, 1, 0,
                 self.transect_data['data'],
                 self.transect_data['name'],
             )
