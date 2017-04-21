@@ -25,9 +25,11 @@ class LinePlotter(plotter.Plotter):
 
         name = query.get('name')
         if name is None or name == '':
-            name = gettext("%s to %s") % (
-                geopy.Point(points[0]),
-                geopy.Point(points[-1])
+            p0 = geopy.Point(points[0])
+            p1 = geopy.Point(points[-1])
+            name = gettext("(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)") % (
+                p0.latitude, p0.longitude,
+                p1.latitude, p1.longitude,
             )
 
         self.name = name
