@@ -295,7 +295,11 @@ class Nemo(NetCDFData):
                     [data_in.shape[0], data_in.shape[1], -1])
                 data = []
                 for i, t in enumerate(time):
-                    data.append(data_in[i, depths, indices])
+                    di = np.ma.MaskedArray(np.zeros(data_in.shape[-1]),
+                                           mask=True,
+                                           dtype=data_in.dtype)
+                    di[indices] = data_in[i, depths, indices]
+                    data.append(di)
                 data = np.ma.array(data).reshape([len(time), d.shape[-2],
                                                   d.shape[-1]])
             else:
@@ -317,8 +321,6 @@ class Nemo(NetCDFData):
                 d = self.depths[depths]
                 d = np.zeros(data.shape)
                 d[np.unravel_index(indices, d.shape)] = self.depths[depths]
-                if hasattr(time, "__len__"):
-                    d = [d] * len(time)
 
                 dep = self.__resample(
                     latvar[miny:maxy, minx:maxx],

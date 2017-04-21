@@ -42,3 +42,13 @@ class TestGeo(unittest.TestCase):
         self.assertAlmostEqual(b[0], 44.5, places=1)
         self.assertAlmostEqual(lat[4], 5.0, places=1)
         self.assertAlmostEqual(lon[4], 5.0, places=1)
+
+        points = [[0, 0], [10, 10], [20, 20]]
+        dist, t, lat, lon, b = geo.path_to_points(points, n=10, times=None)
+        self.assertAlmostEqual(lat[-1], 20.0, places=1)
+        self.assertAlmostEqual(lon[-1], 20.0, places=1)
+
+        points = [[0, 0], [10, 10], [20, 20]]
+        dist, t, lat, lon, b = geo.path_to_points(points, n=10, times=[0, 1])
+        self.assertAlmostEqual(lat[-1], 20.0, places=1)
+        self.assertAlmostEqual(lon[-1], 20.0, places=1)

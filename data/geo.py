@@ -1,6 +1,7 @@
 import numpy as np
 import geopy
 from geopy.distance import vincenty, VincentyDistance
+import datetime
 
 
 def bearing(lat0, lon0, lat1, lon1):
@@ -17,6 +18,16 @@ def bearing(lat0, lon0, lat1, lon1):
 def path_to_points(points, n=100, times=None):
     if times is None:
         times = [0] * len(points)
+
+    if len(times) != len(points):
+        if isinstance(times[0], datetime.datetime):
+            times = times[0] + np.array(map(
+                lambda d: datetime.timedelta(0, d),
+                np.linspace(
+                    0, (times[-1] - times[0]).total_seconds(), num=len(points))
+            ))
+        else:
+            times = np.linspace(times[0], times[-1], num=len(points))
 
     tuples = zip(points, points[1:], times, times[1:])
 
