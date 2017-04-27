@@ -438,7 +438,12 @@ class OceanNavigator extends React.Component {
             <Button
               onClick={function() {
                 this.permalinkbox.select();
-                document.execCommand("copy");
+                if ($('html').hasClass("ie")) {
+                  var copied = window.clipboardData.getData("Text");
+                  if (copied != this.permalinkbox.value) {
+                    alert(_("Clipboard access was denied. Please right-click and copy the link manually."));
+                  }
+                }
               }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
               onClick={() => this.setState({showPermalink: false})}
