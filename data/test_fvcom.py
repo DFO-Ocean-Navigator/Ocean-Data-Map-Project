@@ -13,6 +13,22 @@ class TestFvcom(unittest.TestCase):
         with fvcom.Fvcom('data/testdata/fvcom_test.nc'):
             pass
 
+    def test_depths(self):
+        with fvcom.Fvcom('data/testdata/fvcom_test.nc') as n:
+            depths = n.depths
+
+            self.assertEqual(len(depths), 1)
+            self.assertEqual(depths[0], 0)
+
+    def test_variables(self):
+        with fvcom.Fvcom('data/testdata/fvcom_test.nc') as n:
+            variables = n.variables
+
+            self.assertEqual(len(variables), 3)
+            self.assertTrue('h' in variables)
+            self.assertEqual(variables['h'].name, 'Bathymetry')
+            self.assertEqual(variables['h'].unit, 'm')
+
     def test_get_point(self):
         with fvcom.Fvcom('data/testdata/fvcom_test.nc') as n:
             data, depth = n.get_point(45.3, -64.0, 0, 0, 'temp',

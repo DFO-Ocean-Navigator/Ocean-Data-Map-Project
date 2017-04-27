@@ -14,6 +14,16 @@ class TestMercator(unittest.TestCase):
         with mercator.Mercator('data/testdata/mercator_test.nc'):
             pass
 
+    def test_variables(self):
+        with mercator.Mercator('data/testdata/mercator_test.nc') as n:
+            variables = n.variables
+
+            self.assertEqual(len(variables), 6)
+            self.assertTrue('votemper' in variables)
+            self.assertEqual(variables['votemper'].name,
+                             'Sea water potential temperature')
+            self.assertEqual(variables['votemper'].unit, 'Kelvin')
+
     def test_get_point(self):
         with mercator.Mercator('data/testdata/mercator_test.nc') as n:
             self.assertAlmostEqual(

@@ -26,7 +26,7 @@ class TestGeo(unittest.TestCase):
         self.assertTrue((lo > -52.01).all())
         self.assertTrue((lo < -49.99).all())
 
-        # Test with constant lat/lon
+        # Test with constant lat
         start = geopy.Point("47N, 50W")
         end = geopy.Point("47N, 52W")
         dist, la, lo, b = geo.points_between(start, end, 10, True)
@@ -35,6 +35,16 @@ class TestGeo(unittest.TestCase):
         self.assertTrue((la == 47).all())
         self.assertTrue((lo > -52.01).all())
         self.assertTrue((lo < -49.99).all())
+
+        # Test with constant lon
+        start = geopy.Point("47N, 50W")
+        end = geopy.Point("40N, 50W")
+        dist, la, lo, b = geo.points_between(start, end, 10, True)
+
+        self.assertEqual(len(dist), 10)
+        self.assertTrue((lo == -50).all())
+        self.assertTrue((la > 39.99).all())
+        self.assertTrue((la < 47.01).all())
 
     def test_path_to_points(self):
         points = [[1, 1], [10, 10]]

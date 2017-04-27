@@ -14,6 +14,16 @@ class TestNemo(unittest.TestCase):
         with nemo.Nemo('data/testdata/nemo_test.nc'):
             pass
 
+    def test_variables(self):
+        with nemo.Nemo('data/testdata/nemo_test.nc') as n:
+            variables = n.variables
+
+            self.assertEqual(len(variables), 5)
+            self.assertTrue('votemper' in variables)
+            self.assertEqual(variables['votemper'].name,
+                             'Water temperature at CMC')
+            self.assertEqual(variables['votemper'].unit, 'Kelvins')
+
     def test_get_point(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             self.assertAlmostEqual(
