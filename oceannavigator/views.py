@@ -36,6 +36,7 @@ import pytz
 from data import open_dataset
 
 MAX_CACHE = 315360000
+FAILURE = redirect("/", code=302)
 
 
 @app.route('/api/range/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
@@ -63,11 +64,10 @@ def query(q):
         data = oceannavigator.misc.list_kml_files('line')
     elif q == 'areas':
         data = oceannavigator.misc.list_kml_files('area')
-    elif q == 'drifters':
-        data = oceannavigator.misc.list_drifters()
-        max_age = 3600
     elif q == 'class4':
         data = oceannavigator.misc.list_class4_files()
+    else:
+        return FAILURE
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -75,7 +75,7 @@ def query(q):
     return resp
 
 
-@app.route('/api/<string:q>/<string:q_id>/')
+@app.route('/api/<string:q>/<string:q_id>.json')
 def query_id(q, q_id):
     if q == 'areas':
         data = oceannavigator.misc.list_areas(q_id)
@@ -85,6 +85,8 @@ def query_id(q, q_id):
         data = oceannavigator.misc.drifter_meta()
     elif q == 'observation' and q_id == 'meta':
         data = oceannavigator.misc.observation_meta()
+    else:
+        return FAILURE
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -129,6 +131,8 @@ def query_file(q, projection, resolution, extent, file_id):
     elif q == 'observations':
         data = oceannavigator.misc.observations(
             file_id, projection, resolution, extent)
+    else:
+        return FAILURE
 
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -203,6 +207,9 @@ def colormap_image():
 @app.route('/api/depth/')
 def depth():
     var = request.args.get('variable')
+
+    if var is None:
+        return FAILURE
 
     variables = var.split(',')
     variables = [re.sub('_anom$', '', v) for v in variables]
@@ -323,17 +330,6 @@ def vars_query():
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     return resp
-
-
-def _get_time_var(dataset):
-    if 'time_counter' in dataset.variables:
-        time_var = dataset.variables['time_counter']
-    elif 'time' in dataset.variables:
-        time_var = dataset.variables['time']
-    else:
-        time_var = None
-
-    return time_var
 
 
 @app.route('/api/timestamps/')
@@ -458,6 +454,8 @@ def drifter_query(q, drifter_id):
         pts = oceannavigator.misc.drifters_vars(drifter_id)
     elif q == 'time':
         pts = oceannavigator.misc.drifters_time(drifter_id)
+    else:
+        return FAILURE
 
     data = json.dumps(pts)
     resp = Response(data, status=200, mimetype='application/json')
@@ -471,6 +469,8 @@ def class4_query(q, class4_id, index):
         pts = oceannavigator.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
         pts = oceannavigator.misc.list_class4_models(class4_id)
+    else:
+        return FAILURE
 
     data = json.dumps(pts)
     resp = Response(data, status=200, mimetype='application/json')
@@ -480,8 +480,6 @@ def class4_query(q, class4_id, index):
 
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
-    FAILURE = redirect("/", code=302)
-
     if request.method == "GET":
         if 'query' not in request.args:
             return FAILURE
@@ -564,27 +562,27 @@ def plot():
     elif plottype == 'stick':
         plotter = StickPlotter(
             dataset, query, request.args.get('format'))
+    else:
+        return FAILURE
 
     img, mime, filename = plotter.run(size=size,
                                       dpi=request.args.get('dpi'))
     if img != "":
         response = make_response(img, mime)
     else:
-        response = FAILURE
+        return FAILURE
 
     if 'save' in request.args:
         response.headers[
             'Content-Disposition'] = "attachment; filename=\"%s\"" % filename
 
-    if response != FAILURE:
-        response.cache_control.max_age = 300
+    response.cache_control.max_age = 300
 
     return response
 
 
 @app.route('/stats/', methods=['GET', 'POST'])
 def stats():
-    FAILURE = redirect("/", code=302)
     if request.method == "GET":
         if 'query' not in request.args:
             return FAILURE
