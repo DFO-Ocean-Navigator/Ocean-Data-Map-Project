@@ -18,7 +18,7 @@ class DrifterSelector extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: "/api/drifters/meta/",
+      url: "/api/drifters/meta.json",
       dataType: "json",
       success: function(data) {
         var imei = Object.keys(data.imei).filter(function (k) {
@@ -50,7 +50,7 @@ class DrifterSelector extends React.Component {
 
       }.bind(this),
       error: function(r, status, err) {
-        console.error("/api/drifter/meta.json", status, err.toString());
+        console.error("/api/drifters/meta.json", status, err.toString());
       },
     });
   }

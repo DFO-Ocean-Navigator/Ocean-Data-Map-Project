@@ -18,7 +18,7 @@ class ObservationSelector extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: "/api/observation/meta/",
+      url: "/api/observation/meta.json",
       dataType: "json",
       success: function(data) {
         this.setState({
