@@ -186,7 +186,8 @@ class TransectPlotter(line.LinePlotter):
                     )
                     self.__fill_invalid_shift(climate_data)
 
-                    if (self.depth != cdep).any():
+                    if (self.depth.shape != cdep.shape) or \
+                       (self.depth != cdep).any():
                         # Need to interpolate the depths
                         climate_data = interpolate_depths(
                             climate_data,
