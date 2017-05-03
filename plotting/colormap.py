@@ -34,6 +34,7 @@ def find_colormap(name):
             return colormaps[key]
     return colormaps['mercator']
 
+
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
@@ -134,6 +135,11 @@ colormaps = {
 }
 colormaps['wind'] = colormaps['velocity']
 
+# This is a little odd, but it has a purpose.
+# These gettext calls don't really do anything, but it registers the keys with
+# Babel so that they'll end up in the translation list.
+# If the gettext calls were in the definition of colormap_names, they'd get
+# executed before the user's locale is known and would always be in English.
 gettext('Anomaly')
 gettext('Bathymetry')
 gettext('Chlorophyll')
