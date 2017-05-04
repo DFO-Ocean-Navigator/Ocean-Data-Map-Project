@@ -193,7 +193,7 @@ class TimeseriesPlotter(point.PointPlotter):
         if isinstance(qdepth, list):
             qdepth = qdepth[0]
 
-        if qdepth and len(qdepth) > 0:
+        if qdepth and hasattr(qdepth, "__len__") and len(qdepth) > 0:
             if qdepth == 'all':
                 depth = 'all'
             elif qdepth == 'bottom':
@@ -220,7 +220,9 @@ class TimeseriesPlotter(point.PointPlotter):
             if self.depth != 'all' and self.depth != 'bottom' and \
                 (set(dataset.variables[var].dimensions) &
                     set(dataset.depth_dimensions)):
-                self.depth_label = " at %dm" % (dataset.depths[self.depth])
+                self.depth_label = " at %d m" % (
+                    np.round(dataset.depths[self.depth])
+                )
 
             elif self.depth == 'bottom':
                 self.depth_label = ' at Bottom'

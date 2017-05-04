@@ -111,9 +111,9 @@ class StickPlotter(point.PointPlotter):
                     if self.depth[idx2] == "bottom":
                         depth = "Bottom"
                     else:
-                        depth = "%dm" % self.data_depth[
+                        depth = "%d m" % np.round(self.data_depth[
                             idx, 0, idx2, 0
-                        ]
+                        ])
 
                     a.set_title(gettext("%s at %s (%s)") % (
                         self.vector_name(self.variable_names[0]),

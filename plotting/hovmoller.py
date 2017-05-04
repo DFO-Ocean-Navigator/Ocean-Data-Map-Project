@@ -30,7 +30,7 @@ class HovmollerPlotter(line.LinePlotter):
                 else:
                     self.depth = np.clip(int(self.depth), 0,
                                          len(dataset.depths) - 1)
-                    self.depth_value = dataset.depths[self.depth]
+                    self.depth_value = np.round(dataset.depths[self.depth])
                     self.depth_unit = "m"
             else:
                 self.depth_value = 0
