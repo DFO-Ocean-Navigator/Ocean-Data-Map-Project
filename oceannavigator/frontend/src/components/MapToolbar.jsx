@@ -223,7 +223,7 @@ class MapToolbar extends React.Component {
         header: true,
         complete: function(results) {
           var fields_lowered = results.meta.fields.map(function(f) {
-            return f.toLowerCase();
+            return f.toLowerCase().trim();
           });
           function findKey(names) {
             for (var i = 0; i < names.length; i++) {
