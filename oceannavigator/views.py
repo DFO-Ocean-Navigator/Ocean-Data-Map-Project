@@ -10,7 +10,7 @@ from oceannavigator import app
 from oceannavigator.util import (
     get_variable_name, get_datasets,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden
+    is_variable_hidden, get_dataset_cache
 )
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
@@ -409,7 +409,7 @@ def _cache_and_send_img(img, f):
 def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
-    if os.path.isfile(f):
+    if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
         if depth != "bottom" and depth != "all":
@@ -598,3 +598,24 @@ def stats():
 
     data = areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')
+
+
+def _is_cache_valid(dataset, f):
+    if os.path.isfile(f):
+        cache_time = get_dataset_cache(dataset)
+        if cache_time is not None:
+            modtime = datetime.datetime.fromtimestamp(
+                os.path.getmtime(f)
+            )
+            age_hours = (
+                datetime.datetime.now() - modtime
+            ).total_seconds() / 3600
+            if age_hours > cache_time:
+                os.remove(f)
+                return False
+            else:
+                return True
+        else:
+            return True
+    else:
+        return False

@@ -34,7 +34,8 @@ class TestUtil(unittest.TestCase):
             "dataset": {
                 "url": "the_url",
                 "attribution": "My attribution <b>bold</b>",
-                "climatology": "climatology_url"
+                "climatology": "climatology_url",
+                "cache": 5,
             }
         }
 
@@ -43,6 +44,13 @@ class TestUtil(unittest.TestCase):
             util.get_dataset_climatology("dataset"), "climatology_url")
         self.assertEqual(
             util.get_dataset_attribution("dataset"), "My attribution bold")
+        self.assertEqual(util.get_dataset_cache("dataset"), 5)
+
+        m.return_value = {
+            "dataset2": {
+            }
+        }
+        self.assertEqual(util.get_dataset_cache("dataset2"), None)
 
     @mock.patch("oceannavigator.util.read_config")
     def test_get_variables(self, m):

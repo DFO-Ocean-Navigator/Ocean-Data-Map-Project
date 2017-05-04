@@ -1,5 +1,6 @@
 import unittest
 import mock
+import os
 import numpy as np
 from oceannavigator import misc
 
@@ -135,3 +136,66 @@ class TestMisc(unittest.TestCase):
                 }
             }
         )
+
+    @mock.patch("oceannavigator.misc.app.config")
+    def test_list_kml_files(self, config):
+        config.__getitem__.return_value = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "testdata"
+        )
+
+        result = misc.list_kml_files("point")
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], {
+            'name': 'Test Stations',
+            'id': 'test_points',
+        })
+
+    @mock.patch("oceannavigator.misc.app.config")
+    def test_list_areas(self, config):
+        config.__getitem__.return_value = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "testdata"
+        )
+
+        result = misc.list_areas("test_areas")
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], {
+            'centroids': [(-48.75, 47.45)],
+            'innerrings': [],
+            'key': 'test_areas/A1',
+            'name': 'A1',
+            'polygons': [[
+                (45.6, -51.3),
+                (45.6, -46.2),
+                (49.3, -46.2),
+                (49.3, -51.3),
+                (45.6, -51.3),
+            ]]
+        })
+
+    @mock.patch("oceannavigator.misc.Dataset")
+    def test_drifter_meta(self, dataset):
+        result = misc.drifter_meta()
+        self.assertEqual(result, {
+            'imei': {},
+            'wmo': {},
+            'deployment': {},
+        })
+
+        dataset.return_value.__enter__.return_value.variables = {
+            'buoy': ["abcd.nc"],
+            'imei': [["IME"]],
+            'wmo': [["WMO"]],
+            'deployment': [['DEP']],
+        }
+        with mock.patch("oceannavigator.misc.chartostring", new=lambda x: x):
+            result = misc.drifter_meta()
+
+        self.assertEqual(result, {
+            'imei': {'IME': ['abcd']},
+            'wmo': {'WMO': ['abcd']},
+            'deployment': {'DEP': ['abcd']},
+        })

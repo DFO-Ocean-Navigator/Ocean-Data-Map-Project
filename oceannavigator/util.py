@@ -49,6 +49,14 @@ def get_dataset_attribution(dataset):
         return ""
 
 
+def get_dataset_cache(dataset):
+    cache = get_datasets().get(dataset).get("cache")
+    if cache is not None and isinstance(cache, basestring):
+        cache = int(cache)
+
+    return cache
+
+
 def get_variables(dataset):
     config = read_config()
 
