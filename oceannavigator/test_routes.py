@@ -291,16 +291,22 @@ class TestRoutes(unittest.TestCase):
             key="variable",
             name="Variable Name",
             dimensions=["x", "y", "depth", "time"],
+            valid_min=0,
+            valid_max=10,
         )
         variables[2].configure_mock(
             key="u",
             name="Wind X Speed",
             dimensions=["x", "y", "depth", "time"],
+            valid_min=0,
+            valid_max=10,
         )
         variables[3].configure_mock(
             key="v",
             name="Wind Y Speed",
             dimensions=["x", "y", "depth", "time"],
+            valid_min=0,
+            valid_max=10,
         )
         variables = data.data.VariableList(variables)
 
@@ -381,8 +387,8 @@ class TestRoutes(unittest.TestCase):
         plot.return_value = "data"
         cache_and_send.return_value = Response('', status=200,
                                                mimetype='image/png')
-        with mock.patch.object(os.path, "isfile") as isfile:
-            isfile.return_value = False
+        with mock.patch("oceannavigator.views._is_cache_valid") as cache_valid:
+            cache_valid.return_value = False
             self.app.get(
                 '/tiles/proj/dataset/variable/0/1/scale/2/3/4.png'
             )
@@ -402,7 +408,7 @@ class TestRoutes(unittest.TestCase):
 
             plot.reset_mock()
             cache_and_send.reset_mock()
-            isfile.return_value = True
+            cache_valid.return_value = True
             with mock.patch.object(views, "send_file") as sf:
                 sf.return_value = Response('', status=200,
                                            mimetype='image/png')

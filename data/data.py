@@ -105,11 +105,14 @@ class Data(object):
 
 class Variable(object):
 
-    def __init__(self, key, name, unit, dimensions):
+    def __init__(self, key, name, unit, dimensions, valid_min=None,
+                 valid_max=None):
         self._key = key
         self._name = name
         self._unit = unit
         self._dimensions = dimensions
+        self._valid_min = valid_min
+        self._valid_max = valid_max
 
     @property
     def key(self):
@@ -127,8 +130,26 @@ class Variable(object):
     def dimensions(self):
         return self._dimensions
 
+    @property
+    def valid_min(self):
+        return self._valid_min
+
+    @property
+    def valid_max(self):
+        return self._valid_max
+
     def __str__(self):
         return self._key
+
+    def __repr__(self):
+        return "Variable(%s, %s, %s, %s, %s, %s)" % (
+            self._key,
+            self._name,
+            self._unit,
+            self._dimensions,
+            self._valid_min,
+            self._valid_max,
+        )
 
 
 class VariableList(list):

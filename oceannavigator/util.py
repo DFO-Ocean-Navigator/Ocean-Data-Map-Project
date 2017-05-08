@@ -99,6 +99,8 @@ def get_variable_scale(dataset_name, variable):
         scale = from_config.get("scale")
         if scale is not None:
             return scale
+    if variable.valid_min is not None and variable.valid_max is not None:
+        return [variable.valid_min, variable.valid_max]
 
     return [0, 100]
 

@@ -113,9 +113,16 @@ class TestUtil(unittest.TestCase):
             util.get_variable_scale("dataset", mock.Mock(key="var")),
             [0, 10]
         )
+        variable_mock.configure_mock(key="none", valid_min=5, valid_max=50)
         self.assertEqual(
             util.get_variable_scale(
-                "dataset", mock.Mock(key="varx", scale=None)),
+                "dataset", variable_mock),
+            [5, 50]
+        )
+        self.assertEqual(
+            util.get_variable_scale(
+                "dataset", mock.Mock(key="varx", scale=None, valid_min=None,
+                                     valid_max=None)),
             [0, 100]
         )
 

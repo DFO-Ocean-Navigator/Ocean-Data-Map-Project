@@ -48,11 +48,21 @@ class Mercator(netcdf_data.NetCDFData):
                 long_name = var.long_name
             else:
                 long_name = name
+
             if 'units' in var.ncattrs():
                 units = var.units
             else:
                 units = None
-            l.append(Variable(name, long_name, units, var.dimensions))
+
+            if 'valid_min' in var.ncattrs():
+                valid_min = float(var.valid_min)
+                valid_max = float(var.valid_max)
+            else:
+                valid_min = None
+                valid_max = None
+
+            l.append(Variable(name, long_name, units, var.dimensions,
+                              valid_min, valid_max))
 
         return VariableList(l)
 
