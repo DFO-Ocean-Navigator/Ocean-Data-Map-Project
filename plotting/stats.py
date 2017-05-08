@@ -83,6 +83,8 @@ def stats(dataset_name, query):
         else:
             time = int(query.get('time'))
 
+        if time < 0:
+            time += len(dataset.timestamps)
         time = np.clip(time, 0, len(dataset.timestamps) - 1)
 
         depth = 0

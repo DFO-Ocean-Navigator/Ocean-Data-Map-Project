@@ -107,6 +107,8 @@ class TemperatureSalinityPlotter(point.PointPlotter):
 
     def load_data(self):
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            if self.time < 0:
+                self.time += len(dataset.timestamps)
             time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
             self.timestamp = dataset.timestamps[time]
@@ -117,4 +119,4 @@ class TemperatureSalinityPlotter(point.PointPlotter):
             self.variable_units[0], self.temperature = \
                 super(point.PointPlotter, self).kelvin_to_celsius(
                     self.variable_units[0], self.temperature
-                )
+            )

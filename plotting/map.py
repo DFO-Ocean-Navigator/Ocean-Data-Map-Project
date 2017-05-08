@@ -122,6 +122,8 @@ class MapPlotter(area.AreaPlotter):
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            if self.time < 0:
+                self.time += len(dataset.timestamps)
             self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
             self.variable_unit = get_variable_unit(

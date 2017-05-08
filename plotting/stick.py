@@ -133,6 +133,10 @@ class StickPlotter(point.PointPlotter):
         self.depth = sorted(self.depth)
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            if self.starttime < 0:
+                self.starttime += len(dataset.timestamps)
+            if self.endtime < 0:
+                self.endtime += len(dataset.timestamps)
             start = np.clip(self.starttime, 0, len(dataset.timestamps) - 1)
             end = np.clip(self.endtime, 0, len(dataset.timestamps) - 1)
 

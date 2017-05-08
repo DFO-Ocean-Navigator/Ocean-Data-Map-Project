@@ -108,6 +108,8 @@ class ProfilePlotter(point.PointPlotter):
 
     def load_data(self):
         with open_dataset(get_dataset_url(self.dataset_name)) as d:
+            if self.time < 0:
+                self.time += len(d.timestamps)
             time = np.clip(self.time, 0, len(d.timestamps) - 1)
             timestamp = d.timestamps[time]
 

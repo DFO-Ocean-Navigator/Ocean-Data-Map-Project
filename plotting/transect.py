@@ -43,6 +43,8 @@ class TransectPlotter(line.LinePlotter):
 
     def load_data(self):
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+            if self.time < 0:
+                self.time += len(dataset.timestamps)
             time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
             for idx, v in enumerate(self.variables):

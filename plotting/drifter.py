@@ -101,7 +101,11 @@ class DrifterPlotter(plotter.Plotter):
         else:
             self.end = len(self.times) - 1
 
+        if self.start < 0:
+            self.start += len(self.times)
         self.start = np.clip(self.start, 0, len(self.times) - 1)
+        if self.end < 0:
+            self.end += len(self.times)
         self.end = np.clip(self.end, 0, len(self.times) - 1)
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
