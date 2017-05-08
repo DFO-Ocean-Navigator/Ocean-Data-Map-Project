@@ -5,6 +5,7 @@ import warnings
 from netcdf_data import NetCDFData
 from pint import UnitRegistry
 from data import Variable, VariableList
+import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
@@ -51,8 +52,10 @@ class Nemo(NetCDFData):
                 units = None
 
             if 'valid_min' in var.ncattrs():
-                valid_min = float(var.valid_min)
-                valid_max = float(var.valid_max)
+                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                         str(var.valid_min)))
+                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                                         str(var.valid_max)))
             else:
                 valid_min = None
                 valid_max = None

@@ -9,6 +9,7 @@ from netCDF4 import chartostring
 import pytz
 from cachetools import TTLCache
 import dateutil.parser
+import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
@@ -70,8 +71,10 @@ class Fvcom(netcdf_data.NetCDFData):
                 units = None
 
             if 'valid_min' in var.ncattrs():
-                valid_min = float(var.valid_min)
-                valid_max = float(var.valid_max)
+                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                         str(var.valid_min)))
+                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                                         str(var.valid_max)))
             else:
                 valid_min = None
                 valid_max = None
