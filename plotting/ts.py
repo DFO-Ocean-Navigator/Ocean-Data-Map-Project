@@ -113,7 +113,6 @@ class TemperatureSalinityPlotter(point.PointPlotter):
 
             self.timestamp = dataset.timestamps[time]
 
-            # self.load_misc(dataset, ["votemper"])
             self.load_temp_sal(dataset, time)
 
             self.variable_units[0], self.temperature = \

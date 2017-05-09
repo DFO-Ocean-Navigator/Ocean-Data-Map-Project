@@ -1,6 +1,6 @@
 import numpy as np
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url
+    get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union
 from oceannavigator.misc import list_areas
@@ -112,6 +112,7 @@ def stats(dataset_name, query):
 
             variable_name = get_variable_name(dataset_name, var)
             variable_unit = get_variable_unit(dataset_name, var)
+            scale_factor = get_variable_scale_factor(dataset_name, var)
 
             lat, lon, d = dataset.get_raw_point(
                 lat.ravel(),
@@ -120,6 +121,9 @@ def stats(dataset_name, query):
                 time,
                 v
             )
+
+            if scale_factor != 1.0:
+                d = np.multiply(d, scale_factor)
 
             if variable_unit.startswith("Kelvin"):
                 variable_unit = "Celsius"

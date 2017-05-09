@@ -13,7 +13,7 @@ import tempfile
 import os
 import math
 from oceannavigator.util import get_dataset_url, get_variable_name, \
-    get_variable_unit, get_dataset_climatology
+    get_variable_unit, get_dataset_climatology, get_variable_scale_factor
 from pyproj import Proj
 import pyproj
 from scipy.ndimage.filters import gaussian_filter
@@ -216,6 +216,10 @@ def plot(projection, x, y, z, args):
                                           dataset.variables[variable[0]])
         variable_unit = get_variable_unit(dataset_name,
                                           dataset.variables[variable[0]])
+        scale_factor = get_variable_scale_factor(
+            dataset_name,
+            dataset.variables[variable[0]]
+        )
         if anom:
             cmap = colormap.colormaps['anomaly']
         else:
@@ -225,6 +229,10 @@ def plot(projection, x, y, z, args):
             depthm = dataset.depths[depth]
         else:
             depthm = 0
+
+    if scale_factor != 1.0:
+        for idx, val in enumerate(data):
+            data[idx] = np.multiply(val, scale_factor)
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"

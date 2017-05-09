@@ -101,6 +101,10 @@ class PointPlotter(plotter.Plotter):
         self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
         self.load_misc(dataset, [temp_var, sal_var])
 
+        for idx, factor in enumerate(self.scale_factors):
+            if factor != 1.0:
+                data[:, idx, :] = np.multiply(data[:, idx, :], factor)
+
     def kelvin_to_celsius(self, units, data):
         ureg = pint.UnitRegistry()
         for idx, unit in enumerate(units):
@@ -117,6 +121,13 @@ class PointPlotter(plotter.Plotter):
                 ).to(ureg.celsius).magnitude
 
         return (units, data)
+
+    def apply_scale_factors(self, data):
+        for idx, factor in enumerate(self.scale_factors):
+            if factor != 1.0:
+                data[idx] = np.multiply(data[idx], factor)
+
+        return data
 
     def figuresize(self):
         figuresize = map(float, self.size.split("x"))

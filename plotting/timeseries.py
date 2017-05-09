@@ -262,6 +262,10 @@ class TimeseriesPlotter(point.PointPlotter):
                 point_data.append(np.ma.array(data))
 
             point_data = np.ma.array(point_data)
+            for idx, factor in enumerate(self.scale_factors):
+                if factor != 1.0:
+                    point_data[idx] = np.multiply(point_data[idx], factor)
+
             times = dataset.timestamps[self.starttime:self.endtime + 1]
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]

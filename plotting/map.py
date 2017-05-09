@@ -13,7 +13,7 @@ import osr
 import tempfile
 import os
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_dataset_climatology
+    get_dataset_url, get_dataset_climatology, get_variable_scale_factor
 from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
 from shapely.ops import cascaded_union
 from matplotlib.patches import Polygon
@@ -126,12 +126,16 @@ class MapPlotter(area.AreaPlotter):
                 self.time += len(dataset.timestamps)
             self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
-            self.variable_unit = get_variable_unit(
-                self.dataset_name,
-                dataset.variables[self.variables[0]])
-            self.variable_name = get_variable_name(
-                self.dataset_name,
-                dataset.variables[self.variables[0]])
+            self.variable_unit = self.get_variable_units(
+                dataset, self.variables
+            )[0]
+            self.variable_name = self.get_variable_names(
+                dataset,
+                self.variables
+            )[0]
+            scale_factor = self.get_variable_scale_factors(
+                dataset, self.variables
+            )[0]
 
             if self.cmap is None:
                 if len(self.variables) == 1:
@@ -170,6 +174,7 @@ class MapPlotter(area.AreaPlotter):
                         v
                     )
 
+                d = np.multiply(d, scale_factor)
                 self.variable_unit, d = self.kelvin_to_celsius(
                     self.variable_unit, d)
 
@@ -233,7 +238,11 @@ class MapPlotter(area.AreaPlotter):
                 contour_name = get_variable_name(
                     self.dataset_name,
                     dataset.variables[self.contour['variable']])
+                contour_factor = get_variable_scale_factor(
+                    self.dataset_name,
+                    dataset.variables[self.contour['variable']])
                 contour_unit, d = self.kelvin_to_celsius(contour_unit, d)
+                d = np.multiply(d, contour_factor)
                 contour_data.append(d)
                 self.contour_unit = contour_unit
                 self.contour_name = contour_name

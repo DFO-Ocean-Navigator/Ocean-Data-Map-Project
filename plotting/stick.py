@@ -172,6 +172,10 @@ class StickPlotter(point.PointPlotter):
             point_data = np.ma.array(point_data)
             point_depth = np.ma.array(point_depth)
 
+            for idx, factor in enumerate(self.scale_factors):
+                if factor != 1.0:
+                    point_data[idx] = np.multiply(point_data[idx], factor)
+
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,
                 point_data

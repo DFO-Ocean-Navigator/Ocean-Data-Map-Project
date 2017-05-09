@@ -115,6 +115,7 @@ class ProfilePlotter(point.PointPlotter):
 
             self.load_misc(d, self.variables)
             point_data, point_depths = self.get_data(d, self.variables, time)
+            point_data = self.apply_scale_factors(point_data)
 
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,

@@ -64,11 +64,14 @@ class HovmollerPlotter(line.LinePlotter):
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
+            scale_factors = self.get_variable_scale_factors(dataset,
+                                                            self.variables)
 
             self.variable_unit, self.data = self.kelvin_to_celsius(
                 variable_units[0],
                 value
             )
+            self.data = np.multiply(self.data, scale_factors[0])
             self.variable_name = variable_names[0]
             self.data = self.data.transpose()
 

@@ -10,6 +10,7 @@ import pint
 from oceannavigator.util import (
     get_variable_unit,
     get_variable_name,
+    get_variable_scale_factor,
     get_dataset_attribution
 )
 from flask_babel import format_date, format_datetime
@@ -133,6 +134,7 @@ class Plotter:
     def load_misc(self, data, variables):
         self.variable_names = self.get_variable_names(data, variables)
         self.variable_units = self.get_variable_units(data, variables)
+        self.scale_factors = self.get_variable_scale_factors(data, variables)
 
     def plot(self, fig=None):
         if fig is None:
@@ -247,6 +249,15 @@ class Plotter:
                                            dataset.variables[v]))
 
         return units
+
+    def get_variable_scale_factors(self, dataset, variables):
+        factors = []
+
+        for idx, v in enumerate(variables):
+            factors.append(get_variable_scale_factor(self.dataset_name,
+                                                     dataset.variables[v]))
+
+        return factors
 
     def clip_value(self, input_value, variable):
         output = input_value

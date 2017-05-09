@@ -87,6 +87,8 @@ class ObservationPlotter(point.PointPlotter):
                 dataset, self.variables, time)
             point_data = np.ma.array(point_data)
 
+            point_data = self.apply_scale_factors(point_data)
+
             self.variable_units, point_data = self.kelvin_to_celsius(
                 self.variable_units,
                 point_data

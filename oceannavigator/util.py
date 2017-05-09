@@ -105,6 +105,17 @@ def get_variable_scale(dataset_name, variable):
     return [0, 100]
 
 
+def get_variable_scale_factor(dataset_name, variable):
+    from_config = get_variables(dataset_name).get(variable.key.lower())
+
+    if from_config is not None:
+        factor = from_config.get("scale_factor")
+        if factor is not None:
+            return factor
+
+    return 1.0
+
+
 def is_variable_hidden(dataset_name, variable):
     from_config = get_variables(dataset_name).get(variable.key.lower())
 

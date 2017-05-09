@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url
+    get_dataset_url, get_variable_scale_factor
 import pytz
 import dateutil.parser
 from oceannavigator import app
@@ -166,12 +166,20 @@ class DrifterPlotter(plotter.Plotter):
 
             variable_names = []
             variable_units = []
+            scale_factors = []
 
             for v in self.variables:
                 variable_units.append(get_variable_unit(self.dataset_name,
                                                         dataset.variables[v]))
                 variable_names.append(get_variable_name(self.dataset_name,
                                                         dataset.variables[v]))
+                scale_factors.append(
+                    get_variable_scale_factor(self.dataset_name,
+                                              dataset.variables[v])
+                )
+
+            for idx, sf in enumerate(scale_factors):
+                model_data[idx, :] = np.multiply(model_data[idx, :], sf)
 
             for idx, u in enumerate(variable_units):
                 variable_units[idx], model_data[idx, :] = \

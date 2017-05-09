@@ -11,7 +11,7 @@ from oceannavigator import app
 from geopy.distance import VincentyDistance
 import utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_dataset_climatology
+    get_dataset_url, get_dataset_climatology, get_variable_scale_factor
 import line
 from flask_babel import gettext
 from data import open_dataset, geo
@@ -61,6 +61,12 @@ class TransectPlotter(line.LinePlotter):
                                 self.variables_anom[idx] = potential
 
             value = parallel = perpendicular = None
+
+            variable_names = self.get_variable_names(dataset, self.variables)
+            variable_units = self.get_variable_units(dataset, self.variables)
+            scale_factors = self.get_variable_scale_factors(dataset,
+                                                            self.variables)
+
             if len(self.variables) > 1:
                 v = []
                 for name in self.variables:
@@ -72,7 +78,10 @@ class TransectPlotter(line.LinePlotter):
                 transect_pts, distance, x, dep = dataset.get_path_profile(
                     self.points, time, self.variables[0], 100)
                 transect_pts, distance, y, dep = dataset.get_path_profile(
-                    self.points, time, self.variables[0], 100)
+                    self.points, time, self.variables[1], 100)
+
+                x = np.multiply(x, scale_factors[0])
+                y = np.multiply(y, scale_factors[1])
 
                 r = np.radians(np.subtract(90, bearings))
                 theta = np.arctan2(y, x) - r
@@ -85,8 +94,7 @@ class TransectPlotter(line.LinePlotter):
                 transect_pts, distance, value, dep = dataset.get_path_profile(
                     self.points, time, self.variables[0])
 
-            variable_names = self.get_variable_names(dataset, self.variables)
-            variable_units = self.get_variable_units(dataset, self.variables)
+                value = np.multiply(value, scale_factors[0])
 
             variable_units[0], value = self.kelvin_to_celsius(
                 variable_units[0],
@@ -130,6 +138,11 @@ class TransectPlotter(line.LinePlotter):
                     self.dataset_name,
                     dataset.variables[self.surface]
                 )
+                surface_factor = get_variable_scale_factor(
+                    self.dataset_name,
+                    dataset.variables[self.surface]
+                )
+                surface_value = np.multiply(surface_value, surface_factor)
                 surface_unit, surface_value = self.kelvin_to_celsius(
                     surface_unit,
                     surface_value
