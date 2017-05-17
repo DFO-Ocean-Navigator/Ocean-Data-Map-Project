@@ -1,0 +1,58 @@
+uwsgi_cache_path /data/nginx_cache levels=1:2 keys_zone=on_cache:10m max_size=10g inactive=30d;
+
+server {
+    listen 80 default_server;
+    server_name localhost ;
+
+    return 301 http://navigator.oceansdata.ca$request_uri;
+}
+
+server {
+    listen 80;
+    server_name .navigator.oceansdata.ca ;
+    charset     utf-8;
+    client_max_body_size 75M;
+
+    gzip on;
+    gzip_min_length 1000;
+    gzip_proxied    any;
+    gzip_types      text/plain application/xml application/x-javascript text/css application/json;
+    gzip_vary on;
+
+    root /home/buildadm/src/navigator/oceannavigator/frontend/;
+
+    if ($request_uri ~ "^/\?query=.*$") {
+        return 301 http://navigator.oceansdata.ca/public$request_uri;
+    }
+
+    location /thredds/ {
+        proxy_pass http://127.0.0.1:8080/thredds/;
+        proxy_set_header Host $http_host;
+    }
+
+    location / {
+        try_files $uri @ocean-navigator;
+        expires 1h;
+        add_header Pragma public;
+        add_header Cache-Control "public";
+    }
+
+    location @ocean-navigator {
+        include uwsgi_params;
+        uwsgi_pass unix:/tmp/ocean-navigator.sock;
+        uwsgi_cache_key $request_uri;
+        uwsgi_cache on_cache;
+    }
+
+    location ~* /public/(?:.*)$ {
+        expires max;
+        add_header Pragma public;
+        add_header Cache-Control "public";
+
+    }
+
+    location = /public/index.html {
+        expires 1h;
+    }
+}
+
