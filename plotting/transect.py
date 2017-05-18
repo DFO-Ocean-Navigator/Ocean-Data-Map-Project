@@ -277,17 +277,14 @@ class TransectPlotter(line.LinePlotter):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
         numstations = len(self.transect_data['distance'])
         station = range(1, 1 + numstations)
-        station = map(
-            lambda s: "%03d" % s,
-            np.repeat(station, self.depth.shape[1])
-        )
+        station = map(lambda s: "%03d" % s, station)
 
         latitude = np.repeat(self.transect_data['points'][0, :],
                              len(self.depth))
         longitude = np.repeat(self.transect_data['points'][1, :],
                               len(self.depth))
         time = np.repeat(self.timestamp, len(station))
-        depth = self.depth.ravel()
+        depth = self.depth
 
         if len(self.variables) > 1:
             variable_names = [
@@ -295,13 +292,14 @@ class TransectPlotter(line.LinePlotter):
                 "%s Perpendicular" % self.transect_data['name']
             ]
             variable_units = [self.transect_data['unit']] * 2
-            pa = self.transect_data['parallel'].transpose().ravel()
-            pe = self.transect_data['perpendicular'].transpose().ravel()
-            data = np.ma.array([pa, pe]).transpose()
+            pa = self.transect_data['parallel'].transpose()
+            pe = self.transect_data['perpendicular'].transpose()
+            data = np.ma.array([pa, pe])
+            data = np.rollaxis(data, 0, 2)
         else:
             variable_names = [self.transect_data['name']]
             variable_units = [self.transect_data['unit']]
-            data = self.transect_data['data'].transpose().ravel()
+            data = self.transect_data['data'].transpose()
 
         data = float_to_str(data)
 

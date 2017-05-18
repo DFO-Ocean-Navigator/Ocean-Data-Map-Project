@@ -23,7 +23,7 @@ class StickPlotter(point.PointPlotter):
         columns = [
             "Latitude",
             "Longitude",
-            "Depth (%s)" % self.depth_unit,
+            "Depth (m)"
             "Time",
         ] + map(lambda x: "%s (%s)" % x,
                 zip(self.variable_names, self.variable_units))
@@ -36,7 +36,7 @@ class StickPlotter(point.PointPlotter):
                 if self.depth[d] == 'bottom':
                     depth = 'Bottom'
                 else:
-                    depth = "%d" % self.depths[int(self.depth[d])]
+                    depth = "%d" % np.round(self.data_depth[p, 0, d, 0])
 
                 # For each time
                 for t in range(0, self.data.shape[3]):

@@ -35,7 +35,6 @@ class MapPlotter(area.AreaPlotter):
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
-        # data = np.ma.expand_dims(float_to_str(self.data.ravel()[::5]), 1)
         data = float_to_str(self.data.ravel()[::5])
         station = map(lambda x: "%06d" % x, range(1, len(data) + 1))
 

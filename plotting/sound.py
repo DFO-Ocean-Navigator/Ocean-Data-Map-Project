@@ -79,7 +79,7 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
                 data.append([
                     "%0.4f" % p[0],
                     "%0.4f" % p[1],
-                    "%0.1f" % self.depths[idx],
+                    "%0.1f" % self.temperature_depths[idx][idx2],
                     "%0.1f" % self.pressure[idx][idx2],
                     "%0.1f" % self.salinity[idx][idx2],
                     "%0.1f" % self.temperature[idx][idx2],
