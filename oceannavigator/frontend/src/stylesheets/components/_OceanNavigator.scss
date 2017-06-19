@@ -11,10 +11,9 @@ body {
 }
 .OceanNavigator {
     .MapInputs {
-        width: $sidebar-width;
+        width: 0;
         position: absolute;
         top: 0;
-        left: -$sidebar-width;
         bottom: 0;
         transition: left 0.3s ease-in-out;
     }
@@ -22,7 +21,7 @@ body {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 0;
+        left: 0; // Map view takes up full screen width when sidebar closed
         right: 0;
         display: flex;
         flex-flow: column;
@@ -39,6 +38,7 @@ body {
 
 }
 
+// Moves content to the right to fit sidebar
 .content.open {
     left: $sidebar-width;
 }

@@ -442,9 +442,16 @@ class MapToolbar extends React.Component {
     _("Reset Map");
     _("Link");
 
+    // Toggle Sidebar French translation needs to be checked.
     return (
-      <div className='MapToolbar'
->
+      <div className='MapToolbar'>
+
+        <Button
+        name="toggleSidebar"
+        onClick={this.props.toggleSidebar}
+        >
+        <Icon icon="bars" /> {_("Toggle Sidebar")} </Button>
+
         <SplitButton
           name="point"
           id="point"

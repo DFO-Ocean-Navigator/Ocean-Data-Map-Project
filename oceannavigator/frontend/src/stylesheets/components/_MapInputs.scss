@@ -1,13 +1,13 @@
 
 div.MapInputs {
     overflow-y: auto;
-
-    div {
-        padding: 0.5em;
-
-    }
+    
+    padding: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
+// Move sidebar onto screen when open
 .MapInputs.open {
-    left: 0;
+    width: $sidebar-width;
 }

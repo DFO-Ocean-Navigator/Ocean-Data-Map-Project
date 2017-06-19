@@ -2,6 +2,7 @@ html, body {
     height: 100%;
 }
 
+// Pop up windows
 .full-screen-modal {
     width: calc(100% - 2 * #{$modal-margin});
     margin: $modal-margin;
