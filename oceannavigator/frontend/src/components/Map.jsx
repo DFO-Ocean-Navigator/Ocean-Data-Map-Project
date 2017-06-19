@@ -941,7 +941,7 @@ class Map extends React.Component {
 
   render() {
     return (
-      <div className='Map'>
+      <div className='Map' style={{cursor: 'crosshair'}}>
         <div ref={(c) => this.map.setTarget(c)} />
         <div
           className='title ol-popup'
