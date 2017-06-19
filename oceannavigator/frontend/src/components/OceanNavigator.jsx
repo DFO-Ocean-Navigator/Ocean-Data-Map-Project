@@ -41,6 +41,7 @@ class OceanNavigator extends React.Component {
       basemap: "topo",
       bathymetry: true,
       extent: [],
+      sidebarOpen: true,
     };
     this.mapComponent = null;
 
@@ -384,14 +385,20 @@ class OceanNavigator extends React.Component {
     }.bind(this);
 
     _("Loading");
+
+    const contentClassName = this.state.sidebarOpen ? 'content open' : 'content';
+
     return (
       <div className='OceanNavigator'>
         <MapInputs
           state={this.state}
           changeHandler={this.updateState.bind(this)}
         />
-        <div className='content'>
-          <MapToolbar action={action} plotEnabled={this.state.plotEnabled} />
+        <div className={contentClassName}>
+          <MapToolbar
+          action={action}
+          plotEnabled={this.state.plotEnabled}
+          />
           <Map
             ref={(m) => this.mapComponent = m}
             state={this.state}

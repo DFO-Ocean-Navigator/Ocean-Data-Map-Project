@@ -1,9 +1,13 @@
 
 div.MapInputs {
-    overflow-y: scroll;
+    overflow-y: auto;
 
     div {
         padding: 0.5em;
 
     }
+}
+
+.MapInputs.open {
+    left: 0;
 }

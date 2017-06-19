@@ -6,7 +6,7 @@
         position: fixed;
         width: 100%;
         max-height: calc(100% - #{$toolbar-height});
-        max-width: calc(100% - #{$sidebar-width});
+        //max-width: calc(100% - #{$sidebar-width});
     }
 
     .scale-viewer {
