@@ -73,6 +73,11 @@ class OceanNavigator extends React.Component {
       }
     }.bind(this);
   }
+
+  toggleSidebar() {
+    this.setState({sidebarOpen: !this.state.sidebarOpen});
+  }
+
   updateState(key, value) {
     var newState = {};
     var i;
@@ -398,6 +403,7 @@ class OceanNavigator extends React.Component {
           <MapToolbar
           action={action}
           plotEnabled={this.state.plotEnabled}
+          toggleSidebar={this.toggleSidebar.bind(this)}
           />
           <Map
             ref={(m) => this.mapComponent = m}

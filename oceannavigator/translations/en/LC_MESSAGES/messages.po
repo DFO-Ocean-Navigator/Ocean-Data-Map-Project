@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-06-16 14:26-0430\n"
-"PO-Revision-Date: 2017-06-16 14:30-0230\n"
+"POT-Creation-Date: 2017-06-19 15:55-0430\n"
+"PO-Revision-Date: 2017-06-19 15:58-0230\n"
 "Last-Translator: \n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgid "Randomize"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:53
-#: oceannavigator/frontend/src/components/ComboBox.jsx:58
+#: oceannavigator/frontend/src/components/ComboBox.jsx:57
 #: oceannavigator/views.py:177
 msgid "None"
 msgstr "None"
@@ -84,7 +84,7 @@ msgstr "Ocean Navigator"
 #: oceannavigator/frontend/src/components/LineWindow.jsx:72
 #: oceannavigator/frontend/src/components/LineWindow.jsx:90
 #: oceannavigator/frontend/src/components/MapInputs.jsx:13
-#: oceannavigator/frontend/src/components/MapInputs.jsx:72
+#: oceannavigator/frontend/src/components/MapInputs.jsx:74
 #: oceannavigator/frontend/src/components/PointWindow.jsx:146
 #: oceannavigator/frontend/src/components/PointWindow.jsx:162
 msgid "Dataset"
@@ -95,7 +95,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/LineWindow.jsx:73
 #: oceannavigator/frontend/src/components/LineWindow.jsx:100
 #: oceannavigator/frontend/src/components/MapInputs.jsx:16
-#: oceannavigator/frontend/src/components/MapInputs.jsx:110
+#: oceannavigator/frontend/src/components/MapInputs.jsx:112
 #: oceannavigator/frontend/src/components/PointWindow.jsx:147
 #: oceannavigator/frontend/src/components/PointWindow.jsx:172
 msgid "Time"
@@ -127,7 +127,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/LineWindow.jsx:76
 #: oceannavigator/frontend/src/components/LineWindow.jsx:132
 #: oceannavigator/frontend/src/components/MapInputs.jsx:15
-#: oceannavigator/frontend/src/components/MapInputs.jsx:96
+#: oceannavigator/frontend/src/components/MapInputs.jsx:98
 #: oceannavigator/frontend/src/components/PointWindow.jsx:151
 #: oceannavigator/frontend/src/components/PointWindow.jsx:210
 #: oceannavigator/frontend/src/components/PointWindow.jsx:219
@@ -143,8 +143,8 @@ msgstr ""
 #: oceannavigator/frontend/src/components/LineWindow.jsx:142
 #: oceannavigator/frontend/src/components/LineWindow.jsx:150
 #: oceannavigator/frontend/src/components/MapInputs.jsx:14
-#: oceannavigator/frontend/src/components/MapInputs.jsx:83
-#: oceannavigator/frontend/src/components/MapInputs.jsx:84
+#: oceannavigator/frontend/src/components/MapInputs.jsx:85
+#: oceannavigator/frontend/src/components/MapInputs.jsx:86
 #: oceannavigator/frontend/src/components/PointWindow.jsx:152
 #: oceannavigator/frontend/src/components/PointWindow.jsx:227
 #: oceannavigator/frontend/src/components/PointWindow.jsx:236
@@ -158,7 +158,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/LineWindow.jsx:78
 #: oceannavigator/frontend/src/components/LineWindow.jsx:158
 #: oceannavigator/frontend/src/components/MapInputs.jsx:17
-#: oceannavigator/frontend/src/components/MapInputs.jsx:118
+#: oceannavigator/frontend/src/components/MapInputs.jsx:120
 #: oceannavigator/frontend/src/components/PointWindow.jsx:153
 #: oceannavigator/frontend/src/components/PointWindow.jsx:252
 msgid "Variable Range"
@@ -180,9 +180,9 @@ msgstr ""
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:118
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:194
 #: oceannavigator/frontend/src/components/MapInputs.jsx:18
-#: oceannavigator/frontend/src/components/MapInputs.jsx:63
+#: oceannavigator/frontend/src/components/MapInputs.jsx:65
 msgid "Show Bathymetry Contours"
-msgstr ""
+msgstr "Show Bathymetry Contours"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:119
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:202
@@ -292,17 +292,17 @@ msgstr "Shows the mini map of the location in the plot."
 msgid "climatology_help"
 msgstr "Shows the climatology data."
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:241
+#: oceannavigator/frontend/src/components/ComboBox.jsx:240
 #: oceannavigator/frontend/src/components/NumberBox.jsx:65
 msgid "titlehelp"
 msgstr "{{title}} Help"
 
-#: oceannavigator/frontend/src/components/ComboBox.jsx:249
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:594
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:620
+#: oceannavigator/frontend/src/components/ComboBox.jsx:248
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:600
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:626
 #: oceannavigator/frontend/src/components/NumberBox.jsx:72
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:416
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:450
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:429
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:463
 #: oceannavigator/frontend/src/components/PlotImage.jsx:311
 #: oceannavigator/frontend/src/components/PlotImage.jsx:345
 msgid "Close"
@@ -430,35 +430,35 @@ msgstr "Lon:"
 msgid "RMS Error: "
 msgstr "RMS Error: "
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:28
+#: oceannavigator/frontend/src/components/MapInputs.jsx:30
 msgid "Global"
 msgstr "Global"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:29
+#: oceannavigator/frontend/src/components/MapInputs.jsx:31
 msgid "Arctic"
 msgstr "Arctic"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:30
+#: oceannavigator/frontend/src/components/MapInputs.jsx:32
 msgid "Antarctic"
 msgstr "Antarctic"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:32
+#: oceannavigator/frontend/src/components/MapInputs.jsx:34
 msgid "Projection"
 msgstr "Projection"
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:42
+#: oceannavigator/frontend/src/components/MapInputs.jsx:44
 msgid "ETOPO1 Topography"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:47
+#: oceannavigator/frontend/src/components/MapInputs.jsx:49
 msgid "Esri Ocean Basemap"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:52
+#: oceannavigator/frontend/src/components/MapInputs.jsx:54
 msgid "Esri World Imagery"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapInputs.jsx:56
+#: oceannavigator/frontend/src/components/MapInputs.jsx:58
 msgid "Basemap"
 msgstr ""
 
@@ -471,94 +471,98 @@ msgid "Error: Unknown Date/Time format"
 msgstr "Error: Unknown Date/Time format"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:441
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:513
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:519
 msgid "Drifters"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:442
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:545
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:551
 msgid "Reset Map"
-msgstr ""
+msgstr "Reset Map"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:443
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:551
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:557
 msgid "Link"
 msgstr ""
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:452
+msgid "Toggle Sidebar"
+msgstr "Toggle Sidebar"
+
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:458
 msgid "Point"
 msgstr "Point"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:460
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:466
 msgid "Observations…"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:465
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:481
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:499
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:471
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:487
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:505
 msgid "Draw on Map"
 msgstr "Draw on Map"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:469
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:485
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:503
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:475
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:491
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:509
 msgid "Upload CSV…"
 msgstr "Upload CSV…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:473
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:479
 msgid "Upload ODV…"
 msgstr "Upload ODV…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:475
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:481
 msgid "Line"
 msgstr "Line"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:491
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:497
 msgid "Area"
 msgstr "Area"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:509
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:515
 msgid "Class4"
 msgstr "Class4"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:519
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:525
 msgid "All"
 msgstr "All"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:523
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:529
 msgid "Active"
 msgstr "Active"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:527
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:533
 msgid "Not Responding"
 msgstr "Not Responding"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:531
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:537
 msgid "Inactive"
 msgstr "Inactive"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:535
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:541
 msgid "Select…"
 msgstr "Select…"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:541
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:547
 msgid "Plot"
 msgstr "Plot"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:547
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:553
 msgid "Permalink"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:584
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:590
 msgid "Select Drifters"
 msgstr "Select Drifters"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:600
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:626
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:606
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:632
 msgid "Apply"
 msgstr "Apply"
 
-#: oceannavigator/frontend/src/components/MapToolbar.jsx:609
+#: oceannavigator/frontend/src/components/MapToolbar.jsx:615
 msgid "Select Observations"
 msgstr ""
 
@@ -576,31 +580,31 @@ msgstr ""
 msgid "Trip"
 msgstr ""
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:386
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:459
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:392
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:472
 msgid "Loading"
 msgstr "Loading"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:426
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:439
 #: oceannavigator/frontend/src/components/PlotImage.jsx:285
 #: oceannavigator/frontend/src/components/PlotImage.jsx:321
 msgid "Share Link"
 msgstr "Share Link"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:444
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:457
 #: oceannavigator/frontend/src/components/PlotImage.jsx:304
 msgid ""
 "Clipboard access was denied. Please right-click and copy the link "
 "manually."
 msgstr ""
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:447
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:460
 #: oceannavigator/frontend/src/components/PlotImage.jsx:308
 #: oceannavigator/frontend/src/components/PlotImage.jsx:342
 msgid "Copy"
 msgstr "Copy"
 
-#: oceannavigator/frontend/src/components/OceanNavigator.jsx:456
+#: oceannavigator/frontend/src/components/OceanNavigator.jsx:469
 msgid "Please Wait…"
 msgstr "Please Wait…"
 

@@ -22,7 +22,7 @@ body {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 0;
+        left: 0; // Map view takes up full screen width when sidebar cloased
         right: 0;
         display: flex;
         flex-flow: column;
@@ -39,6 +39,7 @@ body {
 
 }
 
+// Moves content to the right to fit sidebar
 .content.open {
     left: $sidebar-width;
 }
