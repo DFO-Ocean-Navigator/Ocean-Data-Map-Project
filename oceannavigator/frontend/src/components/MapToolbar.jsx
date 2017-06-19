@@ -127,7 +127,7 @@ class MapToolbar extends React.Component {
   }
 
   pointSelect(key) {
-    if (key == "custom") {
+    if (key == "csv") {
       this.setState({
         parser: "point",
       });
@@ -145,8 +145,8 @@ class MapToolbar extends React.Component {
     }
   }
 
-  lineSelect(key) {
-    if (key == "custom") {
+  lineSelect(key) { 
+    if (key == "csv") {
       this.setState({
         parser: "line",
       });
@@ -159,7 +159,7 @@ class MapToolbar extends React.Component {
   }
 
   areaSelect(key) {
-    if (key == "custom") {
+    if (key == "csv") {
       this.setState({
         parser: "area",
       });
@@ -464,8 +464,8 @@ class MapToolbar extends React.Component {
             key='draw'
           ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
           <MenuItem
-            eventKey='custom'
-            key='custom'
+            eventKey='csv'
+            key='csv'
           ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
           <MenuItem
             eventKey='odv'
@@ -480,8 +480,8 @@ class MapToolbar extends React.Component {
             key='draw'
           ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
           <MenuItem
-            eventKey='custom'
-            key='custom'
+            eventKey='csv'
+            key='csv'
           ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
         </SplitButton>
         <SplitButton
@@ -498,8 +498,8 @@ class MapToolbar extends React.Component {
             key='draw'
           ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
           <MenuItem
-            eventKey='custom'
-            key='custom'
+            eventKey='csv'
+            key='csv'
           ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
         </SplitButton>
         <Button

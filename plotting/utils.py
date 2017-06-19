@@ -23,7 +23,7 @@ def get_mimetype(filetype):
         mime = 'application/pdf'
     elif filetype == 'ps':
         mime = 'application/postscript'
-    elif filetype == 'tif':
+    elif filetype == 'tiff':
         mime = 'image/tiff'
     elif filetype == 'eps':
         mime = 'application/postscript'
