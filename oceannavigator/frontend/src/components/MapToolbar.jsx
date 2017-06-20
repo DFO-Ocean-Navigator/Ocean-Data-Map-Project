@@ -442,12 +442,13 @@ class MapToolbar extends React.Component {
     _("Reset Map");
     _("Link");
 
-    // Toggle Sidebar French translation needs to be checked.
+    // "Toggle Sidebar" French translation needs to be checked.
     return (
       <div className='MapToolbar'>
 
         <Button
         name="toggleSidebar"
+        bsStyle="primary"
         onClick={this.props.toggleSidebar}
         >
         <Icon icon="bars" /> {_("Toggle Sidebar")} </Button>

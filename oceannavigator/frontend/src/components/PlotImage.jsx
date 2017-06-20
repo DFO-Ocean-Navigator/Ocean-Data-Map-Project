@@ -191,8 +191,7 @@ class PlotImage extends React.Component {
       infoStatus = _("Failed to retrieve image. Please try again using the 'Get Link' -> 'Web' button below.");
     } else if (this.state.loading) {
       src = LOADING_IMAGE;
-      // Add translation
-      infoStatus = _("Loading. Please wait...");
+      infoStatus = _("Loading. Please wait..."); // Add translation
     } else {
       src = this.state.url;
     }
@@ -224,6 +223,9 @@ class PlotImage extends React.Component {
             <MenuItem
               eventKey="png"
             ><Icon icon="file-image-o" /> PNG</MenuItem>
+            <MenuItem
+              eventKey="jpeg"
+            ><Icon icon="file-image-o" /> JPG</MenuItem>
             <MenuItem
               eventKey="pdf"
             ><Icon icon="file-pdf-o" /> PDF</MenuItem>
