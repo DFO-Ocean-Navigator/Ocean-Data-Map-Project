@@ -416,8 +416,10 @@ class OceanNavigator extends React.Component {
         <Modal
           show={this.state.showModal}
           onHide={this.closeModal.bind(this)}
-          dialogClassName='full-screen-modal'>
-          <Modal.Header closeButton>
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -434,8 +436,10 @@ class OceanNavigator extends React.Component {
           show={this.state.showPermalink}
           onHide={() => this.setState({showPermalink: false})}
           dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}>
-          <Modal.Header closeButton>
+          onEntered={permalinkModalEntered}
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
