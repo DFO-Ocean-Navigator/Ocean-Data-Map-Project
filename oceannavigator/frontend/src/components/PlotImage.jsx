@@ -203,10 +203,14 @@ class PlotImage extends React.Component {
 
   render() {
     var src = "";
+    var infoStatus = "";
     if (this.state.fail) {
       src = FAIL_IMAGE;
+      // Add translation
+      infoStatus = _("Failed to retrieve image. Please try again using the 'Get Link' -> 'Web' button below.");
     } else if (this.state.loading) {
       src = LOADING_IMAGE;
+      infoStatus = _("Loading. Please wait..."); // Add translation
     } else {
       src = this.state.url;
     }
@@ -223,16 +227,24 @@ class PlotImage extends React.Component {
     return (
       <div className='PlotImage'>
         <img src={src} />
+        <br />
+        <label>{infoStatus}</label>
+        <br />
+        <br />
         <ButtonToolbar>
           <DropdownButton
             id="save"
-            title={<span><Icon icon="save" /> {_("Save…")}</span>}
+            title={<span><Icon icon="save" /> {_("Save Image")}</span>}
             dropup
+            disabled={this.state.fail || this.state.loading}
             onSelect={this.saveImage.bind(this)}
           >
             <MenuItem
               eventKey="png"
             ><Icon icon="file-image-o" /> PNG</MenuItem>
+            <MenuItem
+              eventKey="jpeg"
+            ><Icon icon="file-image-o" /> JPG</MenuItem>
             <MenuItem
               eventKey="pdf"
             ><Icon icon="file-pdf-o" /> PDF</MenuItem>
@@ -271,6 +283,8 @@ class PlotImage extends React.Component {
             id="link"
             title={<span><Icon icon="link" /> {_("Get Link")}</span>}
             dropup
+            bsStyle={this.state.fail ? "info" : "default"}
+            disabled={this.state.loading}
             onSelect={this.getLink.bind(this)}
           >
             <MenuItem
@@ -278,6 +292,7 @@ class PlotImage extends React.Component {
             ><Icon icon="globe" /> Web</MenuItem>
             <MenuItem
               eventKey="image"
+              disabled={this.state.fail}
             ><Icon icon="file-image-o" /> Image</MenuItem>
           </DropdownButton>
         </ButtonToolbar>

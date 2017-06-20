@@ -13,8 +13,10 @@ class MapInputs extends React.Component {
     _("Variable Range");
     _("Show Bathymetry Contours");
 
+    const className = this.props.state.sidebarOpen ? 'MapInputs open' : 'MapInputs';
+
     return (
-      <div className='MapInputs'>
+      <div className={className}>
         <ComboBox
           key='projection'
           id='projection'

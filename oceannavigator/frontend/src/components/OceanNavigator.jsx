@@ -49,6 +49,7 @@ class OceanNavigator extends React.Component {
         depth: 0,
         time: -1,
       },
+      sidebarOpen: true,
     };
     this.mapComponent = null;
     this.mapComponent2 = null;
@@ -81,6 +82,11 @@ class OceanNavigator extends React.Component {
       }
     }.bind(this);
   }
+
+  toggleSidebar() {
+    this.setState({sidebarOpen: !this.state.sidebarOpen});
+  }
+
   updateState(key, value) {
     var newState = {};
     var i;
@@ -419,6 +425,9 @@ class OceanNavigator extends React.Component {
 
     _("Loading");
 
+    const contentClassName = this.state.sidebarOpen ? 'content open' : 'content';
+
+
     var map = <Map
       ref={(m) => this.mapComponent = m}
       state={this.state}
@@ -465,16 +474,22 @@ class OceanNavigator extends React.Component {
           state={this.state}
           changeHandler={this.updateState.bind(this)}
         />
-        <div className='content'>
-          <MapToolbar action={action} plotEnabled={this.state.plotEnabled} />
+        <div className={contentClassName}>
+          <MapToolbar
+          action={action}
+          plotEnabled={this.state.plotEnabled}
+          toggleSidebar={this.toggleSidebar.bind(this)}
+          />
           {theMap}
         </div>
 
         <Modal
           show={this.state.showModal}
           onHide={this.closeModal.bind(this)}
-          dialogClassName='full-screen-modal'>
-          <Modal.Header closeButton>
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -491,8 +506,10 @@ class OceanNavigator extends React.Component {
           show={this.state.showPermalink}
           onHide={() => this.setState({showPermalink: false})}
           dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}>
-          <Modal.Header closeButton>
+          onEntered={permalinkModalEntered}
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>

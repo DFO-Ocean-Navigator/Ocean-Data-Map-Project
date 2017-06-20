@@ -2,6 +2,7 @@ html, body {
     height: 100%;
 }
 
+// Pop up windows
 .full-screen-modal {
     width: calc(100% - 2 * #{$modal-margin});
     margin: $modal-margin;
@@ -11,13 +12,20 @@ html, body {
         display: flex;
         flex-direction: column;
 
-        .modal-title {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
+        .modal-header {
+            .close {
+                opacity: 0.95;
+                color: #337ab7;
+                text-decoration: none;
+            }
 
-            flex: 0 1 auto;
+            .modal-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: center;
+                flex: 0 1 auto;
+            }
         }
 
         .modal-body {
