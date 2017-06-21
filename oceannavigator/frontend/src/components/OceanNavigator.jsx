@@ -9,9 +9,9 @@ import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
-var i18n = require("../i18n.js");
 
-var LOADING_IMAGE = require("../images/bar_loader.gif");
+var i18n = require("../i18n.js");
+const LOADING_IMAGE = require("../images/bar_loader.gif");
 
 function formatLatLon(latitude, longitude) {
   var formatted = "";
@@ -20,25 +20,28 @@ function formatLatLon(latitude, longitude) {
   formatted += ", ";
   formatted += Math.abs(longitude).toFixed(4) + " ";
   formatted += (longitude >= 0) ? "E" : "W";
+  
   return formatted;
 }
 
 class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
       variable_scale: "-5,30",
       depth: 0,
       time: -1,
-      scale: "-5,30",
-      plotEnabled: false,
+      scale: "-5,30", // Variable scale for left/primary view
+      scale_1: "-5, 30", // Variable scale for right view
+      plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857",
       showModal: false,
       vectortype: null,
       vectorid: null,
-      busy: false,
+      busy: false, // Controls if the busyModal is visible
       basemap: "topo",
       bathymetry: true,
       extent: [],
@@ -49,12 +52,13 @@ class OceanNavigator extends React.Component {
         depth: 0,
         time: -1,
       },
-      sidebarOpen: true,
+      sidebarOpen: true, // Controls sidebar opened/closed status
     };
+
     this.mapComponent = null;
     this.mapComponent2 = null;
 
-    var preload = new Image();
+    const preload = new Image();
     preload.src = LOADING_IMAGE;
 
     if (window.location.search.length > 0) {
@@ -83,6 +87,7 @@ class OceanNavigator extends React.Component {
     }.bind(this);
   }
 
+  // Opens/closes the sidebar state
   toggleSidebar() {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
@@ -91,10 +96,12 @@ class OceanNavigator extends React.Component {
     var newState = {};
     var i;
     if (typeof(key) === "string") {
+      // value has not changed
       if (this.state[key] == value) {
         return;
       }
 
+      // Store the updated value
       newState[key] = value;
 
       if (key == "time") {
@@ -114,7 +121,8 @@ class OceanNavigator extends React.Component {
           }
         }
       }
-    } else {
+    }
+    else {
       for (i = 0; i < key.length; i++) {
         switch(key[i]) {
           case "variable_scale":
@@ -147,6 +155,8 @@ class OceanNavigator extends React.Component {
       this.changeDataset(dataset, state);
       return;
     }
+
+    // Assign updated state
     this.setState(newState);
   }
 
@@ -425,8 +435,7 @@ class OceanNavigator extends React.Component {
 
     _("Loading");
 
-    const contentClassName = this.state.sidebarOpen ? 'content open' : 'content';
-
+    const contentClassName = this.state.sidebarOpen ? "content open" : "content";
 
     var map = <Map
       ref={(m) => this.mapComponent = m}
@@ -439,7 +448,7 @@ class OceanNavigator extends React.Component {
       var keys = Object.keys(this.state.dataset_1);
       secondState[keys[i]] = this.state.dataset_1[keys[i]];
     }
-    var multimap = <div className='multimap'>
+    const multimap = <div className='multimap'>
       <Map
         ref={(m) => this.mapComponent = m}
         state={this.state}
