@@ -52,6 +52,8 @@ app.ScaleViewer = function(opt_options) {
 
   var scale = document.createElement("img");
   scale.setAttribute("src", options.image);
+  scale.setAttribute("alt", "Variable Scale");
+  scale.setAttribute("title", "Variable Scale");
 
   var element = document.createElement("div");
   element.className = "scale-viewer ol-unselectable ol-control";

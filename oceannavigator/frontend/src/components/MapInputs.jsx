@@ -3,8 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import {PanelGroup, Panel} from "react-bootstrap";
-
+import {Panel} from "react-bootstrap";
 var i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
