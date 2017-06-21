@@ -17,6 +17,7 @@
 .Map {
     position: relative;
     cursor: crosshair;
+    border: 5px solid $toolbar-color;
 
     > div {
         height: 100%;

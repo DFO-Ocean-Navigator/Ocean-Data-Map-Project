@@ -7,9 +7,11 @@ import {Panel} from "react-bootstrap";
 var i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
+  
   constructor(props) {
     super(props);
   }
+
   render() {
     _("Variable Range");
     _("Show Bathymetry Contours");
@@ -18,6 +20,7 @@ class MapInputs extends React.Component {
 
     return (
       <div className={className}>
+
         <Panel
           header="Global Map Settings" 
           expanded
@@ -74,6 +77,7 @@ class MapInputs extends React.Component {
             title={_("Compare Datasets")}
           />
         </Panel>
+
         <Panel
           header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
           expanded
@@ -86,7 +90,25 @@ class MapInputs extends React.Component {
             onUpdate={this.props.changeHandler}
             depth={true}
           />
+          <Range
+            key='scale'
+            id='scale'
+            state={this.props.state.scale}
+            def=''
+            onUpdate={this.props.changeHandler}
+            title={_("Variable Range")}
+            autourl={"/api/range/" +
+              this.props.state.dataset + "/" +
+              this.props.state.projection + "/" +
+              this.props.state.extent.join(",") + "/" +
+              this.props.state.depth + "/" +
+              this.props.state.time + "/" +
+              this.props.state.variable + ".json"
+            }
+            default_scale={this.props.state.variable_scale}
+        ></Range>
         </Panel>
+
         <div style={{"display": this.props.state.dataset_compare ? "block" : "none"}}>
           <Panel
             header="Right View"
@@ -100,25 +122,27 @@ class MapInputs extends React.Component {
               onUpdate={this.props.changeHandler}
               depth={true}
             />
-          </Panel>
-        </div>
-        <Range
-          key='scale'
-          id='scale'
-          state={this.props.state.scale}
-          def=''
-          onUpdate={this.props.changeHandler}
-          title={_("Variable Range")}
-          autourl={"/api/range/" +
-            this.props.state.dataset + "/" +
-            this.props.state.projection + "/" +
-            this.props.state.extent.join(",") + "/" +
-            this.props.state.depth + "/" +
-            this.props.state.time + "/" +
-            this.props.state.variable + ".json"
-          }
-          default_scale={this.props.state.variable_scale}
+            <Range
+              key='scale_1'
+              id='scale_1'
+              state={this.props.state.scale_1}
+              def=''
+              onUpdate={this.props.changeHandler}
+              title={_("Variable Range")}
+              autourl={"/api/range/" +
+                this.props.state.dataset_1.dataset + "/" +
+                this.props.state.projection + "/" +
+                this.props.state.extent.join(",") + "/" +
+                this.props.state.dataset_1.depth + "/" +
+                this.props.state.dataset_1.time + "/" +
+                this.props.state.dataset_1.variable + ".json"
+              }
+              default_scale={this.props.state.variable_scale}
         ></Range>
+          </Panel>
+
+        </div>
+        
       </div>
     );
   }

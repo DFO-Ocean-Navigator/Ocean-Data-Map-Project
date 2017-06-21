@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 var i18n = require("../i18n.js");
 
-var KEYS = [
+const KEYS = [
   "dataset",
   "dataset_attribution",
   "dataset_quantum",
