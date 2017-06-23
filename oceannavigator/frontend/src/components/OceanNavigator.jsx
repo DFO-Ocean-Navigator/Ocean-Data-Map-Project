@@ -26,6 +26,7 @@ function formatLatLon(latitude, longitude) {
 class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
@@ -42,6 +43,15 @@ class OceanNavigator extends React.Component {
       bathymetry: true,
       extent: [],
       sidebarOpen: true,
+
+      // Primary map-view
+      mapView_0: {
+        dataset: "giops_day",
+        variable: "votemper",
+        depth: 0,
+        time: -1,
+        scale: "-5,30",
+      },
     };
     this.mapComponent = null;
 
@@ -79,8 +89,9 @@ class OceanNavigator extends React.Component {
   }
 
   updateState(key, value) {
-    var newState = {};
+    var newState = { mapView_0: {} };
     var i;
+    
     if (typeof(key) === "string") {
       if (this.state[key] == value) {
         return;
@@ -257,7 +268,7 @@ class OceanNavigator extends React.Component {
     }
   }
   generatePermLink(subquery) {
-    var query = {
+    const query = {
       center: this.state.center,
       zoom: this.state.zoom,
       dataset: this.state.dataset,
@@ -391,7 +402,7 @@ class OceanNavigator extends React.Component {
 
     _("Loading");
 
-    const contentClassName = this.state.sidebarOpen ? 'content open' : 'content';
+    const contentClassName = this.state.sidebarOpen ? "content open" : "content";
 
     return (
       <div className='OceanNavigator'>

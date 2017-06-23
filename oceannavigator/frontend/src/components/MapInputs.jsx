@@ -29,7 +29,6 @@ class MapInputs extends React.Component {
         bsStyle='primary' 
       >
           <ComboBox
-            key='projection'
             id='projection'
             state={this.props.state.projection}
             onUpdate={this.props.changeHandler}
@@ -41,7 +40,6 @@ class MapInputs extends React.Component {
             title={_("Projection")}
           />
           <ComboBox
-            key='basemap'
             id='basemap'
             state={this.props.state.basemap}
             onUpdate={this.props.changeHandler}
@@ -65,7 +63,6 @@ class MapInputs extends React.Component {
             title={_("Basemap")}
           />
           <SelectBox
-            key='bathymetry'
             id='bathymetry'
             state={this.props.state.bathymetry}
             onUpdate={this.props.changeHandler}
@@ -78,7 +75,6 @@ class MapInputs extends React.Component {
           bsStyle='primary' 
         >
           <ComboBox
-            key='dataset'
             id='dataset'
             state={this.props.state.dataset}
             def={"defaults.dataset"}
@@ -86,7 +82,6 @@ class MapInputs extends React.Component {
             url='/api/datasets/'
             title={_("Dataset")}></ComboBox>
           <ComboBox
-            key='variable'
             id='variable'
             state={this.props.state.variable}
             def={"defaults.dataset"}
@@ -98,7 +93,6 @@ class MapInputs extends React.Component {
             title={_("Variable")}
           ><h1>{_("Variable")}</h1></ComboBox>
           <ComboBox
-            key='depth'
             id='depth'
             state={this.props.state.depth}
             def={"defaults[this.state.type].depth"}
@@ -111,7 +105,6 @@ class MapInputs extends React.Component {
             title={_("Depth")}
           ></ComboBox>
           <TimePicker
-            key='time'
             id='time'
             state={this.props.state.time}
             def={"defaults[this.state.type].time"}
@@ -125,7 +118,6 @@ class MapInputs extends React.Component {
             title={_("Time")}
           ></TimePicker>
           <Range
-            key='scale'
             id='scale'
             state={this.props.state.scale}
             def=''
