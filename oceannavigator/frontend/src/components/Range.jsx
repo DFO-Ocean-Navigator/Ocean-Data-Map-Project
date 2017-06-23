@@ -23,12 +23,13 @@ class Range extends React.Component {
   
   updateParent() {
     clearTimeout(this.timeout);
-    var range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
+    const range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
     this.props.onUpdate(this.props.id, range);
   }
   
   componentWillReceiveProps(nextProps) {
     var scale = nextProps.state;
+
     if (typeof(nextProps.state.split) === "function") {
       scale = nextProps.state.split(",");
     }
