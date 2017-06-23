@@ -5,6 +5,7 @@ import NumericInput from "react-numeric-input";
 var i18n = require("../i18n.js");
 
 class Range extends React.Component {
+  
   constructor(props) {
     super(props);
     var scale = this.props.state;
@@ -19,11 +20,13 @@ class Range extends React.Component {
       max: max,
     };
   }
+  
   updateParent() {
     clearTimeout(this.timeout);
     var range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
     this.props.onUpdate(this.props.id, range);
   }
+  
   componentWillReceiveProps(nextProps) {
     var scale = nextProps.state;
     if (typeof(nextProps.state.split) === "function") {
@@ -36,6 +39,7 @@ class Range extends React.Component {
       });
     }
   }
+  
   changed(key, value) {
     clearTimeout(this.timeout);
     var state = {};
@@ -43,6 +47,7 @@ class Range extends React.Component {
     this.setState(state);
     this.timeout = setTimeout(this.updateParent.bind(this), 500);
   }
+  
   keyPress(e) {
     var key = e.which || e.keyCode;
     if (key == 13) {
@@ -52,6 +57,7 @@ class Range extends React.Component {
       return true;
     }
   }
+  
   autoChanged(e) {
     this.setState({
       auto: e.target.checked
@@ -68,6 +74,7 @@ class Range extends React.Component {
       this.props.onUpdate(this.props.id, scale[0] + "," + scale[1]);
     }
   }
+  
   getAutoScale() {
     $.ajax({
       url: this.props.autourl,
@@ -81,6 +88,7 @@ class Range extends React.Component {
       }
     });
   }
+  
   render() {
     var auto = (
             <div>

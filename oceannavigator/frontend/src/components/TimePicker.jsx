@@ -29,6 +29,7 @@ class TimePicker extends React.Component {
     };
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
   }
+  
   populate(props) {
     if ("url" in props && "" != props.url) {
       $.ajax({
@@ -157,9 +158,11 @@ class TimePicker extends React.Component {
       });
     }
   }
+  
   componentDidMount() {
     this.populate(this.props);
   }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.url != this.props.url ||
             nextProps.min != this.props.min ||
@@ -167,6 +170,7 @@ class TimePicker extends React.Component {
       this.populate(nextProps);
     }
   }
+
   pickerChange() {
     var min = 0;
     var max = -1;
