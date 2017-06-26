@@ -32,7 +32,6 @@ class OceanNavigator extends React.Component {
       dataset: "giops_day",
       variable: "votemper",
       variable_scale: "-5,30",
-      variable_scale_1: "-5,30",
       depth: 0,
       time: -1,
       scale: "-5,30", // Variable scale for left/primary view
@@ -52,6 +51,7 @@ class OceanNavigator extends React.Component {
         variable: "votemper",
         depth: 0,
         time: -1,
+        variable_scale: "-5,30",
       },
       sidebarOpen: true, // Controls sidebar opened/closed status
     };
@@ -93,35 +93,12 @@ class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
-  // Populates a given state with a value from key
-  setNewStateValueFromKey(key, value, newState) {
-    switch(key) {
-      case "variable_scale":
-        newState.scale = value;
-        break;
-      case "time":
-        if (value != undefined) {
-          newState.time = value;
-        }
-        break;
-      case "dataset":
-        if (this.state.dataset != value) {
-          this.changeDataset(value);
-        }
-        break;
-      default:
-        newState[key] = value;
-        break;
-    }
-  }
-
   // Updates global app state
   updateState(key, value) {
-    var newState = { mapView_0: {} };
+    var newState = {};
     
     // Only updating one value
     if (typeof(key) === "string") {
-      // value has not changed
       if (this.state[key] == value) {
         // Value hasn't changed
         return;
@@ -129,20 +106,8 @@ class OceanNavigator extends React.Component {
 
       // Store the updated value
       newState[key] = value;
-
-      if (key == "variable_scale") {
-        alert(value);
-      }
-
-      if (key == "time") {
-        if (typeof(value) == "undefined") {
-          return;
-        }
-      } else if (key == "variable_scale") {
-        newState.scale = value;
-      } else if (key == "variable_scale_1") {
-        newState.scale_1 = value;
-      } else if (key == "dataset_0") {
+      
+      if (key == "dataset_0") {
         if (value.dataset != this.state.dataset) {
           this.changeDataset(value.dataset, value);
           return;
@@ -155,14 +120,8 @@ class OceanNavigator extends React.Component {
       }
     }
     else {
-      for (i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         switch(key[i]) {
-          case "variable_scale":
-            newState.scale = value[i];
-            break;
-          case "variable_scale_1":
-            newState.scale = value[i];
-            break;
           case "time":
             if (value[i] != undefined) {
               newState.time = value[i];
@@ -203,7 +162,7 @@ class OceanNavigator extends React.Component {
       // If no state parameter has been passed
       // make a skeleton one
       if (state === undefined) {
-        state = { mapView_0:{} };
+        state = { };
       }
 
       state.dataset = dataset;
@@ -471,10 +430,11 @@ class OceanNavigator extends React.Component {
       state={this.state}
       action={action}
       updateState={this.updateState.bind(this)}
+      scale={this.state.scale}
     />;
-    var secondState = $.extend(true, {}, this.state);
-    for (var i=0; i < Object.keys(this.state.dataset_1).length; i++) {
-      var keys = Object.keys(this.state.dataset_1);
+    const secondState = $.extend(true, {}, this.state);
+    for (let i=0; i < Object.keys(this.state.dataset_1).length; i++) {
+      const keys = Object.keys(this.state.dataset_1);
       secondState[keys[i]] = this.state.dataset_1[keys[i]];
     }
     const multimap = <div className='multimap'>
@@ -484,6 +444,7 @@ class OceanNavigator extends React.Component {
         action={action}
         updateState={this.updateState.bind(this)}
         partner={this.mapComponent2}
+        scale={this.state.scale}
       />
       <Map
         ref={(m) => this.mapComponent2 = m}
@@ -491,6 +452,7 @@ class OceanNavigator extends React.Component {
         action={action}
         updateState={this.updateState.bind(this)}
         partner={this.mapComponent}
+        scale={this.state.scale_1}
       />
     </div>;
 

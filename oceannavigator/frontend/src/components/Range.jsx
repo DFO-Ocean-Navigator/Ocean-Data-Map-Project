@@ -2,7 +2,7 @@ import React from "react";
 import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 
-var i18n = require("../i18n.js");
+const i18n = require("../i18n.js");
 
 class Range extends React.Component {
 
