@@ -10,7 +10,7 @@ import Class4Window from "./Class4Window.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 
-var i18n = require("../i18n.js");
+const i18n = require("../i18n.js");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
 
 function formatLatLon(latitude, longitude) {
@@ -27,7 +27,7 @@ function formatLatLon(latitude, longitude) {
 class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
-
+    
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
@@ -64,7 +64,7 @@ class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
-        var querystate = JSON.parse(
+        const querystate = JSON.parse(
                         decodeURIComponent(
                             window.location.search.replace("?query=", ""))
                         );
@@ -74,7 +74,7 @@ class OceanNavigator extends React.Component {
       }
       var url = window.location.origin;
       if (window.location.path != undefined) {
-        url = url + window.location.path;
+        url += window.location.path;
       }
       window.history.replaceState(null, null, url);
     }
@@ -93,12 +93,37 @@ class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
+  // Populates a given state with a value from key
+  setNewStateValueFromKey(key, value, newState) {
+    switch(key) {
+      case "variable_scale":
+        newState.scale = value;
+        break;
+      case "time":
+        if (value != undefined) {
+          newState.time = value;
+        }
+        break;
+      case "dataset":
+        if (this.state.dataset != value) {
+          this.changeDataset(value);
+        }
+        break;
+      default:
+        newState[key] = value;
+        break;
+    }
+  }
+
+  // Updates global app state
   updateState(key, value) {
-    var newState = {};
-    var i;
+    var newState = { mapView_0: {} };
+    
+    // Only updating one value
     if (typeof(key) === "string") {
       // value has not changed
       if (this.state[key] == value) {
+        // Value hasn't changed
         return;
       }
 
@@ -149,59 +174,47 @@ class OceanNavigator extends React.Component {
       }
     }
 
-    if (key == "dataset" && this.state.dataset != value) {
-      this.changeDataset(value);
-      return;
-    } else if ($.inArray("dataset", key) != -1) {
-      var state = {};
-      var dataset = "";
-      for (i = 0; i < key.length; i++) {
-        if (key[i] == "dataset") {
-          dataset = value[i];
-        } else {
-          state[key[i]] = value[i];
-        }
-      }
-      this.changeDataset(dataset, state);
-      return;
-    }
-
-    // Assign updated state
     this.setState(newState);
   }
 
   changeDataset(dataset, state) {
+    // Busy modal
     this.setState({
       busy: true,
     });
+
     // When dataset changes, so does time & variable list
-    var var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
-    var time_promise = $.ajax(
+    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+    const time_promise = $.ajax(
       "/api/timestamp/" +
       this.state.dataset + "/" +
       this.state.time + "/" +
       dataset
     ).promise();
-    $.when(var_promise, time_promise).done(function(v, t) {
+    
+    $.when(var_promise, time_promise).done(function(variable, time) {
       var newvariable = this.state.variable;
-      if ($.inArray(this.state.variable, v[0].map(function(e) {
-        return e.id;
-      })) == -1) {
-        newvariable = v[0][0].id;
+      
+      if ($.inArray(this.state.variable, variable[0].map(function(e) 
+        { return e.id; })) == -1) {
+        newvariable = variable[0][0].id;
       }
 
+      // If no state parameter has been passed
+      // make a skeleton one
       if (state === undefined) {
-        state = {};
+        state = { mapView_0:{} };
       }
 
       state.dataset = dataset;
       state.variable = newvariable;
-      state.time = t[0];
+      state.time = time[0];
       state.busy = false;
 
       this.setState(state);
     }.bind(this));
   }
+
   action(name, arg, arg2, arg3) {
     switch(name) {
       case "point":
@@ -283,11 +296,13 @@ class OceanNavigator extends React.Component {
         break;
     }
   }
+
   showModal() {
     this.setState({
       showModal: true
     });
   }
+  
   closeModal() {
     if (this.state.subquery) {
       this.setState({
@@ -298,14 +313,16 @@ class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.state.showModal && !prevState.showModal) {
       window.history.replaceState(prevState, null, null);
       window.history.pushState(null, null, null);
     }
   }
+
   generatePermLink(subquery) {
-    var query = {
+    const query = {
       center: this.state.center,
       zoom: this.state.zoom,
       dataset: this.state.dataset,
@@ -316,6 +333,7 @@ class OceanNavigator extends React.Component {
       vectortype: this.state.vectortype,
       vectorid: this.state.vectorid,
     };
+
     if (subquery != undefined) {
       query["subquery"] = subquery;
       query["showModal"] = true;
@@ -328,8 +346,9 @@ class OceanNavigator extends React.Component {
       window.location.pathname +
       `?query=${encodeURIComponent(JSON.stringify(query))}`;
   }
+
   render() {
-    var action = this.action.bind(this);
+    const action = this.action.bind(this);
     var modalContent = "";
     var modalTitle = "";
     switch (this.state.modal) {
@@ -570,4 +589,3 @@ class OceanNavigator extends React.Component {
 }
 
 export default OceanNavigator;
-

@@ -957,7 +957,7 @@ class Map extends React.Component {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-          <a href="#" ref={(c) => this.infoPopupCloser = c}></a>
+          <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
           <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>

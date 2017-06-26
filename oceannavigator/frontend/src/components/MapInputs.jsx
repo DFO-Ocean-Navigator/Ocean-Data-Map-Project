@@ -4,14 +4,15 @@ import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel} from "react-bootstrap";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
   
   constructor(props) {
     super(props);
   }
-
+  
   render() {
     _("Variable Range");
     _("Show Bathymetry Contours");
@@ -20,14 +21,12 @@ class MapInputs extends React.Component {
 
     return (
       <div className={className}>
-
-        <Panel
-          header="Global Map Settings" 
-          expanded
-          bsStyle='primary'
-        >
+      <Panel 
+        header={_("Global Map Settings")}  
+        expanded 
+        bsStyle='primary' 
+      >
           <ComboBox
-            key='projection'
             id='projection'
             state={this.props.state.projection}
             onUpdate={this.props.changeHandler}
@@ -39,7 +38,6 @@ class MapInputs extends React.Component {
             title={_("Projection")}
           />
           <ComboBox
-            key='basemap'
             id='basemap'
             state={this.props.state.basemap}
             onUpdate={this.props.changeHandler}
@@ -63,7 +61,6 @@ class MapInputs extends React.Component {
             title={_("Basemap")}
           />
           <SelectBox
-            key='bathymetry'
             id='bathymetry'
             state={this.props.state.bathymetry}
             onUpdate={this.props.changeHandler}
@@ -78,7 +75,7 @@ class MapInputs extends React.Component {
           />
         </Panel>
 
-        <Panel
+        <Panel 
           header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
           expanded
           bsStyle='primary'
@@ -88,10 +85,9 @@ class MapInputs extends React.Component {
             id='dataset_0'
             state={this.props.state}
             onUpdate={this.props.changeHandler}
-            depth={true}
           />
+            depth={true}
           <Range
-            key='scale'
             id='scale'
             state={this.props.state.scale}
             def=''
