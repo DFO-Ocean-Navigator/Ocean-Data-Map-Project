@@ -141,7 +141,7 @@ class ComboBox extends React.Component {
           if (typeof (this.props.onUpdate) === "function") {
             props.onUpdate(props.id, value);
             if (a.indexOf(value) != -1) {
-              var d = data[a.indexOf(value)];
+              const d = data[a.indexOf(value)];
               for (var key in d) {
                 if (d.hasOwnProperty(key) && key != "id" && key != "value") {
                   this.props.onUpdate(this.props.id + "_" + key, d[key]);
@@ -162,7 +162,7 @@ class ComboBox extends React.Component {
 
       if (typeof (props.onUpdate) === "function") {
         for (var i = 0; i < props.data.length; i++) {
-          var d = props.data[i];
+          const d = props.data[i];
           if (d.id == value) {
             for (var key in d) {
               if (d.hasOwnProperty(key) && key != "id" && key != "value") {

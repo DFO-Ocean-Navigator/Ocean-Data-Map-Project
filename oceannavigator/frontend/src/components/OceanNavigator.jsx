@@ -88,38 +88,38 @@ class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
+  // Populates a given state with a value from key
+  setNewStateValueFromKey(key, value, newState) {
+    switch(key) {
+      case "variable_scale":
+        newState.scale = value;
+        break;
+      case "time":
+        if (value != undefined) {
+          newState.time = value;
+        }
+        break;
+      default:
+        newState[key] = value;
+        break;
+    }
+  }
+
   updateState(key, value) {
     var newState = { mapView_0: {} };
-    var i;
     
+    // Only updating one value
     if (typeof(key) === "string") {
       if (this.state[key] == value) {
+        // Value hasn't changed
         return;
       }
-
-      newState[key] = value;
-
-      if (key == "time") {
-        if (typeof(value) == "undefined") {
-          return;
-        }
-      } else if (key == "variable_scale") {
-        newState.scale = value;
-      }
-    } else {
-      for (i = 0; i < key.length; i++) {
-        switch(key[i]) {
-          case "variable_scale":
-            newState.scale = value[i];
-            break;
-          case "time":
-            if (value[i] != undefined) {
-              newState.time = value[i];
-            }
-            break;
-          default:
-            newState[key[i]] = value[i];
-        }
+      this.setNewStateValueFromKey(key, value, newState);
+    } 
+    else {
+      // Update state from array of values
+      for (let i = 0; i < key.length; i++) {
+        this.setNewStateValueFromKey(key[i], value[i], newState);
       }
     }
 
@@ -129,7 +129,7 @@ class OceanNavigator extends React.Component {
     } else if ($.inArray("dataset", key) != -1) {
       var state = {};
       var dataset = "";
-      for (i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         if (key[i] == "dataset") {
           dataset = value[i];
         } else {
