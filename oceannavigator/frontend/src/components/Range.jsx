@@ -2,7 +2,7 @@ import React from "react";
 import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 
-var i18n = require("../i18n.js");
+const i18n = require("../i18n.js");
 
 class Range extends React.Component {
 
@@ -78,6 +78,10 @@ class Range extends React.Component {
     }
   }
 
+  handleDefaultButton() {
+    this.props.onUpdate(this.props.id, this.props.default_scale);
+  }
+
   getAutoScale() {
     $.ajax({
       url: this.props.autourl,
@@ -104,7 +108,7 @@ class Range extends React.Component {
     if (this.props.autourl) {
       autobuttons = (
         <ButtonToolbar style={{ "display": "inline-block", "float": "right" }}>
-          <Button name='default' onClick={() => this.props.onUpdate(this.props.id, this.props.default_scale.join(","))}>{_("Default")}</Button>
+          <Button name='default' onClick={this.handleDefaultButton.bind(this)}>{_("Default")}</Button>
           <Button name='auto' bsStyle="primary" onClick={this.getAutoScale.bind(this)}>{_("Auto")}</Button>
         </ButtonToolbar>
       );

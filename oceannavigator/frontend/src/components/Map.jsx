@@ -1,13 +1,14 @@
 import React from "react";
 import ol from "openlayers";
 require("openlayers/css/ol.css");
-var proj4 = require("proj4/lib/index.js");
-var i18n = require("../i18n.js");
-var SmartPhone = require("detect-mobile-browser")(false);
+
+const proj4 = require("proj4/lib/index.js");
+const i18n = require("../i18n.js");
+const SmartPhone = require("detect-mobile-browser")(false);
 
 ol.proj.setProj4(proj4);
 
-var X_IMAGE = require("../images/x.png");
+const X_IMAGE = require("../images/x.png");
 
 var app = {};
 var COLORS = [
@@ -744,7 +745,7 @@ class Map extends React.Component {
     var datalayer = this.map.getLayers().getArray()[1];
     var old = datalayer.getSource();
     var props = old.getProperties();
-    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.state.scale}/{z}/{x}/{y}.png`;
+    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
     props["projection"] = this.props.state.projection;
     props["attributions"] = [
       new ol.Attribution({
@@ -763,7 +764,7 @@ class Map extends React.Component {
       image: (
         `/scale/${this.props.state.dataset}` +
         `/${this.props.state.variable}` +
-        `/${this.props.state.scale}.png`
+        `/${this.props.scale}.png`
       )
     });
     this.map.addControl(this.scaleViewer);

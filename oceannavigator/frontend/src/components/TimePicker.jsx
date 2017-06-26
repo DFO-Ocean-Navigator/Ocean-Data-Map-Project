@@ -16,7 +16,7 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-var i18n = require("../i18n.js");
+const i18n = require("../i18n.js");
 
 class TimePicker extends React.Component {
   constructor(props) {

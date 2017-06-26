@@ -85,8 +85,8 @@ class MapInputs extends React.Component {
             id='dataset_0'
             state={this.props.state}
             onUpdate={this.props.changeHandler}
-          />
             depth={true}
+          />
           <Range
             id='scale'
             state={this.props.state.scale}
@@ -133,7 +133,7 @@ class MapInputs extends React.Component {
                 this.props.state.dataset_1.time + "/" +
                 this.props.state.dataset_1.variable + ".json"
               }
-              default_scale={this.props.state.variable_scale}
+              default_scale={this.props.state.dataset_1.variable_scale}
         ></Range>
           </Panel>
 
