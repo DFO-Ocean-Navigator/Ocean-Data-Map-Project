@@ -163,6 +163,7 @@ class OceanNavigator extends React.Component {
       this.setState(state);
     }.bind(this));
   }
+
   action(name, arg, arg2, arg3) {
     switch(name) {
       case "point":
@@ -250,12 +251,14 @@ class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.state.showModal && !prevState.showModal) {
       window.history.replaceState(prevState, null, null);
       window.history.pushState(null, null, null);
     }
   }
+
   generatePermLink(subquery) {
     var query = {
       center: this.state.center,
@@ -280,6 +283,7 @@ class OceanNavigator extends React.Component {
       window.location.pathname +
       `?query=${encodeURIComponent(JSON.stringify(query))}`;
   }
+
   render() {
     var action = this.action.bind(this);
     var modalContent = "";

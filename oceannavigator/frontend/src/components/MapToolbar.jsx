@@ -222,12 +222,12 @@ class MapToolbar extends React.Component {
         skipEmptyLines: true,
         header: true,
         complete: function(results) {
-          var fields_lowered = results.meta.fields.map(function(f) {
+          const fields_lowered = results.meta.fields.map(function(f) {
             return f.toLowerCase().trim();
           });
           function findKey(names) {
-            for (var i = 0; i < names.length; i++) {
-              var index = fields_lowered.indexOf(names[i]);
+            for (let i = 0; i < names.length; i++) {
+              const index = fields_lowered.indexOf(names[i]);
               if (index > -1) {
                 return results.meta.fields[index];
               }
@@ -235,14 +235,14 @@ class MapToolbar extends React.Component {
             return -1;
           }
 
-          var lat = findKey(["latitude", "lat"]);
-          var lon = findKey(["longitude", "lon"]);
+          const lat = findKey(["latitude", "lat"]);
+          const lon = findKey(["longitude", "lon"]);
           if (lat == -1 || lon == -1) {
             alert(_("Error: Could not find latitude or longitude column"));
             return;
           }
 
-          var points = results.data.map(function(r) {
+          const points = results.data.map(function(r) {
             return [r[lat], r[lon]];
           });
 
@@ -278,18 +278,17 @@ class MapToolbar extends React.Component {
         complete: function(results) {
           var headerLine = results.data[0];
           function findColumn(prefix) {
-            for (var i = 0; i < headerLine.length; i++) {
-              if (headerLine[i].toLowerCase().startsWith(
-                prefix.toLowerCase()
-              )) {
+            for (let i = 0; i < headerLine.length; i++) {
+              if (headerLine[i].toLowerCase().startsWith(prefix.toLowerCase() )) {
                 return i;
               }
             }
             return -1;
           }
-          var latCol = jQuery.inArray("Latitude [degrees_north]", headerLine);
-          var lonCol = jQuery.inArray("Longitude [degrees_east]", headerLine);
-          var staCol = jQuery.inArray("Station", headerLine);
+
+          const latCol = jQuery.inArray("Latitude [degrees_north]", headerLine);
+          const lonCol = jQuery.inArray("Longitude [degrees_east]", headerLine);
+          const staCol = jQuery.inArray("Station", headerLine);
 
           var dateCol = findColumn("yyyy-mm-dd");
           var i;
@@ -442,7 +441,6 @@ class MapToolbar extends React.Component {
     _("Reset Map");
     _("Link");
 
-    // "Toggle Sidebar" French translation needs to be checked.
     return (
       <div className='MapToolbar'>
 
@@ -480,6 +478,7 @@ class MapToolbar extends React.Component {
             key='odv'
           ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
         </SplitButton>
+        
         <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Line")}</span>} onSelect={this.lineSelect.bind(this)}>
           {lineFiles}
           <MenuItem divider />
@@ -492,6 +491,7 @@ class MapToolbar extends React.Component {
             key='csv'
           ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
         </SplitButton>
+        
         <SplitButton
           name="area"
           id="area"
@@ -510,6 +510,7 @@ class MapToolbar extends React.Component {
             key='csv'
           ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
         </SplitButton>
+        
         <Button
           name="class4"
           onClick={this.class4ButtonHandler.bind(this)}
@@ -542,11 +543,13 @@ class MapToolbar extends React.Component {
             key='select'
           ><Icon icon='list'/> {_("Select…")}</MenuItem>
         </DropdownButton>
+        
         <Button
           name="plot"
           onClick={this.buttonHandler.bind(this)}
           disabled={!this.props.plotEnabled}
         ><Icon icon='line-chart' /> {_("Plot")}</Button>
+        
         <Button
           name="reset"
           onClick={this.buttonHandler.bind(this)}
