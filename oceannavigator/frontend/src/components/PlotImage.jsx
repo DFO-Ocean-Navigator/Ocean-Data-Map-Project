@@ -5,10 +5,11 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
-var i18n = require("../i18n.js");
 
-var LOADING_IMAGE = require("../images/spinner.gif");
-var FAIL_IMAGE = require("./fail.js");
+const i18n = require("../i18n.js");
+
+const LOADING_IMAGE = require("../images/spinner.gif");
+const FAIL_IMAGE = require("./fail.js");
 
 class PlotImage extends React.Component {
   constructor(props) {
@@ -27,7 +28,7 @@ class PlotImage extends React.Component {
   }
 
   loadImage(query) {
-    var paramString = $.param({
+    const paramString = $.param({
       query: JSON.stringify(query),
       format: "json",
     });
@@ -39,7 +40,7 @@ class PlotImage extends React.Component {
         paramString: paramString,
       });
 
-      var promise = $.ajax({
+      const promise = $.ajax({
         url: "/plot/",
         cache: true,
         data: paramString,
@@ -66,7 +67,7 @@ class PlotImage extends React.Component {
   }
 
   generateQuery(q) {
-    var query = {
+    const query = {
       type: q.type,
       dataset: q.dataset,
       quantum: q.quantum,
@@ -160,12 +161,12 @@ class PlotImage extends React.Component {
   }
 
   urlFromQuery(q) {
-    var query = this.generateQuery(q);
+    const query = this.generateQuery(q);
     return "/plot/?query=" + encodeURIComponent(JSON.stringify(query));
   }
 
   saveImage(key) {
-    var url = `${this.urlFromQuery(this.props.query)}` +
+    const url = `${this.urlFromQuery(this.props.query)}` +
       `&save&format=${key}&size=${this.props.query.size}` +
       `&dpi=${this.props.query.dpi}`;
     window.location.href = url;
@@ -196,11 +197,11 @@ class PlotImage extends React.Component {
       src = this.state.url;
     }
 
-    var permalinkModalEntered = function() {
+    const permalinkModalEntered = function() {
       this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + "px";
       this.permalinkbox.select();
     }.bind(this);
-    var imagelinkModalEntered = function() {
+    const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
     }.bind(this);

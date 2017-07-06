@@ -2,4 +2,4 @@
 
 from oceannavigator import app
 
-app.run(host='0.0.0.0', port=500)  # , processes=4)
+app.run(host='0.0.0.0', port=5000)  # , processes=4)
