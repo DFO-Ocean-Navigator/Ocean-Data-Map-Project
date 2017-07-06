@@ -1,5 +1,6 @@
 import React from "react";
 import ol from "openlayers";
+
 require("openlayers/css/ol.css");
 
 const proj4 = require("proj4/lib/index.js");
@@ -11,7 +12,7 @@ ol.proj.setProj4(proj4);
 const X_IMAGE = require("../images/x.png");
 
 var app = {};
-var COLORS = [
+const COLORS = [
     [ 0, 0, 255 ],
     [ 0, 128, 0 ],
     [ 255, 0, 0 ],
@@ -22,25 +23,25 @@ var COLORS = [
     [ 255, 255, 255 ],
 ];
 
-var DEF_CENTER = {
+const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
   "EPSG:32661": [0, 90],
   "EPSG:3031": [0, -90],
 };
 
-var DEF_ZOOM = {
+const DEF_ZOOM = {
   "EPSG:3857": 4,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MIN_ZOOM = {
+const MIN_ZOOM = {
   "EPSG:3857": 1,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MAX_ZOOM = {
+const MAX_ZOOM = {
   "EPSG:3857": 8,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
@@ -49,14 +50,14 @@ var MAX_ZOOM = {
 var drifter_color = {};
 
 app.ScaleViewer = function(opt_options) {
-  var options = opt_options || {};
+  const options = opt_options || {};
 
-  var scale = document.createElement("img");
+  const scale = document.createElement("img");
   scale.setAttribute("src", options.image);
   scale.setAttribute("alt", "Variable Scale");
   scale.setAttribute("title", "Variable Scale");
 
-  var element = document.createElement("div");
+  const element = document.createElement("div");
   element.className = "scale-viewer ol-unselectable ol-control";
   element.appendChild(scale);
 
@@ -200,7 +201,7 @@ class Map extends React.Component {
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
-        opacity: 0.5,
+        opacity: this.props.state.bathymetryOpacity,
         visible: this.props.state.bathymetry,
       });
     this.layer_vector = new ol.layer.Vector(
@@ -940,7 +941,7 @@ class Map extends React.Component {
         break;
     }
 
-    var viewExtent = this.map.getView().calculateExtent(this.map.getSize());
+    const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
     if (!ol.extent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }

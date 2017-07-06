@@ -17,4 +17,8 @@
         max-height: calc(100vh - #{2 * $toolbar-height});
         overflow-y: auto;
     }
+
+   .pointCoord-modal, .lineCoord-modal, .areaCoord-modal, .observation-modal {
+       max-width: 60%!important;
+   } 
 }

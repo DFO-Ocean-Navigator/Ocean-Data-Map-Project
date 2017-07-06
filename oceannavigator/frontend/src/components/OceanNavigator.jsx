@@ -178,11 +178,24 @@ class OceanNavigator extends React.Component {
     switch(name) {
       case "point":
         if (typeof(arg) === "object") {
-          this.setState({
-            point: [[arg[1], arg[0]]],
-            modal: "point",
-            names: [],
-          });
+          // The EnterPoint component correctly orders the coordinate
+          // pair, so no need to swap it.
+          if (arg2 == "enterPoint") {
+            this.setState({
+              point: [[arg[0], arg[1]]],
+              modal: "point",
+              names: [],
+            });
+          }
+          // Drawing on the map results in a reversed coordinate pair
+          // so swap it.
+          else {
+            this.setState({
+              point: [[arg[1], arg[0]]],
+              modal: "point",
+              names: [],
+            });
+          }
 
           this.showModal();
         } else {
@@ -431,6 +444,7 @@ class OceanNavigator extends React.Component {
       action={action}
       updateState={this.updateState.bind(this)}
       scale={this.state.scale}
+      bathymetryOpacity={0.5}
     />;
     const secondState = $.extend(true, {}, this.state);
     for (let i=0; i < Object.keys(this.state.dataset_1).length; i++) {
@@ -445,6 +459,7 @@ class OceanNavigator extends React.Component {
         updateState={this.updateState.bind(this)}
         partner={this.mapComponent2}
         scale={this.state.scale}
+        bathymetryOpacity={0.5}
       />
       <Map
         ref={(m) => this.mapComponent2 = m}
@@ -453,6 +468,7 @@ class OceanNavigator extends React.Component {
         updateState={this.updateState.bind(this)}
         partner={this.mapComponent}
         scale={this.state.scale_1}
+        bathymetryOpacity={0.5}
       />
     </div>;
 
@@ -475,9 +491,9 @@ class OceanNavigator extends React.Component {
         />
         <div className={contentClassName}>
           <MapToolbar
-          action={action}
-          plotEnabled={this.state.plotEnabled}
-          toggleSidebar={this.toggleSidebar.bind(this)}
+            action={action}
+            plotEnabled={this.state.plotEnabled}
+            toggleSidebar={this.toggleSidebar.bind(this)}
           />
           {theMap}
         </div>

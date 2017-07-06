@@ -13,12 +13,6 @@ html, body {
         flex-direction: column;
 
         .modal-header {
-            .close {
-                opacity: 0.95;
-                color: #337ab7;
-                text-decoration: none;
-            }
-
             .modal-title {
                 white-space: nowrap;
                 overflow: hidden;
@@ -37,6 +31,18 @@ html, body {
         }
     }
 
+}
+
+.modal-header {
+    .close {
+        opacity: 0.95;
+        color: #337ab7!important;
+        text-decoration: none;
+    }
+}
+
+textarea.form-control {
+    min-height: 20em!important;
 }
 
 br.clear {

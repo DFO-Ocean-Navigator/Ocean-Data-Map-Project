@@ -8,13 +8,14 @@ class SelectBox extends React.Component {
   
   render() {
     return (
-        <Checkbox
-          id={this.props.id} 
-          onChange={this.handleChange.bind(this)}
-          checked={this.props.state}
-        >
-          {this.props.title}
-        </Checkbox>
+      <Checkbox
+        id={this.props.id} 
+        onChange={this.handleChange.bind(this)}
+        checked={this.props.state}
+        inline
+      >
+        {this.props.title}
+      </Checkbox>
     );
   }
 }

@@ -35,14 +35,14 @@
         cursor: default;
 
         :hover {
-            background-color: transparent;
+            background-color: none!important;
             cursor: default;
         }
     }
 
     // Zoom controls
     .ol-zoom {
-        left: 7em;
+        left: 7.25em;
         opacity: 0.95;
         border-radius: 0;
         cursor: default;
