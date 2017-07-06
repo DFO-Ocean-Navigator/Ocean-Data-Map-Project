@@ -12,7 +12,6 @@ class SelectBox extends React.Component {
         id={this.props.id} 
         onChange={this.handleChange.bind(this)}
         checked={this.props.state}
-        inline
       >
         {this.props.title}
       </Checkbox>

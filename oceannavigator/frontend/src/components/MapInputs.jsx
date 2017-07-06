@@ -9,10 +9,6 @@ const i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
   
-  constructor(props) {
-    super(props);
-  }
-  
   render() {
     _("Variable Range");
     _("Show Bathymetry Contours");
@@ -21,11 +17,11 @@ class MapInputs extends React.Component {
 
     return (
       <div className={className}>
-      <Panel 
-        header={_("Global Map Settings")}  
-        expanded 
-        bsStyle='primary' 
-      >
+        <Panel 
+          header={_("Global Map Settings")}  
+          expanded 
+          bsStyle='primary' 
+        >
           <ComboBox
             id='projection'
             state={this.props.state.projection}
@@ -79,7 +75,7 @@ class MapInputs extends React.Component {
           header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
           expanded
           bsStyle='primary'
-          >
+        >
           <DatasetSelector
             key='dataset_0'
             id='dataset_0'
@@ -102,7 +98,7 @@ class MapInputs extends React.Component {
               this.props.state.variable + ".json"
             }
             default_scale={this.props.state.variable_scale}
-        ></Range>
+          ></Range>
         </Panel>
 
         <div style={{"display": this.props.state.dataset_compare ? "block" : "none"}}>
@@ -134,7 +130,7 @@ class MapInputs extends React.Component {
                 this.props.state.dataset_1.variable + ".json"
               }
               default_scale={this.props.state.dataset_1.variable_scale}
-        ></Range>
+            ></Range>
           </Panel>
 
         </div>
