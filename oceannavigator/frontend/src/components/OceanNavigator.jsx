@@ -41,6 +41,7 @@ class OceanNavigator extends React.Component {
       basemap: "topo",
       bathymetry: true,
       extent: [],
+      sidebarOpen: true,
     };
     this.mapComponent = null;
 
@@ -50,9 +51,9 @@ class OceanNavigator extends React.Component {
     if (window.location.search.length > 0) {
       try {
         var querystate = JSON.parse(
-                        decodeURIComponent(
-                            window.location.search.replace("?query=", ""))
-                        );
+          decodeURIComponent(
+            window.location.search.replace("?query=", ""))
+        );
         $.extend(this.state, querystate);
       } catch(err) {
         console.error(err);
@@ -72,6 +73,11 @@ class OceanNavigator extends React.Component {
       }
     }.bind(this);
   }
+
+  toggleSidebar() {
+    this.setState({sidebarOpen: !this.state.sidebarOpen});
+  }
+
   updateState(key, value) {
     var newState = {};
     var i;
@@ -157,15 +163,29 @@ class OceanNavigator extends React.Component {
       this.setState(state);
     }.bind(this));
   }
+
   action(name, arg, arg2, arg3) {
     switch(name) {
       case "point":
         if (typeof(arg) === "object") {
-          this.setState({
-            point: [[arg[1], arg[0]]],
-            modal: "point",
-            names: [],
-          });
+          // The EnterPoint component correctly orders the coordinate
+          // pair, so no need to swap it.
+          if (arg2 == "enterPoint") {
+            this.setState({
+              point: [[arg[0], arg[1]]],
+              modal: "point",
+              names: [],
+            });
+          }
+          // Drawing on the map results in a reversed coordinate pair
+          // so swap it.
+          else {
+            this.setState({
+              point: [[arg[1], arg[0]]],
+              modal: "point",
+              names: [],
+            });
+          }
 
           this.showModal();
         } else {
@@ -244,12 +264,14 @@ class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.state.showModal && !prevState.showModal) {
       window.history.replaceState(prevState, null, null);
       window.history.pushState(null, null, null);
     }
   }
+
   generatePermLink(subquery) {
     var query = {
       center: this.state.center,
@@ -274,6 +296,7 @@ class OceanNavigator extends React.Component {
       window.location.pathname +
       `?query=${encodeURIComponent(JSON.stringify(query))}`;
   }
+
   render() {
     var action = this.action.bind(this);
     var modalContent = "";
@@ -384,27 +407,37 @@ class OceanNavigator extends React.Component {
     }.bind(this);
 
     _("Loading");
+
+    const contentClassName = this.state.sidebarOpen ? 'content open' : 'content';
+
     return (
       <div className='OceanNavigator'>
         <MapInputs
           state={this.state}
           changeHandler={this.updateState.bind(this)}
         />
-        <div className='content'>
-          <MapToolbar action={action} plotEnabled={this.state.plotEnabled} />
+        <div className={contentClassName}>
+          <MapToolbar
+            action={action}
+            plotEnabled={this.state.plotEnabled}
+            toggleSidebar={this.toggleSidebar.bind(this)}
+          />
           <Map
             ref={(m) => this.mapComponent = m}
             state={this.state}
             action={action}
             updateState={this.updateState.bind(this)}
+            bathymetryOpacity={0.5}
           />
         </div>
 
         <Modal
           show={this.state.showModal}
           onHide={this.closeModal.bind(this)}
-          dialogClassName='full-screen-modal'>
-          <Modal.Header closeButton>
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -421,8 +454,10 @@ class OceanNavigator extends React.Component {
           show={this.state.showPermalink}
           onHide={() => this.setState({showPermalink: false})}
           dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}>
-          <Modal.Header closeButton>
+          onEntered={permalinkModalEntered}
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -438,12 +473,8 @@ class OceanNavigator extends React.Component {
             <Button
               onClick={function() {
                 this.permalinkbox.select();
-                if ($("html").hasClass("ie")) {
-                  var copied = window.clipboardData.getData("Text");
-                  if (copied != this.permalinkbox.value) {
-                    alert(_("Clipboard access was denied. Please right-click and copy the link manually."));
-                  }
-                }
+                // Modern browser command to copy on any selection
+                document.execCommand("copy");
               }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
               onClick={() => this.setState({showPermalink: false})}

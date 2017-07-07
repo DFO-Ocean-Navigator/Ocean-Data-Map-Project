@@ -1,9 +1,19 @@
 
 div.MapInputs {
-    overflow-y: scroll;
+    overflow-y: auto;
+    
+    padding: 0.5em; 
+    padding: 0.25em; 
+    padding-left: 0.5em; 
+    padding-right: 0.5em; 
+ 
+    // Reduce padding of Bootstrap panel
+    .panel {
+        margin-bottom: 10px; 
+    } 
+}
 
-    div {
-        padding: 0.5em;
-
-    }
+// Move sidebar onto screen when open
+.MapInputs.open {
+    width: $sidebar-width;
 }
