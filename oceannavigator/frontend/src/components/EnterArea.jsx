@@ -9,16 +9,8 @@ class EnterArea extends React.Component {
     super(props);
 
     this.state = {
-      showAreaPoint4: false,
-
       areaCoords: [],
     };
-  }
-
-  handleChange(e) {
-    this.setState({showAreaPoint4: e.target.checked});
-    // Pass updated checkbox value to MapToolbar
-    this.props.setCoordData({showAreaPoint4: e.target.checked});
   }
 
   setCoordData(state, id) {
@@ -34,17 +26,8 @@ class EnterArea extends React.Component {
     return (
       <div className="EnterArea">
         <Alert bsStyle="info">
-          {_("Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
+          {_("Please enter at least 3 points with numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
-        <Well>
-          <Checkbox
-            inline
-            checked={this.state.showAreaPoint4}
-            onChange={this.handleChange.bind(this)}
-          >
-            {_("Enable 4-point (quad) area mode.")}
-          </Checkbox>
-        </Well>
         <CoordInputPanel
           id="1"
           header={_("Point 1")}
@@ -60,13 +43,11 @@ class EnterArea extends React.Component {
           header={_("Point 3")}
           setCoordData={this.setCoordData.bind(this)}
         />
-        <div style={{display: this.state.showAreaPoint4 ? "block" : "none"}}>
-          <CoordInputPanel
-            id="4"
-            header={_("Point 4")}
-            setCoordData={this.setCoordData.bind(this)}
-          />
-        </div>
+        <CoordInputPanel
+          id="4"
+          header={_("Point 4")}
+          setCoordData={this.setCoordData.bind(this)}
+        />
       </div>
     );
   }
