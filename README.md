@@ -106,3 +106,20 @@ Javascript is a dynamically-typed language so it's super important to have clear
 ### Coding Style (Python)
 
 Coming soon <3
+
+### Setting up Javascript environment
+* Run the following commands to install NodeJS:
+	* `sudo	apt	install	python-software-properties curl`
+	* `curl	-sL	https://deb.nodesource.com/setup_4.x | sudo	-E bash -`
+	* `sudo	apt install	nodejs`
+	* `sudo npm install -g bower`
+	* `sudo npm install -g npm@next`
+	* `cd oceannavigator/frontend`
+	* `npm install`
+* While altering Javascript code, it can be actively transpiled using:
+	* `cd oceannavigator/frontend`
+	* `npm run dev`
+
+### Running the webserver
+* To run the debug server, execute:
+	* `sudo /opt/tools/anaconda2/bin/python runserver.py`
