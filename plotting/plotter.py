@@ -199,37 +199,48 @@ class Plotter:
             ] + map(lambda x: "%s [%s]" % x, zip(variables, variable_units))))
             buf.write("\n")
 
+            if len(depth.shape) == 1:
+                depth = np.reshape(depth, (depth.shape[0], 1))
+
             for idx in range(0, len(station)):
-                if idx > 0:
-                    cruise = ""
+                for idx2 in range(0, depth.shape[1]):
+                    if idx > 0 or idx2 > 0:
+                        cruise = ""
 
-                if isinstance(data[idx], np.ma.MaskedArray) and \
-                        data[idx].mask.all():
-                    continue
+                    if isinstance(data[idx], np.ma.MaskedArray):
+                        if len(data.shape) == 3 and \
+                           data[idx, :, idx2].mask.all():
+                            continue
+                        if len(data.shape) == 2 and \
+                           np.ma.is_masked(data[idx, idx2]):
+                            continue
 
-                line = [
-                    cruise,
-                    station[idx],
-                    "C",
-                    time[idx].isoformat(),
-                    "%0.4f" % longitude[idx],
-                    "%0.4f" % latitude[idx],
-                    "%0.1f" % depth[idx],
-                ]
-                if len(data.shape) == 1:
-                    line.append(str(data[idx]))
-                else:
-                    line.append(map(str, data[idx]))
+                    line = [
+                        cruise,
+                        station[idx],
+                        "C",
+                        time[idx].isoformat(),
+                        "%0.4f" % longitude[idx],
+                        "%0.4f" % latitude[idx],
+                        "%0.1f" % depth[idx, idx2],
+                    ]
+                    if len(data.shape) == 1:
+                        line.append(str(data[idx]))
+                    elif len(data.shape) == 2:
+                        line.append(str(data[idx, idx2]))
+                    else:
+                        line.extend(map(str, data[idx, :, idx2]))
 
-                if idx > 0 and station[idx] == station[idx - 1]:
-                    line[1] = ""
-                    line[2] = ""
-                    line[3] = ""
-                    line[4] = ""
-                    line[5] = ""
+                    if idx > 0 and station[idx] == station[idx - 1] or \
+                       idx2 > 0:
+                        line[1] = ""
+                        line[2] = ""
+                        line[3] = ""
+                        line[4] = ""
+                        line[5] = ""
 
-                buf.write("\t".join(line))
-                buf.write("\n")
+                    buf.write("\t".join(line))
+                    buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
 

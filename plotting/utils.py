@@ -17,13 +17,15 @@ def get_filename(plot_type, dataset_name, extension):
 def get_mimetype(filetype):
     if filetype == 'png':
         mime = 'image/png'
+    elif filetype == 'jpeg':
+        mime = 'image/jpeg'
     elif filetype == 'svg':
         mime = 'image/svg+xml'
     elif filetype == 'pdf':
         mime = 'application/pdf'
     elif filetype == 'ps':
         mime = 'application/postscript'
-    elif filetype == 'tif':
+    elif filetype == 'tiff':
         mime = 'image/tiff'
     elif filetype == 'eps':
         mime = 'application/postscript'

@@ -16,18 +16,14 @@ class ProfilePlotter(point.PointPlotter):
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.1f" % x)
-        data = np.reshape(
-            np.rollaxis(self.data, 1, 3),
-            (-1, len(self.variables))
-        )
-        data = float_to_str(data)
+        data = float_to_str(self.data)
 
         station = np.repeat(self.names, len(self.depths))
         points = np.array(self.points)
         latitude = np.repeat(points[:, 0], len(self.depths))
         longitude = np.repeat(points[:, 1], len(self.depths))
         time = np.repeat(self.timestamp, data.shape[0])
-        depth = np.tile(self.depths, len(self.points))
+        depth = self.depths[:, 0, :]
 
         return super(ProfilePlotter, self).odv_ascii(
             self.dataset_name,
@@ -64,7 +60,7 @@ class ProfilePlotter(point.PointPlotter):
                 entry = [
                     "%0.4f" % self.points[p][0],
                     "%0.4f" % self.points[p][1],
-                    "%0.1f" % self.depths[d],
+                    "%0.1f" % self.depths[p, 0, d],
                 ] + map(lambda x: "%0.1f" % x, self.data[p, :, d])
                 data.append(entry)
 

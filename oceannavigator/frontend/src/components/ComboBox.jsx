@@ -2,42 +2,61 @@ import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
 import {Modal, Button} from "react-bootstrap";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class ComboBox extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       data: [],
       url: null
     };
   }
 
+  // Fired when new option is selected
   handleChange(e) {
-    var value = e.target.value;
+    var value = e.target.value; // Name of new selected option
+
     if (this.props.multiple) {
       value = [];
-      var options = e.target.options;
+      const options = e.target.options;
+      
       for (var i = 0, l = options.length; i < l; i++) {
         if (options[i].selected) {
           value.push(options[i].value);
         }
       }
     }
+    
     if (typeof(this.props.onUpdate) === "function") {
-      var keys = [this.props.id];
-      var values = [value];
+      // State key ID: "variable", "dataset", "projection", etc.
+      const keys = [this.props.id];
+      // And their associative values
+      const values = [value];
+      
+      // Get index of selected option
       if (e.target.selectedIndex != -1) {
-        var dataset = e.target.options[e.target.selectedIndex].dataset;
+        const dataset = e.target.options[e.target.selectedIndex].dataset;
 
+        // Construct keys and their associative value to be sent to 
+        // OceanNavigator state
         for (var key in dataset) {
+          
+          // State key name ("variable_scale", "dataset_help", etc)
           keys.push(this.props.id + "_" + key);
+
+          // State key value ("-5,30", "Sample dataset help...")
           values.push(dataset[key]);
         }
       }
+      // Update OceanNavigator state
       this.props.onUpdate(keys, values);
     }
   }
+
+  // Load options into dropdown
   populate(props) {
     this.setState({
       url: props.url
@@ -47,26 +66,26 @@ class ComboBox extends React.Component {
         url: props.url,
         dataType: "json",
         cache: true,
-        success: function(data) {
-          var ids = data.map(function(d) {return d.id;});
+        success: function (data) {
+          const ids = data.map(function (d) { return d.id; });
           if (
             (this.props.state == "" && typeof(this.props.state) == "string") ||
             this.props.state == "none"
           ) {
             if (jQuery.inArray("none", ids) == -1) {
-              data.splice(0, 0, {"id": "none", "value": _("None")});
+              data.splice(0, 0, { "id": "none", "value": _("None") });
             }
           }
           this.setState({
             data: data,
           });
 
-          var a = data.map(function(x) {
+          const a = data.map(function (x) {
             return x.id;
           });
 
           var value = this.props.state;
-          var floatValue = parseFloat(value);
+          const floatValue = parseFloat(value);
 
           var notInList = false;
           if (value instanceof Array) {
@@ -119,10 +138,10 @@ class ComboBox extends React.Component {
               value = data[0].id;
             }
           }
-          if (typeof(this.props.onUpdate) === "function") {
+          if (typeof (this.props.onUpdate) === "function") {
             props.onUpdate(props.id, value);
             if (a.indexOf(value) != -1) {
-              var d = data[a.indexOf(value)];
+              const d = data[a.indexOf(value)];
               for (var key in d) {
                 if (d.hasOwnProperty(key) && key != "id" && key != "value") {
                   this.props.onUpdate(this.props.id + "_" + key, d[key]);
@@ -131,7 +150,7 @@ class ComboBox extends React.Component {
             }
           }
         }.bind(this),
-        error: function(xhr, status, err) {
+        error: function (xhr, status, err) {
           console.error(props.url, status, err.toString());
         }.bind(this)
       });
@@ -141,9 +160,9 @@ class ComboBox extends React.Component {
       });
       var value = this.props.state;
 
-      if (typeof(props.onUpdate) === "function") {
+      if (typeof (props.onUpdate) === "function") {
         for (var i = 0; i < props.data.length; i++) {
-          var d = props.data[i];
+          const d = props.data[i];
           if (d.id == value) {
             for (var key in d) {
               if (d.hasOwnProperty(key) && key != "id" && key != "value") {
@@ -155,30 +174,36 @@ class ComboBox extends React.Component {
       }
     }
   }
+
   componentDidMount() {
     this.populate(this.props);
   }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.url != this.state.url || nextProps.data != this.props.data) {
       this.populate(nextProps);
     }
   }
+
   showHelp() {
     this.setState({
       showHelp: true
     });
   }
+
   closeHelp() {
     this.setState({
       showHelp: false
     });
   }
+
   render() {
-    var options = this.state.data.map(function(o) {
+    const options = this.state.data.map(function(o) {
       var opts = {
         key: o.id,
         value: o.id,
       };
+
       for (var key in o) {
         if (key == "id" || key == "value") {
           continue;
@@ -204,7 +229,7 @@ class ComboBox extends React.Component {
         value = value[0];
       }
 
-      var hasHelp =
+      const hasHelp =
         (this.props.children != null && this.props.children.length > 0) ||
         this.state.data.slice(-1)[0].hasOwnProperty("help");
 
@@ -234,8 +259,9 @@ class ComboBox extends React.Component {
             onHide={this.closeHelp.bind(this)}
             bsSize="large"
             dialogClassName="helpdialog"
+            backdrop={true}
           >
-            <Modal.Header closeButton>
+            <Modal.Header closeButton closeLabel={_("Close")}>
               <Modal.Title>{
                 _("titlehelp", {title: this.props.title})
               }</Modal.Title>
@@ -245,7 +271,7 @@ class ComboBox extends React.Component {
               {helpOptions}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.closeHelp.bind(this)}>{_("Close")}</Button>
+              <Button onClick={this.closeHelp.bind(this)}> {_("Close")}</Button>
             </Modal.Footer>
           </Modal>
 
@@ -255,7 +281,8 @@ class ComboBox extends React.Component {
             }
             value={value}
             onChange={this.handleChange.bind(this)}
-            multiple={this.props.multiple}>
+            multiple={this.props.multiple}
+          >
             {options}
           </select>
         </div>

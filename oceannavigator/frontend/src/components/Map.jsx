@@ -1,45 +1,47 @@
 import React from "react";
 import ol from "openlayers";
+
 require("openlayers/css/ol.css");
-var proj4 = require("proj4/lib/index.js");
-var i18n = require("../i18n.js");
-var SmartPhone = require("detect-mobile-browser")(false);
+
+const proj4 = require("proj4/lib/index.js");
+const i18n = require("../i18n.js");
+const SmartPhone = require("detect-mobile-browser")(false);
 
 ol.proj.setProj4(proj4);
 
-var X_IMAGE = require("../images/x.png");
+const X_IMAGE = require("../images/x.png");
 
 var app = {};
-var COLORS = [
-    [ 0, 0, 255 ],
-    [ 0, 128, 0 ],
-    [ 255, 0, 0 ],
-    [ 0, 255, 255 ],
-    [ 255, 0, 255 ],
-    [ 255, 255, 0 ],
-    [ 0, 0, 0 ],
-    [ 255, 255, 255 ],
+const COLORS = [
+  [ 0, 0, 255 ],
+  [ 0, 128, 0 ],
+  [ 255, 0, 0 ],
+  [ 0, 255, 255 ],
+  [ 255, 0, 255 ],
+  [ 255, 255, 0 ],
+  [ 0, 0, 0 ],
+  [ 255, 255, 255 ],
 ];
 
-var DEF_CENTER = {
+const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
   "EPSG:32661": [0, 90],
   "EPSG:3031": [0, -90],
 };
 
-var DEF_ZOOM = {
+const DEF_ZOOM = {
   "EPSG:3857": 4,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MIN_ZOOM = {
+const MIN_ZOOM = {
   "EPSG:3857": 1,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MAX_ZOOM = {
+const MAX_ZOOM = {
   "EPSG:3857": 8,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
@@ -48,12 +50,14 @@ var MAX_ZOOM = {
 var drifter_color = {};
 
 app.ScaleViewer = function(opt_options) {
-  var options = opt_options || {};
+  const options = opt_options || {};
 
-  var scale = document.createElement("img");
+  const scale = document.createElement("img");
   scale.setAttribute("src", options.image);
+  scale.setAttribute("alt", "Variable Scale");
+  scale.setAttribute("title", "Variable Scale");
 
-  var element = document.createElement("div");
+  const element = document.createElement("div");
   element.className = "scale-viewer ol-unselectable ol-control";
   element.appendChild(scale);
 
@@ -197,7 +201,7 @@ class Map extends React.Component {
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
-        opacity: 0.5,
+        opacity: this.props.state.bathymetryOpacity,
         visible: this.props.state.bathymetry,
       });
     this.layer_vector = new ol.layer.Vector(
@@ -742,7 +746,7 @@ class Map extends React.Component {
     var datalayer = this.map.getLayers().getArray()[1];
     var old = datalayer.getSource();
     var props = old.getProperties();
-    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.state.scale}/{z}/{x}/{y}.png`;
+    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
     props["projection"] = this.props.state.projection;
     props["attributions"] = [
       new ol.Attribution({
@@ -761,7 +765,7 @@ class Map extends React.Component {
       image: (
         `/scale/${this.props.state.dataset}` +
         `/${this.props.state.variable}` +
-        `/${this.props.state.scale}.png`
+        `/${this.props.scale}.png`
       )
     });
     this.map.addControl(this.scaleViewer);
@@ -937,7 +941,7 @@ class Map extends React.Component {
         break;
     }
 
-    var viewExtent = this.map.getView().calculateExtent(this.map.getSize());
+    const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
     if (!ol.extent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }
@@ -955,7 +959,7 @@ class Map extends React.Component {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-          <a href="#" ref={(c) => this.infoPopupCloser = c}></a>
+          <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
           <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>

@@ -10,7 +10,7 @@ from data import open_dataset
 class TemperatureSalinityPlotter(point.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
-        self.plottype = "sound"
+        self.plottype = "ts"
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                          format)
 
@@ -38,7 +38,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
                 data.append([
                     "%0.4f" % p[0],
                     "%0.4f" % p[1],
-                    "%0.1f" % self.depths[idx],
+                    "%0.1f" % self.temperature_depths[idx][idx2],
                     "%0.1f" % self.salinity[idx][idx2],
                     "%0.1f" % self.temperature[idx][idx2]
                 ])

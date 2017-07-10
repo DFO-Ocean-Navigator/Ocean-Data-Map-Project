@@ -6,9 +6,11 @@ import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
-var i18n = require("../i18n.js");
+import DatasetSelector from "./DatasetSelector.jsx";
 
-var TabEnum = {
+const i18n = require("../i18n.js");
+
+const TabEnum = {
   PROFILE: 1,
   CTD: 2,
   TS: 3,
@@ -21,6 +23,7 @@ var TabEnum = {
 class PointWindow extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       selected: TabEnum.CTD,
       scale: props.scale + ",auto",
@@ -153,7 +156,7 @@ class PointWindow extends React.Component {
     _("Variable Range");
     _("Colourmap");
     _("Saved Image Size");
-    var dataset = <ComboBox
+    const dataset = <ComboBox
       key='dataset'
       id='dataset'
       state={this.props.dataset}
@@ -162,7 +165,7 @@ class PointWindow extends React.Component {
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
-    var time = <TimePicker
+    const time = <TimePicker
       key='time'
       id='time'
       state={this.props.time}
@@ -172,14 +175,14 @@ class PointWindow extends React.Component {
       title={_("Time")}
       onUpdate={this.props.onUpdate}
     />;
-    var point = <LocationInput
+    const point = <LocationInput
       key='point'
       id='point'
       state={this.props.point}
       title={_("Location")}
       onUpdate={this.onLocalUpdate.bind(this)}
     />;
-    var starttime = <TimePicker
+    const starttime = <TimePicker
       key='starttime'
       id='starttime'
       state={this.state.starttime}
@@ -190,7 +193,7 @@ class PointWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       max={this.props.time}
     />;
-    var endtime = <TimePicker
+    const endtime = <TimePicker
       key='time'
       id='time'
       state={this.props.time}
@@ -200,7 +203,7 @@ class PointWindow extends React.Component {
       onUpdate={this.props.onUpdate}
       min={this.state.starttime}
     />;
-    var depth = <ComboBox
+    const depth = <ComboBox
       key='depth'
       id='depth'
       state={this.state.depth}
@@ -208,7 +211,7 @@ class PointWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       url={"/api/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
       title={_("Depth")}></ComboBox>;
-    var multidepth = <ComboBox
+    const multidepth = <ComboBox
       key='depth'
       id='depth'
       multiple
@@ -217,7 +220,7 @@ class PointWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
       title={_("Depth")}></ComboBox>;
-    var variable = <ComboBox
+    const variable = <ComboBox
       key='variable'
       id='variable'
       state={this.props.variable}
@@ -225,7 +228,7 @@ class PointWindow extends React.Component {
       onUpdate={this.props.onUpdate}
       url={"/api/variables/?vectors&dataset="+this.props.dataset}
       title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>;
-    var profilevariable = <ComboBox
+    const profilevariable = <ComboBox
       key='variable'
       id='variable'
       multiple
@@ -234,7 +237,7 @@ class PointWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       url={"/api/variables/?3d_only&dataset="+this.props.dataset + "&anom"}
       title={_("Variable")}><h1>Variable</h1></ComboBox>;
-    var vectorvariable = <ComboBox
+    const vectorvariable = <ComboBox
       key='variable'
       id='variable'
       state={this.state.variable}
@@ -242,7 +245,7 @@ class PointWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       url={"/api/variables/?vectors_only&dataset="+this.props.dataset}
       title={_("Variable")}><h1>Variable</h1></ComboBox>;
-    var scale = <Range
+    const scale = <Range
       auto
       key='scale'
       id='scale'
@@ -250,7 +253,7 @@ class PointWindow extends React.Component {
       def={""}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Variable Range")} />;
-    var colormap = <ComboBox
+    const colormap = <ComboBox
       key='colormap'
       id='colormap'
       state={this.state.colormap}
@@ -259,14 +262,14 @@ class PointWindow extends React.Component {
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
-    var size = <ImageSize
+    const size = <ImageSize
       key='size'
       id='size'
       state={this.state.size}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Saved Image Size")} />;
-    var observation_data = [];
-    var observation_variable = <div></div>;
+    let observation_data = [];
+    let observation_variable = <div></div>;
     if (this.props.point[0][2] !== undefined) {
       if (typeof(this.props.point[0][2]) == "number") {
         observation_variable = <ComboBox
@@ -296,7 +299,7 @@ class PointWindow extends React.Component {
       }
     }
 
-    var hasTempSalinity =
+    const hasTempSalinity =
       (
         $.inArray("votemper", this.state.variables) != -1
         ||
@@ -308,7 +311,7 @@ class PointWindow extends React.Component {
       );
 
     var inputs = [];
-    var plot_query = {
+    const plot_query = {
       dataset: this.props.dataset,
       quantum: this.props.quantum,
       point: this.props.point,
@@ -317,7 +320,7 @@ class PointWindow extends React.Component {
       dpi: this.state.dpi,
     };
 
-    var active = this.state.selected;
+    let active = this.state.selected;
     if (!hasTempSalinity && (
       active == TabEnum.CTD ||
       active == TabEnum.TS ||
@@ -412,7 +415,7 @@ class PointWindow extends React.Component {
 
     inputs.push(size);
 
-    var permlink_query = {
+    const permlink_query = {
       selected: this.state.selected,
       scale: this.state.scale,
       depth: this.state.depth,

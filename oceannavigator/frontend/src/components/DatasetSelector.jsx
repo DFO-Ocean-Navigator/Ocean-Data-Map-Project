@@ -1,14 +1,15 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
-var i18n = require("../i18n.js");
 
-var KEYS = [
+const i18n = require("../i18n.js");
+
+const KEYS = [
   "dataset",
   "dataset_attribution",
-  "dataset_quantum",
+  "dataset_quantum", // Dataset time
   "variable",
-  "variable_scale",
+  "variable_scale", // Default range values for variable
   "depth",
   "time",
 ];
@@ -49,8 +50,10 @@ class DatasetSelector extends React.Component {
       case "all":
       default:
         variables = "";
+        break;
     }
 
+    // Determine which timepicker we need
     var time = "";
     switch (this.props.time) {
       case "range":
