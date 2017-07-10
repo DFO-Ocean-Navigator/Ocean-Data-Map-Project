@@ -8,11 +8,13 @@ import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class LineWindow extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       selected: 1,
       scale: props.scale + ",auto",
@@ -81,7 +83,7 @@ class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
-    var dataset = <DatasetSelector
+    const dataset = <DatasetSelector
       key='dataset_0'
       id='dataset_0'
       state={this.props.dataset_0}
@@ -90,7 +92,7 @@ class LineWindow extends React.Component {
       variables={this.state.selected == 2 ? "all" : "3d"}
       time={this.state.selected == 2 ? "range" : "single"}
     />;
-    var scale = <Range
+    const scale = <Range
       auto
       key='scale'
       id='scale'
@@ -99,7 +101,7 @@ class LineWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Variable Range")}
     />;
-    var colormap = <ComboBox
+    const colormap = <ComboBox
       key='colormap'
       id='colormap'
       state={this.state.colormap}
@@ -108,20 +110,20 @@ class LineWindow extends React.Component {
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
-    var showmap = <SelectBox
+    const showmap = <SelectBox
       key='showmap'
       id='showmap'
       state={this.state.showmap}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Show Location")}>{_("showmap_help")}</SelectBox>;
-    var linearthreshold = <NumberBox
+    const linearthreshold = <NumberBox
       key='linearthresh'
       id='linearthresh'
       state={this.state.linearthresh}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Linear Threshold")}
     >{_("linearthresh_help")}</NumberBox>;
-    var surfacevariable = <ComboBox
+    const surfacevariable = <ComboBox
       key='surfacevariable'
       id='surfacevariable'
       state={this.state.surfacevariable}
@@ -129,20 +131,20 @@ class LineWindow extends React.Component {
       title={_("Surface Variable")}
       url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
     >{_("surfacevariable_help")}</ComboBox>;
-    var size = <ImageSize
+    const size = <ImageSize
       key='size'
       id='size'
       state={this.state.size}
       onUpdate={this.onLocalUpdate.bind(this)}
       title={_("Saved Image Size")}
     />;
-    var depthlimit = <DepthLimit
+    const depthlimit = <DepthLimit
       key='depth_limit'
       id='depth_limit'
       state={this.state.depth_limit}
       onUpdate={this.onLocalUpdate.bind(this)}
     />;
-    var compare_dataset = <div key='compare_dataset'>
+    const compare_dataset = <div key='compare_dataset'>
       <SelectBox
         key='dataset_compare'
         id='dataset_compare'

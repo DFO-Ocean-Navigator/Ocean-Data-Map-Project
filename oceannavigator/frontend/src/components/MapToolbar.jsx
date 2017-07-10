@@ -305,7 +305,7 @@ class MapToolbar extends React.Component {
           const lat = findKey(["latitude", "lat"]);
           const lon = findKey(["longitude", "lon"]);
           if (lat == -1 || lon == -1) {
-            alert(_("Error: Could not find latitude or longitude column"));
+            alert(_("Error: Could not find latitude or longitude column in file: ") + file.name);
             return;
           }
 
@@ -344,7 +344,7 @@ class MapToolbar extends React.Component {
           console.error(err, reason);
         },
         complete: function(results) {
-          var headerLine = results.data[0];
+          const headerLine = results.data[0];
           function findColumn(prefix) {
             for (let i = 0; i < headerLine.length; i++) {
               if (headerLine[i].toLowerCase().startsWith(prefix.toLowerCase() )) {
@@ -418,7 +418,7 @@ class MapToolbar extends React.Component {
                   results.data[i][daycol] + " ";
               }
             } else {
-              alert(_("Error: Unknown Date/Time format"));
+              alert(_("Error: Unknown Date/Time format in file: " + file.name));
               return;
             }
 

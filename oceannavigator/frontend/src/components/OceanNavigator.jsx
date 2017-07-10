@@ -93,6 +93,14 @@ class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
+  // Turns off map drawing
+  removeMapInteraction(mode) {
+    this.mapComponent.removeMapInteractions(mode);
+    if (this.mapComponent2) {
+      this.mapComponent2.removeMapInteractions(mode);
+    }
+  }
+
   // Updates global app state
   updateState(key, value) {
     var newState = {};
@@ -197,9 +205,15 @@ class OceanNavigator extends React.Component {
             });
           }
 
+          // Disable point selection in both maps
+          this.removeMapInteraction("Point");
           this.showModal();
         } else {
+          // Enable point selection in both maps
           this.mapComponent.point();
+          if (this.mapComponent2) {
+            this.mapComponent2.point();
+          }
         }
         break;
       case "line":
@@ -210,9 +224,15 @@ class OceanNavigator extends React.Component {
             names: [],
           });
 
+          // Disable line drawing in both maps
+          this.removeMapInteraction("Line");
           this.showModal();
         } else {
+          // Enable line drawing in both maps
           this.mapComponent.line();
+          if (this.mapComponent2) {
+            this.mapComponent2.line();
+          }
         }
         break;
       case "area":
@@ -223,9 +243,15 @@ class OceanNavigator extends React.Component {
             names: [],
           });
 
+          // Disable area drawing on both maps
+          this.removeMapInteraction("Area");
           this.showModal();
         } else {
+          // Enable area drawing on both maps
           this.mapComponent.area();
+          if (this.mapComponent2) {
+            this.mapComponent2.area();
+          }
         }
         break;
       case "drifter":
@@ -355,12 +381,12 @@ class OceanNavigator extends React.Component {
             dataset_0={this.state}
             quantum={this.state.dataset_quantum}
             line={this.state.line}
-            time={this.state.time}
             variable={this.state.variable}
+            depth={this.state.depth}
+            time={this.state.time}
             scale={this.state.scale}
             colormap={this.state.colormap}
             names={this.state.names}
-            depth={this.state.depth}
             onUpdate={this.updateState.bind(this)}
             generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
@@ -438,7 +464,7 @@ class OceanNavigator extends React.Component {
 
     const contentClassName = this.state.sidebarOpen ? "content open" : "content";
 
-    var map = <Map
+    let map = <Map
       ref={(m) => this.mapComponent = m}
       state={this.state}
       action={action}
@@ -446,42 +472,36 @@ class OceanNavigator extends React.Component {
       scale={this.state.scale}
       bathymetryOpacity={0.5}
     />;
-    const secondState = $.extend(true, {}, this.state);
-    for (let i=0; i < Object.keys(this.state.dataset_1).length; i++) {
-      const keys = Object.keys(this.state.dataset_1);
-      secondState[keys[i]] = this.state.dataset_1[keys[i]];
-    }
-    const multimap = <div className='multimap'>
-      <Map
-        ref={(m) => this.mapComponent = m}
-        state={this.state}
-        action={action}
-        updateState={this.updateState.bind(this)}
-        partner={this.mapComponent2}
-        scale={this.state.scale}
-        bathymetryOpacity={0.5}
-      />
-      <Map
-        ref={(m) => this.mapComponent2 = m}
-        state={secondState}
-        action={action}
-        updateState={this.updateState.bind(this)}
-        partner={this.mapComponent}
-        scale={this.state.scale_1}
-        bathymetryOpacity={0.5}
-      />
-    </div>;
 
-    var theMap = map;
     if (this.state.dataset_compare) {
-      theMap = multimap;
+      const secondState = $.extend(true, {}, this.state);
+      for (let i = 0; i < Object.keys(this.state.dataset_1).length; i++) {
+        const keys = Object.keys(this.state.dataset_1);
+        secondState[keys[i]] = this.state.dataset_1[keys[i]];
+      }
+      const multimap = <div className='multimap'>
+        <Map
+          ref={(m) => this.mapComponent = m}
+          state={this.state}
+          action={action}
+          updateState={this.updateState.bind(this)}
+          partner={this.mapComponent2}
+          scale={this.state.scale}
+          bathymetryOpacity={0.5}
+        />
+        <Map
+          ref={(m) => this.mapComponent2 = m}
+          state={secondState}
+          action={action}
+          updateState={this.updateState.bind(this)}
+          partner={this.mapComponent}
+          scale={this.state.scale_1}
+          bathymetryOpacity={0.5}
+        />
+      </div>;
+
+      map = multimap;
     }
-          // <Map
-          //   ref={(m) => this.mapComponent = m}
-          //   state={this.state}
-          //   action={action}
-          //   updateState={this.updateState.bind(this)}
-          // />
 
     return (
       <div className='OceanNavigator'>
@@ -495,7 +515,7 @@ class OceanNavigator extends React.Component {
             plotEnabled={this.state.plotEnabled}
             toggleSidebar={this.toggleSidebar.bind(this)}
           />
-          {theMap}
+          {map}
         </div>
 
         <Modal
