@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {Button, SplitButton, DropdownButton, MenuItem, Modal} from "react-bootstrap";
+import {Button, MenuItem, Modal, Navbar, Nav, NavItem, NavDropdown, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Papa from "papaparse";
 import Icon from "./Icon.jsx";
 import DrifterSelector from "./DrifterSelector.jsx";
@@ -509,138 +509,170 @@ class MapToolbar extends React.Component {
     _("Link");
 
     return (
-      <div className='MapToolbar'>
+      <Navbar inverse>
+        <Navbar.Header>
+          <Navbar.Brand>
+            <a href="#" onClick={this.props.toggleSidebar} >
+              <Icon icon="bars" /> {_("Toggle Sidebar")}
+            </a>
+          </Navbar.Brand>
+          <Navbar.Toggle />
+        </Navbar.Header>
+          
+        <Navbar.Collapse>
+          <Nav>
+            <NavDropdown
+              name="point"
+              id="point"
+              //onClick={this.buttonHandler.bind(this)}
+              title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
+              onSelect={this.pointSelect.bind(this)}
+            >
+              <MenuItem
+                eventKey='draw'
+                key='draw'
+              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+              <MenuItem divider />
+              {pointFiles}
+              <MenuItem divider />
+              <MenuItem
+                eventKey='observation'
+                key='observation'
+              ><Icon icon='list'/> {_("Observations…")}</MenuItem>
+              <MenuItem divider />
+              <MenuItem
+                eventKey='coordinates'
+                key='coordinates'
+              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+              <MenuItem
+                eventKey='csv'
+                key='csv'
+              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+              <MenuItem
+                eventKey='odv'
+                key='odv'
+              ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
+            </NavDropdown>
+        
+            <NavDropdown 
+              name="line"
+              id="line"
+              //onClick={this.buttonHandler.bind(this)}
+              title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
+              onSelect={this.lineSelect.bind(this)}
+            >
+              <MenuItem
+                eventKey='draw'
+                key='draw'
+              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+              <MenuItem divider />
+              {lineFiles}
+              <MenuItem divider />
+              <MenuItem
+                eventKey='coordinates'
+                key='coordinates'
+              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+              <MenuItem
+                eventKey='csv'
+                key='csv'
+              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+            </NavDropdown>
+        
+            <NavDropdown
+              name="area"
+              id="area"
+              //onClick={this.buttonHandler.bind(this)}
+              title={<span><Icon icon="square-o" /> {_("Area")}</span>}
+              onSelect={this.areaSelect.bind(this)}
+            >
+              <MenuItem
+                eventKey='draw'
+                key='draw'
+              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+              <MenuItem divider />
+              {areaFiles}
+              <MenuItem divider />
+              <MenuItem
+                eventKey='coordinates'
+                key='coordinates'
+              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+              <MenuItem
+                eventKey='csv'
+                key='csv'
+              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+            </NavDropdown>
 
-        <Button
-          name="toggleSidebar"
-          bsStyle="primary"
-          onClick={this.props.toggleSidebar}
-        >
-          <Icon icon="bars" /> {_("Toggle Sidebar")} </Button>
+            <NavDropdown
+              id="class4"
+              name="class4"
+              title={<span><Icon icon="exclamation-triangle" /> {_("Class4")}</span>}
+              onClick={this.class4ButtonHandler.bind(this)}
+              ref={(b) => this.class4button = b}
+            />
 
-        <SplitButton
-          name="point"
-          id="point"
-          onClick={this.buttonHandler.bind(this)}
-          title={<span><Icon icon="pencil" /> {_("Point")}</span>}
-          onSelect={this.pointSelect.bind(this)}
-        >
-          {pointFiles}
-          <MenuItem divider />
-          <MenuItem
-            eventKey='observation'
-            key='observation'
-          ><Icon icon='list'/> {_("Observations…")}</MenuItem>
-          <MenuItem divider />
-          <MenuItem
-            eventKey='draw'
-            key='draw'
-          ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-          <MenuItem
-            eventKey='coordinates'
-            key='coordinates'
-          ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-          <MenuItem
-            eventKey='csv'
-            key='csv'
-          ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-          <MenuItem
-            eventKey='odv'
-            key='odv'
-          ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
-        </SplitButton>
-        
-        <SplitButton name="line" id="line" onClick={this.buttonHandler.bind(this)} title={<span><Icon icon="pencil" /> {_("Line")}</span>} onSelect={this.lineSelect.bind(this)}>
-          {lineFiles}
-          <MenuItem divider />
-          <MenuItem
-            eventKey='draw'
-            key='draw'
-          ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-          <MenuItem
-            eventKey='coordinates'
-            key='coordinates'
-          ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-          <MenuItem
-            eventKey='csv'
-            key='csv'
-          ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-        </SplitButton>
-        
-        <SplitButton
-          name="area"
-          id="area"
-          onClick={this.buttonHandler.bind(this)}
-          title={<span><Icon icon="pencil" /> {_("Area")}</span>}
-          onSelect={this.areaSelect.bind(this)}
-        >
-          {areaFiles}
-          <MenuItem divider />
-          <MenuItem
-            eventKey='draw'
-            key='draw'
-          ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-          <MenuItem
-            eventKey='coordinates'
-            key='coordinates'
-          ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-          <MenuItem
-            eventKey='csv'
-            key='csv'
-          ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-        </SplitButton>
-        
-        <Button
-          name="class4"
-          onClick={this.class4ButtonHandler.bind(this)}
-          ref={(b) => this.class4button = b}
-        >{_("Class4")} <span className='caret'/></Button>
-        <DropdownButton
-          name="drifter"
-          id="drifter"
-          title={_("Drifters")}
-          onSelect={this.drifterSelect.bind(this)}
-        >
-          <MenuItem
-            eventKey='all'
-            key='all'
-          >{_("All")}</MenuItem>
-          <MenuItem
-            eventKey='active'
-            key='active'
-          >{_("Active")}</MenuItem>
-          <MenuItem
-            eventKey='not responding'
-            key='not responding'
-          >{_("Not Responding")}</MenuItem>
-          <MenuItem
-            eventKey='inactive'
-            key='inactive'
-          >{_("Inactive")}</MenuItem>
-          <MenuItem divider />
-          <MenuItem
-            eventKey='select'
-            key='select'
-          ><Icon icon='list'/> {_("Select…")}</MenuItem>
-        </DropdownButton>
-        
-        <Button
-          name="plot"
-          onClick={this.buttonHandler.bind(this)}
-          disabled={!this.props.plotEnabled}
-        ><Icon icon='line-chart' /> {_("Plot")}</Button>
-        
-        <Button
-          name="reset"
-          onClick={this.buttonHandler.bind(this)}
-        ><Icon icon='undo' alt={_("Reset Map")} /></Button>
+            <NavDropdown
+              name="drifter"
+              id="drifter"
+              title={_("Drifters")}
+              onSelect={this.drifterSelect.bind(this)}
+            >
+              <MenuItem
+                eventKey='all'
+                key='all'
+              >{_("All")}</MenuItem>
+              <MenuItem
+                eventKey='active'
+                key='active'
+              >{_("Active")}</MenuItem>
+              <MenuItem
+                eventKey='not responding'
+                key='not responding'
+              >{_("Not Responding")}</MenuItem>
+              <MenuItem
+                eventKey='inactive'
+                key='inactive'
+              >{_("Inactive")}</MenuItem>
+              <MenuItem divider />
+              <MenuItem
+                eventKey='select'
+                key='select'
+              ><Icon icon='list'/> {_("Select…")}</MenuItem>
+            </NavDropdown>
 
-        <span style={{"float": "right"}} title={_("Permalink")}>
-          <Button
-            name="permalink"
-            onClick={this.buttonHandler.bind(this)}
-          ><Icon icon='link' alt={_("Permalink")} /></Button>
-        </span>
+            <NavItem 
+              name="plot"
+              onClick={this.buttonHandler.bind(this)}
+              disabled={!this.props.plotEnabled}
+            >
+              <Icon icon='line-chart' /> {_("Plot")}
+            </NavItem>
+          
+            <OverlayTrigger
+              placement="bottom"
+              overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
+            >
+              <NavItem
+                name="reset"
+                onClick={this.buttonHandler.bind(this)}
+              >
+                <Icon icon='undo' alt={_("Reset Map")} />
+              </NavItem>
+            </OverlayTrigger>
+          </Nav>
+          <Nav pullRight>
+            <OverlayTrigger
+              placement="bottom"
+              overlay={<Tooltip id="tooltip">{_("Permalink")}</Tooltip>}
+            >
+              <NavItem
+                name="permalink"
+                onClick={this.buttonHandler.bind(this)}
+              >
+                <Icon icon='link' alt={_("Permalink")}/>
+              </NavItem>
+            </OverlayTrigger>
+          </Nav>
+        </Navbar.Collapse>
 
         <form ref={(f) => this.fileform = f}>
           <input
@@ -797,7 +829,7 @@ class MapToolbar extends React.Component {
             ><Icon icon="check" /> {_("Apply")}</Button>
           </Modal.Footer>
         </Modal>
-      </div>
+      </Navbar>
     );
   }
 }

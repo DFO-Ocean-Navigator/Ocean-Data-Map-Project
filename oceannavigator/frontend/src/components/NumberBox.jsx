@@ -1,7 +1,8 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class NumberBox extends React.Component {
   constructor(props) {

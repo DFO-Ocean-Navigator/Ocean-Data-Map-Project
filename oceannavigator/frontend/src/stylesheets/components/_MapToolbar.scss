@@ -14,7 +14,24 @@
         overflow-y: auto;
     }
 
-    a {
-        font-size: 14px;
-    }
+}
+
+.navbar {
+    margin-bottom: 0;
+    font-size: 16px!important;
+}
+
+.navbar .dropdown-menu > li > a, .navbar .dropdown-menu > li > a {
+    font-size: 14px;
+}
+
+@media (min-width: 1200px) {
+.container {
+    width: 100%;
+}
+}
+
+@media (min-width: 768px) {
+.navbar-nav > li > a {
+}
 }
