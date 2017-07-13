@@ -4,7 +4,7 @@ require("font-awesome/scss/font-awesome.scss");
 
 class Icon extends React.Component {
   render() {
-    var alt = null;
+    let alt = null;
     if (this.props.alt) {
       alt = <span className="alt"> {this.props.alt}</span>;
     }

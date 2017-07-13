@@ -516,7 +516,7 @@ class MapToolbar extends React.Component {
           bsStyle="primary"
           onClick={this.props.toggleSidebar}
         >
-        <Icon icon="bars" /> {_("Toggle Sidebar")} </Button>
+          <Icon icon="bars" /> {_("Toggle Sidebar")} </Button>
 
         <SplitButton
           name="point"
@@ -638,7 +638,7 @@ class MapToolbar extends React.Component {
           <Button
             name="permalink"
             onClick={this.buttonHandler.bind(this)}
-          ><Icon icon='link' alt={_("Link")} /></Button>
+          ><Icon icon='link' alt={_("Permalink")} /></Button>
         </span>
 
         <form ref={(f) => this.fileform = f}>
