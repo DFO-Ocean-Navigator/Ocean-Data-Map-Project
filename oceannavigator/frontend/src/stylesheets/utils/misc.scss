@@ -2,6 +2,7 @@ html, body {
     height: 100%;
 }
 
+// Pop up windows
 .full-screen-modal {
     width: calc(100% - 2 * #{$modal-margin});
     margin: $modal-margin;
@@ -11,13 +12,14 @@ html, body {
         display: flex;
         flex-direction: column;
 
-        .modal-title {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
-
-            flex: 0 1 auto;
+        .modal-header {
+            .modal-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: center;
+                flex: 0 1 auto;
+            }
         }
 
         .modal-body {
@@ -29,6 +31,18 @@ html, body {
         }
     }
 
+}
+
+.modal-header {
+    .close {
+        opacity: 0.95;
+        color: #337ab7!important;
+        text-decoration: none;
+    }
+}
+
+textarea.form-control {
+    min-height: 20em!important;
 }
 
 br.clear {

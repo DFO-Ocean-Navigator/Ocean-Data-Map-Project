@@ -1,6 +1,6 @@
 import LngDetector from "i18next-browser-languagedetector";
 
-var i18n = require("i18next");
+var i18n = require("i18next").default;
 
 i18n
     .use(LngDetector)
