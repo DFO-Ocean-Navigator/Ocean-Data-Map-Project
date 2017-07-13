@@ -7,6 +7,7 @@ import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
+import Permalink from "./Permalink.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 
@@ -319,25 +320,40 @@ class OceanNavigator extends React.Component {
     }
   }
 
-  generatePermLink(subquery) {
-    const query = {
-      center: this.state.center,
-      zoom: this.state.zoom,
-      dataset: this.state.dataset,
-      projection: this.state.projection,
-      time: this.state.time,
-      variable: this.state.variable,
-      scale: this.state.scale,
-      vectortype: this.state.vectortype,
-      vectorid: this.state.vectorid,
-    };
+  generatePermLink(subquery, permalinkSettings) {
+    let query = {};
+    if (typeof(subquery) != "string") {
+      query = {
+        center: this.state.center,
+        zoom: this.state.zoom,
+        dataset: this.state.dataset,
+        projection: this.state.projection,
+        time: this.state.time,
+        basemap: this.state.basemap,
+        depth: this.state.depth,
+        variable: this.state.variable,
+        scale: this.state.scale,
+        vectortype: this.state.vectortype,
+        vectorid: this.state.vectorid,
+        dataset_compare: this.state.dataset_compare,
+      };
 
-    if (subquery != undefined) {
-      query["subquery"] = subquery;
-      query["showModal"] = true;
-      query["modal"] = this.state.modal;
-      query["names"] = this.state.names;
-      query[this.state.modal] = this.state[this.state.modal];
+      if (subquery != undefined) {
+        query["subquery"] = subquery;
+        query["showModal"] = true;
+        query["modal"] = this.state.modal;
+        query["names"] = this.state.names;
+        query[this.state.modal] = this.state[this.state.modal];
+      }
+    }
+    // We have a request from the Permalink component.
+    else {
+      for (let setting in permalinkSettings) {
+        if (permalinkSettings[setting] == true) {
+          //console.warn(setting + " " + permalinkSettings[setting]);
+          query[setting] = this.state[setting];
+        }
+      }
     }
 
     return window.location.origin +
@@ -455,11 +471,6 @@ class OceanNavigator extends React.Component {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
 
-    var permalinkModalEntered = function() {
-      this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + "px";
-      this.permalinkbox.select();
-    }.bind(this);
-
     _("Loading");
 
     const contentClassName = this.state.sidebarOpen ? "content open" : "content";
@@ -541,32 +552,17 @@ class OceanNavigator extends React.Component {
           show={this.state.showPermalink}
           onHide={() => this.setState({showPermalink: false})}
           dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Share Link")}</Modal.Title>
+            <Modal.Title><Icon icon="link"/> {_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <textarea
-              ref={(t) => this.permalinkbox = t}
-              type="text"
-              id="permalink_area"
-              readOnly
-              value={this.generatePermLink()}
+            <Permalink
+              generatePermLink={this.generatePermLink.bind(this)}
             />
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              onClick={function() {
-                this.permalinkbox.select();
-                if ($("html").hasClass("ie")) {
-                  var copied = window.clipboardData.getData("Text");
-                  if (copied != this.permalinkbox.value) {
-                    alert(_("Clipboard access was denied. Please right-click and copy the link manually."));
-                  }
-                }
-              }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
               onClick={() => this.setState({showPermalink: false})}
             ><Icon icon="close" /> {_("Close")}</Button>

@@ -17,13 +17,13 @@ class ComboBox extends React.Component {
 
   // Fired when new option is selected
   handleChange(e) {
-    var value = e.target.value; // Name of new selected option
+    let value = e.target.value; // Name of new selected option
 
     if (this.props.multiple) {
       value = [];
       const options = e.target.options;
       
-      for (var i = 0, l = options.length; i < l; i++) {
+      for (let i = 0, l = options.length; i < l; i++) {
         if (options[i].selected) {
           value.push(options[i].value);
         }
@@ -42,7 +42,7 @@ class ComboBox extends React.Component {
 
         // Construct keys and their associative value to be sent to 
         // OceanNavigator state
-        for (var key in dataset) {
+        for (let key in dataset) {
           
           // State key name ("variable_scale", "dataset_help", etc)
           keys.push(this.props.id + "_" + key);
@@ -204,7 +204,7 @@ class ComboBox extends React.Component {
         value: o.id,
       };
 
-      for (var key in o) {
+      for (let key in o) {
         if (key == "id" || key == "value") {
           continue;
         }

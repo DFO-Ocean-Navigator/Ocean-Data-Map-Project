@@ -17,9 +17,10 @@ class MapInputs extends React.Component {
 
     return (
       <div className={className}>
-        <Panel 
-          header={_("Global Map Settings")}  
-          expanded 
+        <Panel
+          collapsible
+          defaultExpanded
+          header={_("Global Map Settings")} 
           bsStyle='primary' 
         >
           <ComboBox
@@ -71,9 +72,10 @@ class MapInputs extends React.Component {
           />
         </Panel>
 
-        <Panel 
+        <Panel
+          collapsible
+          defaultExpanded
           header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
-          expanded
           bsStyle='primary'
         >
           <DatasetSelector
@@ -103,8 +105,9 @@ class MapInputs extends React.Component {
 
         <div style={{"display": this.props.state.dataset_compare ? "block" : "none"}}>
           <Panel
+            collapsible
+            defaultExpanded
             header="Right View"
-            expanded
             bsStyle='primary'
           >
             <DatasetSelector
