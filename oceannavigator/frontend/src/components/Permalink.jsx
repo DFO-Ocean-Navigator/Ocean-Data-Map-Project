@@ -43,17 +43,17 @@ class Permalink extends React.Component {
             type="text"
             id="permalink_area"
             readOnly
-            style={{height: "10em",}}
             value={this.props.generatePermLink("permaLinkSettings", this.state)}
           />
           <Button
             bsStyle="primary"
-            style={{float: "right",}}
+            className="pull-right"
             onClick={function() {
               this.selectPermalink();
             }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
         </Well>
 
+        <br />
         <Panel
           collapsible
           header={_("Advanced")}

@@ -617,6 +617,7 @@ class MapToolbar extends React.Component {
             eventKey='inactive'
             key='inactive'
           >{_("Inactive")}</MenuItem>
+          <MenuItem divider />
           <MenuItem
             eventKey='select'
             key='select'
