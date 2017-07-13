@@ -3,17 +3,19 @@ import {render} from "react-dom";
 import OceanNavigator from "./components/OceanNavigator.jsx";
 import WebFont from "webfontloader";
 import Browser from "detect-browser";
-var i18n = require("./i18n.js");
+
+const i18n = require("./i18n.js");
 
 require("bootstrap/dist/css/bootstrap.css");
+require("./stylesheets/utils/bootstrap.css");
 require("./stylesheets/main.scss");
 
 class App extends React.Component {
   render () {
     return (
-            <div>
-                <OceanNavigator />
-            </div>
+      <div>
+        <OceanNavigator />
+      </div>
     );
   }
 }

@@ -33,7 +33,7 @@ class EnterArea extends React.Component {
   render() {
     return (
       <div className="EnterArea">
-        <Alert bsStyle="info">
+        <Alert bsStyle="warning">
           {_("Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
         <Well>
