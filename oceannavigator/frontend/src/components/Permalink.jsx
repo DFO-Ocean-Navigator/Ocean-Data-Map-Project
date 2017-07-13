@@ -8,13 +8,15 @@ class Permalink extends React.Component {
   constructor(props) {
     super(props);
 
+    // Default options
     this.state = {
       projection: true,
       basemap: true,
       bathymetry: false,
-      dataset_compare: true,
+      dataset_compare: false,
       zoom: true,
       dataset: true,
+      dataset_1: false,
       variable: true,
       depth: true,
       vectortype: true,
@@ -67,21 +69,22 @@ class Permalink extends React.Component {
               bsStyle='primary' 
             >
               <Checkbox 
-                defaultChecked
+                checked={this.state.projection}
                 name="projection"
                 onChange={this.handleChange.bind(this)}
               >{_("Projection")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.basemap}
                 name="basemap"
                 onChange={this.handleChange.bind(this)}
               >{_("Basemap")}</Checkbox>
               <Checkbox
+                checked={this.state.bathymetry}
                 name="bathymetry"
                 onChange={this.handleChange.bind(this)}
               >{_("Bathymetry Contours")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.dataset_compare}
                 name="dataset_compare"
                 onChange={this.handleChange.bind(this)}
               >{_("Side-by-side Comparison")}</Checkbox>
@@ -93,27 +96,32 @@ class Permalink extends React.Component {
               bsStyle="primary"
             >
               <Checkbox
-                defaultChecked
+                checked={this.state.zoom}
                 name="zoom"
                 onChange={this.handleChange.bind(this)}
               >{_("Zoom")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.dataset}
                 name="dataset"
                 onChange={this.handleChange.bind(this)}
               >{_("Dataset (Primary/Left View)")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.dataset_1}
+                name="dataset_1"
+                onChange={this.handleChange.bind(this)}
+              >{_("Dataset (Right View)")}</Checkbox>
+              <Checkbox
+                checked={this.state.variable}
                 name="variable"
                 onChange={this.handleChange.bind(this)}
               >{_("Variable")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.depth}
                 name="depth"
                 onChange={this.handleChange.bind(this)}
               >{_("Depth")}</Checkbox>
               <Checkbox
-                defaultChecked
+                checked={this.state.time}
                 name="time"
                 onChange={this.handleChange.bind(this)}
               >{_("Time")}</Checkbox>
