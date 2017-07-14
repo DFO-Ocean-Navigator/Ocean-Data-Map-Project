@@ -608,7 +608,11 @@ class MapToolbar extends React.Component {
               title={<span><Icon icon="exclamation-triangle" /> {_("Class4")}</span>}
               onClick={this.class4ButtonHandler.bind(this)}
               ref={(b) => this.class4button = b}
-            />
+            >
+              <MenuItem>
+                <div ref={(d) => this.class4div = d}/>
+              </MenuItem>
+            </NavDropdown>
 
             <NavDropdown
               name="drifter"
@@ -693,11 +697,6 @@ class MapToolbar extends React.Component {
             accept=".txt,.TXT"
           />
         </form>
-
-        <div
-          ref={(d) => this.class4div = d}
-          style={{"position": "fixed", "zIndex": 1}}
-        />
 
         <Modal
           show={this.state.showPointCoordModal}
