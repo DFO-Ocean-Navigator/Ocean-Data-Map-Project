@@ -209,7 +209,8 @@ class OceanNavigator extends React.Component {
           // Disable point selection in both maps
           this.removeMapInteraction("Point");
           this.showModal();
-        } else {
+        } 
+        else {
           // Enable point selection in both maps
           this.mapComponent.point();
           if (this.mapComponent2) {
