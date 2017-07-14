@@ -223,7 +223,7 @@ class TransectPlotter(line.LinePlotter):
                     theta = np.arctan2(climate_y, climate_x) - r
                     mag = np.sqrt(climate_x ** 2 + climate_y ** 2)
 
-                    if self.depth != cdep:
+                    if np.all(self.depth != cdep):
                         theta = interpolate_depths(
                             theta,
                             cdep,

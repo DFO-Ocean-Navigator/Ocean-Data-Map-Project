@@ -6,7 +6,7 @@ import point
 from flask_babel import gettext
 from data import open_dataset
 
-
+# Temperature/Salinity Diagram
 class TemperatureSalinityPlotter(point.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
@@ -74,7 +74,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         dens = dens - 1000
 
         CS = plt.contour(si, ti, dens, linestyles='dashed', colors='k')
-        plt.clabel(CS, fontsize=16, inline=1, fmt=r"$\sigma_t = %1.1f$")
+        plt.clabel(CS, fontsize=18, inline=1, fmt=r"$\sigma_t = %1.1f$")
 
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], '-')
