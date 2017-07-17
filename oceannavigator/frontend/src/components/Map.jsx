@@ -659,8 +659,12 @@ class Map extends React.Component {
     });
     draw.set("type", "Point");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection,"EPSG:4326");
+      const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      // Draw point on map(s)
+      this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      // Pass point to PointWindow
       this.props.action("point", lonlat);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -680,15 +684,15 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "LineString"
     });
     draw.set("type", "LineString");
     draw.on("drawend", function(e) {
       this.controlDoubleClickZoom(false);
-      var points = e.feature.getGeometry().getCoordinates().map(function (c) {
-        var lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
+      const points = e.feature.getGeometry().getCoordinates().map(function (c) {
+        const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
         return [lonlat[1], lonlat[0]];
       }.bind(this));
       this.props.action("line", [points]);

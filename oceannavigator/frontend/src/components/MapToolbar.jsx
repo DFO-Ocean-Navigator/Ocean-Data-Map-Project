@@ -253,6 +253,8 @@ class MapToolbar extends React.Component {
 
   // Instructs the OceanNavigator to fetch point data
   applyPointCoords() {
+    // Draw points on map(s)
+    this.props.action("add", "point", [this.state.coordinate]);
     // We send "enterPoint" too so that the coordinates do not get
     // negated or reversed.
     this.props.action("point", this.state.coordinate, "enterPoint");
