@@ -690,11 +690,15 @@ class Map extends React.Component {
     });
     draw.set("type", "LineString");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates().map(function (c) {
         const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
         return [lonlat[1], lonlat[0]];
       }.bind(this));
+      // Draw line(s) on map(s)
+      this.props.action("add", "line", points);
+      // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -747,9 +751,9 @@ class Map extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var datalayer = this.map.getLayers().getArray()[1];
-    var old = datalayer.getSource();
-    var props = old.getProperties();
+    const datalayer = this.map.getLayers().getArray()[1];
+    const old = datalayer.getSource();
+    const props = old.getProperties();
     props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
     props["projection"] = this.props.state.projection;
     props["attributions"] = [
