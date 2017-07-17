@@ -270,11 +270,15 @@ class MapToolbar extends React.Component {
 
   // Fetch area data
   applyAreaCoords() {
+    const points = this.state.areaCoords.slice();
     const area = {
-      polygons: [this.state.areaCoords.slice()],
+      polygons: [points],
       innerrings: [],
       name: "",
     };
+    // Draw area on map(s)
+    this.props.action("add", "area", points);
+    // Send area to AreaWindow
     this.props.action("area", [area]);
   }
 
