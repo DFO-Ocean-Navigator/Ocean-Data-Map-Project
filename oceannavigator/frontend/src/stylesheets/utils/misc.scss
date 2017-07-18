@@ -2,6 +2,12 @@ html, body {
     height: 100%;
 }
 
+::selection {
+    background: #a8d1ff; /* WebKit/Blink Browsers */
+  }
+  ::-moz-selection {
+    background: #a8d1ff; /* Gecko Browsers */
+  }
 // Pop up windows
 .full-screen-modal {
     width: calc(100% - 2 * #{$modal-margin});
@@ -34,9 +40,12 @@ html, body {
 }
 
 .modal-header {
+    color: #fff;
+    background-color: #008cba;
+    // Close button
     .close {
-        opacity: 0.95;
-        color: #337ab7!important;
+        opacity: 1;
+        color: #fff;
         text-decoration: none;
     }
 }
@@ -49,3 +58,6 @@ br.clear {
     clear: both;
 }
 
+.disabled {
+    cursor: not-allowed;
+}

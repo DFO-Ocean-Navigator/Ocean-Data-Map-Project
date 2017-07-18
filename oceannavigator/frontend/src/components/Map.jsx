@@ -3,7 +3,7 @@ import ol from "openlayers";
 
 require("openlayers/css/ol.css");
 
-const proj4 = require("proj4/lib/index.js");
+const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
 
@@ -653,14 +653,18 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "Point",
     });
     draw.set("type", "Point");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection,"EPSG:4326");
+      const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      // Draw point on map(s)
+      this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      // Pass point to PointWindow
       this.props.action("point", lonlat);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -680,17 +684,23 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "LineString"
     });
     draw.set("type", "LineString");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var points = e.feature.getGeometry().getCoordinates().map(function (c) {
-        var lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
-        return [lonlat[1], lonlat[0]];
-      }.bind(this));
+      const points = e.feature.getGeometry().getCoordinates().map(
+        function (c) {
+          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
+          return [lonlat[1], lonlat[0]];
+        }.bind(this)
+      );
+      // Draw line(s) on map(s)
+      this.props.action("add", "line", points);
+      // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -710,27 +720,28 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "Polygon"
     });
     draw.set("type", "Polygon");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var points = e.feature.getGeometry().getCoordinates()[0].map(
+      const points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
-          var lonlat = ol.proj.transform(
-            c,
-            this.props.state.projection,"EPSG:4326"
-          );
+          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
-      var area = {
+      const area = {
         polygons: [points],
         innerrings: [],
         name: "",
       };
+      // Draw area on map(s)
+      this.props.action("add", "area", points);
+      // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -743,9 +754,9 @@ class Map extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var datalayer = this.map.getLayers().getArray()[1];
-    var old = datalayer.getSource();
-    var props = old.getProperties();
+    const datalayer = this.map.getLayers().getArray()[1];
+    const old = datalayer.getSource();
+    const props = old.getProperties();
     props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
     props["projection"] = this.props.state.projection;
     props["attributions"] = [
@@ -889,7 +900,7 @@ class Map extends React.Component {
     var feat;
     switch(type) {
       case "point":
-        for (var c of data) {
+        for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
@@ -916,7 +927,7 @@ class Map extends React.Component {
         geom = new ol.geom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
-        var centroid = ol.extent.getCenter(geom.getExtent());
+        const centroid = ol.extent.getCenter(geom.getExtent());
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
@@ -927,7 +938,7 @@ class Map extends React.Component {
         this.vectorSource.addFeature(feat);
         break;
       case "observation":
-        for (var p of data) {
+        for (let p of data) {
           geom = new ol.geom.Point([p.longitude, p.latitude]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({

@@ -405,12 +405,16 @@ def _cache_and_send_img(img, f):
     return resp
 
 
+# Renders the map images and sends it to the browser
 @app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+    
+    # Check of the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    # Render a new tile/image, then cache and send it
     else:
         if depth != "bottom" and depth != "all":
             depth = int(depth)
@@ -430,6 +434,7 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
 def topo(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+    
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
@@ -437,10 +442,12 @@ def topo(projection, zoom, x, y):
         return _cache_and_send_img(img, f)
 
 
+# Renders bathymetry contours
 @app.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:

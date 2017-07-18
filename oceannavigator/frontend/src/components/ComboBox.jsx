@@ -1,7 +1,8 @@
 import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
-import {Modal, Button} from "react-bootstrap";
+import {Modal, Button, FormControl} from "react-bootstrap";
+import Icon from "./Icon.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -84,10 +85,10 @@ class ComboBox extends React.Component {
             return x.id;
           });
 
-          var value = this.props.state;
+          let value = this.props.state;
           const floatValue = parseFloat(value);
 
-          var notInList = false;
+          let notInList = false;
           if (value instanceof Array) {
             notInList = value.map(
               (el) => (
@@ -158,10 +159,10 @@ class ComboBox extends React.Component {
       this.setState({
         data: props.data
       });
-      var value = this.props.state;
+      const value = this.props.state;
 
       if (typeof (props.onUpdate) === "function") {
-        for (var i = 0; i < props.data.length; i++) {
+        for (let i = 0; i < props.data.length; i++) {
           const d = props.data[i];
           if (d.id == value) {
             for (var key in d) {
@@ -271,11 +272,11 @@ class ComboBox extends React.Component {
               {helpOptions}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.closeHelp.bind(this)}> {_("Close")}</Button>
+              <Button onClick={this.closeHelp.bind(this)}><Icon icon="close"/> {_("Close")}</Button>
             </Modal.Footer>
           </Modal>
 
-          <select
+          <FormControl componentClass="select"
             size={
               Math.min(10, this.props.multiple ? this.state.data.length : 1)
             }
@@ -284,7 +285,7 @@ class ComboBox extends React.Component {
             multiple={this.props.multiple}
           >
             {options}
-          </select>
+          </FormControl>
         </div>
       );
     } else {

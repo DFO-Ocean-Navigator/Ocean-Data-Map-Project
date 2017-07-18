@@ -22,11 +22,11 @@ class EnterLine extends React.Component {
     switch (id) {
       case "start":
         newState.line.startCoord[0] = state.coordinate[0]; // Lat
-        newState.line.startCoord[1] = -state.coordinate[1]; // Long needs to be negated 
+        newState.line.startCoord[1] = state.coordinate[1]; // Long
         break;
       case "end":
         newState.line.endCoord[0] = state.coordinate[0];
-        newState.line.endCoord[1] = -state.coordinate[1];
+        newState.line.endCoord[1] = state.coordinate[1];
         break;
     }
 

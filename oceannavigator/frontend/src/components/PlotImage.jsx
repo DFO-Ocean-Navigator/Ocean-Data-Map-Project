@@ -207,11 +207,10 @@ class PlotImage extends React.Component {
     var infoStatus = "";
     if (this.state.fail) {
       src = FAIL_IMAGE;
-      // Add translation
       infoStatus = _("Failed to retrieve image. Please try again using the 'Get Link' -> 'Web' button below.");
     } else if (this.state.loading) {
       src = LOADING_IMAGE;
-      infoStatus = _("Loading. Please wait..."); // Add translation
+      infoStatus = _("Loading. Please wait...");
     } else {
       src = this.state.url;
     }
@@ -220,6 +219,7 @@ class PlotImage extends React.Component {
       this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + "px";
       this.permalinkbox.select();
     }.bind(this);
+    
     const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
