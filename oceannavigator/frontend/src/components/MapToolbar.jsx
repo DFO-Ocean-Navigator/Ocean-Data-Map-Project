@@ -211,7 +211,7 @@ class MapToolbar extends React.Component {
         this.setState({showAreaCoordModal: true,});
         break;
       default:
-        this.props.action("show", "area", key);
+        this.props.action("show", "areas", key);
         break;
     }
   }
