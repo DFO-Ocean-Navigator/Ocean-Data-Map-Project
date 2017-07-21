@@ -1,6 +1,7 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class ObservationSelector extends React.Component {
   constructor(props) {

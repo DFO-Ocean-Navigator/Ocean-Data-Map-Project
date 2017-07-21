@@ -1,5 +1,6 @@
 import React from "react";
 import FontAwesome from "react-fontawesome";
+
 require("font-awesome/scss/font-awesome.scss");
 
 class Icon extends React.Component {

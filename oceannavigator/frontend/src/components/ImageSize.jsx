@@ -15,7 +15,7 @@ class ImageSize extends React.Component {
   }
 
   show(e) {
-    var p = $(e.target.parentNode);
+    const p = $(e.target.parentNode);
     if (p.hasClass("collapsed")) {
       p.removeClass("collapsed");
     } else {

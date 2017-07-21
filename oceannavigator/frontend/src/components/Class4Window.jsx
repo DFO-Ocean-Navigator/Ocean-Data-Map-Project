@@ -3,7 +3,8 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ImageSize from "./ImageSize.jsx";
-var i18n = require("../i18n.js");
+
+const i18n = require("../i18n.js");
 
 class Class4Window extends React.Component {
   constructor(props) {
@@ -36,7 +37,7 @@ class Class4Window extends React.Component {
   }
 
   render() {
-    var plot_query = {
+    const plot_query = {
       type: "class4",
       forecast: this.state.forecast,
       class4id: this.props.class4id,
@@ -47,7 +48,7 @@ class Class4Window extends React.Component {
       dpi: this.state.dpi,
       models: this.state.models,
     };
-    var error_options = [
+    const error_options = [
       {
         id: "none",
         value: _("None"),

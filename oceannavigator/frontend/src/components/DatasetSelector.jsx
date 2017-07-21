@@ -27,8 +27,9 @@ class DatasetSelector extends React.Component {
 
     if (typeof(key) === "string") {
       newState[key] = value;
-    } else {
-      for (var i = 0; i < key.length; i++) {
+    } 
+    else {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
