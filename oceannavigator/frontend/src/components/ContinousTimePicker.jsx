@@ -2,6 +2,7 @@
 import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
+import PropTypes from "prop-types";
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -63,5 +64,15 @@ class ContinousTimePicker extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+ContinousTimePicker.propTypes = {
+  title: PropTypes.string,
+  state: PropTypes.instanceOf(Date),
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+  min: PropTypes.instanceOf(Date),
+  max: PropTypes.instanceOf(Date),
+};
 
 export default ContinousTimePicker;

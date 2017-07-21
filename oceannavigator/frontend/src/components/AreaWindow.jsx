@@ -9,7 +9,9 @@ import QuiverSelector from "./QuiverSelector.jsx";
 import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
+
+const i18n = require("../i18n.js");
 
 class AreaWindow extends React.Component {
   constructor(props) {
@@ -120,14 +122,14 @@ class AreaWindow extends React.Component {
     _("Additional Contours");
     _("Show Selected Area(s)");
     _("Saved Image Size");
-    var dataset = <DatasetSelector 
+    const dataset = <DatasetSelector 
       key='dataset_0' 
       id='dataset_0' 
       state={this.props.dataset_0} 
       onUpdate={this.props.onUpdate}
       depth={true}
     />;
-    var compare_dataset = <div key='compare_dataset'>
+    const compare_dataset = <div key='compare_dataset'>
       <SelectBox
         key='dataset_compare'
         id='dataset_compare'
@@ -144,7 +146,7 @@ class AreaWindow extends React.Component {
         />
       </div>
     </div>;
-    var multivariable = <ComboBox 
+    const multivariable = <ComboBox 
       key='variable' 
       id='variable' 
       multiple 
@@ -153,7 +155,7 @@ class AreaWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)} 
       url={"/api/variables/?dataset="+this.props.dataset + "&anom"} 
       title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>;
-    var scale = <Range 
+    const scale = <Range 
       auto 
       key='scale' 
       id='scale' 
@@ -161,7 +163,7 @@ class AreaWindow extends React.Component {
       def={""} 
       onUpdate={this.onLocalUpdate.bind(this)} 
       title={_("Variable Range")} />;
-    var colormap = <ComboBox 
+    const colormap = <ComboBox 
       key='colormap' 
       id='colormap' 
       state={this.state.colormap} 
@@ -169,13 +171,13 @@ class AreaWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)} 
       url='/api/colormaps/' 
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" /></ComboBox>;
-    var bathymetry = <SelectBox 
+    const bathymetry = <SelectBox 
       key='bathymetry' 
       id='bathymetry' 
       state={this.state.bathymetry} 
       onUpdate={this.onLocalUpdate.bind(this)} 
       title={_("Show Bathymetry Contours")} />;
-    var quiver = <QuiverSelector 
+    const quiver = <QuiverSelector 
       key='quiver' 
       id='quiver' 
       state={this.state.quiver} 
@@ -183,7 +185,7 @@ class AreaWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)} 
       dataset={this.props.dataset_0.dataset} 
       title={_("Arrows")}>{_("arrows_help")}</QuiverSelector>;
-    var contour = <ContourSelector 
+    const contour = <ContourSelector 
       key='contour' 
       id='contour' 
       state={this.state.contour} 
@@ -191,13 +193,13 @@ class AreaWindow extends React.Component {
       onUpdate={this.onLocalUpdate.bind(this)} 
       dataset={this.props.dataset_0.dataset} 
       title={_("Additional Contours")}>{_("contour_help")}</ContourSelector>;
-    var showarea = <SelectBox 
+    const showarea = <SelectBox 
       key='showarea' 
       id='showarea' 
       state={this.state.showarea} 
       onUpdate={this.onLocalUpdate.bind(this)} 
       title={_("Show Selected Area(s)")}>{_("showarea_help")}</SelectBox>;
-    var size = <ImageSize 
+    const size = <ImageSize 
       key='size' 
       id='size' 
       state={this.state.size} 
@@ -205,7 +207,7 @@ class AreaWindow extends React.Component {
       title={_("Saved Image Size")} />;
 
     var inputs = [];
-    var plot_query = {
+    const plot_query = {
       dataset: this.props.dataset_0.dataset,
       quantum: this.props.quantum,
       scale: this.state.scale,
@@ -276,5 +278,23 @@ class AreaWindow extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+AreaWindow.propTypes = {
+  depth: PropTypes.number,
+  area: PropTypes.array,
+  time: PropTypes.number,
+  generatePermLink: PropTypes.func,
+  dataset_1: PropTypes.object,
+  dataset_compare: PropTypes.bool,
+  variable: PropTypes.string,
+  projection: PropTypes.string,
+  dataset_0: PropTypes.object,
+  quantum: PropTypes.string,
+  name: PropTypes.string,
+  onUpdate: PropTypes.func,
+  scale: PropTypes.string,
+  init: PropTypes.object,
+};
 
 export default AreaWindow;

@@ -1,5 +1,6 @@
 import React from "react";
 import {Panel, Form, FormControl, ControlLabel} from "react-bootstrap";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -68,8 +69,15 @@ class CoordInputPanel extends React.Component {
           </Form>
         </Panel>
       </div>
-      );
+    );
   }
 }
+
+//***********************************************************************
+CoordInputPanel.propTypes = {
+  header: PropTypes.string,
+  setCoordData: PropTypes.func,
+  id: PropTypes.string,
+};
 
 export default CoordInputPanel;

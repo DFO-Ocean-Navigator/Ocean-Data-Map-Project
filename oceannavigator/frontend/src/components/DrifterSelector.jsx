@@ -1,5 +1,6 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -22,20 +23,20 @@ class DrifterSelector extends React.Component {
       url: "/api/drifters/meta.json",
       dataType: "json",
       success: function(data) {
-        var imei = Object.keys(data.imei).filter(function (k) {
-          var list = data.imei[k];
+        const imei = Object.keys(data.imei).filter(function (k) {
+          const list = data.imei[k];
           return list.every(function (e) {
             return $.inArray(e, this.props.state) != -1;
           }.bind(this));
         }.bind(this));
-        var wmo = Object.keys(data.wmo).filter(function (k) {
-          var list = data.wmo[k];
+        const wmo = Object.keys(data.wmo).filter(function (k) {
+          const list = data.wmo[k];
           return list.every(function (e) {
             return $.inArray(e, this.props.state) != -1;
           }.bind(this));
         }.bind(this));
-        var deployment = Object.keys(data.deployment).filter(function (k) {
-          var list = data.deployment[k];
+        const deployment = Object.keys(data.deployment).filter(function (k) {
+          const list = data.deployment[k];
           return list.every(function (e) {
             return $.inArray(e, this.props.state) != -1;
           }.bind(this));
@@ -57,12 +58,12 @@ class DrifterSelector extends React.Component {
   }
 
   onUpdate(keys, values) {
-    var newState = {
+    const newState = {
       imei: this.state.imei,
       wmo: this.state.wmo,
       deployment: this.state.deployment,
     };
-    for (var i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
       newState[keys[i]] = values[i];
     }
 
@@ -81,7 +82,7 @@ class DrifterSelector extends React.Component {
   }
 
   render() {
-    var imei = Array.from(
+    const imei = Array.from(
       new Set(
         Object.keys(this.state.imei_map)
       )
@@ -91,7 +92,7 @@ class DrifterSelector extends React.Component {
         value: o
       };
     });
-    var wmo = Array.from(
+    const wmo = Array.from(
       new Set(
         Object.keys(this.state.wmo_map)
       )
@@ -101,7 +102,7 @@ class DrifterSelector extends React.Component {
         value: o
       };
     });
-    var deployment = Array.from(
+    const deployment = Array.from(
       new Set(
         Object.keys(this.state.deployment_map)
       )
@@ -149,5 +150,11 @@ class DrifterSelector extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+DrifterSelector.propTypes = {
+  select: PropTypes.func,
+  state: PropTypes.array,
+};
 
 export default DrifterSelector;

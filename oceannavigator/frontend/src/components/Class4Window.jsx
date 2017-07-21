@@ -3,6 +3,7 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ImageSize from "./ImageSize.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -69,6 +70,7 @@ class Class4Window extends React.Component {
     _("Additional Models");
     _("Show Error");
     _("Saved Image Size");
+
     return (
       <div className='Class4Window Window'>
         <div className='content'>
@@ -128,5 +130,12 @@ class Class4Window extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+Class4Window.propTypes = {
+  generatePermLink: PropTypes.func,
+  class4id: PropTypes.object,
+  init: PropTypes.object,
+};
 
 export default Class4Window;

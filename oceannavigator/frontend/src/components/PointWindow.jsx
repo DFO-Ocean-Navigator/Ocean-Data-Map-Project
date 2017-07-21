@@ -6,6 +6,7 @@ import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -466,5 +467,21 @@ class PointWindow extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+PointWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  point: PropTypes.array,
+  time: PropTypes.number,
+  variable: PropTypes.string,
+  dpi: PropTypes.number,
+  names: PropTypes.array,
+  quantum: PropTypes.string,
+  dataset: PropTypes.string,
+  onUpdate: PropTypes.func,
+  scale: PropTypes.string,
+  depth: PropTypes.number,
+  init: PropTypes.object,
+};
 
 export default PointWindow;

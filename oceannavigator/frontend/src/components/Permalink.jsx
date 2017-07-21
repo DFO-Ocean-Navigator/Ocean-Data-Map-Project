@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, Well, Panel, Checkbox} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -132,5 +133,10 @@ class Permalink extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+Permalink.propTypes = {
+  generatePermLink: PropTypes.func,
+};
 
 export default Permalink;

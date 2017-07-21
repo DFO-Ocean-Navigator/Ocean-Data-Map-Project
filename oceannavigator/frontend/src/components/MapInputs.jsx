@@ -4,11 +4,12 @@ import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel} from "react-bootstrap";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
 class MapInputs extends React.Component {
-  
+ 
   render() {
     _("Variable Range");
     _("Show Bathymetry Contours");
@@ -79,7 +80,6 @@ class MapInputs extends React.Component {
           bsStyle='primary'
         >
           <DatasetSelector
-            key='dataset_0'
             id='dataset_0'
             state={this.props.state}
             onUpdate={this.props.changeHandler}
@@ -111,7 +111,6 @@ class MapInputs extends React.Component {
             bsStyle='primary'
           >
             <DatasetSelector
-              key='dataset_1'
               id='dataset_1'
               state={this.props.state.dataset_1}
               onUpdate={this.props.changeHandler}
@@ -143,5 +142,22 @@ class MapInputs extends React.Component {
   }
 }
 
-export default MapInputs;
+//***********************************************************************
+MapInputs.propTypes = {
+  state: PropTypes.object,
+  sidebarOpen: PropTypes.bool,
+  basemap: PropTypes.string,
+  scale: PropTypes.string,
+  scale_1: PropTypes.string,
+  bathymetry: PropTypes.bool,
+  dataset_compare: PropTypes.bool,
+  dataset_1: PropTypes.object,
+  projection: PropTypes.string,
+  depth: PropTypes.number,
+  time: PropTypes.number,
+  variable_scale: PropTypes.array,
+  extent: PropTypes.array,
+  changeHandler: PropTypes.func,
+};
 
+export default MapInputs;

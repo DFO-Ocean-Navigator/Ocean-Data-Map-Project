@@ -4,7 +4,9 @@ import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
+
+const i18n = require("../i18n.js");
 
 class DrifterWindow extends React.Component {
   constructor(props) {
@@ -212,5 +214,16 @@ class DrifterWindow extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+DrifterWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  drifter: PropTypes.array,
+  quantum: PropTypes.string,
+  dataset: PropTypes.string,
+  onUpdate: PropTypes.func,
+  init: PropTypes.object,
+  variable: PropTypes.string,
+};
 
 export default DrifterWindow;
