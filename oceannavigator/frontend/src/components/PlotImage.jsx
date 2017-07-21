@@ -33,10 +33,13 @@ class PlotImage extends React.Component {
       format: "json",
     });
 
+    this.setState({
+      loading: true,
+      fail: false,
+    });
+
     if (this.state.paramString != paramString) {
       this.setState({
-        loading: true,
-        fail: false,
         paramString: paramString,
       });
 
