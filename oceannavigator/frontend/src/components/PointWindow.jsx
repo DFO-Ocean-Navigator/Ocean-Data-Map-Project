@@ -6,7 +6,6 @@ import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -311,6 +310,7 @@ class PointWindow extends React.Component {
       );
 
     var inputs = [];
+
     const plot_query = {
       dataset: this.props.dataset,
       quantum: this.props.quantum,

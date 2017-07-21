@@ -51,6 +51,7 @@ class Plotter:
         else:
             return self.plot()
 
+    # Receives query sent from javascript and parses it
     @abstractmethod
     def parse_query(self, query):
         quantum = query.get('quantum')

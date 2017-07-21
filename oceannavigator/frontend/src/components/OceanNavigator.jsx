@@ -120,7 +120,8 @@ class OceanNavigator extends React.Component {
         if (value.dataset != this.state.dataset) {
           this.changeDataset(value.dataset, value);
           return;
-        } else {
+        } 
+        else {
           newState = value;
           if (value.variable_scale != this.state.scale) {
             newState.scale = value.variable_scale;
