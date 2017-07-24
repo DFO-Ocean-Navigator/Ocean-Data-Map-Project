@@ -31,7 +31,10 @@ class MapToolbar extends React.Component {
       showPointCoordModal: false,
       showLineCoordModal: false,
       showAreaCoordModal: false,
-      observationSelection: {ship:[],trip:[]},
+      observationSelection: {
+        ship:[],
+        trip:[]
+      },
       drifterList: [],
     };
   }

@@ -1,5 +1,6 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -81,5 +82,13 @@ class ObservationSelector extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+ObservationSelector.propTypes = {
+  select: PropTypes.func,
+  state: PropTypes.object,
+  ship: PropTypes.array,
+  trip: PropTypes.array,
+};
 
 export default ObservationSelector;

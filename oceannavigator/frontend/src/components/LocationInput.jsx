@@ -1,7 +1,8 @@
 import React from "react";
 import NumericInput from "react-numeric-input";
+import PropTypes from "prop-types";
 
-var i18n = require("../i18n.js");
+const i18n = require("../i18n.js");
 
 class LocationInput extends React.Component {
   constructor(props) {
@@ -85,5 +86,13 @@ class LocationInput extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+LocationInput.propTypes = {
+  id: PropTypes.string,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+  state: PropTypes.array,
+};
 
 export default LocationInput;

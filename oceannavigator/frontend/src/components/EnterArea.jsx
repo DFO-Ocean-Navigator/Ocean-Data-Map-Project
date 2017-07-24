@@ -1,6 +1,7 @@
 import React from "react";
 import {Alert, Well, Checkbox} from "react-bootstrap";
 import CoordInputPanel from "./CoordInputPanel.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -71,5 +72,10 @@ class EnterArea extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+EnterArea.propTypes = {
+  setCoordData: PropTypes.func,
+};
 
 export default EnterArea;

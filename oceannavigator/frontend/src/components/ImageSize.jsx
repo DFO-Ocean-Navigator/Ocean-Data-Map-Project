@@ -1,5 +1,6 @@
 import React from "react";
 import NumericInput from "react-numeric-input";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -41,55 +42,62 @@ class ImageSize extends React.Component {
 
   render() {
     _("inches");
-    return (
-            <div className='Size input'>
-                <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td><label htmlFor={this.props.id + "_width"}>{_("Width:")}</label></td>
-                            <td>
-                                <NumericInput
-                                    id={this.props.id + "_width"}
-                                    step={0.25}
-                                    value={this.state.width}
-                                    precision={2}
-                                    onChange={(n, s) => this.changed("width", n)}
-                                    format={(num) => {return num + " " + _("inches");}}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><label htmlFor={this.props.id + "_height"}>{_("Height:")}</label></td>
-                            <td>
-                                <NumericInput
-                                    id={this.props.id + "_height"}
-                                    step={0.25}
-                                    value={this.state.height}
-                                    precision={2}
-                                    onChange={(n, s) => this.changed("height", n)}
-                                    format={(num) => {return num + " " + _("inches");}}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><label htmlFor={this.props.id + "_dpi"}>{_("DPI:")}</label></td>
-                            <td>
-                                <NumericInput
-                                    id={this.props.id + "_dpi"}
-                                    step={1}
-                                    value={this.state.dpi}
-                                    precision={0}
-                                    onChange={(n, s) => this.changed("dpi", n)}
-                                />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    return ( 
+      <div className='Size input'>
+        <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
+        <table>
+          <tbody>
+            <tr>
+              <td><label htmlFor={this.props.id + "_width"}>{_("Width:")}</label></td>
+              <td>
+                <NumericInput
+                  id={this.props.id + "_width"}
+                  step={0.25}
+                  value={this.state.width}
+                  precision={2}
+                  onChange={(n, s) => this.changed("width", n)}
+                  format={(num) => {return num + " " + _("inches");}}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label htmlFor={this.props.id + "_height"}>{_("Height:")}</label></td>
+              <td>
+                <NumericInput
+                  id={this.props.id + "_height"}
+                  step={0.25}
+                  value={this.state.height}
+                  precision={2}
+                  onChange={(n, s) => this.changed("height", n)}
+                  format={(num) => {return num + " " + _("inches");}}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label htmlFor={this.props.id + "_dpi"}>{_("DPI:")}</label></td>
+              <td>
+                <NumericInput
+                  id={this.props.id + "_dpi"}
+                  step={1}
+                  value={this.state.dpi}
+                  precision={0}
+                  onChange={(n, s) => this.changed("dpi", n)}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     );
   }
 }
+
+//***********************************************************************
+ImageSize.propTypes = {
+  id: PropTypes.string,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+};
 
 export default ImageSize;
 

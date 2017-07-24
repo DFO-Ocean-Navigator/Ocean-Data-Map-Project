@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -159,5 +160,16 @@ class Range extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+Range.propTypes = {
+  id: PropTypes.string,
+  auto: PropTypes.bool,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+  default_scale: PropTypes.array,
+  state: PropTypes.string,
+  autourl: PropTypes.string
+};
 
 export default Range;
