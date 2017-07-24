@@ -367,6 +367,7 @@ class OceanNavigator extends React.Component {
     const action = this.action.bind(this);
     var modalContent = "";
     var modalTitle = "";
+
     switch (this.state.modal) {
       case "point":
         modalContent = (

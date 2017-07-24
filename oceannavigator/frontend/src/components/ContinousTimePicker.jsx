@@ -17,8 +17,8 @@ class ContinousTimePicker extends React.Component {
     };
   }
   populate(props) {
-    var min = props.min;
-    var max = props.max;
+    const min = props.min;
+    const max = props.max;
 
     $(this.refs.picker).datepicker({
       Button: false,
@@ -49,7 +49,7 @@ class ContinousTimePicker extends React.Component {
     }
   }
   render() {
-    var date = this.props.state;
+    let date = this.props.state;
     if (date == undefined || date == null) {
       date = new Date();
     } else if (!(date instanceof Date)) {
@@ -57,10 +57,10 @@ class ContinousTimePicker extends React.Component {
     }
 
     return (
-            <div key={this.props.url} className='ContinousTimePicker input'>
-                <h1>{this.props.title}</h1>
-                <input readOnly ref='picker' type="text" value={$.datepicker.formatDate("dd MM yy", date)} />
-            </div>
+      <div key={this.props.url} className='ContinousTimePicker input'>
+        <h1>{this.props.title}</h1>
+        <input readOnly ref='picker' type="text" value={$.datepicker.formatDate("dd MM yy", date)} />
+      </div>
     );
   }
 }

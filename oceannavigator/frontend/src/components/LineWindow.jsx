@@ -8,6 +8,7 @@ import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -57,7 +58,7 @@ class LineWindow extends React.Component {
     if (typeof(key) === "string") {
       newState[key] = value;
     } else {
-      for (var i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -229,5 +230,22 @@ class LineWindow extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+LineWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  depth: PropTypes.number,
+  time: PropTypes.number,
+  dataset_compare: PropTypes.bool,
+  dataset_1: PropTypes.object,
+  names: PropTypes.array,
+  line: PropTypes.array,
+  variable: PropTypes.string,
+  quantum: PropTypes.string,
+  dataset_0: PropTypes.object,
+  onUpdate: PropTypes.func,
+  scale: PropTypes.string,
+  init: PropTypes.object,
+};
 
 export default LineWindow;

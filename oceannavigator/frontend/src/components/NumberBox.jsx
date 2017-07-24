@@ -2,6 +2,7 @@ import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -96,5 +97,13 @@ class NumberBox extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+NumberBox.propTypes = {
+  id: PropTypes.string,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+  state: PropTypes.number,
+};
 
 export default NumberBox;
