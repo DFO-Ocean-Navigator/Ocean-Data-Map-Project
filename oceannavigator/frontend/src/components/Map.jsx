@@ -1,5 +1,6 @@
 import React from "react";
 import ol from "openlayers";
+import PropTypes from "prop-types";
 
 require("openlayers/css/ol.css");
 
@@ -89,7 +90,7 @@ proj3031.setExtent([
 ]);
 
 
-class Map extends React.Component {
+export default class Map extends React.Component {
   getBasemap(source, projection, attribution) {
     switch(source) {
       case "topo":
@@ -978,4 +979,12 @@ class Map extends React.Component {
   }
 }
 
-export default Map;
+//***********************************************************************
+Map.propTypes = {
+  state: PropTypes.object,
+  projection: PropTypes.string,
+  updateState: PropTypes.func,
+  scale: PropTypes.string,
+  action: PropTypes.func,
+  partner: PropTypes.object,
+};

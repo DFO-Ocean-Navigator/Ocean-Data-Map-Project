@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class ImageSize extends React.Component {
+export default class ImageSize extends React.Component {
   constructor(props) {
     super(props);
 
@@ -98,6 +98,3 @@ ImageSize.propTypes = {
   title: PropTypes.string,
   onUpdate: PropTypes.func,
 };
-
-export default ImageSize;
-

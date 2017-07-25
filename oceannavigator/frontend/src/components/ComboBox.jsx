@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class ComboBox extends React.Component {
+export default class ComboBox extends React.Component {
   constructor(props) {
     super(props);
     
@@ -307,6 +307,4 @@ ComboBox.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
 };
-
-export default ComboBox;
 

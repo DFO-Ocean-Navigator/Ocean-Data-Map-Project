@@ -9,7 +9,7 @@ const DataInput = {
   LONGTITUDE: 1,
 };
 
-class CoordInputPanel extends React.Component {
+export default class CoordInputPanel extends React.Component {
   constructor(props) {
     super(props);
     
@@ -79,5 +79,3 @@ CoordInputPanel.propTypes = {
   setCoordData: PropTypes.func,
   id: PropTypes.string,
 };
-
-export default CoordInputPanel;

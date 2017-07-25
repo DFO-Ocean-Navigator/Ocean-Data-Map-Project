@@ -15,7 +15,7 @@ const KEYS = [
   "time",
 ];
 
-class DatasetSelector extends React.Component {
+export default class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -160,6 +160,4 @@ DatasetSelector.propTypes = {
   id: PropTypes.string,
   variables: PropTypes.string,
 };
-
-export default DatasetSelector;
 

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class ObservationSelector extends React.Component {
+export default class ObservationSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -90,5 +90,3 @@ ObservationSelector.propTypes = {
   ship: PropTypes.array,
   trip: PropTypes.array,
 };
-
-export default ObservationSelector;

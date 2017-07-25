@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 require("font-awesome/scss/font-awesome.scss");
 
-class Icon extends React.Component {
+export default class Icon extends React.Component {
   render() {
     let alt = null;
     if (this.props.alt) {
@@ -24,7 +24,4 @@ Icon.propTypes = {
   alt: PropTypes.string,
   icon: PropTypes.string,
 };
-
-
-export default Icon;
 

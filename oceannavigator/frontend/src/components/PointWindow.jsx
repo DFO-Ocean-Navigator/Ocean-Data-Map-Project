@@ -20,7 +20,7 @@ const TabEnum = {
   MOORING: 7,
 };
 
-class PointWindow extends React.Component {
+export default class PointWindow extends React.Component {
   constructor(props) {
     super(props);
     
@@ -483,5 +483,3 @@ PointWindow.propTypes = {
   depth: PropTypes.number,
   init: PropTypes.object,
 };
-
-export default PointWindow;

@@ -5,13 +5,14 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
 
-class PlotImage extends React.Component {
+export default class PlotImage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -372,4 +373,10 @@ class PlotImage extends React.Component {
   }
 }
 
-export default PlotImage;
+//***********************************************************************
+PlotImage.propTypes = {
+  query: PropTypes.object,
+  dpi: PropTypes.string,
+  size: PropTypes.string,
+  permlink: PropTypes.string,
+};

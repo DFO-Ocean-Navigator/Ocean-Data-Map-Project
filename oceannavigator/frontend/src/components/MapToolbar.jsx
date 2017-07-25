@@ -8,6 +8,7 @@ import ObservationSelector from "./ObservationSelector.jsx";
 import EnterPoint from "./EnterPoint.jsx";
 import EnterLine from "./EnterLine.jsx";
 import EnterArea from "./EnterArea.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -16,7 +17,7 @@ import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 
-class MapToolbar extends React.Component {
+export default class MapToolbar extends React.Component {
   constructor(props) {
     super(props);
     
@@ -844,5 +845,10 @@ class MapToolbar extends React.Component {
   }
 }
 
-export default MapToolbar;
+//***********************************************************************
+MapToolbar.propTypes = {
+  plotEnabled: PropTypes.bool,
+  toggleSidebar: PropTypes.func,
+  action: PropTypes.func,
+};
 

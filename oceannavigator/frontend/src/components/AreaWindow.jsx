@@ -13,7 +13,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class AreaWindow extends React.Component {
+export default class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -296,5 +296,3 @@ AreaWindow.propTypes = {
   scale: PropTypes.string,
   init: PropTypes.object,
 };
-
-export default AreaWindow;

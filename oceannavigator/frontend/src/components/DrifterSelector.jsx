@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class DrifterSelector extends React.Component {
+export default class DrifterSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -156,5 +156,3 @@ DrifterSelector.propTypes = {
   select: PropTypes.func,
   state: PropTypes.array,
 };
-
-export default DrifterSelector;

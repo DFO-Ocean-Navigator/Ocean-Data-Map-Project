@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class EnterPoint extends React.Component {
+export default class EnterPoint extends React.Component {
 
   render() {
     return (
@@ -26,5 +26,3 @@ class EnterPoint extends React.Component {
 EnterPoint.propTypes = {
   setCoordData: PropTypes.func,
 };
-
-export default EnterPoint;

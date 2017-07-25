@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class LocationInput extends React.Component {
+export default class LocationInput extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -94,5 +94,3 @@ LocationInput.propTypes = {
   onUpdate: PropTypes.func,
   state: PropTypes.array,
 };
-
-export default LocationInput;

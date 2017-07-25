@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class NumberBox extends React.Component {
+export default class NumberBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -105,5 +105,3 @@ NumberBox.propTypes = {
   onUpdate: PropTypes.func,
   state: PropTypes.number,
 };
-
-export default NumberBox;

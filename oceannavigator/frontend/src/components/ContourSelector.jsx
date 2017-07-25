@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class ContourSelector extends React.Component {
+export default class ContourSelector extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -83,6 +83,4 @@ ContourSelector.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
 };
-
-export default ContourSelector;
 

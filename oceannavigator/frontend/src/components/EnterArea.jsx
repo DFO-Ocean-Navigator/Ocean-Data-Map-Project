@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class EnterArea extends React.Component {
+export default class EnterArea extends React.Component {
   constructor(props) {
     super(props);
 
@@ -77,5 +77,3 @@ class EnterArea extends React.Component {
 EnterArea.propTypes = {
   setCoordData: PropTypes.func,
 };
-
-export default EnterArea;

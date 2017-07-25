@@ -25,7 +25,7 @@ function formatLatLon(latitude, longitude) {
   return formatted;
 }
 
-class OceanNavigator extends React.Component {
+export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
     
@@ -584,5 +584,3 @@ class OceanNavigator extends React.Component {
     );
   }
 }
-
-export default OceanNavigator;

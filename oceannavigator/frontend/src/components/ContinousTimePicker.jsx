@@ -10,7 +10,7 @@ import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 import "jquery-ui/button";
 
-class ContinousTimePicker extends React.Component {
+export default class ContinousTimePicker extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -74,5 +74,3 @@ ContinousTimePicker.propTypes = {
   min: PropTypes.instanceOf(Date),
   max: PropTypes.instanceOf(Date),
 };
-
-export default ContinousTimePicker;

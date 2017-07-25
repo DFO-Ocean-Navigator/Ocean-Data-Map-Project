@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class DrifterWindow extends React.Component {
+export default class DrifterWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -225,5 +225,3 @@ DrifterWindow.propTypes = {
   init: PropTypes.object,
   variable: PropTypes.string,
 };
-
-export default DrifterWindow;

@@ -12,7 +12,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class LineWindow extends React.Component {
+export default class LineWindow extends React.Component {
   constructor(props) {
     super(props);
     
@@ -247,5 +247,3 @@ LineWindow.propTypes = {
   scale: PropTypes.string,
   init: PropTypes.object,
 };
-
-export default LineWindow;

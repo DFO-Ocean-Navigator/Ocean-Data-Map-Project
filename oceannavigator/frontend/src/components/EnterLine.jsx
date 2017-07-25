@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class EnterLine extends React.Component {
+export default class EnterLine extends React.Component {
   constructor(props) {
     super(props);
 
@@ -60,5 +60,3 @@ class EnterLine extends React.Component {
 EnterLine.propTypes = {
   setCoordData: PropTypes.func,
 };
-
-export default EnterLine;

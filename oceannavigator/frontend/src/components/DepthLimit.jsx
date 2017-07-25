@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class DepthLimit extends React.Component {
+export default class DepthLimit extends React.Component {
   constructor(props) {
     super(props);
         
@@ -71,5 +71,3 @@ DepthLimit.propTypes = {
   id: PropTypes.string,
   state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
 };
-
-export default DepthLimit;

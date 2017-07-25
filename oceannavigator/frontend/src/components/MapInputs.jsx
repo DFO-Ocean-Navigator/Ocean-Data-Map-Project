@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class MapInputs extends React.Component {
+export default class MapInputs extends React.Component {
  
   render() {
     _("Variable Range");
@@ -159,5 +159,3 @@ MapInputs.propTypes = {
   extent: PropTypes.array,
   changeHandler: PropTypes.func,
 };
-
-export default MapInputs;

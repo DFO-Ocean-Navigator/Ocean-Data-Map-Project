@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class Range extends React.Component {
+export default class Range extends React.Component {
 
   constructor(props) {
     super(props);
@@ -171,5 +171,3 @@ Range.propTypes = {
   state: PropTypes.string,
   autourl: PropTypes.string
 };
-
-export default Range;

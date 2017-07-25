@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class Class4Window extends React.Component {
+export default class Class4Window extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -137,5 +137,3 @@ Class4Window.propTypes = {
   class4id: PropTypes.object,
   init: PropTypes.object,
 };
-
-export default Class4Window;
