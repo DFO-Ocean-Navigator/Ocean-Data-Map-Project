@@ -11,6 +11,7 @@ export default class Permalink extends React.Component {
 
     // Default options
     this.state = {
+      center: true,
       projection: true,
       basemap: true,
       bathymetry: false,

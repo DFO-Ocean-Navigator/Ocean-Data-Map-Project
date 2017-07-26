@@ -5,6 +5,7 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import Permalink from "./Permalink.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -195,7 +196,7 @@ export default class PlotImage extends React.Component {
   getLink(key) {
     switch(key) {
       case "web":
-        this.setState({showPermalink: true});
+        this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
         this.setState({showImagelink: true});
@@ -208,7 +209,7 @@ export default class PlotImage extends React.Component {
     var infoStatus = "";
     if (this.state.fail) {
       src = FAIL_IMAGE;
-      infoStatus = _("Failed to retrieve image. Please try again using the 'Get Link' -> 'Web' button below.");
+      infoStatus = _("Failed to retrieve image.");
     } else if (this.state.loading) {
       src = LOADING_IMAGE;
       infoStatus = _("Loading. Please wait...");
@@ -216,11 +217,7 @@ export default class PlotImage extends React.Component {
       src = this.state.url;
     }
 
-    const permalinkModalEntered = function() {
-      this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + "px";
-      this.permalinkbox.select();
-    }.bind(this);
-    
+  
     const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
@@ -300,42 +297,6 @@ export default class PlotImage extends React.Component {
         </ButtonToolbar>
 
         <Modal
-          show={this.state.showPermalink}
-          onHide={() => this.setState({showPermalink: false})}
-          dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}>
-          <Modal.Header closeButton>
-            <Modal.Title>{_("Share Link")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <textarea
-              ref={(t) => this.permalinkbox = t}
-              type="text"
-              id="permalink_area"
-              readOnly
-              value={this.props.permlink}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={function() {
-                this.permalinkbox.select();
-                document.execCommand("copy");
-                if ($("html").hasClass("ie")) {
-                  var copied = window.clipboardData.getData("Text");
-                  if (copied != this.permalinkbox.value) {
-                    alert(_("Clipboard access was denied. Please right-click and copy the link manually."));
-                  }
-                }
-              }.bind(this)}
-            ><Icon icon="copy" /> {_("Copy")}</Button>
-            <Button
-              onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
           show={this.state.showImagelink}
           onHide={() => this.setState({showImagelink: false})}
           dialogClassName='permalink-modal'
@@ -379,4 +340,6 @@ PlotImage.propTypes = {
   dpi: PropTypes.string,
   size: PropTypes.string,
   permlink: PropTypes.string,
+  action: PropTypes.func,
+  permlink_subquery: PropTypes.object,
 };

@@ -46,7 +46,7 @@ export default class OceanNavigator extends React.Component {
       basemap: "topo",
       bathymetry: true,
       extent: [],
-      dataset_compare: false,
+      dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
         dataset: "giops_day",
         variable: "votemper",
@@ -65,10 +65,7 @@ export default class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
-        const querystate = JSON.parse(
-                        decodeURIComponent(
-                            window.location.search.replace("?query=", ""))
-                        );
+        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
         $.extend(this.state, querystate);
       } catch(err) {
         console.error(err);
@@ -165,7 +162,7 @@ export default class OceanNavigator extends React.Component {
       var newvariable = this.state.variable;
       
       if ($.inArray(this.state.variable, variable[0].map(function(e) 
-        { return e.id; })) == -1) {
+      { return e.id; })) == -1) {
         newvariable = variable[0][0].id;
       }
 
@@ -288,9 +285,17 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "permalink":
+        if (arg != null) {
+          this.setState({
+            subquery: arg,
+            showPermalink: true,
+          });
+        }
+        else {
         this.setState({
           showPermalink: true,
         });
+      }
         break;
       default:
         console.error("Undefined", name, arg);
@@ -324,52 +329,34 @@ export default class OceanNavigator extends React.Component {
 
   generatePermLink(subquery, permalinkSettings) {
     let query = {};
-    if (typeof(subquery) != "string") {
-      query = {
-        center: this.state.center,
-        zoom: this.state.zoom,
-        dataset: this.state.dataset,
-        projection: this.state.projection,
-        time: this.state.time,
-        basemap: this.state.basemap,
-        depth: this.state.depth,
-        variable: this.state.variable,
-        scale: this.state.scale,
-        vectortype: this.state.vectortype,
-        vectorid: this.state.vectorid,
-        dataset_compare: this.state.dataset_compare,
-      };
-
-      if (subquery != undefined) {
-        query["subquery"] = subquery;
-        query["showModal"] = true;
-        query["modal"] = this.state.modal;
-        query["names"] = this.state.names;
-        query[this.state.modal] = this.state[this.state.modal];
-      }
+    // We have a request from Point/Line/AreaWindow component.
+    if (this.state.subquery != undefined) {
+      query.subquery = this.state.subquery;
+      query.showModal = true;
+      query.modal = this.state.modal;
+      query.names = this.state.names;
+      query[this.state.modal] = this.state[this.state.modal];
     }
     // We have a request from the Permalink component.
-    else {
-      for (let setting in permalinkSettings) {
-        if (permalinkSettings[setting] == true) {
-          //console.warn(setting + " " + permalinkSettings[setting]);
-          query[setting] = this.state[setting];
-        }
+    for (let setting in permalinkSettings) {
+      if (permalinkSettings[setting] == true) {
+
+        query[setting] = this.state[setting];
       }
     }
 
-    return window.location.origin +
-      window.location.pathname +
+    return window.location.origin + window.location.pathname +
       `?query=${encodeURIComponent(JSON.stringify(query))}`;
   }
 
   render() {
     const action = this.action.bind(this);
-    var modalContent = "";
-    var modalTitle = "";
+    let modalContent = "";
+    let modalTitle = "";
 
     switch (this.state.modal) {
       case "point":
+        alert(this.state.point.length);
         modalContent = (
           <PointWindow
             dataset={this.state.dataset}
@@ -383,10 +370,10 @@ export default class OceanNavigator extends React.Component {
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
         modalTitle = formatLatLon(
@@ -407,10 +394,10 @@ export default class OceanNavigator extends React.Component {
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
 
@@ -432,10 +419,10 @@ export default class OceanNavigator extends React.Component {
             depth={this.state.depth}
             projection={this.state.projection}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
 
@@ -452,8 +439,8 @@ export default class OceanNavigator extends React.Component {
             names={this.state.names}
             depth={this.state.depth}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
+            action={this.action.bind(this)}
           />
         );
 
@@ -463,8 +450,8 @@ export default class OceanNavigator extends React.Component {
         modalContent = (
           <Class4Window
             class4id={this.state.class4}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
+            action={this.action.bind(this)}
           />
         );
         modalTitle = "";

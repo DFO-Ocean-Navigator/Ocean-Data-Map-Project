@@ -222,7 +222,8 @@ export default class LineWindow extends React.Component {
           </div>
           <PlotImage
             query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}
+            permlink_subquery={this.state}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -246,4 +247,5 @@ LineWindow.propTypes = {
   onUpdate: PropTypes.func,
   scale: PropTypes.string,
   init: PropTypes.object,
+  action: PropTypes.func,
 };

@@ -419,7 +419,7 @@ export default class PointWindow extends React.Component {
 
     inputs.push(size);
 
-    const permlink_query = {
+    const permlink_subquery = {
       selected: this.state.selected,
       scale: this.state.scale,
       depth: this.state.depth,
@@ -458,8 +458,9 @@ export default class PointWindow extends React.Component {
             {inputs}
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(permlink_query)}
+            query={plot_query} // For image saving link.
+            permlink_subquery={permlink_subquery}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -482,4 +483,5 @@ PointWindow.propTypes = {
   scale: PropTypes.string,
   depth: PropTypes.number,
   init: PropTypes.object,
+  action: PropTypes.func,
 };

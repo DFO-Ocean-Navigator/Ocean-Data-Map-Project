@@ -122,8 +122,10 @@ export default class Class4Window extends React.Component {
               title={_("Saved Image Size")} />
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}/>
+            query={plot_query} // For image saving link.
+            permlink_subquery={this.state}
+            action={this.props.action}
+          />
           <br className='clear' />
         </div>
       </div>
@@ -136,4 +138,5 @@ Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
   class4id: PropTypes.object,
   init: PropTypes.object,
+  action: PropTypes.func,
 };

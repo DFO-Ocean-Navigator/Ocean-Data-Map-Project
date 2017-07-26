@@ -239,8 +239,9 @@ export default class AreaWindow extends React.Component {
         ];
 
         content = <PlotImage
-          query={plot_query}
-          permlink={this.props.generatePermLink(this.state)}
+          query={plot_query} // For image saving link.
+          permlink_subquery={this.state}
+          action={this.props.action}
         />;
         break;
       case 2:
@@ -295,4 +296,5 @@ AreaWindow.propTypes = {
   onUpdate: PropTypes.func,
   scale: PropTypes.string,
   init: PropTypes.object,
+  action: PropTypes.func,
 };

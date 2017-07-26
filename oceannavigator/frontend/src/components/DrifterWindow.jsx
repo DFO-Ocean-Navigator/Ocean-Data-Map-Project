@@ -205,8 +205,9 @@ export default class DrifterWindow extends React.Component {
             {inputs}
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}
+            query={plot_query} // For image saving link.
+            permlink_subquery={this.state}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -224,4 +225,5 @@ DrifterWindow.propTypes = {
   onUpdate: PropTypes.func,
   init: PropTypes.object,
   variable: PropTypes.string,
+  action: PropTypes.func,
 };
