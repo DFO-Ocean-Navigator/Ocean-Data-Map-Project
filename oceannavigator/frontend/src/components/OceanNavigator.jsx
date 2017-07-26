@@ -335,12 +335,18 @@ export default class OceanNavigator extends React.Component {
       query.showModal = true;
       query.modal = this.state.modal;
       query.names = this.state.names;
-      query[this.state.modal] = this.state[this.state.modal];
+      // Hacky fix to remove a third "null" array member from corrupting
+      // permalink URL.
+      if (this.state.modal == "point" && this.state.point[0].length == 3) {
+        query.point = [this.state.point[0].slice(0, 2)];
+      }
+      else {
+        query[this.state.modal] = this.state[this.state.modal];
+      }
     }
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] == true) {
-
         query[setting] = this.state[setting];
       }
     }
@@ -356,7 +362,6 @@ export default class OceanNavigator extends React.Component {
 
     switch (this.state.modal) {
       case "point":
-        alert(this.state.point.length);
         modalContent = (
           <PointWindow
             dataset={this.state.dataset}
