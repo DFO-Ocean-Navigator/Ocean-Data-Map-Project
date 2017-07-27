@@ -292,10 +292,10 @@ export default class OceanNavigator extends React.Component {
           });
         }
         else {
-        this.setState({
-          showPermalink: true,
-        });
-      }
+          this.setState({
+            showPermalink: true,
+          });
+        }
         break;
       default:
         console.error("Undefined", name, arg);

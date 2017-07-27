@@ -136,7 +136,7 @@ export default class Class4Window extends React.Component {
 //***********************************************************************
 Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
-  class4id: PropTypes.object,
+  class4id: PropTypes.array,
   init: PropTypes.object,
   action: PropTypes.func,
 };
