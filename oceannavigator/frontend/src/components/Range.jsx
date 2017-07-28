@@ -109,6 +109,7 @@ export default class Range extends React.Component {
     if (this.props.autourl) {
       autobuttons = (
         <ButtonToolbar style={{ "display": "inline-block", "float": "right" }}>
+        <ButtonToolbar style={{ display: "inline-block", "float": "right" }}>
           <Button name='default' onClick={this.handleDefaultButton.bind(this)}>{_("Default")}</Button>
           <Button name='auto' bsStyle="primary" onClick={this.getAutoScale.bind(this)}>{_("Auto")}</Button>
         </ButtonToolbar>
@@ -170,4 +171,5 @@ Range.propTypes = {
   default_scale: PropTypes.array,
   state: PropTypes.string,
   autourl: PropTypes.string
+  autourl: PropTypes.string,
 };
