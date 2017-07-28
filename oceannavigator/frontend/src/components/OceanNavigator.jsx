@@ -56,6 +56,7 @@ export default class OceanNavigator extends React.Component {
         time: -1,
         variable_scale: [-5,30], // Default variable range for right view
       },
+      syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
     };
 
@@ -114,6 +115,11 @@ export default class OceanNavigator extends React.Component {
 
       // Store the updated value
       newState[key] = value;
+
+      if ((key == "scale" || key == "scale_1") && this.state.syncRanges) {
+        newState.scale = value;
+        newState.scale_1 = value;
+      }
       
       if (key == "dataset_0") {
         if (value.dataset != this.state.dataset) {

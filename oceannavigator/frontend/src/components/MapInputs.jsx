@@ -65,11 +65,16 @@ export default class MapInputs extends React.Component {
             title={_("Show Bathymetry Contours")}
           />
           <SelectBox
-            key='dataset_compare'
             id='dataset_compare'
             state={this.props.state.dataset_compare}
             onUpdate={this.props.changeHandler}
             title={_("Compare Datasets")}
+          />
+          <SelectBox
+            id='syncRanges'
+            onUpdate={this.props.changeHandler}
+            title={_("Sync Variable Ranges")}
+            style={{display: this.props.state.dataset_compare ? "block" : "none"}}
           />
         </Panel>
 
@@ -99,6 +104,7 @@ export default class MapInputs extends React.Component {
               this.props.state.time + "/" +
               this.props.state.variable + ".json"
             }
+            dataset_compare={this.props.state.dataset_compare}
             default_scale={this.props.state.variable_scale}
           ></Range>
         </Panel>

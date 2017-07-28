@@ -13,6 +13,7 @@ export default class SelectBox extends React.Component {
         id={this.props.id} 
         onChange={this.handleChange.bind(this)}
         checked={this.props.state}
+        style={this.props.style}
       >
         {this.props.title}
       </Checkbox>
@@ -26,5 +27,6 @@ SelectBox.propTypes = {
   state: PropTypes.bool,
   id: PropTypes.string,
   onUpdate: PropTypes.func,
+  style: PropTypes.object,
 };
 
