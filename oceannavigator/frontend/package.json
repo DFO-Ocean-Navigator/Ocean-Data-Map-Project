@@ -38,6 +38,7 @@
     "react-dom": "~15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-numeric-input": "^2.0.7",
+    "react-iframe": "1.0.7",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

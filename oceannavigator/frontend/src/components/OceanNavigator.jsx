@@ -10,6 +10,7 @@ import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import Iframe from "react-iframe";
 
 const i18n = require("../i18n.js");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
@@ -45,6 +46,7 @@ export default class OceanNavigator extends React.Component {
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
       bathymetry: true,
+      showHelp: false,
       extent: [],
       dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
@@ -296,6 +298,9 @@ export default class OceanNavigator extends React.Component {
             showPermalink: true,
           });
         }
+        break;
+      case "help":
+        this.setState({ showHelp: true,});
         break;
       default:
         console.error("Undefined", name, arg);
@@ -560,6 +565,29 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showPermalink: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showHelp}
+          onHide={() => this.setState({showHelp: false})}
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="question"/> {_("Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Iframe 
+              url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+              height="768px"
+              position="relative"
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showHelp: false})}
             ><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>

@@ -687,6 +687,17 @@ export default class MapToolbar extends React.Component {
                 <Icon icon='link' alt={_("Permalink")}/>
               </NavItem>
             </OverlayTrigger>
+            <OverlayTrigger
+              placement="bottom"
+              overlay={<Tooltip id="tooltip">{_("Help")}</Tooltip>}
+            >
+              <NavItem
+                name="help"
+                onClick={this.buttonHandler.bind(this)}
+              >
+                <Icon icon='question' alt={_("Help")}/>
+              </NavItem>
+            </OverlayTrigger>
           </Nav>
         </Navbar.Collapse>
 
