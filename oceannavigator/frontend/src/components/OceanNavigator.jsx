@@ -116,23 +116,28 @@ export default class OceanNavigator extends React.Component {
       // Store the updated value
       newState[key] = value;
 
-      if ((key == "scale" || key == "scale_1") && this.state.syncRanges) {
-        newState.scale = value;
-        newState.scale_1 = value;
-      }
-      
-      if (key == "dataset_0") {
-        if (value.dataset != this.state.dataset) {
-          this.changeDataset(value.dataset, value);
-          return;
-        } 
-        else {
-          newState = value;
-          if (value.variable_scale != this.state.scale) {
-            newState.scale = value.variable_scale;
+      switch (key) {
+        case "scale":
+        case "scale_1":
+          if (this.state.syncRanges) {
+            newState.scale = value;
+            newState.scale_1 = value;
           }
-        }
+          break;
+        case "dataset_0":
+          if (value.dataset != this.state.dataset) {
+            this.changeDataset(value.dataset, value);
+            return;
+          } 
+          else {
+            newState = value;
+            if (value.variable_scale != this.state.scale) {
+              newState.scale = value.variable_scale;
+            }
+          }
+          break;
       }
+
     }
     else {
       for (let i = 0; i < key.length; i++) {
@@ -167,7 +172,7 @@ export default class OceanNavigator extends React.Component {
     ).promise();
     
     $.when(var_promise, time_promise).done(function(variable, time) {
-      var newvariable = this.state.variable;
+      let newvariable = this.state.variable;
       
       if ($.inArray(this.state.variable, variable[0].map(function(e) 
       { return e.id; })) == -1) {
@@ -598,7 +603,11 @@ export default class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal show={this.state.busy} dialogClassName='busy-modal'>
+        <Modal 
+          show={this.state.busy}
+          dialogClassName='busy-modal'
+          backdrop
+        >
           <Modal.Header>
             <Modal.Title>{_("Please Wait…")}</Modal.Title>
           </Modal.Header>

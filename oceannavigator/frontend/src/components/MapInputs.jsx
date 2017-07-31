@@ -43,17 +43,17 @@ export default class MapInputs extends React.Component {
               {
                 id: "topo",
                 value: _("ETOPO1 Topography"),
-                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce"
+                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
               },
               {
                 id: "ocean",
                 value: _("Esri Ocean Basemap"),
-                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri"
+                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
               },
               {
                 id: "world",
                 value: _("Esri World Imagery"),
-                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
               },
             ]}
             title={_("Basemap")}
@@ -81,7 +81,7 @@ export default class MapInputs extends React.Component {
         <Panel
           collapsible
           defaultExpanded
-          header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
+          header={this.props.state.dataset_compare ? _("Left View") : _("Primary View")}
           bsStyle='primary'
         >
           <DatasetSelector
@@ -113,7 +113,7 @@ export default class MapInputs extends React.Component {
           <Panel
             collapsible
             defaultExpanded
-            header="Right View"
+            header={_("Right View")}
             bsStyle='primary'
           >
             <DatasetSelector
