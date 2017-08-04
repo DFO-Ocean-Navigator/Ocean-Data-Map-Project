@@ -592,7 +592,6 @@ export default class Map extends React.Component {
           this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
           break;
         case "line":
-          console.warn(this.props.state.line[0]);
           this.add(this.props.state.modal, this.props.state.line[0]);
           break;
         case "area":
