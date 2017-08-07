@@ -8,7 +8,7 @@ import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
-import {Button, Modal} from "react-bootstrap";
+import {Button, Modal, Tabs, Tab} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 
@@ -590,11 +590,16 @@ export default class OceanNavigator extends React.Component {
             <Modal.Title><Icon icon="question"/> {_("Help")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Iframe 
-              url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
-              height="768px"
-              position="relative"
-            />
+            <Tabs defaultActiveKey={1} id="help-tabs">
+              <Tab eventKey={1} title={_("Manual")}>
+                <Iframe 
+                  url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+                  height="768px"
+                  position="relative"
+                />
+              </Tab>
+              <Tab eventKey={2} title={_("Patch Notes")}>Tab 2 content</Tab>
+            </Tabs>
           </Modal.Body>
           <Modal.Footer>
             <Button

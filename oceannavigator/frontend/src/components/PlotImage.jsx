@@ -282,7 +282,7 @@ export default class PlotImage extends React.Component {
             id="link"
             title={<span><Icon icon="link" /> {_("Get Link")}</span>}
             dropup
-            bsStyle={this.state.fail ? "info" : "default"}
+            bsStyle={this.state.fail ? "primary" : "default"}
             disabled={this.state.loading}
             onSelect={this.getLink.bind(this)}
           >

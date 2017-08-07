@@ -167,7 +167,7 @@ Range.propTypes = {
   auto: PropTypes.bool,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
-  default_scale: PropTypes.array,
+  default_scale: PropTypes.string,
   state: PropTypes.string,
   autourl: PropTypes.string,
 };

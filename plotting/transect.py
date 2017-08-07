@@ -379,14 +379,14 @@ class TransectPlotter(line.LinePlotter):
         )
 
     def plot(self):
+        # velocity has 2 variable components (parallel, perpendicular)
+        velocity = len(self.variables) == 2
+
         # Figure size
         figuresize = map(float, self.size.split("x"))
-        figuresize[1] *= len(self.variables) * 3 if self.compare else 1 # Vertical scaling of figure
+        figuresize[1] *= len(self.variables) * 3 if self.compare else 1.5 # Vertical scaling of figure
+        
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
-
-        velocity = len(self.variables) == 2
-        # Variable anomaly/difference
-        anom = bool(self.compare)
 
         # Setup grid columns
         if self.showmap:
@@ -397,12 +397,16 @@ class TransectPlotter(line.LinePlotter):
             width_ratios = [1]
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
-        if velocity:
-            gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
-        elif self.compare:
-            gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+        if self.compare:
+            if velocity:
+                gs = gridspec.GridSpec(5, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1, 1])
+            else:
+                gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
         else:
-            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+            if velocity:
+                gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+            else:
+                gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
         if self.showmap:
             # Plot the transect on a map
@@ -436,42 +440,44 @@ class TransectPlotter(line.LinePlotter):
                 self._surface_plot(divider)
 
         # Transect Plot
-        if velocity:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin = min(np.amin(self.transect_data['parallel']),
-                           np.amin(self.transect_data['perpendicular']))
-                vmax = max(np.amax(self.transect_data['parallel']),
-                           np.amin(self.transect_data['perpendicular']))
-                vmin = min(vmin, -vmax)
-                vmax = max(vmax, -vmin)
-            
-            # Get colormap for variable
-            self.cmap = colormap.find_colormap(self.transect_data['name'])
-            do_plot(
-                gs, 1, 0,
-                self.transect_data['parallel'],
-                gettext("Parallel"),
-                gettext("Parallel"),
-                vmin,
-                vmax,
-                self.transect_data['unit'],
-                self.cmap
-            )
-            do_plot(
-                gs, 3, 1,
-                self.transect_data['perpendicular'],
-                gettext("Perpendicular"),
-                gettext("Perpendicular"),
-                vmin,
-                vmax,
-                self.transect_data['unit'],
-                self.cmap
-            )
+
         # If in compare mode
-        elif self.compare:
+        if self.compare:
+            # Velocity has 2 components
+            if velocity:
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = min(np.amin(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmax = max(np.amax(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmin = min(vmin, -vmax)
+                    vmax = max(vmax, -vmin)
+            
+                # Get colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['parallel'],
+                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Parallel"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+                do_plot(
+                    gs, 3, 1,
+                    self.transect_data['perpendicular'],
+                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Perpendicular"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
             # Calculate variable range
             vmin = np.amin(self.transect_data['data'])
             vmax = np.amax(self.transect_data['data'])
@@ -518,8 +524,10 @@ class TransectPlotter(line.LinePlotter):
                 self.cmap
             )
             
-            # Show a difference plot if both variables are the same
-            if self.variables[0] == self.compare['variables'][0]:
+            # Show a difference plot if both variables and datasets are the same
+            if self.variables[0] == self.compare['variables'][0] and \
+            self.compare['dataset'] == self.dataset_name:
+
                 # Calculate variable range
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
@@ -535,37 +543,74 @@ class TransectPlotter(line.LinePlotter):
                     colormap.find_colormap("anomaly") # Colormap for difference graphs
                 )
         
-        # Just 1 variable
+        # Not comparing
         else:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin = np.amin(self.transect_data['data'])
-                vmax = np.amax(self.transect_data['data'])
-                if re.search(
-                    "velocity",
-                    self.transect_data['name'],
-                    re.IGNORECASE
-                ) or anom:
+            # Velocity has 2 components
+            if velocity:
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = min(np.amin(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmax = max(np.amax(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-
-            # Find colormap for variable
-            self.cmap = colormap.find_colormap(self.transect_data['name'])
-
-            do_plot(
-                gs, 1, 0,
-                self.transect_data['data'],
-                self.transect_data['name'] + " for " + self.date_formatter(self.timestamp),
-                self.transect_data['name'],
-                vmin,
-                vmax,
-                self.transect_data['unit'],
-                self.cmap
-            )
             
+                # Get colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['parallel'],
+                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Parallel"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+                do_plot(
+                    gs, 3, 1,
+                    self.transect_data['perpendicular'],
+                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Perpendicular"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+            else:
+                # All other variables have 1 component
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = np.amin(self.transect_data['data'])
+                    vmax = np.amax(self.transect_data['data'])
+                    if re.search(
+                        "velocity",
+                        self.transect_data['name'],
+                        re.IGNORECASE
+                    ):
+                        vmin = min(vmin, -vmax)
+                        vmax = max(vmax, -vmin)
 
+                # Find colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['data'],
+                    self.transect_data['name'] + " for " +
+                    self.date_formatter(self.timestamp),
+                    self.transect_data['name'],
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+            
         fig.suptitle("Transect Data for:\n%s" % (
             self.name
         ), fontsize=15)

@@ -103,6 +103,14 @@ export default class LineWindow extends React.Component {
       header={_("Global Settings")}
       bsStyle='primary'
     >
+      <SelectBox
+        key='dataset_compare'
+        id='dataset_compare'
+        state={this.props.dataset_compare}
+        onUpdate={this.props.onUpdate}
+        title={_("Compare Dataset")}
+      />
+
       <Range
         auto
         key='scale'
@@ -112,12 +120,14 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate.bind(this)}
         title={_("Variable Range")}
       />
+
       <SelectBox
         key='showmap'
         id='showmap'
         state={this.state.showmap}
         onUpdate={this.onLocalUpdate.bind(this)}
         title={_("Show Location")}>{_("showmap_help")}</SelectBox>
+        
       <ImageSize
         key='size'
         id='size'
@@ -125,6 +135,38 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate.bind(this)}
         title={_("Saved Image Size")}
       />
+    </Panel>;
+
+    const transectSettings = <Panel
+      collapsible
+      defaultExpanded
+      header={_("Transect Settings")}
+      bsStyle='primary'
+    >
+      <ComboBox
+        key='surfacevariable'
+        id='surfacevariable'
+        state={this.state.surfacevariable}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Surface Variable")}
+        url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
+      >{_("surfacevariable_help")}</ComboBox>
+
+      <NumberBox
+        key='linearthresh'
+        id='linearthresh'
+        state={this.state.linearthresh}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Linear Threshold")}
+      >{_("linearthresh_help")}</NumberBox>
+
+      <DepthLimit
+        key='depth_limit'
+        id='depth_limit'
+        state={this.state.depth_limit}
+        onUpdate={this.onLocalUpdate.bind(this)}
+      />
+
     </Panel>;
     
     const dataset = <Panel 
@@ -144,38 +186,7 @@ export default class LineWindow extends React.Component {
       />
     </Panel>;
     
-    const linearthreshold = <NumberBox
-      key='linearthresh'
-      id='linearthresh'
-      state={this.state.linearthresh}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Linear Threshold")}
-    >{_("linearthresh_help")}</NumberBox>;
-    
-    const surfacevariable = <ComboBox
-      key='surfacevariable'
-      id='surfacevariable'
-      state={this.state.surfacevariable}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Surface Variable")}
-      url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
-    >{_("surfacevariable_help")}</ComboBox>;
-    
-    const depthlimit = <DepthLimit
-      key='depth_limit'
-      id='depth_limit'
-      state={this.state.depth_limit}
-      onUpdate={this.onLocalUpdate.bind(this)}
-    />;
-    
     const compare_dataset = <div key='compare_dataset'>
-      <SelectBox
-        key='dataset_compare'
-        id='dataset_compare'
-        state={this.props.dataset_compare}
-        onUpdate={this.props.onUpdate}
-        title={_("Compare Dataset")}
-      />
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
         <Panel 
           collapsible
@@ -219,8 +230,7 @@ export default class LineWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
         }
         inputs = [
-          global, dataset, compare_dataset, linearthreshold,
-          depthlimit, surfacevariable
+          global, dataset, compare_dataset, transectSettings
         ];
         break;
       case 2:
