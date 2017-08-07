@@ -31,7 +31,7 @@ export default class TimePicker extends React.Component {
     };
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
   }
-  
+
   populate(props) {
     if ("url" in props && "" != props.url) {
       $.ajax({
@@ -161,7 +161,7 @@ export default class TimePicker extends React.Component {
       });
     }
   }
-  
+
   componentDidMount() {
     this.populate(this.props);
   }

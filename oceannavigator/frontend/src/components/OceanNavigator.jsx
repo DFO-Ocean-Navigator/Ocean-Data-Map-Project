@@ -484,6 +484,7 @@ export default class OceanNavigator extends React.Component {
 
     _("Loading");
 
+
     const contentClassName = this.state.sidebarOpen ? "content open" : "content";
 
     let map = <Map

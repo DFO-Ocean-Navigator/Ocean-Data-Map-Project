@@ -800,6 +800,84 @@ export default class MapToolbar extends React.Component {
         </Modal>
 
         <Modal
+          show={this.state.showPointCoordModal}
+          onHide={() => this.setState({showPointCoordModal: false})}
+          dialogClassName="pointCoord-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>{_("Enter Point Coordinate(s)")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <EnterPoint
+              setCoordData={this.setCoordData.bind(this)}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showPointCoordModal: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+            <Button
+              bsStyle="primary"
+              onClick={function() {
+                this.setState({showPointCoordModal: false});
+                this.applyPointCoords();
+              }.bind(this)}
+            ><Icon icon="check" /> {_("Apply")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showLineCoordModal}
+          onHide={() => this.setState({showLineCoordModal: false})}
+          dialogClassName="lineCoord-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>{_("Enter Line Coordinate(s)")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <EnterLine
+              setCoordData={this.setCoordData.bind(this)}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showLineCoordModal: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+            <Button
+              bsStyle="primary"
+              onClick={function() {
+                this.setState({showLineCoordModal: false});
+                this.applyLineCoords();
+              }.bind(this)}
+            ><Icon icon="check" /> {_("Apply")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showAreaCoordModal}
+          onHide={() => this.setState({showAreaCoordModal: false})}
+          dialogClassName="areaCoord-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>{_("Enter Area Coordinate(s)")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <EnterArea
+              setCoordData={this.setCoordData.bind(this)}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showAreaCoordModal: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+            <Button
+              bsStyle="primary"
+              onClick={function() {
+                this.setState({showAreaCoordModal: false});
+                this.applyAreaCoords();
+              }.bind(this)}
+            ><Icon icon="check" /> {_("Apply")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
           show={this.state.showDriftersSelect}
           onHide={() => this.setState({showDriftersSelect: false})}
           dialogClassName="drifter-modal">

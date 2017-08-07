@@ -11,7 +11,6 @@ export default class EnterArea extends React.Component {
 
     this.state = {
       showAreaPoint4: false,
-
       areaCoords: [],
     };
   }
@@ -21,7 +20,8 @@ export default class EnterArea extends React.Component {
     // Pass updated checkbox value to MapToolbar
     this.props.setCoordData({showAreaPoint4: e.target.checked});
   }
-
+  
+  
   setCoordData(state, id) {
     const newState = this.state;
     // Put updated coords into array
@@ -35,7 +35,7 @@ export default class EnterArea extends React.Component {
     return (
       <div className="EnterArea">
         <Alert bsStyle="warning">
-          {_("Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
+          {_("Please enter numerical values with numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
         <Well>
           <Checkbox

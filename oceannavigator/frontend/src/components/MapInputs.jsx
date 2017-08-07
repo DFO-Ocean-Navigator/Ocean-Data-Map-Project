@@ -6,6 +6,8 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel} from "react-bootstrap";
 import PropTypes from "prop-types";
 
+var i18n = require("../i18n.js");
+
 const i18n = require("../i18n.js");
 
 export default class MapInputs extends React.Component {
@@ -142,7 +144,6 @@ export default class MapInputs extends React.Component {
           </Panel>
 
         </div>
-        
       </div>
     );
   }
