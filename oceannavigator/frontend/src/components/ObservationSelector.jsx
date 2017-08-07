@@ -16,7 +16,6 @@ class ObservationSelector extends React.Component {
     };
   }
 
-  // Load data
   componentDidMount() {
     $.ajax({
       url: "/api/observation/meta.json",
@@ -33,12 +32,12 @@ class ObservationSelector extends React.Component {
   }
 
   onUpdate(keys, values) {
-    const newState = {
+    var newState = {
       ship: this.state.ship,
       trip: this.state.trip,
     };
     this.props.select(newState);
-    for (let i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       newState[keys[i]] = values[i];
     }
 
@@ -46,10 +45,10 @@ class ObservationSelector extends React.Component {
   }
 
   render() {
-    const ship = this.state.data.ship.map(function(o) {
+    var ship = this.state.data.ship.map(function(o) {
       return { id: o, value: o, };
     });
-    const trip = this.state.data.trip.map(function(o) {
+    var trip = this.state.data.trip.map(function(o) {
       return { id: o, value: o, };
     });
     _("Ship");

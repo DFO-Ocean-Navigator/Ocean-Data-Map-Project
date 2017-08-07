@@ -234,9 +234,8 @@ class ComboBox extends React.Component {
             onHide={this.closeHelp.bind(this)}
             bsSize="large"
             dialogClassName="helpdialog"
-            backdrop={true}
           >
-            <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Header closeButton>
               <Modal.Title>{
                 _("titlehelp", {title: this.props.title})
               }</Modal.Title>
@@ -246,7 +245,7 @@ class ComboBox extends React.Component {
               {helpOptions}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.closeHelp.bind(this)}> {_("Close")}</Button>
+              <Button onClick={this.closeHelp.bind(this)}>{_("Close")}</Button>
             </Modal.Footer>
           </Modal>
 

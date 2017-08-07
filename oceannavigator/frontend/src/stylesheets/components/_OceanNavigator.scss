@@ -11,21 +11,19 @@ body {
 }
 .OceanNavigator {
     .MapInputs {
-        width: 0;
+        width: $sidebar-width;
         position: absolute;
         top: 0;
         bottom: 0;
-        transition: left 0.3s ease-in-out;
     }
     > .content {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 0; // Map view takes up full screen width when sidebar closed
+        left: $sidebar-width;
         right: 0;
         display: flex;
         flex-flow: column;
-        transition: left 0.3s ease-in-out;
 
         .MapToolbar {
             flex: 0 1 auto;
@@ -36,11 +34,6 @@ body {
         }
     }
 
-}
-
-// Moves content to the right to fit sidebar
-.content.open {
-    left: $sidebar-width;
 }
 
 .permalink-modal {
