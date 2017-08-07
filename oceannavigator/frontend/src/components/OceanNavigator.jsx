@@ -8,8 +8,9 @@ import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
-import {Button, Modal} from "react-bootstrap";
+import {Button, Modal, Tabs, Tab} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import Iframe from "react-iframe";
 
 const i18n = require("../i18n.js");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
@@ -25,7 +26,7 @@ function formatLatLon(latitude, longitude) {
   return formatted;
 }
 
-class OceanNavigator extends React.Component {
+export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
     
@@ -45,8 +46,9 @@ class OceanNavigator extends React.Component {
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
       bathymetry: true,
+      showHelp: false,
       extent: [],
-      dataset_compare: false,
+      dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
         dataset: "giops_day",
         variable: "votemper",
@@ -54,6 +56,7 @@ class OceanNavigator extends React.Component {
         time: -1,
         variable_scale: [-5,30], // Default variable range for right view
       },
+      syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
     };
 
@@ -65,10 +68,7 @@ class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
-        const querystate = JSON.parse(
-                        decodeURIComponent(
-                            window.location.search.replace("?query=", ""))
-                        );
+        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
         $.extend(this.state, querystate);
       } catch(err) {
         console.error(err);
@@ -115,18 +115,29 @@ class OceanNavigator extends React.Component {
 
       // Store the updated value
       newState[key] = value;
-      
-      if (key == "dataset_0") {
-        if (value.dataset != this.state.dataset) {
-          this.changeDataset(value.dataset, value);
-          return;
-        } else {
-          newState = value;
-          if (value.variable_scale != this.state.scale) {
-            newState.scale = value.variable_scale;
+
+      switch (key) {
+        case "scale":
+        case "scale_1":
+          if (this.state.syncRanges) {
+            newState.scale = value;
+            newState.scale_1 = value;
           }
-        }
+          break;
+        case "dataset_0":
+          if (value.dataset != this.state.dataset) {
+            this.changeDataset(value.dataset, value);
+            return;
+          } 
+          else {
+            newState = value;
+            if (value.variable_scale != this.state.scale) {
+              newState.scale = value.variable_scale;
+            }
+          }
+          break;
       }
+
     }
     else {
       for (let i = 0; i < key.length; i++) {
@@ -161,10 +172,10 @@ class OceanNavigator extends React.Component {
     ).promise();
     
     $.when(var_promise, time_promise).done(function(variable, time) {
-      var newvariable = this.state.variable;
+      let newvariable = this.state.variable;
       
       if ($.inArray(this.state.variable, variable[0].map(function(e) 
-        { return e.id; })) == -1) {
+      { return e.id; })) == -1) {
         newvariable = variable[0][0].id;
       }
 
@@ -287,9 +298,20 @@ class OceanNavigator extends React.Component {
         }
         break;
       case "permalink":
-        this.setState({
-          showPermalink: true,
-        });
+        if (arg != null) {
+          this.setState({
+            subquery: arg,
+            showPermalink: true,
+          });
+        }
+        else {
+          this.setState({
+            showPermalink: true,
+          });
+        }
+        break;
+      case "help":
+        this.setState({ showHelp: true,});
         break;
       default:
         console.error("Undefined", name, arg);
@@ -323,49 +345,37 @@ class OceanNavigator extends React.Component {
 
   generatePermLink(subquery, permalinkSettings) {
     let query = {};
-    if (typeof(subquery) != "string") {
-      query = {
-        center: this.state.center,
-        zoom: this.state.zoom,
-        dataset: this.state.dataset,
-        projection: this.state.projection,
-        time: this.state.time,
-        basemap: this.state.basemap,
-        depth: this.state.depth,
-        variable: this.state.variable,
-        scale: this.state.scale,
-        vectortype: this.state.vectortype,
-        vectorid: this.state.vectorid,
-        dataset_compare: this.state.dataset_compare,
-      };
-
-      if (subquery != undefined) {
-        query["subquery"] = subquery;
-        query["showModal"] = true;
-        query["modal"] = this.state.modal;
-        query["names"] = this.state.names;
+    // We have a request from Point/Line/AreaWindow component.
+    if (this.state.subquery != undefined) {
+      query.subquery = this.state.subquery;
+      query.showModal = true;
+      query.modal = this.state.modal;
+      query.names = this.state.names;
+      // Hacky fix to remove a third "null" array member from corrupting
+      // permalink URL.
+      if (this.state.modal == "point" && this.state.point[0].length == 3) {
+        query.point = [this.state.point[0].slice(0, 2)];
+      }
+      else {
         query[this.state.modal] = this.state[this.state.modal];
       }
     }
     // We have a request from the Permalink component.
-    else {
-      for (let setting in permalinkSettings) {
-        if (permalinkSettings[setting] == true) {
-          //console.warn(setting + " " + permalinkSettings[setting]);
-          query[setting] = this.state[setting];
-        }
+    for (let setting in permalinkSettings) {
+      if (permalinkSettings[setting] == true) {
+        query[setting] = this.state[setting];
       }
     }
 
-    return window.location.origin +
-      window.location.pathname +
+    return window.location.origin + window.location.pathname +
       `?query=${encodeURIComponent(JSON.stringify(query))}`;
   }
 
   render() {
     const action = this.action.bind(this);
-    var modalContent = "";
-    var modalTitle = "";
+    let modalContent = "";
+    let modalTitle = "";
+
     switch (this.state.modal) {
       case "point":
         modalContent = (
@@ -381,10 +391,10 @@ class OceanNavigator extends React.Component {
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
         modalTitle = formatLatLon(
@@ -405,10 +415,10 @@ class OceanNavigator extends React.Component {
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
 
@@ -430,10 +440,10 @@ class OceanNavigator extends React.Component {
             depth={this.state.depth}
             projection={this.state.projection}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            action={this.action.bind(this)}
           />
         );
 
@@ -450,8 +460,8 @@ class OceanNavigator extends React.Component {
             names={this.state.names}
             depth={this.state.depth}
             onUpdate={this.updateState.bind(this)}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
+            action={this.action.bind(this)}
           />
         );
 
@@ -461,8 +471,8 @@ class OceanNavigator extends React.Component {
         modalContent = (
           <Class4Window
             class4id={this.state.class4}
-            generatePermLink={this.generatePermLink.bind(this)}
             init={this.state.subquery}
+            action={this.action.bind(this)}
           />
         );
         modalTitle = "";
@@ -570,7 +580,39 @@ class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal show={this.state.busy} dialogClassName='busy-modal'>
+        <Modal
+          show={this.state.showHelp}
+          onHide={() => this.setState({showHelp: false})}
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="question"/> {_("Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Tabs defaultActiveKey={1} id="help-tabs">
+              <Tab eventKey={1} title={_("Manual")}>
+                <Iframe 
+                  url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+                  height="768px"
+                  position="relative"
+                />
+              </Tab>
+              <Tab eventKey={2} title={_("Patch Notes")}>Tab 2 content</Tab>
+            </Tabs>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showHelp: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal 
+          show={this.state.busy}
+          dialogClassName='busy-modal'
+          backdrop
+        >
           <Modal.Header>
             <Modal.Title>{_("Please Wait…")}</Modal.Title>
           </Modal.Header>
@@ -582,5 +624,3 @@ class OceanNavigator extends React.Component {
     );
   }
 }
-
-export default OceanNavigator;

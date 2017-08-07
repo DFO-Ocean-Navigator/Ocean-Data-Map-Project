@@ -6,7 +6,7 @@ import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -20,7 +20,7 @@ const TabEnum = {
   MOORING: 7,
 };
 
-class PointWindow extends React.Component {
+export default class PointWindow extends React.Component {
   constructor(props) {
     super(props);
     
@@ -48,7 +48,7 @@ class PointWindow extends React.Component {
       dataType: "json",
       cache: true,
       success: function(data) {
-        var vars = data.map(function(d) { return d.id; });
+        const vars = data.map(function(d) { return d.id; });
         if ($.inArray(this.props.variable.split(",")[0], vars) == -1) {
           this.props.onUpdate("variable", vars[0]);
           this.setState({
@@ -75,14 +75,15 @@ class PointWindow extends React.Component {
   }
 
   componentWillReceiveProps(props) {
-    var state = {
-    };
+    const state = {};
+
     if (!Array.isArray(this.state.depth)) {
       state.depth = props.depth;
     }
     if (this.state.scale.indexOf("auto") != -1) {
       state.scale = props.scale + ",auto";
-    } else {
+    } 
+    else {
       state.scale = props.scale;
     }
     this.setState(state);
@@ -93,10 +94,12 @@ class PointWindow extends React.Component {
 
   onLocalUpdate(key, value) {
     var newState = {};
+    
     if (typeof(key) === "string") {
       newState[key] = value;
-    } else {
-      for (var i = 0; i < key.length; i++) {
+    } 
+    else {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -139,6 +142,7 @@ class PointWindow extends React.Component {
     }
   }
 
+  // Handles when a tab is selected
   onSelect(key) {
     this.setState({
       selected: key
@@ -146,6 +150,7 @@ class PointWindow extends React.Component {
   }
 
   render() {
+
     _("Dataset");
     _("Time");
     _("Location");
@@ -281,7 +286,8 @@ class PointWindow extends React.Component {
           multiple
           onUpdate={this.onLocalUpdate.bind(this)}
         />;
-      } else {
+      } 
+      else {
         observation_data = this.props.point[0][2].datatypes.map(
           function (o, i) {
             return { id: i, value: o.replace(/ \[.*\]/, "") };
@@ -311,6 +317,7 @@ class PointWindow extends React.Component {
       );
 
     var inputs = [];
+
     const plot_query = {
       dataset: this.props.dataset,
       quantum: this.props.quantum,
@@ -392,8 +399,7 @@ class PointWindow extends React.Component {
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
 
-        inputs = [dataset, starttime, endtime, variable, point, depth,
-          scale];
+        inputs = [dataset, starttime, endtime, variable, point, depth, scale];
         if (this.state.depth == "all") {
           inputs.push(colormap);
         }
@@ -406,16 +412,14 @@ class PointWindow extends React.Component {
         plot_query.endtime = this.props.time;
         plot_query.depth = this.state.depth;
 
-        inputs = [
-          dataset, starttime, endtime, vectorvariable, point, multidepth
-        ];
+        inputs = [dataset, starttime, endtime, vectorvariable, point, multidepth];
 
         break;
     }
 
     inputs.push(size);
 
-    const permlink_query = {
+    const permlink_subquery = {
       selected: this.state.selected,
       scale: this.state.scale,
       depth: this.state.depth,
@@ -454,8 +458,9 @@ class PointWindow extends React.Component {
             {inputs}
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(permlink_query)}
+            query={plot_query} // For image saving link.
+            permlink_subquery={permlink_subquery}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -464,4 +469,19 @@ class PointWindow extends React.Component {
   }
 }
 
-export default PointWindow;
+//***********************************************************************
+PointWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  point: PropTypes.array,
+  time: PropTypes.number,
+  variable: PropTypes.string,
+  dpi: PropTypes.number,
+  names: PropTypes.array,
+  quantum: PropTypes.string,
+  dataset: PropTypes.string,
+  onUpdate: PropTypes.func,
+  scale: PropTypes.string,
+  depth: PropTypes.number,
+  init: PropTypes.object,
+  action: PropTypes.func,
+};

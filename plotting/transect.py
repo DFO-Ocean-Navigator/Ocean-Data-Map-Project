@@ -64,10 +64,11 @@ class TransectPlotter(line.LinePlotter):
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
-            scale_factors = self.get_variable_scale_factors(dataset,
-                                                            self.variables)
+            scale_factors = self.get_variable_scale_factors(dataset, self.variables)
 
+            # Load data sent from primary/left view
             if len(self.variables) > 1:
+                # Only velocity has 2 variables
                 v = []
                 for name in self.variables:
                     v.append(dataset.variables[name])
@@ -91,11 +92,13 @@ class TransectPlotter(line.LinePlotter):
                 perpendicular = mag * np.sin(theta)
 
             else:
+                # Get data for one variable
                 transect_pts, distance, value, dep = dataset.get_path_profile(
                     self.points, time, self.variables[0])
 
                 value = np.multiply(value, scale_factors[0])
 
+            # Get variable units and convert to Celsius if needed
             variable_units[0], value = self.kelvin_to_celsius(
                 variable_units[0],
                 value
@@ -104,6 +107,8 @@ class TransectPlotter(line.LinePlotter):
             if len(self.variables) == 2:
                 variable_names[0] = self.vector_name(variable_names[0])
 
+            # If a colourmap has not been manually specified by the
+            # Navigator...
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(variable_names[0])
 
@@ -156,6 +161,7 @@ class TransectPlotter(line.LinePlotter):
                     "unit": surface_unit
                 }
 
+        # Load data sent from Right view (if in compare mode)
         if self.compare:
             def interpolate_depths(data, depth_in, depth_out):
                 output = []
@@ -172,15 +178,24 @@ class TransectPlotter(line.LinePlotter):
 
                 return np.ma.masked_invalid(output).transpose()
 
-            with open_dataset(
-                get_dataset_url(self.compare['dataset'])
-            ) as dataset:
+            with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
+                # Get and format date
+                self.compare['date'] = np.clip(self.compare['time'], 0, len(dataset.timestamps) - 1)
+                self.compare['date'] = dataset.timestamps[int(self.compare['date'])]
+
+                # 1 variable
                 if len(self.compare['variables']) == 1:
+                    
+                    # Get and store the "nicely formatted" string for the variable name
+                    self.compare['name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
+
                     climate_points, climate_distance, climate_data, cdep = \
                         dataset.get_path_profile(self.points,
                                                  self.compare['time'],
                                                  self.compare['variables'][0])
-                    u, climate_data = self.kelvin_to_celsius(
+                    
+                    # Get variable units and convert to Celsius if needed
+                    self.compare['unit'], climate_data = self.kelvin_to_celsius(
                         dataset.variables[self.compare['variables'][0]].unit,
                         climate_data
                     )
@@ -199,7 +214,9 @@ class TransectPlotter(line.LinePlotter):
                         self.transect_data['parallel'] -= climate_data
                         self.transect_data['perpendicular'] -= climate_data
                     else:
-                        self.transect_data['data'] -= climate_data
+                        self.transect_data['compare_data'] = climate_data
+                
+                # Velocity variables
                 else:
                     climate_pts, climate_distance, climate_x, cdep = \
                         dataset.get_path_profile(
@@ -362,105 +379,250 @@ class TransectPlotter(line.LinePlotter):
         )
 
     def plot(self):
+        # velocity has 2 variable components (parallel, perpendicular)
+        velocity = len(self.variables) == 2
+
         # Figure size
         figuresize = map(float, self.size.split("x"))
-        figuresize[1] *= len(self.variables)
+        figuresize[1] *= len(self.variables) * 3 if self.compare else 1.5 # Vertical scaling of figure
+        
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
-        velocity = len(self.variables) == 2
-        anom = bool(self.compare)
-
+        # Setup grid columns
         if self.showmap:
-            width = 2
+            width = 2 # 2 columns
             width_ratios = [2, 7]
         else:
-            width = 1
+            width = 1 # 1 column
             width_ratios = [1]
 
-        if velocity:
-            gs = gridspec.GridSpec(
-                2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+        # Setup grid (rows, columns, column/row ratios) depending on view mode
+        if self.compare:
+            if velocity:
+                gs = gridspec.GridSpec(5, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1, 1])
+            else:
+                gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
         else:
-            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+            if velocity:
+                gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+            else:
+                gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
         if self.showmap:
             # Plot the transect on a map
-            if velocity:
-                plt.subplot(gs[:, 0])
-            else:
-                plt.subplot(gs[0])
-
+            plt.subplot(gs[:, 0])
             utils.path_plot(self.transect_data['points'])
 
-        def do_plot(subplots, map_subplot, nomap_subplot, data, name):
+        """
+        Args:
+            subplots: a GridSpec object (gs)
+            map_subplot: Row number (Note: don't use consecutive rows to allow
+                         for expanding figure height)
+            nomap_subplot: Row index of subplot location when "Show Location" is
+                           toggled off (consecutive works here)
+            data: Data to be plotted
+            name: subplot title
+            cmapLabel: label for colourmap legend
+            vmin: minimum value for a variable (grabbed from the lowest value of some data)
+            vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
+            units: units for variable (PSU, Celsius, etc)
+            cmap: colormap for variable
+        """
+        def do_plot(subplots, map_subplot, nomap_subplot, data, name, cmapLabel, vmin, vmax, units, cmap):
             if self.showmap:
                 plt.subplot(subplots[map_subplot])
             else:
                 plt.subplot(subplots[nomap_subplot])
 
-            divider = self._transect_plot(data, self.depth, name, vmin, vmax)
+            divider = self._transect_plot(data, self.depth, name, vmin, vmax, cmapLabel, units, cmap)
 
             if self.surface:
                 self._surface_plot(divider)
 
-        # transect Plot
-        if velocity:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin = min(np.amin(self.transect_data['parallel']),
-                           np.amin(self.transect_data['perpendicular']))
-                vmax = max(np.amax(self.transect_data['parallel']),
-                           np.amin(self.transect_data['perpendicular']))
+        # Transect Plot
+
+        # If in compare mode
+        if self.compare:
+            # Velocity has 2 components
+            if velocity:
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = min(np.amin(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmax = max(np.amax(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmin = min(vmin, -vmax)
+                    vmax = max(vmax, -vmin)
+            
+                # Get colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['parallel'],
+                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Parallel"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+                do_plot(
+                    gs, 3, 1,
+                    self.transect_data['perpendicular'],
+                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Perpendicular"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+            # Calculate variable range
+            vmin = np.amin(self.transect_data['data'])
+            vmax = np.amax(self.transect_data['data'])
+            if re.search(
+                "velocity",
+                self.transect_data['name'],
+                re.IGNORECASE
+            ):   
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
 
-            do_plot(
-                gs, 1, 0,
-                self.transect_data['parallel'],
-                gettext("Parallel")
-            )
-            do_plot(
-                gs, 3, 1,
-                self.transect_data['perpendicular'],
-                gettext("Perpendicular")
-            )
-        else:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin = np.amin(self.transect_data['data'])
-                vmax = np.amax(self.transect_data['data'])
-                if re.search(
-                    "velocity",
-                    self.transect_data['name'],
-                    re.IGNORECASE
-                ) or anom:
-                    vmin = min(vmin, -vmax)
-                    vmax = max(vmax, -vmin)
-
+            # Get colormap for variable
+            self.cmap = colormap.find_colormap(self.transect_data['name'])
+            
+            # Primary/left view
             do_plot(
                 gs, 1, 0,
                 self.transect_data['data'],
+                self.transect_data['name'] + gettext(" for ") + self.date_formatter(self.timestamp),
                 self.transect_data['name'],
+                vmin,
+                vmax,
+                self.transect_data['unit'],
+                self.cmap
             )
 
-        fig.suptitle("%s, %s\n%s" % (
-            self.transect_data['name'],
-            self.date_formatter(self.timestamp),
-            self.name
-        ))
+            # If the left and right variables are not equal, find the
+            # correct colormap
+            if (self.transect_data['name'] != self.compare['name']):
+                self.cmap = colormap.find_colormap(self.compare['name'])
 
-        fig.tight_layout(pad=3, w_pad=4)
-        if velocity:
-            fig.subplots_adjust(top=0.9)
+            # Right view
+            # Recalculate variable range
+            vmin = np.amin(self.transect_data['compare_data'])
+            vmax = np.amax(self.transect_data['compare_data'])
+            do_plot(
+                gs, 3, 1,
+                self.transect_data['compare_data'],
+                self.compare['name'] + gettext(" for ") + self.date_formatter(self.compare['date']),
+                self.compare['name'],
+                vmin,
+                vmax,
+                self.compare['unit'],
+                self.cmap
+            )
+            
+            # Show a difference plot if both variables and datasets are the same
+            if self.variables[0] == self.compare['variables'][0] and \
+            self.compare['dataset'] == self.dataset_name:
+
+                # Calculate variable range
+                vmin = min(vmin, -vmax)
+                vmax = max(vmax, -vmin)
+
+                do_plot(
+                    gs, 5, 2,
+                    self.transect_data['data'] - self.transect_data['compare_data'],
+                    self.transect_data['name'] + gettext(" Difference"),
+                    self.transect_data['name'],
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],  # Since both variables are the same doesn't matter which view we reference
+                    colormap.find_colormap("anomaly") # Colormap for difference graphs
+                )
+        
+        # Not comparing
+        else:
+            # Velocity has 2 components
+            if velocity:
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = min(np.amin(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmax = max(np.amax(self.transect_data['parallel']),
+                               np.amin(self.transect_data['perpendicular']))
+                    vmin = min(vmin, -vmax)
+                    vmax = max(vmax, -vmin)
+            
+                # Get colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['parallel'],
+                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Parallel"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+                do_plot(
+                    gs, 3, 1,
+                    self.transect_data['perpendicular'],
+                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Perpendicular"),
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+            else:
+                # All other variables have 1 component
+                if self.scale:
+                    vmin = self.scale[0]
+                    vmax = self.scale[1]
+                else:
+                    vmin = np.amin(self.transect_data['data'])
+                    vmax = np.amax(self.transect_data['data'])
+                    if re.search(
+                        "velocity",
+                        self.transect_data['name'],
+                        re.IGNORECASE
+                    ):
+                        vmin = min(vmin, -vmax)
+                        vmax = max(vmax, -vmin)
+
+                # Find colormap for variable
+                self.cmap = colormap.find_colormap(self.transect_data['name'])
+
+                do_plot(
+                    gs, 1, 0,
+                    self.transect_data['data'],
+                    self.transect_data['name'] + " for " +
+                    self.date_formatter(self.timestamp),
+                    self.transect_data['name'],
+                    vmin,
+                    vmax,
+                    self.transect_data['unit'],
+                    self.cmap
+                )
+            
+        fig.suptitle("Transect Data for:\n%s" % (
+            self.name
+        ), fontsize=15)
+
+        # Subplot padding
+        fig.tight_layout(pad=2, w_pad=4, h_pad=2)
+        fig.subplots_adjust(top=0.9 if self.compare else 0.8)
 
         return super(TransectPlotter, self).plot(fig)
 
     def _surface_plot(self, axis_divider):
-        ax = axis_divider.append_axes("top", size="15%", pad=0.15)
+        ax = axis_divider.append_axes("top", size="35%", pad=0.35)
         ax.plot(self.surface_data['distance'],
                 self.surface_data['data'], color='r')
         ax.locator_params(nbins=3)
@@ -484,22 +646,26 @@ class TransectPlotter(line.LinePlotter):
             ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
-    def _transect_plot(self, values, depths, name, vmin, vmax):
+    def _transect_plot(self, values, depths, plotTitle, vmin, vmax, cmapLabel, unit, cmap):
         self.__fill_invalid_shift(values)
 
         dist = np.tile(self.transect_data['distance'], (values.shape[0], 1))
+        
+        # Plot the data
         c = plt.pcolormesh(dist, depths.transpose(), values,
-                           cmap=self.cmap,
-                           shading='gouraud',
+                           cmap=cmap,
+                           shading='gouraud', # Smooth shading
                            vmin=vmin,
                            vmax=vmax)
         ax = plt.gca()
+        ax.set_title(plotTitle, fontsize=14) # Set title of subplot
         ax.invert_yaxis()
         if self.depth_limit is None or (
             self.depth_limit is not None and
             self.linearthresh < self.depth_limit
         ):
             plt.yscale('symlog', linthreshy=self.linearthresh)
+        
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         # Mask out the bottom
@@ -536,13 +702,14 @@ class TransectPlotter(line.LinePlotter):
         plt.plot([self.transect_data['distance'][0],
                   self.transect_data['distance'][-1]],
                  [self.linearthresh, self.linearthresh],
-                 'k:', alpha=0.5)
+                 'k:', alpha=1.0)
 
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
-        bar.set_label(
-            name + " (" + utils.mathtext(self.transect_data['unit']) + ")")
+
+        # Append variable units to color scale label
+        bar.set_label(cmapLabel + " (" + utils.mathtext(unit) + ")")
 
         if len(self.points) > 2:
             station_distances = []

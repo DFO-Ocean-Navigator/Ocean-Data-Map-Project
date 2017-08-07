@@ -136,12 +136,13 @@ class Class4Plotter(plotter.Plotter):
         width = len(self.variables)
 
         if self.showmap:
-            width += 1
+            width += 1 # Shift graphs to the right
 
         gs = gridspec.GridSpec(2, width)
 
         subplot = 0
 
+        # Render point location
         if self.showmap:
             plt.subplot(gs[0, subplot])
             subplot += 1

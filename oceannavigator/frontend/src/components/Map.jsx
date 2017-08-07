@@ -1,5 +1,6 @@
 import React from "react";
 import ol from "openlayers";
+import PropTypes from "prop-types";
 
 require("openlayers/css/ol.css");
 
@@ -88,49 +89,7 @@ proj3031.setExtent([
   3087442.345821846
 ]);
 
-
-class Map extends React.Component {
-  getBasemap(source, projection, attribution) {
-    switch(source) {
-      case "topo":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
-            projection: projection,
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-      case "ocean":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-      case "world":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-    }
-  }
-
+export default class Map extends React.Component {
   constructor(props) {
     super(props);
 
@@ -151,7 +110,7 @@ class Map extends React.Component {
               featureProjection: this.props.state.projection,
             });
             var featToAdd = [];
-            for (var feat of features) {
+            for (let feat of features) {
               var id = feat.get("name");
               feat.setId(id);
               if (feat.get("error") != null) {
@@ -253,7 +212,8 @@ class Map extends React.Component {
               });
             }
 
-            var styles = [
+            // Map drawing tool style
+            const styles = [
               new ol.style.Style({
                 stroke: new ol.style.Stroke({
                   color: [color[0], color[1], color[2], 0.004],
@@ -287,8 +247,8 @@ class Map extends React.Component {
 
             return styles;
           } else if (feat.get("type") == "class4") {
-            var red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
-            var green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
+            const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
+            const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
             return new ol.style.Style({
               image: new ol.style.Circle({
                 radius: SmartPhone.isAny() ? 6 : 4,
@@ -583,6 +543,64 @@ class Map extends React.Component {
     }.bind(this));
   }
 
+  getBasemap(source, projection, attribution) {
+    switch(source) {
+      case "topo":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
+            projection: projection,
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+      case "ocean":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+      case "world":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+    }
+  }
+
+  componentWillMount() {
+    // Renders a map drawing from the data saved in a permalink
+    if (typeof(this.props.state.modal) === "string") {
+      switch (this.props.state.modal) {
+        case "point":
+          this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
+          break;
+        case "line":
+          this.add(this.props.state.modal, this.props.state.line[0]);
+          break;
+        case "area":
+          this.add(this.props.state.modal, this.props.state.area[0].polygons[0]);
+          break;
+      }
+    }
+  }
+
   componentDidMount() {
     this.overlay = new ol.Overlay({
       element: this.popupElement,
@@ -606,6 +624,13 @@ class Map extends React.Component {
       this.infoPopupCloser.blur();
       return false;
     }.bind(this);
+
+    // Tracks if this component is mounted
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   resetMap() {
@@ -757,15 +782,15 @@ class Map extends React.Component {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
-    props["projection"] = this.props.state.projection;
-    props["attributions"] = [
+    props.url = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
+    props.projection = this.props.state.projection;
+    props.attributions = [
       new ol.Attribution({
         html: this.props.state.dataset_attribution,
       }),
     ];
 
-    var newSource = new ol.source.XYZ(props);
+    const newSource = new ol.source.XYZ(props);
 
     datalayer.setSource(newSource);
 
@@ -826,7 +851,7 @@ class Map extends React.Component {
       this.map.getLayers().setAt(0, this.layer_basemap);
     }
 
-    for (var prop of ["projection", "dataset", "variable", "depth", "time"]) {
+    for (let prop of ["projection", "dataset", "variable", "depth", "time"]) {
       if (prevProps.state[prop] != this.props.state[prop]) {
         this.infoOverlay.setPosition(undefined);
         break;
@@ -894,7 +919,9 @@ class Map extends React.Component {
   }
 
   add(type, data, name) {
-    this.resetMap();
+    if (this._mounted) {
+      this.resetMap();
+    }
 
     var geom;
     var feat;
@@ -978,4 +1005,12 @@ class Map extends React.Component {
   }
 }
 
-export default Map;
+//***********************************************************************
+Map.propTypes = {
+  state: PropTypes.object,
+  projection: PropTypes.string,
+  updateState: PropTypes.func,
+  scale: PropTypes.string,
+  action: PropTypes.func,
+  partner: PropTypes.object,
+};

@@ -1,15 +1,17 @@
 import React from "react";
-import {Button, Well, Panel, Checkbox} from "react-bootstrap";
+import {Button, Well, Panel, Checkbox, Row} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class Permalink extends React.Component {
+export default class Permalink extends React.Component {
   constructor(props) {
     super(props);
 
     // Default options
     this.state = {
+      center: true,
       projection: true,
       basemap: true,
       bathymetry: false,
@@ -38,19 +40,23 @@ class Permalink extends React.Component {
     return (
       <div className="PermaLink">
         <Well bsSize="small">
-          <textarea
-            ref="permalink"
-            type="text"
-            id="permalink_area"
-            readOnly
-            value={this.props.generatePermLink("permaLinkSettings", this.state)}
-          />
-          <Button
-            bsStyle="primary"
-            className="pull-right"
-            onClick={function() {
-              this.selectPermalink();
-            }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+          <Row>
+            <textarea
+              ref="permalink"
+              type="text"
+              id="permalink_area"
+              readOnly
+              value={this.props.generatePermLink("permaLinkSettings", this.state)}
+            />
+          </Row>
+          <Row>
+            <Button
+              bsStyle="primary"
+              className="pull-right"
+              onClick={function() {
+                this.selectPermalink();
+              }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+          </Row>
         </Well>
 
         <br />
@@ -133,4 +139,7 @@ class Permalink extends React.Component {
   }
 }
 
-export default Permalink;
+//***********************************************************************
+Permalink.propTypes = {
+  generatePermLink: PropTypes.func,
+};

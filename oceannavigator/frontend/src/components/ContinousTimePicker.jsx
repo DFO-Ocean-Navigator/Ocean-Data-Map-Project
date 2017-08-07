@@ -2,6 +2,7 @@
 import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
+import PropTypes from "prop-types";
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -9,15 +10,15 @@ import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 import "jquery-ui/button";
 
-class ContinousTimePicker extends React.Component {
+export default class ContinousTimePicker extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
     };
   }
   populate(props) {
-    var min = props.min;
-    var max = props.max;
+    const min = props.min;
+    const max = props.max;
 
     $(this.refs.picker).datepicker({
       Button: false,
@@ -48,7 +49,7 @@ class ContinousTimePicker extends React.Component {
     }
   }
   render() {
-    var date = this.props.state;
+    let date = this.props.state;
     if (date == undefined || date == null) {
       date = new Date();
     } else if (!(date instanceof Date)) {
@@ -56,12 +57,20 @@ class ContinousTimePicker extends React.Component {
     }
 
     return (
-            <div key={this.props.url} className='ContinousTimePicker input'>
-                <h1>{this.props.title}</h1>
-                <input readOnly ref='picker' type="text" value={$.datepicker.formatDate("dd MM yy", date)} />
-            </div>
+      <div key={this.props.url} className='ContinousTimePicker input'>
+        <h1>{this.props.title}</h1>
+        <input readOnly ref='picker' type="text" value={$.datepicker.formatDate("dd MM yy", date)} />
+      </div>
     );
   }
 }
 
-export default ContinousTimePicker;
+//***********************************************************************
+ContinousTimePicker.propTypes = {
+  title: PropTypes.string,
+  state: PropTypes.instanceOf(Date),
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+  min: PropTypes.instanceOf(Date),
+  max: PropTypes.instanceOf(Date),
+};

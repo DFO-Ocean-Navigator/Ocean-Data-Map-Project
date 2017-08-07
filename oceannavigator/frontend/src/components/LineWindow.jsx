@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem} from "react-bootstrap";
+import {Nav, NavItem, Panel} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -8,10 +8,11 @@ import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class LineWindow extends React.Component {
+export default class LineWindow extends React.Component {
   constructor(props) {
     super(props);
     
@@ -24,7 +25,7 @@ class LineWindow extends React.Component {
       surfacevariable: "none",
       linearthresh: 200,
       size: "10x7",
-      dpi: 72,
+      dpi: 144,
       depth_limit: false,
     };
 
@@ -57,7 +58,7 @@ class LineWindow extends React.Component {
     if (typeof(key) === "string") {
       newState[key] = value;
     } else {
-      for (var i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -83,68 +84,25 @@ class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
-    const dataset = <DatasetSelector
-      key='dataset_0'
-      id='dataset_0'
-      state={this.props.dataset_0}
-      onUpdate={this.props.onUpdate}
-      depth={this.state.selected == 2}
-      variables={this.state.selected == 2 ? "all" : "3d"}
-      time={this.state.selected == 2 ? "range" : "single"}
-    />;
-    const scale = <Range
-      auto
-      key='scale'
-      id='scale'
-      state={this.state.scale}
-      def={""}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Variable Range")}
-    />;
-    const colormap = <ComboBox
-      key='colormap'
-      id='colormap'
-      state={this.state.colormap}
-      def='default'
-      onUpdate={this.onLocalUpdate.bind(this)}
-      url='/api/colormaps/'
-      title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-    </ComboBox>;
-    const showmap = <SelectBox
-      key='showmap'
-      id='showmap'
-      state={this.state.showmap}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Show Location")}>{_("showmap_help")}</SelectBox>;
-    const linearthreshold = <NumberBox
-      key='linearthresh'
-      id='linearthresh'
-      state={this.state.linearthresh}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Linear Threshold")}
-    >{_("linearthresh_help")}</NumberBox>;
-    const surfacevariable = <ComboBox
-      key='surfacevariable'
-      id='surfacevariable'
-      state={this.state.surfacevariable}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Surface Variable")}
-      url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
-    >{_("surfacevariable_help")}</ComboBox>;
-    const size = <ImageSize
-      key='size'
-      id='size'
-      state={this.state.size}
-      onUpdate={this.onLocalUpdate.bind(this)}
-      title={_("Saved Image Size")}
-    />;
-    const depthlimit = <DepthLimit
-      key='depth_limit'
-      id='depth_limit'
-      state={this.state.depth_limit}
-      onUpdate={this.onLocalUpdate.bind(this)}
-    />;
-    const compare_dataset = <div key='compare_dataset'>
+
+    /*
+      <ComboBox
+        key='colormap'
+        id='colormap'
+        state={this.state.colormap}
+        def='default'
+        onUpdate={this.onLocalUpdate.bind(this)}
+        url='/api/colormaps/'
+        title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+      </ComboBox>
+    */
+
+    const global = <Panel 
+      collapsible
+      defaultExpanded
+      header={_("Global Settings")}
+      bsStyle='primary'
+    >
       <SelectBox
         key='dataset_compare'
         id='dataset_compare'
@@ -152,14 +110,98 @@ class LineWindow extends React.Component {
         onUpdate={this.props.onUpdate}
         title={_("Compare Dataset")}
       />
+
+      <Range
+        auto
+        key='scale'
+        id='scale'
+        state={this.state.scale}
+        def={""}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Variable Range")}
+      />
+
+      <SelectBox
+        key='showmap'
+        id='showmap'
+        state={this.state.showmap}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Show Location")}>{_("showmap_help")}</SelectBox>
+        
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Saved Image Size")}
+      />
+    </Panel>;
+
+    const transectSettings = <Panel
+      collapsible
+      defaultExpanded
+      header={_("Transect Settings")}
+      bsStyle='primary'
+    >
+      <ComboBox
+        key='surfacevariable'
+        id='surfacevariable'
+        state={this.state.surfacevariable}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Surface Variable")}
+        url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
+      >{_("surfacevariable_help")}</ComboBox>
+
+      <NumberBox
+        key='linearthresh'
+        id='linearthresh'
+        state={this.state.linearthresh}
+        onUpdate={this.onLocalUpdate.bind(this)}
+        title={_("Linear Threshold")}
+      >{_("linearthresh_help")}</NumberBox>
+
+      <DepthLimit
+        key='depth_limit'
+        id='depth_limit'
+        state={this.state.depth_limit}
+        onUpdate={this.onLocalUpdate.bind(this)}
+      />
+
+    </Panel>;
+    
+    const dataset = <Panel 
+      collapsible
+      defaultExpanded
+      header={this.props.dataset_compare ? _("Left View") : _("Primary View")}
+      bsStyle='primary'
+    >
+      <DatasetSelector
+        key='dataset_0'
+        id='dataset_0'
+        state={this.props.dataset_0}
+        onUpdate={this.props.onUpdate}
+        depth={this.state.selected == 2}
+        variables={this.state.selected == 2 ? "all" : "3d"}
+        time={this.state.selected == 2 ? "range" : "single"}
+      />
+    </Panel>;
+    
+    const compare_dataset = <div key='compare_dataset'>
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
-        <DatasetSelector
-          key='dataset_1'
-          id='dataset_1'
-          state={this.props.dataset_1}
-          onUpdate={this.props.onUpdate}
-          variables='3d'
-        />
+        <Panel 
+          collapsible
+          defaultExpanded
+          header={_("Right View")}
+          bsStyle='primary'
+        >
+          <DatasetSelector
+            key='dataset_1'
+            id='dataset_1'
+            state={this.props.dataset_1}
+            onUpdate={this.props.onUpdate}
+            variables='3d'
+          />
+        </Panel>
       </div>
     </div>;
 
@@ -188,8 +230,7 @@ class LineWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
         }
         inputs = [
-          dataset, compare_dataset, showmap, scale, linearthreshold,
-          depthlimit, colormap, surfacevariable
+          global, dataset, compare_dataset, transectSettings
         ];
         break;
       case 2:
@@ -198,12 +239,10 @@ class LineWindow extends React.Component {
         plot_query.starttime = this.state.starttime;
         plot_query.depth = this.props.depth;
         inputs = [
-          dataset, showmap, scale, colormap
+          global, dataset
         ];
         break;
     }
-
-    inputs.push(size);
 
     return (
       <div className='LineWindow Window'>
@@ -221,7 +260,8 @@ class LineWindow extends React.Component {
           </div>
           <PlotImage
             query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}
+            permlink_subquery={this.state}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -230,4 +270,20 @@ class LineWindow extends React.Component {
   }
 }
 
-export default LineWindow;
+//***********************************************************************
+LineWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  depth: PropTypes.number,
+  time: PropTypes.number,
+  dataset_compare: PropTypes.bool,
+  dataset_1: PropTypes.object,
+  names: PropTypes.array,
+  line: PropTypes.array,
+  variable: PropTypes.string,
+  quantum: PropTypes.string,
+  dataset_0: PropTypes.object,
+  onUpdate: PropTypes.func,
+  scale: PropTypes.string,
+  init: PropTypes.object,
+  action: PropTypes.func,
+};

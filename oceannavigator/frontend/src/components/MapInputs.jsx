@@ -4,11 +4,12 @@ import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel} from "react-bootstrap";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class MapInputs extends React.Component {
-  
+export default class MapInputs extends React.Component {
+ 
   render() {
     _("Variable Range");
     _("Show Bathymetry Contours");
@@ -42,17 +43,17 @@ class MapInputs extends React.Component {
               {
                 id: "topo",
                 value: _("ETOPO1 Topography"),
-                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce"
+                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
               },
               {
                 id: "ocean",
                 value: _("Esri Ocean Basemap"),
-                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri"
+                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
               },
               {
                 id: "world",
                 value: _("Esri World Imagery"),
-                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
               },
             ]}
             title={_("Basemap")}
@@ -64,22 +65,26 @@ class MapInputs extends React.Component {
             title={_("Show Bathymetry Contours")}
           />
           <SelectBox
-            key='dataset_compare'
             id='dataset_compare'
             state={this.props.state.dataset_compare}
             onUpdate={this.props.changeHandler}
             title={_("Compare Datasets")}
+          />
+          <SelectBox
+            id='syncRanges'
+            onUpdate={this.props.changeHandler}
+            title={_("Sync Variable Ranges")}
+            style={{display: this.props.state.dataset_compare ? "block" : "none"}}
           />
         </Panel>
 
         <Panel
           collapsible
           defaultExpanded
-          header={this.props.state.dataset_compare ? "Left View" : "Primary View"}
+          header={this.props.state.dataset_compare ? _("Left View") : _("Primary View")}
           bsStyle='primary'
         >
           <DatasetSelector
-            key='dataset_0'
             id='dataset_0'
             state={this.props.state}
             onUpdate={this.props.changeHandler}
@@ -99,6 +104,7 @@ class MapInputs extends React.Component {
               this.props.state.time + "/" +
               this.props.state.variable + ".json"
             }
+            dataset_compare={this.props.state.dataset_compare}
             default_scale={this.props.state.variable_scale}
           ></Range>
         </Panel>
@@ -107,11 +113,10 @@ class MapInputs extends React.Component {
           <Panel
             collapsible
             defaultExpanded
-            header="Right View"
+            header={_("Right View")}
             bsStyle='primary'
           >
             <DatasetSelector
-              key='dataset_1'
               id='dataset_1'
               state={this.props.state.dataset_1}
               onUpdate={this.props.changeHandler}
@@ -143,5 +148,20 @@ class MapInputs extends React.Component {
   }
 }
 
-export default MapInputs;
-
+//***********************************************************************
+MapInputs.propTypes = {
+  state: PropTypes.object,
+  sidebarOpen: PropTypes.bool,
+  basemap: PropTypes.string,
+  scale: PropTypes.string,
+  scale_1: PropTypes.string,
+  bathymetry: PropTypes.bool,
+  dataset_compare: PropTypes.bool,
+  dataset_1: PropTypes.object,
+  projection: PropTypes.string,
+  depth: PropTypes.number,
+  time: PropTypes.number,
+  variable_scale: PropTypes.array,
+  extent: PropTypes.array,
+  changeHandler: PropTypes.func,
+};

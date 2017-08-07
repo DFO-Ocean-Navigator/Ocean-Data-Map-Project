@@ -1,10 +1,11 @@
 import React from "react";
 import NumberBox from "./NumberBox.jsx";
 import {Checkbox} from "react-bootstrap";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class DepthLimit extends React.Component {
+export default class DepthLimit extends React.Component {
   constructor(props) {
     super(props);
         
@@ -64,4 +65,9 @@ class DepthLimit extends React.Component {
   }
 }
 
-export default DepthLimit;
+//***********************************************************************
+DepthLimit.propTypes = {
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+  state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+};

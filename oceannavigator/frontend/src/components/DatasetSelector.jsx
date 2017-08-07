@@ -1,6 +1,7 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -14,21 +15,22 @@ const KEYS = [
   "time",
 ];
 
-class DatasetSelector extends React.Component {
+export default class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
   }
 
   onUpdate(key, value) {
-    var newState = KEYS.reduce((a,b) => {
+    const newState = KEYS.reduce((a,b) => {
       a[b] = this.props.state[b];
       return a;
     }, {});
 
     if (typeof(key) === "string") {
       newState[key] = value;
-    } else {
-      for (var i = 0; i < key.length; i++) {
+    } 
+    else {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -145,5 +147,17 @@ class DatasetSelector extends React.Component {
   }
 }
 
-export default DatasetSelector;
+//***********************************************************************
+DatasetSelector.propTypes = {
+  state: PropTypes.object,
+  variable: PropTypes.string,
+  depth: PropTypes.bool,
+  dataset: PropTypes.string,
+  time: PropTypes.string,
+  dataset_quantum: PropTypes.string,
+  starttime: PropTypes.number,
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+  variables: PropTypes.string,
+};
 

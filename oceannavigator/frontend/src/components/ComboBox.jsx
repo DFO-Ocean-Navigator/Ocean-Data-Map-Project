@@ -3,10 +3,11 @@ import $ from "jquery";
 import jQuery from "jquery";
 import {Modal, Button, FormControl} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class ComboBox extends React.Component {
+export default class ComboBox extends React.Component {
   constructor(props) {
     super(props);
     
@@ -294,5 +295,16 @@ class ComboBox extends React.Component {
   }
 }
 
-export default ComboBox;
+//***********************************************************************
+ComboBox.propTypes = {
+  multiple: PropTypes.bool,
+  title: PropTypes.string,
+  data: PropTypes.array,
+  state: PropTypes.oneOfType([PropTypes.string, 
+                              PropTypes.number, 
+                              PropTypes.array
+                            ]),
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+};
 

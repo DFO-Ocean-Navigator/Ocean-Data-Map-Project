@@ -1,10 +1,11 @@
 import React from "react";
 import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class Range extends React.Component {
+export default class Range extends React.Component {
 
   constructor(props) {
     super(props);
@@ -107,7 +108,7 @@ class Range extends React.Component {
     var autobuttons = <div></div>;
     if (this.props.autourl) {
       autobuttons = (
-        <ButtonToolbar style={{ "display": "inline-block", "float": "right" }}>
+        <ButtonToolbar style={{ display: "inline-block", "float": "right" }}>
           <Button name='default' onClick={this.handleDefaultButton.bind(this)}>{_("Default")}</Button>
           <Button name='auto' bsStyle="primary" onClick={this.getAutoScale.bind(this)}>{_("Auto")}</Button>
         </ButtonToolbar>
@@ -160,4 +161,13 @@ class Range extends React.Component {
   }
 }
 
-export default Range;
+//***********************************************************************
+Range.propTypes = {
+  id: PropTypes.string,
+  auto: PropTypes.bool,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+  default_scale: PropTypes.string,
+  state: PropTypes.string,
+  autourl: PropTypes.string,
+};
