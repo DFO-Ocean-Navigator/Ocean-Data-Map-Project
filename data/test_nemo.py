@@ -50,6 +50,20 @@ class TestNemo(unittest.TestCase):
             self.assertAlmostEqual(p[20], 296.46, places=2)
             self.assertTrue(np.ma.is_masked(p[49]))
 
+    def test_get_profile_depths(self):
+        with nemo.Nemo('data/testdata/nemo_test.nc') as n:
+            p = n.get_profile_depths(
+                13.0,
+                -149.0,
+                0,
+                'votemper',
+                [0, 10, 25, 50, 100, 200, 500, 1000]
+            )
+            self.assertTrue(np.ma.is_masked(p[0]))
+            self.assertAlmostEqual(p[1], 299.17, places=2)
+            self.assertAlmostEqual(p[4], 292.47, places=2)
+            self.assertAlmostEqual(p[7], 277.90, places=2)
+
     def test_bottom_point(self):
         with nemo.Nemo('data/testdata/nemo_test.nc') as n:
             self.assertAlmostEqual(

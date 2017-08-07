@@ -5,6 +5,7 @@ import jQuery from "jquery";
 import dateFormat from "dateformat";
 import {Button} from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -18,7 +19,7 @@ import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
 const i18n = require("../i18n.js");
 
-class TimePicker extends React.Component {
+export default class TimePicker extends React.Component {
   constructor(props) {
     super(props);
     
@@ -367,4 +368,14 @@ class TimePicker extends React.Component {
   }
 }
 
-export default TimePicker;
+//***********************************************************************
+TimePicker.propTypes = {
+  title: PropTypes.string,
+  url: PropTypes.string,
+  quantum: PropTypes.string,
+  state: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  onUpdate: PropTypes.func,
+  id: PropTypes.string,
+  min: PropTypes.number,
+  max: PropTypes.number,
+};

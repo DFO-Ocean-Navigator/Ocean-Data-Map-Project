@@ -1,15 +1,16 @@
 import React from "react";
 import {Alert} from "react-bootstrap";
 import CoordInputPanel from "./CoordInputPanel.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class EnterPoint extends React.Component {
+export default class EnterPoint extends React.Component {
 
   render() {
     return (
       <div className="EnterPoint">
-        <Alert bsStyle="info">
+        <Alert bsStyle="warning">
           {_("Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
         <CoordInputPanel
@@ -21,4 +22,7 @@ class EnterPoint extends React.Component {
   }
 }
 
-export default EnterPoint;
+//***********************************************************************
+EnterPoint.propTypes = {
+  setCoordData: PropTypes.func,
+};

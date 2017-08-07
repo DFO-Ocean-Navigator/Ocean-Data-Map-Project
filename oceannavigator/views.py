@@ -405,12 +405,16 @@ def _cache_and_send_img(img, f):
     return resp
 
 
+# Renders the map images and sends it to the browser
 @app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+    
+    # Check of the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    # Render a new tile/image, then cache and send it
     else:
         if depth != "bottom" and depth != "all":
             depth = int(depth)
@@ -430,6 +434,7 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
 def topo(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+    
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
@@ -437,10 +442,12 @@ def topo(projection, zoom, x, y):
         return _cache_and_send_img(img, f)
 
 
+# Renders bathymetry contours
 @app.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
+
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
@@ -494,6 +501,7 @@ def plot():
     if ("format" in request.args and request.args.get("format") == "json") or \
        ("format" in request.form and request.form.get("format") == "json"):
 
+        # Generates a Base64 encoded string
         def make_response(data, mime):
             b64 = base64.b64encode(data)
 
@@ -530,43 +538,36 @@ def plot():
 
     filename = 'png'
     img = ""
+
+    # Determine which plotter we need.
     if plottype == 'map':
         plotter = MapPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'transect':
-        plotter = TransectPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = TransectPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'timeseries':
-        plotter = TimeseriesPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = TimeseriesPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'ts':
-        plotter = TemperatureSalinityPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = TemperatureSalinityPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'sound':
-        plotter = SoundSpeedPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = SoundSpeedPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'profile':
-        plotter = ProfilePlotter(
-            dataset, query, request.args.get('format'))
+        plotter = ProfilePlotter(dataset, query, request.args.get('format'))
     elif plottype == 'hovmoller':
-        plotter = HovmollerPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = HovmollerPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'observation':
-        plotter = ObservationPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = ObservationPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'drifter':
-        plotter = DrifterPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = DrifterPlotter(dataset, query, request.args.get('format'))
     elif plottype == 'class4':
-        plotter = Class4Plotter(
-            dataset, query, request.args.get('format'))
+        plotter = Class4Plotter(dataset, query, request.args.get('format'))
     elif plottype == 'stick':
-        plotter = StickPlotter(
-            dataset, query, request.args.get('format'))
+        plotter = StickPlotter(dataset, query, request.args.get('format'))
     else:
         return FAILURE
 
-    img, mime, filename = plotter.run(size=size,
-                                      dpi=request.args.get('dpi'))
+    # Get the data from the selected plotter.
+    img, mime, filename = plotter.run(size=size, dpi=request.args.get('dpi'))
+    
     if img != "":
         response = make_response(img, mime)
     else:

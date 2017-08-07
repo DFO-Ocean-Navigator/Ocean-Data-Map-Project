@@ -181,6 +181,6 @@ class StickPlotter(point.PointPlotter):
                 point_data
             )
 
-        self.data = self.subtract_climatology(point_data, timestamp)
+        self.data = self.subtract_other(point_data)
         self.data_depth = point_depth
         self.timestamp = timestamp

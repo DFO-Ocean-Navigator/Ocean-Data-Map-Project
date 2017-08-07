@@ -38,6 +38,10 @@ body {
 
 }
 
+.checkbox, .alert, .control-label {
+    font-size: 95%;
+}
+
 // Moves content to the right to fit sidebar
 .content.open {
     left: $sidebar-width;

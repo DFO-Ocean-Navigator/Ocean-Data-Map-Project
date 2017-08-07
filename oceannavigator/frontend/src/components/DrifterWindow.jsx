@@ -4,9 +4,11 @@ import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
 
-class DrifterWindow extends React.Component {
+const i18n = require("../i18n.js");
+
+export default class DrifterWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -203,8 +205,9 @@ class DrifterWindow extends React.Component {
             {inputs}
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}
+            query={plot_query} // For image saving link.
+            permlink_subquery={this.state}
+            action={this.props.action}
           />
           <br className='clear' />
         </div>
@@ -213,4 +216,14 @@ class DrifterWindow extends React.Component {
   }
 }
 
-export default DrifterWindow;
+//***********************************************************************
+DrifterWindow.propTypes = {
+  generatePermLink: PropTypes.func,
+  drifter: PropTypes.array,
+  quantum: PropTypes.string,
+  dataset: PropTypes.string,
+  onUpdate: PropTypes.func,
+  init: PropTypes.object,
+  variable: PropTypes.string,
+  action: PropTypes.func,
+};

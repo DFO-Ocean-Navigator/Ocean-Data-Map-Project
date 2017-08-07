@@ -1,6 +1,24 @@
+.multimap {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+
+    .Map {
+        width: 100%;
+
+        > div {
+            position: relative;
+            max-height: 100%;
+            max-width: 100%;
+        }
+    }
+}
 .Map {
     position: relative;
     cursor: crosshair;
+    border-left: 5px solid #008cba;
+    border-right: 5px solid #008cba;
 
     > div {
         height: 100%;
@@ -55,7 +73,6 @@
     .ol-popup {
         opacity: 0.95;
         padding: 0.5em;
-        border-radius: 5px;
         line-height: 1.5;
         -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.25));
         filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));

@@ -104,10 +104,9 @@ Javascript is a dynamically-typed language so it's super important to have clear
 * Try to avoid massive `if` chains. Obviously the most important thing is to get a feature/bugfix working. However if it results in a whole bunch of nested `if` statements, or `if`-`for`-`if`-`else`, etc., try to take that working result and incorporate perhaps a `switch`, or hashtable to make your solution cleaner, and more performant. If it's unavoidable, a well-placed comment would reduce the likelihood of a fellow developer trying to optimize it.
 
 ### Coding Style (Python)
+Coming soon...
 
-Coming soon <3
-
-### Setting up Javascript environment
+### Setting up the Javascript environment
 * Run the following commands to install NodeJS:
 	* `sudo	apt	install	python-software-properties curl`
 	* `curl	-sL	https://deb.nodesource.com/setup_4.x | sudo	-E bash -`

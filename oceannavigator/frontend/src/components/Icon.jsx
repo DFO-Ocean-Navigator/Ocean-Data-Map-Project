@@ -1,21 +1,23 @@
 import React from "react";
 import FontAwesome from "react-fontawesome";
+import PropTypes from "prop-types";
+
 require("font-awesome/scss/font-awesome.scss");
 
-class Icon extends React.Component {
+export default class Icon extends React.Component {
   render() {
-    var alt = null;
-    if (this.props.alt) {
-      alt = <span className="alt"> {this.props.alt}</span>;
-    }
     return (
-            <span className='Icon' title={this.props.alt}>
-                <FontAwesome name={this.props.icon} />
-                {alt}
-            </span>
+      <span className='Icon' title={this.props.alt}>
+        <FontAwesome name={this.props.icon} />
+        <span className="alt"> {this.props.alt}</span>
+      </span>
     );
   }
 }
 
-export default Icon;
+//***********************************************************************
+Icon.propTypes = {
+  alt: PropTypes.string.isRequired,
+  icon: PropTypes.string.isRequired,
+};
 

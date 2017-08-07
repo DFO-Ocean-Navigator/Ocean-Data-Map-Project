@@ -1,10 +1,11 @@
 import React from "react";
 import {Alert} from "react-bootstrap";
 import CoordInputPanel from "./CoordInputPanel.jsx";
+import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-class EnterLine extends React.Component {
+export default class EnterLine extends React.Component {
   constructor(props) {
     super(props);
 
@@ -22,11 +23,11 @@ class EnterLine extends React.Component {
     switch (id) {
       case "start":
         newState.line.startCoord[0] = state.coordinate[0]; // Lat
-        newState.line.startCoord[1] = -state.coordinate[1]; // Long needs to be negated 
+        newState.line.startCoord[1] = state.coordinate[1]; // Long
         break;
       case "end":
         newState.line.endCoord[0] = state.coordinate[0];
-        newState.line.endCoord[1] = -state.coordinate[1];
+        newState.line.endCoord[1] = state.coordinate[1];
         break;
     }
 
@@ -37,7 +38,7 @@ class EnterLine extends React.Component {
   render() {
     return (
       <div className="EnterLine">
-        <Alert bsStyle="info">
+        <Alert bsStyle="warning">
           {_("Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
         <CoordInputPanel
@@ -55,4 +56,7 @@ class EnterLine extends React.Component {
   }
 }
 
-export default EnterLine;
+//***********************************************************************
+EnterLine.propTypes = {
+  setCoordData: PropTypes.func,
+};

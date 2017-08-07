@@ -1,6 +1,7 @@
 import abc
 import numpy as np
 import geo
+from scipy.interpolate import interp1d
 
 __author__ = 'Geoff Holden'
 
@@ -49,6 +50,33 @@ class Data(object):
     @abc.abstractmethod
     def get_raw_point(self, latitude, longitude, depth, time, variable):
         pass
+
+    def get_profile_depths(self, latitude, longitude, time, variable, depths):
+        profile, orig_dep = self.get_profile(
+            latitude, longitude, time, variable
+        )
+
+        if not hasattr(latitude, "__len__"):
+            latitude = [latitude]
+            longitude = [longitude]
+            profile = [profile]
+            orig_dep = [orig_dep]
+
+        depths = np.array(depths)
+        if len(depths.shape) == 1:
+            depths = np.tile(depths, (len(latitude), 1))
+
+        output = []
+        for i in range(0, len(latitude)):
+            f = interp1d(
+                orig_dep[i],
+                profile[i],
+                assume_sorted=True,
+                bounds_error=False,
+            )
+            output.append(f(depths[i]))
+
+        return np.ma.masked_invalid(np.squeeze(output))
 
     def get_path(self, path, depth, time, variable, numpoints=100, times=None,
                  return_depth=False):

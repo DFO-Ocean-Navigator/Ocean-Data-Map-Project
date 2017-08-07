@@ -3,9 +3,11 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ImageSize from "./ImageSize.jsx";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
 
-class Class4Window extends React.Component {
+const i18n = require("../i18n.js");
+
+export default class Class4Window extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -36,7 +38,7 @@ class Class4Window extends React.Component {
   }
 
   render() {
-    var plot_query = {
+    const plot_query = {
       type: "class4",
       forecast: this.state.forecast,
       class4id: this.props.class4id,
@@ -47,7 +49,7 @@ class Class4Window extends React.Component {
       dpi: this.state.dpi,
       models: this.state.models,
     };
-    var error_options = [
+    const error_options = [
       {
         id: "none",
         value: _("None"),
@@ -68,6 +70,7 @@ class Class4Window extends React.Component {
     _("Additional Models");
     _("Show Error");
     _("Saved Image Size");
+
     return (
       <div className='Class4Window Window'>
         <div className='content'>
@@ -119,8 +122,10 @@ class Class4Window extends React.Component {
               title={_("Saved Image Size")} />
           </div>
           <PlotImage
-            query={plot_query}
-            permlink={this.props.generatePermLink(this.state)}/>
+            query={plot_query} // For image saving link.
+            permlink_subquery={this.state}
+            action={this.props.action}
+          />
           <br className='clear' />
         </div>
       </div>
@@ -128,4 +133,10 @@ class Class4Window extends React.Component {
   }
 }
 
-export default Class4Window;
+//***********************************************************************
+Class4Window.propTypes = {
+  generatePermLink: PropTypes.func,
+  class4id: PropTypes.array,
+  init: PropTypes.object,
+  action: PropTypes.func,
+};

@@ -1,9 +1,12 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
-var i18n = require("../i18n.js");
+import Icon from "./Icon.jsx";
+import PropTypes from "prop-types";
 
-class NumberBox extends React.Component {
+const i18n = require("../i18n.js");
+
+export default class NumberBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -69,7 +72,7 @@ class NumberBox extends React.Component {
             {this.props.children}
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.closeHelp.bind(this)}>{_("Close")}</Button>
+            <Button onClick={this.closeHelp.bind(this)}><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -95,4 +98,10 @@ class NumberBox extends React.Component {
   }
 }
 
-export default NumberBox;
+//***********************************************************************
+NumberBox.propTypes = {
+  id: PropTypes.string,
+  title: PropTypes.string,
+  onUpdate: PropTypes.func,
+  state: PropTypes.number,
+};
