@@ -216,8 +216,7 @@ export default class PlotImage extends React.Component {
     } else {
       src = this.state.url;
     }
-
-  
+    
     const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
