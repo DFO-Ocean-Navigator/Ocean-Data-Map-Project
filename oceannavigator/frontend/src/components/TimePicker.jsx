@@ -16,12 +16,11 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-const i18n = require("../i18n.js");
+var i18n = require("../i18n.js");
 
 class TimePicker extends React.Component {
   constructor(props) {
     super(props);
-    
     this.state = {
       data: [],
       map: {},
@@ -30,7 +29,6 @@ class TimePicker extends React.Component {
     };
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
   }
-
   populate(props) {
     if ("url" in props && "" != props.url) {
       $.ajax({
@@ -54,7 +52,7 @@ class TimePicker extends React.Component {
               max += data.length;
             }
           }
-          for (let d in data) {
+          for (var d in data) {
             var d1 = new Date(data[d].value);
             var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
             var d3 = d2;
@@ -69,7 +67,6 @@ class TimePicker extends React.Component {
             map[data[d].id] = d2;
             revmap[d3.toUTCString()] = data[d].id;
           }
-
           this.setState({
             data: data,
             map: map,
@@ -160,11 +157,9 @@ class TimePicker extends React.Component {
       });
     }
   }
-
   componentDidMount() {
     this.populate(this.props);
   }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.url != this.props.url ||
             nextProps.min != this.props.min ||
@@ -172,7 +167,6 @@ class TimePicker extends React.Component {
       this.populate(nextProps);
     }
   }
-
   pickerChange() {
     var min = 0;
     var max = -1;
@@ -194,7 +188,7 @@ class TimePicker extends React.Component {
       var times = [];
       d = $(this.refs.picker).datepicker("getDate");
       var isodatestr = dateFormat(d, "yyyy-mm-dd");
-      for (let i in this.state.data) {
+      for (var i in this.state.data) {
         if (this.state.data[i].value.indexOf(isodatestr) == 0) {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
             times.unshift({
@@ -250,7 +244,6 @@ class TimePicker extends React.Component {
       }
     }
   }
-
   timeChange(e) {
     var value = e.target.value;
     this.setState({
@@ -258,7 +251,6 @@ class TimePicker extends React.Component {
     });
     this.props.onUpdate(this.props.id, value);
   }
-
   nextTime() {
     var value = parseInt(this.props.state) + 1;
     this.props.onUpdate(this.props.id, value);
@@ -268,7 +260,6 @@ class TimePicker extends React.Component {
       this.updatePicker(value - 1, value);
     }.bind(this));
   }
-
   prevTime() {
     var value = parseInt(this.props.state) - 1;
     this.setState({
@@ -278,22 +269,18 @@ class TimePicker extends React.Component {
     }.bind(this));
     this.props.onUpdate(this.props.id, value);
   }
-
   updatePicker(oldstate, newstate) {
     if (this.state.data[oldstate].value.substring(0, 10) !=
       this.state.data[newstate].value.substring(0, 10)) {
       this.pickerChange();
     }
   }
-  
   isFirstTime() {
     return parseInt(this.props.state) == this.state.min;
   }
-
   isLastTime() {
     return parseInt(this.props.state) == this.state.max;
   }
-
   render() {
     var date;
     var value = parseInt(this.props.state);

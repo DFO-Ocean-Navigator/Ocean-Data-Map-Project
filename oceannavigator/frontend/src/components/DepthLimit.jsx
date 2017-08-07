@@ -1,8 +1,6 @@
 import React from "react";
 import NumberBox from "./NumberBox.jsx";
-import {Checkbox} from "react-bootstrap";
-
-const i18n = require("../i18n.js");
+var i18n = require("../i18n.js");
 
 class DepthLimit extends React.Component {
   constructor(props) {
@@ -20,7 +18,6 @@ class DepthLimit extends React.Component {
       };
     }
   }
-  
   enableChecked(e) {
     this.setState({
       limit: e.target.checked,
@@ -31,15 +28,12 @@ class DepthLimit extends React.Component {
       this.props.onUpdate(this.props.id, false);
     }
   }
-
   onUpdate(key, value) {
     this.props.onUpdate(this.props.id, value);
   }
-
   updateParent() {
     this.props.onUpdate(this.props.id, this.state.value);
   }
-
   render() {
     _("Depth Limit");
     _("Limit Depth");
@@ -47,10 +41,11 @@ class DepthLimit extends React.Component {
       <div className='DepthLimit input'>
         <h1>{_("Depth Limit")}</h1>
 
-        <Checkbox onChange={this.enableChecked.bind(this)}>
+        <label className="forcheckbox">
+          <input type="checkbox" onChange={this.enableChecked.bind(this)}/>
           {_("Limit Depth")}
-        </Checkbox>
-        <div style={{ "display": this.state.limit ? "block" : "none" }}>
+        </label>
+        <div style={{"display": this.state.limit ? "block" : "none"}}>
           <NumberBox
             key='depth'
             id='depth'
