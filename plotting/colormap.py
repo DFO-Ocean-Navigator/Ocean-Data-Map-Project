@@ -10,11 +10,11 @@ from flask_babel import gettext
 
 
 def make_colormap(seq):
-    """Return a LinearSegmentedColormap
-    seq: a sequence of floats and RGB-tuples. The floats should be increasing
-    and in the interval (0,1).
-
-    http://stackoverflow.com/a/16836182
+    """
+    Return a LinearSegmentedColormap: http://stackoverflow.com/a/16836182
+    Args:
+        seq: a sequence of floats and RGB-tuples. The floats should be increasing
+        and in the interval (0,1).
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}

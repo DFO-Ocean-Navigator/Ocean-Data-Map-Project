@@ -1,27 +1,32 @@
 import React from "react";
+import {Checkbox} from "react-bootstrap";
+import PropTypes from "prop-types";
 
-class SelectBox extends React.Component {
+export default class SelectBox extends React.Component {
   handleChange(e) {
     this.props.onUpdate(this.props.id, e.target.checked);
   }
+  
   render() {
     return (
-      <div className='SelectBox input'>
-        <div>
-          <label className='forcheckbox'>
-            <input
-              type='checkbox'
-              id={this.props.id}
-              onChange={this.handleChange.bind(this)}
-              checked={this.props.state}
-            />
-            {this.props.title}
-          </label>
-        </div>
-      </div>
+      <Checkbox
+        id={this.props.id} 
+        onChange={this.handleChange.bind(this)}
+        checked={this.props.state}
+        style={this.props.style}
+      >
+        {this.props.title}
+      </Checkbox>
     );
   }
 }
 
-export default SelectBox;
+//***********************************************************************
+SelectBox.propTypes = {
+  title: PropTypes.string,
+  state: PropTypes.bool,
+  id: PropTypes.string,
+  onUpdate: PropTypes.func,
+  style: PropTypes.object,
+};
 

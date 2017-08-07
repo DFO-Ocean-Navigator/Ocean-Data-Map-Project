@@ -1,30 +1,68 @@
+.multimap {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+
+    .Map {
+        width: 100%;
+
+        > div {
+            position: relative;
+            max-height: 100%;
+            max-width: 100%;
+        }
+    }
+}
 .Map {
     position: relative;
+    cursor: crosshair;
+    border-left: 5px solid #008cba;
+    border-right: 5px solid #008cba;
 
     > div {
         height: 100%;
         position: fixed;
         width: 100%;
         max-height: calc(100% - #{$toolbar-height});
-        max-width: calc(100% - #{$sidebar-width});
     }
 
+    // Map scale
     .scale-viewer {
         top: 0.5em;
-        right: 0.5em;
+        left: 0.5em;
         background-color: transparent;
+        opacity: 0.95;
+        cursor: default;
 
         :hover {
-            background-color: transparent;
+            background-color: none!important;
+            cursor: default;
         }
     }
 
+    // Zoom controls
+    .ol-zoom {
+        left: 7.25em;
+        opacity: 0.95;
+        border-radius: 0;
+        cursor: default;
+    }
+
+    .ol-zoom-in, .ol-zoom-out {
+        opacity: 0.95!important;
+        border-radius: 0;
+    }
+
+    // Mouse coordinates
     .ol-mouse-position {
         top: inherit;
         bottom: 0;
         left: 0;
         right: inherit;
         background-color: white;
+        opacity: 0.95;
+        cursor: default;
 
         div {
             display: block;
@@ -33,14 +71,17 @@
     }
 
     .ol-popup {
+        opacity: 0.95;
+        padding: 0.5em;
+        line-height: 1.5;
+        -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.25));
+        filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));
+
+        // Plotted data tooltip
         &.title {
             position: relative;
-            background-color: $tooltip-color;
-            filter: drop-shadow(1px 1px 4px rgba(0,0,0,0.4));
-            padding: 0.25em;
-            color: white;
+            background-color: #fff;
             min-height: $tooltip-height;
-            border-radius: 5px;
             text-align: center;
 
             span {
@@ -58,22 +99,20 @@
 
                 border-left: $tooltip-arrow-size solid transparent;
                 border-right: $tooltip-arrow-size solid transparent;
-                border-top:$tooltip-arrow-size solid $tooltip-color;
+                border-top:$tooltip-arrow-size solid #fff;
                 bottom: -$tooltip-arrow-size;
                 right: calc(50% - #{$tooltip-arrow-size});
             }
         }
 
+        // Click popup
         &.ballon {
             position: absolute;
-            background-color: white;
-            -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #cccccc;
+            background-color: #fff;
+            padding: 0.75em;
             bottom: 12px;
             left: -50px;
+            cursor: text;
 
             &:before, &:after {
 				top: 100%;
@@ -86,14 +125,14 @@
             }
 
             &:before {
-                border-top-color: #cccccc;
+                border-top-color: #fff;
                 border-width: 11px;
                 left: 48px;
                 margin-left: -11px;
             }
 
             &:after {
-                border-top-color: white;
+                border-top-color: #fff;
                 border-width: 10px;
                 left: 48px;
                 margin-left: -10px;
@@ -102,8 +141,8 @@
             a {
                 text-decoration: none;
                 position: absolute;
-                top: 2px;
-                right: 8px;
+                top: 5px;
+                right: 5px;
 
                 &:after {
                     content: "✖";
@@ -130,6 +169,7 @@
         border-radius: 0;
         font-size: 0.5em;
         max-width: 75%;
+        cursor: default;
 
         &.ol-uncollapsible {
             height: auto;

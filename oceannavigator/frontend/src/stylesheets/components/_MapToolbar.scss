@@ -1,20 +1,14 @@
+.navbar {
+    margin-bottom: 0;
+    font-size: 16px!important;
+}
 
-.MapToolbar {
+.navbar .dropdown-menu > li > a, .navbar .dropdown-menu > li > a {
+    font-size: 14px;
+}
+
+@media (min-width: 1200px) {
+.container {
     width: 100%;
-    min-height: $toolbar-height;
-    background-color: $toolbar-color;
-    padding: 0 0.25em;
-
-    button {
-        height: calc(#{$toolbar-height} - 0.2em);
-    }
-
-    > div, > button, > span {
-        margin: 0.25em;
-    }
-
-    .dropdown-menu {
-        max-height: calc(100vh - #{2 * $toolbar-height});
-        overflow-y: auto;
-    }
+}
 }

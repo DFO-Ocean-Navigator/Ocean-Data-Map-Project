@@ -18,6 +18,7 @@ import contextlib
 from PIL import Image
 
 
+# Base class for all plotting objects
 class Plotter:
     __metaclass__ = ABCMeta
 
@@ -34,6 +35,8 @@ class Plotter:
             self.filetype
         )
 
+    # Called by views.py to parse query, load data, and return the generated file
+    # to be displayed by Javascript.
     def run(self, **kwargs):
         if 'size' in kwargs and kwargs.get('size') is not None:
             self.size = kwargs.get('size')
@@ -51,6 +54,7 @@ class Plotter:
         else:
             return self.plot()
 
+    # Receives query sent from javascript and parses it.
     @abstractmethod
     def parse_query(self, query):
         quantum = query.get('quantum')
@@ -90,15 +94,18 @@ class Plotter:
         if isinstance(variables, str) or isinstance(variables, unicode):
             variables = variables.split(',')
 
-        variables = filter(lambda v: v != '', variables)
+        self.variables = filter(lambda v: v != '', variables)
 
-        self.variables_anom = variables
-        self.variables = [re.sub('_anom$', '', v) for v in variables]
+        if query.get("compare_to") is not None:
+            self.compare = query.get("compare_to")
+            self.compare['variables'] = self.compare['variable'].split(',')
+        else:
+            self.compare = False
 
         cmap = query.get('colormap')
         if cmap is not None:
             cmap = colormap.colormaps.get(cmap)
-        if cmap is None and self.variables != self.variables_anom:
+        if cmap is None and self.compare:
             cmap = colormap.colormaps['anomaly']
         self.cmap = cmap
 
@@ -247,8 +254,6 @@ class Plotter:
         for idx, v in enumerate(variables):
             names.append(get_variable_name(self.dataset_name,
                                            dataset.variables[v]))
-            if self.variables_anom[idx] != self.variables[idx]:
-                names[idx] = names[idx] + " Anomaly"
 
         return names
 
@@ -317,12 +322,16 @@ class Plotter:
         )
         return re.sub(r" +", " ", n)
 
+    # Convert Kelvin to Celsius
     def kelvin_to_celsius(self, unit, data):
         ureg = pint.UnitRegistry()
         try:
             u = ureg.parse_units(unit.lower())
         except:
             u = ureg.dimensionless
+
+        if u == ureg.boltzmann_constant:
+            u = ureg.kelvin
 
         if u == ureg.kelvin:
             unit = "Celsius"

@@ -1,10 +1,12 @@
 import React from "react";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
 
-var LOADING_IMAGE = require("../images/spinner.gif");
-var FAIL_IMAGE = require("./fail.js");
+const i18n = require("../i18n.js");
 
-class StatsTable extends React.Component {
+const LOADING_IMAGE = require("../images/spinner.gif");
+const FAIL_IMAGE = require("./fail.js");
+
+export default class StatsTable extends React.Component {
   constructor(props) {
     super(props);
 
@@ -146,4 +148,7 @@ class StatsTable extends React.Component {
   }
 }
 
-export default StatsTable;
+//***********************************************************************
+StatsTable.propTypes = {
+  query: PropTypes.object,
+};

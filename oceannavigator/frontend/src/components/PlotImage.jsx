@@ -5,12 +5,15 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
-var i18n = require("../i18n.js");
+import Permalink from "./Permalink.jsx";
+import PropTypes from "prop-types";
 
-var LOADING_IMAGE = require("../images/spinner.gif");
-var FAIL_IMAGE = require("./fail.js");
+const i18n = require("../i18n.js");
 
-class PlotImage extends React.Component {
+const LOADING_IMAGE = require("../images/spinner.gif");
+const FAIL_IMAGE = require("./fail.js");
+
+export default class PlotImage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -27,19 +30,19 @@ class PlotImage extends React.Component {
   }
 
   loadImage(query) {
-    var paramString = $.param({
+    const paramString = $.param({
       query: JSON.stringify(query),
       format: "json",
     });
 
     if (this.state.paramString != paramString) {
       this.setState({
-        loading: true,
-        fail: false,
+        loading: true, 
+        fail: false, 
         paramString: paramString,
       });
 
-      var promise = $.ajax({
+      const promise = $.ajax({
         url: "/plot/",
         cache: true,
         data: paramString,
@@ -66,7 +69,7 @@ class PlotImage extends React.Component {
   }
 
   generateQuery(q) {
-    var query = {
+    const query = {
       type: q.type,
       dataset: q.dataset,
       quantum: q.quantum,
@@ -100,6 +103,15 @@ class PlotImage extends React.Component {
         query.linearthresh = q.linearthresh;
         query.name = q.name;
         query.depth_limit = q.depth_limit;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+          };
+        }
         break;
       case "hovmoller":
         query.variable = q.variable;
@@ -124,6 +136,16 @@ class PlotImage extends React.Component {
         query.quiver = q.quiver;
         query.contour = q.contour;
         query.showarea = q.showarea;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+            depth: q.compare_to.depth,
+          };
+        }
         break;
       case "drifter":
         query.variable = q.variable;
@@ -160,12 +182,12 @@ class PlotImage extends React.Component {
   }
 
   urlFromQuery(q) {
-    var query = this.generateQuery(q);
+    const query = this.generateQuery(q);
     return "/plot/?query=" + encodeURIComponent(JSON.stringify(query));
   }
 
   saveImage(key) {
-    var url = `${this.urlFromQuery(this.props.query)}` +
+    const url = `${this.urlFromQuery(this.props.query)}` +
       `&save&format=${key}&size=${this.props.query.size}` +
       `&dpi=${this.props.query.dpi}`;
     window.location.href = url;
@@ -174,7 +196,7 @@ class PlotImage extends React.Component {
   getLink(key) {
     switch(key) {
       case "web":
-        this.setState({showPermalink: true});
+        this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
         this.setState({showImagelink: true});
@@ -184,19 +206,18 @@ class PlotImage extends React.Component {
 
   render() {
     var src = "";
+    var infoStatus = "";
     if (this.state.fail) {
       src = FAIL_IMAGE;
+      infoStatus = _("Failed to retrieve image.");
     } else if (this.state.loading) {
       src = LOADING_IMAGE;
+      infoStatus = _("Loading. Please wait...");
     } else {
       src = this.state.url;
     }
-
-    var permalinkModalEntered = function() {
-      this.permalinkbox.style.height = this.permalinkbox.scrollHeight + 5 + "px";
-      this.permalinkbox.select();
-    }.bind(this);
-    var imagelinkModalEntered = function() {
+    
+    const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
     }.bind(this);
@@ -204,16 +225,24 @@ class PlotImage extends React.Component {
     return (
       <div className='PlotImage'>
         <img src={src} />
+        <br />
+        <label>{infoStatus}</label>
+        <br />
+        <br />
         <ButtonToolbar>
           <DropdownButton
             id="save"
-            title={<span><Icon icon="save" /> {_("Save…")}</span>}
+            title={<span><Icon icon="save" /> {_("Save Image")}</span>}
             dropup
+            disabled={this.state.fail || this.state.loading}
             onSelect={this.saveImage.bind(this)}
           >
             <MenuItem
               eventKey="png"
             ><Icon icon="file-image-o" /> PNG</MenuItem>
+            <MenuItem
+              eventKey="jpeg"
+            ><Icon icon="file-image-o" /> JPG</MenuItem>
             <MenuItem
               eventKey="pdf"
             ><Icon icon="file-pdf-o" /> PDF</MenuItem>
@@ -252,6 +281,8 @@ class PlotImage extends React.Component {
             id="link"
             title={<span><Icon icon="link" /> {_("Get Link")}</span>}
             dropup
+            bsStyle={this.state.fail ? "primary" : "default"}
+            disabled={this.state.loading}
             onSelect={this.getLink.bind(this)}
           >
             <MenuItem
@@ -259,45 +290,10 @@ class PlotImage extends React.Component {
             ><Icon icon="globe" /> Web</MenuItem>
             <MenuItem
               eventKey="image"
+              disabled={this.state.fail}
             ><Icon icon="file-image-o" /> Image</MenuItem>
           </DropdownButton>
         </ButtonToolbar>
-
-        <Modal
-          show={this.state.showPermalink}
-          onHide={() => this.setState({showPermalink: false})}
-          dialogClassName='permalink-modal'
-          onEntered={permalinkModalEntered}>
-          <Modal.Header closeButton>
-            <Modal.Title>{_("Share Link")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <textarea
-              ref={(t) => this.permalinkbox = t}
-              type="text"
-              id="permalink_area"
-              readOnly
-              value={this.props.permlink}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={function() {
-                this.permalinkbox.select();
-                document.execCommand("copy");
-                if ($("html").hasClass("ie")) {
-                  var copied = window.clipboardData.getData("Text");
-                  if (copied != this.permalinkbox.value) {
-                    alert(_("Clipboard access was denied. Please right-click and copy the link manually."));
-                  }
-                }
-              }.bind(this)}
-            ><Icon icon="copy" /> {_("Copy")}</Button>
-            <Button
-              onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
 
         <Modal
           show={this.state.showImagelink}
@@ -337,4 +333,12 @@ class PlotImage extends React.Component {
   }
 }
 
-export default PlotImage;
+//***********************************************************************
+PlotImage.propTypes = {
+  query: PropTypes.object,
+  dpi: PropTypes.string,
+  size: PropTypes.string,
+  permlink: PropTypes.string,
+  action: PropTypes.func,
+  permlink_subquery: PropTypes.object,
+};

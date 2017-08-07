@@ -79,7 +79,7 @@ class ProfilePlotter(point.PointPlotter):
             ax[idx].set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])))
-            if self.variables[idx] != self.variables_anom[idx]:
+            if self.compare:
                 xlim = np.abs(ax[idx].get_xlim()).max()
                 ax[idx].set_xlim([-xlim, xlim])
 
@@ -118,6 +118,6 @@ class ProfilePlotter(point.PointPlotter):
                 point_data
             )
 
-        self.data = self.subtract_climatology(point_data, timestamp)
+        self.data = self.subtract_other(point_data)
         self.depths = point_depths
         self.timestamp = timestamp

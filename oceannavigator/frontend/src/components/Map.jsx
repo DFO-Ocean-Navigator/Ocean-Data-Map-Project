@@ -1,45 +1,48 @@
 import React from "react";
 import ol from "openlayers";
+import PropTypes from "prop-types";
+
 require("openlayers/css/ol.css");
-var proj4 = require("proj4/lib/index.js");
-var i18n = require("../i18n.js");
-var SmartPhone = require("detect-mobile-browser")(false);
+
+const proj4 = require("proj4/lib/index.js").default;
+const i18n = require("../i18n.js");
+const SmartPhone = require("detect-mobile-browser")(false);
 
 ol.proj.setProj4(proj4);
 
-var X_IMAGE = require("../images/x.png");
+const X_IMAGE = require("../images/x.png");
 
 var app = {};
-var COLORS = [
-    [ 0, 0, 255 ],
-    [ 0, 128, 0 ],
-    [ 255, 0, 0 ],
-    [ 0, 255, 255 ],
-    [ 255, 0, 255 ],
-    [ 255, 255, 0 ],
-    [ 0, 0, 0 ],
-    [ 255, 255, 255 ],
+const COLORS = [
+  [ 0, 0, 255 ],
+  [ 0, 128, 0 ],
+  [ 255, 0, 0 ],
+  [ 0, 255, 255 ],
+  [ 255, 0, 255 ],
+  [ 255, 255, 0 ],
+  [ 0, 0, 0 ],
+  [ 255, 255, 255 ],
 ];
 
-var DEF_CENTER = {
+const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
   "EPSG:32661": [0, 90],
   "EPSG:3031": [0, -90],
 };
 
-var DEF_ZOOM = {
+const DEF_ZOOM = {
   "EPSG:3857": 4,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MIN_ZOOM = {
+const MIN_ZOOM = {
   "EPSG:3857": 1,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
 
-var MAX_ZOOM = {
+const MAX_ZOOM = {
   "EPSG:3857": 8,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
@@ -48,12 +51,14 @@ var MAX_ZOOM = {
 var drifter_color = {};
 
 app.ScaleViewer = function(opt_options) {
-  var options = opt_options || {};
+  const options = opt_options || {};
 
-  var scale = document.createElement("img");
+  const scale = document.createElement("img");
   scale.setAttribute("src", options.image);
+  scale.setAttribute("alt", "Variable Scale");
+  scale.setAttribute("title", "Variable Scale");
 
-  var element = document.createElement("div");
+  const element = document.createElement("div");
   element.className = "scale-viewer ol-unselectable ol-control";
   element.appendChild(scale);
 
@@ -84,49 +89,7 @@ proj3031.setExtent([
   3087442.345821846
 ]);
 
-
-class Map extends React.Component {
-  getBasemap(source, projection, attribution) {
-    switch(source) {
-      case "topo":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
-            projection: projection,
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-      case "ocean":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-      case "world":
-        return new ol.layer.Tile({
-          source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-            attributions: [
-              new ol.Attribution({
-                html: attribution,
-              })
-            ],
-          })
-        });
-    }
-  }
-
+export default class Map extends React.Component {
   constructor(props) {
     super(props);
 
@@ -147,7 +110,7 @@ class Map extends React.Component {
               featureProjection: this.props.state.projection,
             });
             var featToAdd = [];
-            for (var feat of features) {
+            for (let feat of features) {
               var id = feat.get("name");
               feat.setId(id);
               if (feat.get("error") != null) {
@@ -197,7 +160,7 @@ class Map extends React.Component {
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
-        opacity: 0.5,
+        opacity: this.props.state.bathymetryOpacity,
         visible: this.props.state.bathymetry,
       });
     this.layer_vector = new ol.layer.Vector(
@@ -249,7 +212,8 @@ class Map extends React.Component {
               });
             }
 
-            var styles = [
+            // Map drawing tool style
+            const styles = [
               new ol.style.Style({
                 stroke: new ol.style.Stroke({
                   color: [color[0], color[1], color[2], 0.004],
@@ -283,8 +247,8 @@ class Map extends React.Component {
 
             return styles;
           } else if (feat.get("type") == "class4") {
-            var red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
-            var green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
+            const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
+            const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
             return new ol.style.Style({
               image: new ol.style.Circle({
                 radius: SmartPhone.isAny() ? 6 : 4,
@@ -350,6 +314,10 @@ class Map extends React.Component {
       var extent = this.mapView.calculateExtent(this.map.getSize());
       this.props.updateState("extent", extent);
       this.map.render();
+      if (this.props.partner) {
+        this.props.partner.mapView.setCenter(this.mapView.getCenter());
+        this.props.partner.mapView.setZoom(this.mapView.getZoom());
+      }
     }.bind(this));
 
     var center = [-50, 53];
@@ -575,6 +543,64 @@ class Map extends React.Component {
     }.bind(this));
   }
 
+  getBasemap(source, projection, attribution) {
+    switch(source) {
+      case "topo":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
+            projection: projection,
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+      case "ocean":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+      case "world":
+        return new ol.layer.Tile({
+          source: new ol.source.XYZ({
+            url: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+            attributions: [
+              new ol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
+    }
+  }
+
+  componentWillMount() {
+    // Renders a map drawing from the data saved in a permalink
+    if (typeof(this.props.state.modal) === "string") {
+      switch (this.props.state.modal) {
+        case "point":
+          this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
+          break;
+        case "line":
+          this.add(this.props.state.modal, this.props.state.line[0]);
+          break;
+        case "area":
+          this.add(this.props.state.modal, this.props.state.area[0].polygons[0]);
+          break;
+      }
+    }
+  }
+
   componentDidMount() {
     this.overlay = new ol.Overlay({
       element: this.popupElement,
@@ -598,6 +624,13 @@ class Map extends React.Component {
       this.infoPopupCloser.blur();
       return false;
     }.bind(this);
+
+    // Tracks if this component is mounted
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   resetMap() {
@@ -645,14 +678,18 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "Point",
     });
     draw.set("type", "Point");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection,"EPSG:4326");
+      const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      // Draw point on map(s)
+      this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      // Pass point to PointWindow
       this.props.action("point", lonlat);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -672,17 +709,23 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "LineString"
     });
     draw.set("type", "LineString");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var points = e.feature.getGeometry().getCoordinates().map(function (c) {
-        var lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
-        return [lonlat[1], lonlat[0]];
-      }.bind(this));
+      const points = e.feature.getGeometry().getCoordinates().map(
+        function (c) {
+          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
+          return [lonlat[1], lonlat[0]];
+        }.bind(this)
+      );
+      // Draw line(s) on map(s)
+      this.props.action("add", "line", points);
+      // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -702,27 +745,28 @@ class Map extends React.Component {
     this.drawing = true;
 
     this.resetMap();
-    var draw = new ol.interaction.Draw({
+    const draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "Polygon"
     });
     draw.set("type", "Polygon");
     draw.on("drawend", function(e) {
+      // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      var points = e.feature.getGeometry().getCoordinates()[0].map(
+      const points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
-          var lonlat = ol.proj.transform(
-            c,
-            this.props.state.projection,"EPSG:4326"
-          );
+          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
-      var area = {
+      const area = {
         polygons: [points],
         innerrings: [],
         name: "",
       };
+      // Draw area on map(s)
+      this.props.action("add", "area", points);
+      // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
       this.drawing = false;
@@ -735,18 +779,18 @@ class Map extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var datalayer = this.map.getLayers().getArray()[1];
-    var old = datalayer.getSource();
-    var props = old.getProperties();
-    props["url"] = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.state.scale}/{z}/{x}/{y}.png`;
-    props["projection"] = this.props.state.projection;
-    props["attributions"] = [
+    const datalayer = this.map.getLayers().getArray()[1];
+    const old = datalayer.getSource();
+    const props = old.getProperties();
+    props.url = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
+    props.projection = this.props.state.projection;
+    props.attributions = [
       new ol.Attribution({
         html: this.props.state.dataset_attribution,
       }),
     ];
 
-    var newSource = new ol.source.XYZ(props);
+    const newSource = new ol.source.XYZ(props);
 
     datalayer.setSource(newSource);
 
@@ -757,7 +801,7 @@ class Map extends React.Component {
       image: (
         `/scale/${this.props.state.dataset}` +
         `/${this.props.state.variable}` +
-        `/${this.props.state.scale}.png`
+        `/${this.props.scale}.png`
       )
     });
     this.map.addControl(this.scaleViewer);
@@ -807,7 +851,7 @@ class Map extends React.Component {
       this.map.getLayers().setAt(0, this.layer_basemap);
     }
 
-    for (var prop of ["projection", "dataset", "variable", "depth", "time"]) {
+    for (let prop of ["projection", "dataset", "variable", "depth", "time"]) {
       if (prevProps.state[prop] != this.props.state[prop]) {
         this.infoOverlay.setPosition(undefined);
         break;
@@ -875,13 +919,15 @@ class Map extends React.Component {
   }
 
   add(type, data, name) {
-    this.resetMap();
+    if (this._mounted) {
+      this.resetMap();
+    }
 
     var geom;
     var feat;
     switch(type) {
       case "point":
-        for (var c of data) {
+        for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
@@ -908,7 +954,7 @@ class Map extends React.Component {
         geom = new ol.geom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
-        var centroid = ol.extent.getCenter(geom.getExtent());
+        const centroid = ol.extent.getCenter(geom.getExtent());
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
@@ -919,7 +965,7 @@ class Map extends React.Component {
         this.vectorSource.addFeature(feat);
         break;
       case "observation":
-        for (var p of data) {
+        for (let p of data) {
           geom = new ol.geom.Point([p.longitude, p.latitude]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
@@ -933,7 +979,7 @@ class Map extends React.Component {
         break;
     }
 
-    var viewExtent = this.map.getView().calculateExtent(this.map.getSize());
+    const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
     if (!ol.extent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }
@@ -951,7 +997,7 @@ class Map extends React.Component {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-          <a href="#" ref={(c) => this.infoPopupCloser = c}></a>
+          <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
           <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>
@@ -959,4 +1005,12 @@ class Map extends React.Component {
   }
 }
 
-export default Map;
+//***********************************************************************
+Map.propTypes = {
+  state: PropTypes.object,
+  projection: PropTypes.string,
+  updateState: PropTypes.func,
+  scale: PropTypes.string,
+  action: PropTypes.func,
+  partner: PropTypes.object,
+};

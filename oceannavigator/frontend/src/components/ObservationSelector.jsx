@@ -1,8 +1,10 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-var i18n = require("../i18n.js");
+import PropTypes from "prop-types";
 
-class ObservationSelector extends React.Component {
+const i18n = require("../i18n.js");
+
+export default class ObservationSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -16,6 +18,7 @@ class ObservationSelector extends React.Component {
     };
   }
 
+  // Load data
   componentDidMount() {
     $.ajax({
       url: "/api/observation/meta.json",
@@ -32,12 +35,12 @@ class ObservationSelector extends React.Component {
   }
 
   onUpdate(keys, values) {
-    var newState = {
+    const newState = {
       ship: this.state.ship,
       trip: this.state.trip,
     };
     this.props.select(newState);
-    for (var i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
       newState[keys[i]] = values[i];
     }
 
@@ -45,10 +48,10 @@ class ObservationSelector extends React.Component {
   }
 
   render() {
-    var ship = this.state.data.ship.map(function(o) {
+    const ship = this.state.data.ship.map(function(o) {
       return { id: o, value: o, };
     });
-    var trip = this.state.data.trip.map(function(o) {
+    const trip = this.state.data.trip.map(function(o) {
       return { id: o, value: o, };
     });
     _("Ship");
@@ -80,4 +83,10 @@ class ObservationSelector extends React.Component {
   }
 }
 
-export default ObservationSelector;
+//***********************************************************************
+ObservationSelector.propTypes = {
+  select: PropTypes.func,
+  state: PropTypes.object,
+  ship: PropTypes.array,
+  trip: PropTypes.array,
+};
