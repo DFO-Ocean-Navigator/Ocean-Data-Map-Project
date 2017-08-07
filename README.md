@@ -1,5 +1,12 @@
-Ocean Navigator
-===============
+# Ocean Navigator
+
+## Contents
+* Overview
+* Development
+
+---
+
+## Overview
 
 Ocean Navigator is a Data Visualization tool that enables users to discover and view 3D ocean model output quickly and easily.
 
@@ -32,3 +39,87 @@ The server-side component of the Ocean Navigator is written in Python, using the
 The user interface is written in Javascript using the React framework. This allows for a single-page, responsive application that offloads as much processing from the server onto the user's browser as possible. For example, if the user chooses to load points from a CSV file, the file is parsed in the browser and only necessary parts of the result are sent back to the server for plotting.
 
 The main display uses the OpenLayers mapping API to allow the user to pan around the globe to find the area of interest. It also allows the user to pick an individual point to get more information about, draw a transect on the map, or draw a polygon to extract a map or statistics for an area.
+
+---
+
+## Development
+
+These development notes were created after the primary individiual left this project, so please feel free to suggest new standards that improve code reliability, stability, etc. Also, most of the codebase doesn't reflect these decisions, so a good task would be to bring all the code up to scratch.
+
+### Coding Style (Javascript)
+Javascript is a dynamically-typed language so it's super important to have clear and concise code, that demonstrates it's exact purpose.
+
+* Comment any code whose intention may not be self-evident (safer to have more comments than none at all).
+* Use `var`, `let`, and `const` when identifying variables appropriately:
+	* `var`: scoped to the nearest function block. Modern ES6/Javascript doesn't really use this anymore because it usually leads to scoping conflicts. However, `var` allows re-declaration of a variable.
+	* `let`: new keyword introduced to ES6 standard which is scoped to the *nearest block*. It's very useful when using `for()` loops (and similar), so don't predefine loop variable:
+
+		* Bad:
+			```
+				myfunc() {
+					var i;
+					...
+					// Some code
+					...
+					for (i = 0; i < something; ++i) {
+
+					}
+				}
+			```
+		* Good:
+			```
+				myFunc() {
+					...
+					// Some code
+					...
+					for (let i = 0; i < something; ++i) {
+
+					}
+				}
+			```
+		
+		Keep in mind that `let` *does not* allow re-declaration of a variable.
+
+	* `const`: functionally identical to the `let` keyword, however disallows variable re-assignment. Just like const-correctness in C++, `const` is a great candidate for most variable declarations, as it immediately states that "I am not being changed". This leads to the next rule.
+* Use `const` when declaring l-values with `require()`. Example:
+	```
+		const LOADING_IMAGE = require("../images/bar_loader.gif");
+	```
+* Unless using `for` loops, *DO NOT* use single-letter variables! It's an extreme nuisance for other programmers to understand the intention of the code if functions are littered with variables like: `s`, `t`, etc. Slightly more verbose code that is extremely clear will result in a much lower risk for bugs.
+	* Bad:
+		```
+			$.when(var_promise, time_promise).done(function(v, t) {
+				// Some code
+				...
+			}
+		```
+	* Good:
+		```
+			$.when(var_promise, time_promise).done(function(variable, time) {
+				// Some code
+				...
+			}
+
+		```
+* Try to avoid massive `if` chains. Obviously the most important thing is to get a feature/bugfix working. However if it results in a whole bunch of nested `if` statements, or `if`-`for`-`if`-`else`, etc., try to take that working result and incorporate perhaps a `switch`, or hashtable to make your solution cleaner, and more performant. If it's unavoidable, a well-placed comment would reduce the likelihood of a fellow developer trying to optimize it.
+
+### Coding Style (Python)
+
+Coming soon <3
+
+### Setting up Javascript environment
+* Run the following commands to install NodeJS:
+	* `sudo	apt	install	python-software-properties curl`
+	* `curl	-sL	https://deb.nodesource.com/setup_4.x | sudo	-E bash -`
+	* `sudo	apt install	nodejs`
+	* `sudo npm install -g bower`
+	* `sudo npm install -g npm@next`
+	* `cd oceannavigator/frontend`
+	* `npm install`
+* While altering Javascript code, it can be actively transpiled using:
+	* `cd oceannavigator/frontend`
+	* `npm run dev`
+
+### Running the webserver
+* To run the debug server, execute:
+	* `sudo /opt/tools/anaconda2/bin/python runserver.py`
