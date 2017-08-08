@@ -199,7 +199,9 @@ export default class LineWindow extends React.Component {
             id='dataset_1'
             state={this.props.dataset_1}
             onUpdate={this.props.onUpdate}
-            variables='3d'
+            depth={this.state.selected == 2}
+            variables={this.state.selected == 2 ? "all" : "3d"}
+            time={this.state.selected == 2 ? "range" : "single"}
           />
         </Panel>
       </div>
@@ -238,8 +240,11 @@ export default class LineWindow extends React.Component {
         plot_query.endtime = this.props.time;
         plot_query.starttime = this.state.starttime;
         plot_query.depth = this.props.depth;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+        }
         inputs = [
-          global, dataset
+          global, dataset, compare_dataset
         ];
         break;
     }
