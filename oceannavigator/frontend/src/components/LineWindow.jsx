@@ -20,7 +20,6 @@ export default class LineWindow extends React.Component {
       selected: 1,
       scale: props.scale + ",auto",
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -238,10 +237,16 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.state.starttime;
+        plot_query.starttime = this.props.starttime;
         plot_query.depth = this.props.depth;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = {
+            starttime: this.state.starttime_1,
+            endtime: this.props.dataset_1.time,
+            depth: this.props.dataset_1.depth,
+            dataset: this.props.dataset_1.dataset,
+            variable: this.props.dataset_1.variable,
+          };
         }
         inputs = [
           global, dataset, compare_dataset
@@ -289,6 +294,7 @@ LineWindow.propTypes = {
   dataset_0: PropTypes.object,
   onUpdate: PropTypes.func,
   scale: PropTypes.string,
+  starttime: PropTypes.number,
   init: PropTypes.object,
   action: PropTypes.func,
 };

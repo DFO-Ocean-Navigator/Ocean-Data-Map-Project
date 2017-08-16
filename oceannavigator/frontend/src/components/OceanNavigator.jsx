@@ -36,6 +36,7 @@ export default class OceanNavigator extends React.Component {
       variable_scale: [-5,30], // Default variable range for left/primary view
       depth: 0,
       time: -1,
+      starttime: -1,
       scale: "-5,30", // Variable scale for left/primary view
       scale_1: "-5, 30", // Variable scale for right view
       plotEnabled: false, // "Plot" button in MapToolbar
@@ -108,7 +109,7 @@ export default class OceanNavigator extends React.Component {
     
     // Only updating one value
     if (typeof(key) === "string") {
-      if (this.state[key] == value) {
+      if (this.state[key] === value) {
         // Value hasn't changed
         return;
       }
@@ -125,13 +126,13 @@ export default class OceanNavigator extends React.Component {
           }
           break;
         case "dataset_0":
-          if (value.dataset != this.state.dataset) {
+          if (value.dataset !== this.state.dataset) {
             this.changeDataset(value.dataset, value);
             return;
           } 
           else {
             newState = value;
-            if (value.variable_scale != this.state.scale) {
+            if (value.variable_scale !== this.state.scale) {
               newState.scale = value.variable_scale;
             }
           }
@@ -411,6 +412,7 @@ export default class OceanNavigator extends React.Component {
             variable={this.state.variable}
             depth={this.state.depth}
             time={this.state.time}
+            starttime={this.state.starttime}
             scale={this.state.scale}
             colormap={this.state.colormap}
             names={this.state.names}
