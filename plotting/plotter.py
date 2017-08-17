@@ -87,6 +87,7 @@ class Plotter:
             scale = [float(x) for x in scale.split(',')]
         self.scale = scale
 
+        # Get variables
         variables = query.get('variable')
         if variables is None:
             variables = ['votemper']
@@ -96,12 +97,15 @@ class Plotter:
 
         self.variables = filter(lambda v: v != '', variables)
 
+        # Check if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
             self.compare['variables'] = self.compare['variable'].split(',')
         else:
             self.compare = False
 
+        # Get colormap
+        # TODO: clean this up
         cmap = query.get('colormap')
         if cmap is not None:
             cmap = colormap.colormaps.get(cmap)
