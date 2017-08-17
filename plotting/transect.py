@@ -424,7 +424,7 @@ class TransectPlotter(line.LinePlotter):
             name: subplot title
             cmapLabel: label for colourmap legend
             vmin: minimum value for a variable (grabbed from the lowest value of some data)
-            vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
+            vmax: maxmimum value for a variable (grabbed from the highest value of some data)
             units: units for variable (PSU, Celsius, etc)
             cmap: colormap for variable
         """
@@ -611,13 +611,14 @@ class TransectPlotter(line.LinePlotter):
                     self.cmap
                 )
             
+        # Image title
         fig.suptitle("Transect Data for:\n%s" % (
             self.name
         ), fontsize=15)
 
         # Subplot padding
         fig.tight_layout(pad=2, w_pad=4, h_pad=2)
-        fig.subplots_adjust(top=0.9 if self.compare else 0.8)
+        fig.subplots_adjust(top=0.92 if self.compare else 0.8)
 
         return super(TransectPlotter, self).plot(fig)
 
