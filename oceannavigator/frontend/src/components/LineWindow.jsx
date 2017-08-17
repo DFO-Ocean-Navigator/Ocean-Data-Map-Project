@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem, Panel, Alert} from "react-bootstrap";
+import {Nav, NavItem, Panel} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -20,6 +20,7 @@ export default class LineWindow extends React.Component {
       selected: 1,
       scale: props.scale + ",auto",
       colormap: "default",
+      starttime: Math.max(props.time - 24, 0),
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -95,11 +96,6 @@ export default class LineWindow extends React.Component {
         title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
     */
-
-    const alert = <Alert bsStyle="warning">
-      <strong>Note:</strong> The comparison mode for a Hovmoller Diagram does not currently output any
-      meaningful data. Please check back very soon for a working version.
-      </Alert>
 
     const global = <Panel 
       collapsible
@@ -203,9 +199,7 @@ export default class LineWindow extends React.Component {
             id='dataset_1'
             state={this.props.dataset_1}
             onUpdate={this.props.onUpdate}
-            depth={this.state.selected == 2}
-            variables={this.state.selected == 2 ? "all" : "3d"}
-            time={this.state.selected == 2 ? "range" : "single"}
+            variables='3d'
           />
         </Panel>
       </div>
@@ -242,19 +236,10 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.props.starttime;
+        plot_query.starttime = this.state.starttime;
         plot_query.depth = this.props.depth;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = {
-            starttime: this.state.starttime_1,
-            endtime: this.props.dataset_1.time,
-            depth: this.props.dataset_1.depth,
-            dataset: this.props.dataset_1.dataset,
-            variable: this.props.dataset_1.variable,
-          };
-        }
         inputs = [
-          alert, global, dataset, compare_dataset
+          global, dataset
         ];
         break;
     }
@@ -299,7 +284,6 @@ LineWindow.propTypes = {
   dataset_0: PropTypes.object,
   onUpdate: PropTypes.func,
   scale: PropTypes.string,
-  starttime: PropTypes.number,
   init: PropTypes.object,
   action: PropTypes.func,
 };
