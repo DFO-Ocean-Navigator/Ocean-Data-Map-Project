@@ -5,7 +5,6 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
-import Permalink from "./Permalink.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -123,6 +122,16 @@ export default class PlotImage extends React.Component {
         query.depth = q.depth;
         query.showmap = q.showmap;
         query.name = q.name;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            starttime: q.compare_to.starttime,
+            endtime: q.compare_to.time,
+            variable: q.compare_to.variable,
+          };
+        }
         break;
       case "map":
         query.variable = q.variable;

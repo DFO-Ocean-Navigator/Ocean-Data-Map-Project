@@ -88,4 +88,6 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# Visual Studio Code
 oceannavigator/frontend/\.vscode/
+.code-workspace
