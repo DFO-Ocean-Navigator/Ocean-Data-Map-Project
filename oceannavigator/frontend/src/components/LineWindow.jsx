@@ -97,6 +97,11 @@ export default class LineWindow extends React.Component {
       </ComboBox>
     */
 
+    const alert = (<Alert bsStyle="warning">
+      <strong>Note:</strong> The comparison mode for a Hovmoller Diagram does not currently output any
+      meaningful data. Please check back very soon for a working version.
+  </Alert>);
+
     const global = <Panel 
       collapsible
       defaultExpanded
