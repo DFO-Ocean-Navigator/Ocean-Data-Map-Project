@@ -11,6 +11,10 @@ export default class LocationInput extends React.Component {
       latitude: parseFloat(this.props.state[0][0]),
       longitude: parseFloat(this.props.state[0][1]),
     };
+
+    // Function bindings
+    this.updateParent = this.updateParent.bind(this);
+    this.keyPress = this.keyPress.bind(this);
   }
 
   updateParent() {
@@ -36,7 +40,7 @@ export default class LocationInput extends React.Component {
     var state = {};
     state[key] = value;
     this.setState(state);
-    this.timeout = setTimeout(this.updateParent.bind(this), 500);
+    this.timeout = setTimeout(this.updateParent, 500);
   }
 
   render() {
@@ -58,8 +62,8 @@ export default class LocationInput extends React.Component {
                   precision={4}
                   step={0.01}
                   onChange={(n,s) => this.changed("latitude", n)}
-                  onBlur={this.updateParent.bind(this)}
-                  onKeyPress={this.keyPress.bind(this)}
+                  onBlur={this.updateParent}
+                  onKeyPress={this.keyPress}
                   id={this.props.id + "_lat"}
                 />
               </td>
@@ -74,8 +78,8 @@ export default class LocationInput extends React.Component {
                   precision={4}
                   step={0.01}
                   onChange={(n,s) => this.changed("longitude", n)}
-                  onBlur={this.updateParent.bind(this)}
-                  onKeyPress={this.keyPress.bind(this)}
+                  onBlur={this.updateParent}
+                  onKeyPress={this.keyPress}
                   id={this.props.id + "_lon"}
                 />
               </td>

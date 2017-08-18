@@ -15,6 +15,11 @@ export default class ComboBox extends React.Component {
       data: [],
       url: null
     };
+
+    // Function bindings
+    this.handleChange = this.handleChange.bind(this);
+    this.showHelp = this.showHelp.bind(this);
+    this.closeHelp = this.closeHelp.bind(this);
   }
 
   // Fired when new option is selected
@@ -251,14 +256,14 @@ export default class ComboBox extends React.Component {
           <h1>
             {this.props.title}
             <span
-              onClick={this.showHelp.bind(this)}
+              onClick={this.showHelp}
               style={{"display": hasHelp ? "block" : "none"}}
             >?</span>
           </h1>
 
           <Modal
             show={this.state.showHelp}
-            onHide={this.closeHelp.bind(this)}
+            onHide={this.closeHelp}
             bsSize="large"
             dialogClassName="helpdialog"
             backdrop={true}
@@ -273,7 +278,7 @@ export default class ComboBox extends React.Component {
               {helpOptions}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.closeHelp.bind(this)}><Icon icon="close"/> {_("Close")}</Button>
+              <Button onClick={this.closeHelp}><Icon icon="close"/> {_("Close")}</Button>
             </Modal.Footer>
           </Modal>
 
@@ -282,7 +287,7 @@ export default class ComboBox extends React.Component {
               Math.min(10, this.props.multiple ? this.state.data.length : 1)
             }
             value={value}
-            onChange={this.handleChange.bind(this)}
+            onChange={this.handleChange}
             multiple={this.props.multiple}
           >
             {options}

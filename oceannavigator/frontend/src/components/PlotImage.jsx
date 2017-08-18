@@ -20,6 +20,10 @@ export default class PlotImage extends React.Component {
     this.state = {
       showPermalink: false,
     };
+
+    // Function bindings
+    this.saveImage = this.saveImage.bind(this);
+    this.getLink = this.getLink.bind(this);
   }
 
   componentWillMount() {
@@ -235,7 +239,7 @@ export default class PlotImage extends React.Component {
             title={<span><Icon icon="save" /> {_("Save Image")}</span>}
             dropup
             disabled={this.state.fail || this.state.loading}
-            onSelect={this.saveImage.bind(this)}
+            onSelect={this.saveImage}
           >
             <MenuItem
               eventKey="png"
@@ -283,7 +287,7 @@ export default class PlotImage extends React.Component {
             dropup
             bsStyle={this.state.fail ? "primary" : "default"}
             disabled={this.state.loading}
-            onSelect={this.getLink.bind(this)}
+            onSelect={this.getLink}
           >
             <MenuItem
               eventKey="web"
