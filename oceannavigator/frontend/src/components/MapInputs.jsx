@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import {Panel} from "react-bootstrap";
+import {Panel, Button} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -76,12 +76,20 @@ export default class MapInputs extends React.Component {
             title={_("Sync Variable Ranges")}
             style={{display: this.props.state.dataset_compare ? "block" : "none"}}
           />
+          <Button
+            bsStyle="default"
+            block
+            style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+            onClick={this.props.swapViews}
+          >
+            {_("Swap Views")}
+          </Button>
         </Panel>
 
         <Panel
           collapsible
           defaultExpanded
-          header={this.props.state.dataset_compare ? _("Left View") : _("Primary View")}
+          header={this.props.state.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
           bsStyle='primary'
         >
           <DatasetSelector
@@ -163,4 +171,5 @@ MapInputs.propTypes = {
   variable_scale: PropTypes.array,
   extent: PropTypes.array,
   changeHandler: PropTypes.func,
+  swapViews: PropTypes.func,
 };

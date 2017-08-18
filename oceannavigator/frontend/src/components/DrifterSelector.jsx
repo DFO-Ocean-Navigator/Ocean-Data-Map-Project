@@ -16,6 +16,9 @@ export default class DrifterSelector extends React.Component {
       wmo_map: {},
       deployment_map: {},
     };
+
+    // Function bindings
+    this.onUpdate = this.onUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -125,7 +128,7 @@ export default class DrifterSelector extends React.Component {
             multiple
             title={_("IMEI")}
             data={imei}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
           />
           <ComboBox
             key='wmo'
@@ -134,7 +137,7 @@ export default class DrifterSelector extends React.Component {
             multiple
             title={_("WMO")}
             data={wmo}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
           />
           <ComboBox
             key='deployment'
@@ -143,7 +146,7 @@ export default class DrifterSelector extends React.Component {
             multiple
             title={_("Deployment")}
             data={deployment}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
           />
         </div>
       </div>

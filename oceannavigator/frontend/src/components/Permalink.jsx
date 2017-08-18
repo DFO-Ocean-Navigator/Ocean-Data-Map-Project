@@ -25,15 +25,24 @@ export default class Permalink extends React.Component {
       vectorid: true,
       time: true,
     };
+
+    // Function bindings
+    this.handleChange = this.handleChange.bind(this);
+    this.copyPermalink = this.copyPermalink.bind(this);
   }
 
-  selectPermalink() {
+  copyPermalink() {
     this.refs.permalink.select();
+
+    try {
+      document.execCommand('copy');
+    } catch(err) {
+      alert("Please manually copy the selected text.");
+    }
   }
 
   handleChange(e) {
     this.setState({[e.target.name]: e.target.checked});
-    this.selectPermalink();
   }
 
   render() {
@@ -53,9 +62,8 @@ export default class Permalink extends React.Component {
             <Button
               bsStyle="primary"
               className="pull-right"
-              onClick={function() {
-                this.selectPermalink();
-              }.bind(this)}><Icon icon="copy" /> {_("Copy")}</Button>
+              onClick={this.copyPermalink}
+            ><Icon icon="copy" /> {_("Copy")}</Button>
           </Row>
         </Well>
 
@@ -77,22 +85,22 @@ export default class Permalink extends React.Component {
               <Checkbox 
                 checked={this.state.projection}
                 name="projection"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Projection")}</Checkbox>
               <Checkbox
                 checked={this.state.basemap}
                 name="basemap"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Basemap")}</Checkbox>
               <Checkbox
                 checked={this.state.bathymetry}
                 name="bathymetry"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Bathymetry Contours")}</Checkbox>
               <Checkbox
                 checked={this.state.dataset_compare}
                 name="dataset_compare"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Side-by-side Comparison")}</Checkbox>
             </Panel>
             <Panel
@@ -104,32 +112,32 @@ export default class Permalink extends React.Component {
               <Checkbox
                 checked={this.state.zoom}
                 name="zoom"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Zoom")}</Checkbox>
               <Checkbox
                 checked={this.state.dataset}
                 name="dataset"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Dataset (Primary/Left View)")}</Checkbox>
               <Checkbox
                 checked={this.state.dataset_1}
                 name="dataset_1"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Dataset (Right View)")}</Checkbox>
               <Checkbox
                 checked={this.state.variable}
                 name="variable"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Variable")}</Checkbox>
               <Checkbox
                 checked={this.state.depth}
                 name="depth"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Depth")}</Checkbox>
               <Checkbox
                 checked={this.state.time}
                 name="time"
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >{_("Time")}</Checkbox>
             </Panel>
           </form>

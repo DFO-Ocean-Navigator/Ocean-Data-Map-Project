@@ -15,6 +15,9 @@ export default class ContinousTimePicker extends React.Component {
     super(props);
     this.state = {
     };
+
+    // Function bindings
+    this.pickerChange = this.pickerChange.bind(this);
   }
   populate(props) {
     const min = props.min;
@@ -23,7 +26,7 @@ export default class ContinousTimePicker extends React.Component {
     $(this.refs.picker).datepicker({
       Button: false,
       dateFormat: "dd MM yy",
-      onClose: this.pickerChange.bind(this),
+      onClose: this.pickerChange,
     });
 
     if (min != null && min != undefined) {

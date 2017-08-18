@@ -18,6 +18,9 @@ const KEYS = [
 export default class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
+
+    // Function bindings
+    this.onUpdate = this.onUpdate.bind(this);
   }
 
   onUpdate(key, value) {
@@ -71,7 +74,7 @@ export default class DatasetSelector extends React.Component {
                 "&quantum=" +
                 this.props.state.dataset_quantum}
             title={_("Start Time")}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
             max={this.props.state.time}
           />
           <TimePicker
@@ -85,7 +88,7 @@ export default class DatasetSelector extends React.Component {
                 "&quantum=" +
                 this.props.state.dataset_quantum}
             title={_("End Time")}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
             min={this.props.state.starttime}
           />
         </div>;
@@ -98,7 +101,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.time}
           def={-1}
           quantum={this.props.state.dataset_quantum}
-          onUpdate={this.onUpdate.bind(this)}
+          onUpdate={this.onUpdate}
           url={"/api/timestamps/?dataset=" +
             this.props.state.dataset +
             "&quantum=" +
@@ -115,7 +118,7 @@ export default class DatasetSelector extends React.Component {
           id='dataset'
           state={this.props.state.dataset}
           def={"defaults.dataset"}
-          onUpdate={this.onUpdate.bind(this)}
+          onUpdate={this.onUpdate}
           url='/api/datasets/'
           title={_("Dataset")}></ComboBox>
         <ComboBox
@@ -123,7 +126,7 @@ export default class DatasetSelector extends React.Component {
           id='variable'
           state={this.props.state.variable}
           def={"defaults.dataset"}
-          onUpdate={this.onUpdate.bind(this)}
+          onUpdate={this.onUpdate}
           url={"/api/variables/?vectors&dataset=" + this.props.state.dataset + variables
           }
           title={_("Variable")}
@@ -133,7 +136,7 @@ export default class DatasetSelector extends React.Component {
           id='depth'
           state={this.props.state.depth}
           def={0}
-          onUpdate={this.onUpdate.bind(this)}
+          onUpdate={this.onUpdate}
           url={"/api/depth/?variable=" +
             this.props.state.variable +
             "&dataset=" +

@@ -41,9 +41,13 @@ export default class AreaWindow extends React.Component {
       dpi: 72,
     };
 
-    if (props.init != null) {
+    if (props.init !== null) {
       $.extend(this.state, props.init);
     }
+
+    // Function bindings
+    this.onLocalUpdate = this.onLocalUpdate.bind(this);
+    this.onSelect = this.onSelect.bind(this);
   }
 
   componentWillReceiveProps(props) {
@@ -152,7 +156,7 @@ export default class AreaWindow extends React.Component {
       multiple 
       state={this.state.variable} 
       def='' 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       url={"/api/variables/?dataset="+this.props.dataset + "&anom"} 
       title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>;
     const scale = <Range 
@@ -161,28 +165,28 @@ export default class AreaWindow extends React.Component {
       id='scale' 
       state={this.state.scale} 
       def={""} 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       title={_("Variable Range")} />;
     const colormap = <ComboBox 
       key='colormap' 
       id='colormap' 
       state={this.state.colormap} 
       def='default' 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       url='/api/colormaps/' 
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" /></ComboBox>;
     const bathymetry = <SelectBox 
       key='bathymetry' 
       id='bathymetry' 
       state={this.state.bathymetry} 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       title={_("Show Bathymetry Contours")} />;
     const quiver = <QuiverSelector 
       key='quiver' 
       id='quiver' 
       state={this.state.quiver} 
       def='' 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       dataset={this.props.dataset_0.dataset} 
       title={_("Arrows")}>{_("arrows_help")}</QuiverSelector>;
     const contour = <ContourSelector 
@@ -190,20 +194,20 @@ export default class AreaWindow extends React.Component {
       id='contour' 
       state={this.state.contour} 
       def='' 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       dataset={this.props.dataset_0.dataset} 
       title={_("Additional Contours")}>{_("contour_help")}</ContourSelector>;
     const showarea = <SelectBox 
       key='showarea' 
       id='showarea' 
       state={this.state.showarea} 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       title={_("Show Selected Area(s)")}>{_("showarea_help")}</SelectBox>;
     const size = <ImageSize 
       key='size' 
       id='size' 
       state={this.state.size} 
-      onUpdate={this.onLocalUpdate.bind(this)} 
+      onUpdate={this.onLocalUpdate} 
       title={_("Saved Image Size")} />;
 
     var inputs = [];
@@ -263,7 +267,7 @@ export default class AreaWindow extends React.Component {
         <Nav
           bsStyle="tabs"
           activeKey={this.state.selected}
-          onSelect={this.onSelect.bind(this)}
+          onSelect={this.onSelect}
         >
           <NavItem eventKey={1}>{_("Map")}</NavItem>
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
@@ -285,6 +289,7 @@ AreaWindow.propTypes = {
   depth: PropTypes.number,
   area: PropTypes.array,
   time: PropTypes.number,
+  dataset: PropTypes.string,
   generatePermLink: PropTypes.func,
   dataset_1: PropTypes.object,
   dataset_compare: PropTypes.bool,
