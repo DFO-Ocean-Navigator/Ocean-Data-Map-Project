@@ -12,20 +12,30 @@ export default class NumberBox extends React.Component {
     this.state = {
       value: this.props.state
     };
+
+    // Function bindings
+    this.updateParent = this.updateParent.bind(this);
+    this.changed = this.changed.bind(this);
+    this.keyPress = this.keyPress.bind(this);
+    this.closeHelp = this.closeHelp.bind(this);
+    this.showHelp = this.showHelp.bind(this);
   }
+
   updateParent() {
     this.props.onUpdate(this.props.id, this.state.value);
   }
+
   changed(num, str) {
     clearTimeout(this.timeout);
     this.setState({
       value: num,
     });
-    this.timeout = setTimeout(this.updateParent.bind(this), 500);
+    this.timeout = setTimeout(this.updateParent, 500);
   }
+
   keyPress(e) {
     var key = e.which || e.keyCode;
-    if (key == 13) {
+    if (key === 13) {
       this.changed();
       this.updateParent();
       return false;
@@ -33,16 +43,19 @@ export default class NumberBox extends React.Component {
       return true;
     }
   }
+
   closeHelp() {
     this.setState({
       showHelp: false
     });
   }
+
   showHelp() {
     this.setState({
       showHelp: true
     });
   }
+
   render() {
     var hasHelp = (
       this.props.children != null &&
@@ -52,14 +65,14 @@ export default class NumberBox extends React.Component {
       <div className='NumberBox input'>
         <h1>{this.props.title}
           <span
-            onClick={this.showHelp.bind(this)}
+            onClick={this.showHelp}
             style={{"display": hasHelp ?  "block" : "none"}}
           >?</span>
         </h1>
 
         <Modal
           show={this.state.showHelp}
-          onHide={this.closeHelp.bind(this)}
+          onHide={this.closeHelp}
           bsSize="large"
           dialogClassName="helpdialog"
         >
@@ -72,7 +85,7 @@ export default class NumberBox extends React.Component {
             {this.props.children}
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.closeHelp.bind(this)}><Icon icon="close" /> {_("Close")}</Button>
+            <Button onClick={this.closeHelp}><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -85,9 +98,9 @@ export default class NumberBox extends React.Component {
               <td>
                 <NumericInput
                   value={this.state.value}
-                  onChange={this.changed.bind(this)}
-                  onBlur={this.updateParent.bind(this)}
-                  onKeyPress={this.keyPress.bind(this)}
+                  onChange={this.changed}
+                  onBlur={this.updateParent}
+                  onKeyPress={this.keyPress}
                 />
               </td>
             </tr>

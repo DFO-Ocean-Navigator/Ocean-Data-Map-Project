@@ -3,6 +3,13 @@ import {Checkbox} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 export default class SelectBox extends React.Component {
+  constructor(props) {
+    super(props);
+
+    // Function bindings
+    this.handleChange = this.handleChange.bind(this);
+  }
+
   handleChange(e) {
     this.props.onUpdate(this.props.id, e.target.checked);
   }
@@ -11,7 +18,7 @@ export default class SelectBox extends React.Component {
     return (
       <Checkbox
         id={this.props.id} 
-        onChange={this.handleChange.bind(this)}
+        onChange={this.handleChange}
         checked={this.props.state}
         style={this.props.style}
       >

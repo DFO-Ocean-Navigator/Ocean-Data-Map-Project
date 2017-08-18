@@ -20,9 +20,12 @@ export default class Class4Window extends React.Component {
       models: [],
     };
 
-    if (props.init != null) {
+    if (props.init !== null) {
       $.extend(this.state, props.init);
     }
+
+    // Function bindings
+    this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
   onLocalUpdate(key, value) {
@@ -30,7 +33,7 @@ export default class Class4Window extends React.Component {
     if (typeof(key) === "string") {
       newState[key] = value;
     } else {
-      for (var i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -84,26 +87,26 @@ export default class Class4Window extends React.Component {
                 "/api/class4/forecasts/" + this.props.class4id
               }
               title={_("Forecast")}
-              onUpdate={this.onLocalUpdate.bind(this)}
+              onUpdate={this.onLocalUpdate}
             />
             <SelectBox
               key='showmap'
               id='showmap'
               state={this.state.showmap}
-              onUpdate={this.onLocalUpdate.bind(this)}
+              onUpdate={this.onLocalUpdate}
               title={_("Show Location")}>{_("showmap_help")}</SelectBox>
             <SelectBox
               key='climatology'
               id='climatology'
               state={this.state.climatology}
-              onUpdate={this.onLocalUpdate.bind(this)}
+              onUpdate={this.onLocalUpdate}
               title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
             <ComboBox
               key='models'
               id='models'
               state={this.state.models}
               multiple
-              onUpdate={this.onLocalUpdate.bind(this)}
+              onUpdate={this.onLocalUpdate}
               url={"/api/class4/models/" + this.props.class4id}
               title={_("Additional Models")} />
             <ComboBox
@@ -113,12 +116,12 @@ export default class Class4Window extends React.Component {
               def=''
               data={error_options}
               title={_("Show Error")}
-              onUpdate={this.onLocalUpdate.bind(this)} />
+              onUpdate={this.onLocalUpdate} />
             <ImageSize
               key='size'
               id='size'
               state={this.state.size}
-              onUpdate={this.onLocalUpdate.bind(this)}
+              onUpdate={this.onLocalUpdate}
               title={_("Saved Image Size")} />
           </div>
           <PlotImage
