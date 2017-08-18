@@ -40,6 +40,9 @@ export default class PointWindow extends React.Component {
     if (props.init != null) {
       $.extend(this.state, props.init);
     }
+
+    // Function bindings
+    this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
   populateVariables(dataset) {
@@ -185,7 +188,7 @@ export default class PointWindow extends React.Component {
       id='point'
       state={this.props.point}
       title={_("Location")}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
     />;
     const starttime = <TimePicker
       key='starttime'
@@ -195,7 +198,7 @@ export default class PointWindow extends React.Component {
       quantum={this.props.quantum}
       url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
       title={_("Start Time")}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       max={this.props.time}
     />;
     const endtime = <TimePicker
@@ -213,7 +216,7 @@ export default class PointWindow extends React.Component {
       id='depth'
       state={this.state.depth}
       def={""}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
       title={_("Depth")}></ComboBox>;
     const multidepth = <ComboBox
@@ -222,7 +225,7 @@ export default class PointWindow extends React.Component {
       multiple
       state={this.state.depth}
       def={""}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
       title={_("Depth")}></ComboBox>;
     const variable = <ComboBox
@@ -239,7 +242,7 @@ export default class PointWindow extends React.Component {
       multiple
       state={this.state.variable}
       def=''
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/variables/?3d_only&dataset="+this.props.dataset + "&anom"}
       title={_("Variable")}><h1>Variable</h1></ComboBox>;
     const vectorvariable = <ComboBox
@@ -247,7 +250,7 @@ export default class PointWindow extends React.Component {
       id='variable'
       state={this.state.variable}
       def=''
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/variables/?vectors_only&dataset="+this.props.dataset}
       title={_("Variable")}><h1>Variable</h1></ComboBox>;
     const scale = <Range
@@ -256,14 +259,14 @@ export default class PointWindow extends React.Component {
       id='scale'
       state={this.state.scale}
       def={""}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       title={_("Variable Range")} />;
     const colormap = <ComboBox
       key='colormap'
       id='colormap'
       state={this.state.colormap}
       def='default'
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
@@ -271,7 +274,7 @@ export default class PointWindow extends React.Component {
       key='size'
       id='size'
       state={this.state.size}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")} />;
     let observation_data = [];
     let observation_variable = <div></div>;
@@ -284,7 +287,7 @@ export default class PointWindow extends React.Component {
           url='/api/observationvariables/'
           title={_("Observation Variable")}
           multiple
-          onUpdate={this.onLocalUpdate.bind(this)}
+          onUpdate={this.onLocalUpdate}
         />;
       } 
       else {
@@ -300,7 +303,7 @@ export default class PointWindow extends React.Component {
           data={observation_data}
           title={_("Observation Variable")}
           multiple
-          onUpdate={this.onLocalUpdate.bind(this)}
+          onUpdate={this.onLocalUpdate}
         />;
       }
     }

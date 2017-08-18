@@ -28,13 +28,17 @@ export default class LineWindow extends React.Component {
       depth_limit: false,
     };
 
-    if (props.init != null) {
+    if (props.init !== null) {
       $.extend(this.state, props.init);
     }
+
+    // Function bindings
+    this.onLocalUpdate = this.onLocalUpdate.bind(this);
+    this.onSelect = this.onSelect.bind(this);
   }
 
   componentWillReceiveProps(props) {
-    if (props.depth != this.props.depth) {
+    if (props.depth !== this.props.depth) {
       this.setState({
         depth: props.depth,
       });
@@ -121,7 +125,7 @@ export default class LineWindow extends React.Component {
         id='scale'
         state={this.state.scale}
         def={""}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
       />
 
@@ -129,14 +133,14 @@ export default class LineWindow extends React.Component {
         key='showmap'
         id='showmap'
         state={this.state.showmap}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
         title={_("Show Location")}>{_("showmap_help")}</SelectBox>
         
       <ImageSize
         key='size'
         id='size'
         state={this.state.size}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
         title={_("Saved Image Size")}
       />
     </Panel>;
@@ -151,7 +155,7 @@ export default class LineWindow extends React.Component {
         key='surfacevariable'
         id='surfacevariable'
         state={this.state.surfacevariable}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
         url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
       >{_("surfacevariable_help")}</ComboBox>
@@ -160,7 +164,7 @@ export default class LineWindow extends React.Component {
         key='linearthresh'
         id='linearthresh'
         state={this.state.linearthresh}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
         title={_("Linear Threshold")}
       >{_("linearthresh_help")}</NumberBox>
 
@@ -168,7 +172,7 @@ export default class LineWindow extends React.Component {
         key='depth_limit'
         id='depth_limit'
         state={this.state.depth_limit}
-        onUpdate={this.onLocalUpdate.bind(this)}
+        onUpdate={this.onLocalUpdate}
       />
 
     </Panel>;
@@ -264,7 +268,7 @@ export default class LineWindow extends React.Component {
         <Nav
           bsStyle="tabs"
           activeKey={this.state.selected}
-          onSelect={this.onSelect.bind(this)}
+          onSelect={this.onSelect}
         >
           <NavItem eventKey={1}>{_("Transect")}</NavItem>
           <NavItem eventKey={2}>{_("Hovmöller Diagram")}</NavItem>

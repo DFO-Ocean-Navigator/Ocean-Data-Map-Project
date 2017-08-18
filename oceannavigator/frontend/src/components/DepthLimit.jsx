@@ -20,6 +20,10 @@ export default class DepthLimit extends React.Component {
         value: parseInt(this.props.state),
       };
     }
+
+    // Function bindings
+    this.enableChecked = this.enableChecked.bind(this);
+    this.onUpdate = this.onUpdate.bind(this);
   }
   
   enableChecked(e) {
@@ -48,7 +52,7 @@ export default class DepthLimit extends React.Component {
       <div className='DepthLimit input'>
         <h1>{_("Depth Limit")}</h1>
 
-        <Checkbox onChange={this.enableChecked.bind(this)}>
+        <Checkbox onChange={this.enableChecked}>
           {_("Limit Depth")}
         </Checkbox>
         <div style={{ "display": this.state.limit ? "block" : "none" }}>
@@ -56,7 +60,7 @@ export default class DepthLimit extends React.Component {
             key='depth'
             id='depth'
             state={this.state.value}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
             title={_("Depth Limit")}
           />
         </div>

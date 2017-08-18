@@ -13,6 +13,10 @@ export default class EnterArea extends React.Component {
       showAreaPoint4: false,
       areaCoords: [],
     };
+
+    // Function bindings
+    this.handleChange = this.handleChange.bind(this);
+    this.setCoordData = this.setCoordData.bind(this);
   }
 
   handleChange(e) {
@@ -41,7 +45,7 @@ export default class EnterArea extends React.Component {
           <Checkbox
             inline
             checked={this.state.showAreaPoint4}
-            onChange={this.handleChange.bind(this)}
+            onChange={this.handleChange}
           >
             {_("Enable 4-point (quad) area mode.")}
           </Checkbox>
@@ -49,23 +53,23 @@ export default class EnterArea extends React.Component {
         <CoordInputPanel
           id="1"
           header={_("Point 1")}
-          setCoordData={this.setCoordData.bind(this)}
+          setCoordData={this.setCoordData}
         />
         <CoordInputPanel
           id="2"
           header={_("Point 2")}
-          setCoordData={this.setCoordData.bind(this)}
+          setCoordData={this.setCoordData}
         />
         <CoordInputPanel
           id="3"
           header={_("Point 3")}
-          setCoordData={this.setCoordData.bind(this)}
+          setCoordData={this.setCoordData}
         />
         <div style={{display: this.state.showAreaPoint4 ? "block" : "none"}}>
           <CoordInputPanel
             id="4"
             header={_("Point 4")}
-            setCoordData={this.setCoordData.bind(this)}
+            setCoordData={this.setCoordData}
           />
         </div>
       </div>

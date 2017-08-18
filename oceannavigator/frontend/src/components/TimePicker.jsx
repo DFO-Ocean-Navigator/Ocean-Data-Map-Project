@@ -29,7 +29,12 @@ export default class TimePicker extends React.Component {
       revmap: {},
       times: [],
     };
+
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
+
+    // Function bindings
+    this.timeChange = this.timeChange.bind(this);
+    this.pickerChange = this.pickerChange.bind(this);
   }
 
   populate(props) {
@@ -83,7 +88,7 @@ export default class TimePicker extends React.Component {
                 $(this.refs.picker).MonthPicker({
                   Button: false,
                   MonthFormat: "MM yy",
-                  OnAfterMenuClose: this.pickerChange.bind(this),
+                  OnAfterMenuClose: this.pickerChange,
                   MinMonth: new Date(
                     map[min].getTime() + 
                     map[min].getTimezoneOffset() * 60 * 1000
@@ -115,7 +120,7 @@ export default class TimePicker extends React.Component {
                 $(this.refs.picker).datepicker( {
                   Button: false,
                   dateFormat: "dd MM yy",
-                  onClose: this.pickerChange.bind(this),
+                  onClose: this.pickerChange,
                   minDate: new Date(map[min]),
                   maxDate: new Date(map[max]),
                 });
@@ -135,7 +140,7 @@ export default class TimePicker extends React.Component {
                 $(this.refs.picker).datepicker({
                   Button: false,
                   dateFormat: "dd MM yy",
-                  onClose: this.pickerChange.bind(this),
+                  onClose: this.pickerChange,
                   minDate: new Date(map[min]),
                   maxDate: new Date(map[max]),
                 });
@@ -340,7 +345,7 @@ export default class TimePicker extends React.Component {
     if (this.props.quantum == "hour") {
       timeinput = <select
         value={this.state.value}
-        onChange={this.timeChange.bind(this)}>
+        onChange={this.timeChange}>
         {options}
       </select>;
     }

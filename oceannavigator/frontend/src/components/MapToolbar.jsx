@@ -38,6 +38,24 @@ export default class MapToolbar extends React.Component {
       },
       drifterList: [],
     };
+
+    // Function bindings
+    this.buttonHandler = this.buttonHandler.bind(this);
+    this.pointSelect = this.pointSelect.bind(this);
+    this.observationSelect = this.observationSelect.bind(this);
+    this.lineSelect = this.lineSelect.bind(this);
+    this.areaSelect = this.areaSelect.bind(this);
+    this.class4ButtonHandler = this.class4ButtonHandler.bind(this);
+    this.class4Select = this.class4Select.bind(this);
+    this.drifterSelect = this.drifterSelect.bind(this);
+    this.setDrifterSelection = this.setDrifterSelection.bind(this);
+    this.observationSelection = this.observationSelection.bind(this);
+    this.setCoordData = this.setCoordData.bind(this);
+    this.applyPointCoords = this.applyPointCoords.bind(this);
+    this.applyLineCoords = this.applyLineCoords.bind(this);
+    this.applyAreaCoords = this.applyAreaCoords.bind(this);
+    this.parseCSV = this.parseCSV.bind(this);
+    this.parseODV = this.parseODV.bind(this);
   }
 
   buttonHandler(e) {
@@ -536,9 +554,9 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               name="point"
               id="point"
-              //onClick={this.buttonHandler.bind(this)}
+              //onClick={this.buttonHandler}
               title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
-              onSelect={this.pointSelect.bind(this)}
+              onSelect={this.pointSelect}
             >
               <MenuItem
                 eventKey='draw'
@@ -569,9 +587,9 @@ export default class MapToolbar extends React.Component {
             <NavDropdown 
               name="line"
               id="line"
-              //onClick={this.buttonHandler.bind(this)}
+              //onClick={this.buttonHandler}
               title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
-              onSelect={this.lineSelect.bind(this)}
+              onSelect={this.lineSelect}
             >
               <MenuItem
                 eventKey='draw'
@@ -593,9 +611,9 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               name="area"
               id="area"
-              //onClick={this.buttonHandler.bind(this)}
+              //onClick={this.buttonHandler}
               title={<span><Icon icon="square-o" /> {_("Area")}</span>}
-              onSelect={this.areaSelect.bind(this)}
+              onSelect={this.areaSelect}
             >
               <MenuItem
                 eventKey='draw'
@@ -617,8 +635,8 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               id="class4"
               name="class4"
-              title={<span><Icon icon="exclamation-triangle" /> {_("Class4")}</span>}
-              onClick={this.class4ButtonHandler.bind(this)}
+              title={_("Class4")}
+              onClick={this.class4ButtonHandler}
               ref={(b) => this.class4button = b}
             >
               <MenuItem>
@@ -630,7 +648,7 @@ export default class MapToolbar extends React.Component {
               name="drifter"
               id="drifter"
               title={_("Drifters")}
-              onSelect={this.drifterSelect.bind(this)}
+              onSelect={this.drifterSelect}
             >
               <MenuItem
                 eventKey='all'
@@ -657,7 +675,7 @@ export default class MapToolbar extends React.Component {
 
             <NavItem 
               name="plot"
-              onClick={this.buttonHandler.bind(this)}
+              onClick={this.buttonHandler}
               disabled={!this.props.plotEnabled}
             >
               <Icon icon='line-chart' /> {_("Plot")}
@@ -669,7 +687,7 @@ export default class MapToolbar extends React.Component {
             >
               <NavItem
                 name="reset"
-                onClick={this.buttonHandler.bind(this)}
+                onClick={this.buttonHandler}
               >
                 <Icon icon='undo' alt={_("Reset Map")} />
               </NavItem>
@@ -682,7 +700,7 @@ export default class MapToolbar extends React.Component {
             >
               <NavItem
                 name="permalink"
-                onClick={this.buttonHandler.bind(this)}
+                onClick={this.buttonHandler}
               >
                 <Icon icon='link' alt={_("Permalink")}/>
               </NavItem>
@@ -693,7 +711,7 @@ export default class MapToolbar extends React.Component {
             >
               <NavItem
                 name="help"
-                onClick={this.buttonHandler.bind(this)}
+                onClick={this.buttonHandler}
               >
                 <Icon icon='question' alt={_("Help")}/>
               </NavItem>
@@ -705,7 +723,7 @@ export default class MapToolbar extends React.Component {
           <input
             type='file'
             style={{"display": "none"}}
-            onChange={this.parseCSV.bind(this)}
+            onChange={this.parseCSV}
             ref={(f) => this.fileinput = f}
             accept=".csv,.CSV"
           />
@@ -715,7 +733,7 @@ export default class MapToolbar extends React.Component {
           <input
             type='file'
             style={{"display": "none"}}
-            onChange={this.parseODV.bind(this)}
+            onChange={this.parseODV}
             ref={(f) => this.odvinput = f}
             accept=".txt,.TXT"
           />
@@ -730,7 +748,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterPoint
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -756,7 +774,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterLine
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -782,7 +800,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterArea
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -808,7 +826,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterPoint
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -834,7 +852,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterLine
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -860,7 +878,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterArea
-              setCoordData={this.setCoordData.bind(this)}
+              setCoordData={this.setCoordData}
             />
           </Modal.Body>
           <Modal.Footer>
@@ -886,7 +904,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <DrifterSelector
-              select={this.setDrifterSelection.bind(this)}
+              select={this.setDrifterSelection}
               state={this.state.drifterList}/>
           </Modal.Body>
           <Modal.Footer>
@@ -912,7 +930,7 @@ export default class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <ObservationSelector
-              select={this.observationSelection.bind(this)}
+              select={this.observationSelection}
               state={this.state.observationSelection}
             />
           </Modal.Body>

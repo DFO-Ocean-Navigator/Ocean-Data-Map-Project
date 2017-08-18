@@ -27,6 +27,9 @@ export default class DrifterWindow extends React.Component {
     if (props.init != null) {
       $.extend(this.state, props.init);
     }
+
+    // Function bindings
+    this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -101,7 +104,7 @@ export default class DrifterWindow extends React.Component {
       multiple
       state={this.state.buoyvariable}
       def=''
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/drifters/vars/" + this.props.drifter}
       title={_("Buoy Variable")}
     ><h1>Buoy Variable</h1></ComboBox>;
@@ -111,7 +114,7 @@ export default class DrifterWindow extends React.Component {
       multiple
       state={this.state.variable}
       def=''
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/variables/?dataset="+this.props.dataset}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
@@ -119,14 +122,14 @@ export default class DrifterWindow extends React.Component {
       key='showmap'
       id='showmap'
       state={this.state.showmap}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       title={_("Show Map")}
     >{_("showmap_help")}</SelectBox>;
     var latlon = <SelectBox
       key='latlon'
       id='latlon'
       state={this.state.latlon}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</SelectBox>;
     var starttime = <ContinousTimePicker
@@ -134,7 +137,7 @@ export default class DrifterWindow extends React.Component {
       id='starttime'
       state={this.state.starttime}
       title={_("Start Time")}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       max={this.state.endtime}
       min={this.state.mindate}
     />;
@@ -143,7 +146,7 @@ export default class DrifterWindow extends React.Component {
       id='endtime'
       state={this.state.endtime}
       title={_("End Time")}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       min={this.state.starttime}
       max={this.state.maxdate}
     />;
@@ -151,7 +154,7 @@ export default class DrifterWindow extends React.Component {
       key='size'
       id='size'
       state={this.state.size}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")}
     />;
     var depth = <ComboBox
@@ -159,7 +162,7 @@ export default class DrifterWindow extends React.Component {
       id='depth'
       state={this.state.depth}
       def={""}
-      onUpdate={this.onLocalUpdate.bind(this)}
+      onUpdate={this.onLocalUpdate}
       url={"/api/depth/?variable=" +
         this.state.variable +
         "&dataset=" +

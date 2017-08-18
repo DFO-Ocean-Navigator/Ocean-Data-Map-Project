@@ -16,6 +16,9 @@ export default class ObservationSelector extends React.Component {
       ship: props.state.ship,
       trip: props.state.trip,
     };
+
+    // Function bindings
+    this.onUpdate = this.onUpdate.bind(this);
   }
 
   // Load data
@@ -66,7 +69,7 @@ export default class ObservationSelector extends React.Component {
             multiple
             title={_("Ship")}
             data={ship}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
           />
           <ComboBox
             key='trip'
@@ -75,7 +78,7 @@ export default class ObservationSelector extends React.Component {
             multiple
             title={_("Trip")}
             data={trip}
-            onUpdate={this.onUpdate.bind(this)}
+            onUpdate={this.onUpdate}
           />
         </div>
       </div>
