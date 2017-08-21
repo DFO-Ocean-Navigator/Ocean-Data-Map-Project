@@ -23,6 +23,13 @@ export default class Range extends React.Component {
       min: min,
       max: max,
     };
+
+    // Function bindings
+    this.updateParent = this.updateParent.bind(this);
+    this.keyPress = this.keyPress.bind(this);
+    this.autoChanged = this.autoChanged.bind(this);
+    this.handleDefaultButton = this.handleDefaultButton.bind(this);
+    this.getAutoScale = this.getAutoScale.bind(this);
   }
 
   updateParent() {
@@ -49,7 +56,7 @@ export default class Range extends React.Component {
     var state = {};
     state[key] = value;
     this.setState(state);
-    this.timeout = setTimeout(this.updateParent.bind(this), 500);
+    this.timeout = setTimeout(this.updateParent, 500);
   }
 
   keyPress(e) {
@@ -109,8 +116,8 @@ export default class Range extends React.Component {
     if (this.props.autourl) {
       autobuttons = (
         <ButtonToolbar style={{ display: "inline-block", "float": "right" }}>
-          <Button name='default' onClick={this.handleDefaultButton.bind(this)}>{_("Default")}</Button>
-          <Button name='auto' bsStyle="primary" onClick={this.getAutoScale.bind(this)}>{_("Auto")}</Button>
+          <Button name='default' onClick={this.handleDefaultButton}>{_("Default")}</Button>
+          <Button name='auto' bsStyle="primary" onClick={this.getAutoScale}>{_("Auto")}</Button>
         </ButtonToolbar>
       );
     }
@@ -130,10 +137,10 @@ export default class Range extends React.Component {
                   value={this.state.min}
                   onChange={(n, s) => this.changed("min", n)}
                   step={0.1}
-                  precision={3}
-                  onBlur={this.updateParent.bind(this)}
+                  precision={4}
+                  onBlur={this.updateParent}
                   disabled={this.state.auto}
-                  onKeyPress={this.keyPress.bind(this)}
+                  onKeyPress={this.keyPress}
                 />
               </td>
             </tr>
@@ -146,10 +153,10 @@ export default class Range extends React.Component {
                   value={this.state.max}
                   onChange={(n, s) => this.changed("max", n)}
                   step={0.1}
-                  precision={3}
-                  onBlur={this.updateParent.bind(this)}
+                  precision={4}
+                  onBlur={this.updateParent}
                   disabled={this.state.auto}
-                  onKeyPress={this.keyPress.bind(this)}
+                  onKeyPress={this.keyPress}
                 />
               </td>
             </tr>
