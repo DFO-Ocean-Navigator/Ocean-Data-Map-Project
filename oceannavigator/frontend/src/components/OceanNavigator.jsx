@@ -37,15 +37,15 @@ export default class OceanNavigator extends React.Component {
       depth: 0,
       time: -1,
       scale: "-5,30", // Variable scale for left/primary view
-      scale_1: "-5, 30", // Variable scale for right view
+      scale_1: "-5,30", // Variable scale for right view
       plotEnabled: false, // "Plot" button in MapToolbar
-      projection: "EPSG:3857",
+      projection: "EPSG:3857", // Map projection
       showModal: false,
       vectortype: null,
       vectorid: null,
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
-      bathymetry: true,
+      bathymetry: true, // Show bathymetry contours
       showHelp: false,
       extent: [],
       dataset_compare: false, // Controls if compare mode is enabled
@@ -130,7 +130,7 @@ export default class OceanNavigator extends React.Component {
     
     // Only updating one value
     if (typeof(key) === "string") {
-      if (this.state[key] == value) {
+      if (this.state[key] === value) {
         // Value hasn't changed
         return;
       }
@@ -147,16 +147,11 @@ export default class OceanNavigator extends React.Component {
           }
           break;
         case "dataset_0":
-          if (value.dataset != this.state.dataset) {
+          if (value.dataset !== this.state.dataset) {
             this.changeDataset(value.dataset, value);
             return;
-          } 
-          else {
-            newState = value;
-            if (value.variable_scale != this.state.scale) {
-              newState.scale = value.variable_scale;
-            }
           }
+          newState = value;
           break;
       }
 

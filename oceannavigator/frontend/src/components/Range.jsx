@@ -137,7 +137,7 @@ export default class Range extends React.Component {
                   value={this.state.min}
                   onChange={(n, s) => this.changed("min", n)}
                   step={0.1}
-                  precision={3}
+                  precision={4}
                   onBlur={this.updateParent}
                   disabled={this.state.auto}
                   onKeyPress={this.keyPress}
@@ -153,7 +153,7 @@ export default class Range extends React.Component {
                   value={this.state.max}
                   onChange={(n, s) => this.changed("max", n)}
                   step={0.1}
-                  precision={3}
+                  precision={4}
                   onBlur={this.updateParent}
                   disabled={this.state.auto}
                   onKeyPress={this.keyPress}
