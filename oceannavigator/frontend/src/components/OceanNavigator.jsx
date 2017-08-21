@@ -113,7 +113,6 @@ export default class OceanNavigator extends React.Component {
   hideCompareHelp() {
     this.setState({showCompareHelp: false,});
   }
-
   // Swap all view-related state variables
   swapViews() {
     const newState = this.state;
