@@ -80,23 +80,30 @@ class HovmollerPlotter(line.LinePlotter):
 
             self.times = dataset.timestamps[self.starttime:self.endtime + 1]
 
+    # Render Hovmoller graph(s)
     def plot(self):
         # Figure size
         figuresize = map(float, self.size.split("x"))
+        figuresize[1] *= 2 if self.compare else 1 # Vertical scaling of figure
+        
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
         if self.showmap:
-            width = 2
+            width = 2 # 2 columns
             width_ratios = [2, 7]
         else:
-            width = 1
+            width = 1 # 1 column
             width_ratios = [1]
 
-        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+        # Setup grid (rows, columns, column/row ratios) depending on view mode
+        if self.compare:
+            gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+        else:
+            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
         if self.showmap:
             # Plot the path on a map
-            plt.subplot(gs[0])
+            plt.subplot(gs[:, 0])
 
             utils.path_plot(self.path_points)
 
@@ -144,18 +151,19 @@ class HovmollerPlotter(line.LinePlotter):
         bar.set_label("%s (%s)" % (self.variable_name,
                                    utils.mathtext(self.variable_unit)))
 
+        # Image title
         if self.depth == 'bottom':
-            depth_label = " at Bottom"
+            depth_label = "at Bottom"
         else:
-            depth_label = " at %d %s" % (self.depth_value, self.depth_unit)
+            depth_label = "at %d %s" % (self.depth_value, self.depth_unit)
 
-        fig.suptitle(gettext(u"Hovm\xf6ller Diagram for %s%s,\n%s") % (
-            self.variable_name,
+        fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) %s,\n%s") % (
             depth_label,
             self.name
-        ))
+        ), fontsize=15)
 
-        fig.tight_layout(pad=3, w_pad=4)
-        fig.subplots_adjust(top=0.92)
+        # Subplot padding
+        fig.tight_layout(pad=2, w_pad=4, h_pad=2)
+        fig.subplots_adjust(top=0.9 if self.compare else 0.85)
 
         return super(HovmollerPlotter, self).plot(fig)
