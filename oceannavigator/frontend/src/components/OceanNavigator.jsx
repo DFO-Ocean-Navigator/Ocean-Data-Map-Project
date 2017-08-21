@@ -36,6 +36,7 @@ export default class OceanNavigator extends React.Component {
       variable_scale: [-5,30], // Default variable range for left/primary view
       depth: 0,
       time: -1,
+      starttime: -1,
       scale: "-5,30", // Variable scale for left/primary view
       scale_1: "-5,30", // Variable scale for right view
       plotEnabled: false, // "Plot" button in MapToolbar
@@ -47,6 +48,7 @@ export default class OceanNavigator extends React.Component {
       basemap: "topo",
       bathymetry: true, // Show bathymetry contours
       showHelp: false,
+      showCompareHelp: false,
       extent: [],
       dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
@@ -90,6 +92,8 @@ export default class OceanNavigator extends React.Component {
 
     // Function bindings (performance optimization)
     this.toggleSidebar = this.toggleSidebar.bind(this);
+    this.showCompareHelp = this.showCompareHelp.bind(this);
+    this.hideCompareHelp = this.hideCompareHelp.bind(this);
     this.swapViews = this.swapViews.bind(this);
     this.updateState = this.updateState.bind(this);
     this.action = this.action.bind(this);
@@ -102,6 +106,13 @@ export default class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
+  showCompareHelp() {
+    this.setState({showCompareHelp: true,});
+  }
+
+  hideCompareHelp() {
+    this.setState({showCompareHelp: false,});
+  }
   // Swap all view-related state variables
   swapViews() {
     const newState = this.state;
@@ -428,6 +439,7 @@ export default class OceanNavigator extends React.Component {
             variable={this.state.variable}
             depth={this.state.depth}
             time={this.state.time}
+            starttime={this.state.starttime}
             scale={this.state.scale}
             colormap={this.state.colormap}
             names={this.state.names}
@@ -436,6 +448,8 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
             action={this.action}
+            showHelp={this.showCompareHelp}
+            swapViews={this.swapViews}
           />
         );
 
@@ -549,6 +563,7 @@ export default class OceanNavigator extends React.Component {
           state={this.state}
           swapViews={this.swapViews}
           changeHandler={this.updateState}
+          showHelp={this.showCompareHelp}
         />
         <div className={contentClassName}>
           <MapToolbar
@@ -619,6 +634,24 @@ export default class OceanNavigator extends React.Component {
             <Button
               onClick={() => this.setState({showHelp: false})}
             ><Icon icon="close" /> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showCompareHelp}
+          onHide={this.hideCompareHelp}
+          bsSize="large"
+          dialogClassName="helpdialog"
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.hideCompareHelp}><Icon icon="close"/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 

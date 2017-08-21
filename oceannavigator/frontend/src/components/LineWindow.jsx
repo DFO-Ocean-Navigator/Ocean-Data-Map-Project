@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem, Panel} from "react-bootstrap";
+import {Nav, NavItem, Panel, Alert, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -20,7 +20,6 @@ export default class LineWindow extends React.Component {
       selected: 1,
       scale: props.scale + ",auto",
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -112,13 +111,32 @@ export default class LineWindow extends React.Component {
       header={_("Global Settings")}
       bsStyle='primary'
     >
-      <SelectBox
-        key='dataset_compare'
-        id='dataset_compare'
-        state={this.props.dataset_compare}
-        onUpdate={this.props.onUpdate}
-        title={_("Compare Dataset")}
-      />
+      <Row>
+        <Col xs={9}>
+          <SelectBox
+            id='dataset_compare'
+            state={this.props.dataset_compare}
+            onUpdate={this.props.onUpdate}
+            title={_("Compare Datasets")}
+          />
+        </Col>
+        <Col xs={3}>
+          <Button 
+            bsStyle="link"
+            onClick={this.props.showHelp}
+          >
+            {_("Help")}
+          </Button>
+        </Col>
+      </Row>
+      <Button
+        bsStyle="default"
+        block
+        style={{display: this.props.dataset_compare ? "block" : "none"}}
+        onClick={this.props.swapViews}
+      >
+        {_("Swap Views")}
+      </Button>
 
       <Range
         auto
@@ -181,7 +199,7 @@ export default class LineWindow extends React.Component {
     const dataset = <Panel 
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left View") : _("Primary View")}
+      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
       bsStyle='primary'
     >
       <DatasetSelector
@@ -245,7 +263,7 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.state.starttime;
+        plot_query.starttime = this.props.starttime;
         plot_query.depth = this.props.depth;
         inputs = [
           global, dataset
@@ -294,5 +312,8 @@ LineWindow.propTypes = {
   onUpdate: PropTypes.func,
   scale: PropTypes.string,
   init: PropTypes.object,
+  starttime: PropTypes.number,
   action: PropTypes.func,
+  swapViews: PropTypes.func,
+  showHelp: PropTypes.func,
 };

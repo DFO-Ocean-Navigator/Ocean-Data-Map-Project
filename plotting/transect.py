@@ -525,9 +525,7 @@ class TransectPlotter(line.LinePlotter):
             )
             
             # Show a difference plot if both variables and datasets are the same
-            if self.variables[0] == self.compare['variables'][0] and \
-            self.compare['dataset'] == self.dataset_name:
-
+            if self.variables[0] == self.compare['variables'][0]:
                 # Calculate variable range
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)

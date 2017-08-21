@@ -3,12 +3,32 @@ import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import {Panel, Button} from "react-bootstrap";
+import {Panel, Button, Row, Col, Modal} from "react-bootstrap";
+import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
 export default class MapInputs extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      showHelp: false,
+    };
+
+    // Function bindings
+    this.showHelp = this.showHelp.bind(this);
+    this.closeHelp = this.closeHelp.bind(this);
+  }
+
+  showHelp() {
+    this.setState({showHelp: true,});
+  }
+
+  closeHelp() {
+    this.setState({showHelp: false,});
+  }
  
   render() {
     _("Variable Range");
@@ -64,12 +84,24 @@ export default class MapInputs extends React.Component {
             onUpdate={this.props.changeHandler}
             title={_("Show Bathymetry Contours")}
           />
-          <SelectBox
-            id='dataset_compare'
-            state={this.props.state.dataset_compare}
-            onUpdate={this.props.changeHandler}
-            title={_("Compare Datasets")}
-          />
+          <Row>
+            <Col xs={9}>
+              <SelectBox
+                id='dataset_compare'
+                state={this.props.state.dataset_compare}
+                onUpdate={this.props.changeHandler}
+                title={_("Compare Datasets")}
+              />
+            </Col>
+            <Col xs={3}>
+              <Button 
+                bsStyle="link"
+                onClick={this.props.showHelp}
+              >
+                {_("Help")}
+              </Button>
+            </Col>
+          </Row>
           <SelectBox
             id='syncRanges'
             onUpdate={this.props.changeHandler}
@@ -150,6 +182,25 @@ export default class MapInputs extends React.Component {
           </Panel>
 
         </div>
+
+        <Modal
+          show={this.state.showHelp}
+          onHide={this.closeHelp}
+          bsSize="large"
+          dialogClassName="helpdialog"
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.closeHelp}><Icon icon="close"/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
       </div>
     );
   }
@@ -172,4 +223,5 @@ MapInputs.propTypes = {
   extent: PropTypes.array,
   changeHandler: PropTypes.func,
   swapViews: PropTypes.func,
+  showHelp: PropTypes.func,
 };
