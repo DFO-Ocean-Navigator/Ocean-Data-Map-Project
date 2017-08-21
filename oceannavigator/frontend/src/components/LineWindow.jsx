@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem, Panel, Alert, Row, Col, Button} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -99,11 +99,6 @@ export default class LineWindow extends React.Component {
         title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
     */
-
-    const alert = (<Alert bsStyle="warning">
-      <strong>Note:</strong> The comparison mode for a Hovmoller Diagram does not currently output any
-      meaningful data. Please check back very soon for a working version.
-  </Alert>);
 
     const global = <Panel 
       collapsible
