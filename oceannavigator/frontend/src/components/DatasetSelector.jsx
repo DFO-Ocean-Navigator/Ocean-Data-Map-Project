@@ -5,14 +5,16 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-const KEYS = [
+// Default properties for a dataset-state
+const DATA_ELEMS = [
   "dataset",
   "dataset_attribution",
-  "dataset_quantum", // Dataset time
+  "dataset_quantum",
   "variable",
   "variable_scale", // Default range values for variable
   "depth",
   "time",
+  "starttime",
 ];
 
 export default class DatasetSelector extends React.Component {
@@ -24,7 +26,7 @@ export default class DatasetSelector extends React.Component {
   }
 
   onUpdate(key, value) {
-    const newState = KEYS.reduce((a,b) => {
+    const newState = DATA_ELEMS.reduce((a,b) => {
       a[b] = this.props.state[b];
       return a;
     }, {});
@@ -76,6 +78,7 @@ export default class DatasetSelector extends React.Component {
             title={_("Start Time")}
             onUpdate={this.onUpdate}
             max={this.props.state.time}
+            updateDate={this.updateDate}
           />
           <TimePicker
             key='time'

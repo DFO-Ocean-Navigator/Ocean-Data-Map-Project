@@ -1,4 +1,5 @@
 import React from "react";
+import {Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
@@ -16,7 +17,7 @@ export default class Class4Window extends React.Component {
       climatology: false,
       error: "none",
       size: "10x7",
-      dpi: 72,
+      dpi: 144,
       models: [],
     };
 
@@ -78,52 +79,60 @@ export default class Class4Window extends React.Component {
       <div className='Class4Window Window'>
         <div className='content'>
           <div className='inputs'>
-            <ComboBox
-              key='forecast'
-              id='forecast'
-              state={this.state.forecast}
-              def=''
-              url={
-                "/api/class4/forecasts/" + this.props.class4id
-              }
-              title={_("Forecast")}
-              onUpdate={this.onLocalUpdate}
-            />
-            <SelectBox
-              key='showmap'
-              id='showmap'
-              state={this.state.showmap}
-              onUpdate={this.onLocalUpdate}
-              title={_("Show Location")}>{_("showmap_help")}</SelectBox>
-            <SelectBox
-              key='climatology'
-              id='climatology'
-              state={this.state.climatology}
-              onUpdate={this.onLocalUpdate}
-              title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
-            <ComboBox
-              key='models'
-              id='models'
-              state={this.state.models}
-              multiple
-              onUpdate={this.onLocalUpdate}
-              url={"/api/class4/models/" + this.props.class4id}
-              title={_("Additional Models")} />
-            <ComboBox
-              key='error'
-              id='error'
-              state={this.state.error}
-              def=''
-              data={error_options}
-              title={_("Show Error")}
-              onUpdate={this.onLocalUpdate} />
-            <ImageSize
-              key='size'
-              id='size'
-              state={this.state.size}
-              onUpdate={this.onLocalUpdate}
-              title={_("Saved Image Size")} />
+            <Panel 
+              collapsible
+              defaultExpanded
+              header={_("Class 4 Settings")}
+              bsStyle='primary'
+            >
+              <ComboBox
+                key='forecast'
+                id='forecast'
+                state={this.state.forecast}
+                def=''
+                url={
+                  "/api/class4/forecasts/" + this.props.class4id
+                }
+                title={_("Forecast")}
+                onUpdate={this.onLocalUpdate}
+              />
+              <SelectBox
+                key='showmap'
+                id='showmap'
+                state={this.state.showmap}
+                onUpdate={this.onLocalUpdate}
+                title={_("Show Location")}>{_("showmap_help")}</SelectBox>
+              <SelectBox
+                key='climatology'
+                id='climatology'
+                state={this.state.climatology}
+                onUpdate={this.onLocalUpdate}
+                title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
+              <ComboBox
+                key='models'
+                id='models'
+                state={this.state.models}
+                multiple
+                onUpdate={this.onLocalUpdate}
+                url={"/api/class4/models/" + this.props.class4id}
+                title={_("Additional Models")} />
+              <ComboBox
+                key='error'
+                id='error'
+                state={this.state.error}
+                def=''
+                data={error_options}
+                title={_("Show Error")}
+                onUpdate={this.onLocalUpdate} />
+              <ImageSize
+                key='size'
+                id='size'
+                state={this.state.size}
+                onUpdate={this.onLocalUpdate}
+                title={_("Saved Image Size")} />
+            </Panel>
           </div>
+
           <PlotImage
             query={plot_query} // For image saving link.
             permlink_subquery={this.state}

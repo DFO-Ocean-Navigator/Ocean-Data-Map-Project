@@ -35,6 +35,8 @@ export default class TimePicker extends React.Component {
     // Function bindings
     this.timeChange = this.timeChange.bind(this);
     this.pickerChange = this.pickerChange.bind(this);
+    this.nextTime = this.nextTime.bind(this);
+    this.prevTime = this.prevTime.bind(this);
   }
 
   populate(props) {
@@ -164,6 +166,19 @@ export default class TimePicker extends React.Component {
           console.error(props.url, status, err.toString());
         }.bind(this)
       });
+
+      var date;
+      var value = parseInt(props.state);
+  
+      if (value < 0) {
+        value += this.state.data.length;
+      }
+  
+      if (value < 0) {
+        value = 0;
+      }
+  
+      date = new Date(this.state.map[value]);
     }
   }
 
@@ -322,6 +337,7 @@ export default class TimePicker extends React.Component {
           type="text"
           value={$.datepicker.formatDate("MM yy", date)}
         />;
+        console.warn($.datepicker.formatDate("MM yy", date));
         break;
       case "day":
       case "hour":
@@ -331,6 +347,7 @@ export default class TimePicker extends React.Component {
           type="text"
           value={$.datepicker.formatDate("dd MM yy", date)}
         />;
+        //console.warn($.datepicker.formatDate("dd MM yy", date));
         break;
     }
 
@@ -356,7 +373,7 @@ export default class TimePicker extends React.Component {
 
         <div>
           <Button
-            onClick={() => this.prevTime()}
+            onClick={this.prevTime}
             disabled={this.isFirstTime()}
           ><Icon icon='caret-left' alt="<" /></Button>
           <div>
@@ -364,7 +381,7 @@ export default class TimePicker extends React.Component {
             {timeinput}
           </div>
           <Button
-            onClick={() => this.nextTime()}
+            onClick={this.nextTime}
             disabled={this.isLastTime()}
           ><Icon icon='caret-right' alt=">" /></Button>
         </div>

@@ -9,7 +9,7 @@ export default class ImageSize extends React.Component {
     super(props);
 
     this.state = {
-      width: 10,
+      width: 12,
       height: 7.5,
       dpi: 144,
     };
