@@ -36,7 +36,7 @@ export default class OceanNavigator extends React.Component {
       variable_scale: [-5,30], // Default variable range for left/primary view
       depth: 0,
       time: -1,
-      starttime: -1,
+      starttime: -1, // Start time for left view
       scale: "-5,30", // Variable scale for left/primary view
       scale_1: "-5,30", // Variable scale for right view
       plotEnabled: false, // "Plot" button in MapToolbar
@@ -123,6 +123,7 @@ export default class OceanNavigator extends React.Component {
     [newState.time, newState.dataset_1.time] = [newState.dataset_1.time, newState.time];
     [newState.scale, newState.scale_1] = [newState.scale_1, newState.scale];
     [newState.variable_scale, newState.dataset_1.variable_scale] = [newState.dataset_1.variable_scale, newState.variable_scale];
+    [newState.starttime, newState.dataset_1.starttime] = [newState.dataset_1.starttime, newState.starttime];
 
     this.setState(newState);
   }
@@ -441,6 +442,7 @@ export default class OceanNavigator extends React.Component {
             time={this.state.time}
             starttime={this.state.starttime}
             scale={this.state.scale}
+            scale_1={this.state.scale_1}
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
@@ -466,6 +468,7 @@ export default class OceanNavigator extends React.Component {
             time={this.state.time}
             variable={this.state.variable}
             scale={this.state.scale}
+            scale_1={this.state.scale_1}
             colormap={this.state.colormap}
             names={this.state.names}
             depth={this.state.depth}
@@ -474,7 +477,9 @@ export default class OceanNavigator extends React.Component {
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
+            showHelp={this.showCompareHelp}
             action={this.action}
+            swapViews={this.swapViews}
           />
         );
 

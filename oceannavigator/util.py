@@ -8,12 +8,11 @@ import re
 _config = None
 
 
-def read_config():
+def read_config(configFile = 'datasetconfig.cfg'):
     global _config
     if _config is None:
         config = ConfigParser.RawConfigParser()
-        config.read(os.path.join(os.path.dirname(oceannavigator.__file__),
-                                 'datasetconfig.cfg'))
+        config.read(os.path.join(os.path.dirname(oceannavigator.__file__), configFile))
         _config = config
 
     return _config
@@ -35,6 +34,10 @@ def get_dataset_url(dataset):
 
 def get_dataset_climatology(dataset):
     return get_datasets().get(dataset).get("climatology")
+
+
+def get_dataset_name(dataset):
+    return get_datasets().get(dataset).get("name")
 
 
 def get_dataset_attribution(dataset):

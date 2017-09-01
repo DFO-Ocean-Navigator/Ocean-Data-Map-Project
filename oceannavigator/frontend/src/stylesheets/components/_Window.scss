@@ -12,4 +12,9 @@
         float: left;
         max-width: $sidebar-width;
     }
+
+    div.inputs-right {
+        float: right;
+        max-width: $sidebar-width;
+    }
 }

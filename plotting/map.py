@@ -56,6 +56,15 @@ class MapPlotter(area.AreaPlotter):
         )
 
     def csv(self):
+        # If the user has selected the display of quiver data in the browser,
+        # then also export that data in the CSV file.
+        if self.quiver is not None and \
+            self.quiver['variable'] != '' and \
+                self.quiver['variable'] != 'none':
+            have_quiver = True
+        else:
+            have_quiver = False
+
         header = [
             ['Dataset', self.dataset_name],
             ["Timestamp", self.timestamp.isoformat()]
@@ -68,6 +77,13 @@ class MapPlotter(area.AreaPlotter):
             "%s (%s)" % (self.variable_name, self.variable_unit)
         ]
         data_in = self.data.ravel()[::5]
+        if have_quiver:
+            columns.extend([
+                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s Y (%s)" % (self.quiver_name, self.quiver_unit)
+            ])
+            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
+                              self.quiver_data_fullgrid[1].ravel()[::5])
 
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
@@ -84,6 +100,11 @@ class MapPlotter(area.AreaPlotter):
                 "%0.1f" % depth[idx],
                 "%0.1f" % data_in[idx]
             ]
+            if have_quiver:
+                entry.extend([
+                    "%0.3f" % quiver_data_in[0][idx],
+                    "%0.3f" % quiver_data_in[1][idx]
+                ])
             data.append(entry)
 
         return super(MapPlotter, self).csv(header, columns, data)
@@ -193,6 +214,9 @@ class MapPlotter(area.AreaPlotter):
             self.data = data[0]
 
             quiver_data = []
+            # Store the quiver data on the same grid as the main variable. This
+            # will only be used for CSV export.
+            quiver_data_fullgrid = []
 
             if self.quiver is not None and \
                 self.quiver['variable'] != '' and \
@@ -210,12 +234,21 @@ class MapPlotter(area.AreaPlotter):
                         v
                     )
                     quiver_data.append(d)
+                    # Get the quiver data on the same grid as the main variable.
+                    d = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.time,
+                        v
+                    )
+                    quiver_data_fullgrid.append(d)
 
                 self.quiver_name = self.vector_name(quiver_name)
                 self.quiver_longitude = quiver_lon
                 self.quiver_latitude = quiver_lat
                 self.quiver_unit = quiver_unit
             self.quiver_data = quiver_data
+            self.quiver_data_fullgrid = quiver_data_fullgrid
 
             if all(map(lambda v: len(dataset.variables[v].dimensions) == 3,
                        allvars)):

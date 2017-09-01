@@ -80,12 +80,13 @@ class Plotter:
         self.starttime = get_time('starttime')
         self.endtime = get_time('endtime')
 
-        scale = query.get('scale')
-        if scale is None or 'auto' in scale:
-            scale = None
-        else:
-            scale = [float(x) for x in scale.split(',')]
-        self.scale = scale
+        # Parse variable scale
+        def parse_scale(query_scale):
+            if query_scale is None or 'auto' or 'default' in query_scale:
+                return None     
+            return [float(x) for x in query_scale.split(',')]
+
+        self.scale = parse_scale(query.get('scale'))
 
         variables = query.get('variable')
         if variables is None:
@@ -96,9 +97,22 @@ class Plotter:
 
         self.variables = filter(lambda v: v != '', variables)
 
+        # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
+            print self.compare
             self.compare['variables'] = self.compare['variable'].split(',')
+
+            try:
+                # Variable scale
+                self.compare['scale'] = parse_scale(self.compare['scale'])
+            except KeyError:
+                print "Ignoring scale attribute."
+            try:
+                # Difference plot scale
+                self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
+            except KeyError:
+                print "Ignoring scale_diff attribute."
         else:
             self.compare = False
 
@@ -147,8 +161,11 @@ class Plotter:
         if fig is None:
             fig = plt.gcf()
 
-        fig.text(0.9, 0, get_dataset_attribution(self.dataset_name),
-                 ha='right', size='small', va='top')
+        fig.text(1.0, 0.015, get_dataset_attribution(self.dataset_name),
+                ha='right', size='small', va='top')
+        if self.compare:
+            fig.text(1.0, 0.0, get_dataset_attribution(self.compare['dataset']),
+                ha='right', size='small', va='top')
 
         with contextlib.closing(StringIO()) as buf:
             plt.savefig(
@@ -286,16 +303,15 @@ class Plotter:
 
         return output
 
-    def fix_startend_times(self, dataset):
-        self.starttime = np.clip(
-            self.starttime, 0, len(dataset.timestamps) - 1)
-        self.endtime = np.clip(self.endtime, 0, len(dataset.timestamps) - 1)
+    def fix_startend_times(self, dataset, starttime, endtime):
+        starttime = np.clip(starttime, 0, len(dataset.timestamps) - 1)
+        endtime = np.clip(endtime, 0, len(dataset.timestamps) - 1)
 
-        if self.starttime > self.endtime:
-            self.starttime = self.endtime - 1
-            if self.starttime < 0:
-                self.starttime = 0
-                self.endtime = 2
+        if starttime > endtime:
+            starttime = endtime - 1
+            if starttime < 0:
+                starttime = 0
+                endtime = 2
 
     def plot_legend(self, figure, labels):
         if len(labels) > 10:

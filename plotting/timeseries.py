@@ -206,7 +206,7 @@ class TimeseriesPlotter(point.PointPlotter):
     def load_data(self):
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             self.load_misc(dataset, self.variables)
-            self.fix_startend_times(dataset)
+            self.fix_startend_times(dataset, self.starttime, self.endtime)
 
             self.variable_unit = get_variable_unit(
                 self.dataset_name,

@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -34,7 +34,7 @@ export default class PointWindow extends React.Component {
       variable: [props.variable],
       observation_variable: [7],
       size: "10x7",
-      dpi: 72,
+      dpi: 144,
     };
 
     if (props.init != null) {
@@ -164,6 +164,32 @@ export default class PointWindow extends React.Component {
     _("Variable Range");
     _("Colourmap");
     _("Saved Image Size");
+
+    const global = (<Panel
+      collapsible
+      defaultExpanded
+      header={_("Global Settings")}
+      bsStyle='primary'
+    >
+      <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
+        <LocationInput
+          key='point'
+          id='point'
+          state={this.props.point}
+          title={_("Location")}
+          onUpdate={this.onLocalUpdate}
+        />
+      </div>
+      
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+    </Panel>);
+
     const dataset = <ComboBox
       key='dataset'
       id='dataset'
@@ -182,13 +208,6 @@ export default class PointWindow extends React.Component {
       url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
       title={_("Time")}
       onUpdate={this.props.onUpdate}
-    />;
-    const point = <LocationInput
-      key='point'
-      id='point'
-      state={this.props.point}
-      title={_("Location")}
-      onUpdate={this.onLocalUpdate}
     />;
     const starttime = <TimePicker
       key='starttime'
@@ -270,12 +289,6 @@ export default class PointWindow extends React.Component {
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
-    const size = <ImageSize
-      key='size'
-      id='size'
-      state={this.state.size}
-      onUpdate={this.onLocalUpdate}
-      title={_("Saved Image Size")} />;
     let observation_data = [];
     let observation_variable = <div></div>;
     if (this.props.point[0][2] !== undefined) {
@@ -344,10 +357,7 @@ export default class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.props.time;
         plot_query.variable = this.state.variable;
-        inputs = [dataset, time, profilevariable];
-        if (this.props.point.length == 1) {
-          inputs.push(point);
-        }
+        inputs = [global, dataset, time, profilevariable];
         break;
       case TabEnum.CTD:
         plot_query.type = "profile";
@@ -363,35 +373,28 @@ export default class PointWindow extends React.Component {
         } else if ($.inArray("salinity", this.state.variables) != -1) {
           plot_query.variable += "salinity";
         }
-        inputs = [dataset, time];
-        if (this.props.point.length == 1) {
-          inputs.push(point);
-        }
+        inputs = [global, dataset, time];
         break;
       case TabEnum.TS:
         plot_query.type = "ts";
         plot_query.time = this.props.time;
-        inputs = [dataset, time];
-        if (this.props.point.length == 1) {
-          inputs.push(point);
-        }
+        inputs = [global, dataset, time];
         break;
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
-        inputs = [dataset, time];
-        if (this.props.point.length == 1) {
-          inputs.push(point);
-        }
+        inputs = [global, dataset, time];
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
         plot_query.observation = this.props.point.map(function (o) {
           return o[2];
         });
+        
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.variable;
-        inputs = [dataset, observation_variable, profilevariable];
+        inputs = [global, dataset, observation_variable, profilevariable];
+        
         break;
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
@@ -402,7 +405,7 @@ export default class PointWindow extends React.Component {
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
 
-        inputs = [dataset, starttime, endtime, variable, point, depth, scale];
+        inputs = [global, dataset, starttime, endtime, variable, depth, scale];
         if (this.state.depth == "all") {
           inputs.push(colormap);
         }
@@ -415,12 +418,10 @@ export default class PointWindow extends React.Component {
         plot_query.endtime = this.props.time;
         plot_query.depth = this.state.depth;
 
-        inputs = [dataset, starttime, endtime, vectorvariable, point, multidepth];
+        inputs = [global, dataset, starttime, endtime, vectorvariable, multidepth];
 
         break;
     }
-
-    inputs.push(size);
 
     const permlink_subquery = {
       selected: this.state.selected,

@@ -73,7 +73,7 @@ export default class ContourSelector extends React.Component {
             <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def='' onUpdate={this.onUpdate} url='/api/colormaps/' title={_("Colourmap")}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>
           </div>
           <SelectBox key='legend' id='legend' state={this.props.state.legend} onUpdate={this.onUpdate} title={_("Show Legend")}></SelectBox>
-          <h1>_{("Levels")}</h1>
+          <h1>{_("Levels")}</h1>
           <SelectBox key='autolevels' id='autolevels' state={auto} onUpdate={this.onUpdateAuto} title={_("Auto Levels")}></SelectBox>
           <input type="text" style={{"display": this.state.autolevels ? "none" : "inline-block"}} value={this.state.levels} onChange={this.levelsChanged} onBlur={this.updateLevels} />
         </div>

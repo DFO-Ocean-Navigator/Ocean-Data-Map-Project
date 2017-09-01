@@ -94,12 +94,14 @@ export default class MapInputs extends React.Component {
               />
             </Col>
             <Col xs={3}>
+            {/*
               <Button 
                 bsStyle="link"
                 onClick={this.props.showHelp}
               >
                 {_("Help")}
               </Button>
+            */}
             </Col>
           </Row>
           <SelectBox

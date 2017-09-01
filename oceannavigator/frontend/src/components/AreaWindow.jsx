@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -19,7 +19,11 @@ export default class AreaWindow extends React.Component {
     this.state = {
       selected: 1,
       scale: props.scale + ",auto",
-      colormap: "default",
+      scale_1: props.scale_1 + ",auto",
+      scale_diff: "-10,10,auto",
+      leftColormap: "default",
+      rightColormap: "default",
+      diffColormap: "default",
       showarea: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -38,7 +42,7 @@ export default class AreaWindow extends React.Component {
       },
       variable: [props.variable],
       size: "10x7",
-      dpi: 72,
+      dpi: 144,
     };
 
     if (props.init !== null) {
@@ -51,7 +55,7 @@ export default class AreaWindow extends React.Component {
   }
 
   componentWillReceiveProps(props) {
-    if (props.depth != this.props.depth) {
+    if (props.depth !== this.props.depth) {
       this.setState({
         depth: props.depth,
       });
@@ -85,7 +89,7 @@ export default class AreaWindow extends React.Component {
 
     if (newState.hasOwnProperty("variable_scale")) {
       if (typeof(this.state.variable) === "string" ||
-        this.state.variable.length == 1) {
+        this.state.variable.length === 1) {
         parentKeys.push("variable_scale");
         parentValues.push(newState.variable_scale);
       }
@@ -95,7 +99,7 @@ export default class AreaWindow extends React.Component {
       if (typeof(this.state.variable) === "string") {
         parentKeys.push("variable");
         parentValues.push(newState.variable);
-      } else if (this.state.variable.length == 1) {
+      } else if (this.state.variable.length === 1) {
         parentKeys.push("variable");
         parentValues.push(newState.variable[0]);
       }
@@ -126,28 +130,195 @@ export default class AreaWindow extends React.Component {
     _("Additional Contours");
     _("Show Selected Area(s)");
     _("Saved Image Size");
-    const dataset = <DatasetSelector 
-      key='dataset_0' 
-      id='dataset_0' 
-      state={this.props.dataset_0} 
-      onUpdate={this.props.onUpdate}
-      depth={true}
-    />;
-    const compare_dataset = <div key='compare_dataset'>
-      <SelectBox
-        key='dataset_compare'
-        id='dataset_compare'
-        state={this.props.dataset_compare}
-        onUpdate={this.props.onUpdate}
-        title={_("Compare Dataset")}
-      />
-      <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
-        <DatasetSelector
-          key='dataset_1'
-          id='dataset_1'
-          state={this.props.dataset_1}
-          onUpdate={this.props.onUpdate}
+
+    const mapSettings= (<Panel
+      collapsible
+      defaultExpanded
+      header={_("Area Settings")}
+      bsStyle='primary'
+    >
+      <Row>
+        <Col xs={9}>
+          <SelectBox
+            id='dataset_compare'
+            state={this.props.dataset_compare}
+            onUpdate={this.props.onUpdate}
+            title={_("Compare Datasets")}
+          />
+        </Col>
+        <Col xs={3}>
+          <Button 
+            bsStyle="link"
+            onClick={this.props.showHelp}
+          >
+            {_("Help")}
+          </Button>
+        </Col>
+      </Row>
+      <Button
+        bsStyle="default"
+        block
+        style={{display: this.props.dataset_compare ? "block" : "none"}}
+        onClick={this.props.swapViews}
+      >
+        {_("Swap Views")}
+      </Button>
+
+      <div
+        style={{display: this.props.dataset_compare &&
+                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+      >
+        <Range
+          auto
+          key='scale_diff'
+          id='scale_diff'
+          state={this.state.scale_diff}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Diff. Variable Range")}
         />
+        <ComboBox 
+          key='diffColormap' 
+          id='diffColormap' 
+          state={this.state.diffColormap} 
+          def='default' 
+          onUpdate={this.onLocalUpdate} 
+          url='/api/colormaps/' 
+          title={_("Diff. Colourmap")}
+        >
+          {_("colourmap_help")}
+          <img src="/colormaps.png" />
+        </ComboBox>
+      </div>
+      
+      <SelectBox 
+        key='bathymetry' 
+        id='bathymetry' 
+        state={this.state.bathymetry} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Show Bathymetry Contours")}
+      />
+
+      <SelectBox 
+        key='showarea' 
+        id='showarea' 
+        state={this.state.showarea} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Show Selected Area(s)")}
+      >
+        {_("showarea_help")}
+      </SelectBox>
+
+      <QuiverSelector 
+        key='quiver' 
+        id='quiver' 
+        state={this.state.quiver} 
+        def='' 
+        onUpdate={this.onLocalUpdate} 
+        dataset={this.props.dataset_0.dataset} 
+        title={_("Arrows")}
+      >
+        {_("arrows_help")}
+      </QuiverSelector>
+
+      <ContourSelector 
+        key='contour' 
+        id='contour' 
+        state={this.state.contour} 
+        def='' 
+        onUpdate={this.onLocalUpdate} 
+        dataset={this.props.dataset_0.dataset} 
+        title={_("Additional Contours")}
+      >
+        {_("contour_help")}
+      </ContourSelector>
+
+      <ImageSize 
+        key='size' 
+        id='size' 
+        state={this.state.size} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Saved Image Size")} 
+      />
+    </Panel>);
+
+    const dataset = (<Panel
+      collapsible
+      defaultExpanded
+      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
+      bsStyle='primary'
+    >
+      <DatasetSelector 
+        key='dataset_0' 
+        id='dataset_0' 
+        state={this.props.dataset_0} 
+        onUpdate={this.props.onUpdate}
+        depth={true}
+      />
+
+      <Range 
+        auto 
+        key='scale' 
+        id='scale' 
+        state={this.state.scale} 
+        def={""} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Variable Range")} 
+      />
+
+      <ComboBox 
+        key='leftColormap' 
+        id='leftColormap' 
+        state={this.state.leftColormap} 
+        def='default' 
+        onUpdate={this.onLocalUpdate} 
+        url='/api/colormaps/' 
+        title={_("Colourmap")}
+      >
+        {_("colourmap_help")}
+        <img src="/colormaps.png" />
+      </ComboBox>
+    </Panel>);
+    
+    const compare_dataset = <div key='compare_dataset'>
+      <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
+        <Panel
+          collapsible
+          defaultExpanded
+          header={_("Right View")}
+          bsStyle='primary'
+        >
+          <DatasetSelector
+            key='dataset_1'
+            id='dataset_1'
+            state={this.props.dataset_1}
+            onUpdate={this.props.onUpdate}
+          />
+
+          <Range
+            auto
+            key='scale_1'
+            id='scale_1'
+            state={this.state.scale_1}
+            def={""}
+            onUpdate={this.onLocalUpdate}
+            title={_("Variable Range")}
+          />
+
+          <ComboBox 
+            key='rightColormap' 
+            id='rightColormap' 
+            state={this.state.rightColormap} 
+            def='default' 
+            onUpdate={this.onLocalUpdate} 
+            url='/api/colormaps/' 
+            title={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/colormaps.png" />
+          </ComboBox>
+
+        </Panel>
       </div>
     </div>;
     const multivariable = <ComboBox 
@@ -159,63 +330,13 @@ export default class AreaWindow extends React.Component {
       onUpdate={this.onLocalUpdate} 
       url={"/api/variables/?dataset="+this.props.dataset + "&anom"} 
       title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>;
-    const scale = <Range 
-      auto 
-      key='scale' 
-      id='scale' 
-      state={this.state.scale} 
-      def={""} 
-      onUpdate={this.onLocalUpdate} 
-      title={_("Variable Range")} />;
-    const colormap = <ComboBox 
-      key='colormap' 
-      id='colormap' 
-      state={this.state.colormap} 
-      def='default' 
-      onUpdate={this.onLocalUpdate} 
-      url='/api/colormaps/' 
-      title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" /></ComboBox>;
-    const bathymetry = <SelectBox 
-      key='bathymetry' 
-      id='bathymetry' 
-      state={this.state.bathymetry} 
-      onUpdate={this.onLocalUpdate} 
-      title={_("Show Bathymetry Contours")} />;
-    const quiver = <QuiverSelector 
-      key='quiver' 
-      id='quiver' 
-      state={this.state.quiver} 
-      def='' 
-      onUpdate={this.onLocalUpdate} 
-      dataset={this.props.dataset_0.dataset} 
-      title={_("Arrows")}>{_("arrows_help")}</QuiverSelector>;
-    const contour = <ContourSelector 
-      key='contour' 
-      id='contour' 
-      state={this.state.contour} 
-      def='' 
-      onUpdate={this.onLocalUpdate} 
-      dataset={this.props.dataset_0.dataset} 
-      title={_("Additional Contours")}>{_("contour_help")}</ContourSelector>;
-    const showarea = <SelectBox 
-      key='showarea' 
-      id='showarea' 
-      state={this.state.showarea} 
-      onUpdate={this.onLocalUpdate} 
-      title={_("Show Selected Area(s)")}>{_("showarea_help")}</SelectBox>;
-    const size = <ImageSize 
-      key='size' 
-      id='size' 
-      state={this.state.size} 
-      onUpdate={this.onLocalUpdate} 
-      title={_("Saved Image Size")} />;
 
-    var inputs = [];
+    var leftInputs = [];
+    var rightInputs = [];
     const plot_query = {
       dataset: this.props.dataset_0.dataset,
       quantum: this.props.quantum,
       scale: this.state.scale,
-      colormap: this.state.colormap,
       name: this.props.name,
     };
 
@@ -223,6 +344,7 @@ export default class AreaWindow extends React.Component {
     switch(this.state.selected) {
       case 1:
         plot_query.type = "map";
+        plot_query.colormap = this.state.leftColormap;
         plot_query.time = this.props.time;
         plot_query.area = this.props.area;
         plot_query.depth = this.props.depth;
@@ -236,10 +358,17 @@ export default class AreaWindow extends React.Component {
         plot_query.dpi = this.state.dpi;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.scale = this.state.scale_1;
+          plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.rightColormap;
+          plot_query.compare_to.diffColormap = this.state.diffColormap;
         }
-        inputs = [
-          dataset, compare_dataset, showarea, scale, colormap,
-          bathymetry, quiver, contour, size
+
+        leftInputs = [
+          mapSettings
+        ];
+        rightInputs = [
+          dataset, compare_dataset
         ];
 
         content = <PlotImage
@@ -257,7 +386,7 @@ export default class AreaWindow extends React.Component {
         } else {
           plot_query.variable = this.state.variable;
         }
-        inputs = [dataset, multivariable];
+        leftInputs = [dataset, multivariable];
         content = <StatsTable query={plot_query}/>;
         break;
     }
@@ -274,7 +403,10 @@ export default class AreaWindow extends React.Component {
         </Nav>
         <div className='content'>
           <div className='inputs'>
-            {inputs}
+            {leftInputs}
+          </div>
+          <div className="inputs-right">
+            {rightInputs}
           </div>
           {content}
           <br className='clear' />
@@ -302,4 +434,7 @@ AreaWindow.propTypes = {
   scale: PropTypes.string,
   init: PropTypes.object,
   action: PropTypes.func,
+  showHelp: PropTypes.func,
+  swapViews: PropTypes.func,
+  scale_1: PropTypes.string,
 };

@@ -5,7 +5,6 @@ import {Button,
   MenuItem,
   Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
-import Permalink from "./Permalink.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -100,7 +99,6 @@ export default class PlotImage extends React.Component {
         query.variable = q.variable;
         query.time = q.time;
         query.scale = q.scale;
-        query.colormap = q.colormap;
         query.path = q.path;
         query.showmap = q.showmap;
         query.surfacevariable = q.surfacevariable;
@@ -113,6 +111,8 @@ export default class PlotImage extends React.Component {
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
             time: q.compare_to.time,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
             variable: q.compare_to.variable,
           };
         }
@@ -127,6 +127,19 @@ export default class PlotImage extends React.Component {
         query.depth = q.depth;
         query.showmap = q.showmap;
         query.name = q.name;
+        if (q.compare_to) {
+          query.compare_to = {
+            variable: q.compare_to.variable,
+            starttime: q.compare_to.starttime,
+            endtime: q.compare_to.time,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            depth: q.compare_to.depth,
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+          };
+        }
         break;
       case "map":
         query.variable = q.variable;
@@ -148,6 +161,10 @@ export default class PlotImage extends React.Component {
             time: q.compare_to.time,
             variable: q.compare_to.variable,
             depth: q.compare_to.depth,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            colormap: q.compare_to.colormap,
+            diffColormap: q.compare_to.diffColormap,
           };
         }
         break;
@@ -228,18 +245,19 @@ export default class PlotImage extends React.Component {
 
     return (
       <div className='PlotImage'>
+
+        {/* Rendered graph */}
         <img src={src} />
         <br />
         <label>{infoStatus}</label>
-        <br />
         <br />
         <ButtonToolbar>
           <DropdownButton
             id="save"
             title={<span><Icon icon="save" /> {_("Save Image")}</span>}
-            dropup
             disabled={this.state.fail || this.state.loading}
             onSelect={this.saveImage}
+            dropup
           >
             <MenuItem
               eventKey="png"
@@ -284,10 +302,10 @@ export default class PlotImage extends React.Component {
           <DropdownButton
             id="link"
             title={<span><Icon icon="link" /> {_("Get Link")}</span>}
-            dropup
             bsStyle={this.state.fail ? "primary" : "default"}
             disabled={this.state.loading}
             onSelect={this.getLink}
+            dropup
           >
             <MenuItem
               eventKey="web"

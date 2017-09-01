@@ -139,11 +139,14 @@ export default class Map extends React.Component {
       loader: this.loader.bind(this),
     });
 
+    // Basemap layer
     this.layer_basemap = this.getBasemap(
-            this.props.state.basemap,
-            this.props.state.projection,
-            this.props.state.basemap_attribution
-        );
+      this.props.state.basemap,
+      this.props.state.projection,
+      this.props.state.basemap_attribution
+    );
+
+    // Data layer
     this.layer_data = new ol.layer.Tile(
       {
         source: new ol.source.XYZ({
@@ -154,6 +157,8 @@ export default class Map extends React.Component {
           ],
         }),
       });
+
+    // Bathymetry layer
     this.layer_bath = new ol.layer.Tile(
       {
         source: new ol.source.XYZ({
@@ -163,6 +168,8 @@ export default class Map extends React.Component {
         opacity: this.props.state.bathymetryOpacity,
         visible: this.props.state.bathymetry,
       });
+
+    // Drawing layer
     this.layer_vector = new ol.layer.Vector(
       {
         source: this.vectorSource,
@@ -185,7 +192,7 @@ export default class Map extends React.Component {
                 }),
               }),
             ];
-          } else if (feat.get("type") == "drifter") {
+          } else if (feat.get("type") === "drifter") {
             var start = feat.getGeometry().getCoordinateAt(0);
             var end = feat.getGeometry().getCoordinateAt(1);
             var endImage;
@@ -246,7 +253,7 @@ export default class Map extends React.Component {
             ];
 
             return styles;
-          } else if (feat.get("type") == "class4") {
+          } else if (feat.get("type") === "class4") {
             const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
             const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
             return new ol.style.Style({
@@ -328,7 +335,7 @@ export default class Map extends React.Component {
     if (this.props.state.zoom) {
       zoom = this.props.state.zoom;
     }
-    var projection = this.props.state.projection;
+    const projection = this.props.state.projection;
         
     this.mapView = new ol.View({
       center: ol.proj.transform(center, "EPSG:4326", projection),
@@ -362,16 +369,20 @@ export default class Map extends React.Component {
       }
     }.bind(this));
 
+    // Info popup
     this.map.on("singleclick", function(e) {
-      if (this.drawing) {
+      if (this.drawing) { // Prevent conflict with drawing
         return;
       }
-      var coord = e.coordinate;
-      this.infoPopupContent.innerHTML = "Loading...";
+      
+      const coord = e.coordinate;
+      
+      this.infoPopupContent.innerHTML = _("Loading...");
       if (this.infoRequest != undefined) {
         this.infoRequest.abort();
       }
-      var location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
+      const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
+      
       this.infoRequest = $.ajax({
         url: (
           `/api/data/${this.props.state.dataset}` +
@@ -383,7 +394,7 @@ export default class Map extends React.Component {
         success: function(response) {
           var text = "<p>" + 
                         "Location: " + response.location[0].toFixed(4) + ", " + response.location[1].toFixed(4);
-          for (var i = 0; i < response.name.length; i++) {
+          for (let i = 0; i < response.name.length; i++) {
             if (response.value[i] != "nan") {
               text += "<br />" +
                             response.name[i] + ": " + response.value[i] + " " + response.units[i];
