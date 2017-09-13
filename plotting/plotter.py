@@ -82,7 +82,7 @@ class Plotter:
 
         # Parse variable scale
         def parse_scale(query_scale):
-            if query_scale is None or 'auto' or 'default' in query_scale:
+            if query_scale is None or 'auto' in query_scale:
                 return None     
             return [float(x) for x in query_scale.split(',')]
 
