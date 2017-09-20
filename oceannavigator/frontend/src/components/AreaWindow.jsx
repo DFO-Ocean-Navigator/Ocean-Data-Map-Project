@@ -60,8 +60,8 @@ export default class AreaWindow extends React.Component {
         depth: props.depth,
       });
     }
-    if (props.scale != this.props.scale) {
-      if (this.state.scale.indexOf("auto") != -1) {
+    if (props.scale !== this.props.scale) {
+      if (this.state.scale.indexOf("auto") !== -1) {
         this.setState({
           scale: props.scale + ",auto"
         });
@@ -74,11 +74,21 @@ export default class AreaWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
+
+    // Passthrough to capture selected variables from DatasetSelector for StatsTable
+    if (key === "dataset_0" && this.state.selected === 2 && value.hasOwnProperty("variable")) {
+      this.setState({variable: value.variable});
+      // TODO: prevent the navigator trying to get tiles for multiple variables...only one
+      // variable should be passed up.
+      this.props.onUpdate(key, value);
+      return;
+    }
+
     var newState = {};
     if (typeof(key) === "string") {
       newState[key] = value;
     } else {
-      for (var i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
@@ -250,9 +260,10 @@ export default class AreaWindow extends React.Component {
     >
       <DatasetSelector 
         key='dataset_0' 
-        id='dataset_0' 
+        id='dataset_0'
+        multiple={this.state.selected === 2}
         state={this.props.dataset_0} 
-        onUpdate={this.props.onUpdate}
+        onUpdate={this.onLocalUpdate}
         depth={true}
       />
 
@@ -321,15 +332,6 @@ export default class AreaWindow extends React.Component {
         </Panel>
       </div>
     </div>;
-    const multivariable = <ComboBox 
-      key='variable' 
-      id='variable' 
-      multiple 
-      state={this.state.variable} 
-      def='' 
-      onUpdate={this.onLocalUpdate} 
-      url={"/api/variables/?dataset="+this.props.dataset + "&anom"} 
-      title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>;
 
     var leftInputs = [];
     var rightInputs = [];
@@ -384,9 +386,9 @@ export default class AreaWindow extends React.Component {
         if (this.state.variable.join != undefined) {
           plot_query.variable = this.state.variable.join(",");
         } else {
-          plot_query.variable = this.state.variable;
+          plot_query.variable = this.props.dataset_0.variable;
         }
-        leftInputs = [dataset, multivariable];
+        leftInputs = [dataset];
         content = <StatsTable query={plot_query}/>;
         break;
     }

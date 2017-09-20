@@ -16,7 +16,7 @@ const i18n = require("../i18n.js");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
 
 function formatLatLon(latitude, longitude) {
-  var formatted = "";
+  let formatted = "";
   formatted += Math.abs(latitude).toFixed(4) + " ";
   formatted += (latitude >= 0) ? "N" : "S";
   formatted += ", ";
