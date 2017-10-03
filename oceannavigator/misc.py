@@ -1,4 +1,7 @@
+from __future__ import print_function
+import fcntl
 import os
+import time
 from oceannavigator import app
 from pykml import parser
 from shapely.geometry.polygon import LinearRing
@@ -16,6 +19,10 @@ from oceannavigator.util import (
 )
 import re
 from data import open_dataset
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 def list_kml_files(subdir):
@@ -494,8 +501,10 @@ def drifters_time(drifter_id):
     }
 
 
-def list_class4_files():
-    c = Crawl(app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"])
+def list_class4_files_slowly():
+    # This function has poor performance; only use as a fallback.
+    c = Crawl(app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"],
+              workers=16)
 
     result = []
     for dataset in c.datasets:
@@ -505,6 +514,61 @@ def list_class4_files():
             'name': date.strftime("%Y-%m-%d"),
             'id': value
         })
+
+    return result
+
+
+def list_class4_files():
+    """Return the list of Class 4 files.
+
+    For performance reasons, this function reads the list of Class 4 files
+    from a cache file containing the predetermined list. If the cache file is
+    not accessible, this function falls back to the slow method of generating
+    the list on the fly.
+    """
+    cache_file_name = os.path.join(app.config['CACHE_DIR'],
+                                   'class4_files.pickle')
+    try:
+        fp = open(cache_file_name, 'rb')
+    except IOError as e:
+        msg = ('Warning: Unable to open cache list of Class 4 files: %s\n'
+               'Falling back to slow method for generating the list of '
+               'Class 4 files on the fly')
+        msg = msg % (str(e),)
+        print(msg)
+        return list_class4_files_slowly()
+
+    # We need to read from the cache file. To ensure another process is not
+    # currently *writing* to the cache file, first acquire a shared lock (i.e.,
+    # a read lock) on the file. We make at most "max_tries" attempts to acquire
+    # the lock.
+    max_tries = 10
+    num_tries = 0
+    attempt_lock = True
+    while attempt_lock:
+        try:
+            fcntl.lockf(fp, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        except IOError:
+            num_tries += 1
+            if num_tries == max_tries:
+                lock_acquired = False
+                attempt_lock = False
+            else:
+                time.sleep(1)
+        else:
+            lock_acquired = True
+            attempt_lock = False
+
+    if lock_acquired:
+        result = pickle.load(fp)
+        fcntl.lockf(fp, fcntl.LOCK_UN)
+    else:
+        msg = ('Warning: Unable to acquire read lock on cache file\n'
+               'Falling back to slow method for generating list of Class 4 '
+               'files on the fly')
+        print(msg)
+        result = list_class4_files_slowly()
+    fp.close()
 
     return result
 
