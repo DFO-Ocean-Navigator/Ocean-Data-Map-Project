@@ -378,7 +378,7 @@ export default class Map extends React.Component {
       const coord = e.coordinate;
       
       this.infoPopupContent.innerHTML = _("Loading...");
-      if (this.infoRequest != undefined) {
+      if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
       const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");

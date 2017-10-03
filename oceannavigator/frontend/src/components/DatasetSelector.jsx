@@ -127,6 +127,7 @@ export default class DatasetSelector extends React.Component {
         <ComboBox
           key='variable'
           id='variable'
+          multiple={this.props.multiple}
           state={this.props.state.variable}
           def={"defaults.dataset"}
           onUpdate={this.onUpdate}
