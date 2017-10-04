@@ -405,16 +405,17 @@ export default class AreaWindow extends React.Component {
           <NavItem eventKey={1}>{_("Map")}</NavItem>
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
         </Nav>
-        <div className='content'>
-          <div className='inputs'>
+        <Row>
+          <Col lg={2}>
             {leftInputs}
-          </div>
-          <div className="inputs-right">
+          </Col>
+          <Col lg={8}>
+            {content}
+          </Col>
+          <Col lg={2}>
             {rightInputs}
-          </div>
-          {content}
-          <br className='clear' />
-        </div>
+          </Col>
+        </Row>
       </div>
     );
   }

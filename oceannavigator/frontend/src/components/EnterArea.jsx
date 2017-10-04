@@ -10,7 +10,6 @@ export default class EnterArea extends React.Component {
     super(props);
 
     this.state = {
-      showAreaPoint4: false,
       areaCoords: [],
     };
 
@@ -65,13 +64,11 @@ export default class EnterArea extends React.Component {
           header={_("Point 3")}
           setCoordData={this.setCoordData}
         />
-        <div style={{display: this.state.showAreaPoint4 ? "block" : "none"}}>
-          <CoordInputPanel
-            id="4"
-            header={_("Point 4")}
-            setCoordData={this.setCoordData}
-          />
-        </div>
+        <CoordInputPanel
+          id="4"
+          header={_("Point 4")}
+          setCoordData={this.setCoordData}
+        />
       </div>
     );
   }

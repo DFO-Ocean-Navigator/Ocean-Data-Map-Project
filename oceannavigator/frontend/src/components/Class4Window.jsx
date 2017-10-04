@@ -1,5 +1,5 @@
 import React from "react";
-import {Panel, Row, Col, Button} from "react-bootstrap";
+import {Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
@@ -77,8 +77,8 @@ export default class Class4Window extends React.Component {
 
     return (
       <div className='Class4Window Window'>
-        <div className='content'>
-          <div className='inputs'>
+        <Row>
+          <Col lg={2}>
             <Panel 
               collapsible
               defaultExpanded
@@ -131,15 +131,16 @@ export default class Class4Window extends React.Component {
                 onUpdate={this.onLocalUpdate}
                 title={_("Saved Image Size")} />
             </Panel>
-          </div>
+          </Col>
 
-          <PlotImage
-            query={plot_query} // For image saving link.
-            permlink_subquery={this.state}
-            action={this.props.action}
-          />
-          <br className='clear' />
-        </div>
+          <Col lg={10}>
+            <PlotImage
+              query={plot_query} // For image saving link.
+              permlink_subquery={this.state}
+              action={this.props.action}
+            />
+          </Col>
+        </Row>
       </div>
     );
   }
