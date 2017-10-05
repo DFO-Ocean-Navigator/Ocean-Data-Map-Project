@@ -457,17 +457,18 @@ export default class PointWindow extends React.Component {
           <NavItem
             eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
         </Nav>
-        <div className='content'>
-          <div className='inputs'>
+        <Row>
+          <Col lg={2}>
             {inputs}
-          </div>
-          <PlotImage
-            query={plot_query} // For image saving link.
-            permlink_subquery={permlink_subquery}
-            action={this.props.action}
-          />
-          <br className='clear' />
-        </div>
+          </Col>
+          <Col lg={10}>
+            <PlotImage
+              query={plot_query} // For image saving link.
+              permlink_subquery={permlink_subquery}
+              action={this.props.action}
+            />
+          </Col>
+        </Row>
       </div>
     );
   }

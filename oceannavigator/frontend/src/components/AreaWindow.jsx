@@ -76,8 +76,10 @@ export default class AreaWindow extends React.Component {
   onLocalUpdate(key, value) {
 
     // Passthrough to capture selected variables from DatasetSelector for StatsTable
-    if (key === "dataset_0" && this.state.selected === 2 && value.hasOwnProperty("variable")) {
-      this.setState({variable: value.variable});
+    if (key === "dataset_0") {
+      if (this.state.selected === 2 && value.hasOwnProperty("variable")) {
+        this.setState({variable: value.variable});
+      }
       // TODO: prevent the navigator trying to get tiles for multiple variables...only one
       // variable should be passed up.
       this.props.onUpdate(key, value);
@@ -403,16 +405,17 @@ export default class AreaWindow extends React.Component {
           <NavItem eventKey={1}>{_("Map")}</NavItem>
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
         </Nav>
-        <div className='content'>
-          <div className='inputs'>
+        <Row>
+          <Col lg={2}>
             {leftInputs}
-          </div>
-          <div className="inputs-right">
+          </Col>
+          <Col lg={8}>
+            {content}
+          </Col>
+          <Col lg={2}>
             {rightInputs}
-          </div>
-          {content}
-          <br className='clear' />
-        </div>
+          </Col>
+        </Row>
       </div>
     );
   }

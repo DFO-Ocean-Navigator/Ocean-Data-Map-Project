@@ -78,12 +78,20 @@ class MapPlotter(area.AreaPlotter):
         ]
         data_in = self.data.ravel()[::5]
         if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
             columns.extend([
                 "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit)
+                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                "Bearing (degrees clockwise positive from North)"
             ])
             quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
                               self.quiver_data_fullgrid[1].ravel()[::5])
+            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
+                                 self.quiver_data_fullgrid[0].ravel()[::5])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
 
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
@@ -98,12 +106,13 @@ class MapPlotter(area.AreaPlotter):
                 "%0.4f" % latitude[idx],
                 "%0.4f" % longitude[idx],
                 "%0.1f" % depth[idx],
-                "%0.1f" % data_in[idx]
+                "%0.3f" % data_in[idx]
             ]
             if have_quiver:
                 entry.extend([
                     "%0.3f" % quiver_data_in[0][idx],
-                    "%0.3f" % quiver_data_in[1][idx]
+                    "%0.3f" % quiver_data_in[1][idx],
+                    "%0.3f" % bearing[idx]
                 ])
             data.append(entry)
 
@@ -234,7 +243,8 @@ class MapPlotter(area.AreaPlotter):
                         v
                     )
                     quiver_data.append(d)
-                    # Get the quiver data on the same grid as the main variable.
+                    # Get the quiver data on the same grid as the main
+                    # variable.
                     d = dataset.get_area(
                         np.array([self.latitude, self.longitude]),
                         self.depth,

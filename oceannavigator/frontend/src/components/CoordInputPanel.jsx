@@ -51,6 +51,8 @@ export default class CoordInputPanel extends React.Component {
         <Panel
           header={this.props.header}
           bsStyle="primary"
+          collapsible
+          defaultExpanded
         >
           <Form inline>
             <ControlLabel>{_("Latitude")}: </ControlLabel>

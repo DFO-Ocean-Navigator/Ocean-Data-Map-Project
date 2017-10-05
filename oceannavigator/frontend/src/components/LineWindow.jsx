@@ -46,7 +46,7 @@ export default class LineWindow extends React.Component {
       });
     }
     if (props.scale !== this.props.scale) {
-      if (this.state.scale.indexOf("auto") != -1) {
+      if (this.state.scale.indexOf("auto") !== -1) {
         this.setState({
           scale: props.scale + ",auto"
         });
@@ -321,20 +321,21 @@ export default class LineWindow extends React.Component {
           <NavItem eventKey={1}>{_("Transect")}</NavItem>
           <NavItem eventKey={2}>{_("Hovmöller Diagram")}</NavItem>
         </Nav>
-        <div className='content'>
-          <div className='inputs'>
+        <Row>
+          <Col lg={2}>
             {leftInputs}
-          </div>
-          <div className="inputs-right">
+          </Col>
+          <Col lg={8}>
+            <PlotImage
+              query={plot_query}
+              permlink_subquery={this.state}
+              action={this.props.action}
+            />
+          </Col>
+          <Col lg={2}>
             {rightInputs}
-          </div>
-          <PlotImage
-            query={plot_query}
-            permlink_subquery={this.state}
-            action={this.props.action}
-          />
-          <br className='clear' />
-        </div>
+          </Col>
+        </Row>
       </div>
     );
   }
