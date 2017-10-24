@@ -20,6 +20,9 @@ export default class PlotImage extends React.Component {
       showPermalink: false,
     };
 
+    this.failCount = 0;
+    this.passCount = 0;
+    
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
@@ -54,18 +57,24 @@ export default class PlotImage extends React.Component {
       }).promise();
 
       promise.done(function(d) {
+        this.passCount++;
         this.setState({
           loading: false,
           fail: false,
+	        passcount: this.passCount,
           url: d,
         });
       }.bind(this));
             
       promise.fail(function(d) {
-        this.setState({
-          loading: false,
-          fail: true,
-        });
+	      this.failCount++;
+        if(this.failCount >= 2){ // check for 2 fails to allow for a second request to be processed before setting the fail state to true and showing the fail image
+	        this.setState({
+              loading: false,
+              failcount: this.failCount,
+	            fail: true,
+           });
+	}
         console.error("AJAX Error", d);
       }.bind(this));
     }
@@ -235,6 +244,7 @@ export default class PlotImage extends React.Component {
       src = LOADING_IMAGE;
       infoStatus = _("Loading. Please wait...");
     } else {
+      this.failCount=0;
       src = this.state.url;
     }
     
