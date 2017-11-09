@@ -41,7 +41,7 @@ export default class PlotImage extends React.Component {
       format: "json",
     });
 
-    if (this.state.paramString != paramString) {
+    if (this.state.paramString !== paramString) {
       this.setState({
         loading: true, 
         fail: false, 
@@ -67,14 +67,12 @@ export default class PlotImage extends React.Component {
       }.bind(this));
             
       promise.fail(function(d) {
-	      this.failCount++;
-        if(this.failCount >= 2){ // check for 2 fails to allow for a second request to be processed before setting the fail state to true and showing the fail image
-	        this.setState({
-              loading: false,
-              failcount: this.failCount,
-	            fail: true,
-           });
-	}
+        const newFail = this.state.failCount + 1;
+        this.setState({
+          loading: false,
+          fail: true,
+          failCount: newFail,
+        });
         console.error("AJAX Error", d);
       }.bind(this));
     }
@@ -291,22 +289,25 @@ export default class PlotImage extends React.Component {
               eventKey="tiff"
             ><Icon icon="file-image-o" /> TIFF</MenuItem>
             <MenuItem
+              eventKey="geotiff"
+              disabled={this.props.query.type != "map"}
+            ><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
+            <MenuItem divider />
+            <MenuItem
               eventKey="csv"
               disabled={this.props.query.type == "hovmoller"}
-            ><Icon icon="file-text-o" /> CSV</MenuItem>
+              onSelect={this.saveImage}
+            ><Icon icon="file-text-o" /> {_("CSV")}</MenuItem>
             <MenuItem
               eventKey="odv"
+              onSelect={this.saveImage}
               disabled={jQuery.inArray(this.props.query.type, [
                 "profile",
                 "observation",
                 "transect",
                 "map"
               ]) == -1}
-            ><Icon icon="file-text-o" /> ODV</MenuItem>
-            <MenuItem
-              eventKey="geotiff"
-              disabled={this.props.query.type != "map"}
-            ><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
+            ><Icon icon="file-text-o" /> {_("ODV")}</MenuItem>
           </DropdownButton>
 
           <DropdownButton

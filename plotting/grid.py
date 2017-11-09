@@ -53,10 +53,10 @@ class Grid(object):
         Arguments:
             lat0 -- the target latitude
             lon0 -- the target longitude
-            n -- the number of indicies to return
+            n -- the number of indices to return
 
         Returns:
-            y, x indicies
+            y, x indices
         """
         if hasattr(lat0, "__len__"):
             lat0 = np.array(lat0)

@@ -574,6 +574,7 @@ export default class OceanNavigator extends React.Component {
           <MapToolbar
             action={action}
             plotEnabled={this.state.plotEnabled}
+            dataset_compare={this.state.dataset_compare}
             toggleSidebar={this.toggleSidebar}
           />
           {map}

@@ -1,8 +1,8 @@
 #!env python
 # vim: set fileencoding=utf-8 :
 
-from flask import Response, request, redirect, send_file
-from flask_babel import gettext
+from flask import Response, request, redirect, send_file, send_from_directory
+from flask_babel import gettext, format_date
 import json
 import datetime
 
@@ -12,6 +12,8 @@ from oceannavigator.util import (
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache
 )
+from oceannavigator.nearest_grid_point import find_nearest_grid_point
+
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -29,11 +31,15 @@ import plotting.scale
 import numpy as np
 import re
 import oceannavigator.misc
-import os
+import os, subprocess, shlex
 import plotting.colormap
+import geopy
 import base64
 import pytz
 from data import open_dataset
+import xarray as xr
+import pandas
+import zipfile
 
 MAX_CACHE = 315360000
 FAILURE = redirect("/", code=302)
@@ -484,6 +490,59 @@ def class4_query(q, class4_id, index):
     resp.cache_control.max_age = 86400
     return resp
 
+
+@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:min_range>/<string:max_range>/<int:time>/<int:should_zip>')
+def subset_query(output_format, dataset_name, min_range, max_range, time, should_zip):
+    bottom_left = [float(x) for x in min_range.split('_')]
+    top_right = [float(x) for x in max_range.split('_')]
+
+    working_dir = "/home/nabil/"
+
+    # TODO: Support arbitrary datasets (find variable look up table)
+    # TODO: Allow user to select desired variables
+    with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
+
+        # Find closest indices in dataset corresponding to each calculated point
+        # riops used "latitude" and "longitude"
+        ymin_index, xmin_index = find_nearest_grid_point(
+            bottom_left[0], bottom_left[1], dataset, "nav_lat", "nav_lon"
+        )
+        ymax_index, xmax_index = find_nearest_grid_point(
+            top_right[0], top_right[1], dataset, "nav_lat", "nav_lon"
+        )
+
+        # Get nicely formatted bearings
+        p0 = geopy.Point(bottom_left)
+        p1 = geopy.Point(top_right)
+        # Get timestamp
+        timestamp = str(format_date(pandas.to_datetime(dataset['time_counter'][int(time)].values), "yyyyMMdd"))
+        
+        filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
+                    + "_" + timestamp + "_024" + "_" + output_format
+
+        # Do subsetting
+        subset = dataset.sel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
+        subset = subset.isel(time_counter=int(time))
+        
+        if dataset_name is "giops_day":
+            # Filter out unwanted variables
+            subset = subset.drop(['nav_lon', 'nav_lat', 'aice', 'sossheig', 'vice'])
+ 
+        # Export to NetCDF
+        # http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html#xarray.Dataset.to_netcdf
+        subset.to_netcdf(working_dir + filename + ".nc", format='NETCDF3_CLASSIC' if output_format == 'netcdf3' else 'NETCDF4')
+
+
+    # TODO delete generated file.
+    if should_zip == 1:
+        myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
+        myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))
+        myzip.comment = 'Generated from www.navigator.oceansdata.ca'
+        myzip.close() # Must be called to actually create zip
+
+        return send_from_directory(working_dir, '%s.zip' % filename, as_attachment=True)
+
+    return send_from_directory(working_dir, '%s.nc' % filename, as_attachment=True)
 
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():

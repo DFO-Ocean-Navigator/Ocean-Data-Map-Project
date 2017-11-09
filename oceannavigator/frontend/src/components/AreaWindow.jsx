@@ -1,5 +1,6 @@
 import React from "react";
-import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row,  Col, Button, 
+  FormControl, FormGroup, ControlLabel} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -9,6 +10,7 @@ import QuiverSelector from "./QuiverSelector.jsx";
 import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
+import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -16,6 +18,7 @@ const i18n = require("../i18n.js");
 export default class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       selected: 1,
       scale: props.scale + ",auto",
@@ -43,6 +46,8 @@ export default class AreaWindow extends React.Component {
       variable: [props.variable],
       size: "10x7",
       dpi: 144,
+      zip: false,
+      output_format: "netcdf3",
     };
 
     if (props.init !== null) {
@@ -51,6 +56,7 @@ export default class AreaWindow extends React.Component {
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
+    this.saveData = this.saveData.bind(this);
     this.onSelect = this.onSelect.bind(this);
   }
 
@@ -120,6 +126,33 @@ export default class AreaWindow extends React.Component {
     if (parentKeys.length > 0) {
       this.props.onUpdate(parentKeys, parentValues);
     }
+  }
+
+  test(e) {
+    console.warn(e.target.value);
+  }
+
+  saveData(key) {
+    // Find max extents of drawn area
+    let lat_min = this.props.area[0].polygons[0][0][0];
+    let lat_max = this.props.area[0].polygons[0][0][1];
+    let long_min = this.props.area[0].polygons[0][0][0];
+    let long_max = this.props.area[0].polygons[0][0][1];
+
+    for (const i in this.props.area[0].polygons[0]) {
+      lat_min = Math.min(lat_min, this.props.area[0].polygons[0][i][0]);
+      long_min = Math.min(long_min, this.props.area[0].polygons[0][i][1]);
+
+      lat_max = Math.max(lat_max, this.props.area[0].polygons[0][i][0]);
+      long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
+    }
+
+    window.location.href =  `/api/subset/${this.state.output_format}/` + 
+                            `${this.props.dataset_0.dataset}/` + 
+                            `${lat_min}_${long_min}/` +
+                            `${lat_max}_${long_max}/` + 
+                            `${this.props.time}/`+
+                            `${this.state.zip ? 1 : 0}`;
   }
 
   onSelect(key) {
@@ -254,6 +287,42 @@ export default class AreaWindow extends React.Component {
       />
     </Panel>);
 
+    const subset = (<Panel
+      collapsible
+      defaultExpanded
+      header={_("Subset")}
+      bsStyle='primary'
+    >
+      <form>
+        <FormGroup controlId="subset_variables">
+          <ControlLabel>{_("Variables")}</ControlLabel>
+          <FormControl componentClass="select" multiple>
+          </FormControl>
+        </FormGroup>
+        
+        <FormGroup controlId="output_format">
+          <ControlLabel>{_("Output Format")}</ControlLabel>
+          <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
+            <option value="netcdf3">{_("NetCDF3")}</option>
+            <option value="netcdf4">{_("NetCDF4")}</option>
+          </FormControl>
+        </FormGroup>
+        
+        <SelectBox 
+          id='zip' 
+          state={this.state.zip} 
+          onUpdate={this.onLocalUpdate} 
+          title={_("Compress as *.zip")}
+        />
+
+        <Button 
+          bsStyle="default" 
+          onClick={this.saveData}
+        ><Icon icon="save" /> {_("Save")}</Button>
+      </form>
+    </Panel>
+    );
+
     const dataset = (<Panel
       collapsible
       defaultExpanded
@@ -369,7 +438,7 @@ export default class AreaWindow extends React.Component {
         }
 
         leftInputs = [
-          mapSettings
+          mapSettings, subset
         ];
         rightInputs = [
           dataset, compare_dataset
@@ -390,7 +459,9 @@ export default class AreaWindow extends React.Component {
         } else {
           plot_query.variable = this.props.dataset_0.variable;
         }
+        
         leftInputs = [dataset];
+
         content = <StatsTable query={plot_query}/>;
         break;
     }
@@ -426,7 +497,6 @@ AreaWindow.propTypes = {
   depth: PropTypes.number,
   area: PropTypes.array,
   time: PropTypes.number,
-  dataset: PropTypes.string,
   generatePermLink: PropTypes.func,
   dataset_1: PropTypes.object,
   dataset_compare: PropTypes.bool,
