@@ -491,8 +491,8 @@ def class4_query(q, class4_id, index):
     return resp
 
 
-@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:min_range>/<string:max_range>/<int:time>/<int:should_zip>')
-def subset_query(output_format, dataset_name, min_range, max_range, time, should_zip):
+@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:variables>/<string:min_range>/<string:max_range>/<int:time>/<int:should_zip>')
+def subset_query(output_format, dataset_name, variables, min_range, max_range, time, should_zip):
     bottom_left = [float(x) for x in min_range.split('_')]
     top_right = [float(x) for x in max_range.split('_')]
 
@@ -524,13 +524,18 @@ def subset_query(output_format, dataset_name, min_range, max_range, time, should
         subset = dataset.sel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
         subset = subset.isel(time_counter=int(time))
         
-        if dataset_name is "giops_day":
-            # Filter out unwanted variables
-            subset = subset.drop(['nav_lon', 'nav_lat', 'aice', 'sossheig', 'vice'])
+        # Filter out unwanted variables
+        output_vars = variables.split(',')
+        output_vars.extend(['deptht', 'time_counter', 'nav_lat', 'nav_lon'])
+        for variable in subset.data_vars:
+            if variable not in output_vars:
+                subset = subset.drop(variable)
+            
+        #subset = subset.drop(['nav_lon', 'nav_lat', 'aice', 'sossheig', 'vice'])
  
         # Export to NetCDF
         # http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html#xarray.Dataset.to_netcdf
-        subset.to_netcdf(working_dir + filename + ".nc", format='NETCDF3_CLASSIC' if output_format == 'netcdf3' else 'NETCDF4')
+        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
 
     # TODO delete generated file.

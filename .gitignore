@@ -89,3 +89,4 @@ ENV/
 .ropeproject
 
 oceannavigator/frontend/\.vscode/
+*.code-workspace

@@ -46,8 +46,9 @@ export default class AreaWindow extends React.Component {
       variable: [props.variable],
       size: "10x7",
       dpi: 144,
+      output_variables: "",
+      output_format: "NETCDF3_CLASSIC",
       zip: false,
-      output_format: "netcdf3",
     };
 
     if (props.init !== null) {
@@ -149,6 +150,7 @@ export default class AreaWindow extends React.Component {
 
     window.location.href =  `/api/subset/${this.state.output_format}/` + 
                             `${this.props.dataset_0.dataset}/` + 
+                            `${this.state.output_variables.join()}/` + // Comma-separate selected variables
                             `${lat_min}_${long_min}/` +
                             `${lat_max}_${long_max}/` + 
                             `${this.props.time}/`+
@@ -294,17 +296,24 @@ export default class AreaWindow extends React.Component {
       bsStyle='primary'
     >
       <form>
-        <FormGroup controlId="subset_variables">
-          <ControlLabel>{_("Variables")}</ControlLabel>
-          <FormControl componentClass="select" multiple>
-          </FormControl>
-        </FormGroup>
-        
+        <ComboBox
+          id='variable'
+          multiple={true}
+          state={this.state.output_variables}
+          def={"defaults.dataset"}
+          onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
+          url={"/api/variables/?vectors&dataset=" + this.props.dataset_0.dataset
+          }
+          title={_("Variables")}
+        />
+
         <FormGroup controlId="output_format">
           <ControlLabel>{_("Output Format")}</ControlLabel>
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
-            <option value="netcdf3">{_("NetCDF3")}</option>
-            <option value="netcdf4">{_("NetCDF4")}</option>
+            <option value="NETCDF3_CLASSIC">{_("NetCDF3 Classic")}</option>
+            <option value="NETCDF3_64BIT">{_("NetCDF3 64-bit")}</option>
+            <option value="NETCDF4">{_("NetCDF4")}</option>
+            <option value="NETCDF4_CLASSIC">{_("NetCDF4 Classic")}</option>
           </FormControl>
         </FormGroup>
         

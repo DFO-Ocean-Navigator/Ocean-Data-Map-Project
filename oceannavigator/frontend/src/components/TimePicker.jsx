@@ -337,7 +337,6 @@ export default class TimePicker extends React.Component {
           type="text"
           value={$.datepicker.formatDate("MM yy", date)}
         />;
-        console.warn($.datepicker.formatDate("MM yy", date));
         break;
       case "day":
       case "hour":
