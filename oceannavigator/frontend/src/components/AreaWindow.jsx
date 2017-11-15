@@ -327,6 +327,7 @@ export default class AreaWindow extends React.Component {
         <Button 
           bsStyle="default" 
           onClick={this.saveData}
+          disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
       </form>
     </Panel>

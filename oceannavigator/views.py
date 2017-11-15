@@ -496,47 +496,65 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
     bottom_left = [float(x) for x in min_range.split('_')]
     top_right = [float(x) for x in max_range.split('_')]
 
-    working_dir = "/home/nabil/"
+    # Ensure we have an output folder that will be cleaned by tmpreaper
+    if not os.path.isdir("/tmp/subset"):
+        os.makedirs("/tmp/subset")
+
+    working_dir = "/tmp/subset/"
 
     # TODO: Support arbitrary datasets (find variable look up table)
     # TODO: Allow user to select desired variables
     with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
 
+        # Finds a variable in a dictionary given a substring containing common characters
+        # Not a fool-proof method but I want to avoid regex because I hate it.
+        variable_list = dataset.variables.keys()
+        def find_variable(substring):
+            for key in variable_list:
+                if substring in key:
+                    variable_list.remove(key) # Remove from list to speed up search
+                    return key
+
+        # Get lat/lon variable names from dataset (since they all differ >.>)
+        lat = find_variable("lat")
+        lon = find_variable("lon")
+
         # Find closest indices in dataset corresponding to each calculated point
         # riops used "latitude" and "longitude"
         ymin_index, xmin_index = find_nearest_grid_point(
-            bottom_left[0], bottom_left[1], dataset, "nav_lat", "nav_lon"
+            bottom_left[0], bottom_left[1], dataset, lat, lon
         )
         ymax_index, xmax_index = find_nearest_grid_point(
-            top_right[0], top_right[1], dataset, "nav_lat", "nav_lon"
+            top_right[0], top_right[1], dataset, lat, lon
         )
 
         # Get nicely formatted bearings
         p0 = geopy.Point(bottom_left)
         p1 = geopy.Point(top_right)
+        
         # Get timestamp
-        timestamp = str(format_date(pandas.to_datetime(dataset['time_counter'][int(time)].values), "yyyyMMdd"))
-        
-        filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
-                    + "_" + timestamp + "_024" + "_" + output_format
-
+        time_variable = find_variable("time")
+        timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time)].values), "yyyyMMdd"))
+    
         # Do subsetting
-        subset = dataset.sel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
-        subset = subset.isel(time_counter=int(time))
-        
+        if "riops" in dataset_name:
+            subset = dataset.isel(yc=slice(ymin_index, ymax_index), xc=slice(xmin_index, xmax_index))
+        else:
+            subset = dataset.isel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
+        subset = subset.isel(**{time_variable: int(time)})
+
         # Filter out unwanted variables
         output_vars = variables.split(',')
-        output_vars.extend(['deptht', 'time_counter', 'nav_lat', 'nav_lon'])
+        output_vars.extend([find_variable('depth'), time_variable, lat, lon]) # Keep the coordinate variables
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
-            
-        #subset = subset.drop(['nav_lon', 'nav_lat', 'aice', 'sossheig', 'vice'])
- 
-        # Export to NetCDF
-        # http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html#xarray.Dataset.to_netcdf
-        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
+        filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
+                    + "_" + timestamp + "_024_" + output_format
+
+        # Export to NetCDF
+        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
     # TODO delete generated file.
     if should_zip == 1:

@@ -424,6 +424,8 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
             action={this.action}
+            showHelp={this.showCompareHelp}
+            swapViews={this.swapViews}
           />
         );
         modalTitle = formatLatLon(
