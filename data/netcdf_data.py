@@ -20,6 +20,24 @@ class NetCDFData(Data):
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
 
+    """
+    Returns the value of a given variable name from the dataset
+    """
+    def get_dataset_variable(self, key):
+        return self._dataset.variables[key]
+
+    """
+    Returns the file system path which was used to open the dataset
+    """
+    def get_filepath(self):
+        return self._dataset.filepath()
+
+    """
+    Is the dataset open or closed?
+    """
+    def is_open(self):
+        return self._dataset.isopen()
+
     @property
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:

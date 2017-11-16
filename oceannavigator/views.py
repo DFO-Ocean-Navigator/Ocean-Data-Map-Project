@@ -1,8 +1,8 @@
 #!env python
 # vim: set fileencoding=utf-8 :
 
-from flask import Response, request, redirect, send_file
-from flask_babel import gettext
+from flask import Response, request, redirect, send_file, send_from_directory
+from flask_babel import gettext, format_date
 import json
 import datetime
 
@@ -12,6 +12,8 @@ from oceannavigator.util import (
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache
 )
+from oceannavigator.nearest_grid_point import find_nearest_grid_point
+
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -29,11 +31,15 @@ import plotting.scale
 import numpy as np
 import re
 import oceannavigator.misc
-import os
+import os, subprocess, shlex
 import plotting.colormap
+import geopy
 import base64
 import pytz
 from data import open_dataset
+import xarray as xr
+import pandas
+import zipfile
 
 MAX_CACHE = 315360000
 FAILURE = redirect("/", code=302)
@@ -484,6 +490,81 @@ def class4_query(q, class4_id, index):
     resp.cache_control.max_age = 86400
     return resp
 
+
+@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:variables>/<string:min_range>/<string:max_range>/<int:time>/<int:should_zip>')
+def subset_query(output_format, dataset_name, variables, min_range, max_range, time, should_zip):
+    bottom_left = [float(x) for x in min_range.split('_')]
+    top_right = [float(x) for x in max_range.split('_')]
+
+    # Ensure we have an output folder that will be cleaned by tmpreaper
+    if not os.path.isdir("/tmp/subset"):
+        os.makedirs("/tmp/subset")
+    working_dir = "/tmp/subset/"
+
+    # TODO: Support arbitrary datasets (find variable look up table)
+    # TODO: Allow user to select desired variables
+    with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
+
+        # Finds a variable in a dictionary given a substring containing common characters
+        # Not a fool-proof method but I want to avoid regex because I hate it.
+        variable_list = dataset.variables.keys()
+        def find_variable(substring):
+            for key in variable_list:
+                if substring in key:
+                    variable_list.remove(key) # Remove from list to speed up search
+                    return key
+
+        # Get lat/lon variable names from dataset (since they all differ >.>)
+        lat = find_variable("lat")
+        lon = find_variable("lon")
+
+        # Find closest indices in dataset corresponding to each calculated point
+        # riops used "latitude" and "longitude"
+        ymin_index, xmin_index = find_nearest_grid_point(
+            bottom_left[0], bottom_left[1], dataset, lat, lon
+        )
+        ymax_index, xmax_index = find_nearest_grid_point(
+            top_right[0], top_right[1], dataset, lat, lon
+        )
+
+        # Get nicely formatted bearings
+        p0 = geopy.Point(bottom_left)
+        p1 = geopy.Point(top_right)
+        
+        # Get timestamp
+        time_variable = find_variable("time")
+        timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time)].values), "yyyyMMdd"))
+    
+        # Do subsetting
+        if "riops" in dataset_name:
+            subset = dataset.isel(yc=slice(ymin_index, ymax_index), xc=slice(xmin_index, xmax_index))
+        else:
+            subset = dataset.isel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
+        subset = subset.isel(**{time_variable: int(time)})
+
+        # Filter out unwanted variables
+        output_vars = variables.split(',')
+        output_vars.extend([find_variable('depth'), time_variable, lat, lon]) # Keep the coordinate variables
+        for variable in subset.data_vars:
+            if variable not in output_vars:
+                subset = subset.drop(variable)
+
+        filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
+                    + "_" + timestamp + "_024_" + output_format
+
+        # Export to NetCDF
+        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
+
+    # TODO delete generated file.
+    if should_zip == 1:
+        myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
+        myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))
+        myzip.comment = 'Generated from www.navigator.oceansdata.ca'
+        myzip.close() # Must be called to actually create zip
+
+        return send_from_directory(working_dir, '%s.zip' % filename, as_attachment=True)
+
+    return send_from_directory(working_dir, '%s.nc' % filename, as_attachment=True)
 
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
