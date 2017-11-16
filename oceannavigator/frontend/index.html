@@ -20,137 +20,162 @@
         <meta name="msapplication-TileColor" content="#ffffff">
         <meta name="msapplication-TileImage" content="/static/ms-icon-144x144.png">
         <meta name="theme-color" content="#008cba" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-        <style>
-            body {
-                padding: 1em;
-                background-color: #F5F5F5
-            }
-            h1 {
-                font-variant: small-caps;
-            }
-            h2 {
-                font-size: 100%;
-                text-transform: uppercase;
-                font-weight: bold;
-                display: inline-block;
-            }
-            ol {
-                counter-reset: item;
-                margin: 0 0 1.5em;
-                padding: 0;
-            }
-            ol > li {
-                list-style-type: none;
-                margin: 0;
-                padding: 0 0 0 2em;
-                counter-increment: item;
-            }
-            ol > li:before {
-                display: inline-block;
-                width: 1em;
-                padding-right: 0.5em;
-                content: counter(item) ". ";
-                font-weight: bold;
-                text-align: right;
-            }
-            ol > li > p {
-                padding-left: 2em;
-            }
-        </style>
-    <body>
-        <div class="container">
-            <h1>Ocean Navigator (Beta)</h1>
-            <ol>
-                <li>
-                    <h2>What is the ocean navigator</h2>
-                    <p>The ocean navigator is a user-friendly online map of 
-                        scientific ocean data of ocean models. It includes a number of 
-                        different variables such as temperature and ocean currents. 
-                        The tool is developed by scientists but is designed for range 
-                        of end users. Anyone can use it, whether they are in the scientific 
-                        community, industry, academia or general public. 
-                        </p>
+        <meta name="viewport" content="width=device-width, initial-scale=1 shrink-to-fit=no" />
+        <meta name="description" content="">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <!-- MINIFY THIS -->
+        <link rel="stylesheet" href="/static/grayscale.css" >
+    </head>
+    
+    <body id="page-top">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+          <div class="container">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top">Ocean Navigator<sup>Beta</sup></a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+              Menu
+              <i class="fa fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                  <a class="nav-link js-scroll-trigger" href="#about">About</a>
                 </li>
-                <li>
-                    <h2>Objective of Portal</h2>
-                    <p>
-                        The Ocean Navigator prototype portal is being designed with the goal 
-                        to enable the discovery and accessibility of ocean data from ocean 
-                        prediction systems. Operational prediction systems from Canada and other
-                         global systems are available via this tool. Several other sources of data
-                          are available, including, validation data sources and limited 
-                          observational data. More information on the data available can be 
-                          found in the Ocean Navigator. For help in using the Ocean Navigator
-                           please see our  <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Navigator-Manual">user guide</a>.
-                        </br>
-                        </br>
-                        Please note that <u>this site is still in active development</u> and 
-                        may have some bugs or experience other issues in rendering data, for 
-                        access to raw data please see our 
-                        <a href="http://navigator.oceansdata.ca/thredds/catalog.html">THREDDS server</a>.
-                        To report a bug please e-mail: <a href="oceandatamap@gmail.com">oceandatamap@gmail.com</a>
-                    </p>
+                <li class="nav-item">
+                  <a class="nav-link js-scroll-trigger" href="#download">Open Ocean Navigator</a>
                 </li>
-                <img src="http://3.bp.blogspot.com/-Yc6sspuub2c/We9vhyFS77I/AAAAAAAAABY/mXeJHdQJFRkTkmsHX5ZkVaZlzP9KkZzOwCK4BGAYYCw/s1600/Selection_064.png" width="70%">
-
-                <li>
-                    <h2>Recommended Use of Data</h2>
-                    <p>
-                        These datasets are not intended for navigational
-                        purposes.  It is expected that users of this portal
-                        will have an interest in oceanographic data and the
-                        intention is to provide oceanographic context for a
-                        wide range of users.
-                    </p>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/" target="_blank">User Guide</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
                 </li>
-
-                <li>
-                    <h2>Data Producer Responsibility</h2>
-                    <p>
-                        The developers are not responsible for the use made of
-                        the data made accessible via this portal, or errors or
-                        omissions that potentially may occur in the data sets.
-                        While we aim to make accessible the most recent and up
-                        to date data, occasionally a delay in the data feed to
-                        the portal may be experienced.
-                    </p>
-                </li>
-
-                <li>
-                    <h2>Identification of Data Sources</h2>
-                    <p>
-                        Use of the downloaded data should identify the source
-                        of the data. Plots downloaded from the portal will have
-                        a reference to the data source. 
-                    </p>
-                    <p>
-                        Suggested citation: Dataset, http://navigator.oceansdata.ca (year)
-                        <br />
-                        Example: GIOPS daily averages, http://navigator.oceansdata.ca, 2017
-                    </p>
-                    <p>
-                        If you would like further information about how to reference the data 
-                        sources that the Ocean Navigator uses please e-mail <a href="DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca">DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca</a>
-                    </p>
-                </li>
-
-                <li>
-                    <h2>For Inquiries Contact</h2>
-                    <p>
-                        E-mail: <a href="DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca">DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca</a>
-                    </p>
-                </li>
-
-            </ol>
-
-            <div style="text-align: center; margin-top: 2em;">
-                <form action="/public/" method="get">
-                    <button class="btn btn-primary btn-lg">Access Ocean Navigator</button>
-                </form>
+              </ul>
             </div>
-        </div>
-    </body>
+          </div>
+        </nav>
+    
+        <!-- Intro Header -->
+        <header class="masthead">
+          <div class="intro-body">
+            <div class="container">
+              <div class="row">
+                <div class="col-lg-8 mx-auto">
+                  <h1 class="brand-heading">Ocean Navigator</h1>
+                  <p class="intro-text">Beautiful, interactive ocean data for everyone.</p>
+                  <a href="#about" class="btn btn-circle js-scroll-trigger">
+                    <i class="fa fa-angle-double-down animated"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+    
+        <!-- About Section -->
+        <section id="about" class="content-section text-center">
+          <div class="container">
+            <div class="row">
+              <div class="col-lg-8 mx-auto">
+                <h2>What is the Ocean Navigator</h2>
+                <p>The Ocean Navigator is a modern, user-friendly, interactive online map
+                    displaying scientific ocean data gathered from various models around the world. 
+                    It includes a number of different variables such as temperature and ocean currents. 
+                    The tool is developed by scientists, but is designed for any user; be it a researcher
+                    writing a technical paper, or seeing if the currents are favourable to go out on the boat.
+                </p>
+                <h2>Objective of Portal</h2>
+                <p>The Ocean Navigator prototype portal is being designed with the goal 
+                    to enable the discovery and accessibility of ocean data from ocean 
+                    prediction systems. Operational prediction systems from Canada and other
+                    global systems are available via this tool. Several other sources of data
+                    are available, including, validation data sources and limited 
+                    observational data. More information on the data available can be 
+                    found in the Ocean Navigator. For help in using the Ocean Navigator
+                    please see our <a href="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/" target="_blank">User Guide</a>.
+                </p>
+                <p>Please note that <strong>this site is still in active development</strong> and 
+                    may have some bugs or other issues in displaying data, for access to raw data please see our 
+                    <a href="http://navigator.oceansdata.ca/thredds/catalog.html">THREDDS server</a>.
+                    To report a bug please e-mail: <a href="oceandatamap@gmail.com">oceandatamap@gmail.com</a>
+                </p>
+                <h2>Recommended Use of Data</h2>
+                <p>These datasets are not intended for navigational purposes.  It is expected that users of this portal
+                    will have an interest in oceanographic data and the intention is to provide oceanographic context for a
+                    wide range of users.
+                </p>
+                <h2>Data Producer Responsibility</h2>
+                <p>The developers are not responsible for the use made of
+                    the data made accessible via this portal, or errors or
+                    omissions that potentially may occur in the data sets.
+                    While we aim to make accessible the most recent and up
+                    to date data, occasionally a delay in the data feed to
+                    the portal may be experienced.
+                </p>
+                <h2>Identification of Data Sources</h2>
+                <p>Use of the downloaded data should identify the source
+                    of the data. Plots downloaded from the portal will have
+                    a reference to the data source. 
+                </p>
+                <p>Suggested citation: Dataset, http://navigator.oceansdata.ca (year)
+                    <br />
+                    Example: GIOPS daily averages, http://navigator.oceansdata.ca, 2017
+                </p>
+                <p>If you would like further information about how to reference the data 
+                    sources that the Ocean Navigator uses please feel free to <a class="js-scroll-trigger" href="#contact">Contact Us</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+    
+        <!-- Download Section -->
+        <section id="download" class="download-section content-section text-center">
+          <div class="container">
+            <div class="col-lg-8 mx-auto">
+              <h2>Visit the Ocean Navigator</h2>
+              <p>Ready to have <strong>terabytes</strong> of ocean data at your fingertips?</p>
+              <a href="public/" class="btn btn-default btn-lg">Yes! Beam me up Scotty!</a>
+            </div>
+          </div>
+        </section>
+    
+        <!-- Contact Section -->
+        <section id="contact" class="content-section text-center">
+          <div class="container">
+            <div class="row">
+              <div class="col-lg-8 mx-auto">
+                <h2>Contact Us</h2>
+                <p>Feel free to contact us with any questions, or potential issues with the Navigator!</p>
+                <ul class="list-inline banner-social-buttons">
+                  <li class="list-inline-item">
+                    <a href="mailto:DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca" target="_blank" class="btn btn-default btn-lg">
+                      <i class="fa fa-envelope-o fa-fw"></i>
+                      <span class="network-name">E-mail</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Footer -->
+        <footer>
+          <div class="container text-center">
+            <!--<p>Copyright &copy; Your Website 2017</p> -->
+          </div>
+        </footer>
+    
+        <!-- Bootstrap core JavaScript -->
+        <script src="/static/jquery/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+    
+        <!-- Plugin JavaScript -->
+        <script src="/static/jquery-easing/jquery.easing.min.js"></script>
+    
+        <!-- Custom scripts for this template -->
+        <script src="/static/grayscale.min.js"></script>
+    
+      </body>
 </html>

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from oceannavigator.util import get_dataset_url
+from oceannavigator.util import get_dataset_url, get_dataset_name
 import seawater
 import point
 from flask_babel import gettext
@@ -49,9 +49,11 @@ class TemperatureSalinityPlotter(point.PointPlotter):
     def plot(self):
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
-        plt.title(gettext("T/S Diagram for %s (%s)") % (
+        plt.title(gettext("%s T/S Diagram for:\n%s (%s)") % (
+            get_dataset_name(self.dataset_name),
             ", ".join(self.names),
-            self.date_formatter(self.timestamp)))
+            self.date_formatter(self.timestamp))
+            )
 
         smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
         smax = np.amax(self.salinity) + (np.amax(self.salinity) * 0.01)
@@ -119,3 +121,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
                 super(point.PointPlotter, self).kelvin_to_celsius(
                     self.variable_units[0], self.temperature
             )
+
+        if self.compare:
+            with open_dataset(get_dataset_url(self.compare['dataset_name'])) as dataset:
+                return

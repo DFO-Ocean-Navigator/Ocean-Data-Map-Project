@@ -499,7 +499,6 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
     # Ensure we have an output folder that will be cleaned by tmpreaper
     if not os.path.isdir("/tmp/subset"):
         os.makedirs("/tmp/subset")
-
     working_dir = "/tmp/subset/"
 
     # TODO: Support arbitrary datasets (find variable look up table)
