@@ -448,7 +448,7 @@ export default class AreaWindow extends React.Component {
         }
 
         leftInputs = [
-          mapSettings
+          mapSettings, subset
         ];
         rightInputs = [
           dataset, compare_dataset
