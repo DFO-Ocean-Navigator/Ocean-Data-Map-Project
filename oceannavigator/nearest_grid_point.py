@@ -42,9 +42,8 @@ def find_nearest_grid_point(
     lonvals = lonvar[:] * rad_factor
     clat, clon = np.cos(latvals), np.cos(lonvals)
     slat, slon = np.sin(latvals), np.sin(lonvals)
-    triples = np.array(list(zip(np.ravel(clat * clon),
-                                np.ravel(clat * slon),
-                                np.ravel(slat))))
+    triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
+                        np.ravel(slat)]).transpose()
     kdt = KDTree(triples)
     shape = latvar.shape
     dist_sq, iy, ix = find_index(lat, lon, kdt, shape, n)

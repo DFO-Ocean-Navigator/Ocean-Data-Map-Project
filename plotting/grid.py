@@ -37,9 +37,8 @@ class Grid(object):
             lonvals = self.lonvar[:] * rad_factor
             clat, clon = np.cos(latvals), np.cos(lonvals)
             slat, slon = np.sin(latvals), np.sin(lonvals)
-            triples = np.array(list(zip(np.ravel(clat * clon),
-                                        np.ravel(clat * slon),
-                                        np.ravel(slat))))
+            triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
+                                np.ravel(slat)]).transpose()
 
             self.kdt = KDTree(triples)
             _data_cache[ncfile.filepath()] = self.kdt

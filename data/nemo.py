@@ -71,9 +71,8 @@ class Nemo(NetCDFData):
             lonvals = lonvar[:] * RAD_FACTOR
             clat, clon = np.cos(latvals), np.cos(lonvals)
             slat, slon = np.sin(latvals), np.sin(lonvals)
-            triples = np.array(list(zip(np.ravel(clat * clon),
-                                        np.ravel(clat * slon),
-                                        np.ravel(slat))))
+            triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
+                                np.ravel(slat)]).transpose()
             self._kdt[latvar.name] = KDTree(triples)
             del clat, clon
             del slat, slon
