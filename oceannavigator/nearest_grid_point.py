@@ -8,17 +8,12 @@
 # a specified lat/lon location.
 ###############################################################################
 
-import logging
 from math import pi
 import sys
 
-import configargparse
 import xarray as xr
 import numpy as np
 from pykdtree.kdtree import KDTree
-
-import log
-from log import logger
 
 
 def find_nearest_grid_point(
@@ -60,14 +55,7 @@ def find_nearest_grid_point(
     """
     lat_near = latvar[iy, ix]
     lon_near = lonvar[iy, ix]
-
-    if logger.isEnabledFor(logging.INFO):
-        logger.info('Nearest grid point%s:', 's' if n > 1 else '')
-        for k in range(n):
-            msg = ('  (iy, ix, lat, lon) = (%s, %s, %s, %s), '
-                   'squared distance = %s')
-            logger.info(msg, iy[k], ix[k], lat_near[k], lon_near[k],
-                        dist_sq[k])
+    
     return dist_sq, iy, ix, lat_near, lon_near
     """
     return iy, ix
@@ -104,40 +92,3 @@ def find_index(lat0, lon0, kdt, shape, n=1):
     dist_sq_min, minindex_1d = kdt.query(np.float32(q), k=n)
     iy_min, ix_min = np.unravel_index(minindex_1d, shape)
     return dist_sq_min, iy_min, ix_min
-
-
-def main(args=sys.argv[1:]):
-    arg_parser = configargparse.ArgParser(
-        config_file_parser_class=configargparse.YAMLConfigFileParser
-    )
-    arg_parser.add('-c', '--config', is_config_file=True,
-                   help='Name of configuration file')
-    arg_parser.add('--log_level', default='info',
-                   choices=log.log_level.keys(),
-                   help='Set level for log messages')
-
-    arg_parser.add('--lat', type=float, required=True, help='Latitude')
-    arg_parser.add('--lon', type=float, required=True, help='Longitude')
-    arg_parser.add('--lat_var_name', type=str, default='nav_lat',
-                   help='Name of latitude variable in mesh file')
-    arg_parser.add('--lon_var_name', type=str, default='nav_lon',
-                   help='Name of longitude variable in mesh file')
-    arg_parser.add('--mesh_file', type=str, required=True,
-                   help='Name of NetCDF file containing lat/lon mesh')
-    arg_parser.add('--num_nearest_points', type=int, default=1,
-                   help='Number of nearest points to find')
-    config = arg_parser.parse(args)
-
-    log.initialize_logging(level=log.log_level[config.log_level])
-
-    dataset = xr.open_dataset(config.mesh_file, decode_times=False)
-    dist_sq, iy, ix, lat_near, lon_near = find_nearest_grid_point(
-        config.lat, config.lon, dataset, config.lat_var_name,
-        config.lon_var_name, n=config.num_nearest_points
-    )
-
-    log.shutdown_logging()
-
-
-if __name__ == '__main__':
-    main()
