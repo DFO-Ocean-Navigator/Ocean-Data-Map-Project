@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from oceannavigator.util import get_dataset_url, get_dataset_name
+from oceannavigator.util import get_dataset_url, get_dataset_name, get_variable_unit
 import seawater
 import point
 from flask_babel import gettext
@@ -49,10 +49,10 @@ class TemperatureSalinityPlotter(point.PointPlotter):
     def plot(self):
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
-        plt.title(gettext("%s T/S Diagram for:\n%s (%s)") % (
-            get_dataset_name(self.dataset_name),
+        plt.title(gettext("T/S Diagram for (%s)\n%s") % (
             ", ".join(self.names),
-            self.date_formatter(self.timestamp))
+            self.date_formatter(self.timestamp)),
+            fontsize=15
             )
 
         smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
@@ -76,13 +76,13 @@ class TemperatureSalinityPlotter(point.PointPlotter):
         dens -= 1000
 
         CS = plt.contour(si, ti, dens, linestyles='dashed', colors='k')
-        plt.clabel(CS, fontsize=18, inline=1, fmt=r"$\sigma_t = %1.1f$")
+        plt.clabel(CS, fontsize=15, inline=1, fmt=r"$\sigma_t = %1.1f$")
 
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], '-')
 
-        plt.xlabel(gettext("Salinity (PSU)"))
-        plt.ylabel(gettext("Temperature (Celsius)"))
+        plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
+        plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
 
         self.plot_legend(fig, self.names)
         if len(self.points) == 1:
@@ -121,7 +121,3 @@ class TemperatureSalinityPlotter(point.PointPlotter):
                 super(point.PointPlotter, self).kelvin_to_celsius(
                     self.variable_units[0], self.temperature
             )
-
-        if self.compare:
-            with open_dataset(get_dataset_url(self.compare['dataset_name'])) as dataset:
-                return

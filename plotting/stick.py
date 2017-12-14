@@ -115,11 +115,11 @@ class StickPlotter(point.PointPlotter):
                             idx, 0, idx2, 0
                         ])
 
-                    a.set_title(gettext("%s at %s (%s)") % (
+                    a.set_title(gettext("%s at (%s)\n%s") % (
                         self.vector_name(self.variable_names[0]),
                         self.names[idx],
                         depth
-                    ))
+                    ), fontsize=15)
 
         plt.setp(plt.gca().get_xticklabels(), rotation=30)
         fig.tight_layout()

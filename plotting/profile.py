@@ -78,27 +78,23 @@ class ProfilePlotter(point.PointPlotter):
             ax[idx].xaxis.set_ticks_position('top')
             ax[idx].set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
-                                utils.mathtext(self.variable_units[idx])))
+                                utils.mathtext(self.variable_units[idx])), fontsize=14)
             if self.compare:
                 xlim = np.abs(ax[idx].get_xlim()).max()
                 ax[idx].set_xlim([-xlim, xlim])
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (m)"))
+        ax[0].set_ylabel(gettext("Depth (m)"), fontsize=14)
 
         self.plot_legend(fig, self.names)
-
-        wrapped_title = wrap(
-            "%s Profile for %s (%s)" % (
-                ", ".join(self.variable_names),
-                ", ".join(self.names),
-                self.date_formatter(self.timestamp)
-            ), 80)
-        plt.suptitle("\n".join(wrapped_title))
+        
+        plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "), \
+                                        ", ".join(self.names), \
+                                        ", ".join(self.variable_names), \
+                                        self.date_formatter(self.timestamp)), \
+                    fontsize=15)
         fig.tight_layout()
-        fig.subplots_adjust(
-            top=(0.905 - len(wrapped_title) * 0.025)
-        )
+        fig.subplots_adjust(top=(0.8))
 
         return super(ProfilePlotter, self).plot(fig)
 

@@ -266,6 +266,6 @@ class ObservationPlotter(point.PointPlotter):
             ))
 
         fig.tight_layout()
-        fig.subplots_adjust(top=0.88)
+        fig.subplots_adjust(top=0.85)
 
         return super(ObservationPlotter, self).plot()
