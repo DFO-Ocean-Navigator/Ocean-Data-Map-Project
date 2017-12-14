@@ -19,6 +19,18 @@
     cursor: crosshair;
     border-left: 5px solid #008cba;
     border-right: 5px solid #008cba;
+    background-color: #000;
+
+    // Full-screen
+    -moz-full-screen {
+        height: 100%;
+    }
+    -webkit-full-screen {
+        height: 100%;
+    }
+    -ms-fullscreen {
+        height: 100%;
+    }
 
     > div {
         height: 100%;
@@ -27,10 +39,24 @@
         max-height: calc(100% - #{$toolbar-height});
     }
 
+    // Open Layers buttons
+    .ol-control {
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 0;
+        opacity: 0.95;
+        button {
+            background-color: rgba(0,140,186, 1.0);
+            :hover {
+                background-color: rgba(0,140,186, 0.5);
+                cursor: default;
+            }
+        }
+    }
+
     // Map scale
     .scale-viewer {
-        top: 0.5em;
-        left: 0.5em;
+        top: 0.25em;
+        left: 0.25em;
         background-color: transparent;
         opacity: 0.95;
         cursor: default;
@@ -41,17 +67,36 @@
         }
     }
 
-    // Zoom controls
-    .ol-zoom {
-        left: 7.25em;
-        opacity: 0.95;
-        border-radius: 0;
-        cursor: default;
+    // Full-screen control
+    .ol-full-screen {
+        left: 7.5em;
+        right: auto;
+        top: 10em;
     }
 
+    // Zoom controls
+    .ol-zoom {
+        left: 7.5em;
+        top: 0.25em;
+    }
+
+    // Reset rotation button
+    .ol-rotate {
+        left: 7.5em;;
+        right: auto;
+        top: 7em;
+    }
+
+    // Zoom control
     .ol-zoom-in, .ol-zoom-out {
-        opacity: 0.95!important;
-        border-radius: 0;
+        right: auto;
+        left: 7.5em;
+    }
+
+    // Reset pan button
+    .reset-pan {
+        left: 7.5em;
+        top: 5em;
     }
 
     // Mouse coordinates
@@ -60,7 +105,8 @@
         bottom: 0;
         left: 0;
         right: inherit;
-        background-color: white;
+        background-color: rgba(0,140,186, 1.0);
+        color: #fff;
         opacity: 0.95;
         cursor: default;
 
@@ -70,11 +116,12 @@
         }
     }
 
+    // Popup balloon on map
     .ol-popup {
         opacity: 0.95;
         padding: 0.5em;
         line-height: 1.5;
-        -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.25));
+        -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));
         filter: drop-shadow(0 1px 4px rgba(0,0,0,0.5));
 
         // Plotted data tooltip
@@ -167,7 +214,7 @@
         bottom: 0;
         right: 0;
         border-radius: 0;
-        font-size: 0.5em;
+        font-size: 0.75em;
         max-width: 75%;
         cursor: default;
 

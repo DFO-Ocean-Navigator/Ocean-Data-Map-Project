@@ -24,6 +24,8 @@ const COLORS = [
   [ 255, 255, 255 ],
 ];
 
+let CURRENT_PROJ = "EPSG:3857";
+
 const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
   "EPSG:32661": [0, 90],
@@ -50,6 +52,35 @@ const MAX_ZOOM = {
 
 var drifter_color = {};
 
+// Reset Pan button
+app.ResetPanButton = function(opt_options) {
+  const options = opt_options || {};
+
+  const button = document.createElement("button");
+  button.innerHTML = "🏠";
+  button.setAttribute("title", "Reset Map Location");
+
+  const this_ = this;
+  const handleResetPan = function() {
+    // Move to center of map according to correct projection
+    this_.getMap().getView().setCenter(DEF_CENTER[CURRENT_PROJ]);
+  };
+
+  button.addEventListener("click", handleResetPan, false);
+  button.addEventListener("touchstart", handleResetPan, false);
+
+  const element = document.createElement("div");
+  element.className = "reset-pan ol-unselectable ol-control";
+  element.appendChild(button);
+
+  ol.control.Control.call(this, {
+    element: element,
+    target: options.target,
+  });
+};
+ol.inherits(app.ResetPanButton, ol.control.Control);
+
+// Variable scale legend
 app.ScaleViewer = function(opt_options) {
   const options = opt_options || {};
 
@@ -64,7 +95,7 @@ app.ScaleViewer = function(opt_options) {
 
   ol.control.Control.call(this, {
     element: element,
-    target: options.target
+    target: options.target,
   });
 };
 ol.inherits(app.ScaleViewer, ol.control.Control);
@@ -149,6 +180,7 @@ export default class Map extends React.Component {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
+        preload: Infinity,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -167,6 +199,7 @@ export default class Map extends React.Component {
         }),
         opacity: this.props.state.bathymetryOpacity,
         visible: this.props.state.bathymetry,
+        preload: Infinity,
       });
 
     // Drawing layer
@@ -288,6 +321,7 @@ export default class Map extends React.Component {
           }
         }.bind(this),
       });
+
     this.map = new ol.Map({
       layers: [
         this.layer_basemap,
@@ -302,6 +336,8 @@ export default class Map extends React.Component {
           collapsed: false,
         })
       }).extend([
+        new app.ResetPanButton(), 
+        new ol.control.FullScreen(),
         new ol.control.MousePosition({
           projection: "EPSG:4326",
           coordinateFormat: function(c) {
@@ -344,8 +380,8 @@ export default class Map extends React.Component {
       maxZoom: MAX_ZOOM[this.props.state.projection],
       minZoom: MIN_ZOOM[this.props.state.projection],
     });
-    this.mapView.on("change:resolution", this.constrainPan.bind(this));
-    this.mapView.on("change:center", this.constrainPan.bind(this));
+    //this.mapView.on("change:resolution", this.constrainPan.bind(this));
+    //this.mapView.on("change:center", this.constrainPan.bind(this));
     this.map.setView(this.mapView);
 
     this.map.on("pointermove", function(e) {
@@ -558,6 +594,7 @@ export default class Map extends React.Component {
     switch(source) {
       case "topo":
         return new ol.layer.Tile({
+          preload: Infinity,
           source: new ol.source.XYZ({
             url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -570,8 +607,9 @@ export default class Map extends React.Component {
         });
       case "ocean":
         return new ol.layer.Tile({
+          preload: Infinity,
           source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
+            url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
             attributions: [
               new ol.Attribution({
@@ -582,8 +620,9 @@ export default class Map extends React.Component {
         });
       case "world":
         return new ol.layer.Tile({
+          preload: Infinity,
           source: new ol.source.XYZ({
-            url: "http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
             attributions: [
               new ol.Attribution({
@@ -801,6 +840,8 @@ export default class Map extends React.Component {
       }),
     ];
 
+    CURRENT_PROJ = this.props.state.projection;
+
     const newSource = new ol.source.XYZ(props);
 
     datalayer.setSource(newSource);
@@ -845,8 +886,8 @@ export default class Map extends React.Component {
         })
       );
 
-      this.mapView.on("change:resolution", this.constrainPan.bind(this));
-      this.mapView.on("change:center", this.constrainPan.bind(this));
+      //this.mapView.on("change:resolution", this.constrainPan.bind(this));
+      //this.mapView.on("change:center", this.constrainPan.bind(this));
       this.map.setView(this.mapView);
     }
 
@@ -894,7 +935,7 @@ export default class Map extends React.Component {
   }
 
   constrainPan(e) {
-    var view = e.target;
+    const view = e.target;
 
     var visible = view.calculateExtent(this.map.getSize());
     var centre = view.getCenter();

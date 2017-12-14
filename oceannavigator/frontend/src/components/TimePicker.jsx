@@ -187,9 +187,9 @@ export default class TimePicker extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.url != this.props.url ||
-            nextProps.min != this.props.min ||
-            nextProps.max != this.props.max) {
+    if (nextProps.url !== this.props.url ||
+            nextProps.min !== this.props.min ||
+            nextProps.max !== this.props.max) {
       this.populate(nextProps);
     }
   }

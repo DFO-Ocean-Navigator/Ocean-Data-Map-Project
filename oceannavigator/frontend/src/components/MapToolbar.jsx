@@ -554,7 +554,6 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               name="point"
               id="point"
-              //onClick={this.buttonHandler}
               title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
               onSelect={this.pointSelect}
             >
@@ -587,7 +586,6 @@ export default class MapToolbar extends React.Component {
             <NavDropdown 
               name="line"
               id="line"
-              //onClick={this.buttonHandler}
               title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
               onSelect={this.lineSelect}
             >
@@ -611,7 +609,6 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               name="area"
               id="area"
-              //onClick={this.buttonHandler}
               title={<span><Icon icon="square-o" /> {_("Area")}</span>}
               onSelect={this.areaSelect}
             >
