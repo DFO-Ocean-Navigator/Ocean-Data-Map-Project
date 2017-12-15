@@ -1,29 +1,50 @@
-###############################################################################
-# Find nearest grid point
-#
-# Author: Clyde Clements
-# Created: 2017-07-19 14:44:58 -0230
-#
-# This module finds the indices of a point on a lat/lon grid that is closest to
-# a specified lat/lon location.
-###############################################################################
+"""
+Find Nearest Grid Point
+=======================
+
+:Author: Clyde Clements
+:Created: 2017-07-19
+
+This module finds the indices of a point (or points) on a lat/lon grid that is
+closest to a specified lat/lon location.
+"""
 
 from math import pi
-import sys
 
-import xarray as xr
 import numpy as np
 from pykdtree.kdtree import KDTree
 
 
 def find_nearest_grid_point(
-        lat,           # type: float
-        lon,           # type: float
-        dataset,       # type: xr.Dataset
-        lat_var_name,  # type: str
-        lon_var_name,  # type: str
-        n=1            # type: int
-):  # type: (np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray)
+        lat, lon, dataset, lat_var_name, lon_var_name, n=1
+):
+    """Find the nearest grid point to a given lat/lon pair.
+
+    Parameters
+    ----------
+    lat : float
+        Latitude value at which to find the nearest grid point.
+    lon : float
+        Longitude value at which to find the nearest grid point.
+    dataset : xarray.Dataset
+        An xarray Dataset containing the mesh variables.
+    lat_var_name : str
+        Name of the latitude variable in the dataset.
+    lon_var_name : str
+        Name of the longitude variable in the dataset.
+    n : int, optional
+        Number of nearest grid points to return. Default is to return the
+        single closest grid point.
+
+    Returns
+    -------
+    iy, ix
+        A tuple of numpy arrays:
+
+        - ``iy``: the y indices of the nearest grid points
+        - ``ix``: the x indices of the nearest grid points
+    """
+
     # Note the use of the squeeze method: it removes single-dimensional entries
     # from the shape of an array. For example, in the GIOPS mesh file the
     # longitude of the U velocity points is defined as an array with shape
@@ -37,30 +58,46 @@ def find_nearest_grid_point(
     lonvals = lonvar[:] * rad_factor
     clat, clon = np.cos(latvals), np.cos(lonvals)
     slat, slon = np.sin(latvals), np.sin(lonvals)
+    if latvar.ndim == 1:
+        # If latitude and longitude are 1D arrays (as is the case with the
+        # GIOPS forecast data currently pulled from datamart), then we need to
+        # handle this situation in a special manner. The clat array will be of
+        # some size m, say, and the clon array will be of size n. By virtue of
+        # being defined with different dimensions, the product of these two
+        # arrays will be of size (m, n) because xarray will automatically
+        # broadcast the arrays so that the multiplication makes sense to do.
+        # Thus, the array calculated from
+        #
+        #   np.ravel(clat * clon)
+        #
+        # will be of size mn. However, the array
+        #
+        #   np.ravel(slat)
+        #
+        # will be of size m and this will cause the KDTree() call to fail. To
+        # resolve this issue, we broadcast slat to the appropriate size and
+        # shape.
+        shape = (slat.size, slon.size)
+        slat = np.broadcast_to(slat.values[:, np.newaxis], shape)
+    else:
+        shape = latvar.shape
     triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
                         np.ravel(slat)]).transpose()
     kdt = KDTree(triples)
-    shape = latvar.shape
-    dist_sq, iy, ix = find_index(lat, lon, kdt, shape, n)
-    # The results returned from find_index are two-dimensional arrays (if
+    dist_sq, iy, ix = _find_index(lat, lon, kdt, shape, n)
+    # The results returned from _find_index are two-dimensional arrays (if
     # n > 1) because it can handle the case of finding indices closest to
     # multiple lat/lon locations (i.e., where lat and lon are arrays, not
     # scalars). Currently, this function is intended only for a single lat/lon,
     # so we redefine the results as one-dimensional arrays.
     if n > 1:
-        #dist_sq = dist_sq[0, :]
         iy = iy[0, :]
         ix = ix[0, :]
-    """
-    lat_near = latvar[iy, ix]
-    lon_near = lonvar[iy, ix]
-    
-    return dist_sq, iy, ix, lat_near, lon_near
-    """
+
     return iy, ix
 
 
-def find_index(lat0, lon0, kdt, shape, n=1):
+def _find_index(lat0, lon0, kdt, shape, n=1):
     """Finds the y, x indicies that are closest to a latitude, longitude pair.
 
     Arguments:
