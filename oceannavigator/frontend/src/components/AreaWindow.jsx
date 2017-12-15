@@ -84,8 +84,14 @@ export default class AreaWindow extends React.Component {
       }
     }
 
+    // Update time indices
     if (props.dataset_0.time !== this.props.dataset_0.time) {
-      this.setState({ output_starttime: props.dataset_0.time,});
+      this.setState(
+        {
+          output_starttime: props.dataset_0.time,
+          output_endtime: props.dataset_0.time
+        }
+      );
     }
   }
 

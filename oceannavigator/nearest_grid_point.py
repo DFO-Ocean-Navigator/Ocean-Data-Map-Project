@@ -83,6 +83,7 @@ def find_nearest_grid_point(
         shape = latvar.shape
     triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
                         np.ravel(slat)]).transpose()
+
     kdt = KDTree(triples)
     dist_sq, iy, ix = _find_index(lat, lon, kdt, shape, n)
     # The results returned from _find_index are two-dimensional arrays (if

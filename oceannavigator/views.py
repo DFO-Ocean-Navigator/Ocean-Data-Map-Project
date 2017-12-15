@@ -550,6 +550,8 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         if "riops" in dataset_name:
             # Riops has different coordinate names...why? ¯\_(ツ)_/¯
             subset = dataset.isel(yc=slice(ymin_index, ymax_index), xc=slice(xmin_index, xmax_index))
+        elif dataset_name == "giops_forecast":
+            subset = dataset.isel(latitude=slice(ymin_index, ymax_index), longitude=slice(xmin_index, xmax_index))
         else:
             subset = dataset.isel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
         # Select requested time (time range if applicable)
