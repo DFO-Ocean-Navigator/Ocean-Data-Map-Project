@@ -248,9 +248,9 @@ class Class4Plotter(plotter.Plotter):
             plt.gca().xaxis.set_label_position('top')
             plt.gca().xaxis.set_ticks_position('top')
             plt.xlabel("%s (%s)" %
-                       (v, utils.mathtext(self.variable_units[idx])))
+                       (v, utils.mathtext(self.variable_units[idx])), fontsize=14)
             plt.gca().invert_yaxis()
-            plt.ylabel(gettext("Depth (%s)") % utils.mathtext(self.depth_unit))
+            plt.ylabel(gettext("Depth (%s)") % utils.mathtext(self.depth_unit), fontsize=14)
             plt.grid(True)
 
         leg = fig.legend(
@@ -266,8 +266,8 @@ class Class4Plotter(plotter.Plotter):
         plt.suptitle("%s\n%s" % (
             "\n".join(wrap(", ".join(names), 60)),
             plot_label
-        ))
+        ), fontsize=15)
         fig.tight_layout(pad=3, w_pad=4)
-        fig.subplots_adjust(top=0.88)
+        fig.subplots_adjust(top=0.85)
 
         return super(Class4Plotter, self).plot(fig)

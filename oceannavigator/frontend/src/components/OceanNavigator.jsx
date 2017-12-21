@@ -465,10 +465,7 @@ export default class OceanNavigator extends React.Component {
         modalContent = (
           <AreaWindow
             dataset_0={this.state}
-            quantum={this.state.dataset_quantum}
             area={this.state.area}
-            time={this.state.time}
-            variable={this.state.variable}
             scale={this.state.scale}
             scale_1={this.state.scale_1}
             colormap={this.state.colormap}

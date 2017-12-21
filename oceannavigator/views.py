@@ -436,6 +436,7 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
         return _cache_and_send_img(img, f)
 
 
+# Renders basemap
 @app.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo(projection, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
@@ -491,18 +492,24 @@ def class4_query(q, class4_id, index):
     return resp
 
 
-@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:variables>/<string:min_range>/<string:max_range>/<int:time>/<int:should_zip>')
+@app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:variables>/<string:min_range>/<string:max_range>/<string:time>/<int:should_zip>')
 def subset_query(output_format, dataset_name, variables, min_range, max_range, time, should_zip):
-    bottom_left = [float(x) for x in min_range.split('_')]
-    top_right = [float(x) for x in max_range.split('_')]
+    
+    # Bounding box extents
+    bottom_left = [float(x) for x in min_range.split(',')]
+    top_right = [float(x) for x in max_range.split(',')]
+
+    # Time range
+    time_range = [int(x) for x in time.split(',')]
+    apply_time_range = False
+    if time_range[0] != time_range[1]:
+        apply_time_range = True
 
     # Ensure we have an output folder that will be cleaned by tmpreaper
     if not os.path.isdir("/tmp/subset"):
         os.makedirs("/tmp/subset")
     working_dir = "/tmp/subset/"
 
-    # TODO: Support arbitrary datasets (find variable look up table)
-    # TODO: Allow user to select desired variables
     with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
 
         # Finds a variable in a dictionary given a substring containing common characters
@@ -533,14 +540,25 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         
         # Get timestamp
         time_variable = find_variable("time")
-        timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time)].values), "yyyyMMdd"))
-    
+        timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[0])].values), "yyyyMMdd"))
+        if apply_time_range:
+            endtimestamp = "-" + str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[1])].values), "yyyyMMdd"))
+        else:
+            endtimestamp = ""
+
         # Do subsetting
         if "riops" in dataset_name:
+            # Riops has different coordinate names...why? ¯\_(ツ)_/¯
             subset = dataset.isel(yc=slice(ymin_index, ymax_index), xc=slice(xmin_index, xmax_index))
+        elif dataset_name == "giops_forecast":
+            subset = dataset.isel(latitude=slice(ymin_index, ymax_index), longitude=slice(xmin_index, xmax_index))
         else:
             subset = dataset.isel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
-        subset = subset.isel(**{time_variable: int(time)})
+        # Select requested time (time range if applicable)
+        if apply_time_range:
+            subset = subset.isel(**{time_variable: slice(time_range[0], time_range[1] + 1)}) # slice doesn't include the last element
+        else:
+            subset = subset.isel(**{time_variable: int(time_range[0])})
 
         # Filter out unwanted variables
         output_vars = variables.split(',')
@@ -550,12 +568,11 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
                 subset = subset.drop(variable)
 
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
-                    + "_" + timestamp + "_024_" + output_format
+                    + "_" + timestamp + endtimestamp + "_" + output_format
 
         # Export to NetCDF
         subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
-    # TODO delete generated file.
     if should_zip == 1:
         myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
         myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))

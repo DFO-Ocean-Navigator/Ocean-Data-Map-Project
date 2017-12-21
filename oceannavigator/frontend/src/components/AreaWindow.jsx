@@ -11,6 +11,7 @@ import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
+import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -46,7 +47,10 @@ export default class AreaWindow extends React.Component {
       variable: [props.variable],
       size: "10x7",
       dpi: 144,
+      output_timerange: false,
       output_variables: "",
+      output_starttime: props.dataset_0.time,
+      output_endtime: props.dataset_0.time,
       output_format: "NETCDF3_CLASSIC",
       zip: false,
     };
@@ -67,6 +71,7 @@ export default class AreaWindow extends React.Component {
         depth: props.depth,
       });
     }
+
     if (props.scale !== this.props.scale) {
       if (this.state.scale.indexOf("auto") !== -1) {
         this.setState({
@@ -77,6 +82,16 @@ export default class AreaWindow extends React.Component {
           scale: props.scale,
         });
       }
+    }
+
+    // Update time indices
+    if (props.dataset_0.time !== this.props.dataset_0.time) {
+      this.setState(
+        {
+          output_starttime: props.dataset_0.time,
+          output_endtime: props.dataset_0.time
+        }
+      );
     }
   }
 
@@ -151,9 +166,9 @@ export default class AreaWindow extends React.Component {
     window.location.href =  `/api/subset/${this.state.output_format}/` + 
                             `${this.props.dataset_0.dataset}/` + 
                             `${this.state.output_variables.join()}/` + // Comma-separate selected variables
-                            `${lat_min}_${long_min}/` +
-                            `${lat_max}_${long_max}/` + 
-                            `${this.props.time}/`+
+                            `${lat_min},${long_min}/` +
+                            `${lat_max},${long_max}/` + 
+                            `${this.state.output_starttime},${this.state.output_endtime}/`+
                             `${this.state.zip ? 1 : 0}`;
   }
 
@@ -307,13 +322,51 @@ export default class AreaWindow extends React.Component {
           title={_("Variables")}
         />
 
+        <SelectBox
+          id='time_range'
+          state={this.state.output_timerange}
+          onUpdate={(key, value) => {this.setState({output_timerange: value,});}}
+          title={_("Select Time Range")}
+        />
+
+        <TimePicker
+          id='starttime'
+          state={this.state.output_starttime}
+          def=''
+          quantum={this.props.dataset_0.dataset_quantum}
+          url={"/api/timestamps/?dataset=" +
+                this.props.dataset_0.dataset +
+                "&quantum=" +
+                this.props.dataset_0.dataset_quantum}
+          title={this.state.output_timerange ? _("Start Time") : _("Time")}
+          onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
+          max={this.props.dataset_0.time + 1}
+          updateDate={this.updateDate}
+        />
+
+        <div style={{display: this.state.output_timerange ? "block" : "none",}}>
+          <TimePicker
+            id='time'
+            state={this.state.output_endtime}
+            def=''
+            quantum={this.props.dataset_0.dataset_quantum}
+            url={"/api/timestamps/?dataset=" +
+                this.props.dataset_0.dataset +
+                "&quantum=" +
+                this.props.dataset_0.dataset_quantum}
+            title={_("End Time")}
+            onUpdate={(key, value) => { this.setState({output_endtime: value,}); }}
+            min={this.props.dataset_0.time}
+          />
+        </div>
+
         <FormGroup controlId="output_format">
           <ControlLabel>{_("Output Format")}</ControlLabel>
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
-            <option value="NETCDF3_CLASSIC">{_("NetCDF3 Classic")}</option>
-            <option value="NETCDF3_64BIT">{_("NetCDF3 64-bit")}</option>
-            <option value="NETCDF4">{_("NetCDF4")}</option>
-            <option value="NETCDF4_CLASSIC">{_("NetCDF4 Classic")}</option>
+            <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
+            <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            <option value="NETCDF4">{_("NetCDF-4")}</option>
+            <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>
         </FormGroup>
         
@@ -418,7 +471,7 @@ export default class AreaWindow extends React.Component {
     var rightInputs = [];
     const plot_query = {
       dataset: this.props.dataset_0.dataset,
-      quantum: this.props.quantum,
+      quantum: this.props.dataset_0.quantum,
       scale: this.state.scale,
       name: this.props.name,
     };
@@ -428,14 +481,14 @@ export default class AreaWindow extends React.Component {
       case 1:
         plot_query.type = "map";
         plot_query.colormap = this.state.leftColormap;
-        plot_query.time = this.props.time;
+        plot_query.time = this.props.dataset_0.time;
         plot_query.area = this.props.area;
         plot_query.depth = this.props.depth;
         plot_query.bathymetry = this.state.bathymetry;
         plot_query.quiver = this.state.quiver;
         plot_query.contour = this.state.contour;
         plot_query.showarea = this.state.showarea;
-        plot_query.variable = this.props.variable;
+        plot_query.variable = this.props.dataset_1.variable;
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
@@ -461,7 +514,7 @@ export default class AreaWindow extends React.Component {
         />;
         break;
       case 2:
-        plot_query.time = this.props.time;
+        plot_query.time = this.props.dataset_0.time;
         plot_query.area = this.props.area;
         plot_query.depth = this.props.depth;
         if (this.state.variable.join != undefined) {
