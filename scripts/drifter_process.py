@@ -210,6 +210,9 @@ for buoy_id, files in buoy_files.iteritems():
         lambda x: time.mktime(x.timetuple())
     )
 
+    if (vt.size<= 2 or vx.size <=2 or vy.size <=2 ):
+	    print "vt,vx,or vy are to small to use, must nbe greater than 1 (the drifter should have more than 1 point)"
+	    continue
     fx = interpolate.interp1d(vt, vx, bounds_error=False, kind='linear')
     fy = interpolate.interp1d(vt, vy, bounds_error=False, kind='linear')
 

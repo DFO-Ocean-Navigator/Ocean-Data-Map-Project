@@ -47,7 +47,7 @@ export default class DatasetSelector extends React.Component {
     _("Dataset");
     _("Variable");
     _("Depth");
-    _("Time");
+    _("Time (UTC)");
 
     var variables = "";
     switch (this.props.variables) {
@@ -110,7 +110,7 @@ export default class DatasetSelector extends React.Component {
             "&quantum=" +
             this.props.state.dataset_quantum
           }
-          title={_("Time")}
+          title={_("Time (UTC)")}
         />;
     }
 
