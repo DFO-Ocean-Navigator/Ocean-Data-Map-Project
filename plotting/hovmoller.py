@@ -89,7 +89,8 @@ class HovmollerPlotter(line.LinePlotter):
             self.data = self.data.transpose()
 
             # Get colourmap
-            self.cmap = colormap.find_colormap(self.variable_name)
+            if self.cmap is None:
+                self.cmap = colormap.find_colormap(self.variable_name)
 
         # Load data sent from Right view (if in compare mode)
         if self.compare:
@@ -124,6 +125,12 @@ class HovmollerPlotter(line.LinePlotter):
                     )
                     self.compare['variable_name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
 
+                # Colourmap
+                if (self.compare['colormap'] == 'default'):
+                    self.compare['colormap'] = colormap.find_colormap(self.compare['variable_name'])
+                else:
+                    self.compare['colormap'] = colormap.find_colormap(self.compare['colormap'])
+
                 variable_units = self.get_variable_units(dataset, self.compare['variables'])
                 scale_factors = self.get_variable_scale_factors(dataset, self.compare['variables'])
 
@@ -131,9 +138,6 @@ class HovmollerPlotter(line.LinePlotter):
                 self.compare['times'] = dataset.timestamps[self.compare['starttime'] : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
-
-                # Colourmap
-                self.compare['cmap'] = colormap.find_colormap(self.compare['variable_name'])
 
     # Render Hovmoller graph(s)
     def plot(self):
@@ -229,7 +233,7 @@ class HovmollerPlotter(line.LinePlotter):
                 vmin, vmax,
                 self.compare['data'],
                 self.compare['times'],
-                self.compare['cmap'],
+                self.compare['colormap'],
                 self.compare['variable_unit'],
                 gettext(self.compare['variable_name']) + gettext(get_depth_label(self.compare['depth'], self.compare['depth_unit']))
             )
