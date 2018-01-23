@@ -23,7 +23,7 @@ class StickPlotter(point.PointPlotter):
         columns = [
             "Latitude",
             "Longitude",
-            "Depth (m)"
+            "Depth (m)", 
             "Time",
         ] + map(lambda x: "%s (%s)" % x,
                 zip(self.variable_names, self.variable_units))
