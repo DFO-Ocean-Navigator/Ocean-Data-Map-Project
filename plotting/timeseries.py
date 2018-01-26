@@ -81,7 +81,6 @@ class TimeseriesPlotter(point.PointPlotter):
 
     def plot(self):
         if len(self.variables) > 1:
-            self.variable_name = self.vector_name(self.variable_name)
             if self.scale:
                 vmin = self.scale[0]
                 vmax = self.scale[1]
@@ -211,15 +210,18 @@ class TimeseriesPlotter(point.PointPlotter):
             self.load_misc(dataset, self.variables)
             self.fix_startend_times(dataset, self.starttime, self.endtime)
 
-            self.variable_unit = get_variable_unit(
-                self.dataset_name,
-                dataset.variables[self.variables[0]]
-            )
-            self.variable_name = get_variable_name(
-                self.dataset_name,
-                dataset.variables[self.variables[0]]
-            )
-
+            if len(self.variables) == 1:
+                self.variable_unit = get_variable_unit(
+                    self.dataset_name,
+                    dataset.variables[self.variables[0]]
+                )
+                self.variable_name = get_variable_name(
+                    self.dataset_name,
+                    dataset.variables[self.variables[0]]
+                )
+            else:
+                self.variable_name = self.vector_name(self.variable_names[0])
+                self.variable_unit = self.variable_units[0]
             var = self.variables[0]
             if self.depth != 'all' and self.depth != 'bottom' and \
                 (set(dataset.variables[var].dimensions) &
