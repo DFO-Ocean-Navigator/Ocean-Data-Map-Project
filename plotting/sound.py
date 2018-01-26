@@ -14,6 +14,7 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         super(
             ts.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                           format)
+        self.size = '4x8'
 
     def plot(self):
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
