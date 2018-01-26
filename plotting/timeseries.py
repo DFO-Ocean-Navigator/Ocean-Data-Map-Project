@@ -34,6 +34,16 @@ class TimeseriesPlotter(point.PointPlotter):
             "Time",
         ]
 
+        if len(self.variables) > 1:
+            # Under the current API this indicates that velocity has been
+            # selected, which actually is derived from two variables: X and Y
+            # velocities. As such, the CSV export will also include X and Y
+            # velocity components (pulled from the quiver_data attribute) and
+            # bearing information (to be calculated below).
+            have_quiver = hasattr(self, 'quiver_data')
+        else:
+            have_quiver = False
+
         if self.depth != 'all':
             if isinstance(self.depth, str) or isinstance(self.depth, unicode):
                 header.append(["Depth", self.depth])
@@ -45,12 +55,45 @@ class TimeseriesPlotter(point.PointPlotter):
 
             columns.append("%s (%s)" % (self.variable_name,
                                         self.variable_unit))
+            if have_quiver:
+                columns.extend([
+                    "%s (%s)" % (self.variable_names[0],
+                                 self.variable_units[0]),
+                    "%s (%s)" % (self.variable_names[1],
+                                 self.variable_units[1]),
+                    "Bearing (degrees clockwise positive from North)"
+                ])
         else:
-            header.append(["Variable", "%s (%s)" % (self.variable_name,
-                                                    self.variable_unit)])
             max_dep_idx = np.where(~self.data[:, 0, 0, :].mask)[1].max()
-            for dep in self.depths[:max_dep_idx + 1]:
-                columns.append("%d%s" % (np.round(dep), self.depth_unit))
+            if not have_quiver:
+                header.append(["Variable", "%s (%s)" % (self.variable_name,
+                                                        self.variable_unit)])
+                for dep in self.depths[:max_dep_idx + 1]:
+                    columns.append("%d%s" % (np.round(dep), self.depth_unit))
+            else:
+                header_text = "%s (%s) %s (%s) %s (%s) %s" % (
+                    self.variable_name, self.variable_unit,
+                    self.variable_names[0], self.variable_units[0],
+                    self.variable_names[1], self.variable_units[1],
+                    "Bearing (degrees clockwise positive from North)"
+                )
+                header.append(["Variables", header_text])
+                for var_name in [self.variable_name, self.variable_names[0],
+                                 self.variable_names[1], "Bearing"]:
+                    for dep in self.depths[:max_dep_idx + 1]:
+                        columns.append(
+                            "%s at %d%s" % (
+                                var_name, np.round(dep), self.depth_unit
+                            )
+                        )
+
+        if have_quiver:
+            # Calculate bearings.
+            bearing = np.arctan2(self.quiver_data[1][:],
+                                 self.quiver_data[0][:])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
 
         data = []
 
@@ -68,9 +111,27 @@ class TimeseriesPlotter(point.PointPlotter):
                         lambda f: "%0.3f" % f,
                         self.data[p, 0, t, :max_dep_idx + 1]
                     ))
+                    if have_quiver:
+                        entry.extend(map(
+                            lambda f: "%0.3f" % f,
+                            self.quiver_data[0][p, t, :max_dep_idx + 1]
+                        ))
+                        entry.extend(map(
+                            lambda f: "%0.3f" % f,
+                            self.quiver_data[1][p, t, :max_dep_idx + 1]
+                        ))
+                        entry.extend(map(
+                            lambda f: "%0.3f" % f,
+                            bearing[p, t, :max_dep_idx + 1]
+                        ))
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
-
+                    if have_quiver:
+                        entry.extend([
+                            "%0.3f" % self.quiver_data[0][p, t],
+                            "%0.3f" % self.quiver_data[1][p, t],
+                            "%0.3f" % bearing[p, t]
+                        ])
                 data.append(entry)
 
         d = np.array(data)
@@ -286,6 +347,11 @@ class TimeseriesPlotter(point.PointPlotter):
                 point_data[:, idx, :] = point_data[:, idx, :] - 273.15
 
         if point_data.shape[1] == 2:
+            # Under the current API this indicates that velocity data is being
+            # loaded. Save each velocity component (X and Y) for possible CSV
+            # export later.
+            self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
+
             point_data = np.ma.expand_dims(
                 np.sqrt(
                     point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
