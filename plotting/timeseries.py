@@ -38,7 +38,10 @@ class TimeseriesPlotter(point.PointPlotter):
             if isinstance(self.depth, str) or isinstance(self.depth, unicode):
                 header.append(["Depth", self.depth])
             else:
-                header.append(["Depth", "%d" % self.depths[self.depth]])
+                header.append(
+                    ["Depth", "%d%s" % (np.round(self.depths[self.depth]),
+                                        self.depth_unit)]
+                )
 
             columns.append("%s (%s)" % (self.variable_name,
                                         self.variable_unit))
