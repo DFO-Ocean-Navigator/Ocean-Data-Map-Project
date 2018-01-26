@@ -27,7 +27,19 @@ class StickPlotter(point.PointPlotter):
             "Time",
         ] + map(lambda x: "%s (%s)" % x,
                 zip(self.variable_names, self.variable_units))
+        columns.extend([
+            "%s (%s)" % (self.vector_name(self.variable_names[0]),
+                         self.variable_units[0]),
+            "Bearing (degrees clockwise positive from North)"
+        ])
         data = []
+
+        magnitude = np.sqrt(self.data[:, 0, :, :] ** 2 +
+                            self.data[:, 1, :, :] ** 2)
+        bearing = np.arctan2(self.data[:, 1, :, :], self.data[:, 0, :, :])
+        bearing = np.pi / 2.0 - bearing
+        bearing[bearing < 0] += 2 * np.pi
+        bearing *= 180.0 / np.pi
 
         # For each point
         for p in range(0, self.data.shape[0]):
@@ -46,6 +58,10 @@ class StickPlotter(point.PointPlotter):
                         "%s" % depth,
                         self.timestamp[t].isoformat(),
                     ] + map(lambda x: "%0.4f" % x, self.data[p, :, d, t])
+                    entry.extend([
+                        "%0.4f" % magnitude[p, d, t],
+                        "%0.4f" % bearing[p, d, t]
+                    ])
 
                     data.append(entry)
 
