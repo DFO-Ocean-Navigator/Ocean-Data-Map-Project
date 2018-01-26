@@ -25,11 +25,12 @@ class StickPlotter(point.PointPlotter):
             "Longitude",
             "Depth (m)", 
             "Time",
-        ] + map(lambda x: "%s (%s)" % x,
-                zip(self.variable_names, self.variable_units))
+        ]
         columns.extend([
             "%s (%s)" % (self.vector_name(self.variable_names[0]),
                          self.variable_units[0]),
+            "%s (%s)" % (self.variable_names[0], self.variable_units[0]),
+            "%s (%s)" % (self.variable_names[1], self.variable_units[1]),
             "Bearing (degrees clockwise positive from North)"
         ])
         data = []
@@ -57,9 +58,11 @@ class StickPlotter(point.PointPlotter):
                         "%0.4f" % self.points[p][1],
                         "%s" % depth,
                         self.timestamp[t].isoformat(),
-                    ] + map(lambda x: "%0.4f" % x, self.data[p, :, d, t])
+                    ]
                     entry.extend([
                         "%0.4f" % magnitude[p, d, t],
+                        "%0.4f" % self.data[p, 0, d, t],
+                        "%0.4f" % self.data[p, 1, d, t],
                         "%0.4f" % bearing[p, d, t]
                     ])
 
