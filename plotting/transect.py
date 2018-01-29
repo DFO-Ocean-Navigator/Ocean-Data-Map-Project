@@ -188,6 +188,12 @@ class TransectPlotter(line.LinePlotter):
                     
                     # Get and store the "nicely formatted" string for the variable name
                     self.compare['name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
+                    
+                    # Find correct colourmap
+                    if (self.compare['colormap'] == 'default'):
+                        self.compare['colormap'] = colormap.find_colormap(self.compare['name'])
+                    else:
+                        self.compare['colormap'] = colormap.find_colormap(self.compare['colormap'])
 
                     climate_points, climate_distance, climate_data, cdep = \
                         dataset.get_path_profile(self.points,
@@ -220,6 +226,7 @@ class TransectPlotter(line.LinePlotter):
                 else:
                     # Get and store the "nicely formatted" string for the variable name
                     self.compare['name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
+                    
                     
                     climate_pts, climate_distance, climate_x, cdep = \
                         dataset.get_path_profile(
@@ -485,7 +492,6 @@ class TransectPlotter(line.LinePlotter):
                     vmax = max(vmax, -vmin)
             
                 # Get colormap for variable
-                self.cmap = colormap.find_colormap(self.transect_data['name'])
                 do_plot(
                     gs, [0, 0], [0, 0],
                     self.transect_data['parallel'],
@@ -520,7 +526,7 @@ class TransectPlotter(line.LinePlotter):
                         vmax = max(vmax, -vmin)
                         
                     # Get colormap for variable
-                    self.cmap = colormap.find_colormap(self.compare['name'])
+                    cmap = colormap.find_colormap(self.compare['colormap'])
 
                     do_plot(
                         gs, [1, 0], [1, 0],
@@ -530,7 +536,7 @@ class TransectPlotter(line.LinePlotter):
                         vmin,
                         vmax,
                         self.transect_data['unit'],
-                        self.cmap
+                        cmap
                     )
                     do_plot(
                         gs, [1, 1], [1, 1],
@@ -540,10 +546,9 @@ class TransectPlotter(line.LinePlotter):
                         vmin,
                         vmax,
                         self.transect_data['unit'],
-                        self.cmap
+                        cmap
                     )
 
-                    print self.transect_data['parallel'] - self.compare['parallel']
             else:
                 # Get range min/max
                 vmin, vmax = find_minmax(self.scale, self.transect_data['data'])
@@ -554,9 +559,6 @@ class TransectPlotter(line.LinePlotter):
                 ):   
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-
-                # Get colormap for variable
-                self.cmap = colormap.find_colormap(self.transect_data['name'])
 
                 # Render primary/left view
                 do_plot(
@@ -570,11 +572,6 @@ class TransectPlotter(line.LinePlotter):
                     self.cmap
                 )
 
-                # If the left and right variables are not equal, find the
-                # correct colormap
-                if (self.transect_data['name'] != self.compare['name']):
-                    self.cmap = colormap.find_colormap(self.compare['name'])
-
                 # Render right view
                 vmin, vmax = find_minmax(self.compare['scale'], self.transect_data['compare_data'])
                 do_plot(
@@ -585,7 +582,7 @@ class TransectPlotter(line.LinePlotter):
                     vmin,
                     vmax,
                     self.compare['unit'],
-                    self.cmap
+                    self.compare['colormap']
                 )
             
                 # Show a difference plot if both variables and datasets are the same
@@ -609,7 +606,7 @@ class TransectPlotter(line.LinePlotter):
                         vmin,
                         vmax,
                         self.transect_data['unit'],  # Since both variables are the same doesn't matter which view we reference
-                        colormap.find_colormap("anomaly") # Colormap for difference graphs
+                        colormap.find_colormap(self.compare['colormap_diff']) # Colormap for difference graphs
                     )
         
         # Not comparing
@@ -627,8 +624,6 @@ class TransectPlotter(line.LinePlotter):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
             
-                # Get colormap for variable
-                self.cmap = colormap.find_colormap(self.transect_data['name'])
                 do_plot(
                     gs, [0, 1], [0, 0],
                     self.transect_data['parallel'],
@@ -664,9 +659,6 @@ class TransectPlotter(line.LinePlotter):
                     ):
                         vmin = min(vmin, -vmax)
                         vmax = max(vmax, -vmin)
-
-                # Find colormap for variable
-                self.cmap = colormap.find_colormap(self.transect_data['name'])
 
                 do_plot(
                     gs, [0, 1], [0, 0],

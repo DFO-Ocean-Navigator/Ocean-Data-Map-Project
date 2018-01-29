@@ -100,8 +100,10 @@ class Plotter:
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
-            print self.compare
             self.compare['variables'] = self.compare['variable'].split(',')
+
+            if (self.compare['colormap_diff'] == 'default'):
+                self.compare['colormap_diff'] = 'anomaly'
 
             try:
                 # Variable scale
@@ -119,8 +121,6 @@ class Plotter:
         cmap = query.get('colormap')
         if cmap is not None:
             cmap = colormap.colormaps.get(cmap)
-        if cmap is None and self.compare:
-            cmap = colormap.colormaps['anomaly']
         self.cmap = cmap
 
         linearthresh = query.get('linearthresh')

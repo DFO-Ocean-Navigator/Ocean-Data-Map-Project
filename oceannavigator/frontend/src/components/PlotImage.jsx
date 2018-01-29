@@ -112,6 +112,7 @@ export default class PlotImage extends React.Component {
         query.linearthresh = q.linearthresh;
         query.name = q.name;
         query.depth_limit = q.depth_limit;
+        query.colormap = q.colormap;
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -121,6 +122,8 @@ export default class PlotImage extends React.Component {
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             variable: q.compare_to.variable,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
@@ -145,6 +148,8 @@ export default class PlotImage extends React.Component {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;

@@ -22,6 +22,8 @@ export default class LineWindow extends React.Component {
       scale_1: props.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       colormap: "default",
+      colormap_right: "default", // Colourmap for second (right) plot
+      colormap_diff: "default", // Colourmap for difference plot
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -89,18 +91,6 @@ export default class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
-
-    /*
-      <ComboBox
-        key='colormap'
-        id='colormap'
-        state={this.state.colormap}
-        def='default'
-        onUpdate={this.onLocalUpdate.bind(this)}
-        url='/api/colormaps/'
-        title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-      </ComboBox>
-    */
 
     const global = (<Panel 
       collapsible
@@ -200,6 +190,20 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
       />
 
+      <div
+        style={{display: this.props.dataset_compare &&
+                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
+        <ComboBox
+          key='colormap_diff'
+          id='colormap_diff'
+          state={this.state.colormap_diff}
+          def='default'
+          onUpdate={this.onLocalUpdate}
+          url='/api/colormaps/'
+          title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+        </ComboBox>
+      </div>
+
     </Panel>;
     
     const dataset = <Panel 
@@ -226,6 +230,15 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
       />
+      <ComboBox
+        key='colormap'
+        id='colormap'
+        state={this.state.colormap}
+        def='default'
+        onUpdate={this.onLocalUpdate}
+        url='/api/colormaps/'
+        title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+      </ComboBox>
     </Panel>;
     
     const compare_dataset = <div key='compare_dataset'>
@@ -254,6 +267,15 @@ export default class LineWindow extends React.Component {
             onUpdate={this.onLocalUpdate}
             title={_("Variable Range")}
           />
+          <ComboBox
+            key='colormap_right'
+            id='colormap_right'
+            state={this.state.colormap_right}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/colormaps/'
+            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+          </ComboBox>
         </Panel>
       </div>
     </div>;
@@ -284,6 +306,8 @@ export default class LineWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.colormap_right;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
         leftInputs = [
           global, transectSettings
@@ -301,6 +325,8 @@ export default class LineWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.colormap_right;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
         leftInputs = [
           global
