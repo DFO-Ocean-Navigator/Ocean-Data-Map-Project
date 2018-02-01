@@ -2,6 +2,7 @@ import React from "react";
 import Map from "./Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
+import WarningBar from "./warning.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -11,6 +12,7 @@ import Permalink from "./Permalink.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
+import { t } from "i18next/dist/commonjs";
 
 const i18n = require("../i18n.js");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
@@ -48,6 +50,7 @@ export default class OceanNavigator extends React.Component {
       basemap: "topo",
       bathymetry: true, // Show bathymetry contours
       showHelp: false,
+      showBugs: false,
       showCompareHelp: false,
       extent: [],
       dataset_compare: false, // Controls if compare mode is enabled
@@ -94,6 +97,8 @@ export default class OceanNavigator extends React.Component {
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.showCompareHelp = this.showCompareHelp.bind(this);
     this.hideCompareHelp = this.hideCompareHelp.bind(this);
+    this.showBugsModal = this.showBugsModal.bind(this);
+    this.hideBugsModal = this.hideBugsModal.bind(this);
     this.swapViews = this.swapViews.bind(this);
     this.updateState = this.updateState.bind(this);
     this.action = this.action.bind(this);
@@ -113,6 +118,15 @@ export default class OceanNavigator extends React.Component {
   hideCompareHelp() {
     this.setState({showCompareHelp: false,});
   }
+
+  hideBugsModal(){
+    this.setState({showBugs: false,});
+  }
+
+  showBugsModal(){
+      this.setState({showBugs: true,});
+  }
+
   // Swap all view-related state variables
   swapViews() {
     const newState = this.state;
@@ -576,6 +590,9 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             toggleSidebar={this.toggleSidebar}
           />
+          <WarningBar
+            showWarningInfo={this.showBugsModal}
+          />
           {map}
         </div>
 
@@ -657,6 +674,61 @@ export default class OceanNavigator extends React.Component {
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.hideCompareHelp}><Icon icon="close"/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showBugs}
+          onHide={this.hideBugsModal}
+          bsSize="large"
+          dialogClassName="bugsdialog"
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{_("Water Velocity Issue")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>
+              There is a known issue with how the direction of water velocity is rendered.<br/>
+              <br/>
+            </p>
+            <p>
+              The "water x velocity" and "water y velocity" do not necessarily refer to water velocity 
+              in the East or North direction. Instead, they refer to the water velocity along the x or y axis 
+              of the grid used by the source data, which are often rotated.<br/>
+              <br/>
+            </p>
+            <p>
+              For data sources such as GIOPS daily and GIOPS monthly this means the data is on a tripolar grid and the 
+              angle of the x-axis changes, deviating further from the Latitude Longitude grid directions closer to the 
+              north pole.<br/>
+              <br/>
+            </p>
+            <p> 
+              This issue is known to have an impact on:<br/>
+                * Water velocity (x,y and combined) for The Global, Arctic, and Antarctic projections for all dataset<br/>
+                * Model Water velocity for the Area, Point, and Line/Transect plots. for all datasets.<br/>
+                * Model Water velocity (x, y, and combined) for exported CSV's and ODE<br/>
+                * Model Water velocity for drifter plots.<br/>
+              <br/>
+              <br/>
+            </p>
+              Please note that the magnitude of the velocity is correct only the direction is has problems. 
+              Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of 
+              60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
+              a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
+              a clear and understandable fix released soon. <br/>
+              <br/>
+            <p>
+              you would like more detailed information you can view our bug tracking this problem on 
+              our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
+              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/188" target="_blank">"Direction of velocity vectors in different projections don't match"</a> <br/>
+              If you still need more information about the problem contact oceandatamap@gmail.com <br/>
+              <br/>
+            </p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.hideBugsModal}><Icon icon="close"/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 

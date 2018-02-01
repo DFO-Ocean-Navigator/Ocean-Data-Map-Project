@@ -7,8 +7,21 @@
     font-size: 14px;
 }
 
-@media (min-width: 1200px) {
-.container {
-    width: 100%;
+.alert-warning{
+    color: #000;
+    font-weight: bold;
 }
+
+.alert .alert-link{
+    color: #132c8c;
+}
+
+.alert{
+    margin-bottom: 0;
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 100%;
+    }
 }
