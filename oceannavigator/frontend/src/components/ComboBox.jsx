@@ -187,7 +187,7 @@ export default class ComboBox extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.url != this.state.url || nextProps.data != this.props.data) {
+    if (nextProps.url !== this.state.url || nextProps.data !== this.props.data) {
       this.populate(nextProps);
     }
   }

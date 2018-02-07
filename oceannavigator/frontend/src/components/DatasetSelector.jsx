@@ -116,6 +116,7 @@ export default class DatasetSelector extends React.Component {
 
     return (
       <div className='DatasetSelector'>
+
         <ComboBox
           id='dataset'
           state={this.props.state.dataset}
@@ -123,6 +124,7 @@ export default class DatasetSelector extends React.Component {
           onUpdate={this.onUpdate}
           url='/api/datasets/'
           title={_("Dataset")}></ComboBox>
+
         <ComboBox
           id='variable'
           multiple={this.props.multiple}
@@ -133,6 +135,7 @@ export default class DatasetSelector extends React.Component {
           }
           title={_("Variable")}
         ><h1>{_("Variable")}</h1></ComboBox>
+
         {this.props.depth && <ComboBox
           id='depth'
           state={this.props.state.depth}
@@ -145,7 +148,9 @@ export default class DatasetSelector extends React.Component {
           }
           title={_("Depth")}
         ></ComboBox>}
+        
         {time}
+
       </div>
     );
   }

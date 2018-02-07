@@ -197,7 +197,7 @@ export default class Map extends React.Component {
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
-        opacity: this.props.state.bathymetryOpacity,
+        opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.state.bathymetry,
         preload: Infinity,
       });
@@ -207,121 +207,132 @@ export default class Map extends React.Component {
       {
         source: this.vectorSource,
         style: function(feat, res) {
-          if (feat.get("type") == "area") {
-            return [
-              new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: "#000000",
-                  width: 1,
-                }),
-              }),
-              new ol.style.Style({
-                geometry: new ol.geom.Point(ol.proj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-                text: new ol.style.Text({
-                  text: feat.get("name"),
-                  fill: new ol.style.Fill({
-                    color: "#000",
+
+          switch (feat.get("type")) {
+            case "area": {
+              return [
+                new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: "#000000",
+                    width: 1,
                   }),
                 }),
-              }),
-            ];
-          } else if (feat.get("type") === "drifter") {
-            var start = feat.getGeometry().getCoordinateAt(0);
-            var end = feat.getGeometry().getCoordinateAt(1);
-            var endImage;
-            var color = drifter_color[feat.get("name")];
-            if (color == undefined) {
-              color = COLORS[Object.keys(drifter_color).length % COLORS.length];
-              drifter_color[feat.get("name")] = color;
+                new ol.style.Style({
+                  geometry: new ol.geom.Point(ol.proj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+                  text: new ol.style.Text({
+                    text: feat.get("name"),
+                    fill: new ol.style.Fill({
+                      color: "#000",
+                    }),
+                  }),
+                }),
+              ];
             }
-            if (feat.get("status") == "inactive" || feat.get("status") == "not responding") {
-              endImage = new ol.style.Icon({
-                src: X_IMAGE,
-                scale: 0.75,
-              });
-            } else {
-              endImage = new ol.style.Circle({
-                radius: SmartPhone.isAny() ? 6 : 4,
-                fill: new ol.style.Fill({
-                  color: "#ff0000",
+            
+            case "drifter": {
+              const start = feat.getGeometry().getCoordinateAt(0);
+              const end = feat.getGeometry().getCoordinateAt(1);
+              let endImage;
+              let color = drifter_color[feat.get("name")];
+              
+              if (color === undefined) {
+                color = COLORS[Object.keys(drifter_color).length % COLORS.length];
+                drifter_color[feat.get("name")] = color;
+              }
+              if (feat.get("status") == "inactive" || feat.get("status") == "not responding") {
+                endImage = new ol.style.Icon({
+                  src: X_IMAGE,
+                  scale: 0.75,
+                });
+              } else {
+                endImage = new ol.style.Circle({
+                  radius: SmartPhone.isAny() ? 6 : 4,
+                  fill: new ol.style.Fill({
+                    color: "#ff0000",
+                  }),
+                  stroke: new ol.style.Stroke({
+                    color: "#000000",
+                    width: 1
+                  }),
+                });
+              }
+
+              const styles = [
+                new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: [color[0], color[1], color[2], 0.004],
+                    width: 8,
+                  }),
                 }),
-                stroke: new ol.style.Stroke({
-                  color: "#000000",
-                  width: 1
+                new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: color,
+                    width: SmartPhone.isAny() ? 4 : 2,
+                  })
                 }),
-              });
+                new ol.style.Style({
+                  geometry: new ol.geom.Point(end),
+                  image: endImage,
+                }),
+                new ol.style.Style({
+                  geometry: new ol.geom.Point(start),
+                  image: new ol.style.Circle({
+                    radius: SmartPhone.isAny() ? 6 : 4,
+                    fill: new ol.style.Fill({
+                      color: "#008000",
+                    }),
+                    stroke: new ol.style.Stroke({
+                      color: "#000000",
+                      width: 1
+                    }),
+                  }),
+                }),
+              ];
+
+              return styles;
             }
 
-            // Map drawing tool style
-            const styles = [
-              new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: [color[0], color[1], color[2], 0.004],
-                  width: 8,
-                }),
-              }),
-              new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: color,
-                  width: SmartPhone.isAny() ? 4 : 2,
-                })
-              }),
-              new ol.style.Style({
-                geometry: new ol.geom.Point(end),
-                image: endImage,
-              }),
-              new ol.style.Style({
-                geometry: new ol.geom.Point(start),
+            case "class4": {
+              const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
+              const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
+              
+              return new ol.style.Style({
                 image: new ol.style.Circle({
                   radius: SmartPhone.isAny() ? 6 : 4,
                   fill: new ol.style.Fill({
-                    color: "#008000",
+                    color: [red, green, 0, 1],
                   }),
                   stroke: new ol.style.Stroke({
                     color: "#000000",
                     width: 1
                   }),
                 }),
-              }),
-            ];
+              });
+            }
 
-            return styles;
-          } else if (feat.get("type") === "class4") {
-            const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
-            const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
-            return new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: SmartPhone.isAny() ? 6 : 4,
-                fill: new ol.style.Fill({
-                  color: [red, green, 0, 1],
-                }),
+            default:
+              return new ol.style.Style({
                 stroke: new ol.style.Stroke({
-                  color: "#000000",
-                  width: 1
-                }),
-              }),
-            });
-          } else {
-            return new ol.style.Style({
-              stroke: new ol.style.Stroke({
-                color: "#ff0000",
-                width: SmartPhone.isAny() ? 8 : 4,
-              }),
-              image: new ol.style.Circle({
-                radius: SmartPhone.isAny() ? 6 : 4,
-                fill: new ol.style.Fill({
                   color: "#ff0000",
+                  width: SmartPhone.isAny() ? 8 : 4,
                 }),
-                stroke: new ol.style.Stroke({
-                  color: "#000000",
-                  width: 1
+                image: new ol.style.Circle({
+                  radius: SmartPhone.isAny() ? 6 : 4,
+                  fill: new ol.style.Fill({
+                    color: "#ff0000",
+                  }),
+                  stroke: new ol.style.Stroke({
+                    color: "#000000",
+                    width: 1
+                  }),
                 }),
-              }),
-            });
+              });
           }
+
         }.bind(this),
       });
 
+    // Construct our map
     this.map = new ol.Map({
       layers: [
         this.layer_basemap,
@@ -363,11 +374,11 @@ export default class Map extends React.Component {
       }
     }.bind(this));
 
-    var center = [-50, 53];
+    let center = [-50, 53];
     if (this.props.state.center) {
       center = this.props.state.center.map(parseFloat);
     }
-    var zoom = 4;
+    let zoom = 4;
     if (this.props.state.zoom) {
       zoom = this.props.state.zoom;
     }
@@ -385,7 +396,7 @@ export default class Map extends React.Component {
     this.map.setView(this.mapView);
 
     this.map.on("pointermove", function(e) {
-      var feature = this.map.forEachFeatureAtPixel(
+      const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
         function(feature, layer) {
           return feature;
@@ -493,12 +504,12 @@ export default class Map extends React.Component {
     this.selectedFeatures = select.getFeatures();
     this.map.addInteraction(select);
 
-    var dragBox = new ol.interaction.DragBox({
+    const dragBox = new ol.interaction.DragBox({
       condition: ol.events.condition.platformModifierKeyOnly
     });
     this.map.addInteraction(dragBox);
 
-    var pushSelection = function() {
+    const pushSelection = function() {
       var t = undefined;
       var content = [];
       var names = [];
@@ -832,7 +843,17 @@ export default class Map extends React.Component {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = `/tiles/${this.props.state.projection}/${this.props.state.dataset}/${this.props.state.variable}/${this.props.state.time}/${this.props.state.depth}/${this.props.scale}/{z}/{x}/{y}.png`;
+    props.url = `/tiles` + 
+                `/${this.props.options.interpType}` + 
+                `/${this.props.options.interpRadius}` +
+                `/${this.props.options.interpNeighbours}` +
+                `/${this.props.state.projection}` + 
+                `/${this.props.state.dataset}` + 
+                `/${this.props.state.variable}` + 
+                `/${this.props.state.time}` + 
+                `/${this.props.state.depth}` + 
+                `/${this.props.scale}` + 
+                `/{z}/{x}/{y}.png`;
     props.projection = this.props.state.projection;
     props.attributions = [
       new ol.Attribution({
@@ -846,6 +867,7 @@ export default class Map extends React.Component {
 
     datalayer.setSource(newSource);
 
+    // Update colour scale
     if (this.scaleViewer != null) {
       this.map.removeControl(this.scaleViewer);
     }
@@ -876,6 +898,8 @@ export default class Map extends React.Component {
         minZoom: MIN_ZOOM[this.props.state.projection],
         maxZoom: MAX_ZOOM[this.props.state.projection],
       });
+
+      // Update bathymetry
       this.layer_bath.setSource(
         new ol.source.XYZ({
           url: (
@@ -910,6 +934,7 @@ export default class Map extends React.Component {
       }
     }
 
+    this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
     this.layer_bath.setVisible(this.props.state.bathymetry);
 
     this.map.render();
@@ -934,6 +959,7 @@ export default class Map extends React.Component {
     }
   }
 
+  /*
   constrainPan(e) {
     const view = e.target;
 
@@ -964,7 +990,8 @@ export default class Map extends React.Component {
       view.setCenter(centre);
     }
   }
-
+  */
+  
   show(type, key) {
     this.resetMap();
     this.props.updateState(["vectorid", "vectortype"], [key, type]);
@@ -1065,4 +1092,5 @@ Map.propTypes = {
   scale: PropTypes.string,
   action: PropTypes.func,
   partner: PropTypes.object,
+  options: PropTypes.object,
 };

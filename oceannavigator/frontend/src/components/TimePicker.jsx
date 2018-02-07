@@ -18,6 +18,7 @@ import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class TimePicker extends React.Component {
   constructor(props) {
@@ -187,9 +188,7 @@ export default class TimePicker extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url ||
-            nextProps.min !== this.props.min ||
-            nextProps.max !== this.props.max) {
+    if (stringify(this.props) !== stringify(nextProps)) {
       this.populate(nextProps);
     }
   }

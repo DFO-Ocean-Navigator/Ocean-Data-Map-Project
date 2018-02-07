@@ -4,6 +4,7 @@ import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class Range extends React.Component {
 
@@ -39,15 +40,19 @@ export default class Range extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    var scale = nextProps.state;
-    if (typeof (scale.split) === "function") {
-      scale = scale.split(",");
-    }
-    if (scale.length > 1) {
-      this.setState({
-        min: parseFloat(scale[0]),
-        max: parseFloat(scale[1]),
-      });
+
+    if (stringify(this.props) !== stringify(nextProps)) {
+
+      let scale = nextProps.state;
+      if (typeof (scale.split) === "function") {
+        scale = scale.split(",");
+      }
+      if (scale.length > 1) {
+        this.setState({
+          min: parseFloat(scale[0]),
+          max: parseFloat(scale[1]),
+        });
+      }
     }
   }
 
