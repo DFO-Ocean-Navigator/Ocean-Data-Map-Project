@@ -763,7 +763,7 @@ export default class OceanNavigator extends React.Component {
               <br/>
               <br/>
             </p>
-              Please note that the magnitude of the velocity is correct, it is only the direction of the volocity that is misrendered. 
+              Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered. 
               Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of 
               60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
               a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
