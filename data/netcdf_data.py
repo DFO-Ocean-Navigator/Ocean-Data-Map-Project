@@ -10,6 +10,8 @@ class NetCDFData(Data):
     def __init__(self, url):
         self._dataset = None
         self.__timestamp_cache = TTLCache(1, 3600)
+        self.interp = "gaussian"
+        self.radius = 25000
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):

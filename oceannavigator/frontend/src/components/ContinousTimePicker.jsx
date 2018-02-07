@@ -10,11 +10,11 @@ import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 import "jquery-ui/button";
 
+const stringify = require("fast-stable-stringify");
+
 export default class ContinousTimePicker extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-    };
 
     // Function bindings
     this.pickerChange = this.pickerChange.bind(this);
@@ -36,21 +36,23 @@ export default class ContinousTimePicker extends React.Component {
       $(this.refs.picker).datepicker("option", "maxDate", max);
     }
   }
+
   componentDidMount() {
     this.populate(this.props);
   }
+
   componentWillReceiveProps(nextProps) {
-    if (nextProps.url != this.props.url ||
-            nextProps.min != this.props.min ||
-            nextProps.max != this.props.max) {
+    if (stringify(this.props) !== stringify(nextProps)) {
       this.populate(nextProps);
     }
   }
+
   pickerChange() {
     if (this.refs.picker != null) {
       this.props.onUpdate(this.props.id, new Date(this.refs.picker.value));
     }
   }
+
   render() {
     let date = this.props.state;
     if (date == undefined || date == null) {

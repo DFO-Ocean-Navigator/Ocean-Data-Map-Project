@@ -56,9 +56,15 @@ div.input {
             vertical-align: middle;
         }
     }
+}
 
-    span.react-numeric-input {
+span.react-numeric-input {
+    width: 100%;
+    input[type='text'] {
         width: 100%;
+        height: 2.5em;
+        font-family: inherit;
+        font-size: 90%;
     }
 }
 

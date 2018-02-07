@@ -118,12 +118,12 @@ export default class Permalink extends React.Component {
                 checked={this.state.dataset}
                 name="dataset"
                 onChange={this.handleChange}
-              >{_("Dataset (Primary/Left View)")}</Checkbox>
+              >{_("Dataset (Primary/Left Map)")}</Checkbox>
               <Checkbox
                 checked={this.state.dataset_1}
                 name="dataset_1"
                 onChange={this.handleChange}
-              >{_("Dataset (Right View)")}</Checkbox>
+              >{_("Dataset (Right Map)")}</Checkbox>
               <Checkbox
                 checked={this.state.variable}
                 name="variable"
