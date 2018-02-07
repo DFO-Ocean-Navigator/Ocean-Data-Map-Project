@@ -16,7 +16,7 @@ export default class MapInputs extends React.Component {
 
     this.state = {
       showHelp: false,
-      currentTab: 2,
+      currentTab: 1,
     };
 
     // Function bindings
@@ -52,65 +52,7 @@ export default class MapInputs extends React.Component {
           id="MapInputTabs"
         >
 
-          <Tab eventKey={1} title={<span><Icon icon="gear"/> <span>{_("Map Settings")}</span></span>}>
-
-            <Panel
-              collapsible
-              defaultExpanded
-              header={_("Map")} 
-              bsStyle='primary' 
-            >
-              <ComboBox
-                id='projection'
-                state={this.props.state.projection}
-                onUpdate={this.props.changeHandler}
-                data={[
-                  { id: "EPSG:3857", value: _("Global") },
-                  { id: "EPSG:32661", value: _("Arctic") },
-                  { id: "EPSG:3031", value: _("Antarctic") },
-                ]}
-                title={_("Projection")}
-              />
-              <ComboBox
-                id='basemap'
-                state={this.props.state.basemap}
-                onUpdate={this.props.changeHandler}
-                data={[
-                  {
-                    id: "topo",
-                    value: _("ETOPO1 Topography"),
-                    attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
-                  },
-                  {
-                    id: "ocean",
-                    value: _("Esri Ocean Basemap"),
-                    attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
-                  },
-                  {
-                    id: "world",
-                    value: _("Esri World Imagery"),
-                    attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
-                  },
-                ]}
-                title={_("Basemap")}
-              />
-              <SelectBox
-                id='bathymetry'
-                state={this.props.state.bathymetry}
-                onUpdate={this.props.changeHandler}
-                title={_("Show Bathymetry Contours")}
-              />
-              
-            </Panel>
-
-            <Options
-              options={this.props.options}
-              updateOptions={this.props.updateOptions}
-            />
-
-          </Tab>
-
-          <Tab eventKey={2} title={<span><Icon icon="table"/> <span>{_("Data Selection")}</span></span>}>
+          <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Data Selection")}</span></span>}>
             <Panel
               collapsible
               defaultExpanded
@@ -213,6 +155,64 @@ export default class MapInputs extends React.Component {
               </Panel>
 
             </div>
+          </Tab>
+
+          <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Map Settings")}</span></span>}>
+
+            <Panel
+              collapsible
+              defaultExpanded
+              header={_("Map")} 
+              bsStyle='primary' 
+            >
+              <ComboBox
+                id='projection'
+                state={this.props.state.projection}
+                onUpdate={this.props.changeHandler}
+                data={[
+                  { id: "EPSG:3857", value: _("Global") },
+                  { id: "EPSG:32661", value: _("Arctic") },
+                  { id: "EPSG:3031", value: _("Antarctic") },
+                ]}
+                title={_("Projection")}
+              />
+              <ComboBox
+                id='basemap'
+                state={this.props.state.basemap}
+                onUpdate={this.props.changeHandler}
+                data={[
+                  {
+                    id: "topo",
+                    value: _("ETOPO1 Topography"),
+                    attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
+                  },
+                  {
+                    id: "ocean",
+                    value: _("Esri Ocean Basemap"),
+                    attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
+                  },
+                  {
+                    id: "world",
+                    value: _("Esri World Imagery"),
+                    attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
+                  },
+                ]}
+                title={_("Basemap")}
+              />
+              <SelectBox
+                id='bathymetry'
+                state={this.props.state.bathymetry}
+                onUpdate={this.props.changeHandler}
+                title={_("Show Bathymetry Contours")}
+              />
+              
+            </Panel>
+
+            <Options
+              options={this.props.options}
+              updateOptions={this.props.updateOptions}
+            />
+
           </Tab>
         </Tabs>
 
