@@ -135,7 +135,7 @@ export default class OceanNavigator extends React.Component {
   }
 
   showBugsModal(){
-      this.setState({showBugs: true,});
+    this.setState({showBugs: true,});
   }
 
   // Swap all view-related state variables
