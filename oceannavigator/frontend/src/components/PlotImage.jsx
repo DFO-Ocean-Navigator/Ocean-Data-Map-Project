@@ -8,6 +8,7 @@ import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
@@ -32,12 +33,14 @@ export default class PlotImage extends React.Component {
     this.loadImage(this.generateQuery(this.props.query));
   }
   componentWillReceiveProps(props) {
-    this.loadImage(this.generateQuery(props.query));
+    if (stringify(this.props.query) !== stringify(props.query)) {
+      this.loadImage(this.generateQuery(props.query));
+    }
   }
 
   loadImage(query) {
     const paramString = $.param({
-      query: JSON.stringify(query),
+      query: stringify(query),
       format: "json",
     });
 
@@ -92,6 +95,14 @@ export default class PlotImage extends React.Component {
         query.variable = q.variable;
         query.station = q.point;
         query.time = q.time;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            variable: q.compare_to.variable,
+            time: q.compare_to.time,
+          };
+        }
         break;
       case "timeseries":
         query.station = q.point;
@@ -165,6 +176,10 @@ export default class PlotImage extends React.Component {
         query.quiver = q.quiver;
         query.contour = q.contour;
         query.showarea = q.showarea;
+        query.interp = q.interp;
+        query.radius = q.radius;
+        query.neighbours = q.neighbours;
+        
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -176,7 +191,7 @@ export default class PlotImage extends React.Component {
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             colormap: q.compare_to.colormap,
-            diffColormap: q.compare_to.diffColormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
@@ -216,7 +231,7 @@ export default class PlotImage extends React.Component {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    return "/plot/?query=" + encodeURIComponent(JSON.stringify(query));
+    return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(key) {
@@ -260,10 +275,14 @@ export default class PlotImage extends React.Component {
       <div className='PlotImage'>
 
         {/* Rendered graph */}
-        <img src={src} />
+        <div className="RenderedImage">
+          <img src={src} />
+        </div>
+        
         <br />
         <label>{infoStatus}</label>
         <br />
+
         <ButtonToolbar>
           <DropdownButton
             id="save"
@@ -353,20 +372,20 @@ export default class PlotImage extends React.Component {
                   "&dpi=" + this.props.query.dpi
               }
             />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            onClick={function() {
-              this.imagelinkbox.select();
-              document.execCommand("copy");
-            }.bind(this)
-            }><Icon icon="copy" /> {_("Copy")}</Button>
-          <Button
-            onClick={() => this.setState({showImagelink: false})}
-          ><Icon icon="close" /> {_("Close")}</Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={function() {
+                this.imagelinkbox.select();
+                document.execCommand("copy");
+              }.bind(this)
+              }><Icon icon="copy" /> {_("Copy")}</Button>
+            <Button
+              onClick={() => this.setState({showImagelink: false})}
+            ><Icon icon="close" /> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     );
   }
 }

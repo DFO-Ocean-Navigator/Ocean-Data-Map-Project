@@ -15,6 +15,7 @@ import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class AreaWindow extends React.Component {
   constructor(props) {
@@ -27,7 +28,7 @@ export default class AreaWindow extends React.Component {
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
-      diffColormap: "default",
+      colormap_diff: "default",
       showarea: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -66,33 +67,37 @@ export default class AreaWindow extends React.Component {
   }
 
   componentWillReceiveProps(props) {
-    if (props.depth !== this.props.depth) {
-      this.setState({
-        depth: props.depth,
-      });
-    }
 
-    if (props.scale !== this.props.scale) {
-      if (this.state.scale.indexOf("auto") !== -1) {
+    if (stringify(this.props) !== stringify(props)) {
+
+      if (props.depth !== this.props.depth) {
         this.setState({
-          scale: props.scale + ",auto"
-        });
-      } else {
-        this.setState({
-          scale: props.scale,
+          depth: props.depth,
         });
       }
-    }
 
-    // Update time indices
-    if (props.dataset_0.time !== this.props.dataset_0.time) {
-      this.setState(
-        {
-          output_starttime: props.dataset_0.time,
-          output_endtime: props.dataset_0.time
+      if (props.scale !== this.props.scale) {
+        if (this.state.scale.indexOf("auto") !== -1) {
+          this.setState({
+            scale: props.scale + ",auto"
+          });
+        } else {
+          this.setState({
+            scale: props.scale,
+          });
         }
-      );
-    }
+      }
+
+      // Update time indices
+      if (props.dataset_0.time !== this.props.dataset_0.time) {
+        this.setState(
+          {
+            output_starttime: props.dataset_0.time,
+            output_endtime: props.dataset_0.time
+          }
+        );
+      }
+    } 
   }
 
   onLocalUpdate(key, value) {
@@ -142,10 +147,6 @@ export default class AreaWindow extends React.Component {
     if (parentKeys.length > 0) {
       this.props.onUpdate(parentKeys, parentValues);
     }
-  }
-
-  test(e) {
-    console.warn(e.target.value);
   }
 
   saveData(key) {
@@ -240,9 +241,9 @@ export default class AreaWindow extends React.Component {
           title={_("Diff. Variable Range")}
         />
         <ComboBox 
-          key='diffColormap' 
-          id='diffColormap' 
-          state={this.state.diffColormap} 
+          key='colormap_diff' 
+          id='colormap_diff' 
+          state={this.state.colormap_diff} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
           url='/api/colormaps/' 
@@ -365,6 +366,11 @@ export default class AreaWindow extends React.Component {
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
             <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
             <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            <option value="NETCDF3_NC" disabled={
+              this.props.dataset_0.dataset.indexOf("giops") === -1 // Disable if not a giops dataset
+            }>
+              {_("NetCDF-3 NC")}
+            </option>
             <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>
@@ -389,7 +395,7 @@ export default class AreaWindow extends React.Component {
     const dataset = (<Panel
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
+      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
       <DatasetSelector 
@@ -430,7 +436,7 @@ export default class AreaWindow extends React.Component {
         <Panel
           collapsible
           defaultExpanded
-          header={_("Right View")}
+          header={_("Right Map")}
           bsStyle='primary'
         >
           <DatasetSelector
@@ -492,12 +498,16 @@ export default class AreaWindow extends React.Component {
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
+        plot_query.interp = this.props.options.interpType;
+        plot_query.radius = this.props.options.interpRadius;
+        plot_query.neighbours = this.props.options.interpNeighbours;
+
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.rightColormap;
-          plot_query.compare_to.diffColormap = this.state.diffColormap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
 
         leftInputs = [
@@ -575,4 +585,5 @@ AreaWindow.propTypes = {
   showHelp: PropTypes.func,
   swapViews: PropTypes.func,
   scale_1: PropTypes.string,
+  options: PropTypes.object,
 };
