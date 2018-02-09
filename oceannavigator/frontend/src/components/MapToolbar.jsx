@@ -632,7 +632,7 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               id="class4"
               name="class4"
-              title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
+              title={_("Class4")}
               onClick={this.class4ButtonHandler}
               ref={(b) => this.class4button = b}
             >
@@ -644,7 +644,7 @@ export default class MapToolbar extends React.Component {
             <NavDropdown
               name="drifter"
               id="drifter"
-              title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
+              title={_("Drifters")}
               onSelect={this.drifterSelect}
             >
               <MenuItem
@@ -954,6 +954,5 @@ MapToolbar.propTypes = {
   plotEnabled: PropTypes.bool,
   toggleSidebar: PropTypes.func,
   action: PropTypes.func,
-  toggleOptionsSidebar: PropTypes.func,
 };
 

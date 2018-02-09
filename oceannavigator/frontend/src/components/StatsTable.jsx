@@ -3,7 +3,6 @@ import {Table} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
-const stringify = require("fast-stable-stringify");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
@@ -37,7 +36,7 @@ export default class StatsTable extends React.Component {
     const url = this.urlFromQuery(props.query);
     const query = this.query(props.query);
     const paramString = $.param({
-      query: stringify(query),
+      query: JSON.stringify(query),
     });
     $.ajax({
       url: "/stats/",
@@ -82,7 +81,7 @@ export default class StatsTable extends React.Component {
       area: q.area,
     };
 
-    return "/stats/?query=" + encodeURIComponent(stringify(query));
+    return "/stats/?query=" + encodeURIComponent(JSON.stringify(query));
   }
 
   render() {

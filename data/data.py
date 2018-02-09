@@ -105,13 +105,9 @@ class Data(object):
 
         return np.array([lat, lon]), distances, result.transpose(), depth
 
-    def get_area(self, area, depth, time, variable, interp, radius, neighbours, return_depth=False):
+    def get_area(self, area, depth, time, variable, return_depth=False):
         latitude = area[0, :].ravel()
         longitude = area[1, :].ravel()
-
-        self.interp = interp
-        self.radius = radius * 1000 # Convert km to m
-        self.neighbours = neighbours
 
         if return_depth:
             a, d = self.get_point(latitude, longitude, depth, time, variable,

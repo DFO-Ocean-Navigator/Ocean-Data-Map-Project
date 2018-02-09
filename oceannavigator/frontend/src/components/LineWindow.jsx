@@ -11,7 +11,6 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
-const stringify = require("fast-stable-stringify");
 
 export default class LineWindow extends React.Component {
   constructor(props) {
@@ -43,24 +42,20 @@ export default class LineWindow extends React.Component {
   }
 
   componentWillReceiveProps(props) {
-
-    if (stringify(this.props) !== stringify(props)) {
-
-      if (props.depth !== this.props.depth) {
+    if (props.depth !== this.props.depth) {
+      this.setState({
+        depth: props.depth,
+      });
+    }
+    if (props.scale !== this.props.scale) {
+      if (this.state.scale.indexOf("auto") !== -1) {
         this.setState({
-          depth: props.depth,
+          scale: props.scale + ",auto"
         });
-      }
-      if (props.scale !== this.props.scale) {
-        if (this.state.scale.indexOf("auto") !== -1) {
-          this.setState({
-            scale: props.scale + ",auto"
-          });
-        } else {
-          this.setState({
-            scale: props.scale,
-          });
-        }
+      } else {
+        this.setState({
+          scale: props.scale,
+        });
       }
     }
   }
@@ -214,7 +209,7 @@ export default class LineWindow extends React.Component {
     const dataset = <Panel 
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
       bsStyle='primary'
     >
       <DatasetSelector
@@ -251,7 +246,7 @@ export default class LineWindow extends React.Component {
         <Panel 
           collapsible
           defaultExpanded
-          header={_("Right Map")}
+          header={_("Right View")}
           bsStyle='primary'
         >
           <DatasetSelector

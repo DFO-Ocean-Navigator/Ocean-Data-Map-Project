@@ -7,7 +7,7 @@ import re
 from data import open_dataset
 
 
-def get_scale(dataset, variable, depth, time, projection, extent, interp, radius, neighbours):
+def get_scale(dataset, variable, depth, time, projection, extent):
     x = np.linspace(extent[0], extent[2], 50)
     y = np.linspace(extent[1], extent[3], 50)
     xx, yy = np.meshgrid(x, y)
@@ -24,10 +24,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             np.array([lat, lon]),
             depth,
             time,
-            variables[0],
-            interp,
-            radius,
-            neighbours
+            variables[0]
         )
         if len(variables) > 1:
             d0 = d
@@ -35,10 +32,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
                 np.array([lat, lon]),
                 depth,
                 time,
-                variables[1],
-                interp,
-                radius,
-                neighbours
+                variables[1]
             )
             d = np.sqrt(d0 ** 2 + d1 ** 2)
 
@@ -54,10 +48,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
                 np.array([lat, lon]),
                 depth,
                 timestamp.month - 1,
-                variables[0],
-                interp,
-                radius,
-                neighbours
+                variables[0]
             )
 
             if len(variables) > 1:
@@ -66,10 +57,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
                     np.array([lat, lon]),
                     depth,
                     timestamp.month - 1,
-                    variables[1],
-                    interp,
-                    radius,
-                    neighbours
+                    variables[1]
                 )
                 c = np.sqrt(c0 ** 2 + c1 ** 2)
 

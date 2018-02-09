@@ -65,7 +65,7 @@ class TransectPlotter(line.LinePlotter):
             variable_units = self.get_variable_units(dataset, self.variables)
             scale_factors = self.get_variable_scale_factors(dataset, self.variables)
 
-            # Load data sent from primary/Left Map
+            # Load data sent from primary/left view
             if len(self.variables) > 1:
                 # Only velocity has 2 variables
                 v = []
@@ -161,7 +161,7 @@ class TransectPlotter(line.LinePlotter):
                     "unit": surface_unit
                 }
 
-        # Load data sent from Right Map (if in compare mode)
+        # Load data sent from Right view (if in compare mode)
         if self.compare:
             def interpolate_depths(data, depth_in, depth_out):
                 output = []
@@ -464,7 +464,7 @@ class TransectPlotter(line.LinePlotter):
         """
         Finds and returns the correct min/max values for the variable scale
         Args:
-            scale: scale for the left or Right Map (self.scale or self.compare['scale])
+            scale: scale for the left or right view (self.scale or self.compare['scale])
             data: transect_data
         Returns:
             (min, max)
@@ -560,7 +560,7 @@ class TransectPlotter(line.LinePlotter):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
 
-                # Render primary/Left Map
+                # Render primary/left view
                 do_plot(
                     gs, [0, 1], [0, 0],
                     self.transect_data['data'],
@@ -572,7 +572,7 @@ class TransectPlotter(line.LinePlotter):
                     self.cmap
                 )
 
-                # Render Right Map
+                # Render right view
                 vmin, vmax = find_minmax(self.compare['scale'], self.transect_data['compare_data'])
                 do_plot(
                     gs, [1, 1], [1, 0],

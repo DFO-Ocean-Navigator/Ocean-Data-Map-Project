@@ -135,7 +135,7 @@ class Mercator(netcdf_data.NetCDFData):
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1.0 / r ** 2.0
+            return 1. / r ** 2
 
         data = var[:]
 

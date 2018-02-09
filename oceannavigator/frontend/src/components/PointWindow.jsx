@@ -4,13 +4,11 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
-import SelectBox from "./SelectBox.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
-const stringify = require("fast-stable-stringify");
 
 const TabEnum = {
   PROFILE: 1,
@@ -80,24 +78,20 @@ export default class PointWindow extends React.Component {
   }
 
   componentWillReceiveProps(props) {
+    const state = {};
 
-    if (stringify(this.props) !== stringify(props)) {
-
-      const state = {};
-
-      if (!Array.isArray(this.state.depth)) {
-        state.depth = props.depth;
-      }
-      if (this.state.scale.indexOf("auto") != -1) {
-        state.scale = props.scale + ",auto";
-      } 
-      else {
-        state.scale = props.scale;
-      }
-      this.setState(state);
-      if (this.props.dataset != props.dataset) {
-        this.populateVariables(props.dataset);
-      }
+    if (!Array.isArray(this.state.depth)) {
+      state.depth = props.depth;
+    }
+    if (this.state.scale.indexOf("auto") != -1) {
+      state.scale = props.scale + ",auto";
+    } 
+    else {
+      state.scale = props.scale;
+    }
+    this.setState(state);
+    if (this.props.dataset != props.dataset) {
+      this.populateVariables(props.dataset);
     }
   }
 
@@ -295,21 +289,6 @@ export default class PointWindow extends React.Component {
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
-    const dataset_compare = (
-      <div key='compare_dataset'>
-        <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
-          <Panel
-            collapsible
-            defaultExpanded
-            header={_("Right Map")}
-            bsStyle='primary'
-          >
-
-          </Panel>
-        </div>
-      </div>);
-
-
     let observation_data = [];
     let observation_variable = <div></div>;
     if (this.props.point[0][2] !== undefined) {
@@ -399,10 +378,6 @@ export default class PointWindow extends React.Component {
       case TabEnum.TS:
         plot_query.type = "ts";
         plot_query.time = this.props.time;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-        }
-
         inputs = [global, dataset, time];
         break;
       case TabEnum.SOUND:
@@ -514,8 +489,4 @@ PointWindow.propTypes = {
   depth: PropTypes.number,
   init: PropTypes.object,
   action: PropTypes.func,
-  dataset_compare: PropTypes.bool,
-  swapViews: PropTypes.func,
-  showHelp: PropTypes.func,
-  dataset_1: PropTypes.object,
 };
