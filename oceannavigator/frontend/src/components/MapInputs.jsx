@@ -157,7 +157,7 @@ export default class MapInputs extends React.Component {
             </div>
           </Tab>
 
-          <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Settings")}</span></span>}>
+          <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Map Settings")}</span></span>}>
 
             <Panel
               collapsible
