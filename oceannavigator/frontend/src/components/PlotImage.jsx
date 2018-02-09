@@ -176,7 +176,7 @@ export default class PlotImage extends React.Component {
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             colormap: q.compare_to.colormap,
-            diffColormap: q.compare_to.diffColormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
