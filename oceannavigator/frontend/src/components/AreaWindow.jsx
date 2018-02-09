@@ -27,7 +27,7 @@ export default class AreaWindow extends React.Component {
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
-      diffColormap: "default",
+      colormap_diff: "default",
       showarea: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -240,9 +240,9 @@ export default class AreaWindow extends React.Component {
           title={_("Diff. Variable Range")}
         />
         <ComboBox 
-          key='diffColormap' 
-          id='diffColormap' 
-          state={this.state.diffColormap} 
+          key='colormap_diff' 
+          id='colormap_diff' 
+          state={this.state.colormap_diff} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
           url='/api/colormaps/' 
@@ -497,7 +497,7 @@ export default class AreaWindow extends React.Component {
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.rightColormap;
-          plot_query.compare_to.diffColormap = this.state.diffColormap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
 
         leftInputs = [
