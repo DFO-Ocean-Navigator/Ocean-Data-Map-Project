@@ -63,16 +63,20 @@ export default class Range extends React.Component {
 
   updateParent() {
     clearTimeout(this.timeout);
+    
     const range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
-    this.props.onUpdate(this.props.id, range);
+    
+    this.timeout = setTimeout(this.props.onUpdate, 250, this.props.id, range);
   }
 
   changed(key, value) {
     clearTimeout(this.timeout);
-    var state = {};
+    
+    let state = {};
     state[key] = value;
     this.setState(state);
-    this.timeout = setTimeout(this.updateParent, 500);
+    
+    this.timeout = setTimeout(this.updateParent, 1000);
   }
 
   keyPress(e) {
