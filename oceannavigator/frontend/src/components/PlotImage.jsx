@@ -278,7 +278,7 @@ export default class PlotImage extends React.Component {
         this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
-        this.showImagelink();
+        this.openImageLink();
         break;
     }
   }
