@@ -15,7 +15,6 @@ import utils
 
 _data_cache = LRUCache(maxsize=16)
 
-
 class Grid(object):
 
     def __init__(self, ncfile, latvarname, lonvarname):
@@ -271,7 +270,6 @@ class Grid(object):
             deltas[
                 np.where(np.array(times) < ts[0] - model_td / 2)
             ] = np.ma.masked
-            print abcd
 
             # This is a slight modification on scipy's interp1d
             # https://github.com/scipy/scipy/blob/v0.17.1/scipy/interpolate/interpolate.py#L534-L561
