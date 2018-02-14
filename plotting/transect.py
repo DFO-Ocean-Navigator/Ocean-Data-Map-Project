@@ -9,10 +9,10 @@ import re
 import plotting.colormap
 from oceannavigator import app
 from geopy.distance import VincentyDistance
-import utils
+import plotting.utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
-import line
+import plotting.line
 from flask_babel import gettext
 from scipy.interpolate import interp1d
 from data import open_dataset, geo

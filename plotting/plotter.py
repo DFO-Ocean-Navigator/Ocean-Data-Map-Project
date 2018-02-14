@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
-from StringIO import StringIO
+from io import StringIO
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
-import utils
-import colormap
+import plotting.utils
+import plotting.colormap
 import re
 import pint
 from oceannavigator.util import (
@@ -109,12 +109,12 @@ class Plotter:
                 # Variable scale
                 self.compare['scale'] = parse_scale(self.compare['scale'])
             except KeyError:
-                print "Ignoring scale attribute."
+                print("Ignoring scale attribute.")
             try:
                 # Difference plot scale
                 self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
             except KeyError:
-                print "Ignoring scale_diff attribute."
+                print("Ignoring scale_diff attribute.")
         else:
             self.compare = False
 

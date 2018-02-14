@@ -5,7 +5,7 @@ import re
 import plotting
 import os
 import numpy as np
-from StringIO import StringIO
+from io import StringIO
 from flask_babel import gettext
 
 
