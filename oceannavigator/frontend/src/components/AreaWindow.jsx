@@ -199,11 +199,13 @@ export default class AreaWindow extends React.Component {
       defaultExpanded
       header={_("Area Settings")}
       bsStyle='primary'
+      key='map_settings'
     >
       <Row>
         <Col xs={9}>
           <SelectBox
             id='dataset_compare'
+            key='dataset_compare'
             state={this.props.dataset_compare}
             onUpdate={this.props.onUpdate}
             title={_("Compare Datasets")}
@@ -212,6 +214,7 @@ export default class AreaWindow extends React.Component {
         <Col xs={3}>
           <Button 
             bsStyle="link"
+            key='show_help'
             onClick={this.props.showHelp}
           >
             {_("Help")}
@@ -220,6 +223,7 @@ export default class AreaWindow extends React.Component {
       </Row>
       <Button
         bsStyle="default"
+        key='swap_views'
         block
         style={{display: this.props.dataset_compare ? "block" : "none"}}
         onClick={this.props.swapViews}
@@ -306,6 +310,7 @@ export default class AreaWindow extends React.Component {
     </Panel>);
 
     const subset = (<Panel
+      key='subset'
       collapsible
       defaultExpanded
       header={_("Subset")}
@@ -314,6 +319,7 @@ export default class AreaWindow extends React.Component {
       <form>
         <ComboBox
           id='variable'
+          key='variable'
           multiple={true}
           state={this.state.output_variables}
           def={"defaults.dataset"}
@@ -325,6 +331,7 @@ export default class AreaWindow extends React.Component {
 
         <SelectBox
           id='time_range'
+          key='time_range'
           state={this.state.output_timerange}
           onUpdate={(key, value) => {this.setState({output_timerange: value,});}}
           title={_("Select Time Range")}
@@ -332,6 +339,7 @@ export default class AreaWindow extends React.Component {
 
         <TimePicker
           id='starttime'
+          key='starttime'
           state={this.state.output_starttime}
           def=''
           quantum={this.props.dataset_0.dataset_quantum}
@@ -348,6 +356,7 @@ export default class AreaWindow extends React.Component {
         <div style={{display: this.state.output_timerange ? "block" : "none",}}>
           <TimePicker
             id='time'
+            key='time'
             state={this.state.output_endtime}
             def=''
             quantum={this.props.dataset_0.dataset_quantum}
@@ -377,7 +386,8 @@ export default class AreaWindow extends React.Component {
         </FormGroup>
         
         <SelectBox 
-          id='zip' 
+          id='zip'
+          key='zip'
           state={this.state.zip} 
           onUpdate={this.onLocalUpdate} 
           title={_("Compress as *.zip")}
@@ -385,6 +395,8 @@ export default class AreaWindow extends React.Component {
 
         <Button 
           bsStyle="default" 
+          key='save'
+          id='save'
           onClick={this.saveData}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
@@ -393,6 +405,8 @@ export default class AreaWindow extends React.Component {
     );
 
     const dataset = (<Panel
+      key='left_map'
+      id='left_map'
       collapsible
       defaultExpanded
       header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
@@ -434,6 +448,8 @@ export default class AreaWindow extends React.Component {
     const compare_dataset = <div key='compare_dataset'>
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
         <Panel
+          key='right_map'
+          id='right_map'
           collapsible
           defaultExpanded
           header={_("Right Map")}

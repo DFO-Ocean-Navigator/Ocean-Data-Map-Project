@@ -98,6 +98,8 @@ export default class LineWindow extends React.Component {
     _("Saved Image Size");
 
     const global = (<Panel 
+      key='global_settings'
+      id='global_settings'
       collapsible
       defaultExpanded
       header={_("Global Settings")}
@@ -107,6 +109,7 @@ export default class LineWindow extends React.Component {
         <Col xs={9}>
           <SelectBox
             id='dataset_compare'
+            key='dataset_compare'
             state={this.props.dataset_compare}
             onUpdate={this.props.onUpdate}
             title={_("Compare Datasets")}
@@ -115,6 +118,8 @@ export default class LineWindow extends React.Component {
         <Col xs={3}>
           <Button 
             bsStyle="link"
+            key='show_help'
+            id='show_help'
             onClick={this.props.showHelp}
           >
             {_("Help")}
@@ -122,6 +127,8 @@ export default class LineWindow extends React.Component {
         </Col>
       </Row>
       <Button
+        key='swap_views'
+        id='swap_views'
         bsStyle="default"
         block
         style={{display: this.props.dataset_compare ? "block" : "none"}}
@@ -166,6 +173,8 @@ export default class LineWindow extends React.Component {
     </Panel>);
 
     const transectSettings = <Panel
+      key='transect_settings'
+      id='transect_settings'
       collapsible
       defaultExpanded
       header={_("Transect Settings")}
@@ -212,6 +221,8 @@ export default class LineWindow extends React.Component {
     </Panel>;
     
     const dataset = <Panel 
+      key='left_map'
+      id='left_map'
       collapsible
       defaultExpanded
       header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
@@ -249,6 +260,8 @@ export default class LineWindow extends React.Component {
     const compare_dataset = <div key='compare_dataset'>
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
         <Panel 
+          key='right_map'
+          id='right_map'
           collapsible
           defaultExpanded
           header={_("Right Map")}

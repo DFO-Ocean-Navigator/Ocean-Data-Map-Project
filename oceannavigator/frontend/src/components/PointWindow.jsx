@@ -172,6 +172,8 @@ export default class PointWindow extends React.Component {
     _("Saved Image Size");
 
     const global = (<Panel
+      key='global_settings'
+      id='global_settings'
       collapsible
       defaultExpanded
       header={_("Global Settings")}
@@ -299,6 +301,8 @@ export default class PointWindow extends React.Component {
       <div key='compare_dataset'>
         <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
           <Panel
+            key='right_map'
+            id='right_map'
             collapsible
             defaultExpanded
             header={_("Right Map")}
