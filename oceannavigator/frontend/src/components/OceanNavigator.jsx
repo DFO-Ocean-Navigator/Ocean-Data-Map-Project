@@ -67,7 +67,7 @@ export default class OceanNavigator extends React.Component {
       sidebarOpen: true, // Controls sidebar opened/closed status
       options: {
         // Interpolation
-        interpType: "inverse",
+        interpType: "gaussian",
         interpRadius: 25,
         interpNeighbours: 10,
         // Map
