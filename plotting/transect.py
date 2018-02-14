@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
 import re
-import colormap
+import plotting.colormap
 from oceannavigator import app
 from geopy.distance import VincentyDistance
 import utils

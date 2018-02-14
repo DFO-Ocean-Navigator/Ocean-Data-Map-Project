@@ -11,7 +11,7 @@ from cachetools import LRUCache
 import pytz
 from netCDF4 import netcdftime
 from bisect import bisect_left
-import utils
+import plotting.utils
 
 _data_cache = LRUCache(maxsize=16)
 
