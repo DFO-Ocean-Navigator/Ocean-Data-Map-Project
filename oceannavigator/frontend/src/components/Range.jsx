@@ -11,13 +11,16 @@ export default class Range extends React.Component {
   constructor(props) {
     super(props);
 
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
+
     // Parse scale tuple
-    var scale = this.props.state;
+    let scale = this.props.state;
     if (typeof (this.props.state.split) === "function") {
       scale = this.props.state.split(",");
     }
-    var min = parseFloat(scale[0]);
-    var max = parseFloat(scale[1]);
+    const min = parseFloat(scale[0]);
+    const max = parseFloat(scale[1]);
 
     this.state = {
       auto: this.props.auto,
@@ -33,10 +36,12 @@ export default class Range extends React.Component {
     this.getAutoScale = this.getAutoScale.bind(this);
   }
 
-  updateParent() {
-    clearTimeout(this.timeout);
-    const range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
-    this.props.onUpdate(this.props.id, range);
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -54,6 +59,12 @@ export default class Range extends React.Component {
         });
       }
     }
+  }
+
+  updateParent() {
+    clearTimeout(this.timeout);
+    const range = this.state.min.toString() + "," + this.state.max.toString() + (this.state.auto ? ",auto" : "");
+    this.props.onUpdate(this.props.id, range);
   }
 
   changed(key, value) {
@@ -101,10 +112,15 @@ export default class Range extends React.Component {
       dataType: "json",
       cache: false,
       success: function (data) {
-        this.props.onUpdate(this.props.id, data.min + "," + data.max);
+        if (this._mounted) {
+          this.props.onUpdate(this.props.id, data.min + "," + data.max);
+        }
       }.bind(this),
+      
       error: function (r, status, err) {
-        console.error(this.props.autourl, status, err.toString());
+        if (this._mounted) {
+          console.error(this.props.autourl, status, err.toString());
+        }
       }
     });
   }

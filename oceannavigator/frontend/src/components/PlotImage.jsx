@@ -17,6 +17,9 @@ export default class PlotImage extends React.Component {
   constructor(props) {
     super(props);
 
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
+
     this.state = {
       showPermalink: false,
     };
@@ -27,16 +30,39 @@ export default class PlotImage extends React.Component {
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
+    this.closeImageLink = this.closeImageLink.bind(this);
+    this.openImageLink = this.openImageLink.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
+    this._mounted = true;
     this.loadImage(this.generateQuery(this.props.query));
   }
+
   componentWillReceiveProps(props) {
     if (stringify(this.props.query) !== stringify(props.query)) {
       this.loadImage(this.generateQuery(props.query));
     }
   }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  openImageLink() {
+    const newState = Object.assign({}, this.state);
+    newState.showImagelink = true;
+
+    this.setState(newState);
+  }
+
+  closeImageLink() {
+    const newState = Object.assign({}, this.state);
+    newState.showImagelink = false;
+
+    this.setState(newState);
+  }
+
 
   loadImage(query) {
     const paramString = $.param({
@@ -60,25 +86,30 @@ export default class PlotImage extends React.Component {
       }).promise();
 
       promise.done(function(d) {
-        this.passCount++;
-        this.setState({
-          loading: false,
-          fail: false,
-	        passcount: this.passCount,
-          url: d,
-        });
+        if (this._mounted) {
+          this.passCount++;
+          this.setState({
+            loading: false,
+            fail: false,
+	          passcount: this.passCount,
+            url: d,
+          });
+        }
       }.bind(this));
             
       promise.fail(function(d) {
-        const newFail = this.state.failCount + 1;
-        this.setState({
-          loading: false,
-          fail: true,
-          failCount: newFail,
-        });
-        console.error("AJAX Error", d);
+        if (this._mounted) {
+          const newFail = this.state.failCount + 1;
+          this.setState({
+            loading: false,
+            fail: true,
+            failCount: newFail,
+          });
+          console.error("AJAX Error in PlotImage.jsx: ", d);
+        }
       }.bind(this));
     }
+
   }
 
   generateQuery(q) {
@@ -247,7 +278,7 @@ export default class PlotImage extends React.Component {
         this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
-        this.setState({showImagelink: true});
+        this.showImagelink();
         break;
     }
   }
@@ -354,7 +385,7 @@ export default class PlotImage extends React.Component {
 
         <Modal
           show={this.state.showImagelink}
-          onHide={() => this.setState({showImagelink: false})}
+          onHide={this.closeImageLink}
           dialogClassName='permalink-modal'
           onEntered={imagelinkModalEntered}>
           <Modal.Header closeButton>
@@ -381,7 +412,7 @@ export default class PlotImage extends React.Component {
               }.bind(this)
               }><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
-              onClick={() => this.setState({showImagelink: false})}
+              onClick={this.closeImageLink}
             ><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>

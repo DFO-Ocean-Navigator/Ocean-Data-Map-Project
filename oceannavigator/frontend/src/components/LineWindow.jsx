@@ -16,6 +16,9 @@ const stringify = require("fast-stable-stringify");
 export default class LineWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: 1,
@@ -42,9 +45,17 @@ export default class LineWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
   }
 
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
   componentWillReceiveProps(props) {
 
-    if (stringify(this.props) !== stringify(props)) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
 
       if (props.depth !== this.props.depth) {
         this.setState({
@@ -66,15 +77,20 @@ export default class LineWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
-    var newState = {};
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    if (this._mounted) {
+      
+      var newState = {};
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } 
+      else {
+        for (let i = 0; i < key.length; ++i) {
+          newState[key[i]] = value[i];
+        }
       }
+      
+      this.setState(newState);
     }
-    this.setState(newState);
   }
 
   onSelect(key) {

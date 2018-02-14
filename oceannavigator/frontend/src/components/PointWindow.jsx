@@ -1,10 +1,9 @@
 import React from "react";
-import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
-import SelectBox from "./SelectBox.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
@@ -25,6 +24,9 @@ const TabEnum = {
 export default class PointWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: TabEnum.CTD,
@@ -39,7 +41,7 @@ export default class PointWindow extends React.Component {
       dpi: 144,
     };
 
-    if (props.init != null) {
+    if (props.init !== null) {
       $.extend(this.state, props.init);
     }
 
@@ -47,31 +49,11 @@ export default class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
-  populateVariables(dataset) {
-    $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        const vars = data.map(function(d) { return d.id; });
-        if ($.inArray(this.props.variable.split(",")[0], vars) == -1) {
-          this.props.onUpdate("variable", vars[0]);
-          this.setState({
-            selected: TabEnum.PROFILE,
-          });
-        }
-        this.setState({
-          variables: data.map(function(d) { return d.id; }),
-        });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  }
-
   componentDidMount() {
+    this._mounted = true;
+
     this.populateVariables(this.props.dataset);
+
     if (this.props.point[0][2] !== undefined) {
       this.setState({
         selected: TabEnum.OBSERVATION,
@@ -79,9 +61,12 @@ export default class PointWindow extends React.Component {
     }
   }
 
-  componentWillReceiveProps(props) {
+  componentWillUnmount() {
+    this._mounted = false;
+  }
 
-    if (stringify(this.props) !== stringify(props)) {
+  componentWillReceiveProps(props) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
 
       const state = {};
 
@@ -94,6 +79,7 @@ export default class PointWindow extends React.Component {
       else {
         state.scale = props.scale;
       }
+
       this.setState(state);
       if (this.props.dataset != props.dataset) {
         this.populateVariables(props.dataset);
@@ -101,53 +87,87 @@ export default class PointWindow extends React.Component {
     }
   }
 
+  populateVariables(dataset) {
+    $.ajax({
+      url: "/api/variables/?dataset=" + dataset + "&anom",
+      dataType: "json",
+      cache: true,
+  
+      success: function(data) {
+        if (this._mounted) {
+          const vars = data.map(function(d) {
+            return d.id;
+          });
+          if ($.inArray(this.props.variable.split(",")[0], vars) == -1) {
+            this.props.onUpdate("variable", vars[0]);
+            this.setState({
+              selected: TabEnum.PROFILE,
+            });
+          }
+          this.setState({
+            variables: data.map(function(d) {
+              return d.id;
+            }),
+          });
+        }
+      }.bind(this),
+  
+      error: function(xhr, status, err) {
+        if (this._mounted) {
+          console.error(this.props.url, status, err.toString());
+        }
+      }.bind(this)
+    });
+  }
+
   onLocalUpdate(key, value) {
-    var newState = {};
-    
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } 
-    else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    if (this._mounted) {
+      let newState = {};
+
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } else {
+        for (let i = 0; i < key.length; i++) {
+          newState[key[i]] = value[i];
+        }
       }
-    }
-    this.setState(newState);
+      this.setState(newState);
 
-    var parentKeys = [];
-    var parentValues = [];
+      let parentKeys = [];
+      let parentValues = [];
 
-    if (newState.hasOwnProperty("depth") && newState.depth != "all") {
-      if (!Array.isArray(newState.depth)) {
-        parentKeys.push("depth");
-        parentValues.push(newState.depth);
-      } else if (newState.depth.length > 1) {
-        parentKeys.push("depth");
-        parentValues.push(newState.depth[0]);
+      if (newState.hasOwnProperty("depth") && newState.depth != "all") {
+        if (!Array.isArray(newState.depth)) {
+          parentKeys.push("depth");
+          parentValues.push(newState.depth);
+        } else if (newState.depth.length > 1) {
+          parentKeys.push("depth");
+          parentValues.push(newState.depth[0]);
+        }
       }
-    }
 
-    if (newState.hasOwnProperty("point")) {
-      parentKeys.push("point");
-      parentValues.push(newState.point);
+      if (newState.hasOwnProperty("point")) {
+        parentKeys.push("point");
+        parentValues.push(newState.point);
 
-      parentKeys.push("names");
-      parentValues.push([]);
-    }
+        parentKeys.push("names");
+        parentValues.push([]);
+      }
 
-    if (newState.hasOwnProperty("variable_scale") &&
-      this.state.variable.length == 1) {
-      parentKeys.push("variable_scale");
-      parentValues.push(newState.variable_scale);
-    }
+      if (newState.hasOwnProperty("variable_scale") &&
+        this.state.variable.length == 1) {
+        parentKeys.push("variable_scale");
+        parentValues.push(newState.variable_scale);
+      }
 
-    if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
-      parentKeys.push("variable");
-      parentValues.push(newState.variable[0]);
-    }
+      if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
+        parentKeys.push("variable");
+        parentValues.push(newState.variable[0]);
+      }
 
-    if (parentKeys.length > 0) {
-      this.props.onUpdate(parentKeys, parentValues);
+      if (parentKeys.length > 0) {
+        this.props.onUpdate(parentKeys, parentValues);
+      }
     }
   }
 

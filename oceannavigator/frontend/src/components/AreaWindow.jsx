@@ -20,6 +20,9 @@ const stringify = require("fast-stable-stringify");
 export default class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: 1,
@@ -66,9 +69,16 @@ export default class AreaWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
   }
 
-  componentWillReceiveProps(props) {
+  componentDidMount() {
+    this._mounted = true;
+  }
 
-    if (stringify(this.props) !== stringify(props)) {
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  componentWillReceiveProps(props) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
 
       if (props.depth !== this.props.depth) {
         this.setState({
@@ -101,51 +111,55 @@ export default class AreaWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
+    if (this._mounted) {
 
-    // Passthrough to capture selected variables from DatasetSelector for StatsTable
-    if (key === "dataset_0") {
-      if (this.state.selected === 2 && value.hasOwnProperty("variable")) {
-        this.setState({variable: value.variable});
+      // Passthrough to capture selected variables from DatasetSelector for StatsTable
+      if (key === "dataset_0") {
+        if (this.state.selected === 2 && value.hasOwnProperty("variable")) {
+          this.setState({
+            variable: value.variable
+          });
+        }
+        // TODO: prevent the navigator trying to get tiles for multiple variables...only one
+        // variable should be passed up.
+        this.props.onUpdate(key, value);
+        return;
       }
-      // TODO: prevent the navigator trying to get tiles for multiple variables...only one
-      // variable should be passed up.
-      this.props.onUpdate(key, value);
-      return;
-    }
 
-    var newState = {};
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+      var newState = {};
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } else {
+        for (let i = 0; i < key.length; i++) {
+          newState[key[i]] = value[i];
+        }
       }
-    }
-    this.setState(newState);
+      this.setState(newState);
 
-    var parentKeys = [];
-    var parentValues = [];
+      var parentKeys = [];
+      var parentValues = [];
 
-    if (newState.hasOwnProperty("variable_scale")) {
-      if (typeof(this.state.variable) === "string" ||
-        this.state.variable.length === 1) {
-        parentKeys.push("variable_scale");
-        parentValues.push(newState.variable_scale);
+      if (newState.hasOwnProperty("variable_scale")) {
+        if (typeof(this.state.variable) === "string" ||
+          this.state.variable.length === 1) {
+          parentKeys.push("variable_scale");
+          parentValues.push(newState.variable_scale);
+        }
       }
-    }
 
-    if (newState.hasOwnProperty("variable")) {
-      if (typeof(this.state.variable) === "string") {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable);
-      } else if (this.state.variable.length === 1) {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable[0]);
+      if (newState.hasOwnProperty("variable")) {
+        if (typeof(this.state.variable) === "string") {
+          parentKeys.push("variable");
+          parentValues.push(newState.variable);
+        } else if (this.state.variable.length === 1) {
+          parentKeys.push("variable");
+          parentValues.push(newState.variable[0]);
+        }
       }
-    }
 
-    if (parentKeys.length > 0) {
-      this.props.onUpdate(parentKeys, parentValues);
+      if (parentKeys.length > 0) {
+        this.props.onUpdate(parentKeys, parentValues);
+      }
     }
   }
 
