@@ -639,7 +639,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={this.closeModal}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -650,7 +650,7 @@ export default class OceanNavigator extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="link"/> {_("Share Link")}</Modal.Title>
+            <Modal.Title><Icon icon="link" alt={_("Share Link")}/> {_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Permalink
@@ -660,7 +660,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -671,7 +671,7 @@ export default class OceanNavigator extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="gear"/> {_("Options")}</Modal.Title>
+            <Modal.Title><Icon icon="gear" alt={_("Options")}/> {_("Options")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Options 
@@ -682,7 +682,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showOptions: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -693,7 +693,7 @@ export default class OceanNavigator extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="question"/> {_("Help")}</Modal.Title>
+            <Modal.Title><Icon icon="question" alt={_("Help")}/> {_("Help")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Iframe 
@@ -705,7 +705,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showHelp: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -723,7 +723,7 @@ export default class OceanNavigator extends React.Component {
             
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideCompareHelp}><Icon icon="close"/> {_("Close")}</Button>
+            <Button onClick={this.hideCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -778,7 +778,7 @@ export default class OceanNavigator extends React.Component {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideBugsModal}><Icon icon="close"/> {_("Close")}</Button>
+            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
