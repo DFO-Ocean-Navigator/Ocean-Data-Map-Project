@@ -1,9 +1,11 @@
 import os
-import ConfigParser
 import json
 import oceannavigator
 import re
-
+try:
+    import ConfigParser # Python 2.7
+except ImportError:
+    import configparser # Python 3.6
 
 _config = None
 
