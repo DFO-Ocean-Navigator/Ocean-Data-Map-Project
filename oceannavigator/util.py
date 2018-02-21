@@ -10,7 +10,7 @@ _config = None
 def read_config(configFile = 'datasetconfig.cfg'):
     global _config
     if _config is None:
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.read(os.path.join(os.path.dirname(oceannavigator.__file__), configFile))
         _config = config
 
@@ -66,7 +66,7 @@ def get_variables(dataset):
     try:
         for key, value in config.items(dataset):
             res[key] = json.loads(value.replace("\n", ""))
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         pass
 
     return res

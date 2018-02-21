@@ -1,8 +1,8 @@
-from data import Data
+#from data import Data
 from netCDF4 import Dataset
-import nemo
-import fvcom
-import mercator
+import data.nemo
+import data.fvcom
+import data.mercator
 from cachetools import LRUCache
 
 __dataset_cache = LRUCache(maxsize=10, getsizeof=lambda x: 1)

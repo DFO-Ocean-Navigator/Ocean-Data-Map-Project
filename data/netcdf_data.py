@@ -1,5 +1,5 @@
 from netCDF4 import Dataset, netcdftime
-from data import Data
+from data.data import Data
 from cachetools import TTLCache
 import pytz
 import numpy as np

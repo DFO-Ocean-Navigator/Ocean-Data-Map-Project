@@ -12,12 +12,12 @@ from geopy.distance import VincentyDistance
 import plotting.utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
-import plotting.line
+import plotting.line as pl
 from flask_babel import gettext
 from scipy.interpolate import interp1d
 from data import open_dataset, geo
 
-class TransectPlotter(line.LinePlotter):
+class TransectPlotter(pl.LinePlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "transect"

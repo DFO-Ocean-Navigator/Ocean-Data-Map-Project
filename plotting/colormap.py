@@ -195,7 +195,7 @@ colormap_names = {
 
 def get_colormap_names():
     result = {}
-    for key, value in colormap_names.iteritems():
+    for key, value in colormap_names.items():
         result[key] = gettext(value)
 
     return result
@@ -239,7 +239,7 @@ if __name__ == '__main__':
     import matplotlib.cm
     import sys
 
-    for k, v in colormaps.iteritems():
+    for k, v in colormaps.items():
         matplotlib.cm.register_cmap(name=k, cmap=v)
 
     maps = [i for i in colormaps]

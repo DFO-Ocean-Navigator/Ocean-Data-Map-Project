@@ -3,11 +3,11 @@ import matplotlib.ticker as tkr
 import numpy as np
 import seawater
 import pint
-import ts
+import plotting.ts as plTS
 from flask_babel import gettext
 
 
-class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
+class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "sound"

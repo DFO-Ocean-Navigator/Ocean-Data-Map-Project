@@ -4,11 +4,12 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
 import matplotlib.colors as mcolors
 import numpy as np
-import colormap
-import basemap
-import overlays
-import utils
-import gdal
+import plotting.colormap
+import plotting.basemap
+import plotting.overlays
+import plotting.utils
+import plotting.area as plArea
+from osgeo import gdal
 import osr
 import tempfile
 import os
@@ -22,12 +23,11 @@ from matplotlib.patches import PathPatch
 from textwrap import wrap
 from oceannavigator.misc import list_areas
 import pyresample.utils
-import area
 from geopy.distance import VincentyDistance
 from data import open_dataset
 
 
-class MapPlotter(area.AreaPlotter):
+class MapPlotter(plArea.AreaPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'

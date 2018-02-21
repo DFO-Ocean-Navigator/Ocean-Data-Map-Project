@@ -1,9 +1,9 @@
 import pyresample
 import numpy as np
 import warnings
-import netcdf_data
+import data.netcdf_data as ncData
 from pint import UnitRegistry
-from data import Variable, VariableList
+from data.data import Variable, VariableList
 import math
 import re
 
@@ -11,7 +11,7 @@ RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
 
-class Mercator(netcdf_data.NetCDFData):
+class Mercator(ncData.NetCDFData):
     __depths = None
 
     @property

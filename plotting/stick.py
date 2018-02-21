@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.point as plPoint
 from oceannavigator.util import get_dataset_url
-import point
 from flask_babel import gettext
 from matplotlib.dates import date2num
 from data import open_dataset
 
-
-class StickPlotter(point.PointPlotter):
+class StickPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"

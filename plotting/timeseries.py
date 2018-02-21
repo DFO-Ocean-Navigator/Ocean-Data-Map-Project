@@ -5,18 +5,18 @@ import matplotlib
 import numpy as np
 import re
 from textwrap import wrap
-import colormap
-import utils
+import plotting.colormap
+import plotting.utils
+import plotting.point as plPoint
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url
 import datetime
-import point
 from data import open_dataset
 
 LINEAR = 200
 
 
-class TimeseriesPlotter(point.PointPlotter):
+class TimeseriesPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "timeseries"

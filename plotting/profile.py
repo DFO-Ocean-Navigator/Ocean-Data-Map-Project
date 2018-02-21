@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.point as plPoint
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
-import point
 from flask_babel import gettext
 from data import open_dataset
 
 
-class ProfilePlotter(point.PointPlotter):
+class ProfilePlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"

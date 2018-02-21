@@ -1,15 +1,14 @@
 from netCDF4 import Dataset, chartostring
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.plotter as pl
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
-import plotter
 from flask_babel import gettext
 from oceannavigator import app
 
-
-class Class4Plotter(plotter.Plotter):
+class Class4Plotter(pl.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "class4"

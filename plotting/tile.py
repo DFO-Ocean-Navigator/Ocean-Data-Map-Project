@@ -6,9 +6,9 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 import numpy as np
 import re
-import colormap
-from StringIO import StringIO
-import utils
+import plotting.colormap as colormap
+import plotting.utils as utils
+from io import BytesIO
 import tempfile
 import os
 import math
@@ -157,7 +157,7 @@ def scale(args):
     bar.set_label("%s (%s)" % (variable_name.title(),
                                utils.mathtext(variable_unit)))
 
-    buf = StringIO()
+    buf = BytesIO()
     try:
         plt.savefig(buf, format='png', dpi='figure', transparent=False,
                     bbox_inches='tight', pad_inches=0.05)
@@ -376,7 +376,7 @@ def bathymetry(projection, x, y, z, args):
     plt.xlim([0, 255])
     plt.ylim([0, 255])
 
-    with contextlib.closing(StringIO()) as buf:
+    with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
             format='png',
@@ -387,7 +387,7 @@ def bathymetry(projection, x, y, z, args):
         buf.seek(0)
         im = Image.open(buf)
 
-        with contextlib.closing(StringIO()) as buf2:
+        with contextlib.closing(BytesIO()) as buf2:
             im.save(buf2, format='PNG', optimize=True)
             return buf2.getvalue()
 

@@ -1,6 +1,6 @@
 import abc
 import numpy as np
-import geo
+import data.geo
 from scipy.interpolate import interp1d
 
 __author__ = 'Geoff Holden'
@@ -183,7 +183,7 @@ class Variable(object):
 class VariableList(list):
 
     def __getitem__(self, pos):
-        if isinstance(pos, basestring):
+        if isinstance(pos, str):
             for v in self:
                 if v.key == pos:
                     return v
@@ -194,7 +194,7 @@ class VariableList(list):
             return super(VariableList, self).__getitem__(pos)
 
     def __contains__(self, key):
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             for v in self:
                 if v.key == key:
                     return True

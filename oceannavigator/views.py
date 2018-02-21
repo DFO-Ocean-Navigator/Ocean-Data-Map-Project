@@ -193,7 +193,7 @@ def colormaps():
             'id': i,
             'value': n
         }
-        for i, n in plotting.colormap.get_colormap_names().iteritems()
+        for i, n in plotting.colormap.get_colormap_names().items()
     ], key=lambda k: k['value'])
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
@@ -320,7 +320,7 @@ def vars_query():
             if 'vectors' in request.args or 'vectors_only' in request.args:
                 rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
 
-                for key, value in VECTOR_MAP.iteritems():
+                for key, value in VECTOR_MAP.items():
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key])
                         data.append({

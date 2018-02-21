@@ -2,9 +2,9 @@ from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
-import netcdf_data
+import data.netcdf_data as ncData
 from pint import UnitRegistry
-from data import Variable, VariableList
+from data.data import Variable, VariableList
 from netCDF4 import chartostring
 import pytz
 from cachetools import TTLCache
@@ -16,7 +16,7 @@ EARTH_RADIUS = 6378137.0
 ureg = UnitRegistry()
 
 
-class Fvcom(netcdf_data.NetCDFData):
+class Fvcom(ncData.NetCDFData):
     __depths = None
 
     @property

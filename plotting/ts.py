@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from oceannavigator.util import get_dataset_url, get_dataset_name, get_variable_unit
 import seawater
-import point
+import plotting.point as plPoint
 from flask_babel import gettext
 from data import open_dataset
 
 # Temperature/Salinity Diagram for a Point
-class TemperatureSalinityPlotter(point.PointPlotter):
+class TemperatureSalinityPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "ts"

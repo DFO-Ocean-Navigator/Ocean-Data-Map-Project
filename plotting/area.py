@@ -1,6 +1,6 @@
-import plotter
+import plotting.plotter as pl
 
 
-class AreaPlotter(plotter.Plotter):
+class AreaPlotter(pl.Plotter):
 
     pass

@@ -5,15 +5,15 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import re
-import colormap
-import utils
+import plotting.colormap
+import plotting.utils
+import plotting.line as plLine
 from oceannavigator.util import (get_dataset_url, get_dataset_name)
-import line
 from flask_babel import gettext
 from data import open_dataset
 
 
-class HovmollerPlotter(line.LinePlotter):
+class HovmollerPlotter(plLine.LinePlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "hovmoller"

@@ -2,9 +2,9 @@ from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
-from netcdf_data import NetCDFData
+from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
-from data import Variable, VariableList
+from data.data import Variable, VariableList
 import re
 
 RAD_FACTOR = np.pi / 180.0

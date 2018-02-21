@@ -1,21 +1,20 @@
 from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.point as plPoint
 from textwrap import wrap
 import pint
 from oceannavigator.util import get_dataset_url
 import re
 import dateutil.parser
 import pytz
-import point
 import numbers
 from flask_babel import gettext, format_datetime
 from data import open_dataset
 from oceannavigator import app
 
-
-class ObservationPlotter(point.PointPlotter):
+class ObservationPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "observation"
@@ -177,7 +176,7 @@ class ObservationPlotter(point.PointPlotter):
                 unit_map[
                     self.observation_variable_names[idx]] = ureg.dimensionless
 
-        for k, v in unit_map.iteritems():
+        for k, v in unit_map.items():
             if v == ureg.speed_of_light:
                 unit_map[k] = ureg.celsius
 
