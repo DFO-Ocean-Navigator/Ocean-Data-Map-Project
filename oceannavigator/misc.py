@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import fcntl
 import os
 import time
@@ -19,10 +19,7 @@ from oceannavigator.util import (
 )
 import re
 from data import open_dataset
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle as pickle
 
 
 def list_kml_files(subdir):
@@ -37,7 +34,7 @@ def list_kml_files(subdir):
         folder = doc.Document.Folder
 
         entry = {
-            'name': folder.name.text.encode("utf-8"),
+            'name': folder.name.text,
             'id': f[:-4]
         }
 
@@ -47,7 +44,7 @@ def list_kml_files(subdir):
 
 
 def _get_view(extent):
-    extent = map(float, extent.split(","))
+    extent = list(map(float, extent.split(",")))
     view = LinearRing([
         (extent[1], extent[0]),
         (extent[3], extent[0]),
@@ -72,7 +69,7 @@ def points(file_id, projection, resolution, extent):
 
     for place in folder.Placemark:
         c_txt = place.Point.coordinates.text
-        lonlat = map(float, c_txt.split(','))
+        lonlat = list(map(float, c_txt.split(',')))
 
         x, y = proj(lonlat[0], lonlat[1])
         p = Point(y, x)
@@ -85,7 +82,7 @@ def points(file_id, projection, resolution, extent):
                     'coordinates': lonlat,
                 },
                 'properties': {
-                    'name': place.name.text.encode("utf-8"),
+                    'name': place.name.text,
                     'type': 'point',
                     'resolution': 0,
                 }
@@ -110,12 +107,12 @@ def lines(file_id, projection, resolution, extent):
         coords = []
         for point_txt in c_txt.split():
             lonlat = point_txt.split(',')
-            coords.append(map(float, lonlat))
+            coords.append(list(map(float, lonlat)))
 
         coords = np.array(coords)
 
         x, y = proj(coords[:, 0], coords[:, 1])
-        ls = LineString(zip(y, x))
+        ls = LineString(list(zip(y, x)))
 
         if view.envelope.intersects(ls):
             lines.append({
@@ -125,7 +122,7 @@ def lines(file_id, projection, resolution, extent):
                     'coordinates': coords.astype(float).tolist()
                 },
                 'properties': {
-                    'name': place.name.text.encode("utf-8"),
+                    'name': place.name.text,
                     'type': 'line',
                     'resolution': 0,
                 }
@@ -173,11 +170,11 @@ def list_areas(file_id, simplify=True):
 
         centroids = [LinearRing(x).centroid for x in outers]
         areas.append({
-            'name': place.name.text.encode("utf-8"),
+            'name': place.name.text,
             'polygons': outers,
             'innerrings': inners,
             'centroids': [(c.y, c.x) for c in centroids],
-            'key': file_id + "/" + place.name.text.encode("utf-8"),
+            'key': file_id + "/" + place.name.text,
         })
 
     areas = sorted(areas, key=lambda k: k['name'])
@@ -196,25 +193,19 @@ def areas(area_id, projection, resolution, extent):
 
         for p in place.iterfind('.//k:Polygon', nsmap):
             lonlat = np.array(
-                map(
-                    lambda c: c.split(','),
-                    p.outerBoundaryIs.LinearRing.coordinates.text.split()
-                )
+                [c.split(',') for c in p.outerBoundaryIs.LinearRing.coordinates.text.split()]
             ).astype(float)
             ox, oy = proj(lonlat[:, 0], lonlat[:, 1])
 
             holes = []
             for i in p.iterfind('.//k:innerBoundaryIs/k:LinearRing', nsmap):
                 lonlat_inner = np.array(
-                    map(
-                        lambda c: c.split(','),
-                        i.coordinates.text.split()
-                    )
+                    [c.split(',') for c in i.coordinates.text.split()]
                 ).astype(float)
                 ix, iy = proj(lonlat_inner[:, 0], lonlat_inner[:, 1])
-                holes.append(zip(iy, ix))
+                holes.append(list(zip(iy, ix)))
 
-            polys.append(Polygon(zip(oy, ox), holes))
+            polys.append(Polygon(list(zip(oy, ox)), holes))
 
         mp = MultiPolygon(polys).simplify(resolution * 1.5)
 
@@ -245,11 +236,11 @@ def areas(area_id, projection, resolution, extent):
                     'coordinates': coordinates,
                 },
                 'properties': {
-                    'name': place.name.text.encode("utf-8"),
+                    'name': place.name.text,
                     'type': "area",
                     'resolution': resolution,
                     'key': "%s/%s" % (area_id,
-                                      place.name.text.encode("utf-8")),
+                                      place.name.text),
                     'centroid': proj(mp.centroid.y, mp.centroid.x,
                                      inverse=True),
                 },
@@ -413,7 +404,7 @@ def drifters(drifter_id, projection, resolution, extent):
     for i, bid in enumerate(buoy_id):
         x, y = proj(lon[i], lat[i])
 
-        ls = LineString(zip(y, x))
+        ls = LineString(list(zip(y, x)))
         if view.envelope.intersects(ls):
             path = np.array(ls.simplify(resolution * 1.5).coords)
             path = np.array(
@@ -471,7 +462,7 @@ def drifters_vars(drifter_id):
     if len(res) > 1:
         intersect = res[0]
         for i in range(1, len(res)):
-            intersect = filter(lambda x: x in intersect, res[i])
+            intersect = [x for x in res[i] if x in intersect]
 
         return sorted(intersect, key=lambda k: k['value'])
     elif len(res) == 1:
@@ -579,7 +570,7 @@ def list_class4(d):
     with Dataset(dataset_url, 'r') as ds:
         lat = ds['latitude'][:]
         lon = ds['longitude'][:]
-        ids = map(str.strip, chartostring(ds['id'][:]))
+        ids = list(map(str.strip, chartostring(ds['id'][:])))
         rmse = []
 
         for i in range(0, lat.shape[0]):
@@ -591,7 +582,7 @@ def list_class4(d):
     maxval = rmse.mean() + 2 * rmse.std()
     rmse_norm = rmse / maxval
 
-    loc = zip(lat, lon)
+    loc = list(zip(lat, lon))
 
     points = []
     for idx, ll in enumerate(loc):
@@ -623,7 +614,7 @@ def class4(class4_id, projection, resolution, extent):
     with Dataset(dataset_url, 'r') as ds:
         lat_in = ds['latitude'][:]
         lon_in = ds['longitude'][:]
-        ids = map(str.strip, chartostring(ds['id'][:]))
+        ids = list(map(str.strip, chartostring(ds['id'][:])))
 
         for i in range(0, lat_in.shape[0]):
             x, y = proj(lon_in[i], lat_in[i])
@@ -640,7 +631,7 @@ def class4(class4_id, projection, resolution, extent):
     rmse = np.ma.hstack(rmse)
     rmse_norm = np.clip(rmse / 1.5, 0, 1)
 
-    loc = zip(lon, lat)
+    loc = list(zip(lon, lat))
 
     points = []
 
@@ -756,8 +747,8 @@ def get_point_data(dataset, variable, time, depth, location):
                 names[idx] = names[idx] + " Anomaly"
 
     result = {
-        'value': map(lambda f: '%s' % float('%.4g' % f), data),
-        'location': map(lambda f: round(f, 4), location),
+        'value': ['%s' % float('%.4g' % f) for f in data],
+        'location': [round(f, 4) for f in location],
         'name': names,
         'units': units,
     }

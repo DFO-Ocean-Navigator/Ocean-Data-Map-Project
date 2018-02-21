@@ -45,7 +45,7 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             have_quiver = False
 
         if self.depth != 'all':
-            if isinstance(self.depth, str) or isinstance(self.depth, unicode):
+            if isinstance(self.depth, str) or isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
@@ -107,23 +107,11 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                     self.times[t].isoformat(),
                 ]
                 if self.depth == 'all':
-                    entry.extend(map(
-                        lambda f: "%0.3f" % f,
-                        self.data[p, 0, t, :max_dep_idx + 1]
-                    ))
+                    entry.extend(["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
                     if have_quiver:
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            self.quiver_data[0][p, t, :max_dep_idx + 1]
-                        ))
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            self.quiver_data[1][p, t, :max_dep_idx + 1]
-                        ))
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            bearing[p, t, :max_dep_idx + 1]
-                        ))
+                        entry.extend(["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
+                        entry.extend(["%0.3f" % f for f in self.quiver_data[1][p, t, :max_dep_idx + 1]])
+                        entry.extend(["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
                     if have_quiver:
@@ -161,13 +149,13 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                 if self.variable_unit == "fraction":
                     vmin = 0
                     vmax = 1
-                elif np.any(map(lambda x: re.search(x, self.variable_name,
-                                                    re.IGNORECASE), [
+                elif np.any([re.search(x, self.variable_name,
+                                                    re.IGNORECASE) for x in [
                     "free surface",
                     "surface height",
                     "velocity",
                     "wind"
-                ])):
+                ]]):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
 
@@ -176,7 +164,7 @@ class TimeseriesPlotter(plPoint.PointPlotter):
 
         datenum = matplotlib.dates.date2num(self.times)
         if self.depth == 'all':
-            size = map(float, self.size.split("x"))
+            size = list(map(float, self.size.split("x")))
             numpoints = len(self.points)
             figuresize = (size[0], size[1] * numpoints)
             fig, ax = plt.subplots(

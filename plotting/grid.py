@@ -233,7 +233,7 @@ class Grid(object):
         mintime, x = _take_surrounding(ts, times[0])
         x, maxtime = _take_surrounding(ts, times[-1])
         maxtime += 1
-        uniquetimes = range(mintime, maxtime + 1)
+        uniquetimes = list(range(mintime, maxtime + 1))
 
         combined = []
         for t in range(mintime, maxtime):
@@ -273,7 +273,7 @@ class Grid(object):
 
             # This is a slight modification on scipy's interp1d
             # https://github.com/scipy/scipy/blob/v0.17.1/scipy/interpolate/interpolate.py#L534-L561
-            x = np.array(range(0, len(uniquetimes) - 1))
+            x = np.array(list(range(0, len(uniquetimes) - 1)))
             new_idx = np.searchsorted(x, deltas)
             new_idx = new_idx.clip(1, len(x) - 1).astype(int)
             low = new_idx - 1
@@ -285,8 +285,8 @@ class Grid(object):
             else:
                 x_low = x[low]
                 x_high = x[high]
-                y_low = combined[low, range(0, len(times))]
-                y_high = combined[high, range(0, len(times))]
+                y_low = combined[low, list(range(0, len(times)))]
+                y_high = combined[high, list(range(0, len(times)))]
                 slope = (y_high - y_low) / (x_high - x_low)[None]
                 y_new = slope * (deltas - x_low)[None] + y_low
                 result = y_new[0]
@@ -422,7 +422,7 @@ def bathymetry(latvar, lonvar, depthvar, points, n=200):
     y = lonvar[idx_x].ravel()
     z = depthvar[idx_y, idx_x]
 
-    coords = np.array(zip(itertools.product(x, y)))
+    coords = np.array(list(zip(itertools.product(x, y))))
     coords = coords.reshape(-1, 2)
 
     f = interpolator(coords, z.ravel())
@@ -465,7 +465,7 @@ def _path_to_points(points, n, intimes=None):
     if intimes is None:
         intimes = [0] * len(points)
 
-    tuples = zip(points, points[1::], intimes, intimes[1::])
+    tuples = list(zip(points, points[1::], intimes, intimes[1::]))
 
     d = VincentyDistance()
     dist_between_pts = []

@@ -54,7 +54,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
 
             self.fix_startend_times(dataset, self.starttime, self.endtime)
-            time = range(self.starttime, self.endtime + 1)
+            time = list(range(self.starttime, self.endtime + 1))
 
             if len(self.variables) > 1:
                 v = []
@@ -100,7 +100,7 @@ class HovmollerPlotter(plLine.LinePlotter):
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(self.compare['depth'], len(dataset.depths) - 1, dataset)
 
                 self.fix_startend_times(dataset, self.compare['starttime'], self.compare['endtime'])
-                time = range(self.compare['starttime'], self.compare['endtime'] + 1)
+                time = list(range(self.compare['starttime'], self.compare['endtime'] + 1))
 
                 if len(self.compare['variables']) > 1:
                     v = []
@@ -148,7 +148,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             return " at %s %s" % (depthValue, depthUnit)
 
         # Figure size
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= 1.5 if self.compare else 1 # Vertical scaling of figure
         
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
@@ -178,14 +178,11 @@ class HovmollerPlotter(plLine.LinePlotter):
         else:
             vmin = np.amin(self.data)
             vmax = np.amax(self.data)
-            if np.any(map(
-                lambda x: re.search(x, self.variable_name, re.IGNORECASE),
-                [
+            if np.any([re.search(x, self.variable_name, re.IGNORECASE) for x in [
                     "velocity",
                     "surface height",
                     "wind"
-                ]
-            )):
+                ]]):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
             
@@ -213,14 +210,11 @@ class HovmollerPlotter(plLine.LinePlotter):
             else:
                 vmin = np.amin(self.compare['data'])
                 vmax = np.amax(self.compare['data'])
-            if np.any(map(
-                lambda x: re.search(x, self.compare['variable_name'], re.IGNORECASE),
-                [
+            if np.any([re.search(x, self.compare['variable_name'], re.IGNORECASE) for x in [
                     "velocity",
                     "surface height",
                     "wind"
-                ]
-            )):
+                ]]):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
             
@@ -241,7 +235,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             # TODO: Add difference plot
 
         # Image title
-        fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
+        fig.suptitle(gettext("Hovm\xf6ller Diagram(s) for:\n%s") % (
             self.name
         ), fontsize=15)
 

@@ -53,7 +53,7 @@ def get_dataset_attribution(dataset):
 
 def get_dataset_cache(dataset):
     cache = get_datasets().get(dataset).get("cache")
-    if cache is not None and isinstance(cache, basestring):
+    if cache is not None and isinstance(cache, str):
         cache = int(cache)
 
     return cache

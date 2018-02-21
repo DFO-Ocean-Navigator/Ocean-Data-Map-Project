@@ -49,10 +49,7 @@ class NetCDFData(Data):
 
             t = netcdftime.utime(var.units)
             timestamps = np.array(
-                map(
-                    lambda ts: t.num2date(ts).replace(tzinfo=pytz.UTC),
-                    var[:]
-                )
+                [t.num2date(ts).replace(tzinfo=pytz.UTC) for ts in var[:]]
             )
             timestamps.flags.writeable = False
             self.__timestamp_cache["timestamps"] = timestamps

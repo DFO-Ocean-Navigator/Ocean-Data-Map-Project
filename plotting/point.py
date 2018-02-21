@@ -128,7 +128,7 @@ class PointPlotter(pl.Plotter):
         return data
 
     def figuresize(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         if len(self.points) > 10:
             figuresize[0] *= 1.0 / 1.25
 

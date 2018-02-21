@@ -59,8 +59,7 @@ class ObservationPlotter(plPoint.PointPlotter):
                     observation['data'] = np.ma.array(data).transpose()
                     self.observation[idx] = observation
 
-                self.points = map(lambda o: [o['latitude'], o['longitude']],
-                                  self.observation)
+                self.points = [[o['latitude'], o['longitude']] for o in self.observation]
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             ts = dataset.timestamps
@@ -102,15 +101,11 @@ class ObservationPlotter(plPoint.PointPlotter):
     def parse_query(self, query):
         super(ObservationPlotter, self).parse_query(query)
 
-        observation_variable = map(int, query.get("observation_variable"))
+        observation_variable = list(map(int, query.get("observation_variable")))
         observation = query.get("observation")
         if not isinstance(observation[0], numbers.Number):
-            observation_variable_names = map(
-                lambda x: re.sub(r" \[.*\]", "", x),
-                observation[0]['datatypes'])
-            observation_variable_units = map(
-                lambda x: re.match(r".*\[(.*)\]", x).group(1),
-                observation[0]['datatypes'])
+            observation_variable_names = [re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
+            observation_variable_units = [re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
 
             self.parse_names_points(
                 [str(o.get('station')) for o in observation],
@@ -176,7 +171,7 @@ class ObservationPlotter(plPoint.PointPlotter):
                 unit_map[
                     self.observation_variable_names[idx]] = ureg.dimensionless
 
-        for k, v in unit_map.items():
+        for k, v in list(unit_map.items()):
             if v == ureg.speed_of_light:
                 unit_map[k] = ureg.celsius
 

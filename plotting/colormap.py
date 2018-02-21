@@ -5,7 +5,7 @@ import re
 import plotting
 import os
 import numpy as np
-from io import StringIO
+from io import BytesIO
 from flask_babel import gettext
 
 
@@ -29,7 +29,7 @@ def make_colormap(seq):
 
 
 def find_colormap(name):
-    for key in colormaps.keys():
+    for key in list(colormaps.keys()):
         if re.search(key, name, re.I):
             return colormaps[key]
     return colormaps['mercator']
@@ -195,7 +195,7 @@ colormap_names = {
 
 def get_colormap_names():
     result = {}
-    for key, value in colormap_names.items():
+    for key, value in list(colormap_names.items()):
         result[key] = gettext(value)
 
     return result
@@ -213,7 +213,7 @@ def plot_colormaps():
 
     fig.suptitle(gettext("Ocean Navigator Colourmaps"), fontsize=14)
     names = get_colormap_names()
-    for ax, cmap in zip(axes, sorted(names.keys(),
+    for ax, cmap in zip(axes, sorted(list(names.keys()),
                                      key=names.get)):
         ax.imshow(gradient, aspect='auto', cmap=colormaps.get(cmap))
         pos = list(ax.get_position().bounds)
@@ -225,7 +225,7 @@ def plot_colormaps():
     for ax in axes:
         ax.set_axis_off()
 
-    buf = StringIO()
+    buf = BytesIO()
     try:
         plt.savefig(buf, format="png", dpi='figure')
         plt.close(fig)
@@ -239,7 +239,7 @@ if __name__ == '__main__':
     import matplotlib.cm
     import sys
 
-    for k, v in colormaps.items():
+    for k, v in list(colormaps.items()):
         matplotlib.cm.register_cmap(name=k, cmap=v)
 
     maps = [i for i in colormaps]

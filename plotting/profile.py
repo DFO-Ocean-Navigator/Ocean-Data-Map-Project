@@ -47,8 +47,7 @@ class ProfilePlotter(plPoint.PointPlotter):
             "Latitude",
             "Longitude",
             "Depth",
-        ] + map(lambda x: "%s (%s)" % x,
-                zip(self.variable_names, self.variable_units))
+        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
         data = []
 
         # For each point
@@ -61,7 +60,7 @@ class ProfilePlotter(plPoint.PointPlotter):
                     "%0.4f" % self.points[p][0],
                     "%0.4f" % self.points[p][1],
                     "%0.1f" % self.depths[p, 0, d],
-                ] + map(lambda x: "%0.1f" % x, self.data[p, :, d])
+                ] + ["%0.1f" % x for x in self.data[p, :, d]]
                 data.append(entry)
 
         return super(ProfilePlotter, self).csv(header, columns, data)

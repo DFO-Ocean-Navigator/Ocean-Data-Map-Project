@@ -74,7 +74,7 @@ class StickPlotter(plPoint.PointPlotter):
         return super(StickPlotter, self).csv(header, columns, data)
 
     def plot(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= len(self.points) * len(self.depth)
         fig, ax = plt.subplots(
             len(self.points) * len(self.depth),

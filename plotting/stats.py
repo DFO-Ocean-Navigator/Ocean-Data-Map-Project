@@ -13,7 +13,7 @@ from data import open_dataset
 
 def stats(dataset_name, query):
     variables = query.get('variable')
-    if isinstance(variables, str) or isinstance(variables, unicode):
+    if isinstance(variables, str) or isinstance(variables, str):
         variables = variables.split(',')
 
     variables = [re.sub('_anom$', '', v) for v in variables]
@@ -25,7 +25,7 @@ def stats(dataset_name, query):
     names = []
     all_rings = []
     for idx, a in enumerate(area):
-        if isinstance(a, str) or isinstance(a, unicode):
+        if isinstance(a, str) or isinstance(a, str):
             a = a.encode("utf-8")
             sp = a.split('/', 1)
             if data is None:
@@ -141,10 +141,10 @@ def stats(dataset_name, query):
             points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]
             for i, a in enumerate(area):
                 indices = np.where(
-                    map(
+                    list(map(
                         lambda p, poly=area_polys[i]: poly.contains(p),
                         points
-                    )
+                    ))
                 )
 
                 selection = np.ma.array(d.ravel()[indices])

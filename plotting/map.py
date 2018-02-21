@@ -36,7 +36,7 @@ class MapPlotter(plArea.AreaPlotter):
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
         data = float_to_str(self.data.ravel()[::5])
-        station = map(lambda x: "%06d" % x, range(1, len(data) + 1))
+        station = ["%06d" % x for x in range(1, len(data) + 1)]
 
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
@@ -260,8 +260,7 @@ class MapPlotter(plArea.AreaPlotter):
             self.quiver_data = quiver_data
             self.quiver_data_fullgrid = quiver_data_fullgrid
 
-            if all(map(lambda v: len(dataset.variables[v].dimensions) == 3,
-                       allvars)):
+            if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
                 self.depth = 0
 
             contour_data = []
@@ -372,10 +371,10 @@ class MapPlotter(plArea.AreaPlotter):
             indicies = []
             for a in area_polys:
                 indicies.append(np.where(
-                    map(
+                    list(map(
                         lambda p, poly=a: poly.contains(p),
                         points
-                    )
+                    ))
                 )[0])
 
             indicies = np.unique(np.array(indicies).ravel())
@@ -397,7 +396,7 @@ class MapPlotter(plArea.AreaPlotter):
         all_rings = []
         data = None
         for idx, a in enumerate(self.area):
-            if isinstance(a, basestring):
+            if isinstance(a, str):
                 a = a.encode("utf-8")
                 sp = a.split('/', 1)
                 if data is None:
@@ -483,7 +482,7 @@ class MapPlotter(plArea.AreaPlotter):
 
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
         ax = plt.gca()
 
@@ -572,7 +571,7 @@ class MapPlotter(plArea.AreaPlotter):
                 for co in a['polygons'] + a['innerrings']:
                     coords = np.array(co).transpose()
                     mx, my = self.basemap(coords[1], coords[0])
-                    map_coords = zip(mx, my)
+                    map_coords = list(zip(mx, my))
                     polys.append(Polygon(map_coords))
 
                 paths = []

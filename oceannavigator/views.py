@@ -47,7 +47,7 @@ FAILURE = redirect("/", code=302)
 
 @app.route('/api/range/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query(dataset, projection, extent, variable, depth, time):
-    extent = map(float, extent.split(","))
+    extent = list(map(float, extent.split(",")))
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent)
 
@@ -75,6 +75,7 @@ def query(q):
     else:
         return FAILURE
 
+    print(data)
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     resp.cache_control.max_age = max_age
@@ -104,7 +105,7 @@ def query_id(q, q_id):
 def get_data(dataset, variable, time, depth, location):
     data = oceannavigator.misc.get_point_data(
         dataset, variable, time, depth,
-        map(float, location.split(","))
+        list(map(float, location.split(",")))
     )
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
@@ -149,7 +150,7 @@ def query_file(q, projection, resolution, extent, file_id):
 @app.route('/api/datasets/')
 def query_datasets():
     data = []
-    for key, ds in get_datasets().items():
+    for key, ds in list(get_datasets().items()):
         data.append({
             'id': key,
             'value': ds['name'],
@@ -193,7 +194,7 @@ def colormaps():
             'id': i,
             'value': n
         }
-        for i, n in plotting.colormap.get_colormap_names().items()
+        for i, n in list(plotting.colormap.get_colormap_names().items())
     ], key=lambda k: k['value'])
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
@@ -273,7 +274,7 @@ def vars_query():
 
         if get_dataset_climatology(dataset) != "" and 'anom' in request.args:
             with open_dataset(get_dataset_climatology(dataset)) as ds:
-                climatology_variables = map(str, ds.variables)
+                climatology_variables = list(map(str, ds.variables))
         else:
             climatology_variables = []
 
@@ -320,7 +321,7 @@ def vars_query():
             if 'vectors' in request.args or 'vectors_only' in request.args:
                 rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
 
-                for key, value in VECTOR_MAP.items():
+                for key, value in list(VECTOR_MAP.items()):
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key])
                         data.append({
@@ -514,7 +515,7 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
 
         # Finds a variable in a dictionary given a substring containing common characters
         # Not a fool-proof method but I want to avoid regex because I hate it.
-        variable_list = dataset.variables.keys()
+        variable_list = list(dataset.variables.keys())
         def find_variable(substring):
             for key in variable_list:
                 if substring in key:

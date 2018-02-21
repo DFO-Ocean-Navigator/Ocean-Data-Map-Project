@@ -19,9 +19,7 @@ from PIL import Image
 
 
 # Base class for all plotting objects
-class Plotter:
-    __metaclass__ = ABCMeta
-
+class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name, query, format):
         self.dataset_name = dataset_name
         self.query = query
@@ -92,10 +90,10 @@ class Plotter:
         if variables is None:
             variables = ['votemper']
 
-        if isinstance(variables, str) or isinstance(variables, unicode):
+        if isinstance(variables, str) or isinstance(variables, str):
             variables = variables.split(',')
 
-        self.variables = filter(lambda v: v != '', variables)
+        self.variables = [v for v in variables if v != '']
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -135,12 +133,12 @@ class Plotter:
         if depth is None or len(str(depth)) == 0:
             depth = 0
 
-        if isinstance(depth, basestring) and depth.isdigit():
+        if isinstance(depth, str) and depth.isdigit():
             depth = int(depth)
 
         if isinstance(depth, list):
             for i in range(0, len(depth)):
-                if isinstance(depth[i], basestring) and depth[i].isdigit():
+                if isinstance(depth[i], str) and depth[i].isdigit():
                     depth[i] = int(depth[i])
 
         self.depth = depth
@@ -189,7 +187,7 @@ class Plotter:
     def csv(self, header=[], columns=[], data=[]):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(
-                map(lambda h: "// %s: %s" % (h[0], h[1]), header)
+                ["// %s: %s" % (h[0], h[1]) for h in header]
             ))
             buf.write("\n")
             buf.write(", ".join(columns))
@@ -217,7 +215,7 @@ class Plotter:
                 "Longitude [degrees_east]",
                 "Latitude [degrees_north]",
                 "Depth [m]",
-            ] + map(lambda x: "%s [%s]" % x, zip(variables, variable_units))))
+            ] + ["%s [%s]" % x for x in zip(variables, variable_units)]))
             buf.write("\n")
 
             if len(depth.shape) == 1:
@@ -250,7 +248,7 @@ class Plotter:
                     elif len(data.shape) == 2:
                         line.append(str(data[idx, idx2]))
                     else:
-                        line.extend(map(str, data[idx, :, idx2]))
+                        line.extend(list(map(str, data[idx, :, idx2])))
 
                     if idx > 0 and station[idx] == station[idx - 1] or \
                        idx2 > 0:

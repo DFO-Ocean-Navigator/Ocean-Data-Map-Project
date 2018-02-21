@@ -28,7 +28,7 @@ class DrifterPlotter(pl.Plotter):
         self.latlon = query.get('latlon') is None or bool(query.get('latlon'))
 
         drifter = query.get('drifter')
-        if isinstance(drifter, str) or isinstance(drifter, unicode):
+        if isinstance(drifter, str) or isinstance(drifter, str):
             drifters = drifter.split(',')
         else:
             drifters = drifter
@@ -36,7 +36,7 @@ class DrifterPlotter(pl.Plotter):
         self.drifter = drifters[0]
 
         buoyvariable = query.get('buoyvariable')
-        if isinstance(buoyvariable, str) or isinstance(buoyvariable, unicode):
+        if isinstance(buoyvariable, str) or isinstance(buoyvariable, str):
             buoyvariables = buoyvariable.split(',')
         else:
             buoyvariables = buoyvariable
@@ -135,20 +135,14 @@ class DrifterPlotter(pl.Plotter):
                 len(dataset.timestamps) - 1
             )
 
-            model_times = map(
-                lambda t: time.mktime(t.timetuple()),
-                dataset.timestamps[model_start:model_end + 1]
-            )
-            output_times = map(
-                lambda t: time.mktime(t.timetuple()),
-                self.times[self.start:self.end + 1]
-            )
+            model_times = [time.mktime(t.timetuple()) for t in dataset.timestamps[model_start:model_end + 1]]
+            output_times = [time.mktime(t.timetuple()) for t in self.times[self.start:self.end + 1]]
             d = []
             for v in self.variables:
                 pts, dist, mt, md = dataset.get_path(
                     self.points[self.start:self.end + 1],
                     depth,
-                    range(model_start, model_end + 1),
+                    list(range(model_start, model_end + 1)),
                     v,
                     times=output_times
                 )
@@ -186,7 +180,7 @@ class DrifterPlotter(pl.Plotter):
                     self.kelvin_to_celsius(u, model_data[idx, :])
 
             self.model_data = model_data
-            self.model_times = map(datetime.datetime.utcfromtimestamp, mt)
+            self.model_times = list(map(datetime.datetime.utcfromtimestamp, mt))
             self.variable_names = variable_names
             self.variable_units = variable_units
 
@@ -205,7 +199,7 @@ class DrifterPlotter(pl.Plotter):
         if self.latlon:
             numplots += 2
 
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= numplots
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
         gs = gridspec.GridSpec(numplots, width, width_ratios=width_ratios)
@@ -310,8 +304,8 @@ class DrifterPlotter(pl.Plotter):
             "Latitude",
             "Longitude",
         ]
-        columns += map(lambda n: "Buoy " + n, self.data_names)
-        columns += map(lambda n: "Model " + n, self.variable_names)
+        columns += ["Buoy " + n for n in self.data_names]
+        columns += ["Model " + n for n in self.variable_names]
 
         data = []
         for idx, t in enumerate(self.times):
