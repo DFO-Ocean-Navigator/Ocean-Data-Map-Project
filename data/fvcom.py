@@ -41,11 +41,7 @@ class Fvcom(ncData.NetCDFData):
 
             tz = pytz.timezone(var.time_zone)
             timestamps = np.array(
-                map(
-                    lambda datestr:
-                    dateutil.parser.parse(datestr).replace(tzinfo=tz),
-                    chartostring(var[:])
-                )
+                [dateutil.parser.parse(datestr).replace(tzinfo=tz) for datestr in chartostring(var[:])]
             )
             timestamps.flags.writeable = False
             self.__timestamp_cache["timestamps"] = timestamps

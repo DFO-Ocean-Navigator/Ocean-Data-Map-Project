@@ -75,7 +75,6 @@ def query(q):
     else:
         return FAILURE
 
-    print(data)
     js = json.dumps(data)
     resp = Response(js, status=200, mimetype='application/json')
     resp.cache_control.max_age = max_age

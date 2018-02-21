@@ -6,10 +6,9 @@ from scipy.interpolate import interp1d
 __author__ = 'Geoff Holden'
 
 
-class Data(object):
+class Data(object, metaclass=abc.ABCMeta):
 
     """Abstract base class for data access"""
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, url):
         self.url = url
@@ -121,13 +120,13 @@ class Data(object):
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
                              endtime, variable, return_depth=False):
         return self.get_point(latitude, longitude, depth,
-                              range(starttime, endtime + 1),
+                              list(range(starttime, endtime + 1)),
                               variable, return_depth=return_depth)
 
     def get_timeseries_profile(self, latitude, longitude, starttime,
                                endtime, variable):
         return self.get_profile(latitude, longitude,
-                                range(starttime, endtime + 1),
+                                list(range(starttime, endtime + 1)),
                                 variable)
 
 
