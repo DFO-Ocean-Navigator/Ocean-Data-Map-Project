@@ -8,6 +8,7 @@ import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
@@ -15,6 +16,9 @@ const FAIL_IMAGE = require("./fail.js");
 export default class PlotImage extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
 
     this.state = {
       showPermalink: false,
@@ -26,18 +30,43 @@ export default class PlotImage extends React.Component {
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
+    this.closeImageLink = this.closeImageLink.bind(this);
+    this.openImageLink = this.openImageLink.bind(this);
   }
 
-  componentWillMount() {
+  componentDidMount() {
+    this._mounted = true;
     this.loadImage(this.generateQuery(this.props.query));
   }
+
   componentWillReceiveProps(props) {
-    this.loadImage(this.generateQuery(props.query));
+    if (stringify(this.props.query) !== stringify(props.query)) {
+      this.loadImage(this.generateQuery(props.query));
+    }
   }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  openImageLink() {
+    const newState = Object.assign({}, this.state);
+    newState.showImagelink = true;
+
+    this.setState(newState);
+  }
+
+  closeImageLink() {
+    const newState = Object.assign({}, this.state);
+    newState.showImagelink = false;
+
+    this.setState(newState);
+  }
+
 
   loadImage(query) {
     const paramString = $.param({
-      query: JSON.stringify(query),
+      query: stringify(query),
       format: "json",
     });
 
@@ -57,25 +86,30 @@ export default class PlotImage extends React.Component {
       }).promise();
 
       promise.done(function(d) {
-        this.passCount++;
-        this.setState({
-          loading: false,
-          fail: false,
-	        passcount: this.passCount,
-          url: d,
-        });
+        if (this._mounted) {
+          this.passCount++;
+          this.setState({
+            loading: false,
+            fail: false,
+	          passcount: this.passCount,
+            url: d,
+          });
+        }
       }.bind(this));
             
       promise.fail(function(d) {
-        const newFail = this.state.failCount + 1;
-        this.setState({
-          loading: false,
-          fail: true,
-          failCount: newFail,
-        });
-        console.error("AJAX Error", d);
+        if (this._mounted) {
+          const newFail = this.state.failCount + 1;
+          this.setState({
+            loading: false,
+            fail: true,
+            failCount: newFail,
+          });
+          console.error("AJAX Error in PlotImage.jsx: ", d);
+        }
       }.bind(this));
     }
+
   }
 
   generateQuery(q) {
@@ -92,6 +126,14 @@ export default class PlotImage extends React.Component {
         query.variable = q.variable;
         query.station = q.point;
         query.time = q.time;
+        if (q.compare_to) {
+          query.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            variable: q.compare_to.variable,
+            time: q.compare_to.time,
+          };
+        }
         break;
       case "timeseries":
         query.station = q.point;
@@ -165,6 +207,10 @@ export default class PlotImage extends React.Component {
         query.quiver = q.quiver;
         query.contour = q.contour;
         query.showarea = q.showarea;
+        query.interp = q.interp;
+        query.radius = q.radius;
+        query.neighbours = q.neighbours;
+        
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -216,7 +262,7 @@ export default class PlotImage extends React.Component {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    return "/plot/?query=" + encodeURIComponent(JSON.stringify(query));
+    return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(key) {
@@ -232,7 +278,7 @@ export default class PlotImage extends React.Component {
         this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
-        this.setState({showImagelink: true});
+        this.openImageLink();
         break;
     }
   }
@@ -260,10 +306,14 @@ export default class PlotImage extends React.Component {
       <div className='PlotImage'>
 
         {/* Rendered graph */}
-        <img src={src} />
+        <div className="RenderedImage">
+          <img src={src} />
+        </div>
+        
         <br />
         <label>{infoStatus}</label>
         <br />
+
         <ButtonToolbar>
           <DropdownButton
             id="save"
@@ -335,7 +385,7 @@ export default class PlotImage extends React.Component {
 
         <Modal
           show={this.state.showImagelink}
-          onHide={() => this.setState({showImagelink: false})}
+          onHide={this.closeImageLink}
           dialogClassName='permalink-modal'
           onEntered={imagelinkModalEntered}>
           <Modal.Header closeButton>
@@ -353,20 +403,20 @@ export default class PlotImage extends React.Component {
                   "&dpi=" + this.props.query.dpi
               }
             />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            onClick={function() {
-              this.imagelinkbox.select();
-              document.execCommand("copy");
-            }.bind(this)
-            }><Icon icon="copy" /> {_("Copy")}</Button>
-          <Button
-            onClick={() => this.setState({showImagelink: false})}
-          ><Icon icon="close" /> {_("Close")}</Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={function() {
+                this.imagelinkbox.select();
+                document.execCommand("copy");
+              }.bind(this)
+              }><Icon icon="copy" /> {_("Copy")}</Button>
+            <Button
+              onClick={this.closeImageLink}
+            ><Icon icon="close" /> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     );
   }
 }

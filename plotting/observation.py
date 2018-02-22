@@ -94,7 +94,7 @@ class ObservationPlotter(point.PointPlotter):
                 point_data
             )
 
-        self.data = self.subtract_climatology(point_data, timestamp)
+        self.data = point_data
         self.observation_time = observation_time
         self.observation_times = observation_times
         self.timestamps = timestamps

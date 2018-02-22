@@ -47,7 +47,7 @@ class HovmollerPlotter(line.LinePlotter):
             
             return (depth, depth_value, depth_unit)
 
-        # Load left/primary view
+        # Load left/Main Map
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             
             latvar, lonvar = utils.get_latlon_vars(dataset)
@@ -92,7 +92,7 @@ class HovmollerPlotter(line.LinePlotter):
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(self.variable_name)
 
-        # Load data sent from Right view (if in compare mode)
+        # Load data sent from Right Map (if in compare mode)
         if self.compare:
             with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
 

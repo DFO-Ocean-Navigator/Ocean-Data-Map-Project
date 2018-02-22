@@ -11,6 +11,9 @@ export default class ComboBox extends React.Component {
   constructor(props) {
     super(props);
     
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
+
     this.state = {
       data: [],
       url: null
@@ -20,6 +23,21 @@ export default class ComboBox extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.showHelp = this.showHelp.bind(this);
     this.closeHelp = this.closeHelp.bind(this);
+  }
+
+  componentDidMount() {
+    this._mounted = true;
+    this.populate(this.props);
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.url !== this.state.url || nextProps.data !== this.props.data) {
+      this.populate(nextProps);
+    }
   }
 
   // Fired when new option is selected
@@ -65,100 +83,109 @@ export default class ComboBox extends React.Component {
 
   // Load options into dropdown
   populate(props) {
+    
     this.setState({
       url: props.url
     });
-    if ("url" in props && "" != props.url) {
+
+    if ("url" in props && "" !== props.url) {
       $.ajax({
         url: props.url,
         dataType: "json",
         cache: true,
+        
         success: function (data) {
-          const ids = data.map(function (d) { return d.id; });
-          if (
-            (this.props.state == "" && typeof(this.props.state) == "string") ||
-            this.props.state == "none"
-          ) {
-            if (jQuery.inArray("none", ids) == -1) {
-              data.splice(0, 0, { "id": "none", "value": _("None") });
-            }
-          }
-          this.setState({
-            data: data,
-          });
-
-          const a = data.map(function (x) {
-            return x.id;
-          });
-
-          let value = this.props.state;
-          const floatValue = parseFloat(value);
-
-          let notInList = false;
-          if (value instanceof Array) {
-            notInList = value.map(
-              (el) => (
-                jQuery.inArray(el, a) == -1 &&
-                jQuery.inArray(parseFloat(el), a) == -1
-              )
-            ).reduce((prev, cur) => prev || cur, false);
-          } else {
-            notInList = (
-              jQuery.inArray(this.props.state, a) == -1 &&
-              jQuery.inArray(floatValue, a) == -1
-            );
-          }
-          if (
-            notInList ||
-            (this.props.state == "" && data.length > 0) ||
-            this.props.state == "all"
-          ) {
-            if (props.multiple) {
-              if (value == "all") {
-                value = data.map(function (d) {
-                  return d.id;
-                });
-              } else if (!Array.isArray(value)) {
-                value = [value];
+          if (this._mounted) {
+            const ids = data.map(function (d) { return d.id; });
+            if (
+              (this.props.state == "" && typeof(this.props.state) == "string") ||
+              this.props.state == "none"
+            ) {
+              if (jQuery.inArray("none", ids) == -1) {
+                data.splice(0, 0, { "id": "none", "value": _("None") });
               }
             }
-          } else {
-            if (data.length == 0) {
-              value = props.def;
-            } else if (data.length == 1) {
-              value = ids[0];
-            } else if (props.multiple && !Array.isArray(this.props.state)) {
-              value = [this.props.state];
+            this.setState({
+              data: data,
+            });
+
+            const a = data.map(function (x) {
+              return x.id;
+            });
+
+            let value = this.props.state;
+            const floatValue = parseFloat(value);
+
+            let notInList = false;
+            if (value instanceof Array) {
+              notInList = value.map(
+                (el) => (
+                  jQuery.inArray(el, a) == -1 &&
+                jQuery.inArray(parseFloat(el), a) == -1
+                )
+              ).reduce((prev, cur) => prev || cur, false);
             } else {
-              value = this.props.state;
+              notInList = (
+                jQuery.inArray(this.props.state, a) == -1 &&
+                jQuery.inArray(floatValue, a) == -1
+              );
             }
-          }
-          if (
-            data.length > 0 &&
+            if (
+              notInList ||
+            (this.props.state == "" && data.length > 0) ||
+            this.props.state == "all"
+            ) {
+              if (props.multiple) {
+                if (value == "all") {
+                  value = data.map(function (d) {
+                    return d.id;
+                  });
+                } else if (!Array.isArray(value)) {
+                  value = [value];
+                }
+              }
+            } else {
+              if (data.length == 0) {
+                value = props.def;
+              } else if (data.length == 1) {
+                value = ids[0];
+              } else if (props.multiple && !Array.isArray(this.props.state)) {
+                value = [this.props.state];
+              } else {
+                value = this.props.state;
+              }
+            }
+            if (
+              data.length > 0 &&
             !props.multiple &&
             jQuery.inArray(value, a) == -1 &&
             jQuery.inArray(floatValue, a) == -1
-          ) {
-            if (jQuery.inArray(0, a) != -1) {
-              value = 0;
-            } else {
-              value = data[0].id;
+            ) {
+              if (jQuery.inArray(0, a) != -1) {
+                value = 0;
+              } else {
+                value = data[0].id;
+              }
             }
-          }
-          if (typeof (this.props.onUpdate) === "function") {
-            props.onUpdate(props.id, value);
-            if (a.indexOf(value) != -1) {
-              const d = data[a.indexOf(value)];
-              for (var key in d) {
-                if (d.hasOwnProperty(key) && key != "id" && key != "value") {
-                  this.props.onUpdate(this.props.id + "_" + key, d[key]);
+            if (typeof (this.props.onUpdate) === "function") {
+              props.onUpdate(props.id, value);
+              if (a.indexOf(value) != -1) {
+                const d = data[a.indexOf(value)];
+                for (var key in d) {
+                  if (d.hasOwnProperty(key) && key != "id" && key != "value") {
+                    this.props.onUpdate(this.props.id + "_" + key, d[key]);
+                  }
                 }
               }
             }
           }
         }.bind(this),
-        error: function (xhr, status, err) {
-          console.error(props.url, status, err.toString());
+        
+        // On fail...
+        error: function (xhr, status, err) {  
+          if (this._mounted) {
+            console.error(props.url, status, err.toString());
+          }
         }.bind(this)
       });
     } else {
@@ -179,16 +206,6 @@ export default class ComboBox extends React.Component {
           }
         }
       }
-    }
-  }
-
-  componentDidMount() {
-    this.populate(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url != this.state.url || nextProps.data != this.props.data) {
-      this.populate(nextProps);
     }
   }
 

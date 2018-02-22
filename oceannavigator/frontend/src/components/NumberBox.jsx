@@ -27,10 +27,12 @@ export default class NumberBox extends React.Component {
 
   changed(num, str) {
     clearTimeout(this.timeout);
+    
     this.setState({
       value: num,
     });
-    this.timeout = setTimeout(this.updateParent, 500);
+
+    this.timeout = setTimeout(this.updateParent, 1250);
   }
 
   keyPress(e) {
