@@ -46,8 +46,8 @@ MAX_CACHE = 315360000
 FAILURE = redirect("/", code=302)
 
 
-@app.route('/api/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
+@app.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = map(float, extent.split(","))
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
@@ -60,6 +60,19 @@ def range_query(interp, radius, neighbours, dataset, projection, extent, variabl
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
+@app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query(dataset, projection, extent, variable, depth, time):
+    extent = map(float, extent.split(","))
+    min, max = plotting.scale.get_scale(
+        dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
+
+    js = json.dumps({
+        'min': min,
+        'max': max,
+    })
+    resp = Response(js, status=200, mimetype='application/json')
+    resp.cache_control.max_age = MAX_CACHE
+    return resp
 
 @app.route('/api/<string:q>/')
 def query(q):
@@ -413,8 +426,8 @@ def _cache_and_send_img(img, f):
 
 
 # Renders the map images and sends it to the browser
-@app.route('/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+@app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
@@ -430,6 +443,33 @@ def tile(projection, interp, radius, neighbours, dataset, variable, time, depth,
             'interp': interp,
             'radius': radius,
             'neighbours': neighbours,
+            'dataset': dataset,
+            'variable': variable,
+            'time': time,
+            'depth': depth,
+            'scale': scale,
+        })
+
+        return _cache_and_send_img(img, f)
+
+# Renders the map images and sends it to the browser
+@app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
+    cache_dir = app.config['CACHE_DIR']
+    f = os.path.join(cache_dir, request.path[1:])
+    
+    # Check of the tile/image is cached and send it
+    if _is_cache_valid(dataset, f):
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    # Render a new tile/image, then cache and send it
+    else:
+        if depth != "bottom" and depth != "all":
+            depth = int(depth)
+
+        img = plotting.tile.plot(projection, x, y, zoom, {
+            'interp': "inverse",
+            'radius': 25,
+            'neighbours': 10,
             'dataset': dataset,
             'variable': variable,
             'time': time,

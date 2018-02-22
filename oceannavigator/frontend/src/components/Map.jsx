@@ -843,7 +843,7 @@ export default class Map extends React.Component {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = `/tiles` + 
+    props.url = `/tiles/v0.1` + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +

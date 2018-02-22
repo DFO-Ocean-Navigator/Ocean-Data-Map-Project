@@ -103,7 +103,7 @@ export default class MapInputs extends React.Component {
                 def=''
                 onUpdate={this.props.changeHandler}
                 title={_("Variable Range")}
-                autourl={"/api/range/" +
+                autourl={"/api/v0.1/range/" +
                   this.props.options.interpType + "/" +
                   this.props.options.interpRadius + "/" +
                   this.props.options.interpNeighbours + "/" +
@@ -139,7 +139,7 @@ export default class MapInputs extends React.Component {
                   def=''
                   onUpdate={this.props.changeHandler}
                   title={_("Variable Range")}
-                  autourl={"/api/range/" +
+                  autourl={"/api/v0.1/range/" +
                     this.props.options.interpType + "/" +
                     this.props.options.interpRadius + "/" +
                     this.props.options.interpNeighbours + "/" +
