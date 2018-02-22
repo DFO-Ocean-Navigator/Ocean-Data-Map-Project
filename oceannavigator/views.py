@@ -31,8 +31,9 @@ import plotting.scale
 import numpy as np
 import re
 import oceannavigator.misc
-import os, subprocess, shlex
+import os, subprocess
 import plotting.colormap
+import netCDF4
 import geopy
 import base64
 import pytz
@@ -45,11 +46,11 @@ MAX_CACHE = 315360000
 FAILURE = redirect("/", code=302)
 
 
-@app.route('/api/range/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query(dataset, projection, extent, variable, depth, time):
+@app.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = map(float, extent.split(","))
     min, max = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent)
+        dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
 
     js = json.dumps({
         'min': min,
@@ -59,6 +60,19 @@ def range_query(dataset, projection, extent, variable, depth, time):
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
+@app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query(dataset, projection, extent, variable, depth, time):
+    extent = map(float, extent.split(","))
+    min, max = plotting.scale.get_scale(
+        dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
+
+    js = json.dumps({
+        'min': min,
+        'max': max,
+    })
+    resp = Response(js, status=200, mimetype='application/json')
+    resp.cache_control.max_age = MAX_CACHE
+    return resp
 
 @app.route('/api/<string:q>/')
 def query(q):
@@ -412,6 +426,33 @@ def _cache_and_send_img(img, f):
 
 
 # Renders the map images and sends it to the browser
+@app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+    cache_dir = app.config['CACHE_DIR']
+    f = os.path.join(cache_dir, request.path[1:])
+    
+    # Check of the tile/image is cached and send it
+    if _is_cache_valid(dataset, f):
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    # Render a new tile/image, then cache and send it
+    else:
+        if depth != "bottom" and depth != "all":
+            depth = int(depth)
+
+        img = plotting.tile.plot(projection, x, y, zoom, {
+            'interp': interp,
+            'radius': radius,
+            'neighbours': neighbours,
+            'dataset': dataset,
+            'variable': variable,
+            'time': time,
+            'depth': depth,
+            'scale': scale,
+        })
+
+        return _cache_and_send_img(img, f)
+
+# Renders the map images and sends it to the browser
 @app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
@@ -426,6 +467,9 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
             depth = int(depth)
 
         img = plotting.tile.plot(projection, x, y, zoom, {
+            'interp': "inverse",
+            'radius': 25,
+            'neighbours': 10,
             'dataset': dataset,
             'variable': variable,
             'time': time,
@@ -514,16 +558,18 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
 
         # Finds a variable in a dictionary given a substring containing common characters
         # Not a fool-proof method but I want to avoid regex because I hate it.
-        variable_list = dataset.variables.keys()
-        def find_variable(substring):
+        #
+        # dataset: opened xarray dataset to search
+        # substring: common characters to find
+        def find_variable(dataset, substring):
+            variable_list = dataset.variables.keys()
             for key in variable_list:
                 if substring in key:
-                    variable_list.remove(key) # Remove from list to speed up search
                     return key
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat = find_variable("lat")
-        lon = find_variable("lon")
+        lat = find_variable(dataset, "lat")
+        lon = find_variable(dataset, "lon")
 
         # Find closest indices in dataset corresponding to each calculated point
         # riops used "latitude" and "longitude"
@@ -539,7 +585,7 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         p1 = geopy.Point(top_right)
         
         # Get timestamp
-        time_variable = find_variable("time")
+        time_variable = find_variable(dataset, "time")
         timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[0])].values), "yyyyMMdd"))
         if apply_time_range:
             endtimestamp = "-" + str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[1])].values), "yyyyMMdd"))
@@ -558,11 +604,11 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         if apply_time_range:
             subset = subset.isel(**{time_variable: slice(time_range[0], time_range[1] + 1)}) # slice doesn't include the last element
         else:
-            subset = subset.isel(**{time_variable: int(time_range[0])})
+            subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[0]) + 1)})
 
         # Filter out unwanted variables
         output_vars = variables.split(',')
-        output_vars.extend([find_variable('depth'), time_variable, lat, lon]) # Keep the coordinate variables
+        output_vars.extend([find_variable(dataset, 'depth'), time_variable, lat, lon]) # Keep the coordinate variables
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
@@ -571,7 +617,113 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
                     + "_" + timestamp + endtimestamp + "_" + output_format
 
         # Export to NetCDF
-        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
+        if output_format == "NETCDF3_NC":
+            # "Special" netcdf export (┛ಠ_ಠ)┛彡┻━┻
+
+            # This part only ever runs on giops files so no need to worry about variable
+            # names changing
+            subset.to_netcdf(working_dir + filename + ".nc", format="NETCDF3_CLASSIC")
+
+            # Open the GIOPS NCOM file
+            giops_file = netCDF4.Dataset(working_dir + filename + ".nc")
+            giops_variables = giops_file.variables
+                
+            # Create converted ncdf file
+            ds = netCDF4.Dataset(working_dir + filename + "_converted.nc", 'w', format="NETCDF3_CLASSIC")
+            ds.description = "Converted GIOPS " + filename
+            ds.history = "Created: " + str(datetime.datetime.now())
+            ds.source = "www.navigator.oceansdata.ca | GIOPS source: dd.weather.gc.ca"
+
+            # Find correct variable names in subset
+            lat_var = find_variable(subset, 'lat')
+            lon_var = find_variable(subset, 'lon')
+            time_var = find_variable(subset, 'time')
+            depth_var = find_variable(subset, 'depth')
+
+            # Create the netcdf dimensions
+            ds.createDimension('lat', len(giops_variables[lat_var][:]))
+            ds.createDimension('lon', len(giops_variables[lon_var][:]))
+            ds.createDimension('time', len(giops_variables[time_var][:]))
+            ds.CreateDimension('depth', len(giops_variables[depth_var][:]))
+
+            # Create the netcdf variables and assign the values
+            latitudes = ds.createVariable('lat', 'f', ('lat',))
+            longitudes = ds.createVariable('lon', 'f', ('lon',))
+            latitudes = giops_variables[lat_var][:]
+            longitudes = giops_variables[lon_var][:]
+
+            times = ds.createVariable('time', 'i', ('time',))
+            # Convert time from seconds to hours
+            for i in range(0, len(giops_variables[time_var])):
+                times[i] = giops_variables[time_var][i] / 3600
+
+            # Variable Attributes, mimicking HYCOM headers
+            latitudes.long_name = "Latitude"
+            latitudes.units = "degrees_north"
+            latitudes.NAVO_code = 1
+            longitudes.long_name = "Longitude"
+            longitudes.units = "degrees_east"
+            longitudes.NAVO_code = 2
+            times.long_name = "Validity time"
+            times.units = "hours since 1950-01-01 00:00:00"
+            times.time_origin = "1950-01-01 00:00:00"
+
+            levels = ds.createVariable('depth', 'i', ('depth',))
+            levels = giops_variables[depth_var][:]
+            levels.long_name = "Depth"
+            levels.units = "meter"
+            levels.positive = "down"
+            levels.NAVO_code = 5
+
+            for variable in giops_variables:
+                if variable == "vosaline":
+                    salinity = ds.createVariable('salinity', 'f', ('time', 'depth', 'lat', 'lon', ), fill_value=-30000.0)
+                    salinity = giops_variables['vosaline'][:]
+                    salinity.long_name = "Salinity"
+                    salinity.units = "psu"
+                    salinity.valid_min = 0.0
+                    salinity.valid_max = 45.0
+                    salinity.NAVO_code = 16
+
+                if variable == "votemper":
+                    temp = ds.createVariable('water_temp', 'f', ('time', 'depth', 'lat', 'lon', ), fill_value=-30000.0)
+                    # Convert from Kelvin to Celcius
+                    for i in range(0, len(giops_variables['depth'][:])):
+                        temp[:,i, :, :] = giops_variables['votemper'][:,i,:,:] - 273.15
+                    temp.valid_min = -100.0
+                    temp.valid_max = 100.0
+                    temp.NAVO_code = 15
+
+                if variable == "sossheig":
+                    height = ds.createVariable('surf_el', float, ('time', 'lat', 'lon'), fill_value=-30000.0)
+                    height = giops_variables['sossheig'][:]
+                    heights.long_name="Water Surface Elevation"
+                    heights.units="meter"
+                    heights.NAVO_code=32
+                
+                if variable == "vozocrtx":
+                    x_velo = ds.createVariable('water_u', float, ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                    x_velo = giops_variables['vozocrtx'][:]
+                    x_velo.long_name = "Eastward Water Velocity"
+                    x_velo.units = "meter/sec"
+                    x_velo.NAVO_code = 17
+
+                if variable == "vomecrty":
+                    y_velo = ds.createVariable('water_v', float, ('time','depth','lat','lon'), fill_value=-30000.0)
+                    y_velo = giops_variables['vomecrty'][:]
+                    y_velo.long_name = "Northward Water Velocity"
+                    y_velo.units = "meter/sec"
+                    y_velo.NAVO_code = 18
+
+            ds.close()
+            giops_file.close()
+
+            # (┛ಠ_ಠ)┛彡┻━┻
+            return send_from_directory(working_dir, '%s_converted.nc' % filename, as_attachment=True)
+
+        else:
+            # Save subset normally
+            subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
     if should_zip == 1:
         myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')

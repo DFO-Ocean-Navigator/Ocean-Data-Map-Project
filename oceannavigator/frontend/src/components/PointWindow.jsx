@@ -1,5 +1,5 @@
 import React from "react";
-import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -9,6 +9,7 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 const TabEnum = {
   PROFILE: 1,
@@ -23,6 +24,9 @@ const TabEnum = {
 export default class PointWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: TabEnum.CTD,
@@ -37,7 +41,7 @@ export default class PointWindow extends React.Component {
       dpi: 144,
     };
 
-    if (props.init != null) {
+    if (props.init !== null) {
       $.extend(this.state, props.init);
     }
 
@@ -45,31 +49,11 @@ export default class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
-  populateVariables(dataset) {
-    $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        const vars = data.map(function(d) { return d.id; });
-        if ($.inArray(this.props.variable.split(",")[0], vars) == -1) {
-          this.props.onUpdate("variable", vars[0]);
-          this.setState({
-            selected: TabEnum.PROFILE,
-          });
-        }
-        this.setState({
-          variables: data.map(function(d) { return d.id; }),
-        });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  }
-
   componentDidMount() {
+    this._mounted = true;
+
     this.populateVariables(this.props.dataset);
+
     if (this.props.point[0][2] !== undefined) {
       this.setState({
         selected: TabEnum.OBSERVATION,
@@ -77,71 +61,113 @@ export default class PointWindow extends React.Component {
     }
   }
 
-  componentWillReceiveProps(props) {
-    const state = {};
+  componentWillUnmount() {
+    this._mounted = false;
+  }
 
-    if (!Array.isArray(this.state.depth)) {
-      state.depth = props.depth;
-    }
-    if (this.state.scale.indexOf("auto") != -1) {
-      state.scale = props.scale + ",auto";
-    } 
-    else {
-      state.scale = props.scale;
-    }
-    this.setState(state);
-    if (this.props.dataset != props.dataset) {
-      this.populateVariables(props.dataset);
+  componentWillReceiveProps(props) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
+
+      const state = {};
+
+      if (!Array.isArray(this.state.depth)) {
+        state.depth = props.depth;
+      }
+      if (this.state.scale.indexOf("auto") != -1) {
+        state.scale = props.scale + ",auto";
+      } 
+      else {
+        state.scale = props.scale;
+      }
+
+      this.setState(state);
+      if (this.props.dataset != props.dataset) {
+        this.populateVariables(props.dataset);
+      }
     }
   }
 
+  populateVariables(dataset) {
+    $.ajax({
+      url: "/api/variables/?dataset=" + dataset + "&anom",
+      dataType: "json",
+      cache: true,
+  
+      success: function(data) {
+        if (this._mounted) {
+          const vars = data.map(function(d) {
+            return d.id;
+          });
+          if ($.inArray(this.props.variable.split(",")[0], vars) == -1) {
+            this.props.onUpdate("variable", vars[0]);
+            this.setState({
+              selected: TabEnum.PROFILE,
+            });
+          }
+          this.setState({
+            variables: data.map(function(d) {
+              return d.id;
+            }),
+          });
+        }
+      }.bind(this),
+  
+      error: function(xhr, status, err) {
+        if (this._mounted) {
+          console.error(this.props.url, status, err.toString());
+        }
+      }.bind(this)
+    });
+  }
+
   onLocalUpdate(key, value) {
-    var newState = {};
-    
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } 
-    else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    if (this._mounted) {
+      let newState = {};
+
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } else {
+        for (let i = 0; i < key.length; i++) {
+          newState[key[i]] = value[i];
+        }
       }
-    }
-    this.setState(newState);
+      this.setState(newState);
 
-    var parentKeys = [];
-    var parentValues = [];
+      let parentKeys = [];
+      let parentValues = [];
 
-    if (newState.hasOwnProperty("depth") && newState.depth != "all") {
-      if (!Array.isArray(newState.depth)) {
-        parentKeys.push("depth");
-        parentValues.push(newState.depth);
-      } else if (newState.depth.length > 1) {
-        parentKeys.push("depth");
-        parentValues.push(newState.depth[0]);
+      if (newState.hasOwnProperty("depth") && newState.depth != "all") {
+        if (!Array.isArray(newState.depth)) {
+          parentKeys.push("depth");
+          parentValues.push(newState.depth);
+        } else if (newState.depth.length > 1) {
+          parentKeys.push("depth");
+          parentValues.push(newState.depth[0]);
+        }
       }
-    }
 
-    if (newState.hasOwnProperty("point")) {
-      parentKeys.push("point");
-      parentValues.push(newState.point);
+      if (newState.hasOwnProperty("point")) {
+        parentKeys.push("point");
+        parentValues.push(newState.point);
 
-      parentKeys.push("names");
-      parentValues.push([]);
-    }
+        parentKeys.push("names");
+        parentValues.push([]);
+      }
 
-    if (newState.hasOwnProperty("variable_scale") &&
-      this.state.variable.length == 1) {
-      parentKeys.push("variable_scale");
-      parentValues.push(newState.variable_scale);
-    }
+      if (newState.hasOwnProperty("variable_scale") &&
+        this.state.variable.length == 1) {
+        parentKeys.push("variable_scale");
+        parentValues.push(newState.variable_scale);
+      }
 
-    if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
-      parentKeys.push("variable");
-      parentValues.push(newState.variable[0]);
-    }
+      if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
+        parentKeys.push("variable");
+        parentValues.push(newState.variable[0]);
+      }
 
-    if (parentKeys.length > 0) {
-      this.props.onUpdate(parentKeys, parentValues);
+      if (parentKeys.length > 0) {
+        this.props.onUpdate(parentKeys, parentValues);
+      }
     }
   }
 
@@ -166,6 +192,8 @@ export default class PointWindow extends React.Component {
     _("Saved Image Size");
 
     const global = (<Panel
+      key='global_settings'
+      id='global_settings'
       collapsible
       defaultExpanded
       header={_("Global Settings")}
@@ -289,6 +317,23 @@ export default class PointWindow extends React.Component {
       url='/api/colormaps/'
       title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
     </ComboBox>;
+    const dataset_compare = (
+      <div key='compare_dataset'>
+        <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
+          <Panel
+            key='right_map'
+            id='right_map'
+            collapsible
+            defaultExpanded
+            header={_("Right Map")}
+            bsStyle='primary'
+          >
+
+          </Panel>
+        </div>
+      </div>);
+
+
     let observation_data = [];
     let observation_variable = <div></div>;
     if (this.props.point[0][2] !== undefined) {
@@ -378,6 +423,10 @@ export default class PointWindow extends React.Component {
       case TabEnum.TS:
         plot_query.type = "ts";
         plot_query.time = this.props.time;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+        }
+
         inputs = [global, dataset, time];
         break;
       case TabEnum.SOUND:
@@ -489,4 +538,8 @@ PointWindow.propTypes = {
   depth: PropTypes.number,
   init: PropTypes.object,
   action: PropTypes.func,
+  dataset_compare: PropTypes.bool,
+  swapViews: PropTypes.func,
+  showHelp: PropTypes.func,
+  dataset_1: PropTypes.object,
 };

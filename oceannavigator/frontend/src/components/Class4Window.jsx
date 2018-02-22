@@ -11,6 +11,10 @@ const i18n = require("../i18n.js");
 export default class Class4Window extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
+
     this.state = {
       forecast: "best",
       showmap: true,
@@ -29,16 +33,28 @@ export default class Class4Window extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
   }
 
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
   onLocalUpdate(key, value) {
-    var newState = {};
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    if (this._mounted) {
+     
+      let newState = {};
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } 
+      else {
+        for (let i = 0; i < key.length; ++i) {
+          newState[key[i]] = value[i];
+        }
       }
+      this.setState(newState);
     }
-    this.setState(newState);
   }
 
   render() {

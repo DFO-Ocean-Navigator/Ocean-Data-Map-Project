@@ -11,10 +11,14 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class LineWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: 1,
@@ -41,35 +45,52 @@ export default class LineWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
   }
 
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
   componentWillReceiveProps(props) {
-    if (props.depth !== this.props.depth) {
-      this.setState({
-        depth: props.depth,
-      });
-    }
-    if (props.scale !== this.props.scale) {
-      if (this.state.scale.indexOf("auto") !== -1) {
+
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
+
+      if (props.depth !== this.props.depth) {
         this.setState({
-          scale: props.scale + ",auto"
+          depth: props.depth,
         });
-      } else {
-        this.setState({
-          scale: props.scale,
-        });
+      }
+      if (props.scale !== this.props.scale) {
+        if (this.state.scale.indexOf("auto") !== -1) {
+          this.setState({
+            scale: props.scale + ",auto"
+          });
+        } else {
+          this.setState({
+            scale: props.scale,
+          });
+        }
       }
     }
   }
 
   onLocalUpdate(key, value) {
-    var newState = {};
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    if (this._mounted) {
+      
+      var newState = {};
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } 
+      else {
+        for (let i = 0; i < key.length; ++i) {
+          newState[key[i]] = value[i];
+        }
       }
+      
+      this.setState(newState);
     }
-    this.setState(newState);
   }
 
   onSelect(key) {
@@ -93,6 +114,8 @@ export default class LineWindow extends React.Component {
     _("Saved Image Size");
 
     const global = (<Panel 
+      key='global_settings'
+      id='global_settings'
       collapsible
       defaultExpanded
       header={_("Global Settings")}
@@ -102,6 +125,7 @@ export default class LineWindow extends React.Component {
         <Col xs={9}>
           <SelectBox
             id='dataset_compare'
+            key='dataset_compare'
             state={this.props.dataset_compare}
             onUpdate={this.props.onUpdate}
             title={_("Compare Datasets")}
@@ -110,6 +134,8 @@ export default class LineWindow extends React.Component {
         <Col xs={3}>
           <Button 
             bsStyle="link"
+            key='show_help'
+            id='show_help'
             onClick={this.props.showHelp}
           >
             {_("Help")}
@@ -117,6 +143,8 @@ export default class LineWindow extends React.Component {
         </Col>
       </Row>
       <Button
+        key='swap_views'
+        id='swap_views'
         bsStyle="default"
         block
         style={{display: this.props.dataset_compare ? "block" : "none"}}
@@ -161,6 +189,8 @@ export default class LineWindow extends React.Component {
     </Panel>);
 
     const transectSettings = <Panel
+      key='transect_settings'
+      id='transect_settings'
       collapsible
       defaultExpanded
       header={_("Transect Settings")}
@@ -207,9 +237,11 @@ export default class LineWindow extends React.Component {
     </Panel>;
     
     const dataset = <Panel 
+      key='left_map'
+      id='left_map'
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
+      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
       <DatasetSelector
@@ -244,9 +276,11 @@ export default class LineWindow extends React.Component {
     const compare_dataset = <div key='compare_dataset'>
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
         <Panel 
+          key='right_map'
+          id='right_map'
           collapsible
           defaultExpanded
-          header={_("Right View")}
+          header={_("Right Map")}
           bsStyle='primary'
         >
           <DatasetSelector
