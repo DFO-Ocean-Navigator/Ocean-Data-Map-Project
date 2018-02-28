@@ -9,12 +9,14 @@ import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
+import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import { t } from "i18next/dist/commonjs";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
 
 function formatLatLon(latitude, longitude) {
@@ -35,12 +37,12 @@ export default class OceanNavigator extends React.Component {
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
-      variable_scale: [-5,30], // Default variable range for left/primary view
+      variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
       time: -1,
-      starttime: -1, // Start time for left view
-      scale: "-5,30", // Variable scale for left/primary view
-      scale_1: "-5,30", // Variable scale for right view
+      starttime: -1, // Start time for Left Map
+      scale: "-5,30", // Variable scale for left/Main Map
+      scale_1: "-5,30", // Variable scale for Right Map
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
@@ -59,10 +61,18 @@ export default class OceanNavigator extends React.Component {
         variable: "votemper",
         depth: 0,
         time: -1,
-        variable_scale: [-5,30], // Default variable range for right view
+        variable_scale: [-5,30], // Default variable range for Right Map
       },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
+      options: {
+        // Interpolation
+        interpType: "gaussian",
+        interpRadius: 25,
+        interpNeighbours: 10,
+        // Map
+        mapBathymetryOpacity: 0.75,
+      },
     };
 
     this.mapComponent = null;
@@ -78,7 +88,7 @@ export default class OceanNavigator extends React.Component {
       } catch(err) {
         console.error(err);
       }
-      var url = window.location.origin;
+      let url = window.location.origin;
       if (window.location.path != undefined) {
         url += window.location.path;
       }
@@ -104,6 +114,7 @@ export default class OceanNavigator extends React.Component {
     this.action = this.action.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.generatePermLink = this.generatePermLink.bind(this);
+    this.updateOptions = this.updateOptions.bind(this);
   }
 
   // Opens/closes the sidebar state
@@ -124,7 +135,7 @@ export default class OceanNavigator extends React.Component {
   }
 
   showBugsModal(){
-      this.setState({showBugs: true,});
+    this.setState({showBugs: true,});
   }
 
   // Swap all view-related state variables
@@ -148,6 +159,16 @@ export default class OceanNavigator extends React.Component {
     if (this.mapComponent2) {
       this.mapComponent2.removeMapInteractions(mode);
     }
+  }
+
+  updateOptions(newOptions) {
+    let options = Object.assign({}, this.state.options);
+    options.interpType = newOptions.interpType;
+    options.interpRadius = newOptions.interpRadius;
+    options.interpNeighbours = newOptions.interpNeighbours;
+    options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity;
+
+    this.setState({options});
   }
 
   // Updates global app state
@@ -341,7 +362,7 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "permalink":
-        if (arg != null) {
+        if (arg !== null) {
           this.setState({
             subquery: arg,
             showPermalink: true,
@@ -352,6 +373,9 @@ export default class OceanNavigator extends React.Component {
             showPermalink: true,
           });
         }
+        break;
+      case "options":
+        this.setState({showOptions: true,});
         break;
       case "help":
         this.setState({ showHelp: true,});
@@ -411,11 +435,10 @@ export default class OceanNavigator extends React.Component {
     }
 
     return window.location.origin + window.location.pathname +
-      `?query=${encodeURIComponent(JSON.stringify(query))}`;
+      `?query=${encodeURIComponent(stringify(query))}`;
   }
 
   render() {
-    const action = this.action.bind(this);
     let modalContent = "";
     let modalTitle = "";
 
@@ -493,6 +516,7 @@ export default class OceanNavigator extends React.Component {
             showHelp={this.showCompareHelp}
             action={this.action}
             swapViews={this.swapViews}
+            options={this.state.options}
           />
         );
 
@@ -533,46 +557,47 @@ export default class OceanNavigator extends React.Component {
 
     _("Loading");
 
-
     const contentClassName = this.state.sidebarOpen ? "content open" : "content";
-
-    let map = <Map
-      ref={(m) => this.mapComponent = m}
-      state={this.state}
-      action={action}
-      updateState={this.updateState}
-      scale={this.state.scale}
-      bathymetryOpacity={0.5}
-    />;
-
+    
+    // Pick which map we need
+    let map = null;
     if (this.state.dataset_compare) {
+      
       const secondState = $.extend(true, {}, this.state);
       for (let i = 0; i < Object.keys(this.state.dataset_1).length; i++) {
         const keys = Object.keys(this.state.dataset_1);
         secondState[keys[i]] = this.state.dataset_1[keys[i]];
       }
-      const multimap = <div className='multimap'>
+      map = <div className='multimap'>
         <Map
           ref={(m) => this.mapComponent = m}
           state={this.state}
-          action={action}
+          action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
           scale={this.state.scale}
-          bathymetryOpacity={0.5}
+          options={this.state.options}
         />
         <Map
           ref={(m) => this.mapComponent2 = m}
           state={secondState}
-          action={action}
+          action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
           scale={this.state.scale_1}
-          bathymetryOpacity={0.5}
+          options={this.state.options}
         />
       </div>;
-
-      map = multimap;
+    } 
+    else {
+      map = <Map
+        ref={(m) => this.mapComponent = m}
+        state={this.state}
+        action={this.action}
+        updateState={this.updateState}
+        scale={this.state.scale}
+        options={this.state.options}
+      />;
     }
 
     return (
@@ -582,13 +607,16 @@ export default class OceanNavigator extends React.Component {
           swapViews={this.swapViews}
           changeHandler={this.updateState}
           showHelp={this.showCompareHelp}
+          options={this.state.options}
+          updateOptions={this.updateOptions}
         />
         <div className={contentClassName}>
           <MapToolbar
-            action={action}
+            action={this.action}
             plotEnabled={this.state.plotEnabled}
             dataset_compare={this.state.dataset_compare}
             toggleSidebar={this.toggleSidebar}
+            toggleOptionsSidebar={this.toggleOptionsSidebar}
           />
           <WarningBar
             showWarningInfo={this.showBugsModal}
@@ -611,7 +639,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={this.closeModal}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -622,7 +650,7 @@ export default class OceanNavigator extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="link"/> {_("Share Link")}</Modal.Title>
+            <Modal.Title><Icon icon="link" alt={_("Share Link")}/> {_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Permalink
@@ -632,7 +660,29 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showOptions}
+          onHide={() => this.setState({showOptions: false})}
+          dialogClassName='permalink-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="gear" alt={_("Options")}/> {_("Options")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Options 
+              options={this.state.options}
+              updateOptions={this.updateOptions}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showOptions: false})}
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -643,7 +693,7 @@ export default class OceanNavigator extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="question"/> {_("Help")}</Modal.Title>
+            <Modal.Title><Icon icon="question" alt={_("Help")}/> {_("Help")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Iframe 
@@ -655,7 +705,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={() => this.setState({showHelp: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -673,7 +723,7 @@ export default class OceanNavigator extends React.Component {
             
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideCompareHelp}><Icon icon="close"/> {_("Close")}</Button>
+            <Button onClick={this.hideCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -713,7 +763,7 @@ export default class OceanNavigator extends React.Component {
               <br/>
               <br/>
             </p>
-              Please note that the magnitude of the velocity is correct, it is only the direction of the volocity that is misrendered. 
+              Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered. 
               Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of 
               60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
               a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
@@ -728,7 +778,7 @@ export default class OceanNavigator extends React.Component {
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideBugsModal}><Icon icon="close"/> {_("Close")}</Button>
+            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 

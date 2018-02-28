@@ -9,7 +9,15 @@ div.MapInputs {
     // Reduce padding of Bootstrap panel
     .panel {
         margin-bottom: 10px; 
-    } 
+    }
+
+    .nav-tabs {
+        li {
+            a {
+                font-size: 110%;
+            }
+        }
+    }
 }
 
 // Move sidebar onto screen when open

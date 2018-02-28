@@ -18,10 +18,14 @@ import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class TimePicker extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       data: [],
@@ -39,131 +43,152 @@ export default class TimePicker extends React.Component {
     this.prevTime = this.prevTime.bind(this);
   }
 
+  componentDidMount() {
+    this._mounted = true;
+    this.populate(this.props);
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.url !== this.props.url || nextProps.min !== this.props.min || nextProps.max !== this.props.max) {
+      this.populate(nextProps);
+    }
+  }
+
   populate(props) {
     if ("url" in props && "" != props.url) {
       $.ajax({
         url: props.url,
         dataType: "json",
         cache: false,
+        
         success: function(data) {
-          var map = {};
-          var revmap = {};
-          var min = 0;
-          var max = data.length - 1;
-          if (props.hasOwnProperty("min")) {
-            min = parseInt(props.min) + 1;
-            if (min < 0) {
-              min += data.length;
+          //if (true) {
+            var map = {};
+            var revmap = {};
+            var min = 0;
+            var max = data.length - 1;
+            if (props.hasOwnProperty("min")) {
+              min = parseInt(props.min) + 1;
+              if (min < 0) {
+                min += data.length;
+              }
             }
-          }
-          if (props.hasOwnProperty("max")) {
-            max = parseInt(props.max) - 1;
-            if (max < 0) {
-              max += data.length;
+            if (props.hasOwnProperty("max")) {
+              max = parseInt(props.max) - 1;
+              if (max < 0) {
+                max += data.length;
+              }
             }
-          }
-          for (let d in data) {
-            var d1 = new Date(data[d].value);
-            var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
-            var d3 = d2;
-            if (this.props.quantum != "hour") {
-              d3 = new Date(Date.UTC(
-                                d1.getUTCFullYear(),
-                                d1.getUTCMonth(),
-                                d1.getUTCDate(),
-                                0, 0, 0, 0
-                            ));
+            for (let d in data) {
+              var d1 = new Date(data[d].value);
+              var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
+              var d3 = d2;
+              if (this.props.quantum != "hour") {
+                d3 = new Date(Date.UTC(
+                  d1.getUTCFullYear(),
+                  d1.getUTCMonth(),
+                  d1.getUTCDate(),
+                  0, 0, 0, 0
+                ));
+              }
+              map[data[d].id] = d2;
+              revmap[d3.toUTCString()] = data[d].id;
             }
-            map[data[d].id] = d2;
-            revmap[d3.toUTCString()] = data[d].id;
-          }
 
-          this.setState({
-            data: data,
-            map: map,
-            revmap: revmap,
-            min: min,
-            max: max,
-          }, function() {
-            switch(props.quantum) {
-              case "month":
-                $(this.refs.picker).MonthPicker({
-                  Button: false,
-                  MonthFormat: "MM yy",
-                  OnAfterMenuClose: this.pickerChange,
-                  MinMonth: new Date(
-                    map[min].getTime() + 
-                    map[min].getTimezoneOffset() * 60 * 1000
-                  ),
-                  MaxMonth: new Date(
-                    map[max].getTime() +
-                    map[max].getTimezoneOffset() * 60 * 1000
-                  ),
-                  i18n: {
-                    year: _("Year"),
-                    prevYear: _("Previous Year"),
-                    nextYear: _("Next Year"),
-                    next12Years: _("Jump Forward 12 Years"),
-                    prev12Years: _("Jump Back 12 Years"),
-                    nextLabel: _("Next"),
-                    prevLabel: _("Prev"),
-                    buttonText: _("Open Month Chooser"),
-                    jumpYears: _("Jump Years"),
-                    backTo: _("Back to"),
-                    months: [
-                      _("Jan."), _("Feb."), _("Mar."), _("Apr."), _("May"),
-                      _("June"), _("July"), _("Aug."), _("Sep."), _("Oct."),
-                      _("Nov."), _("Dec.")
-                    ]
-                  }
-                });
-                break;
-              case "day":
-                $(this.refs.picker).datepicker( {
-                  Button: false,
-                  dateFormat: "dd MM yy",
-                  onClose: this.pickerChange,
-                  minDate: new Date(map[min]),
-                  maxDate: new Date(map[max]),
-                });
+            this.setState({
+              data: data,
+              map: map,
+              revmap: revmap,
+              min: min,
+              max: max,
+            }, function() {
+              switch (props.quantum) {
+                case "month":
+                  $(this.refs.picker).MonthPicker({
+                    Button: false,
+                    MonthFormat: "MM yy",
+                    OnAfterMenuClose: this.pickerChange,
+                    MinMonth: new Date(
+                      map[min].getTime() +
+                      map[min].getTimezoneOffset() * 60 * 1000
+                    ),
+                    MaxMonth: new Date(
+                      map[max].getTime() +
+                      map[max].getTimezoneOffset() * 60 * 1000
+                    ),
+                    i18n: {
+                      year: _("Year"),
+                      prevYear: _("Previous Year"),
+                      nextYear: _("Next Year"),
+                      next12Years: _("Jump Forward 12 Years"),
+                      prev12Years: _("Jump Back 12 Years"),
+                      nextLabel: _("Next"),
+                      prevLabel: _("Prev"),
+                      buttonText: _("Open Month Chooser"),
+                      jumpYears: _("Jump Years"),
+                      backTo: _("Back to"),
+                      months: [
+                        _("Jan."), _("Feb."), _("Mar."), _("Apr."), _("May"),
+                        _("June"), _("July"), _("Aug."), _("Sep."), _("Oct."),
+                        _("Nov."), _("Dec.")
+                      ]
+                    }
+                  });
+                  break;
+                case "day":
+                  $(this.refs.picker).datepicker({
+                    Button: false,
+                    dateFormat: "dd MM yy",
+                    onClose: this.pickerChange,
+                    minDate: new Date(map[min]),
+                    maxDate: new Date(map[max]),
+                  });
 
-                $(this.refs.picker).datepicker(
-                  "option",
-                  "minDate",
-                  new Date(map[min])
-                );
-                $(this.refs.picker).datepicker(
-                  "option",
-                  "maxDate",
-                  new Date(map[max])
-                );
-                break;
-              case "hour":
-                $(this.refs.picker).datepicker({
-                  Button: false,
-                  dateFormat: "dd MM yy",
-                  onClose: this.pickerChange,
-                  minDate: new Date(map[min]),
-                  maxDate: new Date(map[max]),
-                });
-                $(this.refs.picker).datepicker(
-                  "option",
-                  "minDate",
-                  new Date(map[min])
-                );
-                $(this.refs.picker).datepicker(
-                  "option",
-                  "maxDate",
-                  new Date(map[max])
-                );
-                break;
-            }
-            this.pickerChange();
+                  $(this.refs.picker).datepicker(
+                    "option",
+                    "minDate",
+                    new Date(map[min])
+                  );
+                  $(this.refs.picker).datepicker(
+                    "option",
+                    "maxDate",
+                    new Date(map[max])
+                  );
+                  break;
+                case "hour":
+                  $(this.refs.picker).datepicker({
+                    Button: false,
+                    dateFormat: "dd MM yy",
+                    onClose: this.pickerChange,
+                    minDate: new Date(map[min]),
+                    maxDate: new Date(map[max]),
+                  });
+                  $(this.refs.picker).datepicker(
+                    "option",
+                    "minDate",
+                    new Date(map[min])
+                  );
+                  $(this.refs.picker).datepicker(
+                    "option",
+                    "maxDate",
+                    new Date(map[max])
+                  );
+                  break;
+              }
+              this.pickerChange();
 
-          }.bind(this));
+            }.bind(this));
+          //}
         }.bind(this),
+
         error: function(xhr, status, err) {
-          console.error(props.url, status, err.toString());
+          //if (this._mounted) {
+            console.error(props.url, status, err.toString());
+          //}
         }.bind(this)
       });
 
@@ -179,18 +204,6 @@ export default class TimePicker extends React.Component {
       }
   
       date = new Date(this.state.map[value]);
-    }
-  }
-
-  componentDidMount() {
-    this.populate(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url ||
-            nextProps.min !== this.props.min ||
-            nextProps.max !== this.props.max) {
-      this.populate(nextProps);
     }
   }
 

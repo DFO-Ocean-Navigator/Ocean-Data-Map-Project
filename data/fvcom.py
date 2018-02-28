@@ -176,7 +176,7 @@ class Fvcom(ncData.NetCDFData):
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1. / r ** 2
+            return 1. / r #** 2
 
         data = np.squeeze(var[:])
 

@@ -8,6 +8,9 @@ export default class DrifterSelector extends React.Component {
   constructor(props) {
     super(props);
 
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
+
     this.state = {
       imei: [],
       wmo: [],
@@ -22,6 +25,8 @@ export default class DrifterSelector extends React.Component {
   }
 
   componentDidMount() {
+    this._mounted = true;
+
     $.ajax({
       url: "/api/drifters/meta.json",
       dataType: "json",
@@ -58,6 +63,10 @@ export default class DrifterSelector extends React.Component {
         console.error("/api/drifters/meta.json", status, err.toString());
       },
     });
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   onUpdate(keys, values) {
@@ -115,9 +124,11 @@ export default class DrifterSelector extends React.Component {
         value: o
       };
     });
+
     _("IMEI");
     _("WMO");
     _("Deployment");
+    
     return (
       <div className='DrifterSelector'>
         <div className='inputs'>

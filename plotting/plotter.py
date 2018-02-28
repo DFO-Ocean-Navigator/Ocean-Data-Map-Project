@@ -100,7 +100,7 @@ class Plotter(metaclass=ABCMeta):
             self.compare = query.get("compare_to")
             self.compare['variables'] = self.compare['variable'].split(',')
 
-            if (self.compare['colormap_diff'] == 'default'):
+            if self.compare['colormap_diff'] == 'default':
                 self.compare['colormap_diff'] = 'anomaly'
 
             try:

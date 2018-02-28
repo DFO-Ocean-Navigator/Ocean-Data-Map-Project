@@ -3,6 +3,7 @@ import {Table} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
@@ -10,6 +11,9 @@ const FAIL_IMAGE = require("./fail.js");
 export default class StatsTable extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
 
     this.state = {
       data: [],
@@ -19,7 +23,12 @@ export default class StatsTable extends React.Component {
   }
 
   componentDidMount() {
+    this._mounted = true;
     this.populate(this.props);
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
   }
 
   componentWillReceiveProps(props) {
@@ -29,34 +38,43 @@ export default class StatsTable extends React.Component {
   }
 
   populate(props) {
+
     this.setState({
       loading: true,
       fail: false,
     });
+  
     const url = this.urlFromQuery(props.query);
     const query = this.query(props.query);
     const paramString = $.param({
-      query: JSON.stringify(query),
+      query: stringify(query),
     });
+  
     $.ajax({
       url: "/stats/",
       data: paramString,
       method: (paramString.length < 1536) ? "GET" : "POST",
       dataType: "json",
       cache: true,
+  
       success: function(data) {
-        this.setState({
-          data: data,
-          fail: false,
-          loading: false,
-        });
+        if (this._mounted) {
+          this.setState({
+            data: data,
+            fail: false,
+            loading: false,
+          });
+        }
       }.bind(this),
+  
       error: function(xhr, status, err) {
-        console.error(url, status, err.toString());
-        this.setState({
-          loading: false,
-          fail: true,
-        });
+        if (this._mounted) {
+          console.error(url, status, err.toString());
+          this.setState({
+            loading: false,
+            fail: true,
+          });
+        }
       }.bind(this)
     });
   }
@@ -81,7 +99,7 @@ export default class StatsTable extends React.Component {
       area: q.area,
     };
 
-    return "/stats/?query=" + encodeURIComponent(JSON.stringify(query));
+    return "/stats/?query=" + encodeURIComponent(stringify(query));
   }
 
   render() {

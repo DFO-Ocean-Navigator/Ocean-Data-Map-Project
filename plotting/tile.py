@@ -211,7 +211,10 @@ def plot(projection, x, y, z, args):
                 np.array([lat, lon]),
                 depth,
                 time,
-                v
+                v,
+                args.get('interp'),
+                args.get('radius'),
+                args.get('neighbours')
             ))
 
         variable_name = get_variable_name(dataset_name,
@@ -256,7 +259,10 @@ def plot(projection, x, y, z, args):
                 np.array([lat, lon]),
                 depth,
                 timestamp.month - 1,
-                v
+                v,
+                args.get('interp'),
+                args.get('radius'),
+                args.get('neighbours')
             )
             data = data - a
 

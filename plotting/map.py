@@ -31,6 +31,12 @@ class MapPlotter(plArea.AreaPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'
+        
+        # Init interpolation stuff
+        self.interp = query.get('interp')
+        self.radius = query.get('radius')
+        self.neighbours = query.get('neighbours')
+        
         super(MapPlotter, self).__init__(dataset_name, query, format)
 
     def odv_ascii(self):
@@ -193,6 +199,9 @@ class MapPlotter(plArea.AreaPlotter):
                         self.depth,
                         self.time,
                         v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
                         return_depth=True
                     )
                 else:
@@ -200,7 +209,10 @@ class MapPlotter(plArea.AreaPlotter):
                         np.array([self.latitude, self.longitude]),
                         self.depth,
                         self.time,
-                        v
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours
                     )
 
                 d = np.multiply(d, scale_factor)
@@ -240,7 +252,10 @@ class MapPlotter(plArea.AreaPlotter):
                         np.array([quiver_lat, quiver_lon]),
                         self.depth,
                         self.time,
-                        v
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
                     )
                     quiver_data.append(d)
                     # Get the quiver data on the same grid as the main
@@ -249,7 +264,10 @@ class MapPlotter(plArea.AreaPlotter):
                         np.array([self.latitude, self.longitude]),
                         self.depth,
                         self.time,
-                        v
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
                     )
                     quiver_data_fullgrid.append(d)
 
@@ -271,7 +289,10 @@ class MapPlotter(plArea.AreaPlotter):
                     np.array([self.latitude, self.longitude]),
                     self.depth,
                     self.time,
-                    self.contour['variable']
+                    self.contour['variable'],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
                 )
                 contour_unit = get_variable_unit(
                     self.dataset_name,
@@ -304,7 +325,10 @@ class MapPlotter(plArea.AreaPlotter):
                         np.array([self.latitude, self.longitude]),
                         self.compare['depth'],
                         self.compare['time'],
-                        v
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
                     )
                     data.append(d)
 
@@ -461,6 +485,8 @@ class MapPlotter(plArea.AreaPlotter):
 
             x, y = self.basemap(x, y)
             outRasterSRS.ImportFromProj4(self.basemap.proj4string)
+
+            print self.basemap.proj4string
 
             pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
             pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]

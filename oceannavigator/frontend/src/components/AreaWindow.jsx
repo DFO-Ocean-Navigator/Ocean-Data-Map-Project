@@ -15,10 +15,14 @@ import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
+const stringify = require("fast-stable-stringify");
 
 export default class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
+
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
     
     this.state = {
       selected: 1,
@@ -65,87 +69,98 @@ export default class AreaWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
   }
 
-  componentWillReceiveProps(props) {
-    if (props.depth !== this.props.depth) {
-      this.setState({
-        depth: props.depth,
-      });
-    }
+  componentDidMount() {
+    this._mounted = true;
+  }
 
-    if (props.scale !== this.props.scale) {
-      if (this.state.scale.indexOf("auto") !== -1) {
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
+  componentWillReceiveProps(props) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
+
+      if (props.depth !== this.props.depth) {
         this.setState({
-          scale: props.scale + ",auto"
-        });
-      } else {
-        this.setState({
-          scale: props.scale,
+          depth: props.depth,
         });
       }
-    }
 
-    // Update time indices
-    if (props.dataset_0.time !== this.props.dataset_0.time) {
-      this.setState(
-        {
-          output_starttime: props.dataset_0.time,
-          output_endtime: props.dataset_0.time
+      if (props.scale !== this.props.scale) {
+        if (this.state.scale.indexOf("auto") !== -1) {
+          this.setState({
+            scale: props.scale + ",auto"
+          });
+        } else {
+          this.setState({
+            scale: props.scale,
+          });
         }
-      );
-    }
+      }
+
+      // Update time indices
+      if (props.dataset_0.time !== this.props.dataset_0.time) {
+        this.setState(
+          {
+            output_starttime: props.dataset_0.time,
+            output_endtime: props.dataset_0.time
+          }
+        );
+      }
+    } 
   }
 
   onLocalUpdate(key, value) {
+    if (this._mounted) {
 
-    // Passthrough to capture selected variables from DatasetSelector for StatsTable
-    if (key === "dataset_0") {
-      if (this.state.selected === 2 && value.hasOwnProperty("variable")) {
-        this.setState({variable: value.variable});
+      // Passthrough to capture selected variables from DatasetSelector for StatsTable
+      if (key === "dataset_0") {
+        if (this.state.selected === 2 && value.hasOwnProperty("variable")) {
+          this.setState({
+            variable: value.variable
+          });
+        }
+        // TODO: prevent the navigator trying to get tiles for multiple variables...only one
+        // variable should be passed up.
+        this.props.onUpdate(key, value);
+        return;
       }
-      // TODO: prevent the navigator trying to get tiles for multiple variables...only one
-      // variable should be passed up.
-      this.props.onUpdate(key, value);
-      return;
-    }
 
-    var newState = {};
-    if (typeof(key) === "string") {
-      newState[key] = value;
-    } else {
-      for (let i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+      var newState = {};
+      if (typeof(key) === "string") {
+        newState[key] = value;
+      } else {
+        for (let i = 0; i < key.length; i++) {
+          newState[key[i]] = value[i];
+        }
+      }
+      this.setState(newState);
+
+      var parentKeys = [];
+      var parentValues = [];
+
+      if (newState.hasOwnProperty("variable_scale")) {
+        if (typeof(this.state.variable) === "string" ||
+          this.state.variable.length === 1) {
+          parentKeys.push("variable_scale");
+          parentValues.push(newState.variable_scale);
+        }
+      }
+
+      if (newState.hasOwnProperty("variable")) {
+        if (typeof(this.state.variable) === "string") {
+          parentKeys.push("variable");
+          parentValues.push(newState.variable);
+        } else if (this.state.variable.length === 1) {
+          parentKeys.push("variable");
+          parentValues.push(newState.variable[0]);
+        }
+      }
+
+      if (parentKeys.length > 0) {
+        this.props.onUpdate(parentKeys, parentValues);
       }
     }
-    this.setState(newState);
-
-    var parentKeys = [];
-    var parentValues = [];
-
-    if (newState.hasOwnProperty("variable_scale")) {
-      if (typeof(this.state.variable) === "string" ||
-        this.state.variable.length === 1) {
-        parentKeys.push("variable_scale");
-        parentValues.push(newState.variable_scale);
-      }
-    }
-
-    if (newState.hasOwnProperty("variable")) {
-      if (typeof(this.state.variable) === "string") {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable);
-      } else if (this.state.variable.length === 1) {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable[0]);
-      }
-    }
-
-    if (parentKeys.length > 0) {
-      this.props.onUpdate(parentKeys, parentValues);
-    }
-  }
-
-  test(e) {
-    console.warn(e.target.value);
   }
 
   saveData(key) {
@@ -198,11 +213,13 @@ export default class AreaWindow extends React.Component {
       defaultExpanded
       header={_("Area Settings")}
       bsStyle='primary'
+      key='map_settings'
     >
       <Row>
         <Col xs={9}>
           <SelectBox
             id='dataset_compare'
+            key='dataset_compare'
             state={this.props.dataset_compare}
             onUpdate={this.props.onUpdate}
             title={_("Compare Datasets")}
@@ -211,6 +228,7 @@ export default class AreaWindow extends React.Component {
         <Col xs={3}>
           <Button 
             bsStyle="link"
+            key='show_help'
             onClick={this.props.showHelp}
           >
             {_("Help")}
@@ -219,6 +237,7 @@ export default class AreaWindow extends React.Component {
       </Row>
       <Button
         bsStyle="default"
+        key='swap_views'
         block
         style={{display: this.props.dataset_compare ? "block" : "none"}}
         onClick={this.props.swapViews}
@@ -305,6 +324,7 @@ export default class AreaWindow extends React.Component {
     </Panel>);
 
     const subset = (<Panel
+      key='subset'
       collapsible
       defaultExpanded
       header={_("Subset")}
@@ -313,6 +333,7 @@ export default class AreaWindow extends React.Component {
       <form>
         <ComboBox
           id='variable'
+          key='variable'
           multiple={true}
           state={this.state.output_variables}
           def={"defaults.dataset"}
@@ -324,6 +345,7 @@ export default class AreaWindow extends React.Component {
 
         <SelectBox
           id='time_range'
+          key='time_range'
           state={this.state.output_timerange}
           onUpdate={(key, value) => {this.setState({output_timerange: value,});}}
           title={_("Select Time Range")}
@@ -331,6 +353,7 @@ export default class AreaWindow extends React.Component {
 
         <TimePicker
           id='starttime'
+          key='starttime'
           state={this.state.output_starttime}
           def=''
           quantum={this.props.dataset_0.dataset_quantum}
@@ -347,6 +370,7 @@ export default class AreaWindow extends React.Component {
         <div style={{display: this.state.output_timerange ? "block" : "none",}}>
           <TimePicker
             id='time'
+            key='time'
             state={this.state.output_endtime}
             def=''
             quantum={this.props.dataset_0.dataset_quantum}
@@ -365,13 +389,21 @@ export default class AreaWindow extends React.Component {
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
             <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
             <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            {/*
+            <option value="NETCDF3_NC" disabled={
+              this.props.dataset_0.dataset.indexOf("giops") === -1 // Disable if not a giops dataset
+            }>
+              {_("NetCDF-3 NC")}
+            </option>
+            */}
             <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>
         </FormGroup>
         
         <SelectBox 
-          id='zip' 
+          id='zip'
+          key='zip'
           state={this.state.zip} 
           onUpdate={this.onLocalUpdate} 
           title={_("Compress as *.zip")}
@@ -379,6 +411,8 @@ export default class AreaWindow extends React.Component {
 
         <Button 
           bsStyle="default" 
+          key='save'
+          id='save'
           onClick={this.saveData}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
@@ -387,9 +421,11 @@ export default class AreaWindow extends React.Component {
     );
 
     const dataset = (<Panel
+      key='left_map'
+      id='left_map'
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left View (Anchor)") : _("Primary View")}
+      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
       <DatasetSelector 
@@ -428,9 +464,11 @@ export default class AreaWindow extends React.Component {
     const compare_dataset = <div key='compare_dataset'>
       <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
         <Panel
+          key='right_map'
+          id='right_map'
           collapsible
           defaultExpanded
-          header={_("Right View")}
+          header={_("Right Map")}
           bsStyle='primary'
         >
           <DatasetSelector
@@ -492,6 +530,10 @@ export default class AreaWindow extends React.Component {
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
+        plot_query.interp = this.props.options.interpType;
+        plot_query.radius = this.props.options.interpRadius;
+        plot_query.neighbours = this.props.options.interpNeighbours;
+
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
@@ -575,4 +617,5 @@ AreaWindow.propTypes = {
   showHelp: PropTypes.func,
   swapViews: PropTypes.func,
   scale_1: PropTypes.string,
+  options: PropTypes.object,
 };
