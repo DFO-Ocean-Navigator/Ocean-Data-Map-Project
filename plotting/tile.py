@@ -155,7 +155,9 @@ def scale(args):
     bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation='vertical',
                        format=formatter)
     bar.set_label("%s (%s)" % (variable_name.title(),
-                               utils.mathtext(variable_unit)))
+                               utils.mathtext(variable_unit)), fontsize=12)
+    # Increase tick font size
+    bar.ax.tick_params(labelsize=12)
 
     buf = BytesIO()
     try:
@@ -247,6 +249,7 @@ def plot(projection, x, y, z, args):
         if not anom:
             cmap = colormap.colormaps.get('speed')
 
+    
     if anom:
         with open_dataset(get_dataset_climatology(dataset_name)) as dataset:
             a = dataset.get_area(
@@ -273,10 +276,12 @@ def plot(projection, x, y, z, args):
 
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
-    img = sm.to_rgba(np.squeeze(data))
 
+    img = sm.to_rgba(np.squeeze(data))
+    
     im = Image.fromarray((img * 255.0).astype(np.uint8))
     im.save(fname, format='png', optimize=True)
+    
     with open(fname, 'r') as f:
         buf = f.read()
         os.remove(fname)
@@ -333,7 +338,7 @@ def topo(projection, x, y, z, args):
     os.close(f)
 
     im.save(fname, format='png', optimize=True)
-    with open(fname, 'r') as f:
+    with open(fname, 'rb') as f:
         buf = f.read()
         os.remove(fname)
 

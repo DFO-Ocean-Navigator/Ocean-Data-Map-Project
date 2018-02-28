@@ -403,7 +403,7 @@ def _cache_and_send_img(img, f):
     if not os.path.isdir(p):
         os.makedirs(p)
 
-    with open(f, 'w') as out:
+    with open(f, 'wb') as out:
         out.write(img)
 
     resp = Response(img, status=200, mimetype='image/png')
