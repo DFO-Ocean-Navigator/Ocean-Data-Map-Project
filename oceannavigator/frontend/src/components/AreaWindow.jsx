@@ -389,11 +389,13 @@ export default class AreaWindow extends React.Component {
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
             <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
             <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            {/*
             <option value="NETCDF3_NC" disabled={
               this.props.dataset_0.dataset.indexOf("giops") === -1 // Disable if not a giops dataset
             }>
               {_("NetCDF-3 NC")}
             </option>
+            */}
             <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>

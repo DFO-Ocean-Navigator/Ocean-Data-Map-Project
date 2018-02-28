@@ -53,20 +53,20 @@ export default class TimePicker extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (stringify(this.props) !== stringify(nextProps)) {
+    if (nextProps.url !== this.props.url || nextProps.min !== this.props.min || nextProps.max !== this.props.max) {
       this.populate(nextProps);
     }
   }
 
   populate(props) {
-    if ("url" in props && "" !== props.url) {
+    if ("url" in props && "" != props.url) {
       $.ajax({
         url: props.url,
         dataType: "json",
         cache: false,
         
         success: function(data) {
-          if (this._mounted) {
+          //if (true) {
             var map = {};
             var revmap = {};
             var min = 0;
@@ -182,13 +182,13 @@ export default class TimePicker extends React.Component {
               this.pickerChange();
 
             }.bind(this));
-          }
+          //}
         }.bind(this),
 
         error: function(xhr, status, err) {
-          if (this._mounted) {
+          //if (this._mounted) {
             console.error(props.url, status, err.toString());
-          }
+          //}
         }.bind(this)
       });
 
