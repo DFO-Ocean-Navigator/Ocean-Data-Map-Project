@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 import utils
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
 import point
-import matplotlib.gridspec as gridspec
 from flask_babel import gettext
 from data import open_dataset
 
@@ -102,11 +102,13 @@ class ProfilePlotter(point.PointPlotter):
                 self.data[:, idx, :].transpose(),
                 self.depths[:, idx, :].transpose()
             )
-            plt.gca().xaxis.set_label_position('top')
-            plt.gca().xaxis.set_ticks_position('top')
-            plt.gca().invert_yaxis()
-            plt.gca().grid(True)
-            plt.gca().set_xlabel("%s (%s)" %
+
+            current_axis = plt.gca()
+            current_axis.xaxis.set_label_position('top')
+            current_axis.xaxis.set_ticks_position('top')
+            current_axis.invert_yaxis()
+            current_axis.grid(True)
+            current_axis.set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
             

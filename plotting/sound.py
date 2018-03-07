@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
+import matplotlib.gridspec as gridspec
 import numpy as np
 import seawater
 import pint
 import ts
+import utils
 from flask_babel import gettext
-
 
 class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
 
@@ -14,11 +15,29 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         super(
             ts.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                           format)
-        self.size = '4x8'
+        #self.size = '4x8'
 
     def plot(self):
+        # Create base figure
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
+        # Setup figure layout
+        width = 2 if self.showmap else 1
+        # Scale TS Diagram to be double the size of location map
+        width_ratios = [1, 3] if self.showmap else None
+
+        # Create layout helper
+        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, 0])
+            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
+                                        [x[1] for x in self.points]])) # Longitudes
+
+
+        # Plot Sound Speed profile
+        plt.subplot(gs[:, 1 if self.showmap else 0])
         ax = plt.gca()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
