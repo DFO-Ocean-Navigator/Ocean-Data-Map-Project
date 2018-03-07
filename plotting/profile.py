@@ -75,7 +75,7 @@ class ProfilePlotter(point.PointPlotter):
         if self.showmap:
             width += 1
             # Horizontally scale the actual plots by 2x the size of
-            # larger than the
+            # the location map
             width_ratios = [1]
             [width_ratios.append(2) for w in range(0, width - 1)]
         else:
@@ -89,8 +89,8 @@ class ProfilePlotter(point.PointPlotter):
         if self.showmap:
             plt.subplot(gs[0, subplot])
             subplot += 1
-            utils.point_plot(np.array([ [x[0] for x in self.points],
-                                        [x[1] for x in self.points]]))
+            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
+                                        [x[1] for x in self.points]])) # Longitudes
 
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
