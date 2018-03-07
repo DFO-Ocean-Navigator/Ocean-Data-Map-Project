@@ -4,9 +4,9 @@ import utils
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
 import point
+import matplotlib.gridspec as gridspec
 from flask_babel import gettext
 from data import open_dataset
-
 
 class ProfilePlotter(point.PointPlotter):
 
@@ -67,24 +67,59 @@ class ProfilePlotter(point.PointPlotter):
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def plot(self):
-        fig, ax = self.setup_subplots(len(self.variables))
+        # Create base figure
+        fig = plt.figure(figsize = self.figuresize(), dpi = self.dpi)
 
-        for idx in range(0, len(self.variables)):
-            ax[idx].plot(
+        # Setup figure layout
+        width = len(self.variables)
+        if self.showmap:
+            width += 1
+            # Horizontally scale the actual plots by 2x the size of
+            # larger than the
+            width_ratios = [1]
+            [width_ratios.append(2) for w in range(0, width - 1)]
+        else:
+            width_ratios = None
+
+        # Create layout helper
+        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+        subplot = 0
+
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, subplot])
+            subplot += 1
+            utils.point_plot(np.array([ [x[0] for x in self.points],
+                                        [x[1] for x in self.points]]))
+
+        # Create a subplot for each variable selected
+        # Each subplot has all points plotted
+        for idx, v in enumerate(self.variables):
+            plt.subplot(gs[:, subplot])
+            subplot += 1
+
+            plt.plot(
                 self.data[:, idx, :].transpose(),
                 self.depths[:, idx, :].transpose()
             )
-            ax[idx].xaxis.set_label_position('top')
-            ax[idx].xaxis.set_ticks_position('top')
-            ax[idx].set_xlabel("%s (%s)" %
+            plt.gca().xaxis.set_label_position('top')
+            plt.gca().xaxis.set_ticks_position('top')
+            plt.gca().invert_yaxis()
+            plt.gca().grid(True)
+            plt.gca().set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
+            
             if self.compare:
-                xlim = np.abs(ax[idx].get_xlim()).max()
-                ax[idx].set_xlim([-xlim, xlim])
+                xlim = np.abs(plt.gca().get_xlim()).max()
+                plt.gca().set_xlim([-xlim, xlim])
 
-        ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (m)"), fontsize=14)
+        # Put y-axis label on left-most graph
+        if self.showmap:
+            plt.subplot(gs[:, 1])
+        else:
+            plt.subplot(gs[:, 0])
+        plt.gca().set_ylabel(gettext("Depth (m)"), fontsize=14)
 
         self.plot_legend(fig, self.names)
         

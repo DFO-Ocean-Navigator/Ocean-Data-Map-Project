@@ -125,6 +125,7 @@ export default class PlotImage extends React.Component {
       case "sound":
         query.variable = q.variable;
         query.station = q.point;
+        query.showmap = q.showmap;
         query.time = q.time;
         if (q.compare_to) {
           query.compare_to = {

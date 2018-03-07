@@ -1,6 +1,7 @@
 import React from "react";
 import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
+import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
@@ -32,6 +33,7 @@ export default class PointWindow extends React.Component {
       selected: TabEnum.CTD,
       scale: props.scale + ",auto",
       depth: props.depth,
+      showmap: true,
       colormap: "default",
       starttime: Math.max(props.time - 24, 0),
       variables: [],
@@ -199,6 +201,14 @@ export default class PointWindow extends React.Component {
       header={_("Global Settings")}
       bsStyle='primary'
     >
+      <SelectBox
+        key='showmap'
+        id='showmap'
+        state={this.state.showmap}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Location")}>{_("showmap_help")}
+      </SelectBox>
+      
       <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
         <LocationInput
           key='point'
@@ -383,6 +393,7 @@ export default class PointWindow extends React.Component {
       dataset: this.props.dataset,
       quantum: this.props.quantum,
       point: this.props.point,
+      showmap: this.state.showmap,
       names: this.props.names,
       size: this.state.size,
       dpi: this.state.dpi,
