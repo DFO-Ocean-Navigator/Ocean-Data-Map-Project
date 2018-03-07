@@ -162,6 +162,7 @@ class HovmollerPlotter(line.LinePlotter):
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         if self.compare:
+            # Don't show a difference plot if variables are different
             if self.compare['variables'][0] == self.variables[0]:
                 gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
             else:
