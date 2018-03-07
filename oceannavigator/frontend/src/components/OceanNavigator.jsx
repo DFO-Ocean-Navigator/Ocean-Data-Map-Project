@@ -40,7 +40,7 @@ export default class OceanNavigator extends React.Component {
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
       time: -1,
-      starttime: -1, // Start time for Left Map
+      starttime: -2, // Start time for Left Map
       scale: "-5,30", // Variable scale for left/Main Map
       scale_1: "-5,30", // Variable scale for Right Map
       plotEnabled: false, // "Plot" button in MapToolbar
@@ -61,6 +61,7 @@ export default class OceanNavigator extends React.Component {
         variable: "votemper",
         depth: 0,
         time: -1,
+        starttime: -2,  // Start time for Right Map
         variable_scale: [-5,30], // Default variable range for Right Map
       },
       syncRanges: false, // Clones the variable range from one view to the other when enabled

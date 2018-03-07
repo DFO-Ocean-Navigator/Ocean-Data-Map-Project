@@ -6,6 +6,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import colormap
 import basemap
+import plotter
 import overlays
 import utils
 import gdal
@@ -22,12 +23,11 @@ from matplotlib.patches import PathPatch
 from textwrap import wrap
 from oceannavigator.misc import list_areas
 import pyresample.utils
-import area
 from geopy.distance import VincentyDistance
 from data import open_dataset
 
 
-class MapPlotter(area.AreaPlotter):
+class MapPlotter(plotter.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'
@@ -486,8 +486,6 @@ class MapPlotter(area.AreaPlotter):
 
             x, y = self.basemap(x, y)
             outRasterSRS.ImportFromProj4(self.basemap.proj4string)
-
-            print self.basemap.proj4string
 
             pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
             pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]

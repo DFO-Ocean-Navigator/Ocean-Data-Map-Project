@@ -162,7 +162,10 @@ class HovmollerPlotter(line.LinePlotter):
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         if self.compare:
-            gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+            if self.compare['variables'][0] == self.variables[0]:
+                gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+            else:
+                gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
         else:
             gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -238,7 +241,23 @@ class HovmollerPlotter(line.LinePlotter):
                 gettext(self.compare['variable_name']) + gettext(get_depth_label(self.compare['depth'], self.compare['depth_unit']))
             )
 
-            # TODO: Add difference plot
+            # Difference plot
+            if self.compare['variables'][0] == self.variables[0]:
+                
+                data_difference = self.data - self.compare['data']
+                vmin = np.amin(data_difference)
+                vmax = np.amax(data_difference)
+
+                self._hovmoller_plot(
+                    gs, [2, 1], [2, 0],
+                    gettext(self.compare['variable_name']),
+                    vmin, vmax,
+                    data_difference,
+                    self.compare['times'],
+                    colormap.find_colormap("anomaly"),
+                    self.compare['variable_unit'],
+                    gettext(self.compare['variable_name']) + gettext(" Difference") + gettext(get_depth_label(self.compare['depth'], self.compare['depth_unit']))
+                )
 
         # Image title
         fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
@@ -247,7 +266,7 @@ class HovmollerPlotter(line.LinePlotter):
 
         # Subplot padding
         fig.tight_layout(pad=0, w_pad=4, h_pad=2)
-        fig.subplots_adjust(top=0.85)
+        fig.subplots_adjust(top = 0.9 if self.compare else 0.85)
 
         return super(HovmollerPlotter, self).plot(fig)
 
