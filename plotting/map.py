@@ -528,6 +528,10 @@ class MapPlotter(area.AreaPlotter):
 
         if len(self.quiver_data) == 2:
             qx, qy = self.quiver_data
+            qx, qy ,x ,y = self.basemap.rotate_vector(qx, qy,
+                                                      self.quiver_longitude,
+                                                      self.quiver_latitude,
+                                                      returnxy=True)
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
@@ -543,12 +547,11 @@ class MapPlotter(area.AreaPlotter):
                     qcmap = colormap.colormaps.get('speed')
                 else:
                     qcmap = colormap.colormaps.get(self.quiver['colormap'])
-
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
                     quiver_mag,
-                    latlon=True, width=0.0035,
+                    width=0.0035,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',
@@ -556,9 +559,9 @@ class MapPlotter(area.AreaPlotter):
                 )
             else:
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
-                    latlon=True, width=0.0025,
+                    width=0.0025,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',
