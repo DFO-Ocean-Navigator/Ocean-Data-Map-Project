@@ -205,7 +205,7 @@ export default class OceanNavigator extends React.Component {
 
     }
     else {
-      for (let i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; ++i) {
         switch(key[i]) {
           case "time":
             if (value[i] !== undefined) {

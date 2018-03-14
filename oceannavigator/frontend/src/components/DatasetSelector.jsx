@@ -35,7 +35,7 @@ export default class DatasetSelector extends React.Component {
       newState[key] = value;
     } 
     else {
-      for (let i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; ++i) {
         newState[key[i]] = value[i];
       }
     }
