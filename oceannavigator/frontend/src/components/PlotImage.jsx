@@ -26,13 +26,13 @@ export default class PlotImage extends React.Component {
       errorMessage: null,
       loading: true,
       url: LOADING_IMAGE,
+      showImagelink: false,
     };
     
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
-    this.closeImageLink = this.closeImageLink.bind(this);
-    this.openImageLink = this.openImageLink.bind(this);
+    this.toggleImageLink = this.toggleImageLink.bind(this);
   }
 
   componentDidMount() {
@@ -50,20 +50,12 @@ export default class PlotImage extends React.Component {
     this._mounted = false;
   }
 
-  openImageLink() {
+  toggleImageLink() {
     const newState = Object.assign({}, this.state);
-    newState.showImagelink = true;
+    newState.showImagelink = !this.state.showImagelink;
 
     this.setState(newState);
   }
-
-  closeImageLink() {
-    const newState = Object.assign({}, this.state);
-    newState.showImagelink = false;
-
-    this.setState(newState);
-  }
-
 
   loadImage(query) {
     const paramString = $.param({
@@ -102,6 +94,7 @@ export default class PlotImage extends React.Component {
             
       promise.fail(function(xhr) {
         if (this._mounted) {
+          // Get our custom error message
           const message = JSON.parse(xhr.responseText).message;
           
           this.setState({
@@ -283,7 +276,7 @@ export default class PlotImage extends React.Component {
         this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
-        this.openImageLink();
+        this.toggleImageLink();
         break;
     }
   }
@@ -382,7 +375,7 @@ export default class PlotImage extends React.Component {
 
         <Modal
           show={this.state.showImagelink}
-          onHide={this.closeImageLink}
+          onHide={this.toggleImageLink}
           dialogClassName='permalink-modal'
           onEntered={imagelinkModalEntered}>
           <Modal.Header closeButton>
@@ -409,7 +402,7 @@ export default class PlotImage extends React.Component {
               }.bind(this)
               }><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
-              onClick={this.closeImageLink}
+              onClick={this.toggleImageLink}
             ><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
