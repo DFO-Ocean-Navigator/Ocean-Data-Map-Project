@@ -5,6 +5,7 @@ import utils
 from textwrap import wrap
 import pint
 from oceannavigator.util import get_dataset_url
+from oceannavigator.errors import ClientError
 import re
 import dateutil.parser
 import pytz
@@ -81,10 +82,12 @@ class ObservationPlotter(point.PointPlotter):
                 timestamp = ts[time]
                 timestamps.append(timestamp)
 
-            self.load_misc(dataset, self.variables)
+            try:
+                self.load_misc(dataset, self.variables)
+            except IndexError:
+                raise ClientError(gettext("Cannot plot selected variable(s) because they are not found in variable list."))
 
-            point_data, self.depths = self.get_data(
-                dataset, self.variables, time)
+            point_data, self.depths = self.get_data(dataset, self.variables, time)
             point_data = np.ma.array(point_data)
 
             point_data = self.apply_scale_factors(point_data)
