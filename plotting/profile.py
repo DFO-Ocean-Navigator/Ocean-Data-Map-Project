@@ -4,6 +4,7 @@ import numpy as np
 import utils
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
+from oceannavigator.errors import ClientError
 import point
 from flask_babel import gettext
 from data import open_dataset
@@ -13,6 +14,31 @@ class ProfilePlotter(point.PointPlotter):
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"
         super(ProfilePlotter, self).__init__(dataset_name, query, format)
+
+    def load_data(self):
+        with open_dataset(get_dataset_url(self.dataset_name)) as d:
+            if self.time < 0:
+                self.time += len(d.timestamps)
+            time = np.clip(self.time, 0, len(d.timestamps) - 1)
+            timestamp = d.timestamps[time]
+
+            try:
+                self.load_misc(d, self.variables)
+            except IndexError:
+                raise ClientError(gettext("Cannot plot selected variable(s) because they are not found in variable list."))
+
+            point_data, point_depths = self.get_data(d, self.variables, time)
+            point_data = self.apply_scale_factors(point_data)
+
+            self.variable_units, point_data = self.kelvin_to_celsius(
+                self.variable_units,
+                point_data
+            )
+
+        self.data = self.subtract_other(point_data)
+        self.depths = point_depths
+        self.timestamp = timestamp
+
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.1f" % x)
@@ -134,23 +160,3 @@ class ProfilePlotter(point.PointPlotter):
         fig.subplots_adjust(top=(0.8))
 
         return super(ProfilePlotter, self).plot(fig)
-
-    def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as d:
-            if self.time < 0:
-                self.time += len(d.timestamps)
-            time = np.clip(self.time, 0, len(d.timestamps) - 1)
-            timestamp = d.timestamps[time]
-
-            self.load_misc(d, self.variables)
-            point_data, point_depths = self.get_data(d, self.variables, time)
-            point_data = self.apply_scale_factors(point_data)
-
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
-
-        self.data = self.subtract_other(point_data)
-        self.depths = point_depths
-        self.timestamp = timestamp

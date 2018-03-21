@@ -3,7 +3,8 @@ import {Button,
   DropdownButton,
   ButtonToolbar,
   MenuItem,
-  Modal} from "react-bootstrap";
+  Modal,
+  Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
@@ -22,6 +23,7 @@ export default class PlotImage extends React.Component {
     this.state = {
       showPermalink: false,
       fail: false,
+      errorMessage: null,
       loading: true,
       url: LOADING_IMAGE,
     };
@@ -76,6 +78,7 @@ export default class PlotImage extends React.Component {
         fail: false, 
         url: LOADING_IMAGE,
         paramString: paramString,
+        errorMessage: null,
       });
 
       const promise = $.ajax({
@@ -86,24 +89,27 @@ export default class PlotImage extends React.Component {
         method: (paramString.length < 1536) ? "GET" : "POST",
       }).promise();
 
-      promise.done(function(d) {
+      promise.done(function(data) {
         if (this._mounted) {
           this.setState({
             loading: false,
             fail: false,
-            url: d,
+            url: data,
+            errorMessage: null,
           });
         }
       }.bind(this));
             
-      promise.fail(function(d) {
+      promise.fail(function(xhr) {
         if (this._mounted) {
+          const message = JSON.parse(xhr.responseText).message;
+          
           this.setState({
             url: FAIL_IMAGE,
             loading: false,
             fail: true,
+            errorMessage: message,
           });
-          console.error("AJAX Error in PlotImage.jsx: ", d);
         }
       }.bind(this));
     }
@@ -116,6 +122,7 @@ export default class PlotImage extends React.Component {
       quantum: q.quantum,
       names: q.names,
     };
+
     switch(q.type) {
       case "profile":
       case "ts":
@@ -288,6 +295,12 @@ export default class PlotImage extends React.Component {
       this.imagelinkbox.select();
     }.bind(this);
 
+    // Show a nice error if we need to
+    let errorAlert = null;
+    if (this.state.errorMessage !== null) {
+      errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
+    }
+
     return (
       <div className='PlotImage'>
 
@@ -295,6 +308,8 @@ export default class PlotImage extends React.Component {
         <div className="RenderedImage">
           <img src={this.state.url} />
         </div>
+
+        {errorAlert}
 
         <ButtonToolbar>
           <DropdownButton
