@@ -328,18 +328,25 @@ def vars_query():
                 'u_wind': 'u_wind,v_wind',
                 'u': 'u,v',
                 'ua': 'ua,va',
-                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground'
+                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
+                'east_vel': 'east_vel,north_vel',
             }
 
             if 'vectors' in request.args or 'vectors_only' in request.args:
-                rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
-
+                rxp = r"(?i)( x | y |zonal |meridional |northward |eastward | east | north)"
                 for key, value in VECTOR_MAP.iteritems():
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key])
+                        if re.search(r"(?i) x | y", n):
+                            tail=" (x/y)"
+                        elif re.search(r"(?i)( north | east | northward | eastward )", n):
+                            tail=" (east/north)"
+                        else:
+                            tail=""
+                        print(tail)
                         data.append({
                             'id': value,
-                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                            'value': '{} {}'.format(re.sub(r" +", " ", re.sub(rxp, " ", n)), tail),
                             'scale': [0, get_variable_scale(
                                 dataset,
                                 ds.variables[key]
