@@ -343,7 +343,6 @@ def vars_query():
                             tail=" (east/north)"
                         else:
                             tail=""
-                        print(tail)
                         data.append({
                             'id': value,
                             'value': '{} {}'.format(re.sub(r" +", " ", re.sub(rxp, " ", n)), tail),
