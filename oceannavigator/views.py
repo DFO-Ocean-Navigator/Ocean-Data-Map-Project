@@ -333,24 +333,19 @@ def vars_query():
             }
 
             if 'vectors' in request.args or 'vectors_only' in request.args:
-                rxp = r"(?i)( x | y |zonal |meridional |northward |eastward | east | north)"
+                rxp = r"(?i)(zonal |meridional |northward |eastward | east | north)"
                 for key, value in VECTOR_MAP.iteritems():
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key])
-                        if re.search(r"(?i) x | y", n):
-                            tail=" (x/y)"
-                        elif re.search(r"(?i)( north | east | northward | eastward )", n):
-                            tail=" (east/north)"
-                        else:
-                            tail=""
-                        data.append({
-                            'id': value,
-                            'value': '{} {}'.format(re.sub(r" +", " ", re.sub(rxp, " ", n)), tail),
-                            'scale': [0, get_variable_scale(
-                                dataset,
-                                ds.variables[key]
-                            )[1]]
-                        })
+                        if re.search(rxp, n): 
+                            data.append({
+                                'id': value,
+                                'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                                'scale': [0, get_variable_scale(
+                                          dataset,
+                                          ds.variables[key]
+                                           )[1]]
+                            })
 
     data = sorted(data, key=lambda k: k['value'])
     js = json.dumps(data)
