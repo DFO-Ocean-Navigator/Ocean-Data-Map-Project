@@ -3,8 +3,8 @@ from io import StringIO
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
-import plotting.utils
-import plotting.colormap
+import plotting.utils as utils
+import plotting.colormap as colormap
 import re
 import pint
 from oceannavigator.util import (

@@ -422,7 +422,7 @@ class MapPlotter(plArea.AreaPlotter):
         for idx, a in enumerate(self.area):
             if isinstance(a, str):
                 a = a.encode("utf-8")
-                sp = a.split('/', 1)
+                sp = a.split(b'/', 1)
                 if data is None:
                     data = list_areas(sp[0], simplify=False)
 
