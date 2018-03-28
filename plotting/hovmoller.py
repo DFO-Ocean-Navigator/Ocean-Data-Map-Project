@@ -11,7 +11,7 @@ from oceannavigator.util import (get_dataset_url, get_dataset_name)
 import line
 from flask_babel import gettext
 from data import open_dataset
-
+from oceannavigator.errors import ClientError, ServerError
 
 class HovmollerPlotter(line.LinePlotter):
 
@@ -138,6 +138,11 @@ class HovmollerPlotter(line.LinePlotter):
                 self.compare['times'] = dataset.timestamps[self.compare['starttime'] : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
+
+                # Comparison over different time ranges makes no sense
+                if self.starttime != self.compare['starttime'] or\
+                    self.endtime != self.compare['endtime']:
+                    raise ClientError(gettext("Please ensure the Start Time and End Time for the Left and Right maps are identical."))
 
     # Render Hovmoller graph(s)
     def plot(self):
@@ -293,11 +298,16 @@ class HovmollerPlotter(line.LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        c = plt.pcolormesh(self.distance, times, data,
-                           cmap=cmap,
-                           shading='gouraud', # Smooth shading
-                           vmin=vmin,
-                           vmax=vmax)
+        try:
+            c = plt.pcolormesh(self.distance, times, data,
+                                cmap=cmap,
+                                shading='gouraud', # Smooth shading
+                                vmin=vmin,
+                                vmax=vmax
+                            )
+        except TypeError as e:
+            raise ServerError(gettext("Internal server error occured: " + str(e)))
+        
         ax = plt.gca()
         ax.set_title(title, fontsize=14) # Set title of subplot
         ax.yaxis_date()

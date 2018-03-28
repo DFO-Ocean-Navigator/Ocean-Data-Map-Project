@@ -1,7 +1,5 @@
 div.PlotImage {
-    //width: 100%;
     text-align: center;
-    //float: right;
 
     div.btn-toolbar {
         display: inline-block;
@@ -9,5 +7,11 @@ div.PlotImage {
 
     img {
         max-width: 100%;
+        margin: auto;
+    }
+
+    .alert {
+        max-width: 75%;
+        margin: auto;
     }
 }

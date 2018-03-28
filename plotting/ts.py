@@ -3,12 +3,13 @@ import numpy as np
 from oceannavigator.util import get_dataset_url, get_dataset_name, get_variable_unit
 import seawater
 import point
+import utils
+import matplotlib.gridspec as gridspec
 from flask_babel import gettext
 from data import open_dataset
 
-# Temperature/Salinity Diagram for a Point
+# Temperature/Salinity Diagram
 class TemperatureSalinityPlotter(point.PointPlotter):
-
     def __init__(self, dataset_name, query, format):
         self.plottype = "ts"
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
@@ -47,13 +48,26 @@ class TemperatureSalinityPlotter(point.PointPlotter):
             header, columns, data)
 
     def plot(self):
+        # Create base figure
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 
-        plt.title(gettext("T/S Diagram for (%s)\n%s") % (
-            ", ".join(self.names),
-            self.date_formatter(self.timestamp)),
-            fontsize=15
-            )
+        # Setup figure layout
+        width = 2 if self.showmap else 1
+        # Scale TS Diagram to be double the size of location map
+        width_ratios = [1, 3] if self.showmap else None
+
+        # Create layout helper
+        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, 0])
+            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
+                                        [x[1] for x in self.points]])) # Longitudes
+
+        
+        # Plot TS Diagram
+        plt.subplot(gs[:, 1 if self.showmap else 0])
 
         smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
         smax = np.amax(self.salinity) + (np.amax(self.salinity) * 0.01)
@@ -83,8 +97,7 @@ class TemperatureSalinityPlotter(point.PointPlotter):
 
         plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
         plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
-
-        self.plot_legend(fig, self.names)
+        
         if len(self.points) == 1:
             labels = []
             for idx, d in enumerate(self.temperature_depths[0]):
@@ -104,6 +117,15 @@ class TemperatureSalinityPlotter(point.PointPlotter):
                             textcoords='offset points',
                             arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
                         )
+
+
+        self.plot_legend(fig, self.names)
+
+        plt.title(gettext("T/S Diagram for (%s)\n%s") % (
+            ", ".join(self.names),
+            self.date_formatter(self.timestamp)),
+            fontsize=15
+            )
 
         return super(TemperatureSalinityPlotter, self).plot(fig)
 

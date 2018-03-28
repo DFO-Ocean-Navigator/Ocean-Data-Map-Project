@@ -106,8 +106,7 @@ export default class OceanNavigator extends React.Component {
 
     // Function bindings (performance optimization)
     this.toggleSidebar = this.toggleSidebar.bind(this);
-    this.showCompareHelp = this.showCompareHelp.bind(this);
-    this.hideCompareHelp = this.hideCompareHelp.bind(this);
+    this.toggleCompareHelp = this.toggleCompareHelp.bind(this);
     this.showBugsModal = this.showBugsModal.bind(this);
     this.hideBugsModal = this.hideBugsModal.bind(this);
     this.swapViews = this.swapViews.bind(this);
@@ -123,12 +122,9 @@ export default class OceanNavigator extends React.Component {
     this.setState({sidebarOpen: !this.state.sidebarOpen});
   }
 
-  showCompareHelp() {
-    this.setState({showCompareHelp: true,});
-  }
-
-  hideCompareHelp() {
-    this.setState({showCompareHelp: false,});
+  // Opens/closes the help modal for dataset comparison
+  toggleCompareHelp() {
+    this.setState({showCompareHelp: !this.state.showCompareHelp,});
   }
 
   hideBugsModal(){
@@ -205,7 +201,7 @@ export default class OceanNavigator extends React.Component {
 
     }
     else {
-      for (let i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; ++i) {
         switch(key[i]) {
           case "time":
             if (value[i] !== undefined) {
@@ -462,7 +458,7 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
             action={this.action}
-            showHelp={this.showCompareHelp}
+            showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
           />
         );
@@ -490,7 +486,7 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
             action={this.action}
-            showHelp={this.showCompareHelp}
+            showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
           />
         );
@@ -514,7 +510,7 @@ export default class OceanNavigator extends React.Component {
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}
-            showHelp={this.showCompareHelp}
+            showHelp={this.toggleCompareHelp}
             action={this.action}
             swapViews={this.swapViews}
             options={this.state.options}
@@ -565,7 +561,7 @@ export default class OceanNavigator extends React.Component {
     if (this.state.dataset_compare) {
       
       const secondState = $.extend(true, {}, this.state);
-      for (let i = 0; i < Object.keys(this.state.dataset_1).length; i++) {
+      for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
         const keys = Object.keys(this.state.dataset_1);
         secondState[keys[i]] = this.state.dataset_1[keys[i]];
       }
@@ -607,7 +603,7 @@ export default class OceanNavigator extends React.Component {
           state={this.state}
           swapViews={this.swapViews}
           changeHandler={this.updateState}
-          showHelp={this.showCompareHelp}
+          showHelp={this.toggleCompareHelp}
           options={this.state.options}
           updateOptions={this.updateOptions}
         />
@@ -712,7 +708,7 @@ export default class OceanNavigator extends React.Component {
 
         <Modal
           show={this.state.showCompareHelp}
-          onHide={this.hideCompareHelp}
+          onHide={this.toggleCompareHelp}
           bsSize="large"
           dialogClassName="helpdialog"
           backdrop={true}
@@ -724,7 +720,7 @@ export default class OceanNavigator extends React.Component {
             
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+            <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
