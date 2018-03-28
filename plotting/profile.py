@@ -25,7 +25,9 @@ class ProfilePlotter(point.PointPlotter):
             try:
                 self.load_misc(d, self.variables)
             except IndexError:
-                raise ClientError(gettext("Cannot plot selected variable(s) because they are not found in variable list."))
+                raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
+                Most likely, this variable is a derived product from existing dataset variables. \
+                Please select another variable."))
 
             point_data, point_depths = self.get_data(d, self.variables, time)
             point_data = self.apply_scale_factors(point_data)
