@@ -84,10 +84,10 @@ class ObservationPlotter(point.PointPlotter):
 
             try:
                 self.load_misc(dataset, self.variables)
-            except IndexError:
+            except IndexError as e:
                 raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable."))
+                Please select another variable.") + str(e))
                 
             point_data, self.depths = self.get_data(dataset, self.variables, time)
             point_data = np.ma.array(point_data)
