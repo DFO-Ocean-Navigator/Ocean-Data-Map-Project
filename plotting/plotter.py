@@ -115,7 +115,7 @@ class Plotter(metaclass=ABCMeta):
                 # Difference plot scale
                 self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
             except KeyError:
-                print "Ignoring scale_diff attribute."
+                print("Ignoring scale_diff attribute.")
 
         cmap = query.get('colormap')
         if cmap is not None:

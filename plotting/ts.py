@@ -4,7 +4,7 @@ from oceannavigator.util import get_dataset_url, get_dataset_name, get_variable_
 import seawater
 import plotting.point as plPoint
 import matplotlib.gridspec as gridspec
-import utils
+import plotting.utils as utils
 from flask_babel import gettext
 from data import open_dataset
 

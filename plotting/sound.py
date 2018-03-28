@@ -4,10 +4,9 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 import seawater
 import pint
+import plotting.utils as utils
 import plotting.ts as plTS
-import utils
 from flask_babel import gettext
-
 
 class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
 

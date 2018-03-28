@@ -30,7 +30,7 @@ import plotting.tile
 import plotting.scale
 import numpy as np
 import re
-from errors import ErrorBase, ClientError
+from oceannavigator.errors import ErrorBase, ClientError
 import oceannavigator.misc
 import os
 import plotting.colormap
