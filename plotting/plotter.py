@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from io import StringIO
+from io import StringIO, BytesIO
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
@@ -166,21 +166,22 @@ class Plotter(metaclass=ABCMeta):
             fig.text(1.0, 0.0, get_dataset_attribution(self.compare['dataset']),
                 ha='right', size='small', va='top')
 
-        with contextlib.closing(StringIO()) as buf:
+        with contextlib.closing(BytesIO()) as buf:
             plt.savefig(
                 buf,
                 format=self.filetype,
                 dpi='figure',
                 bbox_inches='tight',
-                pad_inches=0.5,
+                pad_inches=0.5
             )
             plt.close(fig)
 
             if self.filetype == 'png':
                 buf.seek(0)
                 im = Image.open(buf)
-                with contextlib.closing(StringIO()) as buf2:
+                with contextlib.closing(BytesIO()) as buf2:
                     im.save(buf2, format='PNG', optimize=True)
+
                     return (buf2.getvalue(), self.mime, self.filename)
 
             return (buf.getvalue(), self.mime, self.filename)

@@ -4,10 +4,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
 import matplotlib.colors as mcolors
 import numpy as np
-import plotting.colormap
-import plotting.basemap
-import plotting.overlays
-import plotting.utils
+import plotting.colormap as colormap
+import plotting.basemap as basemap
+import plotting.overlays as overlays
+import plotting.utils as utils
 import plotting.area as plArea
 from osgeo import gdal
 import osr
@@ -421,8 +421,8 @@ class MapPlotter(plArea.AreaPlotter):
         data = None
         for idx, a in enumerate(self.area):
             if isinstance(a, str):
-                a = a.encode("utf-8")
-                sp = a.split(b'/', 1)
+
+                sp = a.split('/', 1)
                 if data is None:
                     data = list_areas(sp[0], simplify=False)
 

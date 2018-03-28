@@ -742,7 +742,7 @@ def plot():
 
         # Generates a Base64 encoded string
         def make_response(data, mime):
-            b64 = base64.b64encode(data)
+            b64 = base64.encodebytes(data).decode()
 
             return Response(json.dumps("data:%s;base64,%s" % (
                 mime,

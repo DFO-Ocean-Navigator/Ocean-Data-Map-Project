@@ -137,10 +137,9 @@ def lines(file_id, projection, resolution, extent):
 
 def list_areas(file_id, simplify=True):
     AREA_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'area')
-    file_id_str = file_id.decode("utf-8")
 
     areas = []
-    f = os.path.join(AREA_DIR, "%s.kml" % file_id_str)
+    f = os.path.join(AREA_DIR, "%s.kml" % file_id)
 
     doc = parser.parse(f).getroot()
     folder = doc.Document.Folder
@@ -175,10 +174,11 @@ def list_areas(file_id, simplify=True):
             'polygons': outers,
             'innerrings': inners,
             'centroids': [(c.y, c.x) for c in centroids],
-            'key': file_id_str + "/" + place.name.text,
+            'key': file_id + "/" + place.name.text,
         })
 
     areas = sorted(areas, key=lambda k: k['name'])
+
     return areas
 
 
