@@ -561,7 +561,7 @@ export default class OceanNavigator extends React.Component {
     if (this.state.dataset_compare) {
       
       const secondState = $.extend(true, {}, this.state);
-      for (let i = 0; i < Object.keys(this.state.dataset_1).length; i++) {
+      for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
         const keys = Object.keys(this.state.dataset_1);
         secondState[keys[i]] = this.state.dataset_1[keys[i]];
       }

@@ -105,7 +105,7 @@ export default class PointWindow extends React.Component {
             return d.id;
           });
 
-          if ($.inArray(this.props.variable.split(",")[0], vars) === -1) {
+          if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
             this.props.onUpdate("variable", vars[0]);
           }
           
@@ -131,7 +131,8 @@ export default class PointWindow extends React.Component {
 
       if (typeof(key) === "string") {
         newState[key] = value;
-      } else {
+      } 
+      else {
         for (let i = 0; i < key.length; i++) {
           newState[key[i]] = value[i];
         }
