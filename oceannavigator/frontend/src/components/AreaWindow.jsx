@@ -170,7 +170,7 @@ export default class AreaWindow extends React.Component {
     let long_min = this.props.area[0].polygons[0][0][0];
     let long_max = this.props.area[0].polygons[0][0][1];
 
-    for (const i in this.props.area[0].polygons[0]) {
+    for (let i = 0; i < this.props.area[0].polygons[0].length; ++i) {
       lat_min = Math.min(lat_min, this.props.area[0].polygons[0][i][0]);
       long_min = Math.min(long_min, this.props.area[0].polygons[0][i][1]);
 
@@ -178,13 +178,19 @@ export default class AreaWindow extends React.Component {
       long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
     }
 
-    window.location.href =  `/api/subset/${this.state.output_format}/` + 
-                            `${this.props.dataset_0.dataset}/` + 
-                            `${this.state.output_variables.join()}/` + // Comma-separate selected variables
-                            `${lat_min},${long_min}/` +
-                            `${lat_max},${long_max}/` + 
-                            `${this.state.output_starttime},${this.state.output_endtime}/`+
-                            `${this.state.zip ? 1 : 0}`;
+    setTimeout(() => {
+      const response = {
+        file: `/api/subset/${this.state.output_format}/` + 
+        `${this.props.dataset_0.dataset}/` + 
+        `${this.state.output_variables.join()}/` + // Comma-separate selected variables
+        `${lat_min},${long_min}/` +
+        `${lat_max},${long_max}/` + 
+        `${this.state.output_starttime},${this.state.output_endtime}/`+
+        `${this.state.zip ? 1 : 0}`
+      };
+
+      window.location.href = response.file;
+    }, 100);
   }
 
   onSelect(key) {

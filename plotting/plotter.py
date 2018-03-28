@@ -26,6 +26,7 @@ class Plotter(metaclass=ABCMeta):
         self.format = format
         self.dpi = 72.
         self.size = '11x9'
+        self.compare = False
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,
@@ -42,7 +43,9 @@ class Plotter(metaclass=ABCMeta):
         if 'dpi' in kwargs and kwargs.get('dpi') is not None:
             self.dpi = float(kwargs.get('dpi'))
 
+        # Extract requested data
         self.parse_query(self.query)
+
         self.load_data()
 
         if self.filetype == 'csv':
@@ -112,9 +115,7 @@ class Plotter(metaclass=ABCMeta):
                 # Difference plot scale
                 self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
             except KeyError:
-                print("Ignoring scale_diff attribute.")
-        else:
-            self.compare = False
+                print "Ignoring scale_diff attribute."
 
         cmap = query.get('colormap')
         if cmap is not None:

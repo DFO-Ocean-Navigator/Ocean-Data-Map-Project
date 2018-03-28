@@ -1,9 +1,12 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 import plotting.utils
 import plotting.point as plPoint
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
+from oceannavigator.errors import ClientError
+import point
 from flask_babel import gettext
 from data import open_dataset
 
@@ -13,6 +16,33 @@ class ProfilePlotter(plPoint.PointPlotter):
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"
         super(ProfilePlotter, self).__init__(dataset_name, query, format)
+
+    def load_data(self):
+        with open_dataset(get_dataset_url(self.dataset_name)) as d:
+            if self.time < 0:
+                self.time += len(d.timestamps)
+            time = np.clip(self.time, 0, len(d.timestamps) - 1)
+            timestamp = d.timestamps[time]
+
+            try:
+                self.load_misc(d, self.variables)
+            except IndexError as e:
+                raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
+                Most likely, this variable is a derived product from existing dataset variables. \
+                Please select another variable. ") + str(e))
+
+            point_data, point_depths = self.get_data(d, self.variables, time)
+            point_data = self.apply_scale_factors(point_data)
+
+            self.variable_units, point_data = self.kelvin_to_celsius(
+                self.variable_units,
+                point_data
+            )
+
+        self.data = self.subtract_other(point_data)
+        self.depths = point_depths
+        self.timestamp = timestamp
+
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.1f" % x)
@@ -66,24 +96,61 @@ class ProfilePlotter(plPoint.PointPlotter):
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def plot(self):
-        fig, ax = self.setup_subplots(len(self.variables))
+        # Create base figure
+        fig = plt.figure(figsize = self.figuresize(), dpi = self.dpi)
 
-        for idx in range(0, len(self.variables)):
-            ax[idx].plot(
+        # Setup figure layout
+        width = len(self.variables)
+        if self.showmap:
+            width += 1
+            # Horizontally scale the actual plots by 2x the size of
+            # the location map
+            width_ratios = [1]
+            [width_ratios.append(2) for w in range(0, width - 1)]
+        else:
+            width_ratios = None
+
+        # Create layout helper
+        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+        subplot = 0
+
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, subplot])
+            subplot += 1
+            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
+                                        [x[1] for x in self.points]])) # Longitudes
+
+        # Create a subplot for each variable selected
+        # Each subplot has all points plotted
+        for idx, v in enumerate(self.variables):
+            plt.subplot(gs[:, subplot])
+            subplot += 1
+
+            plt.plot(
                 self.data[:, idx, :].transpose(),
                 self.depths[:, idx, :].transpose()
             )
-            ax[idx].xaxis.set_label_position('top')
-            ax[idx].xaxis.set_ticks_position('top')
-            ax[idx].set_xlabel("%s (%s)" %
+
+            current_axis = plt.gca()
+            current_axis.xaxis.set_label_position('top')
+            current_axis.xaxis.set_ticks_position('top')
+            current_axis.invert_yaxis()
+            current_axis.grid(True)
+            current_axis.set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
+            
             if self.compare:
-                xlim = np.abs(ax[idx].get_xlim()).max()
-                ax[idx].set_xlim([-xlim, xlim])
+                xlim = np.abs(plt.gca().get_xlim()).max()
+                plt.gca().set_xlim([-xlim, xlim])
 
-        ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (m)"), fontsize=14)
+        # Put y-axis label on left-most graph
+        if self.showmap:
+            plt.subplot(gs[:, 1])
+        else:
+            plt.subplot(gs[:, 0])
+        plt.gca().set_ylabel(gettext("Depth (m)"), fontsize=14)
 
         self.plot_legend(fig, self.names)
         
@@ -96,23 +163,3 @@ class ProfilePlotter(plPoint.PointPlotter):
         fig.subplots_adjust(top=(0.8))
 
         return super(ProfilePlotter, self).plot(fig)
-
-    def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as d:
-            if self.time < 0:
-                self.time += len(d.timestamps)
-            time = np.clip(self.time, 0, len(d.timestamps) - 1)
-            timestamp = d.timestamps[time]
-
-            self.load_misc(d, self.variables)
-            point_data, point_depths = self.get_data(d, self.variables, time)
-            point_data = self.apply_scale_factors(point_data)
-
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
-
-        self.data = self.subtract_other(point_data)
-        self.depths = point_depths
-        self.timestamp = timestamp

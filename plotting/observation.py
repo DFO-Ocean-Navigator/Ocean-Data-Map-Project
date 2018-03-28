@@ -6,6 +6,7 @@ import plotting.point as plPoint
 from textwrap import wrap
 import pint
 from oceannavigator.util import get_dataset_url
+from oceannavigator.errors import ClientError
 import re
 import dateutil.parser
 import pytz
@@ -79,10 +80,14 @@ class ObservationPlotter(plPoint.PointPlotter):
                 timestamp = ts[time]
                 timestamps.append(timestamp)
 
-            self.load_misc(dataset, self.variables)
-
-            point_data, self.depths = self.get_data(
-                dataset, self.variables, time)
+            try:
+                self.load_misc(dataset, self.variables)
+            except IndexError as e:
+                raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
+                Most likely, this variable is a derived product from existing dataset variables. \
+                Please select another variable.") + str(e))
+                
+            point_data, self.depths = self.get_data(dataset, self.variables, time)
             point_data = np.ma.array(point_data)
 
             point_data = self.apply_scale_factors(point_data)

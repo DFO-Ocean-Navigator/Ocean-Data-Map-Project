@@ -48,7 +48,7 @@ export default class ComboBox extends React.Component {
       value = [];
       const options = e.target.options;
       
-      for (let i = 0, l = options.length; i < l; i++) {
+      for (let i = 0; i < options.length; ++i) {
         if (options[i].selected) {
           value.push(options[i].value);
         }

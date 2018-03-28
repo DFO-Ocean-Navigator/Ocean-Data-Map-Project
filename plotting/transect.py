@@ -679,7 +679,7 @@ class TransectPlotter(pl.LinePlotter):
 
         # Subplot padding
         fig.tight_layout(pad=2, w_pad=2, h_pad=2)
-        fig.subplots_adjust(top=0.86)
+        fig.subplots_adjust(top = 0.90 if self.compare else 0.85)
 
         return super(TransectPlotter, self).plot(fig)
 

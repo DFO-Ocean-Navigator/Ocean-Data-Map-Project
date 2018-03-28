@@ -18,7 +18,6 @@ import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
 const i18n = require("../i18n.js");
-const stringify = require("fast-stable-stringify");
 
 export default class TimePicker extends React.Component {
   constructor(props) {
@@ -359,7 +358,6 @@ export default class TimePicker extends React.Component {
           type="text"
           value={$.datepicker.formatDate("dd MM yy", date)}
         />;
-        //console.warn($.datepicker.formatDate("dd MM yy", date));
         break;
     }
 

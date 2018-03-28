@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import {Panel, Button, Row, Col, Modal, Tabs, Tab} from "react-bootstrap";
+import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
@@ -15,22 +15,11 @@ export default class MapInputs extends React.Component {
     super(props);
 
     this.state = {
-      showHelp: false,
       currentTab: 1,
     };
 
     // Function bindings
-    this.showHelp = this.showHelp.bind(this);
-    this.closeHelp = this.closeHelp.bind(this);
     this.handleTabs = this.handleTabs.bind(this);
-  }
-
-  showHelp() {
-    this.setState({showHelp: true,});
-  }
-
-  closeHelp() {
-    this.setState({showHelp: false,});
   }
 
   handleTabs(key) {
@@ -67,6 +56,16 @@ export default class MapInputs extends React.Component {
                     onUpdate={this.props.changeHandler}
                     title={_("Compare Datasets")}
                   />
+                </Col>
+                <Col xs={3}>
+                  <Button 
+                    bsStyle="link"
+                    key='show_help'
+                    id='show_help'
+                    onClick={this.props.showHelp}
+                  >
+                    {_("Help")}
+                  </Button>
                 </Col>
               </Row>
               <SelectBox
@@ -215,25 +214,6 @@ export default class MapInputs extends React.Component {
 
           </Tab>
         </Tabs>
-
-        <Modal
-          show={this.state.showHelp}
-          onHide={this.closeHelp}
-          bsSize="large"
-          dialogClassName="helpdialog"
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.closeHelp}><Icon icon="close"/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
       </div>
     );
   }

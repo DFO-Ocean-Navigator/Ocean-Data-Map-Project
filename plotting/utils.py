@@ -100,7 +100,7 @@ def _map_plot(points, path=True, quiver=True):
         lon_0=np.mean(points[1, :]),
         resolution='c', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
-    )
+    )    
 
     if path:
         marker = ''
@@ -124,9 +124,11 @@ def _map_plot(points, path=True, quiver=True):
                      color='r')
     else:
         for idx in range(0, points.shape[1]):
-            m.plot(points[1, idx], points[0, idx], 'o', latlon=True)
+            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
 
-    m.etopo()
+    # Draw a realistic background "blue marble"
+    m.bluemarble()
+
     m.drawparallels(
         np.arange(
             round(minlat),

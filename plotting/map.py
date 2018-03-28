@@ -486,8 +486,6 @@ class MapPlotter(plArea.AreaPlotter):
             x, y = self.basemap(x, y)
             outRasterSRS.ImportFromProj4(self.basemap.proj4string)
 
-            print self.basemap.proj4string
-
             pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
             pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]
             outRaster.SetGeoTransform((x[0], pixelWidth, 0, y[0], 0,
