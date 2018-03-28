@@ -134,6 +134,7 @@ export default class PlotImage extends React.Component {
         }
         break;
       case "timeseries":
+        query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
