@@ -87,8 +87,8 @@ class MapPlotter(area.AreaPlotter):
             # Include bearing information in the exported data, as per user
             # requests.
             columns.extend([
-                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s East (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s North (%s)" % (self.quiver_name, self.quiver_unit),
                 "Bearing (degrees clockwise positive from North)"
             ])
             quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
