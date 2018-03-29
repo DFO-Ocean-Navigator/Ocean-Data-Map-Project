@@ -332,7 +332,7 @@ class Plotter:
 
     def vector_name(self, name):
         n = re.sub(
-            r"(?i)( x | y |zonal |meridional |northward |eastward )",
+            r"(?i)( x | y |zonal |meridional |northward |eastward | east | north)",
             " ",
             name
         )
