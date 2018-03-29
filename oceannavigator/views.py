@@ -325,6 +325,7 @@ def vars_query():
                 'vozocrtx': 'vozocrtx,vomecrty',
                 'itzocrtx': 'itzocrtx,itmecrty',
                 'iicevelu': 'iicevelu,iicevelv',
+                'ice_east_vel': 'ice_east_vel,ice_north_vel',
                 'u_wind': 'u_wind,v_wind',
                 'u': 'u,v',
                 'ua': 'ua,va',
