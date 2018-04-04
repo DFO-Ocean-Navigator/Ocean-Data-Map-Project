@@ -580,7 +580,7 @@ class MapPlotter(plArea.AreaPlotter):
             # Plot bathymetry on top
             cs = self.basemap.contour(
                 self.longitude, self.latitude, self.bathymetry, latlon=True,
-                lineweight=0.5,
+                linewidths=0.5,
                 norm=LogNorm(vmin=1, vmax=6000),
                 cmap=mcolors.LinearSegmentedColormap.from_list(
                     'transparent_gray',
@@ -776,13 +776,13 @@ class MapPlotter(plArea.AreaPlotter):
             self.depth_label,
             self.date_formatter(self.timestamp)
         )
-        plt.title(title.strip())
+        plt.title(title.strip(), fontsize=15)
         ax = plt.gca()
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
         bar.set_label("%s (%s)" % (self.variable_name.title(),
-                                   utils.mathtext(self.variable_unit)))
+                                   utils.mathtext(self.variable_unit)), fontsize=14)
 
         if self.quiver is not None and \
             self.quiver['variable'] != '' and \
@@ -792,7 +792,7 @@ class MapPlotter(plArea.AreaPlotter):
             qbar = plt.colorbar(q, orientation='horizontal', cax=bax)
             qbar.set_label(
                 self.quiver_name.title() + " " +
-                utils.mathtext(self.quiver_unit))
+                utils.mathtext(self.quiver_unit), fontsize=14)
 
         fig.tight_layout(pad=3, w_pad=4)
 
