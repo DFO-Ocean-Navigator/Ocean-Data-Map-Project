@@ -333,9 +333,9 @@ def topo(projection, x, y, z, args):
     img = np.clip(img, 0, 1)
 
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-
     buf = BytesIO()
     im.save(buf, format='PNG', optimize=True)
+    
     return buf
 
 

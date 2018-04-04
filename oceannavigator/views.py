@@ -405,20 +405,22 @@ def scale(dataset, variable, scale):
         'scale': scale,
     })
     
-    return send_file(bytesIOBuff, mimetype="image/png")
+    return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 
-def _cache_and_send_img(img, f):
+def _cache_and_send_img(bytesIOBuff, f):
     p = os.path.dirname(f)
     if not os.path.isdir(p):
         os.makedirs(p)
 
-    im = Image.open(img)
-    img.seek(0)
+    # This seems excessive
+    bytesIOBuff.seek(0)
+    dataIO = BytesIO(bytesIOBuff.read())
+    im = Image.open(dataIO)
     im.save(f, format='PNG', optimize=True) # For cache
 
-    return send_file(img, mimetype="image/png", cache_timeout=MAX_CACHE)
-
+    bytesIOBuff.seek(0)
+    return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 # Renders the map images and sends it to the browser
 @app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
@@ -426,7 +428,7 @@ def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, d
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
-    # Check of the tile/image is cached and send it
+    # Check if the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
@@ -453,7 +455,7 @@ def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
-    # Check of the tile/image is cached and send it
+    # Check if the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
@@ -484,8 +486,9 @@ def topo(projection, zoom, x, y):
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
-        img = plotting.tile.topo(projection, x, y, zoom, {})
-        return _cache_and_send_img(img, f)
+        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, {})
+        
+        return _cache_and_send_img(bytesIOBuff, f)
 
 
 # Renders bathymetry contours
