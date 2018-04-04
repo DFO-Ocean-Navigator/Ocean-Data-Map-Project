@@ -181,9 +181,10 @@ class Plotter(metaclass=ABCMeta):
                 im = Image.open(buf)
                 with contextlib.closing(BytesIO()) as buf2:
                     im.save(buf2, format='PNG', optimize=True)
-
+                    buf2.seek(0)
                     return (buf2.getvalue(), self.mime, self.filename)
 
+            buf.seek(0)
             return (buf.getvalue(), self.mime, self.filename)
 
     def csv(self, header=[], columns=[], data=[]):

@@ -120,11 +120,11 @@ class ProfilePlotter(plPoint.PointPlotter):
             utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
                                         [x[1] for x in self.points]])) # Longitudes
 
+        is_y_label_plotted = False
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
-            subplot += 1
 
             plt.plot(
                 self.data[:, idx, :].transpose(),
@@ -139,17 +139,17 @@ class ProfilePlotter(plPoint.PointPlotter):
             current_axis.set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
+
+            # Put y-axis label on left-most graph (but after the point location)
+            if not is_y_label_plotted and (subplot == 0 or subplot == 1):
+                current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
+                is_y_label_plotted = True
             
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
 
-        # Put y-axis label on left-most graph
-        if self.showmap:
-            plt.subplot(gs[:, 1])
-        else:
-            plt.subplot(gs[:, 0])
-        plt.gca().set_ylabel(gettext("Depth (m)"), fontsize=14)
+            subplot += 1
 
         self.plot_legend(fig, self.names)
         
