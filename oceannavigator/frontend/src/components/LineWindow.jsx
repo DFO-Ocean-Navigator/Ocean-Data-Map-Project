@@ -314,8 +314,10 @@ export default class LineWindow extends React.Component {
       </div>
     </div>;
 
-    var leftInputs = [];
-    var rightInputs = [];
+    // Input panels
+    const leftInputs = [global];
+    const rightInputs = [dataset, compare_dataset];
+    
     const plot_query = {
       dataset: this.props.dataset_0.dataset,
       quantum: this.props.quantum,
@@ -343,12 +345,7 @@ export default class LineWindow extends React.Component {
           plot_query.compare_to.colormap = this.state.colormap_right;
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
-        leftInputs = [
-          global, transectSettings
-        ];
-        rightInputs = [
-          dataset, compare_dataset
-        ];
+        leftInputs.push(transectSettings);
         break;
       case 2:
         plot_query.type = "hovmoller";
@@ -362,12 +359,6 @@ export default class LineWindow extends React.Component {
           plot_query.compare_to.colormap = this.state.colormap_right;
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
-        leftInputs = [
-          global
-        ];
-        rightInputs = [
-          dataset, compare_dataset
-        ];
         break;
     }
 
