@@ -5,8 +5,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import re
-import plotting.colormap
-import plotting.utils
+import plotting.colormap as colormap
+import plotting.utils as utils
 import plotting.line as plLine
 from oceannavigator.util import (get_dataset_url, get_dataset_name)
 from flask_babel import gettext
