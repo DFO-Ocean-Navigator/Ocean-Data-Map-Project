@@ -306,7 +306,7 @@ class HovmollerPlotter(plLine.LinePlotter):
         ax.set_title(title, fontsize=14) # Set title of subplot
         ax.yaxis_date()
         ax.yaxis.grid(True)
-        ax.set_axis_bgcolor('dimgray')
+        ax.set_facecolor('dimgray')
 
         plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])

@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
 import re
-import plotting.colormap
+import plotting.colormap as colormap
+import plotting.utils as utils
 from oceannavigator import app
 from geopy.distance import VincentyDistance
-import plotting.utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 import plotting.line as pl
@@ -735,7 +735,7 @@ class TransectPlotter(pl.LinePlotter):
             facecolor='dimgray',
             hatch='xx'
         )
-        ax.set_axis_bgcolor('dimgray')
+        ax.set_facecolor('dimgray')
 
         plt.xlabel(gettext("Distance (km)"))
         plt.ylabel(gettext("Depth (m)"))
