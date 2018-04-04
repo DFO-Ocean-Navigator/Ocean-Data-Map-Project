@@ -11,7 +11,7 @@ from oceannavigator.util import (get_dataset_url, get_dataset_name)
 import line
 from flask_babel import gettext
 from data import open_dataset
-
+from oceannavigator.errors import ClientError, ServerError
 
 class HovmollerPlotter(line.LinePlotter):
 
@@ -139,6 +139,11 @@ class HovmollerPlotter(line.LinePlotter):
                 self.compare['data'] = np.multiply(self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
 
+                # Comparison over different time ranges makes no sense
+                if self.starttime != self.compare['starttime'] or\
+                    self.endtime != self.compare['endtime']:
+                    raise ClientError(gettext("Please ensure the Start Time and End Time for the Left and Right maps are identical."))
+
     # Render Hovmoller graph(s)
     def plot(self):
         
@@ -162,7 +167,11 @@ class HovmollerPlotter(line.LinePlotter):
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         if self.compare:
-            gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+            # Don't show a difference plot if variables are different
+            if self.compare['variables'][0] == self.variables[0]:
+                gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+            else:
+                gs = gridspec.GridSpec(2, width, width_ratios=width_ratios, height_ratios=[1, 1])
         else:
             gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -238,7 +247,23 @@ class HovmollerPlotter(line.LinePlotter):
                 gettext(self.compare['variable_name']) + gettext(get_depth_label(self.compare['depth'], self.compare['depth_unit']))
             )
 
-            # TODO: Add difference plot
+            # Difference plot
+            if self.compare['variables'][0] == self.variables[0]:
+                
+                data_difference = self.data - self.compare['data']
+                vmin = np.amin(data_difference)
+                vmax = np.amax(data_difference)
+
+                self._hovmoller_plot(
+                    gs, [2, 1], [2, 0],
+                    gettext(self.compare['variable_name']),
+                    vmin, vmax,
+                    data_difference,
+                    self.compare['times'],
+                    colormap.find_colormap("anomaly"),
+                    self.compare['variable_unit'],
+                    gettext(self.compare['variable_name']) + gettext(" Difference") + gettext(get_depth_label(self.compare['depth'], self.compare['depth_unit']))
+                )
 
         # Image title
         fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
@@ -247,7 +272,7 @@ class HovmollerPlotter(line.LinePlotter):
 
         # Subplot padding
         fig.tight_layout(pad=0, w_pad=4, h_pad=2)
-        fig.subplots_adjust(top=0.85)
+        fig.subplots_adjust(top = 0.9 if self.compare else 0.85)
 
         return super(HovmollerPlotter, self).plot(fig)
 
@@ -273,11 +298,16 @@ class HovmollerPlotter(line.LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        c = plt.pcolormesh(self.distance, times, data,
-                           cmap=cmap,
-                           shading='gouraud', # Smooth shading
-                           vmin=vmin,
-                           vmax=vmax)
+        try:
+            c = plt.pcolormesh(self.distance, times, data,
+                                cmap=cmap,
+                                shading='gouraud', # Smooth shading
+                                vmin=vmin,
+                                vmax=vmax
+                            )
+        except TypeError as e:
+            raise ServerError(gettext("Internal server error occured: " + str(e)))
+        
         ax = plt.gca()
         ax.set_title(title, fontsize=14) # Set title of subplot
         ax.yaxis_date()

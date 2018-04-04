@@ -1,4 +1,14 @@
 
+.ui-datepicker-header, .ui-state-highlight {
+  background-color: #3B83C0 !important;
+  color: #FFF !important;
+  border: 1px solid #3B83C0 !important;
+}
+
+.ui-icon {
+  color: #FFF;
+}
+
 .react-datepicker-component {
   position: relative;
 }
