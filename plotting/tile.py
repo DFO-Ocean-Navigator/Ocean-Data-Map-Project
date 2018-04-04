@@ -9,7 +9,6 @@ import re
 import plotting.colormap as colormap
 import plotting.utils as utils
 from io import BytesIO
-import tempfile
 import os
 import math
 from oceannavigator.util import get_dataset_url, get_variable_name, \
@@ -107,7 +106,10 @@ def get_latlon_coords(projection, x, y, z):
 
     return lat, lon
 
-
+"""
+    Draws the variable scale that is placed over the map.
+    Returns a BytesIO object.
+"""
 def scale(args):
     dataset_name = args.get('dataset')
     scale = args.get('scale')
@@ -160,13 +162,12 @@ def scale(args):
     bar.ax.tick_params(labelsize=12)
 
     buf = BytesIO()
-    try:
-        plt.savefig(buf, format='png', dpi='figure', transparent=False,
-                    bbox_inches='tight', pad_inches=0.05)
-        plt.close(fig)
-        return buf.getvalue()
-    finally:
-        buf.close()
+    plt.savefig(buf, format='png', dpi='figure', transparent=False,
+                bbox_inches='tight', pad_inches=0.05)
+    plt.close(fig)
+
+    buf.seek(0) # Move buffer back to beginning
+    return buf
 
 
 def plot(projection, x, y, z, args):
@@ -265,10 +266,6 @@ def plot(projection, x, y, z, args):
                 args.get('neighbours')
             )
             data = data - a
-
-    f, fname = tempfile.mkstemp()
-    os.close(f)
-
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
@@ -286,12 +283,9 @@ def plot(projection, x, y, z, args):
     img = sm.to_rgba(np.squeeze(data))
     
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-    im.save(fname, format='png', optimize=True)
-    
-    with open(fname, 'r') as f:
-        buf = f.read()
-        os.remove(fname)
 
+    buf = BytesIO()
+    im.save(buf, format='PNG', optimize=True)
     return buf
 
 
@@ -340,14 +334,8 @@ def topo(projection, x, y, z, args):
 
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
-    f, fname = tempfile.mkstemp()
-    os.close(f)
-
-    im.save(fname, format='png', optimize=True)
-    with open(fname, 'rb') as f:
-        buf = f.read()
-        os.remove(fname)
-
+    buf = BytesIO()
+    im.save(buf, format='PNG', optimize=True)
     return buf
 
 
@@ -398,10 +386,8 @@ def bathymetry(projection, x, y, z, args):
         buf.seek(0)
         im = Image.open(buf)
 
-        with contextlib.closing(BytesIO()) as buf2:
-            im.save(buf2, format='PNG', optimize=True)
-            return buf2.getvalue()
-
-        return buf.getvalue()
+        buf2 = BytesIO()
+        im.save(buf2, format='PNG', optimize=True)
+        return buf2
 
     return None

@@ -5,6 +5,8 @@ from flask import Response, request, redirect, send_file, send_from_directory, j
 from flask_babel import gettext, format_date
 import json
 import datetime
+from io import BytesIO
+from PIL import Image
 
 from oceannavigator import app
 from oceannavigator.util import (
@@ -397,14 +399,13 @@ def timestamp_for_date(old_dataset, date, new_dataset):
 
 @app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale(dataset, variable, scale):
-    img = plotting.tile.scale({
+    bytesIOBuff = plotting.tile.scale({
         'dataset': dataset,
         'variable': variable,
         'scale': scale,
     })
-    resp = Response(img, status=200, mimetype='image/png')
-    resp.cache_control.max_age = MAX_CACHE
-    return resp
+    
+    return send_file(bytesIOBuff, mimetype="image/png")
 
 
 def _cache_and_send_img(img, f):
@@ -412,12 +413,11 @@ def _cache_and_send_img(img, f):
     if not os.path.isdir(p):
         os.makedirs(p)
 
-    with open(f, 'wb') as out:
-        out.write(img)
+    im = Image.open(img)
+    img.seek(0)
+    im.save(f, format='PNG', optimize=True) # For cache
 
-    resp = Response(img, status=200, mimetype='image/png')
-    resp.cache_control.max_age = MAX_CACHE
-    return resp
+    return send_file(img, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 
 # Renders the map images and sends it to the browser
