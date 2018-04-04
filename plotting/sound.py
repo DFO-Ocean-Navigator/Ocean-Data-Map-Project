@@ -13,7 +13,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
     def __init__(self, dataset_name, query, format):
         self.plottype = "sound"
         super(
-            ts.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
+            plTS.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                           format)
         #self.size = '4x8'
 
@@ -71,7 +71,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        return super(ts.TemperatureSalinityPlotter, self).plot(fig)
+        return super(plTS.TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
         header = [

@@ -141,6 +141,6 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
             self.load_temp_sal(dataset, time)
 
             self.variable_units[0], self.temperature = \
-                super(point.PointPlotter, self).kelvin_to_celsius(
+                super(plPoint.PointPlotter, self).kelvin_to_celsius(
                     self.variable_units[0], self.temperature
             )

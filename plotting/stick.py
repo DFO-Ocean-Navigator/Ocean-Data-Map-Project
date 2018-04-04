@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils
+import plotting.utils as utils
 import plotting.point as plPoint
 from oceannavigator.util import get_dataset_url
 from flask_babel import gettext

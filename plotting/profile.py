@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import numpy as np
-import plotting.utils
+import plotting.utils as utils
 import plotting.point as plPoint
 from textwrap import wrap
 from oceannavigator.util import get_dataset_url
