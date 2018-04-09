@@ -226,7 +226,6 @@ export default class TimePicker extends React.Component {
       d = $(this.refs.picker).datepicker("getDate");
       const isodatestr = dateFormat(d, "yyyy-mm-dd");
       for (let i = 0; i < this.state.data.length; ++i) {
-        //console.warn(this.state.data[i].value);
         if (this.state.data[i].value.indexOf(isodatestr) === 0) {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
             times.unshift({
@@ -260,7 +259,7 @@ export default class TimePicker extends React.Component {
         d = $(this.refs.picker).datepicker("getDate");
       }
       if (d != null) {
-        var utcDate = new Date(Date.UTC(
+        const utcDate = new Date(Date.UTC(
                     d.getFullYear(),
                     d.getMonth(),
                     (this.props.quantum == "month") ? 15 : d.getDate(),

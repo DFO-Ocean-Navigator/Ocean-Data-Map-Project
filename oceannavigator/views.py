@@ -367,14 +367,14 @@ def time_query():
     data = sorted(data, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
-
+    
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
 
             return json.JSONEncoder.default(self, o)
-    
-    resp = jsonify(data)
+    js = json.dumps(data, cls=DateTimeEncoder)
+    resp = Response(js, status=200, mimetype='application/json')
     return resp
 
 
