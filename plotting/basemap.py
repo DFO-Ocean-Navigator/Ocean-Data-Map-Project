@@ -14,6 +14,20 @@ def load_map(projection, center, height, width):
     CACHE_DIR = app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
+    def get_resulation(h, w):
+        area_km=(h*w)/(1000*1000)
+        if area_km < 10000:
+            res='f'
+        elif area_km < 100000:
+            res='h'
+        elif area_km < 1000000:
+            res='i'
+        elif area_km < 10000000:
+            res='l'
+        else:
+            res='c'
+        return res
+
     if _maps_cache.get(filename) is None or True:
         try:
             basemap = pickle.load(open(CACHE_DIR + "/" + filename))
@@ -37,7 +51,8 @@ def load_map(projection, center, height, width):
                 )
             else:
                 basemap = Basemap(
-                    resolution='i',
+                    resolution=get_resulation(height, width),
+                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
