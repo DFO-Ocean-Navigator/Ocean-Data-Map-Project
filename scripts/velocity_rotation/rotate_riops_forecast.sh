@@ -3,7 +3,7 @@
 # Nancy Soontiens, March 2018
 # Usage: bash rotate_riops_forecast.sh YYYYMM LOGFILE
 
-SCRIPTNAME=`realpath $0`
+SCRIPTNAME=$0
 # Read from command line
 date=$1
 LOGFILE=$2
@@ -19,8 +19,12 @@ TYPE_ICE='ice'
 ICEXVELN='itzocrtx'
 ICEYVELN='itmecrty'
 
+# Global attributes to modify
+ATTS_TO_REMOVE="institution source product_version contact history"
+COMMENT="DERIVED PRODUCT - created with script ${SCRIPTNAME}"
 
-OUT=/data/hdd/riops/riopsf/rotated
+# Directory structure
+OUT=/data/hdd/riops/riopsf/rotated/
 FILES=/data/hdd/riops/riopsf/${date}*.nc
 
 for f in $FILES; do
@@ -48,9 +52,6 @@ for f in $FILES; do
 	 $savefile \
 	 $varkeep \
 	 $TYPE_OCEAN
-    ncatted -h \
-	    -a comment,global,o,c,"created with script ${SCRIPTNAME}" \
-	    $savefile
     # Ice velocity next
     if [[ $basename = *"2D"* ]]; then
 	# Add ice to same file
@@ -65,8 +66,12 @@ for f in $FILES; do
 	     $savefile \
 	     $varkeep \
 	     $TYPE_ICE
-	ncatted -h \
-		-a comment,global,o,c,"created with script ${SCRIPTNAME}" \
-		$savefile
     fi
+    # Modify global attributes
+    ncatted -h \
+	    -a comment,global,o,c,"${COMMENT}" \
+	    $savefile
+    for att in $ATTS_TO_REMOVE; do
+	ncatted -h -a $att,global,d,, $savefile
+    done
 done

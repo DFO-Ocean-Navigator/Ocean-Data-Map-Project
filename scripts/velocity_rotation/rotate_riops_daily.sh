@@ -7,7 +7,7 @@
 date=$1
 logfile=$2
 
-SCRIPTNAME=`realpath $0`
+SCRIPTNAME=$0
 # Script will append messages to the following logfile
 LOGFILE=$logfile
 
@@ -22,6 +22,9 @@ TYPE_ICE='ice'
 ICEXVELN='itzocrtx'
 ICEYVELN='itmecrty'
 
+# Global attributes to remove and comment to add
+ATTS_TO_REMOVE="institution source product_version contact history"
+COMMENT="DERIVED PRODUCT - created with script ${SCRIPTNAME}"
 
 OUT=/data/hdd/riops/riops_daily/rotated
 FILES=/data/hdd/riops/riops_daily/${date}*.nc
@@ -51,9 +54,6 @@ for f in $FILES; do
 	 $savefile \
 	 $varkeep \
 	 $TYPE_OCEAN
-    ncatted -h \
-	    -a comment,global,o,c,"created with script ${SCRIPTNAME}" \
-	    $savefile
     # Ice velocity next
     if [[ $basename = *"2D"* ]]; then
 	# Add ice to same file
@@ -68,8 +68,11 @@ for f in $FILES; do
 	     $savefile \
 	     $varkeep \
 	     $TYPE_ICE
-	ncatted -h \
-		-a comment,global,o,c,"created with script ${SCRIPTNAME}" \
-		$savefile
     fi
+    # Modify global attributes
+    ncatted -h -a comment,global,o,c,"${COMMENT}" $savefile
+    for att in $ATTS_TO_REMOVE; do
+	ncatted -h -a $att,global,d,, $savefile
+    done
+    
 done
