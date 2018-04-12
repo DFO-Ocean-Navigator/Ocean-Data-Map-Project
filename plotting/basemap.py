@@ -17,15 +17,15 @@ def load_map(projection, center, height, width):
     def get_resulation(h, w):
         area_km=(h*w)/(1000*1000)
         if area_km < 10000:
-            res='f'
+            res='f'         #full resolution
         elif area_km < 100000:
-            res='h'
+            res='h'         #high resolution
         elif area_km < 1000000:
-            res='i'
+            res='i'         #intermediate resolution
         elif area_km < 10000000:
-            res='l'
+            res='l'         #low resolution
         else:
-            res='c'
+            res='c'         #crude resolution
         return res
 
     if _maps_cache.get(filename) is None or True:
@@ -34,14 +34,17 @@ def load_map(projection, center, height, width):
         except:
             if projection in ['npstere', 'spstere']:
                 basemap = Basemap(
-                    resolution='i',
+                    resolution=get_resulation(height, width),
+                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
-                    boundinglat=center[0],
-                    lon_0=center[1])
+                    boundinglat=center[0]*.95,
+                    lon_0=center[1],
+                )
             elif projection == 'merc':
                 basemap = Basemap(
-                    resolution='i',
+                    resolution=get_resulation(height, width),
+                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
                     llcrnrlat=height[0],
@@ -58,7 +61,8 @@ def load_map(projection, center, height, width):
                     lat_0=center[0],
                     lon_0=center[1],
                     height=height,
-                    width=width)
+                    width=width
+                )
             basemap.filename = filename
 
             def do_pickle(basemap, filename):
