@@ -331,7 +331,7 @@ def vars_query():
                 'ua': 'ua,va',
                 'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
                 'east_vel': 'east_vel,north_vel',
-                'wind_east_vel': 'wind_east_vel','wind_north_vel',
+                'wind_east_vel': 'wind_east_vel,wind_north_vel',
             }
 
             if 'vectors' in request.args or 'vectors_only' in request.args:
