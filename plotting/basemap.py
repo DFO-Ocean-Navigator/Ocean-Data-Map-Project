@@ -5,10 +5,17 @@ import threading
 from cachetools import LRUCache
 from oceannavigator import app
 import os
+import math
 
 _loaded_maps = {}
 _maps_cache = LRUCache(maxsize=64)
 
+def convert_to_bounded_lon(lon):
+    if (math.degrees(math.sin(math.radians(lon)))<0):
+        bounded_lon = ((lon%180)-180)
+    else:
+        bounded_lon = (lon%180)
+    return bounded_lon
 
 def load_map(projection, center, height, width):
     CACHE_DIR = app.config['CACHE_DIR']
@@ -59,7 +66,7 @@ def load_map(projection, center, height, width):
                     ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
-                    lon_0=center[1],
+                    lon_0=convert_to_bounded_lon(center[1]),
                     height=height,
                     width=width
                 )

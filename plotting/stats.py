@@ -9,7 +9,14 @@ from operator import itemgetter
 import re
 from flask_babel import gettext
 from data import open_dataset
+import math
 
+def convert_to_bounded_lon(lon):
+    if (math.degrees(math.sin(math.radians(lon)))<0):
+        bounded_lon = ((lon%180)-180)
+    else:
+        bounded_lon = (lon%180)
+    return bounded_lon
 
 def stats(dataset_name, query):
     variables = query.get('variable')
@@ -52,7 +59,8 @@ def stats(dataset_name, query):
         combined = all_rings[0]
 
     combined = combined.envelope
-    bounds = combined.bounds
+    bounds_not_wrapped = combined.bounds
+    bounds=[bounds_not_wrapped[0], convert_to_bounded_lon(bounds[1]), bounds_not_wrapped[2], convert_to_bounded_lon(bounds[3])]
 
     area_polys = []
     output = []

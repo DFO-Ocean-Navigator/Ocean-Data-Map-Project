@@ -138,19 +138,19 @@ class MapPlotter(plotter.Plotter):
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
             if self.centroid[0] > 85 or self.bounds[0] > 85 or self.bounds[2] > 85: # is centerered close to the north pole 
-                self.basemap = basemap.load_map('npstere', self.centroid, height, width)
+                self.basemap = basemap.load_map('npstere', self.true_centroid, height, width)
             else:
-                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
+                self.basemap = basemap.load_map('lcc', self.true_centroid, height, width)
         elif self.projection == 'EPSG:3031':
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
             if self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80: # is centerered close to the south pole
                 self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
             else:
-                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
+                self.basemap = basemap.load_map('lcc', self.true_centroid, height, width)
         else:           
             self.basemap = basemap.load_map(
-                'lcc', self.centroid, height, width
+                'lcc', self.true_centroid, height, width
             )
 
         if self.basemap.aspect < 1:
@@ -438,7 +438,10 @@ class MapPlotter(plotter.Plotter):
                 self.area[idx] = a
             else:
                 p = np.array(a['polygons'])
-                p[:, :, 1] = pyresample.utils.wrap_longitudes(p[:, :, 1])
+                center_x = [points[1] for points in p[0][:]]
+                center_y = [points[0] for points in p[0][:]]
+                self.true_centroid = (sum(center_y) / len(p[0][:]), sum(center_x) / len(p[0][:]))
+                p[:, :, 1] = pyresample.utils.wrap_longitudes(p[:, :, 1]) #TODO this line breaks the dateline world wrap
                 a['polygons'] = p.tolist()
                 del p
 
