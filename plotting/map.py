@@ -98,7 +98,14 @@ class MapPlotter(area.AreaPlotter):
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
-
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds=np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data_fullgrid[1].ravel()[::5])<10e-6,
+                    np.abs(self.quiver_data_fullgrid[0].ravel()[::5])<10e-6
+                    )
+                )
+            bearing[inds]=np.nan
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
         depth = self.depth_value.ravel()[::5]
@@ -121,6 +128,10 @@ class MapPlotter(area.AreaPlotter):
                     "%0.3f" % bearing[idx]
                 ])
             data.append(entry)
+
+        d = np.array(data)
+        d[np.where(d == 'nan')] = ''
+        data = d.tolist()
 
         return super(MapPlotter, self).csv(header, columns, data)
 

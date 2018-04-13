@@ -94,6 +94,14 @@ class TimeseriesPlotter(point.PointPlotter):
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds=np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data[1])<10e-6,
+                    np.abs(self.quiver_data[0])<10e-6
+                    )
+                 )
+            bearing[inds]=np.nan
 
         data = []
 
