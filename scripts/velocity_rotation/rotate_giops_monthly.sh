@@ -1,27 +1,26 @@
-# Script to rotate riops daily files
+# Script to rotate giops monthly files
+# Note: Only giops daily and monthly need to be rotated
 # Nancy Soontiens, March 2018
+# Usage bash rotate_giops_monthly.sh YYYYMM logfile
 
-# Usage: bash rotate_riops_daily.sh YYYYMM logfile
-
-# Read arguments
 date=$1
 LOGFILE=$2
-# Script will append messages to the logfile
 
-# RIOPS specific variables and gridfile
-GRID=/data/hdd/grids/riops/grid_angle.nc
-VARKEEP="latitude,longitude"
+# GIOPS specific variables and directories
+GRID=/data/hdd/grids/giops/grid_angle.nc
+VARKEEP="nav_lon,nav_lat,time_counter,deptht"
 # Global attributes to remove
-ATTS_TO_REMOVE="institution source product_version contact history"
+ATTS_TO_REMOVE="history"
 # Directory structure
-OUT=/data/hdd/riops/riops_daily/rotated/
-FILES=/data/hdd/riops/riops_daily/${date}*.nc
+BASEDIR=/data/hdd/giops/monthly/
+FILES=$BASEDIR/giops_${date}*.nc
+outsubdir=rotated
 
 for f in $FILES; do
     xvel=$f
     yvel=$f
     basename=$(basename $f .nc)
-    savedir=$OUT
+    savedir=$BASEDIR/$outsubdir
     if [[ ! -e $savedir ]] ; then
 	mkdir -p $savedir
     fi
@@ -32,6 +31,6 @@ for f in $FILES; do
 	 $xvel \
 	 $yvel \
 	 $savefile \
-	 $VARKEEP  \
+	 $VARKEEP \
 	 "$ATTS_TO_REMOVE"
 done
