@@ -172,7 +172,7 @@ class MapPlotter(plotter.Plotter):
                 self.basemap = basemap.load_map('spstere', (blat, 180), height, width2)
             else:
                 self.basemap = basemap.load_map('lcc', self.new_centroid, height, width2, max(self.bounds[0], self.bounds[2]))
-        elif abs(self.new_centroid[1] - self.bounds[1]) > 90:
+        elif abs(self.new_centroid[1] - self.new_bounds[1][1]) > 90:
             height_bounds= copy.copy(self.new_bounds[0])
             width_bounds=copy.copy(self.new_bounds[1])
             height_buffer=(abs(height_bounds[1]-height_bounds[0]))*0.1
