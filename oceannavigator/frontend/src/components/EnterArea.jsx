@@ -40,15 +40,6 @@ export default class EnterArea extends React.Component {
         <Alert bsStyle="warning">
           {_("Please enter numerical values with numerical values. Example: 3.14, or 314e-2, or 0.0314E+2.")}
         </Alert>
-        <Well>
-          <Checkbox
-            inline
-            checked={this.state.showAreaPoint4}
-            onChange={this.handleChange}
-          >
-            {_("Enable 4-point (quad) area mode.")}
-          </Checkbox>
-        </Well>
         <CoordInputPanel
           id="1"
           header={_("Point 1")}

@@ -125,24 +125,30 @@ class MapPlotter(plArea.AreaPlotter):
         return super(MapPlotter, self).csv(header, columns, data)
 
     def load_data(self):
+        distance = VincentyDistance()
+        height = distance.measure(
+            (self.bounds[0], self.centroid[1]),
+            (self.bounds[2], self.centroid[1])
+        ) * 1000 * 1.25
+        width = distance.measure(
+            (self.centroid[0], self.bounds[1]),
+            (self.centroid[0], self.bounds[3])
+        ) * 1000 * 1.25
         if self.projection == 'EPSG:32661':
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
-            self.basemap = basemap.load_map('npstere', (blat, 0), None, None)
+            if self.centroid[0] > 85 or self.bounds[0] > 85 or self.bounds[2] > 85: # is centerered close to the north pole 
+                self.basemap = basemap.load_map('npstere', self.centroid, height, width)
+            else:
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
-            self.basemap = basemap.load_map('spstere', (blat, 180), None, None)
-        else:
-            distance = VincentyDistance()
-            height = distance.measure(
-                (self.bounds[0], self.centroid[1]),
-                (self.bounds[2], self.centroid[1])
-            ) * 1000 * 1.25
-            width = distance.measure(
-                (self.centroid[0], self.bounds[1]),
-                (self.centroid[0], self.bounds[3])
-            ) * 1000 * 1.25
+            if self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80: # is centerered close to the south pole
+                self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
+            else:
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
+        else:           
             self.basemap = basemap.load_map(
                 'lcc', self.centroid, height, width
             )

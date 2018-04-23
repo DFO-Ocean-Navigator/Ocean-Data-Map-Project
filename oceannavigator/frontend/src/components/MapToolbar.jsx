@@ -268,7 +268,6 @@ export default class MapToolbar extends React.Component {
   //               endCoord = [lat,lon]
   //            }
   // Area: areaCoords: [coord[], coord[], coord[], coord[]]
-  //       Fourth coord is optional.
   setCoordData(data) {
     this.setState(data);
   }
@@ -285,7 +284,7 @@ export default class MapToolbar extends React.Component {
   // Fetch line data
   applyLineCoords() {
     // Draw line on map(s)
-    this.props.action("add", "line", [this.state.startCoord, this.state.endCoord]);
+    this.props.action("add", "line", [this.state.line.startCoord, this.state.line.endCoord]);
     // Needs to be a nested array so multiple lines can be parsed
     this.props.action("line", [[this.state.line.startCoord, this.state.line.endCoord]]);
   }
@@ -735,84 +734,6 @@ export default class MapToolbar extends React.Component {
             accept=".txt,.TXT"
           />
         </form>
-
-        <Modal
-          show={this.state.showPointCoordModal}
-          onHide={() => this.setState({showPointCoordModal: false})}
-          dialogClassName="pointCoord-modal">
-          <Modal.Header closeButton>
-            <Modal.Title>{_("Enter Point Coordinate(s)")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <EnterPoint
-              setCoordData={this.setCoordData}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showPointCoordModal: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
-            <Button
-              bsStyle="primary"
-              onClick={function() {
-                this.setState({showPointCoordModal: false});
-                this.applyPointCoords();
-              }.bind(this)}
-            ><Icon icon="check" /> {_("Apply")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showLineCoordModal}
-          onHide={() => this.setState({showLineCoordModal: false})}
-          dialogClassName="lineCoord-modal">
-          <Modal.Header closeButton>
-            <Modal.Title>{_("Enter Line Coordinate(s)")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <EnterLine
-              setCoordData={this.setCoordData}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showLineCoordModal: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
-            <Button
-              bsStyle="primary"
-              onClick={function() {
-                this.setState({showLineCoordModal: false});
-                this.applyLineCoords();
-              }.bind(this)}
-            ><Icon icon="check" /> {_("Apply")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showAreaCoordModal}
-          onHide={() => this.setState({showAreaCoordModal: false})}
-          dialogClassName="areaCoord-modal">
-          <Modal.Header closeButton>
-            <Modal.Title>{_("Enter Area Coordinate(s)")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <EnterArea
-              setCoordData={this.setCoordData}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showAreaCoordModal: false})}
-            ><Icon icon="close" /> {_("Close")}</Button>
-            <Button
-              bsStyle="primary"
-              onClick={function() {
-                this.setState({showAreaCoordModal: false});
-                this.applyAreaCoords();
-              }.bind(this)}
-            ><Icon icon="check" /> {_("Apply")}</Button>
-          </Modal.Footer>
-        </Modal>
 
         <Modal
           show={this.state.showPointCoordModal}
