@@ -268,7 +268,6 @@ export default class MapToolbar extends React.Component {
   //               endCoord = [lat,lon]
   //            }
   // Area: areaCoords: [coord[], coord[], coord[], coord[]]
-  //       Fourth coord is optional.
   setCoordData(data) {
     this.setState(data);
   }
@@ -285,7 +284,7 @@ export default class MapToolbar extends React.Component {
   // Fetch line data
   applyLineCoords() {
     // Draw line on map(s)
-    this.props.action("add", "line", [this.state.startCoord, this.state.endCoord]);
+    this.props.action("add", "line", [this.state.line.startCoord, this.state.line.endCoord]);
     // Needs to be a nested array so multiple lines can be parsed
     this.props.action("line", [[this.state.line.startCoord, this.state.line.endCoord]]);
   }
