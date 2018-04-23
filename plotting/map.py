@@ -153,7 +153,7 @@ class MapPlotter(plotter.Plotter):
             (self.centroid[0], self.bounds[3])
         ) * 1000 * 1.25
         width2 =  distance.measure(
-            (self.new_centroid[0], self.bounds[1]),
+            (self.new_centroid[0], self.new_bounds[1][0]),
             (self.new_centroid)
         ) * 2 * 1000 * 1.25
         if self.projection == 'EPSG:32661':
