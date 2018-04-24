@@ -407,7 +407,6 @@ def scale(dataset, variable, scale):
     
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-
 def _cache_and_send_img(bytesIOBuff, f):
     p = os.path.dirname(f)
     if not os.path.isdir(p):
@@ -560,8 +559,8 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
                     return key
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat = find_variable(dataset, "lat")
-        lon = find_variable(dataset, "lon")
+        lat = find_variable("lat")
+        lon = find_variable("lon")
 
         # Find closest indices in dataset corresponding to each calculated point
         # riops used "latitude" and "longitude"
@@ -577,7 +576,7 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         p1 = geopy.Point(top_right)
         
         # Get timestamp
-        time_variable = find_variable(dataset, "time")
+        time_variable = find_variable("time")
         timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[0])].values), "yyyyMMdd"))
         if apply_time_range:
             endtimestamp = "-" + str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[1])].values), "yyyyMMdd"))
@@ -600,7 +599,7 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
 
         # Filter out unwanted variables
         output_vars = variables.split(',')
-        output_vars.extend([find_variable(dataset, 'depth'), time_variable, lat, lon]) # Keep the coordinate variables
+        output_vars.extend([find_variable("depth"), time_variable, lat, lon]) # Keep the coordinate variables
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
