@@ -392,7 +392,7 @@ def timestamp_for_date(old_dataset, date, new_dataset):
     idx = np.where(diffs <= 0)[0]
     res = 0
     if len(idx) > 0:
-        res = idx.max()
+        res = idx.max().item() # https://stackoverflow.com/a/11389998/2231969
 
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
@@ -564,10 +564,10 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
 
         # Find closest indices in dataset corresponding to each calculated point
         # riops used "latitude" and "longitude"
-        ymin_index, xmin_index = find_nearest_grid_point(
+        ymin_index, xmin_index, _ = find_nearest_grid_point(
             bottom_left[0], bottom_left[1], dataset, lat, lon
         )
-        ymax_index, xmax_index = find_nearest_grid_point(
+        ymax_index, xmax_index, _ = find_nearest_grid_point(
             top_right[0], top_right[1], dataset, lat, lon
         )
 

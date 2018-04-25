@@ -3,6 +3,7 @@ import pyresample
 import numpy as np
 import warnings
 import data.netcdf_data as ncData
+from netCDF4 import Dataset
 from pint import UnitRegistry
 from data.data import Variable, VariableList
 from netCDF4 import chartostring
@@ -15,9 +16,27 @@ RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 ureg = UnitRegistry()
 
-
+"""
+    FVCOM will deal with netCDF4 module directly,
+    so most functions from NetCDFData will be 
+    overridden.
+"""
 class Fvcom(ncData.NetCDFData):
     __depths = None
+
+    def __init__(self, url):
+        self._kdt = [None, None]
+        self.__timestamp_cache = TTLCache(1, 3600)
+        
+        super(Fvcom, self).__init__(url)
+    
+    def __enter__(self):
+        self._dataset = Dataset(self.url, 'r')
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        super(Fvcom, self).__exit__(exc_type, exc_value, traceback)
 
     @property
     def depth_dimensions(self):
@@ -34,16 +53,19 @@ class Fvcom(ncData.NetCDFData):
     @property
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:
+            var = None
             for v in ['Times']:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break
 
             tz = pytz.timezone(var.time_zone)
-            timestamps = np.array(
-                [dateutil.parser.parse(datestr).replace(tzinfo=tz) for datestr in chartostring(var[:])]
-            )
-            timestamps.flags.writeable = False
+            time_list = list(map(
+                lambda dateStr: dateutil.parser.parse(dateStr).replace(tzinfo=tz),
+                chartostring(var[:])
+            ))
+            timestamps = np.array(time_list)
+            timestamps.setflags(write=False) # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
@@ -228,16 +250,6 @@ class Fvcom(ncData.NetCDFData):
             output = output.reshape(origshape[1:])
 
         return np.squeeze(output)
-
-    def __init__(self, url):
-        self._kdt = [None, None]
-        self.__timestamp_cache = TTLCache(1, 3600)
-        super(Fvcom, self).__init__(url)
-
-    def __enter__(self):
-        super(Fvcom, self).__enter__()
-
-        return self
 
     def get_raw_point(self, latitude, longitude, depth, time, variable):
         min_i, max_i, radius = self.__bounding_box(

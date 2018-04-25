@@ -1,9 +1,9 @@
 from netCDF4 import Dataset, netcdftime
 from data.data import Data
+import xarray as xr
 from cachetools import TTLCache
 import pytz
 import numpy as np
-
 
 class NetCDFData(Data):
 
@@ -16,45 +16,42 @@ class NetCDFData(Data):
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):
-        self._dataset = Dataset(self.url, 'r')
-
+        # Don't decode times since we do it anyways.
+        self._dataset = xr.open_dataset(self.url, decode_times=False)
+        
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
 
     """
-    Returns the value of a given variable name from the dataset
+        Returns the value of a given variable name from the dataset
     """
     def get_dataset_variable(self, key):
         return self._dataset.variables[key]
 
     """
-    Returns the file system path which was used to open the dataset
+        Loads, caches, and returns the time dimension from a dataset.
     """
-    def get_filepath(self):
-        return self._dataset.filepath()
-
-    """
-    Is the dataset open or closed?
-    """
-    def is_open(self):
-        return self._dataset.isopen()
-
     @property
     def timestamps(self):
+        # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
             var = None
             for v in ['time', 'time_counter']:
-                if v in self._dataset.variables:
+                if v in self._dataset.variables.keys():
+                    # Get the xarray.DataArray for time variable
                     var = self._dataset.variables[v]
                     break
 
-            t = netcdftime.utime(var.units)
-            timestamps = np.array(
-                [t.num2date(ts).replace(tzinfo=pytz.UTC) for ts in var[:]]
-            )
-            timestamps.flags.writeable = False
+            # Convert timestamps to UTC
+            t = netcdftime.utime(var.attrs['units']) # Get time units from variable
+            time_list = list(map(
+                                lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
+                                var.values
+                            ))
+            timestamps = np.array(time_list)
+            timestamps.setflags(write=False) # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")

@@ -57,6 +57,7 @@ class PointPlotter(pl.Plotter):
                 )
                 data.append(prof)
                 depths.append(d)
+            
             point_data.append(np.ma.array(data))
             point_depths.append(np.ma.array(depths))
 

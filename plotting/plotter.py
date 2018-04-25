@@ -27,6 +27,9 @@ class Plotter(metaclass=ABCMeta):
         self.dpi = 72.
         self.size = '11x9'
         self.compare = False
+        self.variable_names = None
+        self.variable_units = None
+        self.scale_factors = None
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,

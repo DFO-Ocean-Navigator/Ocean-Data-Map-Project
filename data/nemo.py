@@ -5,100 +5,103 @@ import warnings
 from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
 from data.data import Variable, VariableList
+from oceannavigator.nearest_grid_point import find_nearest_grid_point
 import re
-
-RAD_FACTOR = np.pi / 180.0
-EARTH_RADIUS = 6378137.0
 
 class Nemo(NetCDFData):
     __depths = None
 
+    def __init__(self, url):
+        super(Nemo, self).__init__(url)
+
+    def __enter__(self):
+        super(Nemo, self).__enter__()
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        super(Nemo, self).__exit__(exc_type, exc_value, traceback)
+
+    """
+        Returns the possible names of the depth dimension in the dataset
+    """
     @property
     def depth_dimensions(self):
         return ['depth', 'deptht']
 
+    """
+        Finds, caches, and returns the valid depths for the dataset.
+    """
     @property
     def depths(self):
         if self.__depths is None:
             var = None
-            for v in ['depth', 'deptht']:
-                if v in self._dataset.variables:
+            # Look through possible dimension names
+            for v in self.depth_dimensions:
+                # Depth is usually a "coordinate" variable
+                if v in list(self._dataset.coords.keys()):
+                    # Get DataArray for depth
                     var = self._dataset.variables[v]
                     break
 
             ureg = UnitRegistry()
-            unit = ureg.parse_units(var.units.lower())
+            unit = ureg.parse_units(var.attrs['units'].lower())
             self.__depths = ureg.Quantity(
-                var[:], unit
+                var.values, unit
             ).to(ureg.meters).magnitude
-            self.__depths.flags.writeable = False
+            self.__depths.setflags(write=False) # Make immutable
 
         return self.__depths
 
+    """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+    """
     @property
     def variables(self):
         l = []
-        for name in self._dataset.variables:
+        # Get "data variables" from dataset
+        variables = list(self._dataset.data_vars.keys())
+
+        for name in variables:
+            # Get variable DataArray
+            # http://xarray.pydata.org/en/stable/api.html#dataarray
             var = self._dataset.variables[name]
-            if 'long_name' in var.ncattrs():
-                long_name = var.long_name
+
+            # Get variable attributes
+            attrs = list(var.attrs.keys())
+            
+            if 'long_name' in attrs:
+                long_name = var.attrs['long_name']
             else:
                 long_name = name
 
-            if 'units' in var.ncattrs():
-                units = var.units
+            if 'units' in attrs:
+                units = var.attrs['units']
             else:
                 units = None
 
-            if 'valid_min' in var.ncattrs():
+            if 'valid_min' in attrs:
                 valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                         str(var.valid_min)))
+                                         str(var.attrs['valid_min'])))
                 valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                         str(var.valid_max)))
+                                         str(var.attrs['valid_max'])))
             else:
                 valid_min = None
                 valid_max = None
 
-            l.append(Variable(name, long_name, units, var.dimensions,
+            # Add to our "Variable" wrapper
+            l.append(Variable(name, long_name, units, var.dims,
                               valid_min, valid_max))
 
         return VariableList(l)
 
-    def __find_index(self, lat, lon, latvar, lonvar, n=1):
-        if self._kdt.get(latvar.name) is None:
-            latvals = latvar[:] * RAD_FACTOR
-            lonvals = lonvar[:] * RAD_FACTOR
-            clat, clon = np.cos(latvals), np.cos(lonvals)
-            slat, slon = np.sin(latvals), np.sin(lonvals)
-            triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
-                                np.ravel(slat)]).transpose()
-            self._kdt[latvar.name] = KDTree(triples)
-            del clat, clon
-            del slat, slon
-            del triples
-
-        if not hasattr(lat, "__len__"):
-            lat = [lat]
-            lon = [lon]
-
-        lat = np.array(lat)
-        lon = np.array(lon)
-
-        lat_rad = lat * RAD_FACTOR
-        lon_rad = lon * RAD_FACTOR
-        clat, clon = np.cos(lat_rad), np.cos(lon_rad)
-        slat, slon = np.sin(lat_rad), np.sin(lon_rad)
-        q = np.array([clat * clon, clat * slon, slat]).transpose()
-
-        dist_sq_min, minindex_1d = self._kdt[latvar.name].query(
-            np.float32(q),
-            k=n
-        )
-        iy_min, ix_min = np.unravel_index(minindex_1d, latvar.shape)
-        return iy_min, ix_min, dist_sq_min * EARTH_RADIUS
-
+    """
+        Computes and returns points bounding lat, lon.
+    """
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
-        y, x, d = self.__find_index(lat, lon, latvar, lonvar, n)
+
+        y, x, d = find_nearest_grid_point(lat, lon, self._dataset, latvar, lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -151,17 +154,21 @@ class Nemo(NetCDFData):
                 for d in range(0, data.shape[2]):
                     masked_lon_in.mask = masked_lat_in.mask = \
                         data[:, :, d].view(np.ma.MaskedArray).mask
+
                     input_def = pyresample.geometry.SwathDefinition(
                         lons=masked_lon_in,
-                        lats=masked_lat_in
+                        lats=masked_lat_in,
+                        nprocs = 4
                     )
-                    
+                  
                     # Interpolation with gaussian weighting
                     if self.interp == "gaussian":
                         
-                        output.append(pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
+                        test = pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
                             output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                            nprocs=8))
+                            nprocs=8)
+
+                        output.append(test)
 
                     # Bilinear weighting
                     elif self.interp == "bilinear":
@@ -252,17 +259,15 @@ class Nemo(NetCDFData):
 
         return np.squeeze(output)
 
-    def __init__(self, url):
-        super(Nemo, self).__init__(url)
-        self._kdt = {}
-
-    def __enter__(self):
-        super(Nemo, self).__enter__()
-
-        return self
-
+    """
+        Returns the xarray.DataArray for latitude and longitude variables in the dataset.
+    """
     def __latlon_vars(self, variable):
+        # Get DataArray
         var = self._dataset.variables[variable]
+
+        # Get variable attributes
+        attrs = list(var.attrs.keys())
 
         pairs = [
             ['nav_lat_u', 'nav_lon_u'],
@@ -273,13 +278,13 @@ class Nemo(NetCDFData):
             ['latitude', 'longitude'],
         ]
 
-        if 'coordinates' in var.ncattrs():
-            coordinates = var.coordinates.split()
+        if 'coordinates' in attrs:
+            coordinates = var.attrs['coordinates'].split()
             for p in pairs:
                 if p[0] in coordinates:
                     return (
                         self._dataset.variables[p[0]],
-                        self._dataset.variables[p[1]]
+                        self._dataset.variables[p[1]] # Check this
                     )
         else:
             for p in pairs:
@@ -344,6 +349,7 @@ class Nemo(NetCDFData):
     def get_point(self, latitude, longitude, depth, time, variable,
                   return_depth=False):
         latvar, lonvar = self.__latlon_vars(variable)
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
 
@@ -351,6 +357,7 @@ class Nemo(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
+        # Get variable DataArray
         var = self._dataset.variables[variable]
 
         if depth == 'bottom':
@@ -413,7 +420,7 @@ class Nemo(NetCDFData):
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
                 latitude, longitude,
-                data,
+                data.values,
             )
 
             if return_depth:
@@ -429,6 +436,7 @@ class Nemo(NetCDFData):
 
     def get_profile(self, latitude, longitude, time, variable):
         latvar, lonvar = self.__latlon_vars(variable)
+        
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
 
