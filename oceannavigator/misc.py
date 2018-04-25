@@ -713,7 +713,6 @@ def get_point_data(dataset, variable, time, depth, location):
     units = []
     with open_dataset(get_dataset_url(dataset)) as ds:
         timestamp = ds.timestamps[time]
-
         for v in variables:
             d = ds.get_point(
                 location[0],

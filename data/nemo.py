@@ -357,10 +357,11 @@ class Nemo(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        # Get variable DataArray
+        # Get xarray.Variable
         var = self._dataset.variables[variable]
 
         if depth == 'bottom':
+            
             if hasattr(time, "__len__"):
                 d = var[time[0], :, miny:maxy, minx:maxx]
             else:
@@ -413,9 +414,10 @@ class Nemo(NetCDFData):
 
         else:
             if len(var.shape) == 4:
-                data = var[time, depth, miny:maxy, minx:maxx]
+                data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
+            
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
