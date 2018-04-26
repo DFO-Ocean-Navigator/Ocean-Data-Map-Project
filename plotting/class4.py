@@ -1,7 +1,7 @@
 from netCDF4 import Dataset, chartostring
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils
+import plotting.utils as utils
 import plotting.plotter as pl
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
