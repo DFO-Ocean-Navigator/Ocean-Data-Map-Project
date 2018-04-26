@@ -138,7 +138,7 @@ class Nemo(NetCDFData):
         origshape = var.shape
         var = var.reshape([var.shape[0], var.shape[1], -1])
 
-        data = var[:]
+        data = np.ma.masked_invalid(var[:])
 
         masked_lon_in = np.ma.array(lon_in)
         masked_lat_in = np.ma.array(lat_in)
@@ -166,7 +166,6 @@ class Nemo(NetCDFData):
                   
                     # Interpolation with gaussian weighting
                     if self.interp == "gaussian":
-                        print(np.ma.is_masked(data))
                         output.append(pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
                             output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
                             nprocs=8))
