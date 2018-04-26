@@ -19,7 +19,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
 
     with open_dataset(get_dataset_url(dataset)) as ds:
         timestamp = ds.timestamps[time]
-
+        
         d = ds.get_area(
             np.array([lat, lon]),
             depth,
@@ -29,6 +29,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             radius,
             neighbours
         )
+        
         if len(variables) > 1:
             d0 = d
             d1 = ds.get_area(
@@ -78,4 +79,6 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             m = max(abs(d.min()), abs(d.max()))
             return -m, m
 
-    return d.min(), d.max()
+    # Return min and max values of selected variable, while ignoring
+    # nan values
+    return np.nanmin(d), np.nanmax(d)

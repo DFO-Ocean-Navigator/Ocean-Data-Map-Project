@@ -367,7 +367,7 @@ class Nemo(NetCDFData):
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
 
-            reshaped = d.reshape([d.shape[0], -1])
+            reshaped = d.values.reshape([d.shape[0], -1])
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
             depths = edges[1, 0, :]
@@ -375,7 +375,7 @@ class Nemo(NetCDFData):
 
             if hasattr(time, "__len__"):
                 data_in = var[time, :, miny:maxy, minx:maxx]
-                data_in = data_in.reshape(
+                data_in = data_in.values.reshape(
                     [data_in.shape[0], data_in.shape[1], -1])
                 data = []
                 for i, t in enumerate(time):

@@ -56,10 +56,11 @@ def handle_error(error):
 
 @app.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
-    extent = map(float, extent.split(","))
+    extent = list(map(float, extent.split(",")))
+    
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
-
+    
     resp = jsonify({
         'min': min,
         'max': max,
@@ -70,6 +71,7 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
 @app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query(dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
+    
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
 
