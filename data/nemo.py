@@ -125,6 +125,9 @@ class Nemo(NetCDFData):
 
         return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
     
+    """
+        Applies interpolation to output data
+    """
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
@@ -215,7 +218,6 @@ class Nemo(NetCDFData):
 
                 # Interpolation with gaussian weighting
                 if self.interp == "gaussian":
-                    
                     output = pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
                         nprocs=8)

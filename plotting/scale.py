@@ -6,7 +6,10 @@ from oceannavigator.util import (
 import re
 from data import open_dataset
 
-
+"""
+    Calculates and returns the range (min, max values) of a selected variable,
+    given the current map extents.
+"""
 def get_scale(dataset, variable, depth, time, projection, extent, interp, radius, neighbours):
     x = np.linspace(extent[0], extent[2], 50)
     y = np.linspace(extent[1], extent[3], 50)
@@ -76,7 +79,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
 
             d = d - c
 
-            m = max(abs(d.min()), abs(d.max()))
+            m = max(abs(d.nanmin()), abs(d.nanmax()))
             return -m, m
 
     # Return min and max values of selected variable, while ignoring

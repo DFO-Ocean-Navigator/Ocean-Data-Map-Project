@@ -38,6 +38,9 @@ class Fvcom(ncData.NetCDFData):
     def __exit__(self, exc_type, exc_value, traceback):
         super(Fvcom, self).__exit__(exc_type, exc_value, traceback)
 
+    """
+        Returns the possible names of the depth dimension in the dataset
+    """
     @property
     def depth_dimensions(self):
         return ['siglev', 'siglay']
@@ -46,7 +49,7 @@ class Fvcom(ncData.NetCDFData):
     def depths(self):
         if self.__depths is None:
             self.__depths = np.array([0])
-            self.__depths.flags.writeable = False
+            self.__depths.setflags(write=False) # Make immutable
 
         return self.__depths
 
