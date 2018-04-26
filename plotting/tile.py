@@ -252,7 +252,6 @@ def plot(projection, x, y, z, args):
         data = np.sqrt(data[0] ** 2 + data[1] ** 2)
         if not anom:
             cmap = colormap.colormaps.get('speed')
-
     
     if anom:
         with open_dataset(get_dataset_climatology(dataset_name)) as dataset:
@@ -265,7 +264,7 @@ def plot(projection, x, y, z, args):
                 args.get('radius'),
                 args.get('neighbours')
             )
-            data = data - a
+            data -= a
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
@@ -277,11 +276,11 @@ def plot(projection, x, y, z, args):
 
     data[np.where(bathymetry > -depthm)] = np.ma.masked
 
+    
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
-
-    img = sm.to_rgba(np.squeeze(data))
     
+    img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
     buf = BytesIO()

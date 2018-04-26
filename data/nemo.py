@@ -161,17 +161,15 @@ class Nemo(NetCDFData):
                     input_def = pyresample.geometry.SwathDefinition(
                         lons=masked_lon_in,
                         lats=masked_lat_in,
-                        nprocs = 4
+                        nprocs = 8
                     )
                   
                     # Interpolation with gaussian weighting
                     if self.interp == "gaussian":
-                        
-                        test = pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
+                        print(np.ma.is_masked(data))
+                        output.append(pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
                             output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                            nprocs=8)
-
-                        output.append(test)
+                            nprocs=8))
 
                     # Bilinear weighting
                     elif self.interp == "bilinear":
