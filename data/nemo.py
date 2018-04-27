@@ -446,11 +446,12 @@ class Nemo(NetCDFData):
             longitude = np.array([longitude])
 
         var = self._dataset.variables[variable]
+
         res = self.__resample(
             latvar[miny:maxy, minx:maxx],
             lonvar[miny:maxy, minx:maxx],
             [latitude], [longitude],
-            var[time, :, miny:maxy, minx:maxx],
+            var[time, :, miny:maxy, minx:maxx].values,
         )
 
         return res, np.squeeze([self.depths] * len(latitude))
