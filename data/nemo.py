@@ -59,42 +59,48 @@ class Nemo(NetCDFData):
     """
     @property
     def variables(self):
-        l = []
-        # Get "data variables" from dataset
-        variables = list(self._dataset.data_vars.keys())
+        # Check if variable list has been created yet.
+        # This saves approx 3 lookups per tile, and
+        # over a dozen when a new dataset is loaded.
+        if self._variable_list == None:
+            l = []
+            # Get "data variables" from dataset
+            variables = list(self._dataset.data_vars.keys())
 
-        for name in variables:
-            # Get variable DataArray
-            # http://xarray.pydata.org/en/stable/api.html#dataarray
-            var = self._dataset.variables[name]
+            for name in variables:
+                # Get variable DataArray
+                # http://xarray.pydata.org/en/stable/api.html#dataarray
+                var = self._dataset.variables[name]
 
-            # Get variable attributes
-            attrs = list(var.attrs.keys())
+                # Get variable attributes
+                attrs = list(var.attrs.keys())
             
-            if 'long_name' in attrs:
-                long_name = var.attrs['long_name']
-            else:
-                long_name = name
+                if 'long_name' in attrs:
+                    long_name = var.attrs['long_name']
+                else:
+                    long_name = name
 
-            if 'units' in attrs:
-                units = var.attrs['units']
-            else:
-                units = None
+                if 'units' in attrs:
+                    units = var.attrs['units']
+                else:
+                    units = None
 
-            if 'valid_min' in attrs:
-                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                         str(var.attrs['valid_min'])))
-                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                if 'valid_min' in attrs:
+                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                             str(var.attrs['valid_min'])))
+                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
                                          str(var.attrs['valid_max'])))
-            else:
-                valid_min = None
-                valid_max = None
+                else:
+                    valid_min = None
+                    valid_max = None
 
-            # Add to our "Variable" wrapper
-            l.append(Variable(name, long_name, units, var.dims,
+                # Add to our "Variable" wrapper
+                l.append(Variable(name, long_name, units, var.dims,
                               valid_min, valid_max))
 
-        return VariableList(l)
+            self._variable_list = VariableList(l) # Cache the list for later
+        
+        return self._variable_list
 
     """
         Computes and returns points bounding lat, lon.

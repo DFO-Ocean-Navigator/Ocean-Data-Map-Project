@@ -9,6 +9,7 @@ class NetCDFData(Data):
 
     def __init__(self, url):
         self._dataset = None
+        self._variable_list = None
         self.__timestamp_cache = TTLCache(1, 3600)
         self.interp = "gaussian"
         self.radius = 25000

@@ -14,10 +14,16 @@ EARTH_RADIUS = 6378137.0
 class Mercator(ncData.NetCDFData):
     __depths = None
 
+    """
+        Returns the possible names of the depth dimension in the dataset
+    """
     @property
     def depth_dimensions(self):
         return ['depth', 'deptht', 'z']
 
+    """
+        Finds, caches, and returns the valid depths for the dataset.
+    """
     @property
     def depths(self):
         if self.__depths is None:
@@ -40,34 +46,45 @@ class Mercator(ncData.NetCDFData):
 
         return self.__depths
 
+    """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+    """
     @property
     def variables(self):
-        l = []
-        for name in self._dataset.variables:
-            var = self._dataset.variables[name]
-            if 'long_name' in var.ncattrs():
-                long_name = var.long_name
-            else:
-                long_name = name
+        # Check if variable list has been created yet.
+        # This saves approx 3 lookups per tile, and
+        # over a dozen when a new dataset is loaded.
+        if self._variable_list == None:
+            l = []
+            for name in self._dataset.variables:
+                var = self._dataset.variables[name]
+                
+                if 'long_name' in var.ncattrs():
+                    long_name = var.long_name
+                else:
+                    long_name = name
 
-            if 'units' in var.ncattrs():
-                units = var.units
-            else:
-                units = None
+                if 'units' in var.ncattrs():
+                    units = var.units
+                else:
+                    units = None
 
-            if 'valid_min' in var.ncattrs():
-                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                         str(var.valid_min)))
-                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                if 'valid_min' in var.ncattrs():
+                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                             str(var.valid_min)))
+                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
                                          str(var.valid_max)))
-            else:
-                valid_min = None
-                valid_max = None
+                else:
+                    valid_min = None
+                    valid_max = None
 
-            l.append(Variable(name, long_name, units, var.dimensions,
+                l.append(Variable(name, long_name, units, var.dimensions,
                               valid_min, valid_max))
 
-        return VariableList(l)
+            self._variable_list = VariableList(l) # Save list for later
+
+        return self._variable_list
 
     def __find_var(self, candidates):
         for c in candidates:

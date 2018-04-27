@@ -45,6 +45,9 @@ class Fvcom(ncData.NetCDFData):
     def depth_dimensions(self):
         return ['siglev', 'siglay']
 
+    """
+        Supposedly FVCOM is surface only?
+    """
     @property
     def depths(self):
         if self.__depths is None:
@@ -53,6 +56,9 @@ class Fvcom(ncData.NetCDFData):
 
         return self.__depths
 
+    """
+        Loads, caches, and returns the time dimension from a dataset.
+    """
     @property
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:
@@ -73,37 +79,49 @@ class Fvcom(ncData.NetCDFData):
 
         return self.__timestamp_cache.get("timestamps")
 
+    """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+    """
     @property
     def variables(self):
-        l = []
-        for name in self._dataset.variables:
-            var = self._dataset.variables[name]
-            if 'coordinates' not in var.ncattrs():
-                continue
+        # Check if variable list has been created yet.
+        # This saves approx 3 lookups per tile, and
+        # over a dozen when a new dataset is loaded.
+        if self._variable_list == None:
+            l = []
+            for name in self._dataset.variables:
+                var = self._dataset.variables[name]
+                
+                if 'coordinates' not in var.ncattrs():
+                    continue
 
-            if 'long_name' in var.ncattrs():
-                long_name = var.long_name
-            else:
-                long_name = name
+                if 'long_name' in var.ncattrs():
+                    long_name = var.long_name
+                else:
+                    long_name = name
 
-            if 'units' in var.ncattrs():
-                units = var.units
-            else:
-                units = None
+                if 'units' in var.ncattrs():
+                    units = var.units
+                else:
+                    units = None
 
-            if 'valid_min' in var.ncattrs():
-                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                         str(var.valid_min)))
-                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                         str(var.valid_max)))
-            else:
-                valid_min = None
-                valid_max = None
+                if 'valid_min' in var.ncattrs():
+                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                             str(var.valid_min)))
+                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                                             str(var.valid_max)))
+                else:
+                    valid_min = None
+                    valid_max = None
 
-            l.append(Variable(name, long_name, units, var.dimensions,
-                              valid_min, valid_max))
+                # Add to our "Variable" wrapper
+                l.append(Variable(name, long_name, units, var.dimensions,
+                                  valid_min, valid_max))
 
-        return VariableList(l)
+            self._variable_list = VariableList(l) # Cache for later
+        
+        return self._variable_list
 
     def __find_var(self, candidates):
         for c in candidates:
