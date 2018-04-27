@@ -5,10 +5,10 @@ from scipy.interpolate import interp1d
 
 __author__ = 'Geoff Holden'
 
-
+"""
+    Abstract base class for data access
+"""
 class Data(object, metaclass=abc.ABCMeta):
-
-    """Abstract base class for data access"""
 
     def __init__(self, url):
         self.url = url
@@ -133,7 +133,10 @@ class Data(object, metaclass=abc.ABCMeta):
                                 list(range(starttime, endtime + 1)),
                                 variable)
 
-
+"""
+    Wrapper around a netCDF variable.
+    Provides a common interface between dataset types (xarray vs netCDF4)
+"""
 class Variable(object):
 
     def __init__(self, key, name, unit, dimensions, valid_min=None,

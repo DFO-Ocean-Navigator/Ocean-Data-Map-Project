@@ -4,7 +4,6 @@ import numpy as np
 import warnings
 import data.netcdf_data as ncData
 from netCDF4 import Dataset
-from pint import UnitRegistry
 from data.data import Variable, VariableList
 from netCDF4 import chartostring
 import pytz
@@ -14,7 +13,6 @@ import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
-ureg = UnitRegistry()
 
 """
     FVCOM will deal with netCDF4 module directly,
