@@ -13,20 +13,32 @@ import math
 import copy
 from oceannavigator.errors import ClientError, ServerError
 
-class stats_area:
+class Area:
+    def __init__(self, query):
+        print "constructer called, query is : " + str(query)
+        self.area_query = copy.deepcopy(query.get('area'))
+
+class Stats:
     def __init__(self, query, lons):
         print "constructer called, query is : " + str(query)
-        self.area = copy.deepcopy(query.get('area')) 
+        self.area = Area(query)
+        #self.oldname = "asfa"
+        #self.area.bounds = []
+        #self.area.all_rings = []
         self.variable = copy.deepcopy(query.get('variables'))
+        self.names = copy.deepcopy(query.get('name')) 
         self.raw_lons = copy.deepcopy(lons)
+
+
     
     def set_area(self, area):
         self.area=copy.deepcopy(area)
     
     def split_area(self, divide_lon_line):
+        self.test = "test"
         self.inner_area=copy.deepcopy(self.area)
         self.outter_area=copy.deepcopy(self.area)
-        for idx, a in enumerate(self.area):
+        for idx, a in enumerate(self.area.area_query):
             print "idx: " + str(idx)
             print "a: " + str(a)
             for idx2, lon  in enumerate(self.raw_lons):
@@ -35,11 +47,51 @@ class stats_area:
 
                 if abs(lon) > abs(divide_lon_line): # outside range of -180 to 180
                     print "setting inner_area val"
-                    self.inner_area[idx]['polygons'][0][idx2][1] = divide_lon_line
-                    self.outter_area[idx]['polygons'][0][idx2][1] = convert_to_bounded_lon(lon)
+                    self.inner_area.area_query[idx]['polygons'][0][idx2][1] = divide_lon_line
+                    self.outter_area.area_query[idx]['polygons'][0][idx2][1] = convert_to_bounded_lon(lon)
                 elif abs(lon) < abs(divide_lon_line):
                     print "setting outter_area val"
-                    self.outter_area[idx]['polygons'][0][idx2][1] = -divide_lon_line    
+                    self.outter_area.area_query[idx]['polygons'][0][idx2][1] = -divide_lon_line
+    
+    def combine_stats(self):
+        print "self.inner_area.stats[0]['variables'][0]['mean']: " + str(type(self.inner_area.stats[0]['variables'][0]['mean'])) + ", " + str(self.inner_area.stats[0]['variables'][0]['mean'])
+        print "u'No Data': " + str(type(u'No Data'))
+        print "self.outter_area.stats[0]['variables'][0]['mean']: " + str(self.outter_area.stats[0]['variables'][0]['mean'])
+        if self.inner_area.stats[0]['variables'][0]['mean'] == u'No Data':
+            print "____inner = no data"
+        else:
+            print "____inner != no data"
+        if self.outter_area.stats[0]['variables'][0]['mean'] == u'No Data':
+            print "____outter_area = no data"
+        else:
+            print "____outter_area != no data"
+        if (self.inner_area.stats[0]['variables'][0]['mean'] != u'No Data') and (self.outter_area.stats[0]['variables'][0]['mean'] != u'No Data'):
+            print "self.inner_area.stats[0]: " + str(self.inner_area.stats[0])
+            print "self.inner_area.stats: " + str( float(self.inner_area.stats[0]['variables'][0]['num']))
+            print "self.outter_area.stats: " + str( float(self.outter_area.stats[0]['variables'][0]['num']))
+            t1 = int(self.inner_area.stats[0]['variables'][0]['num'])
+            t2 = int(self.outter_area.stats[0]['variables'][0]['num'])
+            t3 = float(self.inner_area.stats[0]['variables'][0]['mean'])
+            t4 = float(self.outter_area.stats[0]['variables'][0]['mean'])
+            median1 = float(self.inner_area.stats[0]['variables'][0]['median'])
+            median2 = float(self.outter_area.stats[0]['variables'][0]['median'])
+            
+            print "type self.outter_area.stats[0]['variables'][0]['mean']: " + str(type(self.outter_area.stats[0]['variables'][0]['mean']))
+            combined_area = copy.deepcopy(self.inner_area.stats)
+            combined_area[0]['variables'][0]['num'] = t1 +  t2
+            combined_area[0]['variables'][0]['min'] = min(self.inner_area.stats[0]['variables'][0]['min'],  self.outter_area.stats[0]['variables'][0]['min'])
+            combined_area[0]['variables'][0]['max'] = max(self.inner_area.stats[0]['variables'][0]['max'],  self.outter_area.stats[0]['variables'][0]['max'])
+            combined_area[0]['variables'][0]['mean'] = ((t3*t1)+(t4*t2))/(t1*t2)
+            combined_area[0]['variables'][0]['median'] = "about " + str((median1+median2)/2)
+            temp5 = int(combined_area[0]['variables'][0]['num'])
+            combined_area[0]['variables'][0]['stddev'] = np.sqrt((combined_area[0]['variables'][0]['mean']**2)/temp5)
+            self.area.stats = combined_area
+        elif (self.inner_area.stats[0]['variables'][0]['mean'] == "No Data"):
+            print "!!!!!!!!!!!!! no points inside" 
+            self.area.stats = self.outter_area.stats
+        else:
+            print "!!!!!!!!!!!!! no points outside" 
+            self.area.stats = self.inner_area.stats
         
 
 def get_values(opened_dataset, dataset_name, lon_spacing, bounds, variables, depth, time, area, depthm, area_polys, output):
@@ -165,27 +217,6 @@ def get_names_rings(area):
     
     return names, all_rings
 
-def combine(area1, area2):
-    print "area1: " + str( float(area1[0]['variables'][0]['num']))
-    print "area2: " + str( float(area2[0]['variables'][0]['num']))
-    t1 = int(area1[0]['variables'][0]['num'])
-    t2 = int(area2[0]['variables'][0]['num'])
-    t3 = float(area1[0]['variables'][0]['mean'])
-    t4 = float(area2[0]['variables'][0]['mean'])
-    median1 = float(area1[0]['variables'][0]['median'])
-    median2 = float(area2[0]['variables'][0]['median'])
-    
-    print "type area2[0]['variables'][0]['mean']: " + str(type(area2[0]['variables'][0]['mean']))
-    combined_area = copy.deepcopy(area1)
-    combined_area[0]['variables'][0]['num'] = t1 +  t2
-    combined_area[0]['variables'][0]['min'] = min(area1[0]['variables'][0]['min'],  area2[0]['variables'][0]['min'])
-    combined_area[0]['variables'][0]['max'] = max(area1[0]['variables'][0]['max'],  area2[0]['variables'][0]['max'])
-    combined_area[0]['variables'][0]['mean'] = ((t3*t1)+(t4*t2))/(t1*t2)
-    combined_area[0]['variables'][0]['median'] = "about " + str((median1+median2)/2)
-    temp5 = int(combined_area[0]['variables'][0]['num'])
-    combined_area[0]['variables'][0]['stddev'] = np.sqrt((combined_area[0]['variables'][0]['mean']**2)/temp5)
-    return combined_area  
-
 def convert_to_bounded_lon(lon):
     if (math.degrees(math.sin(math.radians(lon)))<0):
         bounded_lon = ((lon%180)-180)
@@ -193,35 +224,7 @@ def convert_to_bounded_lon(lon):
         bounded_lon = (lon%180)
     return bounded_lon
 
-def computer_wrap_stats(area, query, dataset_name, lon_valuse):
-    #determ left east or west wrap
-    if any(p > 180 for p in lon_valuse): #points to the east of the east dateline 
-        print "_ there are points to the east of the east dateline"
-        wrap_val=180
-    elif any(p < -180 for p in lon_valuse): #points to the west of the west dateline
-        print "_ there are points to the west of the west dateline" 
-        wrap_val=-180
-    else:
-        print "!!!!!!!!!Error raised"
-        raise ClientError(gettext("someing went wrong. te seems you trying to creat a plot across the internatinal date line." + 
-                                "While we do support this function it must be done within 360 deg of the defalut map view. Try refreshing the page and try again"))
-    
-    variables = query.get('variable')
-
-    if isinstance(variables, str) or isinstance(variables, unicode):
-        variables = variables.split(',')
-    
-    new_area = stats_area(query, lon_valuse)
-    new_area.split_area(wrap_val)
-    print "inner_area: " + str(new_area.inner_area)
-    print "outter_area: " + str(new_area.outter_area)
-
-    variables = [re.sub('_anom$', '', v) for v in variables]
-    data = None
-
-    new_area.inner_area.names, new_area.inner_area.all_rings = get_names_rings(new_area.inner_area)
-    new_area.outter_area.names, new_area.outter_area.all_rings = get_names_rings(new_area.outter_area)
-
+def compute_bounds(all_rings):  
     if len(all_rings) > 1:
         combined = cascaded_union(all_rings)
     else:
@@ -231,6 +234,9 @@ def computer_wrap_stats(area, query, dataset_name, lon_valuse):
     bounds_not_wrapped = copy.deepcopy(combined.bounds)
     print "bounds_not_wrapped: " + str(bounds_not_wrapped)  
     bounds=(bounds_not_wrapped[0], convert_to_bounded_lon(bounds_not_wrapped[1]), bounds_not_wrapped[2], convert_to_bounded_lon(bounds_not_wrapped[3]))
+    return bounds
+
+def fill_polygons(area):
     area_polys = []
     output = []
     for a in area:
@@ -252,6 +258,48 @@ def computer_wrap_stats(area, query, dataset_name, lon_valuse):
             'name': a.get('name'),
             'variables': [],
         })
+
+    return area_polys, output
+
+
+def computer_wrap_stats(area, query, dataset_name, lon_valuse):
+    #determ left east or west wrap
+    if any(p > 180 for p in lon_valuse): #points to the east of the east dateline 
+        print "_ there are points to the east of the east dateline"
+        wrap_val=180
+    elif any(p < -180 for p in lon_valuse): #points to the west of the west dateline
+        print "_ there are points to the west of the west dateline" 
+        wrap_val=-180
+    else:
+        print "!!!!!!!!!Error raised"
+        raise ClientError(gettext("someing went wrong. te seems you trying to creat a plot across the internatinal date line." + 
+                                "While we do support this function it must be done within 360 deg of the defalut map view. Try refreshing the page and try again"))
+    
+    variables = query.get('variable')
+
+    if isinstance(variables, str) or isinstance(variables, unicode):
+        variables = variables.split(',')
+    
+    new_area = Stats(query, lon_valuse)
+    #new_area = stats_area(query, lon_valuse)
+    new_area.split_area(wrap_val)
+    print "inner_area: " + str(new_area.inner_area.area_query)
+    print "outter_area: " + str(new_area.outter_area.area_query)
+
+    variables = [re.sub('_anom$', '', v) for v in variables]
+    
+    new_area.names = "me"
+    new_area.new_name = "metoo"
+
+    new_area.names, new_area.inner_area.all_rings = get_names_rings(new_area.inner_area.area_query)
+    _, new_area.outter_area.all_rings = get_names_rings(new_area.outter_area.area_query)
+
+    new_area.inner_area.bounds = compute_bounds(new_area.inner_area.all_rings)
+    new_area.outter_area.bounds = compute_bounds(new_area.outter_area.all_rings)
+
+    new_area.inner_area.area_polys, new_area.inner_area.output = fill_polygons(new_area.inner_area.area_query)
+    new_area.outter_area.area_polys, new_area.outter_area.output = fill_polygons(new_area.outter_area.area_query)
+    
     print "________open dataset__________"
     with open_dataset(get_dataset_url(dataset_name)) as dataset:
         if query.get('time') is None or (type(query.get('time')) == str and
@@ -278,12 +326,20 @@ def computer_wrap_stats(area, query, dataset_name, lon_valuse):
                 depth = np.clip(depth, 0, len(dataset.depths) - 1)
                 depthm = dataset.depths[depth]
 
-        stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
+        #stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
+
+        new_area.inner_area.stats = get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+        new_area.outter_area.stats =  get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+        new_area.combine_stats()
+
+
+
     
 
     #conbine
+    print "stats: " + str(new_area.area.stats)
     print "_______________________end of world wrap true_________________________________" 
-    return "null"
+    return json.dumps(sorted(new_area.area.stats, key=itemgetter('name')))
 
 def computer_stats(area, query, dataset_name):
     variables = query.get('variable')
@@ -315,35 +371,9 @@ def computer_stats(area, query, dataset_name):
     #    if a.get('name'):
     #        names.append(a.get('name'))
 
-    if len(all_rings) > 1:
-        combined = cascaded_union(all_rings)
-    else:
-        combined = all_rings[0]
+    bounds = compute_bounds(all_rings)
 
-    combined = combined.envelope
-    bounds_not_wrapped = copy.deepcopy(combined.bounds)
-    bounds=(bounds_not_wrapped[0], convert_to_bounded_lon(bounds_not_wrapped[1]), bounds_not_wrapped[2], convert_to_bounded_lon(bounds_not_wrapped[3]))
-    area_polys = []
-    output = []
-    for a in area:
-        rings = [LinearRing(p) for p in a['polygons']]
-        innerrings = [LinearRing(p) for p in a['innerrings']]
-
-        polygons = []
-        for r in rings:
-            inners = []
-            for ir in innerrings:
-                if r.contains(ir):
-                    inners.append(ir)
-
-            polygons.append(Polygon(r, inners))
-
-        area_polys.append(MultiPolygon(polygons))
-
-        output.append({
-            'name': a.get('name'),
-            'variables': [],
-        })
+    area_polys, output = fill_polygons(area)
 
     with open_dataset(get_dataset_url(dataset_name)) as dataset:
         if query.get('time') is None or (type(query.get('time')) == str and
@@ -371,6 +401,7 @@ def computer_stats(area, query, dataset_name):
                 depthm = dataset.depths[depth]
 
         stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
+        print "stats: " + str(stats)
         print "_______________________end of world wrap false_________________________________" 
         return json.dumps(sorted(stats, key=itemgetter('name')))
     raise ServerError(gettext("An Error has occored. When oping the dataset. Please try again or try a different dataset. If you would like to report this error please contact oceandatamap@gmail.com"))
