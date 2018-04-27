@@ -8,7 +8,7 @@ import plotting.colormap as colormap
 import plotting.basemap as basemap
 import plotting.overlays as overlays
 import plotting.utils as utils
-import plotting.area as plArea
+import plotting.plotter as pl
 from osgeo import gdal
 import osr
 import tempfile
@@ -27,15 +27,10 @@ from geopy.distance import VincentyDistance
 from data import open_dataset
 
 
-class MapPlotter(plArea.AreaPlotter):
+class MapPlotter(pl.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'
-        
-        # Init interpolation stuff
-        self.interp = query.get('interp')
-        self.radius = query.get('radius')
-        self.neighbours = query.get('neighbours')
         
         super(MapPlotter, self).__init__(dataset_name, query, format)
 

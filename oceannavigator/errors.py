@@ -11,7 +11,8 @@ class ErrorBase(Exception):
         self.message = message
 
     """"
-        Converts internal message into dictionary object
+        Converts internal message into dictionary object.
+        This is what is sent back to the browser.
     """
     def to_dict(self):
         rv = dict()

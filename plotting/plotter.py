@@ -17,7 +17,6 @@ from flask_babel import format_date, format_datetime
 import contextlib
 from PIL import Image
 
-
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name, query, format):
@@ -30,6 +29,10 @@ class Plotter(metaclass=ABCMeta):
         self.variable_names = None
         self.variable_units = None
         self.scale_factors = None
+        # Init interpolation stuff
+        self.interp = query.get('interp')
+        self.radius = query.get('radius')
+        self.neighbours = query.get('neighbours')
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,
