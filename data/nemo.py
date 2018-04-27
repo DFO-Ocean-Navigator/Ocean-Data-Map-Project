@@ -131,8 +131,57 @@ class Nemo(NetCDFData):
 
         return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
     
+
     """
-        Applies interpolation to output data
+        Interpolates data given input and output definitions
+        and the selected interpolation algorithm.
+    """
+    def __interpolate(self, input_def, output_def, data):
+        # Interpolation with gaussian weighting
+        if self.interp == "gaussian":
+            return pyresample.kd_tree.resample_gauss(input_def, data,
+                output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
+                nprocs=8)
+
+        # Bilinear weighting
+        elif self.interp == "bilinear":
+            """
+                Weight function used to determine the effect of surrounding points
+                on a given point
+            """
+            def weight(r):
+                r = np.clip(r, np.finfo(r.dtype).eps,
+                            np.finfo(r.dtype).max)
+                return 1. / r
+
+            return pyresample.kd_tree.resample_custom(input_def, data,
+                output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
+                weight_funcs=weight, nprocs=8)
+
+        # Inverse-square weighting
+        elif self.interp == "inverse":
+            """
+                Weight function used to determine the effect of surrounding points
+                on a given point
+            """
+            def weight(r):
+                r = np.clip(r, np.finfo(r.dtype).eps,
+                            np.finfo(r.dtype).max)
+                return 1. / r ** 2
+
+            return pyresample.kd_tree.resample_custom(input_def, data,
+                output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
+                weight_funcs=weight, nprocs=8)
+
+
+        # Nearest-neighbour interpolation (junk)
+        elif self.interp == "nearest":
+
+            return pyresample.kd_tree.resample_nearest(input_def, data,
+                output_def, radius_of_influence=float(self.radius), nprocs=8)
+
+    """
+        Resamples data given lat/lon inputs and outputs
     """
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         if len(var.shape) == 3:
@@ -154,110 +203,35 @@ class Nemo(NetCDFData):
             lats=np.ma.array(lat_out)
         )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-
-            if len(data.shape) == 3:
-                output = []
-                # multiple depths
-                for d in range(0, data.shape[2]):
-                    masked_lon_in.mask = masked_lat_in.mask = \
-                        data[:, :, d].view(np.ma.MaskedArray).mask
-
-                    input_def = pyresample.geometry.SwathDefinition(
-                        lons=masked_lon_in,
-                        lats=masked_lat_in,
-                        nprocs = 8
-                    )
-                  
-                    # Interpolation with gaussian weighting
-                    if self.interp == "gaussian":
-                        output.append(pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
-                            output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                            nprocs=8))
-
-                    # Bilinear weighting
-                    elif self.interp == "bilinear":
-                        """
-                            Weight function used to determine the effect of surrounding points
-                            on a given point
-                        """
-                        def weight(r):
-                            r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-                            return 1. / r
-                        
-                        output.append(pyresample.kd_tree.resample_custom(input_def, data[:, :, d],
-                            output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                            weight_funcs=weight, nprocs=8))
-
-                    # Inverse-square weighting
-                    elif self.interp == "inverse":
-                        """
-                            Weight function used to determine the effect of surrounding points
-                            on a given point
-                        """
-                        def weight(r):
-                            r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-                            return 1. / r ** 2
-                        
-                        output.append(pyresample.kd_tree.resample_custom(input_def, data[:, :, d],
-                            output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                            weight_funcs=weight, nprocs=8))
-                    
-                    # Nearest-neighbour interpolation (junk)
-                    elif self.interp == "nearest":
-                        
-                        output.append(pyresample.kd_tree.resample_nearest(input_def, data[:, :, d],
-                            output_def, radius_of_influence=float(self.radius), nprocs=8))
-
-                output = np.ma.array(output).transpose()
-            else:
+        if len(data.shape) == 3:
+            output = []
+            # multiple depths
+            for d in range(0, data.shape[2]):
+                
                 masked_lon_in.mask = masked_lat_in.mask = \
-                    var[:].view(np.ma.MaskedArray).mask
+                    data[:, :, d].view(np.ma.MaskedArray).mask
+
                 input_def = pyresample.geometry.SwathDefinition(
                     lons=masked_lon_in,
-                    lats=masked_lat_in
+                    lats=masked_lat_in,
+                    nprocs=8
                 )
 
-                # Interpolation with gaussian weighting
-                if self.interp == "gaussian":
-                    output = pyresample.kd_tree.resample_gauss(input_def, data[:, :, d],
-                        output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                        nprocs=8)
-                
-                # Bilineaer weighting
-                elif self.interp == "bilinear":
-                    """
-                        Weight function used to determine the effect of surrounding points
-                        on a given point
-                    """
-                    def weight(r):
-                        r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-                        return 1. / r
-                    
-                    output = pyresample.kd_tree.resample_custom(input_def, data[:, :, d],
-                                output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                                weight_funcs=weight, nprocs=8)
+                output.append(self.__interpolate(input_def, output_def, data[:, :, d]))
 
-                # Inverse-square weighting
-                elif self.interp == "inverse":
-                    """
-                        Weight function used to determine the effect of surrounding points
-                        on a given point
-                    """
-                    def weight(r):
-                        r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-                        return 1. / r ** 2
+            output = np.ma.array(output).transpose()
+            
+        else:
+            masked_lon_in.mask = masked_lat_in.mask = \
+                var[:].view(np.ma.MaskedArray).mask
+            
+            input_def = pyresample.geometry.SwathDefinition(
+                lons=masked_lon_in,
+                lats=masked_lat_in
+            )
 
-                    output = pyresample.kd_tree.resample_custom(input_def, data[:, :, d],
-                            output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                            weight_funcs=weight, nprocs=8)
-                
-                # Nearest-neighbour interpolation (junk)
-                elif self.interp == "nearest":
-                    
-                    output = pyresample.kd_tree.resample_nearest(input_def, data[:, :, d], 
-                                output_def, radius_of_influence=float(self.radius), nprocs=8)
+            output = self.__interpolate(input_def, output_def, data)
+           
 
         if len(origshape) == 4:
             output = output.reshape(origshape[2:])
