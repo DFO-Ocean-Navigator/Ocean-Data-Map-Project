@@ -122,6 +122,11 @@ def stats(dataset_name, query):
                 v
             )
 
+            # Get underlying numpy array from Variable object
+            lat = lat.values
+            lon = lon.values
+            d = d.values
+
             if scale_factor != 1.0:
                 d = np.multiply(d, scale_factor)
 
