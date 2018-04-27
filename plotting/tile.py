@@ -23,9 +23,7 @@ import contextlib
 from data import open_dataset
 from oceannavigator import app
 
-
 ETOPO_FILE = app.config['ETOPO_FILE']
-
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)

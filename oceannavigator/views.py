@@ -15,6 +15,8 @@ from oceannavigator.util import (
     is_variable_hidden, get_dataset_cache
 )
 from oceannavigator.nearest_grid_point import find_nearest_grid_point
+from oceannavigator.errors import ErrorBase, ClientError
+import oceannavigator.misc
 
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
@@ -28,14 +30,12 @@ from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
 from plotting.stats import stats as areastats
+import plotting.colormap
 import plotting.tile
 import plotting.scale
 import numpy as np
 import re
-from oceannavigator.errors import ErrorBase, ClientError
-import oceannavigator.misc
 import os
-import plotting.colormap
 import netCDF4
 import geopy
 import base64
@@ -61,20 +61,6 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
     
-    resp = jsonify({
-        'min': min,
-        'max': max,
-    })
-    resp.cache_control.max_age = MAX_CACHE
-    return resp
-
-@app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query(dataset, projection, extent, variable, depth, time):
-    extent = list(map(float, extent.split(",")))
-    
-    min, max = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
-
     resp = jsonify({
         'min': min,
         'max': max,
@@ -450,34 +436,6 @@ def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, d
 
         return _cache_and_send_img(img, f)
 
-# Renders the map images and sends it to the browser
-@app.route('/tiles/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile(projection, dataset, variable, time, depth, scale, zoom, x, y):
-    cache_dir = app.config['CACHE_DIR']
-    f = os.path.join(cache_dir, request.path[1:])
-    
-    # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
-    # Render a new tile/image, then cache and send it
-    else:
-        if depth != "bottom" and depth != "all":
-            depth = int(depth)
-
-        img = plotting.tile.plot(projection, x, y, zoom, {
-            'interp': "inverse",
-            'radius': 25,
-            'neighbours': 10,
-            'dataset': dataset,
-            'variable': variable,
-            'time': time,
-            'depth': depth,
-            'scale': scale,
-        })
-
-        return _cache_and_send_img(img, f)
-
-
 # Renders basemap
 @app.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo(projection, zoom, x, y):
@@ -628,10 +586,10 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
             ds.source = "www.navigator.oceansdata.ca | GIOPS source: dd.weather.gc.ca"
 
             # Find correct variable names in subset
-            lat_var = find_variable(subset, 'lat')
-            lon_var = find_variable(subset, 'lon')
-            time_var = find_variable(subset, 'time')
-            depth_var = find_variable(subset, 'depth')
+            lat_var = find_variable('lat')
+            lon_var = find_variable('lon')
+            time_var = find_variable('time')
+            depth_var = find_variable('depth')
 
             # Create the netcdf dimensions
             ds.createDimension('lat', len(giops_variables[lat_var][:]))
