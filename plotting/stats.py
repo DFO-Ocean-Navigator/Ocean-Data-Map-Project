@@ -19,20 +19,25 @@ class Area:
         self.area_query = copy.deepcopy(query.get('area'))
 
 class Stats:
-    def __init__(self, query, lons):
+    def __init__(self, query):
         print "constructer called, query is : " + str(query)
+        self.time = query.get('time')
+        self.depth = query.get('depth')
         self.area = Area(query)
         #self.oldname = "asfa"
         #self.area.bounds = []
         #self.area.all_rings = []
         #self.variable = copy.deepcopy(query.get('variable'))
         self.names = copy.deepcopy(query.get('name')) 
-        self.raw_lons = copy.deepcopy(lons)
+        
 
 
     
     def set_area(self, area):
         self.area=copy.deepcopy(area)
+    
+    def set_lons(self, lons):
+        self.raw_lons = copy.deepcopy(lons)
     
     def split_area(self, divide_lon_line):
         self.test = "test"
@@ -86,100 +91,132 @@ class Stats:
             print "!!!!!!!!!!!!! no points outside" 
             self.area.stats = self.inner_area.stats
 
-    def get_values_object_oreanted(self, area_info, opened_dataset, dataset_name, variables, depth, time, depthm):
+    def get_values_object_oreanted(self, area_info, dataset_name, variables):
         #get_values_object_oreanted(self, area_info, opened_dataset, dataset_name, lon_spacing, bounds, variables, depth, time, area, depthm, area_polys, output):
         #new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, new_area.inner_area.spaced_points, new_area.inner_area.bounds,variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
         # new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, variables, depth, time, depthm)
-        lat, lon = np.meshgrid(
-            np.linspace(area_info.bounds[0], area_info.bounds[2], 50),
-            area_info.spaced_points
-        )
-        print "lenther of: lat, lon:  " + str(len(lat)) + ", " + str(len(lon))
-        print "____lon:  " + ", " + str(lon)
+        print "________open dataset__________"
+        with open_dataset(get_dataset_url(dataset_name)) as dataset:
 
-        output_fmtstr = "%6.5g"
-        for v_idx, v in enumerate(variables):
-            var = opened_dataset.variables[v]
-
-            variable_name = get_variable_name(dataset_name, var)
-            variable_unit = get_variable_unit(dataset_name, var)
-            scale_factor = get_variable_scale_factor(dataset_name, var)
-
-            lat, lon, d = opened_dataset.get_raw_point(
-                lat.ravel(),
-                lon.ravel(),
-                depth,
-                time,
-                v
-            )
-
-            if scale_factor != 1.0:
-                d = np.multiply(d, scale_factor)
-
-            if variable_unit.startswith("Kelvin"):
-                variable_unit = "Celsius"
-                d = d - 273.15
-
-            lon[np.where(lon > 180)] -= 360
-
-            if len(var.dimensions) == 3:
-                variable_depth = ""
-            elif depth == 'bottom':
-                variable_depth = "(@ Bottom)"
+            if self.time is None or (type(self.time) == str and
+                                            len(self.time) == 0):
+                time = -1
             else:
-                variable_depth = "(@%d m)" % np.round(depthm)
+                time = int(self.time)
 
-            points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]
-            print "len points: " + str(len(points))
-            print "area: " + str(area_info.area_query)
-            for i, a in enumerate(area_info.area_query):
-                print "i, a: " + str(i) + ", " + str(a)
-                indices = np.where(
-                    map(
-                        lambda p, poly=area_info.area_polys[i]: poly.contains(p),
-                        points
-                    )
+            if time < 0:
+                time += len(dataset.timestamps)
+            time = np.clip(time, 0, len(dataset.timestamps) - 1)
+
+            depth = 0
+            depthm = 0
+
+            if self.depth:
+                if self.depth == 'bottom':
+                    depth = 'bottom'
+                    depthm = 'Bottom'
+                if len(self.depth) > 0 and \
+                        self.depth != 'bottom':
+                    depth = int(self.depth)
+
+                    depth = np.clip(depth, 0, len(dataset.depths) - 1)
+                    depthm = dataset.depths[depth]
+
+            lat, lon = np.meshgrid(
+                np.linspace(area_info.bounds[0], area_info.bounds[2], 50),
+                area_info.spaced_points
+            )
+            print "lenther of: lat, lon:  " + str(len(lat)) + ", " + str(len(lon))
+            print "____lon:  " + ", " + str(lon)
+
+            output_fmtstr = "%6.5g"
+            for v_idx, v in enumerate(variables):
+                var = dataset.variables[v]
+
+                variable_name = get_variable_name(dataset_name, var)
+                variable_unit = get_variable_unit(dataset_name, var)
+                scale_factor = get_variable_scale_factor(dataset_name, var)
+
+                lat, lon, d = dataset.get_raw_point(
+                    lat.ravel(),
+                    lon.ravel(),
+                    depth,
+                    time,
+                    v
                 )
-                print "indices____ : " + str(indices)
 
-                selection = np.ma.array(d.ravel()[indices])
-                print " len(selection): " + str(len(selection))
-                if len(selection) > 0 and not selection.mask.all():
-                    area_info.output[i]['variables'].append({
-                        'name': ("%s %s" % (variable_name,
-                                            variable_depth)).strip(),
-                        'unit': variable_unit,
-                        'min': output_fmtstr % (
-                            np.ma.amin(selection).astype(float)
-                        ),
-                        'max': output_fmtstr % (
-                            np.ma.amax(selection).astype(float)
-                        ),
-                        'mean': output_fmtstr % (
-                            np.ma.mean(selection).astype(float)
-                        ),
-                        'median': output_fmtstr % (
-                            np.ma.median(selection).astype(float)
-                        ),
-                        'stddev': output_fmtstr % (
-                            np.ma.std(selection).astype(float)
-                        ),
-                        'num': "%d" % selection.count(),
-                    })
+                if scale_factor != 1.0:
+                    d = np.multiply(d, scale_factor)
+
+                if variable_unit.startswith("Kelvin"):
+                    variable_unit = "Celsius"
+                    d = d - 273.15
+
+                lon[np.where(lon > 180)] -= 360
+
+                if len(var.dimensions) == 3:
+                    variable_depth = ""
+                elif depth == 'bottom':
+                    variable_depth = "(@ Bottom)"
                 else:
-                    area_info.output[i]['variables'].append({
-                        'name': ("%s %s" % (variable_name,
-                                            variable_depth)).strip(),
-                        'unit': variable_unit,
-                        'min': gettext("No Data"),
-                        'max': gettext("No Data"),
-                        'mean': gettext("No Data"),
-                        'median': gettext("No Data"),
-                        'stddev': gettext("No Data"),
-                        'num': "0",
-                    })
+                    variable_depth = "(@%d m)" % np.round(depthm)
 
-        area_info.stats = area_info.output
+                points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]
+                print "len points: " + str(len(points))
+                print "area: " + str(area_info.area_query)
+                for i, a in enumerate(area_info.area_query):
+                    print "i, a: " + str(i) + ", " + str(a)
+                    indices = np.where(
+                        map(
+                            lambda p, poly=area_info.area_polys[i]: poly.contains(p),
+                            points
+                        )
+                    )
+                    print "indices____ : " + str(indices)
+
+                    selection = np.ma.array(d.ravel()[indices])
+                    print " len(selection): " + str(len(selection))
+                    if len(selection) > 0 and not selection.mask.all():
+                        area_info.output[i]['variables'].append({
+                            'name': ("%s %s" % (variable_name,
+                                                variable_depth)).strip(),
+                            'unit': variable_unit,
+                            'min': output_fmtstr % (
+                                np.ma.amin(selection).astype(float)
+                            ),
+                            'max': output_fmtstr % (
+                                np.ma.amax(selection).astype(float)
+                            ),
+                            'mean': output_fmtstr % (
+                                np.ma.mean(selection).astype(float)
+                            ),
+                            'median': output_fmtstr % (
+                                np.ma.median(selection).astype(float)
+                            ),
+                            'stddev': output_fmtstr % (
+                                np.ma.std(selection).astype(float)
+                            ),
+                            'num': "%d" % selection.count(),
+                        })
+                    else:
+                        area_info.output[i]['variables'].append({
+                            'name': ("%s %s" % (variable_name,
+                                                variable_depth)).strip(),
+                            'unit': variable_unit,
+                            'min': gettext("No Data"),
+                            'max': gettext("No Data"),
+                            'mean': gettext("No Data"),
+                            'median': gettext("No Data"),
+                            'stddev': gettext("No Data"),
+                            'num': "0",
+                        })
+
+            area_info.stats = area_info.output
+            return
+
+        raise ServerError(gettext("An Error has occored. When opening the dataset. \
+                                Please try again or try a different dataset. \
+                                If you would like to report this error please contact oceandatamap@gmail.com"))
 
 def get_values(opened_dataset, dataset_name, lon_spacing, bounds, variables, depth, time, area, depthm, area_polys, output):
     
@@ -353,13 +390,13 @@ def fill_polygons(area):
     return area_polys, output
 
 
-def computer_wrap_stats(query, dataset_name, lon_valuse):
+def wrap_computer_stats(query, dataset_name, lon_values):
 
     #determ left east or west wrap
-    if any(p > 180 for p in lon_valuse): #points to the east of the east dateline 
+    if any(p > 180 for p in lon_values): #points to the east of the east dateline 
         print "_ there are points to the east of the east dateline"
         wrap_val=180
-    elif any(p < -180 for p in lon_valuse): #points to the west of the west dateline
+    elif any(p < -180 for p in lon_values): #points to the west of the west dateline
         print "_ there are points to the west of the west dateline" 
         wrap_val=-180
     else:
@@ -372,16 +409,12 @@ def computer_wrap_stats(query, dataset_name, lon_valuse):
     if isinstance(variables, str) or isinstance(variables, unicode):
         variables = variables.split(',')
     
-    new_area = Stats(query, lon_valuse)
-    #new_area = stats_area(query, lon_valuse)
+    new_area = Stats(query)
+    new_area.set_lons(lon_values)
+
     new_area.split_area(wrap_val)
-    print "inner_area: " + str(new_area.inner_area.area_query)
-    print "outter_area: " + str(new_area.outter_area.area_query)
 
     variables = [re.sub('_anom$', '', v) for v in variables]
-    
-    new_area.names = "me"
-    new_area.new_name = "metoo"
 
     new_area.names, new_area.inner_area.all_rings = get_names_rings(new_area.inner_area.area_query)
     _, new_area.outter_area.all_rings = get_names_rings(new_area.outter_area.area_query)
@@ -392,60 +425,35 @@ def computer_wrap_stats(query, dataset_name, lon_valuse):
     new_area.inner_area.area_polys, new_area.inner_area.output = fill_polygons(new_area.inner_area.area_query)
     new_area.outter_area.area_polys, new_area.outter_area.output = fill_polygons(new_area.outter_area.area_query)
     
-    print "________open dataset__________"
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
-        if query.get('time') is None or (type(query.get('time')) == str and
-                                        len(query.get('time')) == 0):
-            time = -1
-        else:
-            time = int(query.get('time'))
 
-        if time < 0:
-            time += len(dataset.timestamps)
-        time = np.clip(time, 0, len(dataset.timestamps) - 1)
+    #stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
 
-        depth = 0
-        depthm = 0
+    #new_area.inner_area.stats = get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+    #new_area.outter_area.stats =  get_values(dataset, dataset_name, np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50), new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+    #new_area.combine_stats()
 
-        if query.get('depth'):
-            if query.get('depth') == 'bottom':
-                depth = 'bottom'
-                depthm = 'Bottom'
-            if len(query.get('depth')) > 0 and \
-                    query.get('depth') != 'bottom':
-                depth = int(query.get('depth'))
+    print " new_area.inner_area.: " + str(new_area.inner_area.bounds)
+    print " new_area.outter_area.: " + str( new_area.outter_area.bounds)
+    new_area.inner_area.width = new_area.inner_area.bounds[3] - new_area.inner_area.bounds[1] 
+    new_area.outter_area.width = new_area.outter_area.bounds[3] - new_area.outter_area.bounds[1]
+    print "____new_area.inner_area.width : " + str( new_area.inner_area.width)
+    print "______new_area.outter_area.width : " + str( new_area.outter_area.width)
+    
 
-                depth = np.clip(depth, 0, len(dataset.depths) - 1)
-                depthm = dataset.depths[depth]
+    spacing = math.floor((new_area.inner_area.width/(new_area.inner_area.width+new_area.outter_area.width))*50)
+    print "______________@ spacing: " + str(spacing)
+    new_area.inner_area.spaced_points = np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], spacing)
+    new_area.outter_area.spaced_points = np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50-spacing)
+    #print "temp_1: " +  str(temp_1)
 
-        #stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
+    #get_values_object_oreanted
+    #new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, new_area.inner_area.spaced_points, new_area.inner_area.bounds,variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+    #new_area.outter_area.stats =  get_values_object_oreanted(dataset, dataset_name, new_area.outter_area.spaced_points, new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+    # self, area_info, opened_dataset, dataset_name, bounds, variables, depth, time, depthm):
 
-        #new_area.inner_area.stats = get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
-        #new_area.outter_area.stats =  get_values(dataset, dataset_name, np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50), new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
-        #new_area.combine_stats()
-
-        print " new_area.inner_area.: " + str( new_area.inner_area.bounds)
-        print " new_area.outter_area.: " + str( new_area.outter_area.bounds)
-        new_area.inner_area.width = new_area.inner_area.bounds[3] - new_area.inner_area.bounds[1] 
-        new_area.outter_area.width = new_area.outter_area.bounds[3] - new_area.outter_area.bounds[1]
-        print "____new_area.inner_area.width : " + str( new_area.inner_area.width)
-        print "______new_area.outter_area.width : " + str( new_area.outter_area.width)
-        
-
-        spacing = math.floor((new_area.inner_area.width/(new_area.inner_area.width+new_area.outter_area.width))*50)
-        print "______________@ spacing: " + str(spacing)
-        new_area.inner_area.spaced_points = np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], spacing)
-        new_area.outter_area.spaced_points = np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50-spacing)
-        #print "temp_1: " +  str(temp_1)
-
-        #get_values_object_oreanted
-        #new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, new_area.inner_area.spaced_points, new_area.inner_area.bounds,variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
-        #new_area.outter_area.stats =  get_values_object_oreanted(dataset, dataset_name, new_area.outter_area.spaced_points, new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
-        # self, area_info, opened_dataset, dataset_name, bounds, variables, depth, time, depthm):
-
-        new_area.get_values_object_oreanted(new_area.inner_area, dataset , dataset_name, variables, depth, time, depthm)
-        new_area.get_values_object_oreanted(new_area.outter_area, dataset, dataset_name, variables, depth, time, depthm)
-        new_area.combine_stats()
+    new_area.get_values_object_oreanted(new_area.inner_area , dataset_name, variables)
+    new_area.get_values_object_oreanted(new_area.outter_area, dataset_name, variables)
+    new_area.combine_stats()
 
 
 
@@ -457,71 +465,45 @@ def computer_wrap_stats(query, dataset_name, lon_valuse):
     return json.dumps(sorted(new_area.area.stats, key=itemgetter('name')))
 
 def computer_stats(area, query, dataset_name):
+    new_area = Stats(query)
+    lon_values = []
+    for p in new_area.area.area_query[0]['polygons'][0]:
+        print ":::: p : " + str(p)
+        p[1] = convert_to_bounded_lon(p[1])
+        lon_values.append(p[1])
+        print "____ p : " + str(p)
+    new_area.set_lons(lon_values)
+
     variables = query.get('variable')
     if isinstance(variables, str) or isinstance(variables, unicode):
         variables = variables.split(',')
 
     variables = [re.sub('_anom$', '', v) for v in variables]
 
-    names, all_rings = get_names_rings(area)
-    #for idx, a in enumerate(area):
-    #    for idx_2, points in enumerate(a['polygons']):
-    #        a['polygons'][idx_2] = map(lambda point: [point[0], convert_to_bounded_lon(point[1])], points)
-    #    if isinstance(a, str) or isinstance(a, unicode):
-    #        a = a.encode("utf-8")
-    #        sp = a.split('/', 1)
-    #        if data is None:
-    #            data = list_areas(sp[0])
-    #   
-    #        b = [x for x in data if x.get('key') == a]
-    #        a = b[0]
-    #        area[idx] = a
-    #
-    #    rings = [LinearRing(p) for p in a['polygons']]
-    #    if len(rings) > 1:
-    #        u = cascaded_union(rings)
-    #    else:
-    #        u = rings[0]
-    #    all_rings.append(u.envelope)
-    #    if a.get('name'):
-    #        names.append(a.get('name'))
 
-    bounds = compute_bounds(all_rings)
 
-    area_polys, output = fill_polygons(area)
+    variables = [re.sub('_anom$', '', v) for v in variables]
 
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
-        if query.get('time') is None or (type(query.get('time')) == str and
-                                        len(query.get('time')) == 0):
-            time = -1
-        else:
-            time = int(query.get('time'))
+    new_area.names, new_area.area.all_rings = get_names_rings(new_area.area.area_query)
 
-        if time < 0:
-            time += len(dataset.timestamps)
-        time = np.clip(time, 0, len(dataset.timestamps) - 1)
+    new_area.area.bounds = compute_bounds(new_area.area.all_rings)
 
-        depth = 0
-        depthm = 0
+    new_area.area.area_polys, new_area.area.output = fill_polygons(new_area.area.area_query)
 
-        if query.get('depth'):
-            if query.get('depth') == 'bottom':
-                depth = 'bottom'
-                depthm = 'Bottom'
-            if len(query.get('depth')) > 0 and \
-                    query.get('depth') != 'bottom':
-                depth = int(query.get('depth'))
+    new_area.area.spaced_points = np.linspace(new_area.area.bounds[1], new_area.area.bounds[3], 50)
 
-                depth = np.clip(depth, 0, len(dataset.depths) - 1)
-                depthm = dataset.depths[depth]
+    
+        
+    print "__ new_area.area.bounds: " + str(new_area.area.bounds)
+    print "new_area.area.area_polys, new_area.area.output : " + str(new_area.area.area_polys[0]) + ", " + str(new_area.area.output)
+    print "__ new_area.area.area_query: " + str(new_area.area.area_query)
 
-        stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
-        print "stats: " + str(stats)
-        print "_______________________end of world wrap false_________________________________" 
-        return json.dumps(sorted(stats, key=itemgetter('name')))
-    raise ServerError(gettext("An Error has occored. When oping the dataset. \
-                                Please try again or try a different dataset. \
-                                If you would like to report this error please contact oceandatamap@gmail.com"))
+    # stats = get_values_object_oreanted(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
+    new_area.get_values_object_oreanted(new_area.area, dataset_name, variables)
+    print "stats: " + str(stats)
+    print "_______________________end of world wrap false_________________________________" 
+    return json.dumps(sorted(new_area.area.stats, key=itemgetter('name')))
+    
 
 
 def stats(dataset_name, query):
@@ -543,7 +525,7 @@ def stats(dataset_name, query):
     elif any((p > 180 or p < -180) for p in points_lat) and any(-180 <= p <= 180 for p in points_lat): #if there area points on both sides of the date line
         world_wrap = True 
         print "_______________________world wrap true_________________________________" 
-        return computer_wrap_stats(query, dataset_name, points_lat)
+        return wrap_computer_stats(query, dataset_name, points_lat)
     else: # all(-180 <= p <= 180 for p in area[0]['polygons'][0][:][1]):
         print "points_lat_Werwe:  " + str(points_lat)
         print "_______________________*world wrap false*_________________________________"
