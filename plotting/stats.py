@@ -25,7 +25,7 @@ class Stats:
         #self.oldname = "asfa"
         #self.area.bounds = []
         #self.area.all_rings = []
-        self.variable = copy.deepcopy(query.get('variables'))
+        #self.variable = copy.deepcopy(query.get('variable'))
         self.names = copy.deepcopy(query.get('name')) 
         self.raw_lons = copy.deepcopy(lons)
 
@@ -57,14 +57,7 @@ class Stats:
         print "self.inner_area.stats[0]['variables'][0]['mean']: " + str(type(self.inner_area.stats[0]['variables'][0]['mean'])) + ", " + str(self.inner_area.stats[0]['variables'][0]['mean'])
         print "u'No Data': " + str(type(u'No Data'))
         print "self.outter_area.stats[0]['variables'][0]['mean']: " + str(self.outter_area.stats[0]['variables'][0]['mean'])
-        if self.inner_area.stats[0]['variables'][0]['mean'] == u'No Data':
-            print "____inner = no data"
-        else:
-            print "____inner != no data"
-        if self.outter_area.stats[0]['variables'][0]['mean'] == u'No Data':
-            print "____outter_area = no data"
-        else:
-            print "____outter_area != no data"
+
         if (self.inner_area.stats[0]['variables'][0]['mean'] != u'No Data') and (self.outter_area.stats[0]['variables'][0]['mean'] != u'No Data'):
             print "self.inner_area.stats[0]: " + str(self.inner_area.stats[0])
             print "self.inner_area.stats: " + str( float(self.inner_area.stats[0]['variables'][0]['num']))
@@ -92,7 +85,101 @@ class Stats:
         else:
             print "!!!!!!!!!!!!! no points outside" 
             self.area.stats = self.inner_area.stats
-        
+
+    def get_values_object_oreanted(self, area_info, opened_dataset, dataset_name, variables, depth, time, depthm):
+        #get_values_object_oreanted(self, area_info, opened_dataset, dataset_name, lon_spacing, bounds, variables, depth, time, area, depthm, area_polys, output):
+        #new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, new_area.inner_area.spaced_points, new_area.inner_area.bounds,variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+        # new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, variables, depth, time, depthm)
+        lat, lon = np.meshgrid(
+            np.linspace(area_info.bounds[0], area_info.bounds[2], 50),
+            area_info.spaced_points
+        )
+        print "lenther of: lat, lon:  " + str(len(lat)) + ", " + str(len(lon))
+        print "____lon:  " + ", " + str(lon)
+
+        output_fmtstr = "%6.5g"
+        for v_idx, v in enumerate(variables):
+            var = opened_dataset.variables[v]
+
+            variable_name = get_variable_name(dataset_name, var)
+            variable_unit = get_variable_unit(dataset_name, var)
+            scale_factor = get_variable_scale_factor(dataset_name, var)
+
+            lat, lon, d = opened_dataset.get_raw_point(
+                lat.ravel(),
+                lon.ravel(),
+                depth,
+                time,
+                v
+            )
+
+            if scale_factor != 1.0:
+                d = np.multiply(d, scale_factor)
+
+            if variable_unit.startswith("Kelvin"):
+                variable_unit = "Celsius"
+                d = d - 273.15
+
+            lon[np.where(lon > 180)] -= 360
+
+            if len(var.dimensions) == 3:
+                variable_depth = ""
+            elif depth == 'bottom':
+                variable_depth = "(@ Bottom)"
+            else:
+                variable_depth = "(@%d m)" % np.round(depthm)
+
+            points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]
+            print "len points: " + str(len(points))
+            print "area: " + str(area_info.area_query)
+            for i, a in enumerate(area_info.area_query):
+                print "i, a: " + str(i) + ", " + str(a)
+                indices = np.where(
+                    map(
+                        lambda p, poly=area_info.area_polys[i]: poly.contains(p),
+                        points
+                    )
+                )
+                print "indices____ : " + str(indices)
+
+                selection = np.ma.array(d.ravel()[indices])
+                print " len(selection): " + str(len(selection))
+                if len(selection) > 0 and not selection.mask.all():
+                    area_info.output[i]['variables'].append({
+                        'name': ("%s %s" % (variable_name,
+                                            variable_depth)).strip(),
+                        'unit': variable_unit,
+                        'min': output_fmtstr % (
+                            np.ma.amin(selection).astype(float)
+                        ),
+                        'max': output_fmtstr % (
+                            np.ma.amax(selection).astype(float)
+                        ),
+                        'mean': output_fmtstr % (
+                            np.ma.mean(selection).astype(float)
+                        ),
+                        'median': output_fmtstr % (
+                            np.ma.median(selection).astype(float)
+                        ),
+                        'stddev': output_fmtstr % (
+                            np.ma.std(selection).astype(float)
+                        ),
+                        'num': "%d" % selection.count(),
+                    })
+                else:
+                    area_info.output[i]['variables'].append({
+                        'name': ("%s %s" % (variable_name,
+                                            variable_depth)).strip(),
+                        'unit': variable_unit,
+                        'min': gettext("No Data"),
+                        'max': gettext("No Data"),
+                        'mean': gettext("No Data"),
+                        'median': gettext("No Data"),
+                        'stddev': gettext("No Data"),
+                        'num': "0",
+                    })
+
+        area_info.stats = area_info.output
 
 def get_values(opened_dataset, dataset_name, lon_spacing, bounds, variables, depth, time, area, depthm, area_polys, output):
     
@@ -186,6 +273,8 @@ def get_values(opened_dataset, dataset_name, lon_spacing, bounds, variables, dep
                 })
     return output
 
+
+
 def get_names_rings(area):
     names = []
     all_rings =[]
@@ -220,8 +309,10 @@ def get_names_rings(area):
 def convert_to_bounded_lon(lon):
     if (math.degrees(math.sin(math.radians(lon)))<0):
         bounded_lon = ((lon%180)-180)
-    else:
+    elif abs(lon) != 180:
         bounded_lon = (lon%180)
+    else:
+        bounded_lon = lon
     return bounded_lon
 
 def compute_bounds(all_rings):  
@@ -262,7 +353,8 @@ def fill_polygons(area):
     return area_polys, output
 
 
-def computer_wrap_stats(area, query, dataset_name, lon_valuse):
+def computer_wrap_stats(query, dataset_name, lon_valuse):
+
     #determ left east or west wrap
     if any(p > 180 for p in lon_valuse): #points to the east of the east dateline 
         print "_ there are points to the east of the east dateline"
@@ -272,7 +364,7 @@ def computer_wrap_stats(area, query, dataset_name, lon_valuse):
         wrap_val=-180
     else:
         print "!!!!!!!!!Error raised"
-        raise ClientError(gettext("someing went wrong. te seems you trying to creat a plot across the internatinal date line." + 
+        raise ClientError(gettext("something went wrong. It seems you trying to creat a plot across the internatinal date line." + 
                                 "While we do support this function it must be done within 360 deg of the defalut map view. Try refreshing the page and try again"))
     
     variables = query.get('variable')
@@ -328,8 +420,31 @@ def computer_wrap_stats(area, query, dataset_name, lon_valuse):
 
         #stats = get_values(dataset, dataset_name, np.linspace(bounds[1], bounds[3], 50), bounds, variables, depth, time, area, depthm, area_polys, output)
 
-        new_area.inner_area.stats = get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
-        new_area.outter_area.stats =  get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+        #new_area.inner_area.stats = get_values(dataset, dataset_name, np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], 50), new_area.inner_area.bounds, variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+        #new_area.outter_area.stats =  get_values(dataset, dataset_name, np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50), new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+        #new_area.combine_stats()
+
+        print " new_area.inner_area.: " + str( new_area.inner_area.bounds)
+        print " new_area.outter_area.: " + str( new_area.outter_area.bounds)
+        new_area.inner_area.width = new_area.inner_area.bounds[3] - new_area.inner_area.bounds[1] 
+        new_area.outter_area.width = new_area.outter_area.bounds[3] - new_area.outter_area.bounds[1]
+        print "____new_area.inner_area.width : " + str( new_area.inner_area.width)
+        print "______new_area.outter_area.width : " + str( new_area.outter_area.width)
+        
+
+        spacing = math.floor((new_area.inner_area.width/(new_area.inner_area.width+new_area.outter_area.width))*50)
+        print "______________@ spacing: " + str(spacing)
+        new_area.inner_area.spaced_points = np.linspace(new_area.inner_area.bounds[1], new_area.inner_area.bounds[3], spacing)
+        new_area.outter_area.spaced_points = np.linspace(new_area.outter_area.bounds[1], new_area.outter_area.bounds[3], 50-spacing)
+        #print "temp_1: " +  str(temp_1)
+
+        #get_values_object_oreanted
+        #new_area.inner_area.stats = get_values_object_oreanted(dataset, dataset_name, new_area.inner_area.spaced_points, new_area.inner_area.bounds,variables, depth, time, new_area.inner_area.area_query, depthm, new_area.inner_area.area_polys, new_area.inner_area.output)
+        #new_area.outter_area.stats =  get_values_object_oreanted(dataset, dataset_name, new_area.outter_area.spaced_points, new_area.outter_area.bounds, variables, depth, time, new_area.outter_area.area_query, depthm, new_area.outter_area.area_polys, new_area.outter_area.output)
+        # self, area_info, opened_dataset, dataset_name, bounds, variables, depth, time, depthm):
+
+        new_area.get_values_object_oreanted(new_area.inner_area, dataset , dataset_name, variables, depth, time, depthm)
+        new_area.get_values_object_oreanted(new_area.outter_area, dataset, dataset_name, variables, depth, time, depthm)
         new_area.combine_stats()
 
 
@@ -404,7 +519,9 @@ def computer_stats(area, query, dataset_name):
         print "stats: " + str(stats)
         print "_______________________end of world wrap false_________________________________" 
         return json.dumps(sorted(stats, key=itemgetter('name')))
-    raise ServerError(gettext("An Error has occored. When oping the dataset. Please try again or try a different dataset. If you would like to report this error please contact oceandatamap@gmail.com"))
+    raise ServerError(gettext("An Error has occored. When oping the dataset. \
+                                Please try again or try a different dataset. \
+                                If you would like to report this error please contact oceandatamap@gmail.com"))
 
 
 def stats(dataset_name, query):
@@ -421,15 +538,18 @@ def stats(dataset_name, query):
     print "points_lat: " + str(points_lat)
 
     if (max(points_lat)-min(points_lat))>360:
-        ClientError(gettext("Error: you are trying to create a plot that is wider than the world. The desired information is ambiguous please select a smaller area and try again"))
+        ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
+        The desired information is ambiguous please select a smaller area and try again"))
     elif any((p > 180 or p < -180) for p in points_lat) and any(-180 <= p <= 180 for p in points_lat): #if there area points on both sides of the date line
         world_wrap = True 
         print "_______________________world wrap true_________________________________" 
-        return computer_wrap_stats(area, query, dataset_name, points_lat)
+        return computer_wrap_stats(query, dataset_name, points_lat)
     else: # all(-180 <= p <= 180 for p in area[0]['polygons'][0][:][1]):
         print "points_lat_Werwe:  " + str(points_lat)
         print "_______________________*world wrap false*_________________________________"
         world_wrap = False
         return computer_stats(area, query, dataset_name)   
 
-    ServerError(gettext("Unknow Error: you have tried something that we did not expect. Please try again or try something else. If you would like to report this error please contact oceandatamap@gmail.com")) 
+    ServerError(gettext("Unknow Error: you have tried something that we did not expect. \
+                        Please try again or try something else. If you would like to report \
+                        this error please contact oceandatamap@gmail.com")) 
