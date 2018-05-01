@@ -210,33 +210,21 @@ class Stats:
 def get_names_rings(area):
     names = []
     all_rings =[]
-    data = None
 
     for idx, a in enumerate(area):
-        if isinstance(a, str) or isinstance(a, unicode):
-            a = a.encode("utf-8")
-            sp = a.split('/', 1)
-            if data is None:
-                data = list_areas(sp[0])
-
-            b = [x for x in data if x.get('key') == a]
-            a = b[0]
-            area[idx] = a
-
-    print "area: " + str(area)
-
-    rings = [LinearRing(p) for p in a['polygons']]
-    if len(rings) > 1:
-        u = cascaded_union(rings)
-    else:
-        u = rings[0]
-    all_rings.append(u.envelope)
-    if a.get('name'):
-        names.append(a.get('name'))
+        rings = [LinearRing(p) for p in a['polygons']]
+        if len(rings) > 1:
+            u = cascaded_union(rings)
+        else:
+            u = rings[0]
+        all_rings.append(u.envelope)
+        if a.get('name'):
+            names.append(a.get('name'))
 
     names = sorted(names)
     
     return names, all_rings
+
 
 def convert_to_bounded_lon(lon):
     if (math.degrees(math.sin(math.radians(lon)))<0):
@@ -370,11 +358,23 @@ def stats(dataset_name, query):
     print "query:" + str(query)
 
     try:
-        area = copy.deepcopy(query.get('area'))
+        area = query.get('area')
+        data = None
+        for idx, a in enumerate(area):
+            if isinstance(a, str) or isinstance(a, unicode):
+                a = a.encode("utf-8")
+                sp = a.split('/', 1)
+                if data is None:
+                    data = list_areas(sp[0], simplify=False)
+
+                b = [x for x in data if x.get('key') == a]
+                a = b[0]
+                area[idx] = a
+                
         points_lat =[]
         for p in area[0]['polygons'][0]:
             points_lat.append(p[1])
-    except: 
+    except:
         ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                         Please try again or try something else. If you would like to report \
                         this error please contact oceandatamap@gmail.com")) 
