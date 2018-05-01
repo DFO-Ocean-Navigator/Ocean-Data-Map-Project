@@ -369,10 +369,15 @@ def stats(dataset_name, query):
     print "===================================================================================="
     print "query:" + str(query)
 
-    area = copy.deepcopy(query.get('area'))
-    points_lat =[]
-    for p in area[0]['polygons'][0]:
-        points_lat.append(p[1])
+    try:
+        area = copy.deepcopy(query.get('area'))
+        points_lat =[]
+        for p in area[0]['polygons'][0]:
+            points_lat.append(p[1])
+    except: 
+        ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
+                        Please try again or try something else. If you would like to report \
+                        this error please contact oceandatamap@gmail.com")) 
 
     if (max(points_lat)-min(points_lat))>360:
         ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
