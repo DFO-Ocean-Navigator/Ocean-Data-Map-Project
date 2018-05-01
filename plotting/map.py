@@ -26,6 +26,9 @@ import pyresample.utils
 from geopy.distance import VincentyDistance
 from data import open_dataset
 import copy
+from oceannavigator.errors import ClientError, ServerError
+from flask_babel import gettext
+
 
 class MapPlotter(plotter.Plotter):
 
@@ -140,43 +143,46 @@ class MapPlotter(plotter.Plotter):
             if quad1 and quad2 and quad3 and quad4:
                 covers_pole = True
             return near_pole, covers_pole
-
+    
     def load_data(self):
-        self.area
         distance = VincentyDistance()
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
             (self.bounds[2], self.centroid[1])
-        ) * 1000 * 1.25
+        ) * 1000 * 1.25       
         width = distance.measure(
             (self.centroid[0], self.bounds[1]),
             (self.centroid[0], self.bounds[3])
-        ) * 1000 * 1.25
-        width2 =  distance.measure(
-            (self.new_centroid[0], self.new_bounds[1][0]),
-            (self.new_centroid)
-        ) * 2 * 1000 * 1.25
+            ) * 1000 * 1.25
+        
         if self.projection == 'EPSG:32661':
-            near_pole, covers_pole = self.pole_proximity(self.points)
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
-            if self.centroid[0] > 80 or near_pole or covers_pole: # is centerered close to the north pole 
-                self.basemap = basemap.load_map('npstere', self.new_centroid, height, width2, min(self.bounds[0], self.bounds[2]))
+            if self.centroid[0] > 80 or near_pole or covers_pole:
+                #self.basemap = basemap.load_map('npstere', (blat, 0), None, None)
+                self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
             else:
-                self.basemap = basemap.load_map('lcc', self.new_centroid, height, width2)
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':
-            near_pole, covers_pole = self.pole_proximity(self.points)
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
+            #self.basemap = basemap.load_map('spstere', (blat, 180), None, None)
             if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
-                self.basemap = basemap.load_map('spstere', (blat, 180), height, width2)
+                self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
             else:
-                self.basemap = basemap.load_map('lcc', self.new_centroid, height, width2, max(self.bounds[0], self.bounds[2]))
-        elif abs(self.new_centroid[1] - self.new_bounds[1][1]) > 90:
-            height_bounds= copy.copy(self.new_bounds[0])
-            width_bounds=copy.copy(self.new_bounds[1])
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))       
+        elif abs(self.centroid[1] - self.bounds[1]) > 90:
+            height_bounds= [self.bounds[0], self.bounds[2]] 
+            width_bounds= [self.bounds[1], self.bounds[3]] 
             height_buffer=(abs(height_bounds[1]-height_bounds[0]))*0.1
-            width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1     
+            width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1   
+
+            if abs(width_bounds[1]- width_bounds[0]) > 360:
+                raise ClientError(gettext("You have requested an area that exceads the width of the world. \
+                                        Thinking big is good but plots need to be less the 360 deg wide." ))
+
             if height_bounds[1] < 0:
                 height_bounds[1]=height_bounds[1]+height_buffer
             else:
@@ -185,23 +191,31 @@ class MapPlotter(plotter.Plotter):
                 height_bounds[0]=height_bounds[0]-height_buffer
             else:
                 height_bounds[0]=height_bounds[0]-height_buffer
-            width_bounds[0] = width_bounds[0]-width_buffer
-            width_bounds[1] = width_bounds[1]+width_buffer
-            if width_bounds[0] < -360:
-                width_bounds[0] = -360
-            if width_bounds[1] > 720:
-                width_bounds[1] = 720
-            if (width_bounds[1]-360) > width_bounds[0]:
-                width_bounds=copy.copy(self.new_bounds[1])
-                width_bounds[1]=width_bounds[0]+359  
+
+            
+            new_width_bounds = []
+            new_width_bounds.append(width_bounds[0]-width_buffer)
+
+            new_width_bounds.append(width_bounds[1]+width_buffer)
+
+            if abs(new_width_bounds[1] - new_width_bounds[0]) > 360:
+                width_buffer = np.floor((360-abs(width_bounds[1] - width_bounds[0]))/2)
+                new_width_bounds[0] = width_bounds[0]-width_buffer
+                new_width_bounds[1] = width_bounds[1]+width_buffer
+            
+            if new_width_bounds[0] < -360:
+                new_width_bounds[0] = -360
+            if new_width_bounds[1] > 720:
+                new_width_bounds[1] = 720
+            
             self.basemap = basemap.load_map(
-                'merc', self.new_centroid, 
+                'merc', self.centroid, 
                 (height_bounds[0], height_bounds[1]),
-                (width_bounds[0], width_bounds[1])
+                (new_width_bounds[0], new_width_bounds[1])
             )
         else:  
             self.basemap = basemap.load_map(
-                'lcc', self.new_centroid, height, width2
+                'lcc', self.centroid, height, width
            )
 
         if self.basemap.aspect < 1:
@@ -488,19 +502,9 @@ class MapPlotter(plotter.Plotter):
                 a = b[0]
                 self.area[idx] = a
             else:
-                p = np.array(a['polygons'])
-                self.points=p[0]
-                self.raw_points=copy.copy(p[0])
-                center_x = [points[1] for points in p[0][:]]
-                max_x, min_x = max(center_x), min(center_x)
-                center_y = [points[0] for points in p[0][:]]
-                max_y, min_y = max(center_y), min(center_y)
-                self.true_centroid = ((sum(center_y) / len(p[0][:])), sum(center_x) / len(p[0][:]))
-                self.new_centroid= (min_y+((max_y-min_y)/2), min_x+((max_x-min_x)/2))
-                self.new_bounds = [[min_y, max_y], [min_x, max_x]]
-                p[:, :, 1] = pyresample.utils.wrap_longitudes(p[:, :, 1]) #TODO this line breaks the dateline world wrap
-                a['polygons'] = p.tolist()
-                del p
+                self.points = copy.deepcopy(np.array(a['polygons']))
+                a['polygons'] = self.points.tolist()
+                a['name'] = str(a['polygons'])                
 
             rings = [LinearRing(po) for po in a['polygons']]
             if len(rings) > 1:
@@ -512,7 +516,6 @@ class MapPlotter(plotter.Plotter):
             if a.get('name'):
                 names.append(a.get('name'))
                 centroids.append(u.centroid)
-
         nc = sorted(zip(names, centroids))
         self.names = [n for (n, c) in nc]
         self.centroids = [c for (n, c) in nc]
@@ -659,7 +662,7 @@ class MapPlotter(plotter.Plotter):
         if self.area and self.show_area:
             for a in self.area:
                 polys = []
-                for co in [self.raw_points]:
+                for co in a['polygons'] + a['innerrings']:
                     coords = np.array(co).transpose()
                     mx, my = self.basemap(coords[1], coords[0])
                     map_coords = zip(mx, my)
