@@ -1,5 +1,5 @@
 import React from "react";
-import {Table} from "react-bootstrap";
+import {Table, Alert} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -19,6 +19,7 @@ export default class StatsTable extends React.Component {
       data: [],
       loading: true,
       fail: false,
+      errorMessage: null,
     };
   }
 
@@ -42,6 +43,7 @@ export default class StatsTable extends React.Component {
     this.setState({
       loading: true,
       fail: false,
+      errorMessage: null,
     });
   
     const url = this.urlFromQuery(props.query);
@@ -50,33 +52,37 @@ export default class StatsTable extends React.Component {
       query: stringify(query),
     });
   
-    $.ajax({
+    const promise = $.ajax({
       url: "/stats/",
       data: paramString,
       method: (paramString.length < 1536) ? "GET" : "POST",
       dataType: "json",
       cache: true,
-  
-      success: function(data) {
-        if (this._mounted) {
-          this.setState({
-            data: data,
-            fail: false,
-            loading: false,
-          });
-        }
-      }.bind(this),
-  
-      error: function(xhr, status, err) {
-        if (this._mounted) {
-          console.error(url, status, err.toString());
-          this.setState({
-            loading: false,
-            fail: true,
-          });
-        }
-      }.bind(this)
-    });
+      
+    }).promise();
+    promise.done(function(data) {
+      if (this._mounted) {
+        this.setState({
+          data: data,
+          fail: false,
+          loading: false,
+          errorMessage: null,
+        });
+      }
+    }.bind(this));
+    promise.fail(function(xhr) {
+      if (this._mounted) {
+        const message = JSON.parse(xhr.responseText).message;
+        console.error(xhr);
+        this.setState({
+          loading: false,
+          fail: true,
+          errorMessage: message,
+        });
+      }
+    }.bind(this));
+    
+    
   }
 
   query(q) {
@@ -103,6 +109,12 @@ export default class StatsTable extends React.Component {
   }
 
   render() {
+    // Show a nice error if we need to
+    let errorAlert = null;
+    if (this.state.errorMessage !== null) {
+      errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
+    }
+
     let content = "";
     if (this.state.loading) {
       content = (
@@ -149,26 +161,29 @@ export default class StatsTable extends React.Component {
     }
 
     return (
-      <Table 
-        responsive 
-        className='StatsTable'
-        hover
-        striped
-        bordered
-      >
-        <thead>
-          <tr>
-            <th>{_("Variable")}</th>
-            <th title={_("Minimum Value")}>{_("Min")}</th>
-            <th title={_("Maximum Value")}>{_("Max")}</th>
-            <th title={_("Median Value")}>{_("Median")}</th>
-            <th title={_("Average Value")}>{_("Mean")}</th>
-            <th title={_("Standard Deviation")}>{_("Std Dev")}</th>
-            <th title={_("Number of Valid Points in Area")}>{_("# Valid Pts")}</th>
-          </tr>
-        </thead>
-        {content}
-      </Table>
+      <div>
+        <Table 
+          responsive 
+          className='StatsTable'
+          hover
+          striped
+          bordered
+        >
+          <thead>
+            <tr>
+              <th>{_("Variable")}</th>
+              <th title={_("Minimum Value")}>{_("Min")}</th>
+              <th title={_("Maximum Value")}>{_("Max")}</th>
+              <th title={_("Median Value")}>{_("Median")}</th>
+              <th title={_("Average Value")}>{_("Mean")}</th>
+              <th title={_("Standard Deviation")}>{_("Std Dev")}</th>
+              <th title={_("Number of Valid Points in Area")}>{_("# Valid Pts")}</th>
+            </tr>
+          </thead>
+          {content}
+        </Table>
+        {errorAlert}
+      </div>
     );
   }
 }

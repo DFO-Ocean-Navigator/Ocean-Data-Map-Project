@@ -5,12 +5,19 @@ import threading
 from cachetools import LRUCache
 from oceannavigator import app
 import os
+import math
 
 _loaded_maps = {}
 _maps_cache = LRUCache(maxsize=64)
 
+def convert_to_bounded_lon(lon):
+    if (math.degrees(math.sin(math.radians(lon)))<0):
+        bounded_lon = ((lon%180)-180)
+    else:
+        bounded_lon = (lon%180)
+    return bounded_lon
 
-def load_map(projection, center, height, width):
+def load_map(projection, center, height, width, min_lat=0):
     CACHE_DIR = app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
@@ -38,19 +45,19 @@ def load_map(projection, center, height, width):
                     area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
-                    boundinglat=center[0]*.95,
+                    boundinglat=min_lat,
                     lon_0=center[1],
                 )
             elif projection == 'merc':
                 basemap = Basemap(
-                    resolution=get_resulation(height, width),
-                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
+                    resolution='c',
+                    #area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
                     llcrnrlat=height[0],
-                    llcrnrlon=height[1],
-                    urcrnrlat=width[0],
-                    urcrnrlon=width[1],
+                    llcrnrlon=width[0],
+                    urcrnrlat=height[1],
+                    urcrnrlon=width[1]
                 )
             else:
                 basemap = Basemap(
@@ -59,7 +66,7 @@ def load_map(projection, center, height, width):
                     ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
-                    lon_0=center[1],
+                    lon_0=convert_to_bounded_lon(center[1]),
                     height=height,
                     width=width
                 )
