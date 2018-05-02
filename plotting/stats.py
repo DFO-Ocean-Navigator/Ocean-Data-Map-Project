@@ -56,7 +56,7 @@ class Stats:
             combined_area[0]['variables'][0]['min'] = min(self.inner_area.stats[0]['variables'][0]['min'],  self.outter_area.stats[0]['variables'][0]['min'])
             combined_area[0]['variables'][0]['max'] = max(self.inner_area.stats[0]['variables'][0]['max'],  self.outter_area.stats[0]['variables'][0]['max'])
             combined_area[0]['variables'][0]['mean'] = ((inner_mean*inner_num)+(outter_mean*outter_num))/(inner_num*outter_num)
-            combined_area[0]['variables'][0]['median'] = "about " + str((inner_median+outer_median)/2)
+            combined_area[0]['variables'][0]['median'] = "Dateline error, could not compute"
             combined_num = int(combined_area[0]['variables'][0]['num'])
             combined_area[0]['variables'][0]['stddev'] = np.sqrt((combined_area[0]['variables'][0]['mean']**2)/combined_num)
             self.area.stats = combined_area
