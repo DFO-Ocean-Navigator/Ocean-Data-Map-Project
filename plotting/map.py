@@ -160,7 +160,6 @@ class MapPlotter(plotter.Plotter):
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
             if self.centroid[0] > 80 or near_pole or covers_pole:
-                #self.basemap = basemap.load_map('npstere', (blat, 0), None, None)
                 self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
             else:
                 self.basemap = basemap.load_map('lcc', self.centroid, height, width)
@@ -168,7 +167,6 @@ class MapPlotter(plotter.Plotter):
             near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
-            #self.basemap = basemap.load_map('spstere', (blat, 180), None, None)
             if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
                 self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
             else:
@@ -504,7 +502,7 @@ class MapPlotter(plotter.Plotter):
             else:
                 self.points = copy.deepcopy(np.array(a['polygons']))
                 a['polygons'] = self.points.tolist()
-                a['name'] = str(a['polygons'])                
+                a['name'] = " "              
 
             rings = [LinearRing(po) for po in a['polygons']]
             if len(rings) > 1:
@@ -675,8 +673,14 @@ class MapPlotter(plotter.Plotter):
 
                 poly = PathPatch(path,
                                  fill=None,
+                                 edgecolor='#ffffff',
+                                 linewidth=5
+                                 )
+                plt.gca().add_patch(poly)
+                poly = PathPatch(path,
+                                 fill=None,
                                  edgecolor='k',
-                                 linewidth=1
+                                 linewidth=2
                                  )
                 plt.gca().add_patch(poly)
 

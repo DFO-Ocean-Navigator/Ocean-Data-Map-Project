@@ -199,13 +199,19 @@ class Stats:
                             'stddev': gettext("No Data"),
                             'num': "0",
                         })
+                        ClientError(gettext("there are no datapoints in the area you selected. \
+                                                you may have selected a area on land or you may \
+                                                have an ara that is smallenough to fit between \
+                                                the datapoints try selection a different area or \
+                                                a larger area"))
 
             area_info.stats = area_info.output
             return
 
         raise ServerError(gettext("An Error has occurred. When opening the dataset. \
                                 Please try again or try a different dataset. \
-                                If you would like to report this error please contact oceandatamap@gmail.com"))
+                                If you would like to report this error please \
+                                contact oceandatamap@gmail.com"))
 
 def get_names_rings(area):
     names = []
@@ -318,12 +324,20 @@ def wrap_computer_stats(query, dataset_name, lon_values):
 
     print "stats: " + str(new_area.area.stats)
     print "_______________________end of world wrap true_________________________________" 
+    if int(new_area.area.stats[0]['variables'][0]['num']) == 0:
+        raise ClientWarning(gettext("there are no datapoints in the area you selected. \
+                                            You may have selected a area on land or you may \
+                                            have an ara that is too small. \
+                                            Try selection a different area or \
+                                            a larger area"))
     return json.dumps(sorted(new_area.area.stats, key=itemgetter('name')))
 
 def computer_stats(area, query, dataset_name):
     new_area = Stats(query)
     lon_values = []
     for p in new_area.area.area_query[0]['polygons'][0]:
+        print "pppppp: " + str(p)
+        print "pppppp: " + str(type(p))
         p[1] = convert_to_bounded_lon(p[1])
         lon_values.append(p[1])
     new_area.set_lons(lon_values)
@@ -349,6 +363,15 @@ def computer_stats(area, query, dataset_name):
     new_area.get_values_object_oreanted(new_area.area, dataset_name, variables)
     print "stats: " + str(stats)
     print "_______________________end of world wrap false_________________________________" 
+    print "new_area.area.stats[0]['variables'][0]['num']: " + str(new_area.area.stats[0]['variables'][0]['num'])
+    print "type: " + str(type(new_area.area.stats[0]['variables'][0]['num']))
+
+    if int(new_area.area.stats[0]['variables'][0]['num']) == 0:
+        raise ClientWarning(gettext("there are no datapoints in the area you selected. \
+                                            You may have selected a area on land or you may \
+                                            have an ara that is too small. \
+                                            Try selection a different area or \
+                                            a larger area"))
     return json.dumps(sorted(new_area.area.stats, key=itemgetter('name')))
     
 
@@ -359,6 +382,7 @@ def stats(dataset_name, query):
 
     try:
         area = query.get('area')
+        print "_+_+_area: " + str(area)
         data = None
         for idx, a in enumerate(area):
             if isinstance(a, str) or isinstance(a, unicode):
@@ -371,16 +395,16 @@ def stats(dataset_name, query):
                 a = b[0]
                 area[idx] = a
                 
+        print "_+_+_area2: " + str(area)
         points_lat =[]
         for p in area[0]['polygons'][0]:
             points_lat.append(p[1])
     except:
-        ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
+        raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                         Please try again or try something else. If you would like to report \
                         this error please contact oceandatamap@gmail.com")) 
-
     if (max(points_lat)-min(points_lat))>360:
-        ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
+        raise ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
         The desired information is ambiguous please select a smaller area and try again"))
     elif any((p > 180 or p < -180) for p in points_lat) and any(-180 <= p <= 180 for p in points_lat): #if there area points on both sides of the date line
         print "_______________________world wrap true_________________________________" 
@@ -390,6 +414,6 @@ def stats(dataset_name, query):
         print "_______________________*world wrap false*_________________________________"
         return computer_stats(area, query, dataset_name)   
 
-    ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
+    raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                         Please try again or try something else. If you would like to report \
                         this error please contact oceandatamap@gmail.com")) 
