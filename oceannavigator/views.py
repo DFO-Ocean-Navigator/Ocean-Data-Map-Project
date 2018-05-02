@@ -525,10 +525,10 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         # Find closest indices in dataset corresponding to each calculated point
         # riops used "latitude" and "longitude"
         ymin_index, xmin_index, _ = find_nearest_grid_point(
-            bottom_left[0], bottom_left[1], dataset, lat, lon
+            bottom_left[0], bottom_left[1], dataset, dataset.variables[lat], dataset.variables[lon]
         )
         ymax_index, xmax_index, _ = find_nearest_grid_point(
-            top_right[0], top_right[1], dataset, lat, lon
+            top_right[0], top_right[1], dataset, dataset.variables[lat], dataset.variables[lon]
         )
 
         # Get nicely formatted bearings
@@ -538,11 +538,10 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
         # Get timestamp
         time_variable = find_variable("time")
         timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[0])].values), "yyyyMMdd"))
+        endtimestamp = ""
         if apply_time_range:
             endtimestamp = "-" + str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[1])].values), "yyyyMMdd"))
-        else:
-            endtimestamp = ""
-
+        
         # Do subsetting
         if "riops" in dataset_name:
             # Riops has different coordinate names...why? ¯\_(ツ)_/¯
