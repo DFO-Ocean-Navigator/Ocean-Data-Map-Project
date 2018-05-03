@@ -6,6 +6,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import colormap
 import basemap
+import plotter
 import overlays
 import utils
 import gdal
@@ -22,12 +23,14 @@ from matplotlib.patches import PathPatch
 from textwrap import wrap
 from oceannavigator.misc import list_areas
 import pyresample.utils
-import area
 from geopy.distance import VincentyDistance
 from data import open_dataset
+import copy
+from oceannavigator.errors import ClientError, ServerError
+from flask_babel import gettext
 
 
-class MapPlotter(area.AreaPlotter):
+class MapPlotter(plotter.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'
@@ -135,28 +138,94 @@ class MapPlotter(area.AreaPlotter):
 
         return super(MapPlotter, self).csv(header, columns, data)
 
+    def pole_proximity(self, points):
+        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
+        for p in points:
+            if p[0] > 80:
+                near_pole=True                    
+            if -180<=p[1]<=-90:
+                quad1=True
+            elif -90<=p[1]<=0:
+                quad2=True
+            elif 0<=p[1]<=90:
+                quad3=True
+            elif 90<=p[1]<=180:
+                quad4=True
+            if quad1 and quad2 and quad3 and quad4:
+                covers_pole = True
+            return near_pole, covers_pole
+    
     def load_data(self):
+        distance = VincentyDistance()
+        height = distance.measure(
+            (self.bounds[0], self.centroid[1]),
+            (self.bounds[2], self.centroid[1])
+        ) * 1000 * 1.25       
+        width = distance.measure(
+            (self.centroid[0], self.bounds[1]),
+            (self.centroid[0], self.bounds[3])
+            ) * 1000 * 1.25
+        
         if self.projection == 'EPSG:32661':
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
-            self.basemap = basemap.load_map('npstere', (blat, 0), None, None)
+            if self.centroid[0] > 80 or near_pole or covers_pole:
+                self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
+            else:
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
-            self.basemap = basemap.load_map('spstere', (blat, 180), None, None)
-        else:
-            distance = VincentyDistance()
-            height = distance.measure(
-                (self.bounds[0], self.centroid[1]),
-                (self.bounds[2], self.centroid[1])
-            ) * 1000 * 1.25
-            width = distance.measure(
-                (self.centroid[0], self.bounds[1]),
-                (self.centroid[0], self.bounds[3])
-            ) * 1000 * 1.25
+            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
+                self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
+            else:
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))       
+        elif abs(self.centroid[1] - self.bounds[1]) > 90:
+            height_bounds= [self.bounds[0], self.bounds[2]] 
+            width_bounds= [self.bounds[1], self.bounds[3]] 
+            height_buffer=(abs(height_bounds[1]-height_bounds[0]))*0.1
+            width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1   
+
+            if abs(width_bounds[1]- width_bounds[0]) > 360:
+                raise ClientError(gettext("You have requested an area that exceads the width of the world. \
+                                        Thinking big is good but plots need to be less the 360 deg wide." ))
+
+            if height_bounds[1] < 0:
+                height_bounds[1]=height_bounds[1]+height_buffer
+            else:
+                height_bounds[1]=height_bounds[1]+height_buffer
+            if height_bounds[0] < 0:
+                height_bounds[0]=height_bounds[0]-height_buffer
+            else:
+                height_bounds[0]=height_bounds[0]-height_buffer
+
+            
+            new_width_bounds = []
+            new_width_bounds.append(width_bounds[0]-width_buffer)
+
+            new_width_bounds.append(width_bounds[1]+width_buffer)
+
+            if abs(new_width_bounds[1] - new_width_bounds[0]) > 360:
+                width_buffer = np.floor((360-abs(width_bounds[1] - width_bounds[0]))/2)
+                new_width_bounds[0] = width_bounds[0]-width_buffer
+                new_width_bounds[1] = width_bounds[1]+width_buffer
+            
+            if new_width_bounds[0] < -360:
+                new_width_bounds[0] = -360
+            if new_width_bounds[1] > 720:
+                new_width_bounds[1] = 720
+            
+            self.basemap = basemap.load_map(
+                'merc', self.centroid, 
+                (height_bounds[0], height_bounds[1]),
+                (new_width_bounds[0], new_width_bounds[1])
+            )
+        else:  
             self.basemap = basemap.load_map(
                 'lcc', self.centroid, height, width
-            )
+           )
 
         if self.basemap.aspect < 1:
             gridx = 500
@@ -442,10 +511,9 @@ class MapPlotter(area.AreaPlotter):
                 a = b[0]
                 self.area[idx] = a
             else:
-                p = np.array(a['polygons'])
-                p[:, :, 1] = pyresample.utils.wrap_longitudes(p[:, :, 1])
-                a['polygons'] = p.tolist()
-                del p
+                self.points = copy.deepcopy(np.array(a['polygons']))
+                a['polygons'] = self.points.tolist()
+                a['name'] = " "              
 
             rings = [LinearRing(po) for po in a['polygons']]
             if len(rings) > 1:
@@ -457,7 +525,6 @@ class MapPlotter(area.AreaPlotter):
             if a.get('name'):
                 names.append(a.get('name'))
                 centroids.append(u.centroid)
-
         nc = sorted(zip(names, centroids))
         self.names = [n for (n, c) in nc]
         self.centroids = [c for (n, c) in nc]
@@ -497,8 +564,6 @@ class MapPlotter(area.AreaPlotter):
 
             x, y = self.basemap(x, y)
             outRasterSRS.ImportFromProj4(self.basemap.proj4string)
-
-            print self.basemap.proj4string
 
             pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
             pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]
@@ -622,8 +687,14 @@ class MapPlotter(area.AreaPlotter):
 
                 poly = PathPatch(path,
                                  fill=None,
+                                 edgecolor='#ffffff',
+                                 linewidth=5
+                                 )
+                plt.gca().add_patch(poly)
+                poly = PathPatch(path,
+                                 fill=None,
                                  edgecolor='k',
-                                 linewidth=1
+                                 linewidth=2
                                  )
                 plt.gca().add_patch(poly)
 

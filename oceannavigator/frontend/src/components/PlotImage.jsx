@@ -3,15 +3,15 @@ import {Button,
   DropdownButton,
   ButtonToolbar,
   MenuItem,
-  Modal} from "react-bootstrap";
+  Modal,
+  Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
-
-const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
+const LOADING_IMAGE = require("../images/spinner.gif");
 
 export default class PlotImage extends React.Component {
   constructor(props) {
@@ -22,16 +22,17 @@ export default class PlotImage extends React.Component {
 
     this.state = {
       showPermalink: false,
+      fail: false,
+      errorMessage: null,
+      loading: true,
+      url: LOADING_IMAGE,
+      showImagelink: false,
     };
-
-    this.failCount = 0;
-    this.passCount = 0;
     
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
-    this.closeImageLink = this.closeImageLink.bind(this);
-    this.openImageLink = this.openImageLink.bind(this);
+    this.toggleImageLink = this.toggleImageLink.bind(this);
   }
 
   componentDidMount() {
@@ -49,20 +50,12 @@ export default class PlotImage extends React.Component {
     this._mounted = false;
   }
 
-  openImageLink() {
+  toggleImageLink() {
     const newState = Object.assign({}, this.state);
-    newState.showImagelink = true;
+    newState.showImagelink = !this.state.showImagelink;
 
     this.setState(newState);
   }
-
-  closeImageLink() {
-    const newState = Object.assign({}, this.state);
-    newState.showImagelink = false;
-
-    this.setState(newState);
-  }
-
 
   loadImage(query) {
     const paramString = $.param({
@@ -71,10 +64,13 @@ export default class PlotImage extends React.Component {
     });
 
     if (this.state.paramString !== paramString) {
+
       this.setState({
         loading: true, 
         fail: false, 
+        url: LOADING_IMAGE,
         paramString: paramString,
+        errorMessage: null,
       });
 
       const promise = $.ajax({
@@ -85,31 +81,31 @@ export default class PlotImage extends React.Component {
         method: (paramString.length < 1536) ? "GET" : "POST",
       }).promise();
 
-      promise.done(function(d) {
+      promise.done(function(data) {
         if (this._mounted) {
-          this.passCount++;
           this.setState({
             loading: false,
             fail: false,
-	          passcount: this.passCount,
-            url: d,
+            url: data,
+            errorMessage: null,
           });
         }
       }.bind(this));
             
-      promise.fail(function(d) {
+      promise.fail(function(xhr) {
         if (this._mounted) {
-          const newFail = this.state.failCount + 1;
+          // Get our custom error message
+          const message = JSON.parse(xhr.responseText).message;
+          
           this.setState({
+            url: FAIL_IMAGE,
             loading: false,
             fail: true,
-            failCount: newFail,
+            errorMessage: message,
           });
-          console.error("AJAX Error in PlotImage.jsx: ", d);
         }
       }.bind(this));
     }
-
   }
 
   generateQuery(q) {
@@ -119,12 +115,14 @@ export default class PlotImage extends React.Component {
       quantum: q.quantum,
       names: q.names,
     };
+
     switch(q.type) {
       case "profile":
       case "ts":
       case "sound":
         query.variable = q.variable;
         query.station = q.point;
+        query.showmap = q.showmap;
         query.time = q.time;
         if (q.compare_to) {
           query.compare_to = {
@@ -136,6 +134,7 @@ export default class PlotImage extends React.Component {
         }
         break;
       case "timeseries":
+        query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
@@ -278,41 +277,33 @@ export default class PlotImage extends React.Component {
         this.props.action("permalink", this.props.permlink_subquery);
         break;
       case "image":
-        this.openImageLink();
+        this.toggleImageLink();
         break;
     }
   }
 
   render() {
-    var src = "";
-    var infoStatus = "";
-    if (this.state.fail) {
-      src = FAIL_IMAGE;
-      infoStatus = _("Failed to retrieve image.");
-    } else if (this.state.loading) {
-      src = LOADING_IMAGE;
-      infoStatus = _("Loading. Please wait...");
-    } else {
-      this.failCount=0;
-      src = this.state.url;
-    }
     
     const imagelinkModalEntered = function() {
       this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
     }.bind(this);
 
+    // Show a nice error if we need to
+    let errorAlert = null;
+    if (this.state.errorMessage !== null) {
+      errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
+    }
+
     return (
       <div className='PlotImage'>
 
         {/* Rendered graph */}
         <div className="RenderedImage">
-          <img src={src} />
+          <img src={this.state.url} />
         </div>
-        
-        <br />
-        <label>{infoStatus}</label>
-        <br />
+
+        {errorAlert}
 
         <ButtonToolbar>
           <DropdownButton
@@ -385,7 +376,7 @@ export default class PlotImage extends React.Component {
 
         <Modal
           show={this.state.showImagelink}
-          onHide={this.closeImageLink}
+          onHide={this.toggleImageLink}
           dialogClassName='permalink-modal'
           onEntered={imagelinkModalEntered}>
           <Modal.Header closeButton>
@@ -412,7 +403,7 @@ export default class PlotImage extends React.Component {
               }.bind(this)
               }><Icon icon="copy" /> {_("Copy")}</Button>
             <Button
-              onClick={this.closeImageLink}
+              onClick={this.toggleImageLink}
             ><Icon icon="close" /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>

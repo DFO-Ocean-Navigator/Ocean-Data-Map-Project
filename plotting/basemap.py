@@ -5,14 +5,35 @@ import threading
 from cachetools import LRUCache
 from oceannavigator import app
 import os
+import math
 
 _loaded_maps = {}
 _maps_cache = LRUCache(maxsize=64)
 
+def convert_to_bounded_lon(lon):
+    if (math.degrees(math.sin(math.radians(lon)))<0):
+        bounded_lon = ((lon%180)-180)
+    else:
+        bounded_lon = (lon%180)
+    return bounded_lon
 
-def load_map(projection, center, height, width):
+def load_map(projection, center, height, width, min_lat=0):
     CACHE_DIR = app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
+
+    def get_resulation(h, w):
+        area_km=(h*w)/(1000*1000)
+        if area_km < 10000:
+            res='f'         #full resolution
+        elif area_km < 100000:
+            res='h'         #high resolution
+        elif area_km < 1000000:
+            res='i'         #intermediate resolution
+        elif area_km < 10000000:
+            res='l'         #low resolution
+        else:
+            res='c'         #crude resolution
+        return res
 
     if _maps_cache.get(filename) is None or True:
         try:
@@ -20,30 +41,35 @@ def load_map(projection, center, height, width):
         except:
             if projection in ['npstere', 'spstere']:
                 basemap = Basemap(
-                    resolution='i',
+                    resolution=get_resulation(height, width),
+                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
-                    boundinglat=center[0],
-                    lon_0=center[1])
+                    boundinglat=min_lat,
+                    lon_0=center[1],
+                )
             elif projection == 'merc':
                 basemap = Basemap(
-                    resolution='i',
+                    resolution='c',
+                    #area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
                     llcrnrlat=height[0],
-                    llcrnrlon=height[1],
-                    urcrnrlat=width[0],
-                    urcrnrlon=width[1],
+                    llcrnrlon=width[0],
+                    urcrnrlat=height[1],
+                    urcrnrlon=width[1]
                 )
             else:
                 basemap = Basemap(
-                    resolution='i',
+                    resolution=get_resulation(height, width),
+                    area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
-                    lon_0=center[1],
+                    lon_0=convert_to_bounded_lon(center[1]),
                     height=height,
-                    width=width)
+                    width=width
+                )
             basemap.filename = filename
 
             def do_pickle(basemap, filename):

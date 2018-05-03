@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.ticker import ScalarFormatter
 import matplotlib
@@ -234,22 +235,50 @@ class TimeseriesPlotter(point.PointPlotter):
                 plt.setp(ax[idx].get_xticklabels(), rotation=30)
             fig.autofmt_xdate()
         else:
-            fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
+            # Create base figure
+            figure_size = self.figuresize()
+            figure_size[0] *= 1.5 if self.showmap else 1.0
+            fig = plt.figure(figsize=figure_size, dpi=self.dpi)
+
+            # Setup figure layout
+            width = 1
+            if self.showmap:
+                width += 1
+                # Horizontally scale the actual plots by 2x the size of
+                # the location map
+                width_ratios = [1, 2]
+            else:
+                width_ratios = None
+
+            # Create layout helper
+            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+            subplot = 0
+
+            # Render point location
+            if self.showmap:
+                plt.subplot(gs[0, 0])
+                subplot += 1
+                utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
+                                            [x[1] for x in self.points]])) # Longitudes
+
+            plt.subplot(gs[:, subplot])
+            plt.plot_date(
+                datenum, self.data[:, 0, :].transpose(), '-', figure=fig)
+            plt.ylabel("%s (%s)" % (self.variable_name.title(),
+                                    utils.mathtext(self.variable_unit)), fontsize=14)
+            plt.ylim(vmin, vmax)
+
+            # Title
             wrapped_title = wrap(
                 "%s%s at %s" % (
                     self.variable_name.title(),
                     self.depth_label,
                     ", ".join(self.names)
                 ), 80)
+            plt.title("\n".join(wrapped_title), fontsize=15)
 
-            plt.title("\n".join(wrapped_title))
-            plt.plot_date(
-                datenum, self.data[:, 0, :].transpose(), '-', figure=fig)
-            plt.ylabel("%s (%s)" % (self.variable_name.title(),
-                                    utils.mathtext(self.variable_unit)))
-            plt.ylim(vmin, vmax)
-            plt.gca().xaxis.grid(True)
-            plt.gca().yaxis.grid(True)
+            plt.gca().grid(True)
+
             fig.autofmt_xdate()
 
             self.plot_legend(fig, self.names)

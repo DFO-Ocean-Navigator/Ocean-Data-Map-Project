@@ -1,7 +1,7 @@
 #!env python
 # vim: set fileencoding=utf-8 :
 
-from flask import Response, request, redirect, send_file, send_from_directory
+from flask import Response, request, redirect, send_file, send_from_directory, jsonify
 from flask_babel import gettext, format_date
 import json
 import datetime
@@ -30,8 +30,9 @@ import plotting.tile
 import plotting.scale
 import numpy as np
 import re
+from errors import ErrorBase, ClientError
 import oceannavigator.misc
-import os, subprocess
+import os
 import plotting.colormap
 import netCDF4
 import geopy
@@ -43,8 +44,13 @@ import pandas
 import zipfile
 
 MAX_CACHE = 315360000
-FAILURE = redirect("/", code=302)
+FAILURE = ClientError("Bad API usage")
 
+@app.errorhandler(ErrorBase)
+def handle_error(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 @app.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
@@ -52,11 +58,10 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
 
-    js = json.dumps({
+    resp = jsonify({
         'min': min,
         'max': max,
     })
-    resp = Response(js, status=200, mimetype='application/json')
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
@@ -66,18 +71,16 @@ def range_query(dataset, projection, extent, variable, depth, time):
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
 
-    js = json.dumps({
+    resp = jsonify({
         'min': min,
         'max': max,
     })
-    resp = Response(js, status=200, mimetype='application/json')
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
 @app.route('/api/<string:q>/')
 def query(q):
     data = []
-    max_age = 86400
     if q == 'points':
         data = oceannavigator.misc.list_kml_files('point')
     elif q == 'lines':
@@ -87,11 +90,10 @@ def query(q):
     elif q == 'class4':
         data = oceannavigator.misc.list_class4_files()
     else:
-        return FAILURE
+        raise FAILURE
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
-    resp.cache_control.max_age = max_age
+    resp = jsonify(data)
+    resp.cache_control.max_age = 86400
     return resp
 
 
@@ -106,10 +108,9 @@ def query_id(q, q_id):
     elif q == 'observation' and q_id == 'meta':
         data = oceannavigator.misc.observation_meta()
     else:
-        return FAILURE
+        raise FAILURE
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     resp.cache_control.max_age = 86400
     return resp
 
@@ -120,9 +121,8 @@ def get_data(dataset, variable, time, depth, location):
         dataset, variable, time, depth,
         map(float, location.split(","))
     )
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
-    # resp.cache_control.max_age = MAX_CACHE
+    
+    resp = jsonify(data)
     resp.cache_control.max_age = 2
     return resp
 
@@ -152,10 +152,9 @@ def query_file(q, projection, resolution, extent, file_id):
         data = oceannavigator.misc.observations(
             file_id, projection, resolution, extent)
     else:
-        return FAILURE
+        raise FAILURE
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     resp.cache_control.max_age = max_age
     return resp
 
@@ -173,8 +172,7 @@ def query_datasets():
         })
 
     data = sorted(data, key=lambda k: k['value'])
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
@@ -195,8 +193,8 @@ def colors():
         data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
     if request.args.get('none'):
         data.insert(0, {'id': 'none', 'value': gettext('None')})
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    
+    resp = jsonify(data)
     return resp
 
 
@@ -211,8 +209,7 @@ def colormaps():
     ], key=lambda k: k['value'])
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     return resp
 
 
@@ -229,7 +226,7 @@ def depth():
     var = request.args.get('variable')
 
     if var is None:
-        return FAILURE
+        raise FAILURE
 
     variables = var.split(',')
     variables = [re.sub('_anom$', '', v) for v in variables]
@@ -263,8 +260,7 @@ def depth():
         e for i, e in enumerate(data) if data.index(e) == i
     ]
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     return resp
 
 
@@ -274,8 +270,7 @@ def obs_vars_query():
     for idx, v in enumerate(oceannavigator.misc.observation_vars()):
         data.append({'id': idx, 'value': v})
 
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = jsonify(data)
     return resp
 
 
@@ -350,8 +345,8 @@ def vars_query():
                             })
 
     data = sorted(data, key=lambda k: k['value'])
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    
+    resp = jsonify(data)
     return resp
 
 
@@ -375,7 +370,7 @@ def time_query():
     data = sorted(data, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
-
+    
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
@@ -516,10 +511,9 @@ def drifter_query(q, drifter_id):
     elif q == 'time':
         pts = oceannavigator.misc.drifters_time(drifter_id)
     else:
-        return FAILURE
+        raise FAILURE
 
-    data = json.dumps(pts)
-    resp = Response(data, status=200, mimetype='application/json')
+    resp = jsonify(pts)
     resp.cache_control.max_age = 3600
     return resp
 
@@ -531,17 +525,15 @@ def class4_query(q, class4_id, index):
     elif q == 'models':
         pts = oceannavigator.misc.list_class4_models(class4_id)
     else:
-        return FAILURE
+        raise FAILURE
 
-    data = json.dumps(pts)
-    resp = Response(data, status=200, mimetype='application/json')
+    resp = jsonify(pts)
     resp.cache_control.max_age = 86400
     return resp
 
 
 @app.route('/api/subset/<string:output_format>/<string:dataset_name>/<string:variables>/<string:min_range>/<string:max_range>/<string:time>/<int:should_zip>')
 def subset_query(output_format, dataset_name, variables, min_range, max_range, time, should_zip):
-    
     # Bounding box extents
     bottom_left = [float(x) for x in min_range.split(',')]
     top_right = [float(x) for x in max_range.split(',')]
@@ -742,12 +734,12 @@ def subset_query(output_format, dataset_name, variables, min_range, max_range, t
 def plot():
     if request.method == "GET":
         if 'query' not in request.args:
-            return FAILURE
+            raise FAILURE
 
         query = json.loads(request.args.get('query'))
     else:
         if 'query' not in request.form:
-            return FAILURE
+            raise FAILURE
 
         query = json.loads(request.form.get('query'))
 
@@ -816,7 +808,7 @@ def plot():
     elif plottype == 'stick':
         plotter = StickPlotter(dataset, query, request.args.get('format'))
     else:
-        return FAILURE
+        raise FAILURE
 
     # Get the data from the selected plotter.
     img, mime, filename = plotter.run(size=size, dpi=request.args.get('dpi'))
@@ -824,7 +816,7 @@ def plot():
     if img != "":
         response = make_response(img, mime)
     else:
-        return FAILURE
+        raise FAILURE
 
     if 'save' in request.args:
         response.headers[
@@ -839,12 +831,12 @@ def plot():
 def stats():
     if request.method == "GET":
         if 'query' not in request.args:
-            return FAILURE
+            raise FAILURE
 
         query = json.loads(request.args.get('query'))
     else:
         if 'query' not in request.form:
-            return FAILURE
+            raise FAILURE
 
         query = json.loads(request.form.get('query'))
 

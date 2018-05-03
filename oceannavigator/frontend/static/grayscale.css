@@ -8,8 +8,8 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-  color: white;
-  background-color: black; }
+  color: #FCFDFD;
+  background-color: #171717; }
 
 html {
   width: 100%;
@@ -55,18 +55,18 @@ a {
   #mainNav .navbar-toggler {
     font-size: 14px;
     padding: 11px;
-    color: white;
-    border: 1px solid white; }
+    color: #FCFDFD;
+    border: 1px solid #FCFDFD; }
   #mainNav .navbar-brand {
     font-weight: 700; }
   #mainNav a {
-    color: white; }
+    color: #FCFDFD; }
   #mainNav .navbar-nav .nav-item {
     -webkit-transition: background 0.3s ease-in-out;
     -moz-transition: background 0.3s ease-in-out;
     transition: background 0.3s ease-in-out; }
     #mainNav .navbar-nav .nav-item:hover {
-      color: fade(white, 80%);
+      color: fade(#FCFDFD, 80%);
       outline: none;
       background-color: transparent; }
     #mainNav .navbar-nav .nav-item:active, #mainNav .navbar-nav .nav-item:focus {
@@ -81,7 +81,7 @@ a {
       transition: background 0.3s ease-in-out, padding-top 0.3s ease-in-out, padding-bottom 0.3s;
       letter-spacing: 1px;
       border-bottom: none;
-      background: transparent; }
+      background: rgba(29, 29, 29, 0.8); }
       #mainNav.navbar-shrink {
         padding-top: 10px;
         padding-bottom: 10px;
@@ -91,7 +91,7 @@ a {
         outline: none;
         background-color: rgba(255, 255, 255, 0.3); }
         #mainNav .nav-link.active:hover {
-          color: white; } }
+          color: #FCFDFD; } }
 
 .masthead {
   display: table;
@@ -99,7 +99,7 @@ a {
   height: auto;
   padding: 200px 0;
   text-align: center;
-  color: white;
+  color: #FCFDFD;
   background: url("/static/img/intro-bg.jpg") no-repeat bottom center scroll;
   background-color: black;
   -webkit-background-size: cover;
@@ -131,12 +131,12 @@ a {
   -webkit-transition: background 0.3s ease-in-out;
   -moz-transition: background 0.3s ease-in-out;
   transition: background 0.3s ease-in-out;
-  color: white;
-  border: 2px solid white;
+  color: #FCFDFD;
+  border: 2px solid #FCFDFD;
   border-radius: 100% !important;
   background: transparent; }
   .btn-circle:focus, .btn-circle:hover {
-    color: white;
+    color: #FCFDFD;
     outline: none;
     background: rgba(255, 255, 255, 0.1); }
 
@@ -144,8 +144,8 @@ a {
   padding-top: 150px;
   padding-bottom: 150px; }
 
-.download-section {
-  color: white;
+.launch-section {
+  color: #FCFDFD;
   background: url("/static/img/navigator-main.png") no-repeat center center scroll;
   background-color: black;
   -webkit-background-size: cover;

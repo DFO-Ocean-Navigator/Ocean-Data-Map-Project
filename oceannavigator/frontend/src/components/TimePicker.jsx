@@ -18,7 +18,6 @@ import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
 const i18n = require("../i18n.js");
-const stringify = require("fast-stable-stringify");
 
 export default class TimePicker extends React.Component {
   constructor(props) {
@@ -186,9 +185,7 @@ export default class TimePicker extends React.Component {
         }.bind(this),
 
         error: function(xhr, status, err) {
-          //if (this._mounted) {
-            console.error(props.url, status, err.toString());
-          //}
+          console.warn(props.url, status, err.toString());
         }.bind(this)
       });
 
@@ -224,12 +221,12 @@ export default class TimePicker extends React.Component {
     }
 
     var d;
-    if (this.props.quantum == "hour") {
+    if (this.props.quantum === "hour") {
       var times = [];
       d = $(this.refs.picker).datepicker("getDate");
-      var isodatestr = dateFormat(d, "yyyy-mm-dd");
-      for (let i in this.state.data) {
-        if (this.state.data[i].value.indexOf(isodatestr) == 0) {
+      const isodatestr = dateFormat(d, "yyyy-mm-dd");
+      for (let i = 0; i < this.state.data.length; ++i) {
+        if (this.state.data[i].value.indexOf(isodatestr) === 0) {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
             times.unshift({
               id: this.state.data[i].id,
@@ -241,11 +238,12 @@ export default class TimePicker extends React.Component {
       this.setState({
         times: times,
       });
+
       if (times.length > 0) {
         if (this.state.value === undefined) {
           this.props.onUpdate(this.props.id, times[0].id);
         } else if (
-          this.state.data[this.props.state].value.indexOf(isodatestr) != 0
+          this.state.data[this.props.state].value.indexOf(isodatestr) !== 0
         ) {
           this.props.onUpdate(this.props.id, times[0].id);
         }
@@ -261,7 +259,7 @@ export default class TimePicker extends React.Component {
         d = $(this.refs.picker).datepicker("getDate");
       }
       if (d != null) {
-        var utcDate = new Date(Date.UTC(
+        const utcDate = new Date(Date.UTC(
                     d.getFullYear(),
                     d.getMonth(),
                     (this.props.quantum == "month") ? 15 : d.getDate(),
@@ -286,7 +284,7 @@ export default class TimePicker extends React.Component {
   }
 
   timeChange(e) {
-    var value = e.target.value;
+    const value = e.target.value;
     this.setState({
       value: value
     });
@@ -294,8 +292,10 @@ export default class TimePicker extends React.Component {
   }
 
   nextTime() {
-    var value = parseInt(this.props.state) + 1;
+    const value = parseInt(this.props.state) + 1;
+    
     this.props.onUpdate(this.props.id, value);
+    
     this.setState({
       value: value
     }, function() {
@@ -304,12 +304,14 @@ export default class TimePicker extends React.Component {
   }
 
   prevTime() {
-    var value = parseInt(this.props.state) - 1;
+    const value = parseInt(this.props.state) - 1;
+    
     this.setState({
       value: value
     }, function() {
       this.updatePicker(value + 1, value);
     }.bind(this));
+    
     this.props.onUpdate(this.props.id, value);
   }
 
@@ -321,15 +323,14 @@ export default class TimePicker extends React.Component {
   }
   
   isFirstTime() {
-    return parseInt(this.props.state) == this.state.min;
+    return parseInt(this.props.state) === this.state.min;
   }
 
   isLastTime() {
-    return parseInt(this.props.state) == this.state.max;
+    return parseInt(this.props.state) === this.state.max;
   }
 
   render() {
-    var date;
     var value = parseInt(this.props.state);
 
     if (value < 0) {
@@ -340,8 +341,8 @@ export default class TimePicker extends React.Component {
       value = 0;
     }
 
-    date = new Date(this.state.map[value]);
-    var input = "";
+    const date = new Date(this.state.map[value]);
+    let input = null;
     switch(this.props.quantum) {
       case "month":
         input = <input
@@ -359,12 +360,12 @@ export default class TimePicker extends React.Component {
           type="text"
           value={$.datepicker.formatDate("dd MM yy", date)}
         />;
-        //console.warn($.datepicker.formatDate("dd MM yy", date));
         break;
     }
 
-    var timeinput = "";
-    var options = this.state.times.map(function (t) {
+    let timeinput = null;
+    const options = this.state.times.map(function (t) {
+      console.warn(t);
       return (
         <option key={t.id} value={t.id}>
           {t.value}
