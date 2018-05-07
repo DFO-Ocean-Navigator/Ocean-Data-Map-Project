@@ -2,7 +2,8 @@ import numpy as np
 import re
 import datetime
 from mpl_toolkits.basemap import Basemap
-
+from flask_babel import gettext
+from oceannavigator.errors import ClientError, ServerError
 
 def get_filename(plot_type, dataset_name, extension):
     outname = [
@@ -127,20 +128,23 @@ def _map_plot(points, path=True, quiver=True):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
 
     # Draw a realistic background "blue marble"
-    m.bluemarble()
-
-    m.drawparallels(
-        np.arange(
-            round(minlat),
-            round(maxlat),
-            round(lat_d / 1.5)
-        ), labels=[0, 1, 0, 0])
-    m.drawmeridians(
-        np.arange(
-            round(minlon),
-            round(maxlon),
-            round(lon_d / 1.5)
-        ), labels=[0, 0, 0, 1])
+    try:
+        m.bluemarble()
+    
+        m.drawparallels(
+            np.arange(
+                round(minlat),
+                round(maxlat),
+                round(lat_d / 1.5)
+            ), labels=[0, 1, 0, 0])
+        m.drawmeridians(
+            np.arange(
+                round(minlon),
+                round(maxlon),
+                round(lon_d / 1.5)
+            ), labels=[0, 0, 0, 1])
+    except:
+        raise ClientError(gettext("Plot is to close to pole"))
 
 
 def point_plot(points):
