@@ -17,8 +17,12 @@ SCRIPTNAME=$0
 VECTOR_PAIRS=("vozocrtx vomecrty ocean"
 	      "itzocrtx itmecrty ice"
 	      "iicevelu iicevelv ice"
+	      "sozotaux sometauy windstress"
 	      "u_wind v_wind wind"
 	      "vozo_unstag vome_unstag ocean"
+	      "sozo_unstag some_unstag windstress"
+	      "iocestru iocestrv icewindstress"
+	      "iicestru iicestrv airicestress"
 	     )	  
 COMMENT="DERIVED PRODUCT - created with script ${SCRIPTNAME}"
 
@@ -52,8 +56,20 @@ for vector in "${VECTOR_PAIRS[@]}"; do
       east="wind_east_vel"
       north="wind_north_vel"
       comment="wind"
+    elif [[ "${vector_type}" = "windstress" ]]; then
+	east="wind_stress_east"
+	north="wind_stress_north"
+	comment="wind stress"
+    elif [[ "${vector_type}" = "icewindstress" ]]; then
+	east="iwind_stress_east"
+	north="iwind_stress_north"
+	comment="ice model wind stress"
+    elif [[ "${vector_type}" = "airicestress" ]]; then
+	east="air_ice_stress_east"
+	north="air_ice_stress_north"
+	comment="air ice stress"
     else
-      echo "Invalid vector_type ${vector_type}. Choose from wind, ice, ocean"
+      echo "Invalid vector_type ${vector_type}. Choose from windstress, wind, ice, ocean"
       exit
     fi
     # Add rotated velocities to list of variables to keep
@@ -73,14 +89,14 @@ for vector in "${VECTOR_PAIRS[@]}"; do
       echo "_FillValue identified for ${xvel_name}."
     else
       echo "No _FillValue for ${xvel_name}. Substituting with missing_value."
-      fillx=$(grep -Po "${xvel_name}:missing_value = \K.*(?=.f ;)" <<< "${vars}")
+      fillx=$(grep -Po "${xvel_name}:missing_value = \K.*(?=f ;)" <<< "${vars}") 
       ncatted -h -a _FillValue,${xvel_name},o,f,$fillx $tmp_file
     fi
     if grep -q "${yvel_name}:_FillValue" <<< "${vars}"; then
       echo "_FillValue identified for ${yvel_name}"
     else
       echo "No _FillValue for ${yvel_name}. Substituting with missing_value."
-      filly=$(grep -Po "${yvel_name}:missing_value = \K.*(?=.f ;)" <<< "${vars}")
+      filly=$(grep -Po "${yvel_name}:missing_value = \K.*(?=f ;)" <<< "${vars}")
       ncatted -h -a _FillValue,${yvel_name},o,f,$filly $tmp_file
     fi
     # Start rotation
