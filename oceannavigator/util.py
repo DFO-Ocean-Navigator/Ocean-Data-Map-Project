@@ -2,41 +2,35 @@ import os
 import json
 import oceannavigator
 import re
-import configparser # Python 3.6
+import json
 
 _config = None
 
-
-def read_config(configFile = 'datasetconfig.cfg'):
+def get_dataset_config(configFile = 'datasetconfig.json'):
     global _config
     if _config is None:
-        config = configparser.RawConfigParser()
-        config.read(os.path.join(os.path.dirname(oceannavigator.__file__), configFile))
-        _config = config
+        cwd = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(cwd, configFile), 'r') as f:
+            _config = json.load(f)
 
     return _config
 
-
 def get_datasets():
-    config = read_config()
+    config = get_dataset_config()
 
-    res = {}
-    for key, value in config.items("datasets"):
-        res[key] = json.loads(value.replace("\n", ""))
-
-    return res
+    # Only return "enabled" datasets
+    return [key for key in config.keys() if config[key]["enabled"]]
 
 
 def get_dataset_url(dataset):
-    return get_datasets().get(dataset).get("url")
-
+    return get_dataset_config()[dataset]["url"]
 
 def get_dataset_climatology(dataset):
-    return get_datasets().get(dataset).get("climatology")
+    return get_dataset_config()[dataset]["climatology"]
 
 
 def get_dataset_name(dataset):
-    return get_datasets().get(dataset).get("name")
+    return get_dataset_config()[dataset]["name"]
 
 
 def get_dataset_attribution(dataset):
@@ -45,14 +39,14 @@ def get_dataset_attribution(dataset):
         return re.sub(
             r"<[^>]*>",
             "",
-            get_datasets().get(dataset).get("attribution")
+            get_dataset_config()[dataset]["attribution"]
         )
     except:
         return ""
 
 
 def get_dataset_cache(dataset):
-    cache = get_datasets().get(dataset).get("cache")
+    cache = get_dataset_config()[dataset].get("cache")
     if cache is not None and isinstance(cache, str):
         cache = int(cache)
 
@@ -60,45 +54,47 @@ def get_dataset_cache(dataset):
 
 
 def get_variables(dataset):
-    config = read_config()
+    variable_keys = get_dataset_config()[dataset]["variables"].keys()
 
-    res = {}
-    try:
-        for key, value in config.items(dataset):
-            res[key] = json.loads(value.replace("\n", ""))
-    except configparser.NoSectionError:
-        pass
+    variables = []
+    for key in variable_keys:
+        is_hidden = get_dataset_config()[dataset]["variables"][key].get("hide")
 
-    return res
+        if is_hidden is None or is_hidden in ['false', 'False']:
+            variables.append(key)
+    return variables
 
 
-def get_variable_name(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key.lower())
+def get_variable_name(dataset, variable):
+    ds_vars = get_variables(dataset)
 
-    if from_config is not None:
-        return from_config.get("name")
+    key = variable.key.lower()
+    if key in ds_vars:
+        return get_dataset_config()[dataset]["variables"][key]["name"]
     elif variable.name is not None:
         return variable.name
     else:
         return str(variable.key).title()
 
 
-def get_variable_unit(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key.lower())
+def get_variable_unit(dataset, variable):
+    ds_vars = get_variables(dataset)
 
-    if from_config is not None:
-        return from_config.get("unit")
+    key = variable.key.lower()
+    if key in ds_vars:
+        return get_dataset_config()[dataset]["variables"][key]["unit"]
     elif variable.unit is not None:
         return variable.unit
     else:
         return "Unknown"
 
 
-def get_variable_scale(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key.lower())
+def get_variable_scale(dataset, variable):
+    ds_vars = get_variables(dataset)
 
-    if from_config is not None:
-        scale = from_config.get("scale")
+    key = variable.key.lower()
+    if key in ds_vars:
+        scale = get_dataset_config()[dataset]["variables"][key].get("scale")
         if scale is not None:
             return scale
     if variable.valid_min is not None and variable.valid_max is not None:
@@ -107,22 +103,25 @@ def get_variable_scale(dataset_name, variable):
     return [0, 100]
 
 
-def get_variable_scale_factor(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key.lower())
+def get_variable_scale_factor(dataset, variable):
+    ds_vars = get_variables(dataset)
 
-    if from_config is not None:
-        factor = from_config.get("scale_factor")
+    key = variable.key.lower()
+    if key in ds_vars:
+        factor = get_dataset_config()[dataset]["variables"][key].get("scale_factor")
         if factor is not None:
             return factor
 
     return 1.0
 
 
-def is_variable_hidden(dataset_name, variable):
-    from_config = get_variables(dataset_name).get(variable.key.lower())
+def is_variable_hidden(dataset, variable):
+    from_config = get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
 
-    hidden = False
     if from_config is not None:
-        hidden = bool(from_config.get("hide"))
+        if from_config in ['false', 'False']:
+            return False
+        elif from_config in ['true', 'True']:
+            return True
 
-    return hidden
+    return False

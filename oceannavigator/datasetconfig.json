@@ -1,0 +1,910 @@
+{
+    "biomer": {
+        "attribution": "BIOMER from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Biogeochemical Reanalysis -&nbsp;             <a href=\"https://www.mercator-ocean.fr/wp-content/uploads/2015/10/FS-BIOMER_EN.pdf\" target=\"_new\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1998&ndash;December 2013)</li>                 <li>Variables Available:                     <ul>                         <li>Chlorophyll</li>                         <li>Dissolved Oxygen</li>                         <li>Iron</li>                         <li>Nitrate</li>                         <li>Phosphate</li>                         <li>Phytoplankton expressed as carbon</li>                         <li>Primary Productivity of Carbon</li>                         <li>Silicate</li>                     </ul>                 </li>             </ul>",
+        "name": "BIOMER",
+        "quantum": "month",
+        "url": "http://trinity:8080/thredds/dodsC/biomer/aggregated.ncml",
+        "variables": {
+            "chl": {
+                "hide": "false",
+                "name": "Chlorophyll",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mg/m^3"
+            },
+            "fe": {
+                "hide": "false",
+                "name": "Iron",
+                "scale": [
+                    0,
+                    0.05
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "no3": {
+                "hide": "false",
+                "name": "Nitrate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "o2": {
+                "hide": "false",
+                "name": "Dissolved Oxygen",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "phyc": {
+                "hide": "false",
+                "name": "Phytoplankton expressed as carbon",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "po4": {
+                "hide": "false",
+                "name": "Phosphate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "pp": {
+                "hide": "false",
+                "name": "Primary Productivity of Carbon",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "g/m^3/day"
+            },
+            "si": {
+                "hide": "false",
+                "name": "Silicate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            }
+        }
+    },
+    "biomer_climatology": {
+        "attribution": "BIOMER from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Biogeochemical Reanalysis             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Computed from the monthly averages (January 1998&ndash;December 2013)</li>                 <li>Variables Available:                     <ul>                         <li>Chlorophyll</li>                         <li>Dissolved Oxygen</li>                         <li>Iron</li>                         <li>Nitrate</li>                         <li>Phosphate</li>                         <li>Phytoplankton expressed as carbon</li>                         <li>Primary Productivity of Carbon</li>                         <li>Silicate</li>                     </ul>                 </li>             </ul>",
+        "name": "BIOMER Climatology",
+        "quantum": "month",
+        "url": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "variables": {
+            "chl": {
+                "hide": "false",
+                "name": "Chlorophyll",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mg/m^3"
+            },
+            "fe": {
+                "hide": "false",
+                "name": "Iron",
+                "scale": [
+                    0,
+                    0.05
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "no3": {
+                "hide": "false",
+                "name": "Nitrate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "o2": {
+                "hide": "false",
+                "name": "Dissolved Oxygen",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "phyc": {
+                "hide": "false",
+                "name": "Phytoplankton expressed as carbon",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "po4": {
+                "hide": "false",
+                "name": "Phosphate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            },
+            "pp": {
+                "hide": "false",
+                "name": "Primary Productivity of Carbon",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "g/m^3/day"
+            },
+            "si": {
+                "hide": "false",
+                "name": "Silicate",
+                "scale": [
+                    0,
+                    0
+                ],
+                "scale_factor": 1,
+                "unit": "mmol/m^3"
+            }
+        }
+    },
+    "giops_day": {
+        "attribution": "GIOPS Daily Values from CONCEPTS",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Ice Ocean Prediction System             <ul>                 <li>Global Coverage</li>                 <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>                 <li>50 vertical z-levels</li>                 <li>Available as Daily averages (March 8, 2016 to present)</li>                 <li>Variables Available:                     <ul>                         <li>Ice Concentration</li>                         <li>Ice Volume</li>                         <li>Meridional Wind</li>                         <li>Salinity</li>                         <li>Sea Surface Height (Free Surface)</li>                         <li>Sea Water Velocity</li>                         <li>Sea Water X Velocity</li>                         <li>Sea Water Y Velocity</li>                         <li>Water Temperature</li>                         <li>Wind</li>                         <li>Zonal Wind</li>                     </ul>                 </li>             </ul>",
+        "name": "GIOPS Daily",
+        "quantum": "day",
+        "url": "http://trinity:8080/thredds/dodsC/giops/daily/aggregated.ncml",
+        "variables": {
+            "aice": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "u_wind": {
+                "hide": "false",
+                "name": "Zonal Wind",
+                "scale": [
+                    -20,
+                    20
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "v_wind": {
+                "hide": "false",
+                "name": "Meridional Wind",
+                "scale": [
+                    -20,
+                    20
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vice": {
+                "hide": "false",
+                "name": "Ice Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Kelvin"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "giops_month": {
+        "attribution": "GIOPS Monthly Averages from CONCEPTS",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Ice Ocean Prediction System             <ul>                 <li>Global Coverage</li>                 <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>                 <li>50 vertical z-levels</li>                 <li>Available as monthly averages (May 2014&ndash;April 2015)</li>                 <li>Variables Available:                     <ul>                         <li>Ice Concentration</li>                         <li>Ice Volume</li>                         <li>Meridional Wind</li>                         <li>Salinity</li>                         <li>Sea Surface Height (Free Surface)</li>                         <li>Sea Water Velocity</li>                         <li>Sea Water X Velocity</li>                         <li>Sea Water Y Velocity</li>                         <li>Water Temperature</li>                         <li>Wind</li>                         <li>Zonal Wind</li>                     </ul>                 </li>             </ul>",
+        "name": "GIOPS Monthly",
+        "quantum": "month",
+        "url": "http://trinity:8080/thredds/dodsC/giops/monthly/aggregated.ncml",
+        "variables": {
+            "aice": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "u_wind": {
+                "hide": "false",
+                "name": "Zonal Wind",
+                "scale": [
+                    -20,
+                    20
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "v_wind": {
+                "hide": "false",
+                "name": "Meridional Wind",
+                "scale": [
+                    -20,
+                    20
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vice": {
+                "hide": "false",
+                "name": "Ice Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Kelvin"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "glorys": {
+        "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Ocean Reanalysis and Simulation             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Computed from the monthly averages January 1993&ndash;December 2013</li>                 <li>Variables Available:                     <ul>                         <li>Eastward Velocity</li>                         <li>Ice Concentration</li>                         <li>Northward Velocity</li>                         <li>Salinity</li>                         <li>Sea Ice Eastward Velocity</li>                         <li>Sea Ice Northward Velocity</li>                         <li>Sea Ice Thickness</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Surface Height</li>                         <li>Sea Water Velocity</li>                         <li>Temperature</li>                     </ul>                 </li>             </ul>",
+        "name": "GLORYS Climatology",
+        "quantum": "month",
+        "url": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "variables": {
+            "iicethic": {
+                "hide": "false",
+                "name": "Ice Thickness",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "iicevelu": {
+                "hide": "false",
+                "name": "Sea Ice X Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "iicevelv": {
+                "hide": "false",
+                "name": "Sea Ice Y Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "ileadfra": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "glorys_climatology": {
+        "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Ocean Reanalysis and Simulation             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Computed from the monthly averages January 1993&ndash;December 2013</li>                 <li>Variables Available:                     <ul>                         <li>Eastward Velocity</li>                         <li>Ice Concentration</li>                         <li>Northward Velocity</li>                         <li>Salinity</li>                         <li>Sea Ice Eastward Velocity</li>                         <li>Sea Ice Northward Velocity</li>                         <li>Sea Ice Thickness</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Surface Height</li>                         <li>Sea Water Velocity</li>                         <li>Temperature</li>                     </ul>                 </li>             </ul>",
+        "name": "GLORYS Climatology",
+        "quantum": "month",
+        "url": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "variables": {
+            "iicethic": {
+                "hide": "false",
+                "name": "Ice Thickness",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "iicevelu": {
+                "hide": "false",
+                "name": "Sea Ice X Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "iicevelv": {
+                "hide": "false",
+                "name": "Sea Ice Y Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "ileadfra": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "riops": {
+        "attribution": "RIOPS Values from CONCEPTS",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "help": "Regional Ice Ocean Prediction System             <ul>                 <li>North Atlantic and Arctic</li>                 <li>Tri-polar ORCA grid 1/12° resolution</li>                 <li>50 vertical z-levels</li>                 <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>                 <li>Variables Available:                     <ul>                         <li>Depth-Integrated Sea Ice Strength</li>                         <li>Depth-Integrated Internal Sea Ice Pressure</li>                         <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                         <li>Sea Ice Area Fraction</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Ice Volume Per Unit Grid Cell Area</li>                         <li>Sea Ice X Velocity</li>                         <li>Sea Ice Y Velocity</li>                         <li>Sea Surface Height Above Geoid</li>                         <li>Sea Water Potential Temperature</li>                         <li>Sea Water Salinity</li>                         <li>Sea Water Velocity</li>                         <li>Sea Water X Velocity</li>                         <li>Sea Water Y Velocity</li>                         <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                         <li>Turbocline Depth</li>                         <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                     </ul>                 </li>             </ul>",
+        "name": "RIOPS",
+        "quantum": "hour",
+        "url": "http://trinity:8080/thredds/dodsC/riops/riopsf/aggregated.ncml",
+        "variables": {
+            "iiceconc": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "iicepressure": {
+                "hide": "false",
+                "name": "Internal Sea Ice Pressure",
+                "scale": [
+                    0,
+                    200000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicestrength": {
+                "hide": "false",
+                "name": "Compressive Sea Ice Strength",
+                "scale": [
+                    0,
+                    60000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicesurftemp": {
+                "hide": "false",
+                "name": "Ice/Snow Surface Temperature",
+                "scale": [
+                    -5,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "Kelvin"
+            },
+            "iicevol": {
+                "hide": "false",
+                "name": "Ice Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "isnowvol": {
+                "hide": "false",
+                "name": "Snow Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "cm"
+            },
+            "itmecrty": {
+                "hide": "false",
+                "name": "Sea Ice Y Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "itzocrtx": {
+                "hide": "false",
+                "name": "Sea Ice X Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "sokaraml": {
+                "hide": "false",
+                "name": "Ocean Mixed Layer Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "somixhgt": {
+                "hide": "false",
+                "name": "Turbocline Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "riops_daily": {
+        "attribution": "RIOPS Daily Averages from CONCEPTS",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "help": "Regional Ice Ocean Prediction System             <ul>                 <li>North Atlantic and Arctic</li>                 <li>Tri-polar ORCA grid 1/12° resolution</li>                 <li>50 vertical z-levels</li>                 <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>                 <li>Variables Available:                     <ul>                         <li>Depth-Integrated Sea Ice Strength</li>                         <li>Depth-Integrated Internal Sea Ice Pressure</li>                         <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                         <li>Sea Ice Area Fraction</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Ice Volume Per Unit Grid Cell Area</li>                         <li>Sea Ice X Velocity</li>                         <li>Sea Ice Y Velocity</li>                         <li>Sea Surface Height Above Geoid</li>                         <li>Sea Water Potential Temperature</li>                         <li>Sea Water Salinity</li>                         <li>Sea Water Velocity</li>                         <li>Sea Water X Velocity</li>                         <li>Sea Water Y Velocity</li>                         <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                         <li>Turbocline Depth</li>                         <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                     </ul>                 </li>             </ul>",
+        "name": "RIOPS Daily Average",
+        "quantum": "day",
+        "url": "http://trinity:8080/thredds/dodsC/riops/riops_daily/aggregated.ncml",
+        "variables": {
+            "iiceconc": {
+                "hide": "false",
+                "name": "Ice Concentration",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "iicepressure": {
+                "hide": "false",
+                "name": "Internal Sea Ice Pressure",
+                "scale": [
+                    0,
+                    200000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicestrength": {
+                "hide": "false",
+                "name": "Compressive Sea Ice Strength",
+                "scale": [
+                    0,
+                    60000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicesurftemp": {
+                "hide": "false",
+                "name": "Ice/Snow Surface Temperature",
+                "scale": [
+                    -5,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "Kelvin"
+            },
+            "iicevol": {
+                "hide": "false",
+                "name": "Ice Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "isnowvol": {
+                "hide": "false",
+                "name": "Snow Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "cm"
+            },
+            "itmecrty": {
+                "hide": "false",
+                "name": "Sea Ice Y Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "itzocrtx": {
+                "hide": "false",
+                "name": "Sea Ice X Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "sokaraml": {
+                "hide": "false",
+                "name": "Ocean Mixed Layer Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "somixhgt": {
+                "hide": "false",
+                "name": "Turbocline Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "sossheig": {
+                "hide": "false",
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+                "hide": "false",
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+                "hide": "false",
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+                "unit": "PSU"
+            },
+            "votemper": {
+                "hide": "false",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius"
+            },
+            "vozocrtx": {
+                "hide": "false",
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    }
+}

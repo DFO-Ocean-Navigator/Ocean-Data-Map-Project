@@ -10,7 +10,7 @@ from PIL import Image
 
 from oceannavigator import app
 from oceannavigator.util import (
-    get_variable_name, get_datasets,
+    get_variable_name, get_datasets, get_dataset_config,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache
 )
@@ -152,13 +152,15 @@ def query_file(q, projection, resolution, extent, file_id):
 @app.route('/api/datasets/')
 def query_datasets():
     data = []
-    for key, ds in list(get_datasets().items()):
+
+    config = get_dataset_config()
+    for key in get_datasets():
         data.append({
             'id': key,
-            'value': ds['name'],
-            'quantum': ds['quantum'],
-            'help': ds.get('help'),
-            'attribution': ds.get('attribution'),
+            'value': config[key]['name'],
+            'quantum': config[key]['quantum'],
+            'help': config[key]['help'],
+            'attribution': config[key]['attribution'],
         })
 
     data = sorted(data, key=lambda k: k['value'])
