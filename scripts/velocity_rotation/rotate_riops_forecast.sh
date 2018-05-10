@@ -29,11 +29,15 @@ for f in $FILES; do
     # Ocean current first
     savefile=$savedir/${basename}_cardinal_velocity.nc
     echo "Rotating velocity from $f. Saving to $savefile" >> $LOGFILE
-    bash rotate_velocity.sh \
-	 $GRID \
-	 $xvel \
-	 $yvel \
-	 $savefile \
-	 $VARKEEP \
-	 "$ATTS_TO_REMOVE"
+    if [[ ! -e $savefile ]] ; then
+        bash rotate_velocity.sh \
+        $GRID \
+        $xvel \
+        $yvel \
+        $savefile \
+        $VARKEEP \
+        "$ATTS_TO_REMOVE"
+    else
+        echo "File $savefile already exists and therefore creation has been skipped" >> $LOGFILE
+    fi
 done

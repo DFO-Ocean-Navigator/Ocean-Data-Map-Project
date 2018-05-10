@@ -81,13 +81,17 @@ for Ufile in $FILES; do
     basename=$(echo $basename | sed "s/unstag//")
     savefile=$OUT/${basename}cardinal_velocity.nc
     echo "Rotating ocean current in ${Ufile}. Saving in ${savefile}" >> $LOGFILE
-    bash rotate_velocity.sh \
-	 $GRID \
-	 $xvel \
-	 $yvel \
-	 $savefile \
-	 $VARKEEP \
-	 "$ATTS_TO_REMOVE"
+    if [[ ! -e $savefile ]] ; then
+        bash rotate_velocity.sh \
+        $GRID \
+        $xvel \
+        $yvel \
+        $savefile \
+        $VARKEEP \
+        "$ATTS_TO_REMOVE"
+    else
+        echo "File $savefile already exists and therefore creation has been skipped" >> $LOGFILE
+    fi
 done
 # Ice files next
 # NOTE: Assuming that GLORYS needs rotated ice velocities. Metadata on both ice
@@ -101,13 +105,17 @@ for f in $ICEFILES; do
     basename=$(echo $basename | sed "s/icemod//")
     savefile=$OUT/${basename}ice_cardinal_velocity.nc
     echo "Rotating ice velocity in ${f}. Saving in ${savefile}" >> $LOGFILE
-    bash rotate_velocity.sh \
-	 $GRID \
-	 $xvel \
-	 $yvel \
-	 $savefile \
-	 $VARKEEP \
-	 "$ATTS_TO_REMOVE"
+    if [[ ! -e $savefile ]] ; then
+        bash rotate_velocity.sh \
+        $GRID \
+        $xvel \
+        $yvel \
+        $savefile \
+        $VARKEEP \
+        "$ATTS_TO_REMOVE"
+    else
+        echo "File $savefile already exists and therefore creation has been skipped" >> $LOGFILE
+    fi
 done
 
 rm -rf $tmpdir
