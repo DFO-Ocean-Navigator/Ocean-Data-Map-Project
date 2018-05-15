@@ -1,3 +1,4 @@
+/* eslint react/no-deprecated: 0 */
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
   FormControl, FormGroup, ControlLabel} from "react-bootstrap";
@@ -221,8 +222,8 @@ export default class AreaWindow extends React.Component {
       bsStyle='primary'
       key='map_settings'
     >
-      <Row>
-        <Col xs={9}>
+      <Row>   {/* Contains compare dataset and help button */}
+        <Col xs={9}> 
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
@@ -241,6 +242,8 @@ export default class AreaWindow extends React.Component {
           </Button>
         </Col>
       </Row>
+    
+      {/* Displays Options for Compare Datasets */}
       <Button
         bsStyle="default"
         key='swap_views'
@@ -277,7 +280,8 @@ export default class AreaWindow extends React.Component {
           <img src="/colormaps.png" />
         </ComboBox>
       </div>
-      
+      {/* End of Compare Datasets options */}
+
       <SelectBox 
         key='bathymetry' 
         id='bathymetry' 
@@ -296,6 +300,7 @@ export default class AreaWindow extends React.Component {
         {_("showarea_help")}
       </SelectBox>
 
+      {/* Arror Selector Drop Down menu */}
       <QuiverSelector 
         key='quiver' 
         id='quiver' 
@@ -308,6 +313,7 @@ export default class AreaWindow extends React.Component {
         {_("arrows_help")}
       </QuiverSelector>
 
+      {/* Contour Selector drop down menu */}
       <ContourSelector 
         key='contour' 
         id='contour' 
@@ -320,13 +326,24 @@ export default class AreaWindow extends React.Component {
         {_("contour_help")}
       </ContourSelector>
 
+      {/* Image Size Selection */}
       <ImageSize 
         key='size' 
         id='size' 
         state={this.state.size} 
         onUpdate={this.onLocalUpdate} 
         title={_("Saved Image Size")} 
-      />
+      ></ImageSize>
+
+      {/* Plot Title */}
+      <div className='input'>
+        <h1>Plot Title</h1>
+        <FormControl
+          placeholder='Default'
+        >
+        </FormControl>
+      </div>
+      
     </Panel>);
 
     const subset = (<Panel
