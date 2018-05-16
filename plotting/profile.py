@@ -152,12 +152,16 @@ class ProfilePlotter(point.PointPlotter):
         plt.gca().set_ylabel(gettext("Depth (m)"), fontsize=14)
 
         self.plot_legend(fig, self.names)
+
+        if self.plotTitle is None or self.plotTitle == "":  
+            plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "), \
+                                            ", ".join(self.names), \
+                                            ", ".join(self.variable_names), \
+                                            self.date_formatter(self.timestamp)), \
+                        fontsize=15)
+        else:
+            plt.suptitle(self.plotTitle,fontsize=15)
         
-        plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "), \
-                                        ", ".join(self.names), \
-                                        ", ".join(self.variable_names), \
-                                        self.date_formatter(self.timestamp)), \
-                    fontsize=15)
         fig.tight_layout()
         fig.subplots_adjust(top=(0.8))
 

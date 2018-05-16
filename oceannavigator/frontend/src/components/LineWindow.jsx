@@ -1,3 +1,9 @@
+/* eslint react/no-deprecated: 0 */
+/*
+
+  Opens Window displaying the Image corresponding to a Selected Line
+
+*/
 import React from "react";
 import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
@@ -9,6 +15,7 @@ import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
+import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -34,6 +41,7 @@ export default class LineWindow extends React.Component {
       size: "10x7",
       dpi: 144,
       depth_limit: false,
+      plotTitles: Array(2).fill(""),
     };
 
     if (props.init !== null) {
@@ -43,6 +51,7 @@ export default class LineWindow extends React.Component {
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
+    this.updatePlotTitle = this.updatePlotTitle.bind(this);
   }
 
   componentDidMount() {
@@ -73,6 +82,15 @@ export default class LineWindow extends React.Component {
           });
         }
       }
+    }
+  }
+
+  //Updates Plot with User Specified Title
+  updatePlotTitle (title) {
+    if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
+      const newTitles = this.state.plotTitles;
+      newTitles[this.state.selected - 1] = title;
+      this.setState({plotTitles: newTitles,});   //Update Plot Title
     }
   }
 
@@ -186,6 +204,13 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Saved Image Size")}
       />
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      ></CustomPlotLabels>
     </Panel>);
 
     const transectSettings = <Panel
@@ -329,6 +354,7 @@ export default class LineWindow extends React.Component {
       name: this.props.names[0],
       size: this.state.size,
       dpi: this.state.dpi,
+      plotTitle: this.state.plotTitles[this.state.selected - 1],
     };
 
     switch(this.state.selected) {
