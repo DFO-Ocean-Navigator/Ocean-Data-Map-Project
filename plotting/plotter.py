@@ -28,6 +28,7 @@ class Plotter:
         self.format = format
         self.dpi = 72.
         self.size = '11x9'
+        self.plotTitle = None
         self.compare = False
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
@@ -82,6 +83,10 @@ class Plotter:
         self.time = get_time('time')
         self.starttime = get_time('starttime')
         self.endtime = get_time('endtime')
+
+        # Sets custom plot title
+        self.plotTitle = query.get('plotTitle')
+
 
         # Parse variable scale
         def parse_scale(query_scale):
@@ -159,6 +164,7 @@ class Plotter:
         self.scale_factors = self.get_variable_scale_factors(data, variables)
 
     def plot(self, fig=None):
+        
         if fig is None:
             fig = plt.gcf()
 

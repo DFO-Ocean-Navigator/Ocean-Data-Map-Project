@@ -10,6 +10,7 @@ import ContourSelector from "./ContourSelector.jsx";
 import QuiverSelector from "./QuiverSelector.jsx";
 import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
+import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -37,6 +38,7 @@ export default class AreaWindow extends React.Component {
       surfacevariable: "none",
       linearthresh: 200,
       bathymetry: true,
+      plotTitle: null,
       quiver: {
         variable: "",
         magnitude: "length",
@@ -68,6 +70,7 @@ export default class AreaWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.saveData = this.saveData.bind(this);
     this.onSelect = this.onSelect.bind(this);
+    this.updatePlotTitle = this.updatePlotTitle.bind(this);
   }
 
   componentDidMount() {
@@ -109,6 +112,14 @@ export default class AreaWindow extends React.Component {
         );
       }
     } 
+  }
+
+  updatePlotTitle (title) {
+    
+    if (title !== this.state.plotTitle) {   //If new plot title
+      this.setState({plotTitle: title,});   //Update Plot Title
+    }
+
   }
 
   onLocalUpdate(key, value) {
@@ -336,13 +347,12 @@ export default class AreaWindow extends React.Component {
       ></ImageSize>
 
       {/* Plot Title */}
-      <div className='input'>
-        <h1>Plot Title</h1>
-        <FormControl
-          placeholder='Default'
-        >
-        </FormControl>
-      </div>
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+      ></CustomPlotLabels>
       
     </Panel>);
 
@@ -556,7 +566,7 @@ export default class AreaWindow extends React.Component {
         plot_query.interp = this.props.options.interpType;
         plot_query.radius = this.props.options.interpRadius;
         plot_query.neighbours = this.props.options.interpNeighbours;
-
+        plot_query.plotTitle = this.state.plotTitle;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
