@@ -118,6 +118,10 @@ export default class PlotImage extends React.Component {
       names: q.names,
     };
 
+    if (q.plotTitle !== null) {
+      query.plotTitle = q.plotTitle;
+    }
+    
     switch(q.type) {
       case "profile":
       case "ts":
@@ -213,9 +217,7 @@ export default class PlotImage extends React.Component {
         query.neighbours = q.neighbours;
         
         //Checks if a user specified their own title
-        if (q.plotTitle !== null) {
-          query.plotTitle = q.plotTitle;
-        }
+        
         
         if (q.compare_to) {
           query.compare_to = {

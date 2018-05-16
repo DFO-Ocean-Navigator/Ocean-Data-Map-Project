@@ -1,7 +1,22 @@
+/* eslint react/no-deprecated: 0 */
+/*
+  Created: 05/15/2018 
+  Noah Gallant
+
+  Modified: 05/16/2018
+  
+  Component Allowing for Custom Plot Titles provided by the user
+
+  ~~User Requested~~
+
+*/
+
 import React from "react";
 import {FormControl, Row, Button, Form} from "react-bootstrap";
 import PropTypes from "prop-types";
 import Icon from "./Icon.jsx";
+
+const i18n = require("../i18n.js");
 
 export default class CustomPlotLabels extends React.Component {
 
@@ -12,8 +27,12 @@ export default class CustomPlotLabels extends React.Component {
     this.updateState = this. updateState.bind(this);
     
     this.state = {
-      userProvidedTitle: null   //Holds user defined plot title
+      userProvidedTitle: props.plotTitle   //Holds user defined plot title
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({userProvidedTitle: nextProps.plotTitle});
   }
 
   //Updates new title value as user types
@@ -54,11 +73,12 @@ export default class CustomPlotLabels extends React.Component {
           
               {/* Updated Plot Title Input Field*/}           
               <FormControl
+                value = {this.state.userProvidedTitle}
                 ref = {(input) => this.textInput = input}
                 style = {{width: "83%"}}
                 type="text"
                 onChange={this.updateState}   //Updates as user types
-                placeholder='Default'
+                placeholder={_("Default")}
               ></FormControl>
             
               {/* Update Plot Title Button */}          
@@ -83,4 +103,5 @@ CustomPlotLabels.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   updatePlotTitle: PropTypes.func,
+  plotTitle: PropTypes.string,
 };

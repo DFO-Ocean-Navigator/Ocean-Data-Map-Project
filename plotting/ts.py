@@ -121,11 +121,14 @@ class TemperatureSalinityPlotter(point.PointPlotter):
 
         self.plot_legend(fig, self.names)
 
-        plt.title(gettext("T/S Diagram for (%s)\n%s") % (
-            ", ".join(self.names),
-            self.date_formatter(self.timestamp)),
-            fontsize=15
-            )
+        if self.plotTitle is None or self.plotTitle == "":  
+            plt.title(gettext("T/S Diagram for (%s)\n%s") % (
+                ", ".join(self.names),
+                self.date_formatter(self.timestamp)),
+                fontsize=15
+                )
+        else :
+            plt.title(self.plotTitle,fontsize=15)
 
         return super(TemperatureSalinityPlotter, self).plot(fig)
 

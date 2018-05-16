@@ -1,4 +1,12 @@
 /* eslint react/no-deprecated: 0 */
+/*
+
+  Modified: 05/16/2018
+
+  Opens Window displaying the Image of a Selected Area
+
+*/
+
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
   FormControl, FormGroup, ControlLabel} from "react-bootstrap";
@@ -114,12 +122,11 @@ export default class AreaWindow extends React.Component {
     } 
   }
 
+  //Updates Plot with User Specified Title
   updatePlotTitle (title) {
-    
     if (title !== this.state.plotTitle) {   //If new plot title
       this.setState({plotTitle: title,});   //Update Plot Title
     }
-
   }
 
   onLocalUpdate(key, value) {
@@ -352,6 +359,7 @@ export default class AreaWindow extends React.Component {
         id='title'
         title={_("Plot Title")}
         updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
       ></CustomPlotLabels>
       
     </Panel>);
