@@ -298,51 +298,54 @@ export default class LineWindow extends React.Component {
       </ComboBox>
     </Panel>;
     
-    const compare_dataset = <div key='compare_dataset'>
-      <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
-        <Panel 
-          key='right_map'
-          id='right_map'
-          collapsible
-          defaultExpanded
-          header={_("Right Map")}
-          bsStyle='primary'
-        >
-          <DatasetSelector
-            key='dataset_1'
-            id='dataset_1'
-            state={this.props.dataset_1}
-            onUpdate={this.props.onUpdate}
-            depth={this.state.selected == 2}
-            variables={this.state.selected == 2 ? "all" : "3d"}
-            time={this.state.selected == 2 ? "range" : "single"}
-          />
-          <Range
-            auto
-            key='scale_1'
-            id='scale_1'
-            state={this.state.scale_1}
-            def={""}
-            onUpdate={this.onLocalUpdate}
-            title={_("Variable Range")}
-          />
-          <ComboBox
-            key='colormap_right'
-            id='colormap_right'
-            state={this.state.colormap_right}
-            def='default'
-            onUpdate={this.onLocalUpdate}
-            url='/api/colormaps/'
-            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-          </ComboBox>
-        </Panel>
-      </div>
+    const compare_dataset = 
+    <div key='compare_dataset'>
+      
+      <Panel 
+        key='right_map'
+        id='right_map'
+        collapsible
+        defaultExpanded
+        header={_("Right Map")}
+        bsStyle='primary'
+      >
+        <DatasetSelector
+          key='dataset_1'
+          id='dataset_1'
+          state={this.props.dataset_1}
+          onUpdate={this.props.onUpdate}
+          depth={this.state.selected == 2}
+          variables={this.state.selected == 2 ? "all" : "3d"}
+          time={this.state.selected == 2 ? "range" : "single"}
+        />
+        <Range
+          auto
+          key='scale_1'
+          id='scale_1'
+          state={this.state.scale_1}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")}
+        />
+        <ComboBox
+          key='colormap_right'
+          id='colormap_right'
+          state={this.state.colormap_right}
+          def='default'
+          onUpdate={this.onLocalUpdate}
+          url='/api/colormaps/'
+          title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+        </ComboBox>
+      </Panel>
+      
     </div>;
 
     // Input panels
     const leftInputs = [global];
-    const rightInputs = [dataset, compare_dataset];
-    
+    const rightInputs = [dataset];
+    if (this.props.dataset_compare) {
+      rightInputs.push(compare_dataset);
+    }
     const plot_query = {
       dataset: this.props.dataset_0.dataset,
       quantum: this.props.quantum,

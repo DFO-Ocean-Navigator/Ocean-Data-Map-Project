@@ -1,8 +1,6 @@
 /* eslint react/no-deprecated: 0 */
 /*
 
-  Modified: 05/16/2018
-
   Opens Window displaying the Image of a Selected Area
 
 */
@@ -46,7 +44,7 @@ export default class AreaWindow extends React.Component {
       surfacevariable: "none",
       linearthresh: 200,
       bathymetry: true,
-      plotTitle: null,
+      plotTitle: undefined,
       quiver: {
         variable: "",
         magnitude: "length",
@@ -583,13 +581,12 @@ export default class AreaWindow extends React.Component {
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
 
-        leftInputs = [
-          mapSettings, subset
-        ];
-        rightInputs = [
-          dataset, compare_dataset
-        ];
+        leftInputs = [mapSettings, subset]; //Left Sidebar
+        rightInputs = [dataset];  //Right Sidebar
 
+        if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
+          rightInputs.push(compare_dataset);
+        }
         content = <PlotImage
           query={plot_query} // For image saving link.
           permlink_subquery={this.state}
