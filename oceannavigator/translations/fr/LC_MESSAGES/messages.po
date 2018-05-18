@@ -8,16 +8,17 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2017-06-19 15:55-0430\n"
-"PO-Revision-Date: 2017-06-19 15:59-0230\n"
+"PO-Revision-Date: 2018-05-14 17:00-0230\n"
 "Last-Translator: \n"
-"Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 1.3\n"
+"Language: fr\n"
 "X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-Bookmarks: 10,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: oceannavigator/views.py:165
 msgid "Black"
@@ -59,15 +60,15 @@ msgstr "Randomiser"
 #: oceannavigator/frontend/src/components/ComboBox.jsx:57
 #: oceannavigator/views.py:177
 msgid "None"
-msgstr "Acun"
+msgstr "Aucun"
 
 #: oceannavigator/views.py:192
 msgid "Default for Variable"
-msgstr "Par défaut pour la variable"
+msgstr "Variable par Defaut"
 
 #: oceannavigator/views.py:231
 msgid "All Depths"
-msgstr "Toutes les profondeurs"
+msgstr "Toutes Profondeurs"
 
 #: oceannavigator/views.py:241
 msgid "Bottom"
@@ -75,7 +76,7 @@ msgstr "Fond"
 
 #: oceannavigator/frontend/src/index.jsx:21
 msgid "Ocean Navigator"
-msgstr "Océan navigateur"
+msgstr "Navigateur d'Océan "
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:110
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:129
@@ -99,7 +100,7 @@ msgstr "Ensemble de données"
 #: oceannavigator/frontend/src/components/PointWindow.jsx:147
 #: oceannavigator/frontend/src/components/PointWindow.jsx:172
 msgid "Time"
-msgstr "Temps"
+msgstr "Heure"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:112
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:84
@@ -132,7 +133,7 @@ msgstr "Heure de fin"
 #: oceannavigator/frontend/src/components/PointWindow.jsx:210
 #: oceannavigator/frontend/src/components/PointWindow.jsx:219
 msgid "Depth"
-msgstr "Profond"
+msgstr "Profondeur"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:115
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:163
@@ -210,17 +211,16 @@ msgstr "Afficher la (les) région (s) sélectionnée (s)"
 #: oceannavigator/frontend/src/components/PointWindow.jsx:155
 #: oceannavigator/frontend/src/components/PointWindow.jsx:267
 msgid "Saved Image Size"
-msgstr "Taille de l'image enregistrée"
+msgstr "Taille de l'image sauvegarder"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:188
 #: oceannavigator/frontend/src/components/LineWindow.jsx:167
 #: oceannavigator/frontend/src/components/PointWindow.jsx:260
 msgid "colourmap_help"
 msgstr ""
-"Il y a plusieurs colourmaps disponibles. Cet outil essaie de choisir une "
-"valeur par défaut appropriée en fonction du type de variable (Default For "
-"Variable). Si vous voulez utiliser l'un des autres, ils sont tous "
-"sélectionnables."
+"Il y a plusieurs cartes en couleur disponibles. Cet outil essaie de choisir "
+"une valeur par défaut appropriée en fonction du type de variable. Si vous "
+"voulez utiliser l'un des autres, ils sont tous sélectionnables."
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:202
 msgid "arrows_help"
@@ -431,7 +431,7 @@ msgstr "Lon:"
 
 #: oceannavigator/frontend/src/components/Map.jsx:154
 msgid "RMS Error: "
-msgstr "Errur RMS: "
+msgstr "Erreur RMS: "
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:30
 msgid "Global"
@@ -455,7 +455,7 @@ msgstr "ETOPO1 Topographie"
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:49
 msgid "Esri Ocean Basemap"
-msgstr "Fond d'océan de l'Esri"
+msgstr "Carte base  Esri de l'océan"
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:54
 msgid "Esri World Imagery"
@@ -554,7 +554,7 @@ msgstr "Graphique"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:553
 msgid "Permalink"
-msgstr ""
+msgstr "Lien Permanent"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:590
 msgid "Select Drifters"
@@ -599,6 +599,8 @@ msgstr "Partager le site"
 msgid ""
 "Clipboard access was denied. Please right-click and copy the link manually."
 msgstr ""
+"L'accès au presse -papiers a été refusé. S'il vous plait fait un clic-droit, "
+"et copier le lien de facons manuelle"
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:460
 #: oceannavigator/frontend/src/components/PlotImage.jsx:308
@@ -615,6 +617,8 @@ msgid ""
 "Failed to retrieve image. Please try again using the 'Get Link' -> 'Web' "
 "button below."
 msgstr ""
+"La recuperation d'image a echoue. Silvouplait, essayer en utilisent le "
+"bouton 'Obtenit Lien' -> 'Web' ci-dessous "
 
 #: oceannavigator/frontend/src/components/PlotImage.jsx:195
 msgid "Loading. Please wait..."
@@ -636,7 +640,7 @@ msgstr "Emplacement"
 #: oceannavigator/frontend/src/components/PointWindow.jsx:277
 #: oceannavigator/frontend/src/components/PointWindow.jsx:292
 msgid "Observation Variable"
-msgstr "Variable d'observation"
+msgstr "Variable d'Observation"
 
 #: oceannavigator/frontend/src/components/PointWindow.jsx:430
 msgid "Profile"
@@ -669,7 +673,7 @@ msgstr "Amarrage virtuel"
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:29
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:37
 msgid "Show Magnitude"
-msgstr "Afficher l'ampleur"
+msgstr "Afficher l'Ordre de Grandeur"
 
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:30
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:37
@@ -708,7 +712,7 @@ msgstr "Max:"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:135
 msgid "Minimum Value"
-msgstr ""
+msgstr "Valeur Minimum"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:135
 msgid "Min"
@@ -716,7 +720,7 @@ msgstr "Min"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:136
 msgid "Maximum Value"
-msgstr ""
+msgstr "Valeur Maximum"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:136
 msgid "Max"
@@ -724,7 +728,7 @@ msgstr "Max"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:137
 msgid "Median Value"
-msgstr ""
+msgstr "Valeur Médian"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:137
 msgid "Median"
@@ -732,7 +736,7 @@ msgstr "Médian"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:138
 msgid "Average Value"
-msgstr ""
+msgstr "Valeur Moyenne"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:138
 msgid "Mean"
@@ -740,7 +744,7 @@ msgstr "Moyenne"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:139
 msgid "Standard Deviation"
-msgstr ""
+msgstr "écart type"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:139
 msgid "Std Dev"
@@ -748,11 +752,11 @@ msgstr "Écart type"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:140
 msgid "Number of Valid Points in Area"
-msgstr ""
+msgstr "Quantité de points valides dans la région"
 
 #: oceannavigator/frontend/src/components/StatsTable.jsx:140
 msgid "Num"
-msgstr "Nombre"
+msgstr "Numero"
 
 #: oceannavigator/frontend/src/components/TimePicker.jsx:92
 msgid "Year"
@@ -776,7 +780,7 @@ msgstr "Sauter 12 ans"
 
 #: oceannavigator/frontend/src/components/TimePicker.jsx:97
 msgid "Next"
-msgstr "Prochain"
+msgstr "Prochaine"
 
 #: oceannavigator/frontend/src/components/TimePicker.jsx:98
 msgid "Prev"
@@ -1005,7 +1009,7 @@ msgstr ""
 #: plotting/line.py:30
 #, python-format
 msgid "(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)"
-msgstr ""
+msgstr "(%0.4f N, %0.4f W) à (%0.4f N, %0.4f W)"
 
 #: plotting/observation.py:247 plotting/profile.py:87 plotting/sound.py:33
 #: plotting/transect.py:470
@@ -1070,11 +1074,6 @@ msgstr "Salinité (PSU)"
 #: plotting/ts.py:83
 msgid "Temperature (Celsius)"
 msgstr "Température (Celsius)"
-
-#~ msgid "topoattribution"
-#~ msgstr ""
-#~ "Données topographiques de <a href='https://www.ngdc.noaa.gov/mgg/"
-#~ "global/'> ETOPO1</a>"
 
 #~ msgid "%s to %s"
 #~ msgstr "%s à %s"
