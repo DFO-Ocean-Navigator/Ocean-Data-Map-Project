@@ -244,25 +244,28 @@ class ObservationPlotter(plPoint.PointPlotter):
 
         ax[0].invert_yaxis()
         ax[0].set_ylabel(gettext("Depth (m)"))
-
-        if len(self.variables) > 0:
-            plt.suptitle("\n".join(
-                wrap(
-                    gettext("Profile for %s, Observed at %s, Modelled at %s")
-                    % (
-                        ", ".join(self.names),
-                        format_datetime(self.observation_time),
-                        format_datetime(self.timestamp)
-                    ), 80)
-            ))
-        else:
-            plt.suptitle("\n".join(
-                wrap(
-                    gettext("Profile for %s (%s)") % (
-                        ", ".join(self.names),
-                        format_datetime(self.observation_time)
-                    ), 80)
-            ))
+        
+        if self.plotTitle is None or self.plotTitle == "": 
+            if len(self.variables) > 0:
+                plt.suptitle("\n".join(
+                    wrap(
+                        gettext("Profile for %s, Observed at %s, Modelled at %s")
+                        % (
+                            ", ".join(self.names),
+                            format_datetime(self.observation_time),
+                            format_datetime(self.timestamp)
+                        ), 80)
+                ))
+            else:
+                plt.suptitle("\n".join(
+                    wrap(
+                        gettext("Profile for %s (%s)") % (
+                            ", ".join(self.names),
+                            format_datetime(self.observation_time)
+                        ), 80)
+                ))
+        else :
+            plt.suptitle(self.plotTitle,fontsize=15)
 
         fig.tight_layout()
         fig.subplots_adjust(top=0.85)

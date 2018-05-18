@@ -834,17 +834,20 @@ class MapPlotter(pl.Plotter):
         self.basemap.drawmeridians(
             meridians, labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
 
-        area_title = "\n".join(
-            wrap(", ".join(self.names), 60)
-        ) + "\n"
+        title = self.plotTitle
 
-        title = "%s %s %s, %s" % (
-            area_title,
-            self.variable_name.title(),
-            self.depth_label,
-            self.date_formatter(self.timestamp)
-        )
-        plt.title(title.strip(), fontsize=15)
+        if self.plotTitle is None or self.plotTitle == "":  
+            area_title = "\n".join(
+                wrap(", ".join(self.names), 60)
+            ) + "\n"
+
+            title = "%s %s %s, %s" % (
+                area_title,
+                self.variable_name.title(),
+                self.depth_label,
+                self.date_formatter(self.timestamp)
+            )
+        plt.title(title.strip())
         ax = plt.gca()
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)

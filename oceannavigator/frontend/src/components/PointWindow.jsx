@@ -1,3 +1,11 @@
+/* eslint react/no-deprecated: 0 */
+/*
+
+  Opens Window displaying the Image corresponding to a Selected Point
+
+*/
+
+
 import React from "react";
 import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
@@ -8,6 +16,7 @@ import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
+import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -41,6 +50,7 @@ export default class PointWindow extends React.Component {
       observation_variable: [7],
       size: "10x7",
       dpi: 144,
+      plotTitles: Array(7).fill(""),
     };
 
     if (props.init !== null) {
@@ -50,6 +60,7 @@ export default class PointWindow extends React.Component {
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
+    this.updatePlotTitle = this.updatePlotTitle.bind(this);
   }
 
   componentDidMount() {
@@ -123,6 +134,15 @@ export default class PointWindow extends React.Component {
         }
       }.bind(this)
     });
+  }
+
+  //Updates Plot with User Specified Title
+  updatePlotTitle (title) {
+    if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
+      const newTitles = this.state.plotTitles;
+      newTitles[this.state.selected - 1] = title;
+      this.setState({plotTitles: newTitles,});   //Update Plot Title
+    }
   }
 
   onLocalUpdate(key, value) {
@@ -240,6 +260,16 @@ export default class PointWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Saved Image Size")}
       />
+
+      {/* Plot Title */}
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      ></CustomPlotLabels>
+
     </Panel>);
 
     // Show a single time selector on all tabs except Stick and Virtual Mooring.
@@ -391,6 +421,7 @@ export default class PointWindow extends React.Component {
       names: this.props.names,
       size: this.state.size,
       dpi: this.state.dpi,
+      plotTitle: this.state.plotTitles[this.state.selected - 1],
     };
 
     let inputs = [];
