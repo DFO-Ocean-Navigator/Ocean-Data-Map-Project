@@ -1,6 +1,6 @@
 
 import React, {Component} from "react";
-import {Button} from "react-bootstrap";
+import {Button, NavItem} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -20,7 +20,7 @@ export default class ToggleSwitch extends Component {
 
   toggleUpdate(e) {
 
-    if (e.target.id === "button1" && !this.state.toggleState) {
+    if (!this.state.toggleState) {
       this.setState({
         toggleState: true,
       });
@@ -28,7 +28,7 @@ export default class ToggleSwitch extends Component {
       currentLanguage.language = "en";
     }
 
-    if (e.target.id === "button2" && this.state.toggleState) {
+    if (this.state.toggleState) {
       this.setState({
         toggleState: false,
       });
@@ -41,8 +41,11 @@ export default class ToggleSwitch extends Component {
 
   render() {
 
+    /*
     const button1 = [
-      <Button
+      <Button className="button1"
+        aria-expanded="false"
+        bsSize="xsmall"
         key='button1'
         id='button1'
         onClick={this.toggleUpdate}
@@ -50,19 +53,32 @@ export default class ToggleSwitch extends Component {
     ];
 
     const button2 = [
-      <Button
+      <Button className="button2"
+        aria-expanded="false"
+        bsSize="xsmall"
         key="button2"
         id='button2'
         onClick={this.toggleUpdate}
       >{this.props.rightButton}</Button>
     ];
+    */
+    //const toggleButton = [button1, button2];
+    var languageText = null;
 
-    const toggleButton = [button1, button2];
+    if (this.state.toggleState) {
+      languageText = "Français";
+    } else {
+      languageText = "English";
+    }
+    
 
     return (
-      <div>
-        {toggleButton}
-      </div>
+    
+      <NavItem
+        onClick={this.toggleUpdate}
+      >
+        {languageText}
+      </NavItem>
     );
 
   }

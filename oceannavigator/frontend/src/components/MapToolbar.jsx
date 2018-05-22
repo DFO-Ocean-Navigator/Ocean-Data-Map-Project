@@ -716,13 +716,13 @@ export default class MapToolbar extends React.Component {
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("Language")}</Tooltip>}
             >
-              <NavItem>
-                <ToggleSwitch
-                  leftButton={"EN"}
-                  rightButton={"FR"}
-                  updateLanguage={this.props.updateLanguage}
-                />
-              </NavItem>
+              
+              <ToggleSwitch className = "languageButton"
+                leftButton={"EN"}
+                rightButton={"FR"}
+                updateLanguage={this.props.updateLanguage}   
+              />
+              
             </OverlayTrigger>
 
             <OverlayTrigger
