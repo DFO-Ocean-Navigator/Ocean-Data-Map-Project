@@ -58,9 +58,6 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
 
-    print("EXTENT V0.1: "),
-    print(extent)
-
     resp = jsonify({       #Creates an object which is converted to JSON
         'min': min,
         'max': max,
@@ -89,9 +86,6 @@ def range_query(dataset, projection, extent, variable, depth, time):
 
 @app.route('/api/<string:q>/')
 def query(q):
-
-    print("QUERY: "),
-    print(q)
 
     data = []
     
@@ -312,9 +306,6 @@ def vars_query():
 
         with open_dataset(get_dataset_url(dataset)) as ds:
             if 'vectors_only' not in request.args:      #Will send more than just vectors
-                print("DS VARIABLES: ")
-                print(ds.variables)
-                
 
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
@@ -322,14 +313,6 @@ def vars_query():
                 #
                 # 'ds.variables' is the dataset
                 for v in ds.variables:  #Iterates through all the variables in the dataset
-                    print("VARIABLE: "),
-                    print(v)
-
-                    print("OBJECT CONTENTS: "),
-                    print(vars(v))
-                    
-                    print("  -  DIMENSTIONS: "),
-                    print(v.dimensions)
 
                     #If a time period and at least one other unit type is specified
                     if ('time_counter' in v.dimensions or   
@@ -371,14 +354,11 @@ def vars_query():
             #If Vectors are needed
             if 'vectors' in request.args or 'vectors_only' in request.args:
                 rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
-                print("RXP: "),
-                print(rxp)
+
                 for key, value in VECTOR_MAP.iteritems():       #Iterates through each key, value combination (key and value hold the corresponding group oin VECTOR_MAP)
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key])       #Returns a normal variable type
-                        print("N: "),
-                        print(n)
-                        
+
                         data.append({
                             'id': value,
                             'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
@@ -391,9 +371,6 @@ def vars_query():
          
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     #Data is set of scale, id, value objects
-
-    print("RETURN DATA: "),
-    print(data)
 
     resp = jsonify(data)
 
