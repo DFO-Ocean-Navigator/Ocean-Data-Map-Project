@@ -1,14 +1,16 @@
-import LngDetector from "i18next-browser-languagedetector";
+import LngDetector from "i18next-browser-languagedetector"; 
+//import { changeLanguage } from "i18next/dist/commonjs";
+import i18n from "i18next";
+//var i18next = require("i18next"); //.default;
 
-var i18n = require("i18next").default;
 
 i18n
-    .use(LngDetector)
     .init({
+      lng: "en",
       nsSeparator: false,
       keySeparator: false,
       whitelist: ["en", "fr"],
-      fallbackLng: "en",
+      fallbackLng: ["en"],
       resources: {
         fr: {
           translation: require("../../translations/fr.json"),
@@ -19,5 +21,5 @@ i18n
       },
     });
 
-module.exports = i18n;
 
+module.exports = i18n;
