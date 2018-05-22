@@ -96,6 +96,12 @@ msgstr ""
 #: oceannavigator/frontend/src/components/MapInputs.jsx:112
 #: oceannavigator/frontend/src/components/PointWindow.jsx:147
 #: oceannavigator/frontend/src/components/PointWindow.jsx:172
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:221
+#: oceannavigator/frontend/src/components/AreaWindow.jsx:403
+#: oceannavigator/frontend/src/components/LineWindow.jsx:122
+#: oceannavigator/frontend/src/components/Permalink.jsx:141
+#: oceannavigator/frontend/src/components/PointWindow.jsx:210
+#: oceannavigator/frontend/src/components/PointWindow.jsx:285
 msgid "Time"
 msgstr ""
 
