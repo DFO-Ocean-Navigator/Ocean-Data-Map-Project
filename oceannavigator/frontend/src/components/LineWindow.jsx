@@ -17,6 +17,7 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 
@@ -42,6 +43,7 @@ export default class LineWindow extends React.Component {
       dpi: 144,
       depth_limit: false,
       plotTitles: Array(2).fill(""),
+      selectedPlots: [true, false, false]
     };
 
     if (props.init !== null) {
@@ -52,6 +54,7 @@ export default class LineWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+    this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
   }
 
   componentDidMount() {
@@ -92,6 +95,12 @@ export default class LineWindow extends React.Component {
       newTitles[this.state.selected - 1] = title;
       this.setState({plotTitles: newTitles,});   //Update Plot Title
     }
+  }
+
+  updateSelectedPlots (plots_selected) {
+    this.setState({
+      selectedPlots: plots_selected,
+    });
   }
 
   onLocalUpdate(key, value) {
@@ -277,7 +286,10 @@ export default class LineWindow extends React.Component {
         depth={this.state.selected == 2}
         variables={this.state.selected == 2 ? "all" : "3d"}
         time={this.state.selected == 2 ? "range" : "single"}
+        line={true}
+        updateSelectedPlots={this.updateSelectedPlots}
       />
+
       <Range
         auto
         key='scale'
@@ -287,6 +299,7 @@ export default class LineWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
       />
+
       <ComboBox
         key='colormap'
         id='colormap'
@@ -367,6 +380,7 @@ export default class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
+        plot_query.selectedPlots = this.state.selectedPlots;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;

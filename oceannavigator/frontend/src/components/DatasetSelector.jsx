@@ -1,7 +1,10 @@
+/* eslint react/no-deprecated: 0 */
+
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
+import VelocitySelector from "./VelocitySelector.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -115,6 +118,17 @@ export default class DatasetSelector extends React.Component {
         />;
     }
 
+    let velocity_selector = null;
+    if(this.props.line && this.props.state.variable === "vozocrtx,vomecrty") {
+      velocity_selector = [
+        <VelocitySelector
+          key='velocityType'
+          id='velocityType'
+          updateSelectedPlots={this.props.updateSelectedPlots}
+        />
+      ];  
+    }
+
     return (
       <div className='DatasetSelector'>
 
@@ -136,6 +150,8 @@ export default class DatasetSelector extends React.Component {
           }
           title={_("Variable")}
         ><h1>{_("Variable")}</h1></ComboBox>
+
+        {velocity_selector}
 
         {this.props.depth && <ComboBox
           id='depth'
@@ -170,5 +186,7 @@ DatasetSelector.propTypes = {
   id: PropTypes.string,
   variables: PropTypes.string,
   multiple: PropTypes.bool,
+  line: PropTypes.bool,
+  updateSelectedPlots: PropTypes.func,
 };
 

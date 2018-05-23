@@ -389,14 +389,16 @@ class TransectPlotter(line.LinePlotter):
             data
         )
 
-    def plot(self):
+    def gridSetup(self):
         # velocity has 2 variable components (parallel, perpendicular)
         velocity = len(self.variables) == 2 or \
                     self.compare and len(self.compare['variables']) == 2
 
         # Setup grid
-        if self.showmap:
+        if self.showmap:    #Shows Map Location
             width = 2 # 2 columns
+
+            #Velocity Plot
             if velocity:
                 if self.compare:
                     width_ratios = [1, 1]
@@ -404,7 +406,7 @@ class TransectPlotter(line.LinePlotter):
                     width_ratios = [2, 7]
             else:
                 width_ratios = [2, 7]
-        else:
+        else:               #Doesn't Show Map Location
             if velocity:
                 width = 2
                 width_ratios = [1, 1]
@@ -430,6 +432,13 @@ class TransectPlotter(line.LinePlotter):
                 gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
+
+        return gs, fig, velocity
+
+    def plot(self):
+        
+
+        gs, fig, velocity = self.gridSetup()
         # Plot the transect on a map
         if self.showmap:
             plt.subplot(gs[:,0])
