@@ -3,10 +3,11 @@ import json
 import oceannavigator
 import re
 import json
+from oceannavigator import app
 
 _config = None
 
-def get_dataset_config(configFile = 'datasetconfig.json'):
+def get_dataset_config(configFile = app.config['datasetConfig']):
     global _config
     if _config is None:
         cwd = os.path.dirname(os.path.realpath(__file__))
