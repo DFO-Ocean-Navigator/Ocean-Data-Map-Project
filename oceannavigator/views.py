@@ -60,17 +60,38 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
-    
-    resp = jsonify({
+
+    resp = jsonify({       #Creates an object which is converted to JSON
         'min': min,
         'max': max,
     })
     resp.cache_control.max_age = MAX_CACHE
-    return resp
+    return resp #Returns JSON Range Object
+
+# ~~~
+# 
+# Returns a range (min, max)
+#
+@app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
+def range_query(dataset, projection, extent, variable, depth, time):
+    extent = map(float, extent.split(","))
+
+    min, max = plotting.scale.get_scale(
+        dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
+
+    #Changes data to json objects
+    resp = jsonify({    #Creates an object which is converted to JSON
+        'min': min,
+        'max': max,
+    })
+    resp.cache_control.max_age = MAX_CACHE
+    return resp     #Returns JSON Range Object
 
 @app.route('/api/<string:q>/')
 def query(q):
+
     data = []
+    
     if q == 'points':
         data = oceannavigator.misc.list_kml_files('point')
     elif q == 'lines':
@@ -121,6 +142,7 @@ def get_data(dataset, variable, time, depth, location):
 def query_file(q, projection, resolution, extent, file_id):
     data = []
     max_age = 86400
+
 
     if q == 'points':
         data = oceannavigator.misc.points(
@@ -268,21 +290,36 @@ def obs_vars_query():
 
 @app.route('/api/variables/')
 def vars_query():
-    data = []
+    
+    data = []       #Initializes empty data array
+
+
     if 'dataset' in request.args:
+        
         dataset = request.args['dataset']
 
-        if get_dataset_climatology(dataset) != "" and 'anom' in request.args:
+        #Queries config files
+        if get_dataset_climatology(dataset) != "" and 'anom' in request.args:   #If a url exists for the dataset and an anomaly
             with open_dataset(get_dataset_climatology(dataset)) as ds:
                 climatology_variables = list(map(str, ds.variables))
         else:
             climatology_variables = []
 
-        three_d = '3d_only' in request.args
+        three_d = '3d_only' in request.args     #Checks if 3d_only is in request.args
+        #If three_d is true - Only 3d variables will be returned
+
         with open_dataset(get_dataset_url(dataset)) as ds:
-            if 'vectors_only' not in request.args:
-                for v in ds.variables:
-                    if ('time_counter' in v.dimensions or
+            if 'vectors_only' not in request.args:      #Will send more than just vectors
+
+                # 'v' is a Variable in the Dataset
+                #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
+                #          
+                #
+                # 'ds.variables' is the dataset
+                for v in ds.variables:  #Iterates through all the variables in the dataset
+
+                    #If a time period and at least one other unit type is specified
+                    if ('time_counter' in v.dimensions or   
                         'time' in v.dimensions) \
                             and ('y' in v.dimensions or
                                  'yc' in v.dimensions or
@@ -318,12 +355,14 @@ def vars_query():
                 'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground'
             }
 
+            #If Vectors are needed
             if 'vectors' in request.args or 'vectors_only' in request.args:
                 rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
 
                 for key, value in list(VECTOR_MAP.items()):
                     if key in ds.variables:
-                        n = get_variable_name(dataset, ds.variables[key])
+                        n = get_variable_name(dataset, ds.variables[key])       #Returns a normal variable type
+
                         data.append({
                             'id': value,
                             'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
@@ -333,9 +372,12 @@ def vars_query():
                             )[1]]
                         })
 
-    data = sorted(data, key=lambda k: k['value'])
-    
+         
+    data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
+    #Data is set of scale, id, value objects
+
     resp = jsonify(data)
+
     return resp
 
 

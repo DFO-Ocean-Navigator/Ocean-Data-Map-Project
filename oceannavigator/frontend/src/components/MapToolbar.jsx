@@ -9,8 +9,12 @@ import EnterPoint from "./EnterPoint.jsx";
 import EnterLine from "./EnterLine.jsx";
 import EnterArea from "./EnterArea.jsx";
 import PropTypes from "prop-types";
+import ToggleSwitch from "./ToggleSwitch.jsx";
 
+
+const currentLanguage = require("../currentLanguage.js");
 const i18n = require("../i18n.js");
+
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -67,25 +71,31 @@ export default class MapToolbar extends React.Component {
     }
     this.props.action(name);
   }
-
+  
   class4ButtonHandler() {
     const button = $(ReactDOM.findDOMNode(this.class4button));
     if (this.class4Picker && this.class4Picker.is(":visible")) {
       this.class4Picker.hide();
     } else if (!this.class4Picker) {
+      if (this.class4Picker !== null) {
+        this.class4Picker = null;
+      }
       this.class4Picker = $(this.class4div).datepicker({
         dateFormat: "yy-mm-dd",
         beforeShowDay: this.beforeShowDay.bind(this),
+        regional: currentLanguage.language,
         onSelect: function(text, picker) {
           this.props.action("show", "class4", this.state.class4Files[text]);
           this.class4Picker.hide();
         }.bind(this),
         defaultDate: this.state.class4Current,
       });
+
       $(this.class4div).css("left", button.offset().left + "px");
     } else {
       this.class4Picker.show();
     }
+    this.forceUpdate();
   }
 
   beforeShowDay(d) {
@@ -701,6 +711,20 @@ export default class MapToolbar extends React.Component {
                 <Icon icon='link' alt={_("Permalink")}/>
               </NavItem>
             </OverlayTrigger>
+
+            <OverlayTrigger
+              placement="bottom"
+              overlay={<Tooltip id="tooltip">{_("Language")}</Tooltip>}
+            >
+              
+              <ToggleSwitch className = "languageButton"
+                leftButton={"EN"}
+                rightButton={"FR"}
+                updateLanguage={this.props.updateLanguage}   
+              />
+              
+            </OverlayTrigger>
+
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("Help")}</Tooltip>}
@@ -876,5 +900,6 @@ MapToolbar.propTypes = {
   toggleSidebar: PropTypes.func,
   action: PropTypes.func,
   toggleOptionsSidebar: PropTypes.func,
+  updateLanguage: PropTypes.func,
 };
 

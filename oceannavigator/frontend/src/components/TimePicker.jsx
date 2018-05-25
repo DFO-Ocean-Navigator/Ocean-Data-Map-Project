@@ -1,3 +1,5 @@
+/* eslint react/no-deprecated: 0 */
+
 import React from "react";
 import $ from "jquery";
 /*eslint no-unused-vars: ["error", {"varsIgnorePattern": "jQuery" }]*/
@@ -17,8 +19,8 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-const i18n = require("../i18n.js");
-
+const currentLanguage = require("../i18n.js");
+ 
 export default class TimePicker extends React.Component {
   constructor(props) {
     super(props);
@@ -32,8 +34,6 @@ export default class TimePicker extends React.Component {
       revmap: {},
       times: [],
     };
-
-    $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
 
     // Function bindings
     this.timeChange = this.timeChange.bind(this);
@@ -331,6 +331,9 @@ export default class TimePicker extends React.Component {
   }
 
   render() {
+
+    $.datepicker.setDefaults($.datepicker.regional[currentLanguage.language]);
+
     var value = parseInt(this.props.state);
 
     if (value < 0) {
