@@ -43,7 +43,7 @@ export default class LineWindow extends React.Component {
       dpi: 144,
       depth_limit: false,
       plotTitles: Array(2).fill(""),
-      selectedPlots: [true, false, false]
+      selectedPlots: [0, 1, 1],
     };
 
     if (props.init !== null) {
@@ -97,10 +97,37 @@ export default class LineWindow extends React.Component {
     }
   }
 
-  updateSelectedPlots (plots_selected) {
-    this.setState({
-      selectedPlots: plots_selected,
-    });
+  updateSelectedPlots (plots_selected, compare) {
+    console.warn(plots_selected);
+    console.warn(compare);
+    let temp = [1, 0, 0];
+    
+    if(plots_selected[0]) {
+      temp[0] = 1;
+    } else {
+      temp[0] = 0;
+    }
+    if(plots_selected[1]) {
+      temp[1] = 1;
+    } else {
+      temp[1] = 0;
+    }
+    if(plots_selected[2]) {
+      temp[2] = 1;
+    } else {
+      temp[2] = 0;
+    }
+
+    if (compare) {
+      this.setState({
+        comparePlots: temp, 
+      });
+    } else {
+      this.setState({
+        selectedPlots: temp,
+      });
+    }
+    console.warn(this.state.selectedPlots);
   }
 
   onLocalUpdate(key, value) {
@@ -288,6 +315,7 @@ export default class LineWindow extends React.Component {
         time={this.state.selected == 2 ? "range" : "single"}
         line={true}
         updateSelectedPlots={this.updateSelectedPlots}
+        compare={this.props.dataset_compare}
       />
 
       <Range
@@ -380,7 +408,7 @@ export default class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
-        plot_query.selectedPlots = this.state.selectedPlots;
+        plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;

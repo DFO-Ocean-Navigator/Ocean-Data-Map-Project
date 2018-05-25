@@ -16,7 +16,7 @@ export default class VelocitySelector extends React.Component {
     super(props);
 
     this.state = {
-      velocity_plots: [true, false, false] 
+      velocity_plots: [false, true, true] 
     };
 
     this.updatePlotType = this.updatePlotType.bind(this);
@@ -78,5 +78,5 @@ export default class VelocitySelector extends React.Component {
 
 VelocitySelector.propTypes = {
   title: PropTypes.string,
-  updateSelectedPlots: PropTypes.func
+  updateSelectedPlots: PropTypes.func,
 };
