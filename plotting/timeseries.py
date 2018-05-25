@@ -269,13 +269,16 @@ class TimeseriesPlotter(point.PointPlotter):
             plt.ylim(vmin, vmax)
 
             # Title
-            wrapped_title = wrap(
-                "%s%s at %s" % (
-                    self.variable_name.title(),
-                    self.depth_label,
-                    ", ".join(self.names)
-                ), 80)
-            plt.title("\n".join(wrapped_title), fontsize=15)
+            if self.plotTitle is None or self.plotTitle == "": 
+                wrapped_title = wrap(
+                    "%s%s at %s" % (
+                        self.variable_name.title(),
+                        self.depth_label,
+                        ", ".join(self.names)
+                    ), 80)
+                plt.title("\n".join(wrapped_title), fontsize=15)
+            else :
+                plt.title(self.plotTitle,fontsize=15)
 
             plt.gca().grid(True)
 

@@ -142,12 +142,14 @@ class StickPlotter(point.PointPlotter):
                         depth = "%d m" % np.round(self.data_depth[
                             idx, 0, idx2, 0
                         ])
-
-                    a.set_title(gettext("%s at (%s)\n%s") % (
-                        self.vector_name(self.variable_names[0]),
-                        self.names[idx],
-                        depth
-                    ), fontsize=15)
+                    if self.plotTitle is None or self.plotTitle == "":  
+                        a.set_title(gettext("%s at (%s)\n%s") % (
+                            self.vector_name(self.variable_names[0]),
+                            self.names[idx],
+                            depth
+                        ), fontsize=15)
+                    else :
+                        a.set_title(self.plotTitle,fontsize=15)
 
         plt.setp(plt.gca().get_xticklabels(), rotation=30)
         fig.tight_layout()

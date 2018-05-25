@@ -266,10 +266,12 @@ class HovmollerPlotter(line.LinePlotter):
                 )
 
         # Image title
-        fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
-            self.name
-        ), fontsize=15)
-
+        if self.plotTitle is None or self.plotTitle == "":  
+            fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
+                self.name
+            ), fontsize=15)
+        else:
+            fig.suptitle(self.plotTitle,fontsize=15)
         # Subplot padding
         fig.tight_layout(pad=0, w_pad=4, h_pad=2)
         fig.subplots_adjust(top = 0.9 if self.compare else 0.85)

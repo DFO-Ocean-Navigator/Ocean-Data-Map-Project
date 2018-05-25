@@ -115,6 +115,12 @@ export default class OceanNavigator extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
+    this.updateLanguage = this.updateLanguage.bind(this);
+  }
+
+  //Updates the page language upon user request
+  updateLanguage() {
+    this.forceUpdate();
   }
 
   // Opens/closes the sidebar state
@@ -614,6 +620,7 @@ export default class OceanNavigator extends React.Component {
             dataset_compare={this.state.dataset_compare}
             toggleSidebar={this.toggleSidebar}
             toggleOptionsSidebar={this.toggleOptionsSidebar}
+            updateLanguage={this.updateLanguage}
           />
           <WarningBar
             showWarningInfo={this.showBugsModal}

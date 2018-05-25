@@ -56,9 +56,14 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
-        ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-            ", ".join(self.names), self.date_formatter(self.timestamp)
-        ), fontsize=15)
+
+        if self.plotTitle is None or self.plotTitle == "":  
+            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                ", ".join(self.names), self.date_formatter(self.timestamp)
+            ), fontsize=15)
+        else :
+            ax.set_title(self.plotTitle,fontsize=15)
+        
         ax.title.set_position([.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)

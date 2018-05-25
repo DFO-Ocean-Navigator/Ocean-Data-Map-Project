@@ -673,9 +673,12 @@ class TransectPlotter(line.LinePlotter):
                 )
             
         # Figure title
-        fig.suptitle("Transect Data for:\n%s" % (
-            self.name
-        ), fontsize=15)
+        if self.plotTitle is None or self.plotTitle == "": 
+            fig.suptitle("Transect Data for:\n%s" % (
+                self.name
+            ), fontsize=15)
+        else:
+            fig.suptitle(self.plotTitle,fontsize=15)
 
         # Subplot padding
         fig.tight_layout(pad=2, w_pad=2, h_pad=2)
