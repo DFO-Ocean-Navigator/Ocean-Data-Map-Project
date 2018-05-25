@@ -98,8 +98,7 @@ export default class LineWindow extends React.Component {
   }
 
   updateSelectedPlots (plots_selected, compare) {
-    console.warn(plots_selected);
-    console.warn(compare);
+
     let temp = [1, 0, 0];
     
     if(plots_selected[0]) {
@@ -127,7 +126,7 @@ export default class LineWindow extends React.Component {
         selectedPlots: temp,
       });
     }
-    console.warn(this.state.selectedPlots);
+    
   }
 
   onLocalUpdate(key, value) {
