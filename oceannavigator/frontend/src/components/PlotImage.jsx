@@ -161,8 +161,6 @@ export default class PlotImage extends React.Component {
         query.depth_limit = q.depth_limit;
         query.colormap = q.colormap;
         query.selectedPlots = q.selectedPlots;
-        console.warn("SLDKJDLFSKJ");
-        console.warn(q.selectedPlots);
 
         if (q.compare_to) {
           query.compare_to = {
