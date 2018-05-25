@@ -180,7 +180,7 @@ export default class AreaWindow extends React.Component {
     }
   }
 
-  saveData(key) {
+  saveData() {
     // Find max extents of drawn area
     let lat_min = this.props.area[0].polygons[0][0][0];
     let lat_max = this.props.area[0].polygons[0][0][1];
@@ -196,17 +196,17 @@ export default class AreaWindow extends React.Component {
     }
 
     setTimeout(() => {
-      const response = {
-        file: `/api/subset/${this.state.output_format}/` + 
-        `${this.props.dataset_0.dataset}/` + 
-        `${this.state.output_variables.join()}/` + // Comma-separate selected variables
-        `${lat_min},${long_min}/` +
-        `${lat_max},${long_max}/` + 
-        `${this.state.output_starttime},${this.state.output_endtime}/`+
-        `${this.state.zip ? 1 : 0}`
+      const query = {
+        output_format: this.state.output_format,
+        dataset_name: this.props.dataset_0.dataset,
+        variables: this.state.output_variables.join(),
+        min_range: [lat_min, long_min],
+        max_range: [lat_max, long_max],
+        time: [this.state.output_starttime, this.state.output_endtime],
+        should_zip: this.state.zip ? 1 : 0
       };
 
-      window.location.href = response.file;
+      window.location.href = "/subset/?query=" + encodeURIComponent(stringify(query));
     }, 100);
   }
 
