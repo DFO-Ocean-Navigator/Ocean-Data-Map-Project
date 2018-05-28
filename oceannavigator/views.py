@@ -528,9 +528,13 @@ def subset_query():
 
         query = json.loads(request.form.get('query'))
     
-    # Bounding box extents
-    bottom_left = [float(x) for x in query.get('min_range')]
-    top_right = [float(x) for x in query.get('max_range')]
+    entire_globe = True # subset the globe?
+    if 'min_range' in query:
+        # Area explicitly specified
+        entire_globe = False
+        # Bounding box extents
+        bottom_left = [float(x) for x in query.get('min_range')]
+        top_right = [float(x) for x in query.get('max_range')]
 
     # Time range
     time_range = [int(x) for x in query.get('time')]
@@ -558,18 +562,27 @@ def subset_query():
         lat = find_variable("lat")
         lon = find_variable("lon")
 
-        # Find closest indices in dataset corresponding to each calculated point
-        # riops used "latitude" and "longitude"
-        ymin_index, xmin_index, _ = find_nearest_grid_point(
-            bottom_left[0], bottom_left[1], dataset, dataset.variables[lat], dataset.variables[lon]
-        )
-        ymax_index, xmax_index, _ = find_nearest_grid_point(
-            top_right[0], top_right[1], dataset, dataset.variables[lat], dataset.variables[lon]
-        )
+        if not entire_globe:
+            # Find closest indices in dataset corresponding to each calculated point
+            ymin_index, xmin_index, _ = find_nearest_grid_point(
+                bottom_left[0], bottom_left[1], dataset, dataset.variables[lat], dataset.variables[lon]
+            )
+            ymax_index, xmax_index, _ = find_nearest_grid_point(
+                top_right[0], top_right[1], dataset, dataset.variables[lat], dataset.variables[lon]
+            )
 
-        # Get nicely formatted bearings
-        p0 = geopy.Point(bottom_left)
-        p1 = geopy.Point(top_right)
+            y_slice = slice(ymin_index, ymax_index)
+            x_slice = slice(xmin_index, xmax_index)
+
+            # Get nicely formatted bearings
+            p0 = geopy.Point(bottom_left)
+            p1 = geopy.Point(top_right)
+        else:
+            y_slice = slice(dataset.variables[lat].size)
+            x_slice = slice(dataset.variables[lon].size)
+
+            p0 = geopy.Point([-85.0, -180.0])
+            p1 = geopy.Point([85.0, 180.0])
         
         # Get timestamp
         time_variable = find_variable("time")
@@ -581,11 +594,12 @@ def subset_query():
         # Do subsetting
         if "riops" in dataset_name:
             # Riops has different coordinate names...why? ¯\_(ツ)_/¯
-            subset = dataset.isel(yc=slice(ymin_index, ymax_index), xc=slice(xmin_index, xmax_index))
+            subset = dataset.isel(yc=y_slice, xc=slicex_slice)
         elif dataset_name == "giops_forecast":
-            subset = dataset.isel(latitude=slice(ymin_index, ymax_index), longitude=slice(xmin_index, xmax_index))
+            subset = dataset.isel(latitude=y_slice, longitude=x_slice)
         else:
-            subset = dataset.isel(y=slice(ymin_index, ymax_index), x=slice(xmin_index, xmax_index))
+            subset = dataset.isel(y=y_slice, x=x_slice)
+
         # Select requested time (time range if applicable)
         if apply_time_range:
             subset = subset.isel(**{time_variable: slice(time_range[0], time_range[1] + 1)}) # slice doesn't include the last element
