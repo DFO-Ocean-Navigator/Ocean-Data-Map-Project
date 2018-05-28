@@ -60,27 +60,7 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
-
-    resp = jsonify({       #Creates an object which is converted to JSON
-        'min': min,
-        'max': max,
-    })
-    resp.cache_control.max_age = MAX_CACHE
-    return resp #Returns JSON Range Object
-
-# ~~~
-# 
-# Returns a range (min, max)
-#
-@app.route('/api/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query(dataset, projection, extent, variable, depth, time):
-    extent = map(float, extent.split(","))
-
-    min, max = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent, "inverse", 25, 10)
-
-    #Changes data to json objects
-    resp = jsonify({    #Creates an object which is converted to JSON
+    resp = jsonify({
         'min': min,
         'max': max,
     })
