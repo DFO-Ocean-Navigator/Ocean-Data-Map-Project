@@ -12,7 +12,8 @@ from oceannavigator import app
 from oceannavigator.util import (
     get_variable_name, get_datasets, get_dataset_config,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden, get_dataset_cache
+    is_variable_hidden, get_dataset_cache, get_dataset_help,
+    get_dataset_name, get_dataset_quantum, get_dataset_attribution
 )
 from oceannavigator.nearest_grid_point import find_nearest_grid_point
 from oceannavigator.errors import ErrorBase, ClientError
@@ -155,14 +156,13 @@ def query_file(q, projection, resolution, extent, file_id):
 def query_datasets():
     data = []
 
-    config = get_dataset_config()
     for key in get_datasets():
         data.append({
             'id': key,
-            'value': config[key]['name'],
-            'quantum': config[key]['quantum'],
-            'help': config[key]['help'],
-            'attribution': config[key]['attribution'],
+            'value': get_dataset_name(key),
+            'quantum': get_dataset_quantum(key),
+            'help': get_dataset_help(key),
+            'attribution': get_dataset_attribution(key),
         })
 
     data = sorted(data, key=lambda k: k['value'])
