@@ -85,8 +85,8 @@ class MapPlotter(pl.Plotter):
             # Include bearing information in the exported data, as per user
             # requests.
             columns.extend([
-                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s East (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s North (%s)" % (self.quiver_name, self.quiver_unit),
                 "Bearing (degrees clockwise positive from North)"
             ])
             quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
@@ -96,7 +96,14 @@ class MapPlotter(pl.Plotter):
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
-
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds=np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data_fullgrid[1].ravel()[::5])<10e-6,
+                    np.abs(self.quiver_data_fullgrid[0].ravel()[::5])<10e-6
+                    )
+                )
+            bearing[inds]=np.nan
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
         depth = self.depth_value.ravel()[::5]
@@ -119,6 +126,10 @@ class MapPlotter(pl.Plotter):
                     "%0.3f" % bearing[idx]
                 ])
             data.append(entry)
+
+        d = np.array(data)
+        d[np.where(d == 'nan')] = ''
+        data = d.tolist()
 
         return super(MapPlotter, self).csv(header, columns, data)
 
@@ -587,6 +598,10 @@ class MapPlotter(pl.Plotter):
 
         if len(self.quiver_data) == 2:
             qx, qy = self.quiver_data
+            qx, qy ,x ,y = self.basemap.rotate_vector(qx, qy,
+                                                      self.quiver_longitude,
+                                                      self.quiver_latitude,
+                                                      returnxy=True)
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
@@ -602,12 +617,11 @@ class MapPlotter(pl.Plotter):
                     qcmap = colormap.colormaps.get('speed')
                 else:
                     qcmap = colormap.colormaps.get(self.quiver['colormap'])
-
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
                     quiver_mag,
-                    latlon=True, width=0.0035,
+                    width=0.0035,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',
@@ -615,9 +629,9 @@ class MapPlotter(pl.Plotter):
                 )
             else:
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
-                    latlon=True, width=0.0025,
+                    width=0.0025,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',

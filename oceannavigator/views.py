@@ -329,30 +329,31 @@ def vars_query():
                 'vozocrtx': 'vozocrtx,vomecrty',
                 'itzocrtx': 'itzocrtx,itmecrty',
                 'iicevelu': 'iicevelu,iicevelv',
+                'ice_east_vel': 'ice_east_vel,ice_north_vel',
                 'u_wind': 'u_wind,v_wind',
                 'u': 'u,v',
                 'ua': 'ua,va',
-                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground'
+                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
+                'east_vel': 'east_vel,north_vel',
+                'wind_east_vel': 'wind_east_vel,wind_north_vel',
             }
 
             #If Vectors are needed
             if 'vectors' in request.args or 'vectors_only' in request.args:
-                rxp = r"(?i)( x | y |zonal |meridional |northward |eastward)"
-
                 for key, value in list(VECTOR_MAP.items()):
+                rxp = r"(?i)(zonal |meridional |northward |eastward | east | north)"
                     if key in ds.variables:
-                        n = get_variable_name(dataset, ds.variables[key])       #Returns a normal variable type
+                        n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
+                        if re.search(rxp, n): # Extra if for datasets with non-eastward vozocrtx
+                            data.append({
+                                'id': value,
+                                'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                                'scale': [0, get_variable_scale(
+                                          dataset,
+                                          ds.variables[key]
+                                           )[1]]
+                            })
 
-                        data.append({
-                            'id': value,
-                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                            'scale': [0, get_variable_scale(
-                                dataset,
-                                ds.variables[key]
-                            )[1]]
-                        })
-
-         
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     #Data is set of scale, id, value objects
 
