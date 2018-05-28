@@ -261,7 +261,7 @@ def wrap_computer_stats(query, dataset_name, lon_values):
     elif any(p < -180 for p in lon_values):     #points to the west of the west dateline
         wrap_val=-180
     else:
-        raise ClientError(gettext("something went wrong. It seems you trying to create a plot across the international date line." + 
+        raise ClientError(gettext("something went wrong. It seems you are trying to create a plot across the international date line." + 
                                 "While we do support this function it must be done within 360 deg of the default map view. Try refreshing the page and try again"))
     
     variables = query.get('variable')
