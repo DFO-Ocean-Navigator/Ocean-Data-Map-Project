@@ -340,8 +340,8 @@ def vars_query():
 
             #If Vectors are needed
             if 'vectors' in request.args or 'vectors_only' in request.args:
-                for key, value in list(VECTOR_MAP.items()):
                 rxp = r"(?i)(zonal |meridional |northward |eastward | east | north)"
+                for key, value in list(VECTOR_MAP.items()):
                     if key in ds.variables:
                         n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
                         if re.search(rxp, n): # Extra if for datasets with non-eastward vozocrtx
