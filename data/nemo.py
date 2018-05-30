@@ -1,7 +1,6 @@
 from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
-import warnings
 from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
 from data.data import Variable, VariableList
@@ -18,9 +17,6 @@ class Nemo(NetCDFData):
         super(Nemo, self).__enter__()
 
         return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        super(Nemo, self).__exit__(exc_type, exc_value, traceback)
 
     """
         Returns the possible names of the depth dimension in the dataset
@@ -131,61 +127,6 @@ class Nemo(NetCDFData):
 
         return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
     
-
-    """
-        Interpolates data given input and output definitions
-        and the selected interpolation algorithm.
-    """
-    def __interpolate(self, input_def, output_def, data):
-        
-        # Ignore pyresample warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            warnings.simplefilter("ignore", UserWarning)
-            
-            # Interpolation with gaussian weighting
-            if self.interp == "gaussian":
-                return pyresample.kd_tree.resample_gauss(input_def, data,
-                    output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                    nprocs=8)
-
-            # Bilinear weighting
-            elif self.interp == "bilinear":
-                """
-                    Weight function used to determine the effect of surrounding points
-                    on a given point
-                """
-                def weight(r):
-                    r = np.clip(r, np.finfo(r.dtype).eps,
-                                np.finfo(r.dtype).max)
-                    return 1. / r
-
-                return pyresample.kd_tree.resample_custom(input_def, data,
-                    output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                    weight_funcs=weight, nprocs=8)
-
-            # Inverse-square weighting
-            elif self.interp == "inverse":
-                """
-                    Weight function used to determine the effect of surrounding points
-                    on a given point
-                """
-                def weight(r):
-                    r = np.clip(r, np.finfo(r.dtype).eps,
-                                np.finfo(r.dtype).max)
-                    return 1. / r ** 2
-
-                return pyresample.kd_tree.resample_custom(input_def, data,
-                    output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                    weight_funcs=weight, nprocs=8)
-
-
-            # Nearest-neighbour interpolation (junk)
-            elif self.interp == "nearest":
-
-                return pyresample.kd_tree.resample_nearest(input_def, data,
-                    output_def, radius_of_influence=float(self.radius), nprocs=8)
-
     """
         Resamples data given lat/lon inputs and outputs
     """
@@ -223,7 +164,7 @@ class Nemo(NetCDFData):
                     nprocs=8
                 )
 
-                output.append(self.__interpolate(input_def, output_def, data[:, :, d]))
+                output.append(super(Nemo, self)._interpolate(input_def, output_def, data[:, :, d]))
 
             output = np.ma.array(output).transpose()
             
@@ -236,7 +177,7 @@ class Nemo(NetCDFData):
                 lats=masked_lat_in
             )
 
-            output = self.__interpolate(input_def, output_def, data)
+            output = super(Nemo, self)._interpolate(input_def, output_def, data)
            
 
         if len(origshape) == 4:
