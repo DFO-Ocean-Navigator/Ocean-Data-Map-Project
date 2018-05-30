@@ -437,7 +437,7 @@ class MapPlotter(pl.Plotter):
             for d in self.contour_data:
                 d[np.where(self.bathymetry < depth_value)] = np.ma.masked
         else:
-            mask = maskoceans(self.longitude, self.latitude, self.data).mask
+            mask = maskoceans(self.longitude, self.latitude, self.data, True, 'h', 1.25).mask
             self.data[~mask] = np.ma.masked
             for d in self.quiver_data:
                 mask = maskoceans(
