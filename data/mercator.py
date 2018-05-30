@@ -14,7 +14,6 @@ class Mercator(NetCDFData):
     __depths = None
 
     def __init__(self, url):
-        self.__timestamp_cache = TTLCache(1, 3600)
         self.latvar = None
         self.lonvar = None
         self.__latsort = None
@@ -23,7 +22,7 @@ class Mercator(NetCDFData):
         super(Mercator, self).__init__(url)
 
     def __enter__(self):
-        self._dataset = Dataset(self.url, 'r')
+        super(Mercator, self).__enter__()
 
         if self.latvar is None:
             self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
@@ -64,70 +63,6 @@ class Mercator(NetCDFData):
             self.__depths.flags.writeable = False
 
         return self.__depths
-
-    """
-        Loads, caches, and returns the time dimension from a dataset.
-    """
-    @property
-    def timestamps(self):
-        if self.__timestamp_cache.get("timestamps") is None:
-            var = None
-            for v in self.time_variables:
-                if v in self._dataset.variables:
-                    var = self._dataset.variables[v]
-                    break
-
-            t = netcdftime.utime(var.units)
-            timestamps = np.array(
-                list(map(
-                    lambda ts: t.num2date(ts).replace(tzinfo=pytz.UTC),
-                    var[:]
-                ))
-            )
-            timestamps.setflags(write=False) # Make immutable
-            self.__timestamp_cache["timestamps"] = timestamps
-
-        return self.__timestamp_cache.get("timestamps")
-
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
-    @property
-    def variables(self):
-        # Check if variable list has been created yet.
-        # This saves approx 3 lookups per tile, and
-        # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
-            l = []
-            for name in self._dataset.variables:
-                var = self._dataset.variables[name]
-                
-                if 'long_name' in var.ncattrs():
-                    long_name = var.long_name
-                else:
-                    long_name = name
-
-                if 'units' in var.ncattrs():
-                    units = var.units
-                else:
-                    units = None
-
-                if 'valid_min' in var.ncattrs():
-                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                             str(var.valid_min)))
-                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                         str(var.valid_max)))
-                else:
-                    valid_min = None
-                    valid_max = None
-
-                l.append(Variable(name, long_name, units, var.dimensions,
-                              valid_min, valid_max))
-
-            self._variable_list = VariableList(l) # Save list for later
-
-        return self._variable_list
 
     def __find_var(self, candidates):
         for c in candidates:
@@ -174,8 +109,8 @@ class Mercator(NetCDFData):
             mx = np.amax(data)
             mn = np.amin(data)
 
-            mn -= n / 2
-            mx += n / 2
+            mn -= np.int64(n / 2)
+            mx += np.int64(n / 2)
 
             mn = np.clip(mn, 0, limit)
             mx = np.clip(mx, 0, limit)
@@ -343,7 +278,7 @@ class Mercator(NetCDFData):
                 self.latvar[miny:maxy],
                 np.mod(self.lonvar[minx:maxx] + 360, 360),
                 [latitude], [longitude],
-                data,
+                data.values,
                 radius
             )
 
@@ -375,7 +310,7 @@ class Mercator(NetCDFData):
                 self.latvar[miny:maxy],
                 self.lonvar[minx:maxx],
                 latitude, longitude,
-                data,
+                data.values,
                 radius
             )
 
@@ -403,7 +338,7 @@ class Mercator(NetCDFData):
             self.latvar[miny:maxy],
             self.lonvar[minx:maxx],
             [latitude], [longitude],
-            var[time, :, miny:maxy, minx:maxx],
+            var[time, :, miny:maxy, minx:maxx].values,
             radius
         )
 
