@@ -114,11 +114,10 @@ def scale(args):
     scale = [float(component) for component in scale.split(',')]
 
     variable = args.get('variable')
+    anom = False
     if variable.endswith('_anom'):
         variable = variable[0:-5]
         anom = True
-    else:
-        anom = False
 
     variable = variable.split(',')
 

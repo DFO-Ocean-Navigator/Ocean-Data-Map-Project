@@ -2,7 +2,7 @@ from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
-import data.netcdf_data as ncData
+from data.netcdf_data import NetCDFData
 from netCDF4 import Dataset
 from data.data import Variable, VariableList
 from netCDF4 import chartostring
@@ -15,11 +15,11 @@ RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
 """
-    FVCOM will deal with netCDF4 module directly,
-    so most functions from NetCDFData will be 
-    overridden.
+    FVCOM datasets have a non-uniform grid,
+    so xArray can't handle it/
+
 """
-class Fvcom(ncData.NetCDFData):
+class Fvcom(NetCDFData):
     __depths = None
 
     def __init__(self, url):
@@ -61,7 +61,7 @@ class Fvcom(ncData.NetCDFData):
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:
             var = None
-            for v in ['Times']:
+            for v in self.time_variables:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break

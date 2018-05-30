@@ -16,23 +16,29 @@ def get_dataset_config(configFile = app.config['datasetConfig']):
 
     return _config
 
+def __get_dataset_attribute(dataset, key):
+    return get_dataset_config()[dataset].get(key) if not None else ""
+
 def get_datasets():
     config = get_dataset_config()
 
     # Only return "enabled" datasets
-    return [key for key in config.keys() if config[key]["enabled"]]
-
+    return [key for key in config.keys() if config[key].get("enabled")]
 
 def get_dataset_url(dataset):
-    return get_dataset_config()[dataset]["url"]
+    return __get_dataset_attribute(dataset, "url")
 
 def get_dataset_climatology(dataset):
-    return get_dataset_config()[dataset]["climatology"]
-
+    return __get_dataset_attribute(dataset, "climatology")
 
 def get_dataset_name(dataset):
-    return get_dataset_config()[dataset]["name"]
+    return __get_dataset_attribute(dataset, "name")
 
+def get_dataset_help(dataset):
+    return __get_dataset_attribute(dataset, "help")
+
+def get_dataset_quantum(dataset):
+    return __get_dataset_attribute(dataset, "quantum")
 
 def get_dataset_attribution(dataset):
     # Strip any HTML from this
@@ -40,11 +46,10 @@ def get_dataset_attribution(dataset):
         return re.sub(
             r"<[^>]*>",
             "",
-            get_dataset_config()[dataset]["attribution"]
+            get_dataset_config()[dataset].get("attribution")
         )
     except:
         return ""
-
 
 def get_dataset_cache(dataset):
     cache = get_dataset_config()[dataset].get("cache")
@@ -52,7 +57,6 @@ def get_dataset_cache(dataset):
         cache = int(cache)
 
     return cache
-
 
 def get_variables(dataset):
     variable_keys = get_dataset_config()[dataset]["variables"].keys()
@@ -117,12 +121,13 @@ def get_variable_scale_factor(dataset, variable):
 
 
 def is_variable_hidden(dataset, variable):
-    from_config = get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
+    try:
+        from_config = get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
+    except KeyError:
+        return True
 
-    if from_config is not None:
-        if from_config in ['false', 'False']:
-            return False
-        elif from_config in ['true', 'True']:
-            return True
+    if from_config in ['true', 'True'] or from_config == True:
+        return True
 
     return False
+    
