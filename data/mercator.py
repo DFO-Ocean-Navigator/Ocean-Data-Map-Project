@@ -10,9 +10,6 @@ import math
 import pytz
 import re
 
-RAD_FACTOR = np.pi / 180.0
-EARTH_RADIUS = 6378137.0
-
 class Mercator(NetCDFData):
     __depths = None
 
@@ -193,13 +190,8 @@ class Mercator(NetCDFData):
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
-        
 
         origshape = var.shape
-
-        def weight(r):
-            r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1.0 / r ** 2.0
 
         data = var[:]
 
@@ -212,52 +204,39 @@ class Mercator(NetCDFData):
             lons=np.ma.array(lon_out),
             lats=np.ma.array(lat_out)
         )
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
 
-            if len(data.shape) == 3:
-                output = []
-                # multiple depths
-                for d in range(0, data.shape[2]):
-                    grid_lat, grid_lon = np.meshgrid(
-                        masked_lat_in,
-                        masked_lon_in
-                    )
-                    grid_lat.mask = grid_lon.mask = \
-                        data[:, :, d].view(np.ma.MaskedArray).mask.transpose()
-                    input_def = pyresample.geometry.SwathDefinition(
-                        lons=grid_lon,
-                        lats=grid_lat
-                    )
-                    output.append(pyresample.kd_tree.resample_custom(
-                        input_def, data[:, :, d].transpose(), output_def,
-                        radius_of_influence=float(radius),
-                        neighbours=10,
-                        weight_funcs=weight,
-                        fill_value=None, nprocs=8
-                    ))
-
-                output = np.ma.array(output).transpose()
-            else:
+        if len(data.shape) == 3:
+            output = []
+            # multiple depths
+            for d in range(0, data.shape[2]):
                 grid_lat, grid_lon = np.meshgrid(
                     masked_lat_in,
                     masked_lon_in
                 )
                 grid_lat.mask = grid_lon.mask = \
-                    data.view(np.ma.MaskedArray).mask.transpose()
-
+                    data[:, :, d].view(np.ma.MaskedArray).mask.transpose()
                 input_def = pyresample.geometry.SwathDefinition(
                     lons=grid_lon,
                     lats=grid_lat
                 )
 
-                output = pyresample.kd_tree.resample_custom(
-                    input_def, data.transpose(), output_def,
-                    radius_of_influence=float(radius),
-                    neighbours=10,
-                    weight_funcs=weight,
-                    fill_value=None, nprocs=8
-                )
+                output.append(super(Mercator, self)._interpolate(input_def, output_def, data[:, :, d].transpose()))
+
+            output = np.ma.array(output).transpose()
+        else:
+            grid_lat, grid_lon = np.meshgrid(
+                masked_lat_in,
+                masked_lon_in
+            )
+            grid_lat.mask = grid_lon.mask = \
+                data.view(np.ma.MaskedArray).mask.transpose()
+
+            input_def = pyresample.geometry.SwathDefinition(
+                lons=grid_lon,
+                lats=grid_lat
+            )
+
+            output = super(Mercator, self)._interpolate(input_def, output_def, data.transpose())
 
         if len(origshape) == 4:
             output = output.reshape(origshape[2:])

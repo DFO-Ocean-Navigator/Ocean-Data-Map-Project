@@ -33,9 +33,6 @@ class Fvcom(NetCDFData):
 
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        super(Fvcom, self).__exit__(exc_type, exc_value, traceback)
-
     """
         Returns the possible names of the depth dimension in the dataset
     """

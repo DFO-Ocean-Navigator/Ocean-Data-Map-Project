@@ -3,6 +3,8 @@ from data.data import Data
 import xarray as xr
 from cachetools import TTLCache
 import pytz
+import warnings
+import pyresample
 import numpy as np
 
 class NetCDFData(Data):
@@ -24,6 +26,60 @@ class NetCDFData(Data):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
+    
+    """
+        Interpolates data given input and output definitions
+        and the selected interpolation algorithm.
+    """
+    def _interpolate(self, input_def, output_def, data):
+        
+        # Ignore pyresample warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            warnings.simplefilter("ignore", UserWarning)
+            
+            # Interpolation with gaussian weighting
+            if self.interp == "gaussian":
+                return pyresample.kd_tree.resample_gauss(input_def, data,
+                    output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
+                    nprocs=8)
+
+            # Bilinear weighting
+            elif self.interp == "bilinear":
+                """
+                    Weight function used to determine the effect of surrounding points
+                    on a given point
+                """
+                def weight(r):
+                    r = np.clip(r, np.finfo(r.dtype).eps,
+                                np.finfo(r.dtype).max)
+                    return 1. / r
+
+                return pyresample.kd_tree.resample_custom(input_def, data,
+                    output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
+                    weight_funcs=weight, nprocs=8)
+
+            # Inverse-square weighting
+            elif self.interp == "inverse":
+                """
+                    Weight function used to determine the effect of surrounding points
+                    on a given point
+                """
+                def weight(r):
+                    r = np.clip(r, np.finfo(r.dtype).eps,
+                                np.finfo(r.dtype).max)
+                    return 1. / r ** 2
+
+                return pyresample.kd_tree.resample_custom(input_def, data,
+                    output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
+                    weight_funcs=weight, nprocs=8)
+
+
+            # Nearest-neighbour interpolation (junk)
+            elif self.interp == "nearest":
+
+                return pyresample.kd_tree.resample_nearest(input_def, data,
+                    output_def, radius_of_influence=float(self.radius), nprocs=8)
 
     """
         Returns the value of a given variable name from the dataset
