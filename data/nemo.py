@@ -142,6 +142,8 @@ class Nemo(NetCDFData):
 
         data = np.ma.masked_invalid(var[:])
 
+        lon_in, lat_in = pyresample.utils.check_and_wrap(lon_in, lat_in)
+
         masked_lon_in = np.ma.array(lon_in)
         masked_lat_in = np.ma.array(lat_in)
 
