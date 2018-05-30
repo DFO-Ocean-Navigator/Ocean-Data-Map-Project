@@ -293,9 +293,6 @@ def vars_query():
 
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-                #          
-                #
-                # 'ds.variables' is the dataset
                 for v in ds.variables:  #Iterates through all the variables in the dataset
 
                     #If a time period and at least one other unit type is specified
@@ -313,6 +310,7 @@ def vars_query():
                             continue
                         else:
                             if not is_variable_hidden(dataset, v):
+                                
                                 data.append({
                                     'id': v.key,
                                     'value': get_variable_name(dataset, v),

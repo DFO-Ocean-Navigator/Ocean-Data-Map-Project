@@ -32,6 +32,13 @@ class NetCDFData(Data):
         return self._dataset.variables[key]
 
     """
+        Returns the possible names of the time dimension in the dataset
+    """
+    @property
+    def time_variables(self):
+        return ['time', 'time_counter', 'Times']
+
+    """
         Loads, caches, and returns the time dimension from a dataset.
     """
     @property
@@ -39,7 +46,7 @@ class NetCDFData(Data):
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
             var = None
-            for v in ['time', 'time_counter']:
+            for v in self.time_variables:
                 if v in self._dataset.variables.keys():
                     # Get the xarray.DataArray for time variable
                     var = self._dataset.variables[v]

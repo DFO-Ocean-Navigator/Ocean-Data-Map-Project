@@ -121,7 +121,10 @@ def get_variable_scale_factor(dataset, variable):
 
 
 def is_variable_hidden(dataset, variable):
-    from_config = get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
+    try:
+        from_config = get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
+    except KeyError:
+        return True
 
     if from_config in ['true', 'True'] or from_config == True:
         return True

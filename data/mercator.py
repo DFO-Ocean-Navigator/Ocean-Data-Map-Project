@@ -1,18 +1,40 @@
 import pyresample
 import numpy as np
 import warnings
-import data.netcdf_data as ncData
+from netCDF4 import Dataset, netcdftime
+from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
+from cachetools import TTLCache
 from data.data import Variable, VariableList
 import math
+import pytz
 import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
-
-class Mercator(ncData.NetCDFData):
+class Mercator(NetCDFData):
     __depths = None
+
+    def __init__(self, url):
+        self.__timestamp_cache = TTLCache(1, 3600)
+        self.latvar = None
+        self.lonvar = None
+        self.__latsort = None
+        self.__lonsort = None
+
+        super(Mercator, self).__init__(url)
+
+    def __enter__(self):
+        self._dataset = Dataset(self.url, 'r')
+
+        if self.latvar is None:
+            self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
+            self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
+            self.__latsort = np.argsort(self.latvar[:])
+            self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
+
+        return self
 
     """
         Returns the possible names of the depth dimension in the dataset
@@ -28,7 +50,7 @@ class Mercator(ncData.NetCDFData):
     def depths(self):
         if self.__depths is None:
             var = None
-            for v in ['depth', 'deptht']:
+            for v in self.depth_dimensions:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break
@@ -45,6 +67,30 @@ class Mercator(ncData.NetCDFData):
             self.__depths.flags.writeable = False
 
         return self.__depths
+
+    """
+        Loads, caches, and returns the time dimension from a dataset.
+    """
+    @property
+    def timestamps(self):
+        if self.__timestamp_cache.get("timestamps") is None:
+            var = None
+            for v in self.time_variables:
+                if v in self._dataset.variables:
+                    var = self._dataset.variables[v]
+                    break
+
+            t = netcdftime.utime(var.units)
+            timestamps = np.array(
+                list(map(
+                    lambda ts: t.num2date(ts).replace(tzinfo=pytz.UTC),
+                    var[:]
+                ))
+            )
+            timestamps.setflags(write=False) # Make immutable
+            self.__timestamp_cache["timestamps"] = timestamps
+
+        return self.__timestamp_cache.get("timestamps")
 
     """
         Returns a list of all data variables and their 
@@ -142,11 +188,12 @@ class Mercator(ncData.NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.lonvar.shape[0])
 
-        return miny, maxy, minx, maxx, np.amax(d)
+        return np.int64(miny), np.int64(maxy), np.int64(minx), np.int64(maxx), np.amax(d)
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
+        
 
         origshape = var.shape
 
@@ -155,6 +202,8 @@ class Mercator(ncData.NetCDFData):
             return 1.0 / r ** 2.0
 
         data = var[:]
+
+        lon_in, lat_in = pyresample.utils.check_and_wrap(lon_in, lat_in)
 
         masked_lon_in = np.ma.array(lon_in)
         masked_lat_in = np.ma.array(lat_in)
@@ -185,7 +234,7 @@ class Mercator(ncData.NetCDFData):
                         radius_of_influence=float(radius),
                         neighbours=10,
                         weight_funcs=weight,
-                        fill_value=None, nprocs=4
+                        fill_value=None, nprocs=8
                     ))
 
                 output = np.ma.array(output).transpose()
@@ -207,31 +256,13 @@ class Mercator(ncData.NetCDFData):
                     radius_of_influence=float(radius),
                     neighbours=10,
                     weight_funcs=weight,
-                    fill_value=None, nprocs=4
+                    fill_value=None, nprocs=8
                 )
 
         if len(origshape) == 4:
             output = output.reshape(origshape[2:])
 
         return np.squeeze(output)
-
-    def __init__(self, url):
-        super(Mercator, self).__init__(url)
-        self.latvar = None
-        self.lonvar = None
-        self.__latsort = None
-        self.__lonsort = None
-
-    def __enter__(self):
-        super(Mercator, self).__enter__()
-
-        if self.latvar is None:
-            self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
-            self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
-            self.__latsort = np.argsort(self.latvar[:])
-            self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
-
-        return self
 
     def get_raw_point(self, latitude, longitude, depth, time, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -278,6 +309,7 @@ class Mercator(ncData.NetCDFData):
 
         lat_out, lon_out = np.meshgrid(self.latvar[miny:maxy],
                                        self.lonvar[minx:maxx])
+        
         return (
             lat_out,
             lon_out,
@@ -356,7 +388,7 @@ class Mercator(ncData.NetCDFData):
 
         else:
             if len(var.shape) == 4:
-                data = var[time, depth, miny:maxy, minx:maxx]
+                data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
 
