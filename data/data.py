@@ -109,7 +109,7 @@ class Data(object, metaclass=abc.ABCMeta):
         longitude = area[1, :].ravel()
 
         self.interp = interp
-        self.radius = radius * 1000 # Convert km to m
+        self.radius = radius
         self.neighbours = neighbours
 
         if return_depth:
