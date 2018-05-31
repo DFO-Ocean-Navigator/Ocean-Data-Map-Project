@@ -17,13 +17,6 @@ class Nemo(NetCDFData):
         return self
 
     """
-        Returns the possible names of the depth dimension in the dataset
-    """
-    @property
-    def depth_dimensions(self):
-        return ['depth', 'deptht']
-
-    """
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
