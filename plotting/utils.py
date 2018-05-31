@@ -144,7 +144,7 @@ def _map_plot(points, path=True, quiver=True):
                 round(lon_d / 1.5)
             ), labels=[0, 0, 0, 1])
     except:
-        raise ClientError(gettext("Plot is too close to pole"))
+        raise ClientError(gettext("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection"))
 
 
 def point_plot(points):
