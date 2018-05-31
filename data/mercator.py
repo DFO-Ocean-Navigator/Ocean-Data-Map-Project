@@ -6,6 +6,7 @@ from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
 from cachetools import TTLCache
 from data.data import Variable, VariableList
+from oceannavigator.nearest_grid_point import find_nearest_grid_point
 import math
 import pytz
 import re
@@ -33,13 +34,6 @@ class Mercator(NetCDFData):
         return self
 
     """
-        Returns the possible names of the depth dimension in the dataset
-    """
-    @property
-    def depth_dimensions(self):
-        return ['depth', 'deptht', 'z']
-
-    """
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
@@ -47,15 +41,17 @@ class Mercator(NetCDFData):
         if self.__depths is None:
             var = None
             for v in self.depth_dimensions:
-                if v in self._dataset.variables:
+                # Depth is usually a "coordinate" variable
+                if v in list(self._dataset.coords.keys()):
+                    # Get DataArray for depth
                     var = self._dataset.variables[v]
                     break
 
             if var is not None:
                 ureg = UnitRegistry()
-                unit = ureg.parse_units(var.units.lower())
+                unit = ureg.parse_units(var.attrs['units'].lower())
                 self.__depths = ureg.Quantity(
-                    var[:], unit
+                    var[:].values, unit
                 ).to(ureg.meters).magnitude
             else:
                 self.__depths = np.array([0])
@@ -71,39 +67,9 @@ class Mercator(NetCDFData):
 
         return None
 
-    def __find_index(self, lat, lon, n=1):
-        def find_nearest(array, value, sorter):
-            idx = np.searchsorted(array, value, side="left",
-                                  sorter=sorter)
-
-            result = []
-            for i in range(0, len(value)):
-                if idx[i] > 0 and (
-                    idx[i] == len(array) or
-                    math.fabs(value[i] - array[idx[i] - 1]) < math.fabs(
-                        value[i] - array[idx[i]])
-                ):
-                    result.append(idx[i] - 1)
-                else:
-                    result.append(idx[i])
-
-            return sorter[result]
-
-        if not hasattr(lat, "__len__"):
-            lat = [lat]
-            lon = [lon]
-
-        lat = np.array(lat)
-        lon = np.mod(np.array(lon) + 360, 360)
-
-        iy_min = find_nearest(self.latvar[:], lat, self.__latsort)
-        ix_min = find_nearest(np.mod(self.lonvar[:] + 360, 360), lon,
-                              self.__lonsort)
-
-        return iy_min, ix_min, [50000]
-
     def __bounding_box(self, lat, lon, n=10):
-        y, x, d = self.__find_index(lat, np.mod(np.add(lon, 360), 360), n)
+
+        y, x, _ = find_nearest_grid_point(lat, lon, self._dataset, self.latvar, self.lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -120,7 +86,7 @@ class Mercator(NetCDFData):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.lonvar.shape[0])
 
-        return np.int64(miny), np.int64(maxy), np.int64(minx), np.int64(maxx), np.amax(d)
+        return np.int64(miny), np.int64(maxy), np.int64(minx), np.int64(maxx), np.amax(50000)
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         if len(var.shape) == 3:
@@ -128,7 +94,7 @@ class Mercator(NetCDFData):
 
         origshape = var.shape
 
-        data = var[:]
+        data = np.ma.masked_invalid(var[:])
 
         lon_in, lat_in = pyresample.utils.check_and_wrap(lon_in, lat_in)
 

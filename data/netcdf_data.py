@@ -81,6 +81,13 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
+    
+    """
+        Returns the possible names of the depth dimension in the dataset
+    """
+    @property
+    def depth_dimensions(self):
+        return ['depth', 'deptht', 'z']
 
     """
         Returns the value of a given variable name from the dataset
