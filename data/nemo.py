@@ -3,9 +3,7 @@ import pyresample
 import numpy as np
 from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
-from data.data import Variable, VariableList
 from oceannavigator.nearest_grid_point import find_nearest_grid_point
-import re
 
 class Nemo(NetCDFData):
     __depths = None
@@ -48,55 +46,6 @@ class Nemo(NetCDFData):
             self.__depths.setflags(write=False) # Make immutable
 
         return self.__depths
-
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
-    @property
-    def variables(self):
-        # Check if variable list has been created yet.
-        # This saves approx 3 lookups per tile, and
-        # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
-            l = []
-            # Get "data variables" from dataset
-            variables = list(self._dataset.data_vars.keys())
-
-            for name in variables:
-                # Get variable DataArray
-                # http://xarray.pydata.org/en/stable/api.html#dataarray
-                var = self._dataset.variables[name]
-
-                # Get variable attributes
-                attrs = list(var.attrs.keys())
-            
-                if 'long_name' in attrs:
-                    long_name = var.attrs['long_name']
-                else:
-                    long_name = name
-
-                if 'units' in attrs:
-                    units = var.attrs['units']
-                else:
-                    units = None
-
-                if 'valid_min' in attrs:
-                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                             str(var.attrs['valid_min'])))
-                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                         str(var.attrs['valid_max'])))
-                else:
-                    valid_min = None
-                    valid_max = None
-
-                # Add to our "Variable" wrapper
-                l.append(Variable(name, long_name, units, var.dims,
-                              valid_min, valid_max))
-
-            self._variable_list = VariableList(l) # Cache the list for later
-        
-        return self._variable_list
 
     """
         Computes and returns points bounding lat, lon.
@@ -325,7 +274,7 @@ class Nemo(NetCDFData):
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
                 latitude, longitude,
-                data,
+                data.values,
             )
 
             if return_depth:

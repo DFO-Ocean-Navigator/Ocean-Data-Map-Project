@@ -1,11 +1,12 @@
 from netCDF4 import Dataset, netcdftime
-from data.data import Data
+from data.data import Data, Variable, VariableList
 import xarray as xr
 from cachetools import TTLCache
 import pytz
 import warnings
 import pyresample
 import numpy as np
+import re
 
 class NetCDFData(Data):
 
@@ -86,6 +87,55 @@ class NetCDFData(Data):
     """
     def get_dataset_variable(self, key):
         return self._dataset.variables[key]
+
+    """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+    """
+    @property
+    def variables(self):
+        # Check if variable list has been created yet.
+        # This saves approx 3 lookups per tile, and
+        # over a dozen when a new dataset is loaded.
+        if self._variable_list == None:
+            l = []
+            # Get "data variables" from dataset
+            variables = list(self._dataset.data_vars.keys())
+
+            for name in variables:
+                # Get variable DataArray
+                # http://xarray.pydata.org/en/stable/api.html#dataarray
+                var = self._dataset.variables[name]
+
+                # Get variable attributes
+                attrs = list(var.attrs.keys())
+            
+                if 'long_name' in attrs:
+                    long_name = var.attrs['long_name']
+                else:
+                    long_name = name
+
+                if 'units' in attrs:
+                    units = var.attrs['units']
+                else:
+                    units = None
+
+                if 'valid_min' in attrs:
+                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                             str(var.attrs['valid_min'])))
+                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                                         str(var.attrs['valid_max'])))
+                else:
+                    valid_min = None
+                    valid_max = None
+
+                # Add to our "Variable" wrapper
+                l.append(Variable(name, long_name, units, var.dims,
+                              valid_min, valid_max))
+
+            self._variable_list = VariableList(l) # Cache the list for later
+        
+        return self._variable_list
 
     """
         Returns the possible names of the time dimension in the dataset

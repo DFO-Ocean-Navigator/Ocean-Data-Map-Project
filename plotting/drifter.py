@@ -2,21 +2,20 @@ from netCDF4 import Dataset, netcdftime, chartostring
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils
+import plotting.utils as utils
 from oceannavigator.util import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 import pytz
 import dateutil.parser
 from oceannavigator import app
-import plotting.plotter as pl
+from plotting.plotter import Plotter
 from flask_babel import gettext
 from data import open_dataset
 import time
 import datetime
 from scipy.interpolate import interp1d
 
-
-class DrifterPlotter(pl.Plotter):
+class DrifterPlotter(Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "drifter"
