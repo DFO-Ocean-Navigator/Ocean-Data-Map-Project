@@ -31,9 +31,9 @@ class Plotter(metaclass=ABCMeta):
         self.variable_units = None
         self.scale_factors = None
         # Init interpolation stuff
-        self.interp = query.get('interp')
-        self.radius = query.get('radius')
-        self.neighbours = query.get('neighbours')
+        self.interp = "gaussian"
+        self.radius = 25000
+        self.neighbours = 10
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,
@@ -88,9 +88,15 @@ class Plotter(metaclass=ABCMeta):
         self.starttime = get_time('starttime')
         self.endtime = get_time('endtime')
 
+        if query.get('interp') is not None:
+            self.interp = query.get('interp')
+        if query.get('radius') is not None:
+            self.radius = query.get('radius') * 1000
+        if query.get('neighbours') is not None:
+            self.neighbours = query.get('neighbours') 
+
         # Sets custom plot title
         self.plotTitle = query.get('plotTitle')
-
 
         # Parse variable scale
         def parse_scale(query_scale):

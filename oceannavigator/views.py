@@ -592,7 +592,7 @@ def subset_query():
         # Do subsetting
         if "riops" in dataset_name:
             # Riops has different coordinate names...why? ¯\_(ツ)_/¯
-            subset = dataset.isel(yc=y_slice, xc=slicex_slice)
+            subset = dataset.isel(yc=y_slice, xc=x_slice)
         elif dataset_name == "giops_forecast":
             subset = dataset.isel(latitude=y_slice, longitude=x_slice)
         else:
