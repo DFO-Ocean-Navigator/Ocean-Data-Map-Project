@@ -116,6 +116,7 @@ export default class OceanNavigator extends React.Component {
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
     this.updateLanguage = this.updateLanguage.bind(this);
+    this.updateScale = this.updateScale.bind(this);
   }
 
   //Updates the page language upon user request
@@ -177,26 +178,33 @@ export default class OceanNavigator extends React.Component {
   // Updates global app state
   updateState(key, value) {
     var newState = {};
-    
+    console.warn(value);
     // Only updating one value
     if (typeof(key) === "string") {
       if (this.state[key] === value) {
+        console.warn(key);
         // Value hasn't changed
         return;
       }
-
+      
       // Store the updated value
       newState[key] = value;
-
+      console.warn(key);
       switch (key) {
         case "scale":
+          this.updateScale(key, value);
+          return;
         case "scale_1":
+          console.warn(key);
+          console.warn(this.state.syncRanges);
           if (this.state.syncRanges) {
             newState.scale = value;
             newState.scale_1 = value;
           }
           break;
         case "dataset_0":
+          console.warn(key);
+          console.warn(value.dataset);
           if (value.dataset !== this.state.dataset) {
             this.changeDataset(value.dataset, value);
             return;
@@ -219,8 +227,14 @@ export default class OceanNavigator extends React.Component {
         }
       }
     }
-
     this.setState(newState);
+  }
+
+  updateScale(key, value) {
+    console.warn("IN THE FUNC");
+    this.setState({
+      scale: value
+    });
   }
 
   changeDataset(dataset, state) {
