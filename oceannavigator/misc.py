@@ -13,7 +13,7 @@ from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
 from operator import itemgetter
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_dataset_url, get_variable_name,
     get_variable_unit, get_dataset_climatology
 )

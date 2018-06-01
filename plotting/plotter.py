@@ -7,7 +7,7 @@ import plotting.utils as utils
 import plotting.colormap as colormap
 import re
 import pint
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_variable_unit,
     get_variable_name,
     get_variable_scale_factor,
@@ -20,21 +20,21 @@ from PIL import Image
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name, query, format):
-        self.dataset_name = dataset_name
+        self.dataset_name: str = dataset_name
         self.query = query
         self.format = format
         self.data = None
         self.dpi = 72.
-        self.size = '11x9'
-        self.plotTitle = None
-        self.compare = False
+        self.size: str = '11x9'
+        self.plotTitle: str = None
+        self.compare: bool = False
         self.variable_names = None
         self.variable_units = None
         self.scale_factors = None
         # Init interpolation stuff
-        self.interp = "gaussian"
-        self.radius = 25000 # radius in meters
-        self.neighbours = 10
+        self.interp: str = "gaussian"
+        self.radius: int = 25000 # radius in meters
+        self.neighbours: int = 10
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,

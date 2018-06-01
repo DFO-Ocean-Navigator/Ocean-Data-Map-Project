@@ -11,7 +11,7 @@ __author__ = 'Geoff Holden'
 class Data(object, metaclass=abc.ABCMeta):
 
     def __init__(self, url):
-        self.url = url
+        self.url: str = url
         self.interp: str = "gaussian"
         self.radius: int = 25000 # radius in meters
         self.neighbours: int = 10
