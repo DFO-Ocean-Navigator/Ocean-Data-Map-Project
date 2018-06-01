@@ -21,13 +21,13 @@ from PIL import Image
 class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name, query, format):
         self.dataset_name: str = dataset_name
-        self.query = query
-        self.format = format
-        self.data = None
-        self.dpi = 72.
+        self.query: dict = query
+        self.format: str = format
+        self.dpi: int = 72
         self.size: str = '11x9'
         self.plotTitle: str = None
         self.compare: bool = False
+        self.data = None
         self.variable_names = None
         self.variable_units = None
         self.scale_factors = None
@@ -65,7 +65,7 @@ class Plotter(metaclass=ABCMeta):
 
     # Receives query sent from javascript and parses it.
     @abstractmethod
-    def parse_query(self, query):
+    def parse_query(self, query: str):
         quantum = query.get('quantum')
         if quantum == 'month':
             self.date_formatter = lambda x: format_date(x, "MMMM yyyy")

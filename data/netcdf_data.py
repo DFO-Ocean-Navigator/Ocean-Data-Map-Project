@@ -10,10 +10,10 @@ import re
 
 class NetCDFData(Data):
 
-    def __init__(self, url):
-        self._dataset = None
-        self._variable_list = None
-        self.__timestamp_cache = TTLCache(1, 3600)
+    def __init__(self, url: str):
+        self._dataset: [xr.core.dataset.Dataset, Dataset] = None
+        self._variable_list: VariableList = None
+        self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):
@@ -83,13 +83,13 @@ class NetCDFData(Data):
         Returns the possible names of the depth dimension in the dataset
     """
     @property
-    def depth_dimensions(self):
+    def depth_dimensions(self) -> list:
         return ['depth', 'deptht', 'z']
 
     """
         Returns the value of a given variable name from the dataset
     """
-    def get_dataset_variable(self, key):
+    def get_dataset_variable(self, key: str):
         return self._dataset.variables[key]
 
     """

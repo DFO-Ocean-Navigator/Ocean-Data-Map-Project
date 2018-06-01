@@ -22,9 +22,9 @@ EARTH_RADIUS = 6378137.0
 class Fvcom(NetCDFData):
     __depths = None
 
-    def __init__(self, url):
-        self._kdt = [None, None]
-        self.__timestamp_cache = TTLCache(1, 3600)
+    def __init__(self, url: str):
+        self._kdt: KDTree = [None, None]
+        self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         
         super(Fvcom, self).__init__(url)
     

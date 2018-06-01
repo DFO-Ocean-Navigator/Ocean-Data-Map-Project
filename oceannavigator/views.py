@@ -417,7 +417,13 @@ def scale(dataset, variable, scale):
     
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-def _cache_and_send_img(bytesIOBuff, f):
+"""
+    Caches a rendered image buffer on disk and sends it to the browser
+
+    bytesIOBuff: BytesIO object containing image data
+    f: filename of image to be cached
+"""
+def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     p = os.path.dirname(f)
     if not os.path.isdir(p):
         os.makedirs(p)
@@ -850,7 +856,7 @@ def stats():
     return Response(data, status=200, mimetype='application/json')
 
 
-def _is_cache_valid(dataset, f):
+def _is_cache_valid(dataset: str, f: str) -> bool:
     if os.path.isfile(f):
         cache_time = get_dataset_cache(dataset)
         if cache_time is not None:

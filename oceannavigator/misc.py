@@ -1,4 +1,3 @@
-
 import fcntl
 import os
 import time
@@ -20,7 +19,6 @@ from oceannavigator.dataset_config import (
 import re
 from data import open_dataset
 import pickle as pickle
-
 
 def list_kml_files(subdir):
     DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)
