@@ -14,9 +14,6 @@ class NetCDFData(Data):
         self._dataset = None
         self._variable_list = None
         self.__timestamp_cache = TTLCache(1, 3600)
-        self.interp = "gaussian"
-        self.radius = 25000
-        self.neighbours = 10
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):

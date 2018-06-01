@@ -60,13 +60,13 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     extent = list(map(float, extent.split(",")))
     
     min, max = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent, interp, radius, neighbours)
+        dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours)
     resp = jsonify({
         'min': min,
         'max': max,
     })
     resp.cache_control.max_age = MAX_CACHE
-    return resp     #Returns JSON Range Object
+    return resp
 
 @app.route('/api/<string:q>/')
 def query(q):
@@ -447,7 +447,7 @@ def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, d
 
         img = plotting.tile.plot(projection, x, y, zoom, {
             'interp': interp,
-            'radius': radius,
+            'radius': radius*1000,
             'neighbours': neighbours,
             'dataset': dataset,
             'variable': variable,

@@ -23,6 +23,7 @@ class Plotter(metaclass=ABCMeta):
         self.dataset_name = dataset_name
         self.query = query
         self.format = format
+        self.data = None
         self.dpi = 72.
         self.size = '11x9'
         self.plotTitle = None
@@ -32,7 +33,7 @@ class Plotter(metaclass=ABCMeta):
         self.scale_factors = None
         # Init interpolation stuff
         self.interp = "gaussian"
-        self.radius = 25000
+        self.radius = 25000 # radius in meters
         self.neighbours = 10
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
@@ -93,7 +94,7 @@ class Plotter(metaclass=ABCMeta):
         if query.get('radius') is not None:
             self.radius = query.get('radius') * 1000
         if query.get('neighbours') is not None:
-            self.neighbours = query.get('neighbours') 
+            self.neighbours = query.get('neighbours')
 
         # Sets custom plot title
         self.plotTitle = query.get('plotTitle')
