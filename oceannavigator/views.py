@@ -518,30 +518,19 @@ def class4_query(q, class4_id, index):
     resp.cache_control.max_age = 86400
     return resp
 
-@app.route('/subset/', methods=['GET', 'POST'])
+@app.route('/subset/')
 def subset_query():
     
-    if request.method == "GET":
-        if 'query' not in request.args:
-            raise FAILURE
-
-        query = json.loads(request.args.get('query'))
-    else:
-        if 'query' not in request.form:
-            raise FAILURE
-
-        query = json.loads(request.form.get('query'))
-    
     entire_globe = True # subset the globe?
-    if 'min_range' in query:
+    if 'min_range' in request.args:
         # Area explicitly specified
         entire_globe = False
         # Bounding box extents
-        bottom_left = [float(x) for x in query.get('min_range')]
-        top_right = [float(x) for x in query.get('max_range')]
+        bottom_left = [float(x) for x in request.args.get('min_range').split(',')]
+        top_right = [float(x) for x in request.args.get('max_range').split(',')]
 
     # Time range
-    time_range = [int(x) for x in query.get('time')]
+    time_range = [int(x) for x in request.args.get('time').split(',')]
     apply_time_range = False
     if time_range[0] != time_range[1]:
         apply_time_range = True
@@ -551,7 +540,7 @@ def subset_query():
         os.makedirs("/tmp/subset")
     working_dir = "/tmp/subset/"
 
-    dataset_name = query.get('dataset_name')
+    dataset_name = request.args.get('dataset_name')
     with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
 
         # Finds a variable in a dictionary given a substring containing common characters
@@ -611,13 +600,13 @@ def subset_query():
             subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[0]) + 1)})
 
         # Filter out unwanted variables
-        output_vars = query.get('variables').split(',')
+        output_vars = request.args.get('variables').split(',')
         output_vars.extend([find_variable("depth"), time_variable, lat, lon]) # Keep the coordinate variables
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
 
-        output_format = query.get('output_format')
+        output_format = request.args.get('output_format')
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
 
@@ -730,7 +719,7 @@ def subset_query():
             # Save subset normally
             subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
-    if int(query.get('should_zip')) == 1:
+    if int(request.args.get('should_zip')) == 1:
         myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
         myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))
         myzip.comment = 'Generated from www.navigator.oceansdata.ca'
