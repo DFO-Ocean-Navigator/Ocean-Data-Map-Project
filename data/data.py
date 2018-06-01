@@ -12,6 +12,9 @@ class Data(object, metaclass=abc.ABCMeta):
 
     def __init__(self, url):
         self.url = url
+        self.interp: str = "gaussian"
+        self.radius: int = 25000 # radius in meters
+        self.neighbours: int = 10
 
     @abc.abstractmethod
     def __enter__(self):
