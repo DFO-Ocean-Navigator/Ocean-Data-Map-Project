@@ -21,15 +21,12 @@ def path_to_points(points, n=100, times=None):
 
     if len(times) != len(points):
         if isinstance(times[0], datetime.datetime):
-            times = times[0] + np.array(map(
-                lambda d: datetime.timedelta(0, d),
-                np.linspace(
-                    0, (times[-1] - times[0]).total_seconds(), num=len(points))
-            ))
+            times = times[0] + np.array([datetime.timedelta(0, d) for d in np.linspace(
+                    0, (times[-1] - times[0]).total_seconds(), num=len(points))])
         else:
             times = np.linspace(times[0], times[-1], num=len(points))
 
-    tuples = zip(points, points[1:], times, times[1:])
+    tuples = list(zip(points, points[1:], times, times[1:]))
 
     distance_between = []
     for pair in tuples:
@@ -46,7 +43,7 @@ def path_to_points(points, n=100, times=None):
         n_pts = int(np.ceil(n * (distance_between[index] /
                                  total_distance)))
         n_pts = np.clip(n_pts, 2, n)
-        p = map(geopy.Point, pair[0:2])
+        p = list(map(geopy.Point, pair[0:2]))
 
         p_dist, p_lat, p_lon, b = points_between(p[0], p[1], n_pts)
         if len(distance) > 0:
@@ -102,4 +99,4 @@ def points_between(start, end, numpoints, constantvalue=False):
             latitude.append(p.latitude)
             longitude.append(p.longitude)
 
-    return map(np.array, [distance, latitude, longitude, b])
+    return list(map(np.array, [distance, latitude, longitude, b]))

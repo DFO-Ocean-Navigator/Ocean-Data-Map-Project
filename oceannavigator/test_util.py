@@ -21,7 +21,7 @@ class TestUtil(unittest.TestCase):
         m.return_value.items.return_value = {
             "k": "\"v\"",
             "key": "\"value\"",
-        }.iteritems()
+        }.items()
 
         result = util.get_datasets()
         self.assertEqual(len(result), 2)
@@ -57,7 +57,7 @@ class TestUtil(unittest.TestCase):
         m.return_value.items.return_value = {
             "k": "\"v\"",
             "key": "\"value\"",
-        }.iteritems()
+        }.items()
 
         result = util.get_variables("ds")
         m.return_value.items.assert_called_with("ds")

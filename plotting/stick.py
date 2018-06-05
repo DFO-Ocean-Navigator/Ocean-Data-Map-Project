@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
-from oceannavigator.util import get_dataset_url
-import point
+import plotting.utils as utils
+import plotting.point as plPoint
+from oceannavigator.dataset_config import get_dataset_url
 from flask_babel import gettext
 from matplotlib.dates import date2num
 from data import open_dataset
 
-
-class StickPlotter(point.PointPlotter):
+class StickPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"
@@ -75,7 +74,7 @@ class StickPlotter(point.PointPlotter):
         return super(StickPlotter, self).csv(header, columns, data)
 
     def plot(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= len(self.points) * len(self.depth)
         fig, ax = plt.subplots(
             len(self.points) * len(self.depth),

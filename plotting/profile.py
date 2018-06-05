@@ -1,15 +1,16 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import numpy as np
-import utils
+import plotting.utils as utils
+import plotting.point as plPoint
 from textwrap import wrap
-from oceannavigator.util import get_dataset_url
+from oceannavigator.dataset_config import get_dataset_url
 from oceannavigator.errors import ClientError
-import point
 from flask_babel import gettext
 from data import open_dataset
 
-class ProfilePlotter(point.PointPlotter):
+
+class ProfilePlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"
@@ -75,8 +76,7 @@ class ProfilePlotter(point.PointPlotter):
             "Latitude",
             "Longitude",
             "Depth",
-        ] + map(lambda x: "%s (%s)" % x,
-                zip(self.variable_names, self.variable_units))
+        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
         data = []
 
         # For each point
@@ -89,7 +89,7 @@ class ProfilePlotter(point.PointPlotter):
                     "%0.4f" % self.points[p][0],
                     "%0.4f" % self.points[p][1],
                     "%0.1f" % self.depths[p, 0, d],
-                ] + map(lambda x: "%0.1f" % x, self.data[p, :, d])
+                ] + ["%0.1f" % x for x in self.data[p, :, d]]
                 data.append(entry)
 
         return super(ProfilePlotter, self).csv(header, columns, data)
@@ -120,11 +120,11 @@ class ProfilePlotter(point.PointPlotter):
             utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
                                         [x[1] for x in self.points]])) # Longitudes
 
+        is_y_label_plotted = False
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
-            subplot += 1
 
             plt.plot(
                 self.data[:, idx, :].transpose(),
@@ -139,17 +139,17 @@ class ProfilePlotter(point.PointPlotter):
             current_axis.set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
+
+            # Put y-axis label on left-most graph (but after the point location)
+            if not is_y_label_plotted and (subplot == 0 or subplot == 1):
+                current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
+                is_y_label_plotted = True
             
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
 
-        # Put y-axis label on left-most graph
-        if self.showmap:
-            plt.subplot(gs[:, 1])
-        else:
-            plt.subplot(gs[:, 0])
-        plt.gca().set_ylabel(gettext("Depth (m)"), fontsize=14)
+            subplot += 1
 
         self.plot_legend(fig, self.names)
 

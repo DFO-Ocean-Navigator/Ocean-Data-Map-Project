@@ -368,7 +368,6 @@ export default class TimePicker extends React.Component {
 
     let timeinput = null;
     const options = this.state.times.map(function (t) {
-
       return (
         <option key={t.id} value={t.id}>
           {t.value}

@@ -21,7 +21,7 @@ def load_map(projection, center, height, width, min_lat=0):
     CACHE_DIR = app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
-    def get_resulation(h, w):
+    def get_resolution(h, w):
         area_km=(h*w)/(1000*1000)
         if area_km < 10000:
             res='f'         #full resolution
@@ -41,7 +41,7 @@ def load_map(projection, center, height, width, min_lat=0):
         except:
             if projection in ['npstere', 'spstere']:
                 basemap = Basemap(
-                    resolution=get_resulation(height, width),
+                    resolution=get_resolution(height, width),
                     area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
@@ -61,7 +61,7 @@ def load_map(projection, center, height, width, min_lat=0):
                 )
             else:
                 basemap = Basemap(
-                    resolution=get_resulation(height, width),
+                    resolution=get_resolution(height, width),
                     area_thresh=((height*width)/(1000*1000))*0.00001 , #display islands whose area is 0.001% of displayed area 
                     ellps='WGS84',
                     projection=projection,
@@ -105,8 +105,8 @@ def load_nwpassage():
     return load_map('lcc', (74, -95), 1.5e6, 2.5e6)
 
 
-def _get_filename(projection, center, height, width):
+def _get_filename(projection, center, height, width):    
     hash = hashlib.sha1(";".join(
-        str(x) for x in [projection, center, height, width])
+        str(x) for x in [projection, center, height, width]).encode()
     ).hexdigest()
     return hash + ".pickle"

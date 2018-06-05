@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
-from StringIO import StringIO
+from io import StringIO, BytesIO
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
-import utils
-import colormap
+import plotting.utils as utils
+import plotting.colormap as colormap
 import re
 import pint
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_variable_unit,
     get_variable_name,
     get_variable_scale_factor,
@@ -17,19 +17,24 @@ from flask_babel import format_date, format_datetime
 import contextlib
 from PIL import Image
 
-
 # Base class for all plotting objects
-class Plotter:
-    __metaclass__ = ABCMeta
-
+class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name, query, format):
-        self.dataset_name = dataset_name
-        self.query = query
-        self.format = format
-        self.dpi = 72.
-        self.size = '11x9'
-        self.plotTitle = None
-        self.compare = False
+        self.dataset_name: str = dataset_name
+        self.query: dict = query
+        self.format: str = format
+        self.dpi: int = 72
+        self.size: str = '11x9'
+        self.plotTitle: str = None
+        self.compare: bool = False
+        self.data = None
+        self.variable_names = None
+        self.variable_units = None
+        self.scale_factors = None
+        # Init interpolation stuff
+        self.interp: str = "gaussian"
+        self.radius: int = 25000 # radius in meters
+        self.neighbours: int = 10
         self.filetype, self.mime = utils.get_mimetype(format)
         self.filename = utils.get_filename(
             self.plottype,
@@ -60,7 +65,7 @@ class Plotter:
 
     # Receives query sent from javascript and parses it.
     @abstractmethod
-    def parse_query(self, query):
+    def parse_query(self, query: str):
         quantum = query.get('quantum')
         if quantum == 'month':
             self.date_formatter = lambda x: format_date(x, "MMMM yyyy")
@@ -84,9 +89,15 @@ class Plotter:
         self.starttime = get_time('starttime')
         self.endtime = get_time('endtime')
 
+        if query.get('interp') is not None:
+            self.interp = query.get('interp')
+        if query.get('radius') is not None:
+            self.radius = query.get('radius') * 1000
+        if query.get('neighbours') is not None:
+            self.neighbours = query.get('neighbours')
+
         # Sets custom plot title
         self.plotTitle = query.get('plotTitle')
-
 
         # Parse variable scale
         def parse_scale(query_scale):
@@ -100,10 +111,10 @@ class Plotter:
         if variables is None:
             variables = ['votemper']
 
-        if isinstance(variables, str) or isinstance(variables, unicode):
+        if isinstance(variables, str) or isinstance(variables, str):
             variables = variables.split(',')
 
-        self.variables = filter(lambda v: v != '', variables)
+        self.variables = [v for v in variables if v != '']
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -117,12 +128,12 @@ class Plotter:
                 # Variable scale
                 self.compare['scale'] = parse_scale(self.compare['scale'])
             except KeyError:
-                print "Ignoring scale attribute."
+                print("Ignoring scale attribute.")
             try:
                 # Difference plot scale
                 self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
             except KeyError:
-                print "Ignoring scale_diff attribute."
+                print("Ignoring scale_diff attribute.")
 
         cmap = query.get('colormap')
         if cmap is not None:
@@ -141,12 +152,12 @@ class Plotter:
         if depth is None or len(str(depth)) == 0:
             depth = 0
 
-        if isinstance(depth, basestring) and depth.isdigit():
+        if isinstance(depth, str) and depth.isdigit():
             depth = int(depth)
 
         if isinstance(depth, list):
             for i in range(0, len(depth)):
-                if isinstance(depth[i], basestring) and depth[i].isdigit():
+                if isinstance(depth[i], str) and depth[i].isdigit():
                     depth[i] = int(depth[i])
 
         self.depth = depth
@@ -174,29 +185,31 @@ class Plotter:
             fig.text(1.0, 0.0, get_dataset_attribution(self.compare['dataset']),
                 ha='right', size='small', va='top')
 
-        with contextlib.closing(StringIO()) as buf:
+        with contextlib.closing(BytesIO()) as buf:
             plt.savefig(
                 buf,
                 format=self.filetype,
                 dpi='figure',
                 bbox_inches='tight',
-                pad_inches=0.5,
+                pad_inches=0.5
             )
             plt.close(fig)
 
             if self.filetype == 'png':
                 buf.seek(0)
                 im = Image.open(buf)
-                with contextlib.closing(StringIO()) as buf2:
+                with contextlib.closing(BytesIO()) as buf2:
                     im.save(buf2, format='PNG', optimize=True)
+                    buf2.seek(0)
                     return (buf2.getvalue(), self.mime, self.filename)
 
+            buf.seek(0)
             return (buf.getvalue(), self.mime, self.filename)
 
     def csv(self, header=[], columns=[], data=[]):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(
-                map(lambda h: "// %s: %s" % (h[0], h[1]), header)
+                ["// %s: %s" % (h[0], h[1]) for h in header]
             ))
             buf.write("\n")
             buf.write(", ".join(columns))
@@ -224,7 +237,7 @@ class Plotter:
                 "Longitude [degrees_east]",
                 "Latitude [degrees_north]",
                 "Depth [m]",
-            ] + map(lambda x: "%s [%s]" % x, zip(variables, variable_units))))
+            ] + ["%s [%s]" % x for x in zip(variables, variable_units)]))
             buf.write("\n")
 
             if len(depth.shape) == 1:
@@ -257,7 +270,7 @@ class Plotter:
                     elif len(data.shape) == 2:
                         line.append(str(data[idx, idx2]))
                     else:
-                        line.extend(map(str, data[idx, :, idx2]))
+                        line.extend(list(map(str, data[idx, :, idx2])))
 
                     if idx > 0 and station[idx] == station[idx - 1] or \
                        idx2 > 0:

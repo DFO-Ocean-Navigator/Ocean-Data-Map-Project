@@ -21,10 +21,10 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
     else:
         fname = basemap.filename
 
-    hashed = hashlib.sha1(fname +
+    hashed = hashlib.sha1("".join(fname +
                           str(target_lat.shape) +
                           str(target_lon.shape)
-                          ).hexdigest()
+                          ).encode()).hexdigest()
     if _bathymetry_cache.get(hashed) is None:
         try:
             data = np.load(CACHE_DIR + "/" + hashed + ".npy")

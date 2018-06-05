@@ -1,4 +1,4 @@
-from grid import bathymetry
+from plotting.grid import bathymetry
 from netCDF4 import Dataset
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as gridspec
@@ -6,18 +6,18 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
 import re
-import colormap
+import plotting.colormap as colormap
+import plotting.utils as utils
 from oceannavigator import app
 from geopy.distance import VincentyDistance
-import utils
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
-import line
+import plotting.line as pl
 from flask_babel import gettext
 from scipy.interpolate import interp1d
 from data import open_dataset, geo
 
-class TransectPlotter(line.LinePlotter):
+class TransectPlotter(pl.LinePlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "transect"
@@ -356,8 +356,8 @@ class TransectPlotter(line.LinePlotter):
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
         numstations = len(self.transect_data['distance'])
-        station = range(1, 1 + numstations)
-        station = map(lambda s: "%03d" % s, station)
+        station = list(range(1, 1 + numstations))
+        station = ["%03d" % s for s in station]
 
         latitude = np.repeat(self.transect_data['points'][0, :],
                              len(self.depth))
@@ -479,8 +479,7 @@ class TransectPlotter(line.LinePlotter):
                 width_ratios = [1]
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
-        figuresize = map(float, self.size.split("x"))
-        
+        figuresize = list(map(float, self.size.split("x")))
         if self.compare:
             figuresize[1] *= len(self.variables) * 3 # Vertical scaling of figure
             if velocity:
@@ -840,13 +839,10 @@ class TransectPlotter(line.LinePlotter):
         plt.setp(label, size='smaller')
         plt.setp(ax.get_yticklabels(), size='x-small')
         plt.xlim([0, self.surface_data['distance'][-1]])
-        if np.any(map(
-            lambda x: re.search(x, self.surface_data['name'], re.IGNORECASE),
-            [
+        if np.any([re.search(x, self.surface_data['name'], re.IGNORECASE) for x in [
                 "free surface",
                 "surface height"
-            ]
-        )):
+            ]]):
             ylim = plt.ylim()
             plt.ylim([min(ylim[0], -ylim[1]), max([-ylim[0], ylim[1]])])
             ax.yaxis.grid(True)
@@ -882,7 +878,7 @@ class TransectPlotter(line.LinePlotter):
             facecolor='dimgray',
             hatch='xx'
         )
-        ax.set_axis_bgcolor('dimgray')
+        ax.set_facecolor('dimgray')
 
         plt.xlabel(gettext("Distance (km)"))
         plt.ylabel(gettext("Depth (m)"))
@@ -900,7 +896,7 @@ class TransectPlotter(line.LinePlotter):
         ticks = sorted(set(list(plt.yticks()[0]) + [self.linearthresh,
                                                     plt.ylim()[0]]))
         if self.depth_limit is not None:
-            ticks = filter(lambda y: y <= self.depth_limit, ticks)
+            ticks = [y for y in ticks if y <= self.depth_limit]
 
         plt.yticks(ticks)
 
@@ -940,7 +936,7 @@ class TransectPlotter(line.LinePlotter):
                 pad=-3,
                 labelsize='xx-small',
                 which='major')
-            ax2.xaxis.set_major_formatter(StrMethodFormatter(u"$\u25bc$"))
+            ax2.xaxis.set_major_formatter(StrMethodFormatter("$\u25bc$"))
             cax = make_axes_locatable(ax2).append_axes(
                 "right", size="5%", pad=0.05)
             bar2 = plt.colorbar(c, cax=cax)

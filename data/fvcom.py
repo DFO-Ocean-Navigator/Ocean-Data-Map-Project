@@ -2,87 +2,125 @@ from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
-import netcdf_data
-from pint import UnitRegistry
-from data import Variable, VariableList
+from data.netcdf_data import NetCDFData
+from netCDF4 import Dataset
+from data.data import Variable, VariableList
 from netCDF4 import chartostring
 import pytz
 from cachetools import TTLCache
 import dateutil.parser
+from oceannavigator.errors import ServerError
 import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
-ureg = UnitRegistry()
 
+"""
+    FVCOM datasets have a non-uniform grid,
+    so xArray can't handle it/
 
-class Fvcom(netcdf_data.NetCDFData):
+"""
+class Fvcom(NetCDFData):
     __depths = None
 
+    def __init__(self, url: str):
+        self._kdt: KDTree = [None, None]
+        self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
+        
+        super(Fvcom, self).__init__(url)
+    
+    def __enter__(self):
+        self._dataset = Dataset(self.url, 'r')
+
+        return self
+
+    """
+        Returns the possible names of the depth dimension in the dataset
+    """
     @property
     def depth_dimensions(self):
         return ['siglev', 'siglay']
 
+    def subset(self, query):
+        raise ServerError("Subsetting FVCOM datasets is currently not supported.")
+
+    """
+        Supposedly FVCOM is surface only?
+    """
     @property
     def depths(self):
         if self.__depths is None:
             self.__depths = np.array([0])
-            self.__depths.flags.writeable = False
+            self.__depths.setflags(write=False) # Make immutable
 
         return self.__depths
 
+    """
+        Loads, caches, and returns the time dimension from a dataset.
+    """
     @property
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:
-            for v in ['Times']:
+            var = None
+            for v in self.time_variables:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break
 
             tz = pytz.timezone(var.time_zone)
-            timestamps = np.array(
-                map(
-                    lambda datestr:
-                    dateutil.parser.parse(datestr).replace(tzinfo=tz),
-                    chartostring(var[:])
-                )
-            )
-            timestamps.flags.writeable = False
+            time_list = list(map(
+                lambda dateStr: dateutil.parser.parse(dateStr).replace(tzinfo=tz),
+                chartostring(var[:])
+            ))
+            timestamps = np.array(time_list)
+            timestamps.setflags(write=False) # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
 
+    """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+    """
     @property
     def variables(self):
-        l = []
-        for name in self._dataset.variables:
-            var = self._dataset.variables[name]
-            if 'coordinates' not in var.ncattrs():
-                continue
+        # Check if variable list has been created yet.
+        # This saves approx 3 lookups per tile, and
+        # over a dozen when a new dataset is loaded.
+        if self._variable_list == None:
+            l = []
+            for name in self._dataset.variables:
+                var = self._dataset.variables[name]
+                
+                if 'coordinates' not in var.ncattrs():
+                    continue
 
-            if 'long_name' in var.ncattrs():
-                long_name = var.long_name
-            else:
-                long_name = name
+                if 'long_name' in var.ncattrs():
+                    long_name = var.long_name
+                else:
+                    long_name = name
 
-            if 'units' in var.ncattrs():
-                units = var.units
-            else:
-                units = None
+                if 'units' in var.ncattrs():
+                    units = var.units
+                else:
+                    units = None
 
-            if 'valid_min' in var.ncattrs():
-                valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                         str(var.valid_min)))
-                valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                         str(var.valid_max)))
-            else:
-                valid_min = None
-                valid_max = None
+                if 'valid_min' in var.ncattrs():
+                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
+                                             str(var.valid_min)))
+                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
+                                             str(var.valid_max)))
+                else:
+                    valid_min = None
+                    valid_max = None
 
-            l.append(Variable(name, long_name, units, var.dimensions,
-                              valid_min, valid_max))
+                # Add to our "Variable" wrapper
+                l.append(Variable(name, long_name, units, var.dimensions,
+                                  valid_min, valid_max))
 
-        return VariableList(l)
+            self._variable_list = VariableList(l) # Cache for later
+        
+        return self._variable_list
 
     def __find_var(self, candidates):
         for c in candidates:
@@ -232,16 +270,6 @@ class Fvcom(netcdf_data.NetCDFData):
             output = output.reshape(origshape[1:])
 
         return np.squeeze(output)
-
-    def __init__(self, url):
-        self._kdt = [None, None]
-        self.__timestamp_cache = TTLCache(1, 3600)
-        super(Fvcom, self).__init__(url)
-
-    def __enter__(self):
-        super(Fvcom, self).__enter__()
-
-        return self
 
     def get_raw_point(self, latitude, longitude, depth, time, variable):
         min_i, max_i, radius = self.__bounding_box(

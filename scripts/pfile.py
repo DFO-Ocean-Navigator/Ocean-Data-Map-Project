@@ -250,7 +250,7 @@ class PFile:
             'par': 'PAR []',
             'ph': 'pH []',
         }
-        for key, value in column_mapping.iteritems():
+        for key, value in column_mapping.items():
             if key in self.dataframe.columns.values:
                 df[value] = self.dataframe[key]
 
