@@ -37,108 +37,65 @@ class MapPlotter(pl.Plotter):
         
         super(MapPlotter, self).__init__(dataset_name, query, format)
 
-    def odv_ascii(self):
-        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
-        data = float_to_str(self.data.ravel()[::5])
-        station = ["%06d" % x for x in range(1, len(data) + 1)]
+    def parse_query(self, query):
+        super(MapPlotter, self).parse_query(query)
 
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        time = np.repeat(self.timestamp, data.shape[0])
-        depth = self.depth_value.ravel()[::5]
+        self.projection = query.get('projection')
 
-        return super(MapPlotter, self).odv_ascii(
-            self.dataset_name,
-            [self.variable_name],
-            [self.variable_unit],
-            station,
-            latitude,
-            longitude,
-            depth,
-            time,
-            data
-        )
+        self.area = query.get('area')
 
-    def csv(self):
-        # If the user has selected the display of quiver data in the browser,
-        # then also export that data in the CSV file.
-        if self.quiver is not None and \
-            self.quiver['variable'] != '' and \
-                self.quiver['variable'] != 'none':
-            have_quiver = True
+        names = []
+        centroids = []
+        all_rings = []
+        data = None
+        for idx, a in enumerate(self.area):
+            if isinstance(a, str):
+
+                sp = a.split('/', 1)
+                if data is None:
+                    data = list_areas(sp[0], simplify=False)
+
+                b = [x for x in data if x.get('key') == a]
+                a = b[0]
+                self.area[idx] = a
+            else:
+                self.points = copy.deepcopy(np.array(a['polygons']))
+                a['polygons'] = self.points.tolist()
+                a['name'] = " "              
+
+            rings = [LinearRing(po) for po in a['polygons']]
+            if len(rings) > 1:
+                u = cascaded_union(rings)
+            else:
+                u = rings[0]
+
+            all_rings.append(u)
+            if a.get('name'):
+                names.append(a.get('name'))
+                centroids.append(u.centroid)
+        nc = sorted(zip(names, centroids))
+        self.names = [n for (n, c) in nc]
+        self.centroids = [c for (n, c) in nc]
+        data = None
+
+        if len(all_rings) > 1:
+            combined = cascaded_union(all_rings)
         else:
-            have_quiver = False
+            combined = all_rings[0]
 
-        header = [
-            ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
-        ]
+        self.combined_area = combined
+        combined = combined.envelope
 
-        columns = [
-            "Latitude",
-            "Longitude",
-            "Depth (m)",
-            "%s (%s)" % (self.variable_name, self.variable_unit)
-        ]
-        data_in = self.data.ravel()[::5]
-        if have_quiver:
-            # Include bearing information in the exported data, as per user
-            # requests.
-            columns.extend([
-                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
-                "Bearing (degrees clockwise positive from North)"
-            ])
-            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
-                              self.quiver_data_fullgrid[1].ravel()[::5])
-            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
-                                 self.quiver_data_fullgrid[0].ravel()[::5])
-            bearing = np.pi / 2.0 - bearing
-            bearing[bearing < 0] += 2 * np.pi
-            bearing *= 180.0 / np.pi
+        self.centroid = list(combined.centroid.coords)[0]
+        self.bounds = combined.bounds
 
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        depth = self.depth_value.ravel()[::5]
+        self.show_bathymetry = bool(query.get('bathymetry'))
+        self.show_area = bool(query.get('showarea'))
 
-        data = []
-        for idx in range(0, len(latitude)):
-            if np.ma.is_masked(data_in[idx]):
-                continue
+        self.quiver = query.get('quiver')
 
-            entry = [
-                "%0.4f" % latitude[idx],
-                "%0.4f" % longitude[idx],
-                "%0.1f" % depth[idx],
-                "%0.3f" % data_in[idx]
-            ]
-            if have_quiver:
-                entry.extend([
-                    "%0.3f" % quiver_data_in[0][idx],
-                    "%0.3f" % quiver_data_in[1][idx],
-                    "%0.3f" % bearing[idx]
-                ])
-            data.append(entry)
+        self.contour = query.get('contour')
 
-        return super(MapPlotter, self).csv(header, columns, data)
-
-    def pole_proximity(self, points):
-        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
-        for p in points:
-            if p[0] > 80:
-                near_pole=True                    
-            if -180<=p[1]<=-90:
-                quad1=True
-            elif -90<=p[1]<=0:
-                quad2=True
-            elif 0<=p[1]<=90:
-                quad3=True
-            elif 90<=p[1]<=180:
-                quad4=True
-            if quad1 and quad2 and quad3 and quad4:
-                covers_pole = True
-            return near_pole, covers_pole
-    
     def load_data(self):
         distance = VincentyDistance()
         height = distance.measure(
@@ -472,64 +429,107 @@ class MapPlotter(pl.Plotter):
 
         self.depth_value = depth_value
 
-    def parse_query(self, query):
-        super(MapPlotter, self).parse_query(query)
+    def odv_ascii(self):
+        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
+        data = float_to_str(self.data.ravel()[::5])
+        station = ["%06d" % x for x in range(1, len(data) + 1)]
 
-        self.projection = query.get('projection')
+        latitude = self.latitude.ravel()[::5]
+        longitude = self.longitude.ravel()[::5]
+        time = np.repeat(self.timestamp, data.shape[0])
+        depth = self.depth_value.ravel()[::5]
 
-        self.area = query.get('area')
+        return super(MapPlotter, self).odv_ascii(
+            self.dataset_name,
+            [self.variable_name],
+            [self.variable_unit],
+            station,
+            latitude,
+            longitude,
+            depth,
+            time,
+            data
+        )
 
-        names = []
-        centroids = []
-        all_rings = []
-        data = None
-        for idx, a in enumerate(self.area):
-            if isinstance(a, str):
-
-                sp = a.split('/', 1)
-                if data is None:
-                    data = list_areas(sp[0], simplify=False)
-
-                b = [x for x in data if x.get('key') == a]
-                a = b[0]
-                self.area[idx] = a
-            else:
-                self.points = copy.deepcopy(np.array(a['polygons']))
-                a['polygons'] = self.points.tolist()
-                a['name'] = " "              
-
-            rings = [LinearRing(po) for po in a['polygons']]
-            if len(rings) > 1:
-                u = cascaded_union(rings)
-            else:
-                u = rings[0]
-
-            all_rings.append(u)
-            if a.get('name'):
-                names.append(a.get('name'))
-                centroids.append(u.centroid)
-        nc = sorted(zip(names, centroids))
-        self.names = [n for (n, c) in nc]
-        self.centroids = [c for (n, c) in nc]
-        data = None
-
-        if len(all_rings) > 1:
-            combined = cascaded_union(all_rings)
+    def csv(self):
+        # If the user has selected the display of quiver data in the browser,
+        # then also export that data in the CSV file.
+        if self.quiver is not None and \
+            self.quiver['variable'] != '' and \
+                self.quiver['variable'] != 'none':
+            have_quiver = True
         else:
-            combined = all_rings[0]
+            have_quiver = False
 
-        self.combined_area = combined
-        combined = combined.envelope
+        header = [
+            ['Dataset', self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()]
+        ]
 
-        self.centroid = list(combined.centroid.coords)[0]
-        self.bounds = combined.bounds
+        columns = [
+            "Latitude",
+            "Longitude",
+            "Depth (m)",
+            "%s (%s)" % (self.variable_name, self.variable_unit)
+        ]
+        data_in = self.data.ravel()[::5]
+        if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
+            columns.extend([
+                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                "Bearing (degrees clockwise positive from North)"
+            ])
+            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
+                              self.quiver_data_fullgrid[1].ravel()[::5])
+            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
+                                 self.quiver_data_fullgrid[0].ravel()[::5])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
 
-        self.show_bathymetry = bool(query.get('bathymetry'))
-        self.show_area = bool(query.get('showarea'))
+        latitude = self.latitude.ravel()[::5]
+        longitude = self.longitude.ravel()[::5]
+        depth = self.depth_value.ravel()[::5]
 
-        self.quiver = query.get('quiver')
+        data = []
+        for idx in range(0, len(latitude)):
+            if np.ma.is_masked(data_in[idx]):
+                continue
 
-        self.contour = query.get('contour')
+            entry = [
+                "%0.4f" % latitude[idx],
+                "%0.4f" % longitude[idx],
+                "%0.1f" % depth[idx],
+                "%0.3f" % data_in[idx]
+            ]
+            if have_quiver:
+                entry.extend([
+                    "%0.3f" % quiver_data_in[0][idx],
+                    "%0.3f" % quiver_data_in[1][idx],
+                    "%0.3f" % bearing[idx]
+                ])
+            data.append(entry)
+
+        return super(MapPlotter, self).csv(header, columns, data)
+
+    def pole_proximity(self, points):
+        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
+        for p in points:
+            if p[0] > 80:
+                near_pole=True                    
+            if -180<=p[1]<=-90:
+                quad1=True
+            elif -90<=p[1]<=0:
+                quad2=True
+            elif 0<=p[1]<=90:
+                quad3=True
+            elif 90<=p[1]<=180:
+                quad4=True
+            if quad1 and quad2 and quad3 and quad4:
+                covers_pole = True
+            return near_pole, covers_pole
 
     def plot(self):
         if self.filetype == 'geotiff':
@@ -562,7 +562,7 @@ class MapPlotter(pl.Plotter):
             outband.FlushCache()
             outRaster = None
 
-            with open(fname, 'r') as f:
+            with open(fname, 'r', encoding="latin-1") as f:
                 buf = f.read()
             os.remove(fname)
 
