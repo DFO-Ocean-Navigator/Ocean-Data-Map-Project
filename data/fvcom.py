@@ -9,6 +9,7 @@ from netCDF4 import chartostring
 import pytz
 from cachetools import TTLCache
 import dateutil.parser
+from oceannavigator.errors import ServerError
 import re
 
 RAD_FACTOR = np.pi / 180.0
@@ -22,9 +23,9 @@ EARTH_RADIUS = 6378137.0
 class Fvcom(NetCDFData):
     __depths = None
 
-    def __init__(self, url):
-        self._kdt = [None, None]
-        self.__timestamp_cache = TTLCache(1, 3600)
+    def __init__(self, url: str):
+        self._kdt: KDTree = [None, None]
+        self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         
         super(Fvcom, self).__init__(url)
     
@@ -39,6 +40,9 @@ class Fvcom(NetCDFData):
     @property
     def depth_dimensions(self):
         return ['siglev', 'siglay']
+
+    def subset(self, query):
+        raise ServerError("Subsetting FVCOM datasets is currently not supported.")
 
     """
         Supposedly FVCOM is surface only?

@@ -11,7 +11,7 @@ import plotting.utils as utils
 from io import BytesIO
 import os
 import math
-from oceannavigator.util import get_dataset_url, get_variable_name, \
+from oceannavigator.dataset_config import get_dataset_url, get_variable_name, \
     get_variable_unit, get_dataset_climatology, get_variable_scale_factor
 from pyproj import Proj
 import pyproj

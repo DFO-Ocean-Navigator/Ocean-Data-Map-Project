@@ -1,5 +1,5 @@
 import numpy as np
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union

@@ -9,7 +9,7 @@ from textwrap import wrap
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.point as plPoint
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url
 import datetime
 from data import open_dataset

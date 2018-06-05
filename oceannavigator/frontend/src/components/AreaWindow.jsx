@@ -194,20 +194,15 @@ export default class AreaWindow extends React.Component {
       lat_max = Math.max(lat_max, this.props.area[0].polygons[0][i][0]);
       long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
     }
-
-    setTimeout(() => {
-      const query = {
-        output_format: this.state.output_format,
-        dataset_name: this.props.dataset_0.dataset,
-        variables: this.state.output_variables.join(),
-        min_range: [lat_min, long_min],
-        max_range: [lat_max, long_max],
-        time: [this.state.output_starttime, this.state.output_endtime],
-        should_zip: this.state.zip ? 1 : 0
-      };
-
-      window.location.href = "/subset/?query=" + encodeURIComponent(stringify(query));
-    }, 100);
+    
+    window.location.href = "/subset/?" +
+       "&output_format=" + this.state.output_format +
+       "&dataset_name=" + this.props.dataset_0.dataset +
+       "&variables=" + this.state.output_variables.join() +
+       "&min_range=" + [lat_min, long_min].join() +
+       "&max_range=" + [lat_max, long_max].join() +
+       "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+       "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
   onSelect(key) {

@@ -1,4 +1,3 @@
-
 import fcntl
 import os
 import time
@@ -13,14 +12,13 @@ from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
 from operator import itemgetter
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_dataset_url, get_variable_name,
     get_variable_unit, get_dataset_climatology
 )
 import re
 from data import open_dataset
 import pickle as pickle
-
 
 def list_kml_files(subdir):
     DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)

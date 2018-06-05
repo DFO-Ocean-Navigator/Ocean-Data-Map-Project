@@ -15,13 +15,12 @@ from io import BytesIO
 from PIL import Image
 
 from oceannavigator import app
-from oceannavigator.util import (
-    get_variable_name, get_datasets, get_dataset_config,
+from oceannavigator.dataset_config import (
+    get_variable_name, get_datasets,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache, get_dataset_help,
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
 )
-from oceannavigator.nearest_grid_point import find_nearest_grid_point
 from oceannavigator.errors import ErrorBase, ClientError, ServerError
 import oceannavigator.misc
 
@@ -44,13 +43,9 @@ import numpy as np
 import re
 import os
 import netCDF4
-import geopy
 import base64
 import pytz
 from data import open_dataset
-import xarray as xr
-import pandas
-import zipfile
 
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
@@ -564,11 +559,13 @@ def scale(dataset, variable, scale):
     
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-def _cache_and_send_img(bytesIOBuff, f):
-    """
-    
-    """
-    
+"""
+    Caches a rendered image buffer on disk and sends it to the browser
+
+    bytesIOBuff: BytesIO object containing image data
+    f: filename of image to be cached
+"""
+def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     p = os.path.dirname(f)
     if not os.path.isdir(p):
         os.makedirs(p)
@@ -707,114 +704,14 @@ def class4_query(q, class4_id, index):
     resp.cache_control.max_age = 86400
     return resp
 
-@app.route('/subset/', methods=['GET', 'POST'])
+@app.route('/subset/')
 def subset_query():
-    """
-    API Format: /subset/
 
-
-    """
-
-    if request.method == "GET":
-        if 'query' not in request.args:
-            raise FAILURE
-
-        query = json.loads(request.args.get('query'))
-    else:
-        if 'query' not in request.form:
-            raise FAILURE
-
-        query = json.loads(request.form.get('query'))
-    
-    entire_globe = True # subset the globe?
-    if 'min_range' in query:
-        # Area explicitly specified
-        entire_globe = False
-        # Bounding box extents
-        bottom_left = [float(x) for x in query.get('min_range')]
-        top_right = [float(x) for x in query.get('max_range')]
-
-    # Time range
-    time_range = [int(x) for x in query.get('time')]
-    apply_time_range = False
-    if time_range[0] != time_range[1]:
-        apply_time_range = True
-
-    # Ensure we have an output folder that will be cleaned by tmpreaper
-    if not os.path.isdir("/tmp/subset"):
-        os.makedirs("/tmp/subset")
-    working_dir = "/tmp/subset/"
-
-    dataset_name = query.get('dataset_name')
-    with xr.open_dataset(get_dataset_url(dataset_name)) as dataset:
-
-        # Finds a variable in a dictionary given a substring containing common characters
-        # Not a fool-proof method but I want to avoid regex because I hate it.
-        variable_list = list(dataset.variables.keys())
-        def find_variable(substring):
-            for key in variable_list:
-                if substring in key:
-                    return key
-
-        # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat = find_variable("lat")
-        lon = find_variable("lon")
-
-        if not entire_globe:
-            # Find closest indices in dataset corresponding to each calculated point
-            ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], dataset, dataset.variables[lat], dataset.variables[lon]
-            )
-            ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], dataset, dataset.variables[lat], dataset.variables[lon]
-            )
-
-            y_slice = slice(ymin_index, ymax_index)
-            x_slice = slice(xmin_index, xmax_index)
-
-            # Get nicely formatted bearings
-            p0 = geopy.Point(bottom_left)
-            p1 = geopy.Point(top_right)
-        else:
-            y_slice = slice(dataset.variables[lat].size)
-            x_slice = slice(dataset.variables[lon].size)
-
-            p0 = geopy.Point([-85.0, -180.0])
-            p1 = geopy.Point([85.0, 180.0])
-        
-        # Get timestamp
-        time_variable = find_variable("time")
-        timestamp = str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[0])].values), "yyyyMMdd"))
-        endtimestamp = ""
-        if apply_time_range:
-            endtimestamp = "-" + str(format_date(pandas.to_datetime(dataset[time_variable][int(time_range[1])].values), "yyyyMMdd"))
-        
-        # Do subsetting
-        if "riops" in dataset_name:
-            # Riops has different coordinate names...why? ¯\_(ツ)_/¯
-            subset = dataset.isel(yc=y_slice, xc=x_slice)
-        elif dataset_name == "giops_forecast":
-            subset = dataset.isel(latitude=y_slice, longitude=x_slice)
-        else:
-            subset = dataset.isel(y=y_slice, x=x_slice)
-
-        # Select requested time (time range if applicable)
-        if apply_time_range:
-            subset = subset.isel(**{time_variable: slice(time_range[0], time_range[1] + 1)}) # slice doesn't include the last element
-        else:
-            subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[0]) + 1)})
-
-        # Filter out unwanted variables
-        output_vars = query.get('variables').split(',')
-        output_vars.extend([find_variable("depth"), time_variable, lat, lon]) # Keep the coordinate variables
-        for variable in subset.data_vars:
-            if variable not in output_vars:
-                subset = subset.drop(variable)
-
-        output_format = query.get('output_format')
-        filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
-                    + "_" + timestamp + endtimestamp + "_" + output_format
-
+    working_dir = None
+    subset_filename = None
+    with open_dataset(get_dataset_url(request.args.get('dataset_name'))) as dataset:
+        working_dir, subset_filename = dataset.subset(request.args)
+        """
         # Export to NetCDF
         if output_format == "NETCDF3_NC":
             # "Special" netcdf export (┛ಠ_ಠ)┛彡┻━┻
@@ -926,20 +823,9 @@ def subset_query():
 
             # (┛ಠ_ಠ)┛彡┻━┻
             return send_from_directory(working_dir, '%s_converted.nc' % filename, as_attachment=True)
-
-        else:
-            # Save subset normally
-            subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
-
-    if int(query.get('should_zip')) == 1:
-        myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
-        myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))
-        myzip.comment = 'Generated from www.navigator.oceansdata.ca'
-        myzip.close() # Must be called to actually create zip
-
-        return send_from_directory(working_dir, '%s.zip' % filename, as_attachment=True)
-
-    return send_from_directory(working_dir, '%s.nc' % filename, as_attachment=True)
+        """
+            
+    return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
@@ -1065,7 +951,7 @@ def stats():
     return Response(data, status=200, mimetype='application/json')
 
 
-def _is_cache_valid(dataset, f):
+def _is_cache_valid(dataset: str, f: str) -> bool:
     """
 
     """

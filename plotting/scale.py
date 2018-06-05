@@ -1,6 +1,6 @@
 import numpy as np
 from pyproj import Proj
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_dataset_url, get_dataset_climatology, get_variable_unit
 )
 import re

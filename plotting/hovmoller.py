@@ -8,7 +8,7 @@ import re
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.line as plLine
-from oceannavigator.util import (get_dataset_url, get_dataset_name)
+from oceannavigator.dataset_config import (get_dataset_url, get_dataset_name)
 from flask_babel import gettext
 from data import open_dataset
 from oceannavigator.errors import ClientError, ServerError

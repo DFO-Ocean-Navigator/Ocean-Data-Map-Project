@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotting.plotter as pl
 from netCDF4 import Dataset
-from oceannavigator.util import get_dataset_url
+from oceannavigator.dataset_config import get_dataset_url
 import pint
 
 

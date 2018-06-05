@@ -11,7 +11,7 @@ __author__ = 'Geoff Holden'
 class Data(object, metaclass=abc.ABCMeta):
 
     def __init__(self, url):
-        self.url = url
+        self.url: str = url
         self.interp: str = "gaussian"
         self.radius: int = 25000 # radius in meters
         self.neighbours: int = 10
@@ -144,12 +144,12 @@ class Variable(object):
 
     def __init__(self, key, name, unit, dimensions, valid_min=None,
                  valid_max=None):
-        self._key = key
-        self._name = name
-        self._unit = unit
-        self._dimensions = dimensions
-        self._valid_min = valid_min
-        self._valid_max = valid_max
+        self._key: str = key
+        self._name: str = name
+        self._unit: str = unit
+        self._dimensions: tuple = dimensions
+        self._valid_min: [int, float] = valid_min
+        self._valid_max: [int, float] = valid_max
 
     @property
     def key(self):
