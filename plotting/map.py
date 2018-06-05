@@ -148,7 +148,7 @@ class MapPlotter(pl.Plotter):
                 quad4=True
             if quad1 and quad2 and quad3 and quad4:
                 covers_pole = True
-            return near_pole, covers_pole
+        return near_pole, covers_pole
     
     def load_data(self):
         distance = VincentyDistance()
@@ -162,7 +162,7 @@ class MapPlotter(pl.Plotter):
             ) * 1000 * 1.25
         
         if self.projection == 'EPSG:32661':
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            near_pole, covers_pole = self.pole_proximity(self.area[0]['innerrings'])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
             if self.centroid[0] > 80 or near_pole or covers_pole:
@@ -170,7 +170,7 @@ class MapPlotter(pl.Plotter):
             else:
                 self.basemap = basemap.load_map('lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            near_pole, covers_pole = self.pole_proximity(self.area[0]['innerrings'])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
             if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
@@ -184,8 +184,8 @@ class MapPlotter(pl.Plotter):
             width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1   
 
             if abs(width_bounds[1]- width_bounds[0]) > 360:
-                raise ClientError(gettext("You have requested an area that exceads the width of the world. \
-                                        Thinking big is good but plots need to be less the 360 deg wide." ))
+                raise ClientError(gettext("You have requested an area that exceeds the width of the world. \
+                                        Thinking big is good but plots need to be less than 360 deg wide." ))
 
             if height_bounds[1] < 0:
                 height_bounds[1]=height_bounds[1]+height_buffer

@@ -1,6 +1,12 @@
 #!env python
 # vim: set fileencoding=utf-8 :
 
+"""
+Handles API Queries
+
+This module handles all API Queries
+"""
+
 from flask import Response, request, redirect, send_file, send_from_directory, jsonify
 from flask_babel import gettext, format_date
 import json
@@ -16,7 +22,7 @@ from oceannavigator.util import (
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
 )
 from oceannavigator.nearest_grid_point import find_nearest_grid_point
-from oceannavigator.errors import ErrorBase, ClientError
+from oceannavigator.errors import ErrorBase, ClientError, ServerError
 import oceannavigator.misc
 
 from plotting.transect import TransectPlotter
@@ -49,12 +55,18 @@ import zipfile
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
+"""
+
+"""
 @app.errorhandler(ErrorBase)
 def handle_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
 
+"""
+Range Query V0.1
+"""
 @app.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
@@ -68,6 +80,18 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
+"""
+/api/<string:q>/
+
+<string:q> = {
+    -points
+    -lines 
+    -areas
+    -class4
+}
+
+Returns predefined points / lines / areas / class4's
+"""
 @app.route('/api/<string:q>/')
 def query(q):
 
@@ -88,7 +112,18 @@ def query(q):
     resp.cache_control.max_age = 86400
     return resp
 
+"""
+/api/<string:q>/<string:q_id>.json'
 
+<string:q> = {
+
+}
+<string:q_id> = {
+
+}
+
+
+"""
 @app.route('/api/<string:q>/<string:q_id>.json')
 def query_id(q, q_id):
     if q == 'areas':
@@ -109,6 +144,14 @@ def query_id(q, q_id):
 
 @app.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data(dataset, variable, time, depth, location):
+    """
+    /api/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
+
+
+
+
+
+    """
     data = oceannavigator.misc.get_point_data(
         dataset, variable, time, depth,
         list(map(float, location.split(",")))
@@ -118,9 +161,13 @@ def get_data(dataset, variable, time, depth, location):
     resp.cache_control.max_age = 2
     return resp
 
-
 @app.route('/api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file(q, projection, resolution, extent, file_id):
+    """
+    /api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
+
+    """
+
     data = []
     max_age = 86400
 
@@ -154,6 +201,12 @@ def query_file(q, projection, resolution, extent, file_id):
 
 @app.route('/api/datasets/')
 def query_datasets():
+    """
+    /api/datasets/
+
+    Will return a list of possible datasets and their corresponding data
+    """
+
     data = []
 
     for key in get_datasets():
@@ -173,6 +226,11 @@ def query_datasets():
 
 @app.route('/api/colors/')
 def colors():
+    """
+    /api/colors/
+
+    Returns a list of colours for use in colour maps
+    """
     data = [
         {'id': 'k', 'value': gettext('Black')},
         {'id': 'b', 'value': gettext('Blue')},
@@ -194,6 +252,12 @@ def colors():
 
 @app.route('/api/colormaps/')
 def colormaps():
+    """
+    /api/colormaps/
+
+
+    """
+
     data = sorted([
         {
             'id': i,
@@ -209,6 +273,12 @@ def colormaps():
 
 @app.route('/colormaps.png')
 def colormap_image():
+    """
+    /colormaps.png
+
+    Returns image of colormap example configurations
+    """
+
     img = plotting.colormap.plot_colormaps()
     resp = Response(img, status=200, mimetype='image/png')
     resp.cache_control.max_age = 86400
@@ -217,39 +287,54 @@ def colormap_image():
 
 @app.route('/api/depth/')
 def depth():
+    """
+    /api/depth/?dataset=''&variable=' '
+
+    dataset : 
+
+    variable : 
+
+    Returns all depths available for that variable in the dataset
+    """
+
+    #Checking for valid Query
+    if 'variable' not in request.args or ('dataset' not in request.args):
+        if 'dataset' in request.args:
+            raise ServerError("Please Specify a using &variable='...' ")
+        if 'variable' in request.args:
+            raise ServerError("Please Specify a Dataset using &dataset='...' ")
+        raise ServerError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
+    #~~~~~~~~~~~~~~~~~~~~~~~~
+
     var = request.args.get('variable')
-
-    if var is None:
-        raise FAILURE
-
     variables = var.split(',')
     variables = [re.sub('_anom$', '', v) for v in variables]
 
     data = []
-    if 'dataset' in request.args:
-        dataset = request.args['dataset']
+   
+    dataset = request.args['dataset']
 
-        with open_dataset(get_dataset_url(dataset)) as ds:
-            for variable in variables:
-                if variable and \
-                    variable in ds.variables and \
-                        set(ds.depth_dimensions) & \
-                   set(ds.variables[variable].dimensions):
-                    if str(request.args.get('all')).lower() in ['true',
-                                                                'yes',
-                                                                'on']:
-                        data.append(
-                            {'id': 'all', 'value': gettext('All Depths')})
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for variable in variables:
+            if variable and \
+                variable in ds.variables and \
+                    set(ds.depth_dimensions) & \
+               set(ds.variables[variable].dimensions):
+                if str(request.args.get('all')).lower() in ['true',
+                                                            'yes',
+                                                            'on']:
+                    data.append(
+                        {'id': 'all', 'value': gettext('All Depths')})
 
-                    for idx, value in enumerate(np.round(ds.depths)):
-                        data.append({
-                            'id': idx,
-                            'value': "%d m" % (value)
-                        })
+                for idx, value in enumerate(np.round(ds.depths)):
+                    data.append({
+                        'id': idx,
+                        'value': "%d m" % (value)
+                    })
 
-                if len(data) > 0:
-                    data.insert(
-                        0, {'id': 'bottom', 'value': gettext('Bottom')})
+            if len(data) > 0:
+                data.insert(
+                    0, {'id': 'bottom', 'value': gettext('Bottom')})
     data = [
         e for i, e in enumerate(data) if data.index(e) == i
     ]
@@ -258,8 +343,14 @@ def depth():
     return resp
 
 
-@app.route('/api/observationvariables/')
+@app.route('/api/observationvariables/')    #Returns list of Observation variables
 def obs_vars_query():
+    """
+    /api/observationvariables/
+
+
+    """
+
     data = []
     for idx, v in enumerate(oceannavigator.misc.observation_vars()):
         data.append({'id': idx, 'value': v})
@@ -268,114 +359,137 @@ def obs_vars_query():
     return resp
 
 
-@app.route('/api/variables/')
+@app.route('/api/variables/')   #Queries possible variables in a dataset
 def vars_query():
-    
-    data = []       #Initializes empty data array
+    """
+    /api/variables/
 
 
-    if 'dataset' in request.args:
-        
-        dataset = request.args['dataset']
+    """ 
 
-        #Queries config files
-        if get_dataset_climatology(dataset) != "" and 'anom' in request.args:   #If a url exists for the dataset and an anomaly
-            with open_dataset(get_dataset_climatology(dataset)) as ds:
-                climatology_variables = list(map(str, ds.variables))
-        else:
-            climatology_variables = []
+    if 'dataset' not in request.args.keys():
+        raise ServerError("Please Specify a Dataset Using ?dataset='...'")
 
-        three_d = '3d_only' in request.args     #Checks if 3d_only is in request.args
-        #If three_d is true - Only 3d variables will be returned
+    data = []       #Initializes empty data list
+    dataset = request.args['dataset']   #Dataset Specified in query
 
-        with open_dataset(get_dataset_url(dataset)) as ds:
-            if 'vectors_only' not in request.args:      #Will send more than just vectors
+    #Queries config files
+    if get_dataset_climatology(dataset) != "" and 'anom' in request.args:   #If a url exists for the dataset and an anomaly
+           
+        #print(dataset)
+        #print(get_dataset_climatology(dataset))
+        #print(request.args)
+            
+        with open_dataset(get_dataset_climatology(dataset)) as ds:
+            climatology_variables = list(map(str, ds.variables))
+    else:
+        climatology_variables = []
 
-                # 'v' is a Variable in the Dataset
-                #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-                for v in ds.variables:  #Iterates through all the variables in the dataset
+    three_d = '3d_only' in request.args     #Checks if 3d_only is in request.args
+    #If three_d is true - Only 3d variables will be returned
 
-                    #If a time period and at least one other unit type is specified
-                    if ('time_counter' in v.dimensions or   
-                        'time' in v.dimensions) \
-                            and ('y' in v.dimensions or
-                                 'yc' in v.dimensions or
-                                 'node' in v.dimensions or
-                                 'nele' in v.dimensions or
-                                 'latitude' in v.dimensions or
-                                 'lat' in v.dimensions):
-                        if three_d and not (
-                            set(ds.depth_dimensions) & set(v.dimensions)
-                        ):
-                            continue
-                        else:
-                            if not is_variable_hidden(dataset, v):
-                                
-                                data.append({
-                                    'id': v.key,
-                                    'value': get_variable_name(dataset, v),
-                                    'scale': get_variable_scale(dataset, v)
-                                })
-                                if v.key in climatology_variables:
-                                    data.append({
-                                        'id': v.key + "_anom",
-                                        'value': get_variable_name(dataset, v) + " Anomaly",
-                                        'scale': [-10, 10]
-                                    })
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        if 'vectors_only' not in request.args:      #Vectors_only -> Magnitude Only
 
-            VECTOR_MAP = {
-                'vozocrtx': 'vozocrtx,vomecrty',
-                'itzocrtx': 'itzocrtx,itmecrty',
-                'iicevelu': 'iicevelu,iicevelv',
-                'ice_east_vel': 'ice_east_vel,ice_north_vel',
-                'u_wind': 'u_wind,v_wind',
-                'u': 'u,v',
-                'ua': 'ua,va',
-                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
-                'east_vel': 'east_vel,north_vel',
-                'wind_east_vel': 'wind_east_vel,wind_north_vel',
-            }
+            # 'v' is a Variable in the Dataset
+            #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
+            for v in ds.variables:  #Iterates through all the variables in the dataset
 
-            #If Vectors are needed
-            if 'vectors' in request.args or 'vectors_only' in request.args:
-                rxp = r"(?i)(zonal |meridional |northward |eastward | east | north)"
-                for key, value in list(VECTOR_MAP.items()):
-                    if key in ds.variables:
-                        n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
-                        if re.search(rxp, n): # Extra if for datasets with non-eastward vozocrtx
+                #If a time period and at least one other unit type is specified
+                if ('time_counter' in v.dimensions or   
+                    'time' in v.dimensions) \
+                        and ('y' in v.dimensions or
+                             'yc' in v.dimensions or
+                             'node' in v.dimensions or
+                             'nele' in v.dimensions or
+                             'latitude' in v.dimensions or
+                             'lat' in v.dimensions):
+                    if three_d and not (
+                        set(ds.depth_dimensions) & set(v.dimensions)
+                    ):
+                        continue
+                    else:
+                        if not is_variable_hidden(dataset, v):
+                             
                             data.append({
-                                'id': value,
-                                'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                                'scale': [0, get_variable_scale(
-                                          dataset,
-                                          ds.variables[key]
-                                           )[1]]
+                                'id': v.key,
+                                'value': get_variable_name(dataset, v),
+                                'scale': get_variable_scale(dataset, v)
                             })
+                            if v.key in climatology_variables:
+                                data.append({
+                                    'id': v.key + "_anom",
+                                    'value': get_variable_name(dataset, v) + " Anomaly",
+                                    'scale': [-10, 10]
+                                })
+     
+        VECTOR_MAP = {
+            'vozocrtx': 'vozocrtx,vomecrty',
+            'itzocrtx': 'itzocrtx,itmecrty',
+            'iicevelu': 'iicevelu,iicevelv',
+            'ice_east_vel': 'ice_east_vel,ice_north_vel',
+            'u_wind': 'u_wind,v_wind',
+            'u': 'u,v',
+            'ua': 'ua,va',
+            'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
+            'east_vel': 'east_vel,north_vel',
+            'wind_east_vel': 'wind_east_vel,wind_north_vel',
+        }
+
+        #If Vectors are needed
+        if 'vectors' in request.args or 'vectors_only' in request.args:
+            rxp = r"(?i)(zonal |meridional |northward |eastward | east | north)"
+            for key, value in list(VECTOR_MAP.items()):
+                if key in ds.variables:
+                    n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
+                    if re.search(rxp, n): # Extra if for datasets with non-eastward vozocrtx
+                        print(re.sub(rxp, " ",n))   #Replacing values that exist in both rxp and n
+                        print(re.sub(r" +", " ", re.sub(rxp, " ", n)))
+                        data.append({
+                            'id': value,
+                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                            'scale': [0, get_variable_scale(
+                                      dataset,
+                                      ds.variables[key]
+                                       )[1]]
+                        })
 
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
+    
     #Data is set of scale, id, value objects
-
     resp = jsonify(data)
-
     return resp
 
 
-@app.route('/api/timestamps/')
+@app.route('/api/timestamps/')  #List all the time Stamps in the provided dataset
 def time_query():
+    """
+    /api/timestamps/?dataset=' '
+
+    dataset = /api/datasets
+
+    Finds all data timestamps available for a specific dataset
+    """
+    
+    
+    #Checking Query Validity
+    if 'dataset' not in request.args:
+        raise ServerError("Please Specify a Dataset Using ?dataset='...' ")
+    #~~~~~~~~~~~~~~~~~~~~~~~
+
     data = []
-    if 'dataset' in request.args:
-        dataset = request.args['dataset']
-        quantum = request.args.get('quantum')
-        with open_dataset(get_dataset_url(dataset)) as ds:
-            for idx, date in enumerate(ds.timestamps):
-                if quantum == 'month':
-                    date = datetime.datetime(
-                        date.year,
-                        date.month,
-                        15
-                    )
-                data.append(
-                    {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
+    dataset = request.args['dataset']
+    quantum = request.args.get('quantum')
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for idx, date in enumerate(ds.timestamps):
+            if quantum == 'month':
+                date = datetime.datetime(
+                    date.year,
+                    date.month,
+                    15
+                )
+            data.append(
+                {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
 
     data = sorted(data, key=lambda k: k['id'])
 
@@ -393,6 +507,22 @@ def time_query():
 
 @app.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date(old_dataset, date, new_dataset):
+    """
+    /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
+
+    <string:old_dataset> = {
+
+    }
+
+    <int:date> = {
+
+    }
+
+    <string:new_dataset> = {
+
+    }
+    """
+
     with open_dataset(get_dataset_url(old_dataset)) as ds:
         timestamp = ds.timestamps[date]
 
@@ -410,6 +540,22 @@ def timestamp_for_date(old_dataset, date, new_dataset):
 
 @app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale(dataset, variable, scale):
+    """
+    /scale/<string:dataset>/<string:variable>/<string:scale>.png
+
+    <string:dataset> = {
+
+    }
+
+    <string:variable> = {
+
+    }
+
+    <string:scale> = {
+
+    }
+    """
+
     bytesIOBuff = plotting.tile.scale({
         'dataset': dataset,
         'variable': variable,
@@ -419,6 +565,10 @@ def scale(dataset, variable, scale):
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 def _cache_and_send_img(bytesIOBuff, f):
+    """
+    
+    """
+    
     p = os.path.dirname(f)
     if not os.path.isdir(p):
         os.makedirs(p)
@@ -435,6 +585,10 @@ def _cache_and_send_img(bytesIOBuff, f):
 # Renders the map images and sends it to the browser
 @app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+    """
+    Produces the Main Map Tiles
+    """
+    
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
@@ -462,6 +616,10 @@ def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, d
 # Renders basemap
 @app.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo(projection, zoom, x, y):
+    """
+    Generates Topographical Tiles for the Main Map
+    """
+
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
@@ -476,6 +634,10 @@ def topo(projection, zoom, x, y):
 # Renders bathymetry contours
 @app.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry(projection, zoom, x, y):
+    """
+    Generates Bathymetry Tiles for the Main Map
+    """
+
     cache_dir = app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
 
@@ -488,6 +650,18 @@ def bathymetry(projection, zoom, x, y):
 
 @app.route('/api/drifters/<string:q>/<string:drifter_id>')
 def drifter_query(q, drifter_id):
+    """
+    API Format: /api/drifters/<string:q>/<string:drifter_id>
+
+    <string:q> = {
+
+    }
+
+    <string:drifter_id> = {
+
+    }
+    """
+    
     if q == 'vars':
         pts = oceannavigator.misc.drifters_vars(drifter_id)
     elif q == 'time':
@@ -500,22 +674,47 @@ def drifter_query(q, drifter_id):
     return resp
 
 
-@app.route('/api/class4/<string:q>/<string:class4_id>/<int:index>')
+@app.route('/api/class4/<string:q>/<string:class4_id>/<string:index>')
 def class4_query(q, class4_id, index):
+    """
+    API Format: /api/class4/<string:q>/<string:class4_id>/
+
+    <string:q> = {
+        -forecasts
+        -models
+    }
+
+    <string:class4_id> = {
+        ID of the desired class4
+    }
+    """
+    print(q)
+    print(class4_id)
+
+    if class4_id == None:
+        raise ServerError("Please Specify an ID ")
+    
+
     if q == 'forecasts':
         pts = oceannavigator.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
         pts = oceannavigator.misc.list_class4_models(class4_id)
     else:
-        raise FAILURE
+        raise ServerError("Please Specify either forecasts or models using /models/ or /forecasts/")
 
     resp = jsonify(pts)
+    print(pts)
     resp.cache_control.max_age = 86400
     return resp
 
 @app.route('/subset/', methods=['GET', 'POST'])
 def subset_query():
-    
+    """
+    API Format: /subset/
+
+
+    """
+
     if request.method == "GET":
         if 'query' not in request.args:
             raise FAILURE
@@ -675,7 +874,10 @@ def subset_query():
             levels.positive = "down"
             levels.NAVO_code = 5
 
+            #Variables in Dataset
             for variable in giops_variables:
+
+                #Salinity
                 if variable == "vosaline":
                     salinity = ds.createVariable('salinity', 'f', ('time', 'depth', 'lat', 'lon', ), fill_value=-30000.0)
                     salinity = giops_variables['vosaline'][:]
@@ -685,6 +887,7 @@ def subset_query():
                     salinity.valid_max = 45.0
                     salinity.NAVO_code = 16
 
+                #Temperature
                 if variable == "votemper":
                     temp = ds.createVariable('water_temp', 'f', ('time', 'depth', 'lat', 'lon', ), fill_value=-30000.0)
                     # Convert from Kelvin to Celcius
@@ -694,6 +897,7 @@ def subset_query():
                     temp.valid_max = 100.0
                     temp.NAVO_code = 15
 
+                #Water Surface Elevation
                 if variable == "sossheig":
                     height = ds.createVariable('surf_el', float, ('time', 'lat', 'lon'), fill_value=-30000.0)
                     height = giops_variables['sossheig'][:]
@@ -701,6 +905,7 @@ def subset_query():
                     heights.units="meter"
                     heights.NAVO_code=32
                 
+                #Eastward Water Velocity
                 if variable == "vozocrtx":
                     x_velo = ds.createVariable('water_u', float, ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
                     x_velo = giops_variables['vozocrtx'][:]
@@ -708,6 +913,7 @@ def subset_query():
                     x_velo.units = "meter/sec"
                     x_velo.NAVO_code = 17
 
+                #Northward Water Velocity
                 if variable == "vomecrty":
                     y_velo = ds.createVariable('water_v', float, ('time','depth','lat','lon'), fill_value=-30000.0)
                     y_velo = giops_variables['vomecrty'][:]
@@ -737,6 +943,10 @@ def subset_query():
 
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
+    """
+    
+    """
+
     if request.method == "GET":
         if 'query' not in request.args:
             raise FAILURE
@@ -834,6 +1044,10 @@ def plot():
 
 @app.route('/stats/', methods=['GET', 'POST'])
 def stats():
+    """
+    
+    """
+
     if request.method == "GET":
         if 'query' not in request.args:
             raise FAILURE
@@ -852,6 +1066,10 @@ def stats():
 
 
 def _is_cache_valid(dataset, f):
+    """
+
+    """
+
     if os.path.isfile(f):
         cache_time = get_dataset_cache(dataset)
         if cache_time is not None:
