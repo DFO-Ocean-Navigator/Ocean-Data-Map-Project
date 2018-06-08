@@ -1,9 +1,8 @@
-import plotter
+import plotting.plotter as pl
 import geopy
 from flask_babel import gettext
 
-
-class LinePlotter(plotter.Plotter):
+class LinePlotter(pl.Plotter):
 
     def parse_query(self, query):
         super(LinePlotter, self).parse_query(query)

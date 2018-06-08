@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
-from oceannavigator.util import get_dataset_url
-import point
+import plotting.utils as utils
+import plotting.point as plPoint
+from oceannavigator.dataset_config import get_dataset_url
 from flask_babel import gettext
 from matplotlib.dates import date2num
 from data import open_dataset
 
-
-class StickPlotter(point.PointPlotter):
+class StickPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "profile"
@@ -41,6 +40,15 @@ class StickPlotter(point.PointPlotter):
         bearing = np.pi / 2.0 - bearing
         bearing[bearing < 0] += 2 * np.pi
         bearing *= 180.0 / np.pi
+        # Deal with undefined angles (where velocity is 0 or very very close) 
+        # np.arctan2 doesn't return nan if x,y are both zero...
+        inds=np.where(
+            np.logical_and(
+                np.abs(self.data[:, 0, :, :]) < 10e-6,
+                np.abs(self.data[:, 1, :, :]) < 10e-6
+                )
+            )
+        bearing[inds]=np.nan
 
         # For each point
         for p in range(0, self.data.shape[0]):
@@ -75,7 +83,7 @@ class StickPlotter(point.PointPlotter):
         return super(StickPlotter, self).csv(header, columns, data)
 
     def plot(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= len(self.points) * len(self.depth)
         fig, ax = plt.subplots(
             len(self.points) * len(self.depth),

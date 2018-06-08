@@ -43,7 +43,7 @@ class TestRoutes(unittest.TestCase):
             'stick': 'StickPlotter',
         }
 
-        for t, cls in tests.iteritems():
+        for t, cls in tests.items():
             with mock.patch.object(views, cls) as m:
                 m.return_value = m
                 m.run.return_value = ("data", "text/plain", "mock.txt")
@@ -147,7 +147,7 @@ class TestRoutes(unittest.TestCase):
                 '/api/points/': 'point',
                 '/api/lines/': 'line',
                 '/api/areas/': 'area',
-            }.iteritems():
+            }.items():
                 resp = self.app.get(url)
                 self.assertEquals(resp.status_code, 200)
                 self.assertEquals(resp.mimetype, 'application/json')

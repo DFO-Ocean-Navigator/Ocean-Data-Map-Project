@@ -2,21 +2,20 @@ from netCDF4 import Dataset, netcdftime, chartostring
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+import plotting.utils as utils
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 import pytz
 import dateutil.parser
 from oceannavigator import app
-import plotter
+from plotting.plotter import Plotter
 from flask_babel import gettext
 from data import open_dataset
 import time
 import datetime
 from scipy.interpolate import interp1d
 
-
-class DrifterPlotter(plotter.Plotter):
+class DrifterPlotter(Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "drifter"
@@ -28,7 +27,7 @@ class DrifterPlotter(plotter.Plotter):
         self.latlon = query.get('latlon') is None or bool(query.get('latlon'))
 
         drifter = query.get('drifter')
-        if isinstance(drifter, str) or isinstance(drifter, unicode):
+        if isinstance(drifter, str) or isinstance(drifter, str):
             drifters = drifter.split(',')
         else:
             drifters = drifter
@@ -36,7 +35,7 @@ class DrifterPlotter(plotter.Plotter):
         self.drifter = drifters[0]
 
         buoyvariable = query.get('buoyvariable')
-        if isinstance(buoyvariable, str) or isinstance(buoyvariable, unicode):
+        if isinstance(buoyvariable, str) or isinstance(buoyvariable, str):
             buoyvariables = buoyvariable.split(',')
         else:
             buoyvariables = buoyvariable
@@ -91,7 +90,18 @@ class DrifterPlotter(plotter.Plotter):
 
         if self.starttime is not None:
             d = dateutil.parser.parse(self.starttime)
-            self.start = np.where(self.times >= d)[0].min()
+            print(d)
+            print(self.times)
+            print(np)
+            print(np.where(self.times>=d))
+            try :
+                self.start = np.where(self.times >= d)[0].min()
+            except e:
+                print("ERROR: ")
+                print(str(e))
+                self.start = 0
+            
+            print(self.start)
         else:
             self.start = 0
 
@@ -135,20 +145,14 @@ class DrifterPlotter(plotter.Plotter):
                 len(dataset.timestamps) - 1
             )
 
-            model_times = map(
-                lambda t: time.mktime(t.timetuple()),
-                dataset.timestamps[model_start:model_end + 1]
-            )
-            output_times = map(
-                lambda t: time.mktime(t.timetuple()),
-                self.times[self.start:self.end + 1]
-            )
+            model_times = [time.mktime(t.timetuple()) for t in dataset.timestamps[model_start:model_end + 1]]
+            output_times = [time.mktime(t.timetuple()) for t in self.times[self.start:self.end + 1]]
             d = []
             for v in self.variables:
                 pts, dist, mt, md = dataset.get_path(
                     self.points[self.start:self.end + 1],
                     depth,
-                    range(model_start, model_end + 1),
+                    list(range(model_start, model_end + 1)),
                     v,
                     times=output_times
                 )
@@ -186,7 +190,7 @@ class DrifterPlotter(plotter.Plotter):
                     self.kelvin_to_celsius(u, model_data[idx, :])
 
             self.model_data = model_data
-            self.model_times = map(datetime.datetime.utcfromtimestamp, mt)
+            self.model_times = list(map(datetime.datetime.utcfromtimestamp, mt))
             self.variable_names = variable_names
             self.variable_units = variable_units
 
@@ -205,7 +209,7 @@ class DrifterPlotter(plotter.Plotter):
         if self.latlon:
             numplots += 2
 
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= numplots
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
         gs = gridspec.GridSpec(numplots, width, width_ratios=width_ratios)
@@ -310,8 +314,8 @@ class DrifterPlotter(plotter.Plotter):
             "Latitude",
             "Longitude",
         ]
-        columns += map(lambda n: "Buoy " + n, self.data_names)
-        columns += map(lambda n: "Model " + n, self.variable_names)
+        columns += ["Buoy " + n for n in self.data_names]
+        columns += ["Model " + n for n in self.variable_names]
 
         data = []
         for idx, t in enumerate(self.times):

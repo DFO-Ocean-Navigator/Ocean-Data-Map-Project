@@ -1,15 +1,14 @@
 from netCDF4 import Dataset, chartostring
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils as utils
+import plotting.plotter as pl
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
-import plotter
 from flask_babel import gettext
 from oceannavigator import app
 
-
-class Class4Plotter(plotter.Plotter):
+class Class4Plotter(pl.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "class4"
@@ -19,7 +18,7 @@ class Class4Plotter(plotter.Plotter):
         super(Class4Plotter, self).parse_query(query)
 
         class4 = query.get("class4id")
-        if isinstance(class4, str) or isinstance(class4, unicode):
+        if isinstance(class4, str) or isinstance(class4, str):
             class4 = class4.split(",")
 
         self.class4 = np.array([c.split("/") for c in class4])
@@ -39,11 +38,11 @@ class Class4Plotter(plotter.Plotter):
         with Dataset(app.config["CLASS4_URL"] % self.class4[0][0], 'r') as ds:
             self.latitude = ds['latitude'][indices]
             self.longitude = ds['longitude'][indices]
-            self.ids = map(str.strip, chartostring(ds['id'][indices]))
+            self.ids = list(map(str.strip, chartostring(ds['id'][indices])))
 
-            self.variables = map(str.strip, chartostring(ds['varname'][:]))
-            self.variable_units = map(
-                str.strip, chartostring(ds['unitname'][:]))
+            self.variables = list(map(str.strip, chartostring(ds['varname'][:])))
+            self.variable_units = list(map(
+                str.strip, chartostring(ds['unitname'][:])))
 
             forecast_data = []
             observed_data = []
@@ -130,7 +129,7 @@ class Class4Plotter(plotter.Plotter):
         return super(Class4Plotter, self).csv(header, columns, data)
 
     def plot(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
         width = len(self.variables)
@@ -254,14 +253,14 @@ class Class4Plotter(plotter.Plotter):
             plt.grid(True)
 
         leg = fig.legend(
-            map(lambda x: x[0], handles), legend, loc='lower left',
+            [x[0] for x in handles], legend, loc='lower left',
             bbox_to_anchor=(0.05, 0.05))
         for legobj in leg.legendHandles:
             legobj.set_linewidth(4.0)
 
-        names = map(lambda x: "%s (%0.2f, %0.2f)" % x, zip(self.ids,
+        names = ["%s (%0.2f, %0.2f)" % x for x in zip(self.ids,
                                                            self.latitude,
-                                                           self.longitude))
+                                                           self.longitude)]
 
         plt.suptitle("%s\n%s" % (
             "\n".join(wrap(", ".join(names), 60)),

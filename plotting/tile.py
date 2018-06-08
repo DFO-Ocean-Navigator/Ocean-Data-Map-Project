@@ -6,13 +6,12 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 import numpy as np
 import re
-import colormap
-from StringIO import StringIO
-import utils
-import tempfile
+import plotting.colormap as colormap
+import plotting.utils as utils
+from io import BytesIO
 import os
 import math
-from oceannavigator.util import get_dataset_url, get_variable_name, \
+from oceannavigator.dataset_config import get_dataset_url, get_variable_name, \
     get_variable_unit, get_dataset_climatology, get_variable_scale_factor
 from pyproj import Proj
 import pyproj
@@ -24,9 +23,7 @@ import contextlib
 from data import open_dataset
 from oceannavigator import app
 
-
 ETOPO_FILE = app.config['ETOPO_FILE']
-
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -107,18 +104,20 @@ def get_latlon_coords(projection, x, y, z):
 
     return lat, lon
 
-
+"""
+    Draws the variable scale that is placed over the map.
+    Returns a BytesIO object.
+"""
 def scale(args):
     dataset_name = args.get('dataset')
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
 
     variable = args.get('variable')
+    anom = False
     if variable.endswith('_anom'):
         variable = variable[0:-5]
         anom = True
-    else:
-        anom = False
 
     variable = variable.split(',')
 
@@ -155,16 +154,17 @@ def scale(args):
     bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation='vertical',
                        format=formatter)
     bar.set_label("%s (%s)" % (variable_name.title(),
-                               utils.mathtext(variable_unit)))
+                               utils.mathtext(variable_unit)), fontsize=12)
+    # Increase tick font size
+    bar.ax.tick_params(labelsize=12)
 
-    buf = StringIO()
-    try:
-        plt.savefig(buf, format='png', dpi='figure', transparent=False,
-                    bbox_inches='tight', pad_inches=0.05)
-        plt.close(fig)
-        return buf.getvalue()
-    finally:
-        buf.close()
+    buf = BytesIO()
+    plt.savefig(buf, format='png', dpi='figure', transparent=False,
+                bbox_inches='tight', pad_inches=0.05)
+    plt.close(fig)
+
+    buf.seek(0) # Move buffer back to beginning
+    return buf
 
 
 def plot(projection, x, y, z, args):
@@ -249,7 +249,7 @@ def plot(projection, x, y, z, args):
         data = np.sqrt(data[0] ** 2 + data[1] ** 2)
         if not anom:
             cmap = colormap.colormaps.get('speed')
-
+    
     if anom:
         with open_dataset(get_dataset_climatology(dataset_name)) as dataset:
             a = dataset.get_area(
@@ -261,11 +261,7 @@ def plot(projection, x, y, z, args):
                 args.get('radius'),
                 args.get('neighbours')
             )
-            data = data - a
-
-    f, fname = tempfile.mkstemp()
-    os.close(f)
-
+            data -= a
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
@@ -277,16 +273,15 @@ def plot(projection, x, y, z, args):
 
     data[np.where(bathymetry > -depthm)] = np.ma.masked
 
+    
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
-    img = sm.to_rgba(np.squeeze(data))
-
+    
+    img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-    im.save(fname, format='png', optimize=True)
-    with open(fname, 'r') as f:
-        buf = f.read()
-        os.remove(fname)
 
+    buf = BytesIO()
+    im.save(buf, format='PNG', optimize=True)
     return buf
 
 
@@ -334,15 +329,9 @@ def topo(projection, x, y, z, args):
     img = np.clip(img, 0, 1)
 
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-
-    f, fname = tempfile.mkstemp()
-    os.close(f)
-
-    im.save(fname, format='png', optimize=True)
-    with open(fname, 'r') as f:
-        buf = f.read()
-        os.remove(fname)
-
+    buf = BytesIO()
+    im.save(buf, format='PNG', optimize=True)
+    
     return buf
 
 
@@ -382,7 +371,7 @@ def bathymetry(projection, x, y, z, args):
     plt.xlim([0, 255])
     plt.ylim([0, 255])
 
-    with contextlib.closing(StringIO()) as buf:
+    with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
             format='png',
@@ -393,10 +382,8 @@ def bathymetry(projection, x, y, z, args):
         buf.seek(0)
         im = Image.open(buf)
 
-        with contextlib.closing(StringIO()) as buf2:
-            im.save(buf2, format='PNG', optimize=True)
-            return buf2.getvalue()
-
-        return buf.getvalue()
+        buf2 = BytesIO()
+        im.save(buf2, format='PNG', optimize=True)
+        return buf2
 
     return None

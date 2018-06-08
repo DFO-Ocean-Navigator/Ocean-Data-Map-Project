@@ -1,15 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from oceannavigator.util import get_dataset_url, get_dataset_name, get_variable_unit
+from oceannavigator.dataset_config import get_dataset_url, get_dataset_name, get_variable_unit
 import seawater
-import point
-import utils
+import plotting.point as plPoint
 import matplotlib.gridspec as gridspec
+import plotting.utils as utils
 from flask_babel import gettext
 from data import open_dataset
 
-# Temperature/Salinity Diagram
-class TemperatureSalinityPlotter(point.PointPlotter):
+# Temperature/Salinity Diagram for a Point
+class TemperatureSalinityPlotter(plPoint.PointPlotter):
+
     def __init__(self, dataset_name, query, format):
         self.plottype = "ts"
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
@@ -143,6 +144,6 @@ class TemperatureSalinityPlotter(point.PointPlotter):
             self.load_temp_sal(dataset, time)
 
             self.variable_units[0], self.temperature = \
-                super(point.PointPlotter, self).kelvin_to_celsius(
+                super(plPoint.PointPlotter, self).kelvin_to_celsius(
                     self.variable_units[0], self.temperature
             )

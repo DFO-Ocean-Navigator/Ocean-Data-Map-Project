@@ -4,16 +4,16 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
 import matplotlib.colors as mcolors
 import numpy as np
-import colormap
-import basemap
-import plotter
-import overlays
-import utils
-import gdal
+import plotting.colormap as colormap
+import plotting.basemap as basemap
+import plotting.overlays as overlays
+import plotting.utils as utils
+import plotting.plotter as pl
+from osgeo import gdal
 import osr
 import tempfile
 import os
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
 from shapely.ops import cascaded_union
@@ -30,120 +30,72 @@ from oceannavigator.errors import ClientError, ServerError
 from flask_babel import gettext
 
 
-class MapPlotter(plotter.Plotter):
+class MapPlotter(pl.Plotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = 'map'
         
-        # Init interpolation stuff
-        self.interp = query.get('interp')
-        self.radius = query.get('radius')
-        self.neighbours = query.get('neighbours')
-        
         super(MapPlotter, self).__init__(dataset_name, query, format)
 
-    def odv_ascii(self):
-        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
-        data = float_to_str(self.data.ravel()[::5])
-        station = map(lambda x: "%06d" % x, range(1, len(data) + 1))
+    def parse_query(self, query):
+        super(MapPlotter, self).parse_query(query)
 
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        time = np.repeat(self.timestamp, data.shape[0])
-        depth = self.depth_value.ravel()[::5]
+        self.projection = query.get('projection')
 
-        return super(MapPlotter, self).odv_ascii(
-            self.dataset_name,
-            [self.variable_name],
-            [self.variable_unit],
-            station,
-            latitude,
-            longitude,
-            depth,
-            time,
-            data
-        )
+        self.area = query.get('area')
 
-    def csv(self):
-        # If the user has selected the display of quiver data in the browser,
-        # then also export that data in the CSV file.
-        if self.quiver is not None and \
-            self.quiver['variable'] != '' and \
-                self.quiver['variable'] != 'none':
-            have_quiver = True
+        names = []
+        centroids = []
+        all_rings = []
+        data = None
+        for idx, a in enumerate(self.area):
+            if isinstance(a, str):
+
+                sp = a.split('/', 1)
+                if data is None:
+                    data = list_areas(sp[0], simplify=False)
+
+                b = [x for x in data if x.get('key') == a]
+                a = b[0]
+                self.area[idx] = a
+            else:
+                self.points = copy.deepcopy(np.array(a['polygons']))
+                a['polygons'] = self.points.tolist()
+                a['name'] = " "              
+
+            rings = [LinearRing(po) for po in a['polygons']]
+            if len(rings) > 1:
+                u = cascaded_union(rings)
+            else:
+                u = rings[0]
+
+            all_rings.append(u)
+            if a.get('name'):
+                names.append(a.get('name'))
+                centroids.append(u.centroid)
+        nc = sorted(zip(names, centroids))
+        self.names = [n for (n, c) in nc]
+        self.centroids = [c for (n, c) in nc]
+        data = None
+
+        if len(all_rings) > 1:
+            combined = cascaded_union(all_rings)
         else:
-            have_quiver = False
+            combined = all_rings[0]
 
-        header = [
-            ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
-        ]
+        self.combined_area = combined
+        combined = combined.envelope
 
-        columns = [
-            "Latitude",
-            "Longitude",
-            "Depth (m)",
-            "%s (%s)" % (self.variable_name, self.variable_unit)
-        ]
-        data_in = self.data.ravel()[::5]
-        if have_quiver:
-            # Include bearing information in the exported data, as per user
-            # requests.
-            columns.extend([
-                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
-                "Bearing (degrees clockwise positive from North)"
-            ])
-            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
-                              self.quiver_data_fullgrid[1].ravel()[::5])
-            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
-                                 self.quiver_data_fullgrid[0].ravel()[::5])
-            bearing = np.pi / 2.0 - bearing
-            bearing[bearing < 0] += 2 * np.pi
-            bearing *= 180.0 / np.pi
+        self.centroid = list(combined.centroid.coords)[0]
+        self.bounds = combined.bounds
 
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        depth = self.depth_value.ravel()[::5]
+        self.show_bathymetry = bool(query.get('bathymetry'))
+        self.show_area = bool(query.get('showarea'))
 
-        data = []
-        for idx in range(0, len(latitude)):
-            if np.ma.is_masked(data_in[idx]):
-                continue
+        self.quiver = query.get('quiver')
 
-            entry = [
-                "%0.4f" % latitude[idx],
-                "%0.4f" % longitude[idx],
-                "%0.1f" % depth[idx],
-                "%0.3f" % data_in[idx]
-            ]
-            if have_quiver:
-                entry.extend([
-                    "%0.3f" % quiver_data_in[0][idx],
-                    "%0.3f" % quiver_data_in[1][idx],
-                    "%0.3f" % bearing[idx]
-                ])
-            data.append(entry)
+        self.contour = query.get('contour')
 
-        return super(MapPlotter, self).csv(header, columns, data)
-
-    def pole_proximity(self, points):
-        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
-        for p in points:
-            if p[0] > 80:
-                near_pole=True                    
-            if -180<=p[1]<=-90:
-                quad1=True
-            elif -90<=p[1]<=0:
-                quad2=True
-            elif 0<=p[1]<=90:
-                quad3=True
-            elif 90<=p[1]<=180:
-                quad4=True
-            if quad1 and quad2 and quad3 and quad4:
-                covers_pole = True
-            return near_pole, covers_pole
-    
     def load_data(self):
         distance = VincentyDistance()
         height = distance.measure(
@@ -156,7 +108,7 @@ class MapPlotter(plotter.Plotter):
             ) * 1000 * 1.25
         
         if self.projection == 'EPSG:32661':
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            near_pole, covers_pole = self.pole_proximity(self.area[0]['innerrings'])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
             if self.centroid[0] > 80 or near_pole or covers_pole:
@@ -164,7 +116,7 @@ class MapPlotter(plotter.Plotter):
             else:
                 self.basemap = basemap.load_map('lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            near_pole, covers_pole = self.pole_proximity(self.area[0]['innerrings'])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
             if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
@@ -178,8 +130,8 @@ class MapPlotter(plotter.Plotter):
             width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1   
 
             if abs(width_bounds[1]- width_bounds[0]) > 360:
-                raise ClientError(gettext("You have requested an area that exceads the width of the world. \
-                                        Thinking big is good but plots need to be less the 360 deg wide." ))
+                raise ClientError(gettext("You have requested an area that exceeds the width of the world. \
+                                        Thinking big is good but plots need to be less than 360 deg wide." ))
 
             if height_bounds[1] < 0:
                 height_bounds[1]=height_bounds[1]+height_buffer
@@ -347,8 +299,7 @@ class MapPlotter(plotter.Plotter):
             self.quiver_data = quiver_data
             self.quiver_data_fullgrid = quiver_data_fullgrid
 
-            if all(map(lambda v: len(dataset.variables[v].dimensions) == 3,
-                       allvars)):
+            if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
                 self.depth = 0
 
             contour_data = []
@@ -432,7 +383,7 @@ class MapPlotter(plotter.Plotter):
             for d in self.contour_data:
                 d[np.where(self.bathymetry < depth_value)] = np.ma.masked
         else:
-            mask = maskoceans(self.longitude, self.latitude, self.data).mask
+            mask = maskoceans(self.longitude, self.latitude, self.data, True, 'h', 1.25).mask
             self.data[~mask] = np.ma.masked
             for d in self.quiver_data:
                 mask = maskoceans(
@@ -465,10 +416,10 @@ class MapPlotter(plotter.Plotter):
             indicies = []
             for a in area_polys:
                 indicies.append(np.where(
-                    map(
+                    list(map(
                         lambda p, poly=a: poly.contains(p),
                         points
-                    )
+                    ))
                 )[0])
 
             indicies = np.unique(np.array(indicies).ravel())
@@ -478,64 +429,107 @@ class MapPlotter(plotter.Plotter):
 
         self.depth_value = depth_value
 
-    def parse_query(self, query):
-        super(MapPlotter, self).parse_query(query)
+    def odv_ascii(self):
+        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
+        data = float_to_str(self.data.ravel()[::5])
+        station = ["%06d" % x for x in range(1, len(data) + 1)]
 
-        self.projection = query.get('projection')
+        latitude = self.latitude.ravel()[::5]
+        longitude = self.longitude.ravel()[::5]
+        time = np.repeat(self.timestamp, data.shape[0])
+        depth = self.depth_value.ravel()[::5]
 
-        self.area = query.get('area')
+        return super(MapPlotter, self).odv_ascii(
+            self.dataset_name,
+            [self.variable_name],
+            [self.variable_unit],
+            station,
+            latitude,
+            longitude,
+            depth,
+            time,
+            data
+        )
 
-        names = []
-        centroids = []
-        all_rings = []
-        data = None
-        for idx, a in enumerate(self.area):
-            if isinstance(a, basestring):
-                a = a.encode("utf-8")
-                sp = a.split('/', 1)
-                if data is None:
-                    data = list_areas(sp[0], simplify=False)
-
-                b = [x for x in data if x.get('key') == a]
-                a = b[0]
-                self.area[idx] = a
-            else:
-                self.points = copy.deepcopy(np.array(a['polygons']))
-                a['polygons'] = self.points.tolist()
-                a['name'] = " "              
-
-            rings = [LinearRing(po) for po in a['polygons']]
-            if len(rings) > 1:
-                u = cascaded_union(rings)
-            else:
-                u = rings[0]
-
-            all_rings.append(u)
-            if a.get('name'):
-                names.append(a.get('name'))
-                centroids.append(u.centroid)
-        nc = sorted(zip(names, centroids))
-        self.names = [n for (n, c) in nc]
-        self.centroids = [c for (n, c) in nc]
-        data = None
-
-        if len(all_rings) > 1:
-            combined = cascaded_union(all_rings)
+    def csv(self):
+        # If the user has selected the display of quiver data in the browser,
+        # then also export that data in the CSV file.
+        if self.quiver is not None and \
+            self.quiver['variable'] != '' and \
+                self.quiver['variable'] != 'none':
+            have_quiver = True
         else:
-            combined = all_rings[0]
+            have_quiver = False
 
-        self.combined_area = combined
-        combined = combined.envelope
+        header = [
+            ['Dataset', self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()]
+        ]
 
-        self.centroid = list(combined.centroid.coords)[0]
-        self.bounds = combined.bounds
+        columns = [
+            "Latitude",
+            "Longitude",
+            "Depth (m)",
+            "%s (%s)" % (self.variable_name, self.variable_unit)
+        ]
+        data_in = self.data.ravel()[::5]
+        if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
+            columns.extend([
+                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                "Bearing (degrees clockwise positive from North)"
+            ])
+            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
+                              self.quiver_data_fullgrid[1].ravel()[::5])
+            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
+                                 self.quiver_data_fullgrid[0].ravel()[::5])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
 
-        self.show_bathymetry = bool(query.get('bathymetry'))
-        self.show_area = bool(query.get('showarea'))
+        latitude = self.latitude.ravel()[::5]
+        longitude = self.longitude.ravel()[::5]
+        depth = self.depth_value.ravel()[::5]
 
-        self.quiver = query.get('quiver')
+        data = []
+        for idx in range(0, len(latitude)):
+            if np.ma.is_masked(data_in[idx]):
+                continue
 
-        self.contour = query.get('contour')
+            entry = [
+                "%0.4f" % latitude[idx],
+                "%0.4f" % longitude[idx],
+                "%0.1f" % depth[idx],
+                "%0.3f" % data_in[idx]
+            ]
+            if have_quiver:
+                entry.extend([
+                    "%0.3f" % quiver_data_in[0][idx],
+                    "%0.3f" % quiver_data_in[1][idx],
+                    "%0.3f" % bearing[idx]
+                ])
+            data.append(entry)
+
+        return super(MapPlotter, self).csv(header, columns, data)
+
+    def pole_proximity(self, points):
+        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
+        for p in points:
+            if p[0] > 80:
+                near_pole=True                    
+            if -180<=p[1]<=-90:
+                quad1=True
+            elif -90<=p[1]<=0:
+                quad2=True
+            elif 0<=p[1]<=90:
+                quad3=True
+            elif 90<=p[1]<=180:
+                quad4=True
+            if quad1 and quad2 and quad3 and quad4:
+                covers_pole = True
+        return near_pole, covers_pole
 
     def plot(self):
         if self.filetype == 'geotiff':
@@ -568,13 +562,13 @@ class MapPlotter(plotter.Plotter):
             outband.FlushCache()
             outRaster = None
 
-            with open(fname, 'r') as f:
+            with open(fname, 'r', encoding="latin-1") as f:
                 buf = f.read()
             os.remove(fname)
 
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
         ax = plt.gca()
 
@@ -593,6 +587,10 @@ class MapPlotter(plotter.Plotter):
 
         if len(self.quiver_data) == 2:
             qx, qy = self.quiver_data
+            qx, qy ,x ,y = self.basemap.rotate_vector(qx, qy,
+                                                      self.quiver_longitude,
+                                                      self.quiver_latitude,
+                                                      returnxy=True)
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
@@ -608,12 +606,11 @@ class MapPlotter(plotter.Plotter):
                     qcmap = colormap.colormaps.get('speed')
                 else:
                     qcmap = colormap.colormaps.get(self.quiver['colormap'])
-
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
                     quiver_mag,
-                    latlon=True, width=0.0035,
+                    width=0.0035,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',
@@ -621,9 +618,9 @@ class MapPlotter(plotter.Plotter):
                 )
             else:
                 q = self.basemap.quiver(
-                    self.quiver_longitude, self.quiver_latitude,
+                    x, y,
                     qx, qy,
-                    latlon=True, width=0.0025,
+                    width=0.0025,
                     headaxislength=4, headlength=4,
                     scale=qscale,
                     pivot='mid',
@@ -648,7 +645,7 @@ class MapPlotter(plotter.Plotter):
             # Plot bathymetry on top
             cs = self.basemap.contour(
                 self.longitude, self.latitude, self.bathymetry, latlon=True,
-                lineweight=0.5,
+                linewidths=0.5,
                 norm=LogNorm(vmin=1, vmax=6000),
                 cmap=mcolors.LinearSegmentedColormap.from_list(
                     'transparent_gray',
@@ -663,7 +660,7 @@ class MapPlotter(plotter.Plotter):
                 for co in a['polygons'] + a['innerrings']:
                     coords = np.array(co).transpose()
                     mx, my = self.basemap(coords[1], coords[0])
-                    map_coords = zip(mx, my)
+                    map_coords = list(zip(mx, my))
                     polys.append(Polygon(map_coords))
 
                 paths = []
@@ -853,14 +850,13 @@ class MapPlotter(plotter.Plotter):
                 self.depth_label,
                 self.date_formatter(self.timestamp)
             )
-        print(title)
         plt.title(title.strip())
         ax = plt.gca()
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
         bar.set_label("%s (%s)" % (self.variable_name.title(),
-                                   utils.mathtext(self.variable_unit)))
+                                   utils.mathtext(self.variable_unit)), fontsize=14)
 
         if self.quiver is not None and \
             self.quiver['variable'] != '' and \
@@ -870,7 +866,7 @@ class MapPlotter(plotter.Plotter):
             qbar = plt.colorbar(q, orientation='horizontal', cax=bax)
             qbar.set_label(
                 self.quiver_name.title() + " " +
-                utils.mathtext(self.quiver_unit))
+                utils.mathtext(self.quiver_unit), fontsize=14)
 
         fig.tight_layout(pad=3, w_pad=4)
 

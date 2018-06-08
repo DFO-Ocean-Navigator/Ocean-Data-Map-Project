@@ -1,22 +1,21 @@
 from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.point as plPoint
 from textwrap import wrap
 import pint
-from oceannavigator.util import get_dataset_url
+from oceannavigator.dataset_config import get_dataset_url
 from oceannavigator.errors import ClientError
 import re
 import dateutil.parser
 import pytz
-import point
 import numbers
 from flask_babel import gettext, format_datetime
 from data import open_dataset
 from oceannavigator import app
 
-
-class ObservationPlotter(point.PointPlotter):
+class ObservationPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "observation"
@@ -61,8 +60,7 @@ class ObservationPlotter(point.PointPlotter):
                     observation['data'] = np.ma.array(data).transpose()
                     self.observation[idx] = observation
 
-                self.points = map(lambda o: [o['latitude'], o['longitude']],
-                                  self.observation)
+                self.points = [[o['latitude'], o['longitude']] for o in self.observation]
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             ts = dataset.timestamps
@@ -108,15 +106,11 @@ class ObservationPlotter(point.PointPlotter):
     def parse_query(self, query):
         super(ObservationPlotter, self).parse_query(query)
 
-        observation_variable = map(int, query.get("observation_variable"))
+        observation_variable = list(map(int, query.get("observation_variable")))
         observation = query.get("observation")
         if not isinstance(observation[0], numbers.Number):
-            observation_variable_names = map(
-                lambda x: re.sub(r" \[.*\]", "", x),
-                observation[0]['datatypes'])
-            observation_variable_units = map(
-                lambda x: re.match(r".*\[(.*)\]", x).group(1),
-                observation[0]['datatypes'])
+            observation_variable_names = [re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
+            observation_variable_units = [re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
 
             self.parse_names_points(
                 [str(o.get('station')) for o in observation],
@@ -182,7 +176,7 @@ class ObservationPlotter(point.PointPlotter):
                 unit_map[
                     self.observation_variable_names[idx]] = ureg.dimensionless
 
-        for k, v in unit_map.iteritems():
+        for k, v in list(unit_map.items()):
             if v == ureg.speed_of_light:
                 unit_map[k] = ureg.celsius
 

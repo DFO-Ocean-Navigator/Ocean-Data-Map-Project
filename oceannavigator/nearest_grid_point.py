@@ -14,9 +14,8 @@ from math import pi
 import numpy as np
 from pykdtree.kdtree import KDTree
 
-
 def find_nearest_grid_point(
-        lat, lon, dataset, lat_var_name, lon_var_name, n=1
+        lat, lon, dataset, latvar, lonvar, n=1
 ):
     """Find the nearest grid point to a given lat/lon pair.
 
@@ -28,21 +27,22 @@ def find_nearest_grid_point(
         Longitude value at which to find the nearest grid point.
     dataset : xarray.Dataset
         An xarray Dataset containing the mesh variables.
-    lat_var_name : str
-        Name of the latitude variable in the dataset.
-    lon_var_name : str
-        Name of the longitude variable in the dataset.
+    latvar : xarray.DataArray
+        DataArray corresponding to latitude variable.
+    lonVar : xarray.DataArray
+        DataArray corresponding to longitude variable.
     n : int, optional
         Number of nearest grid points to return. Default is to return the
         single closest grid point.
 
     Returns
     -------
-    iy, ix
+    iy, ix, dist_sq
         A tuple of numpy arrays:
 
         - ``iy``: the y indices of the nearest grid points
         - ``ix``: the x indices of the nearest grid points
+        - dist_sq: squared distance
     """
 
     # Note the use of the squeeze method: it removes single-dimensional entries
@@ -50,8 +50,8 @@ def find_nearest_grid_point(
     # longitude of the U velocity points is defined as an array with shape
     # (1, 1, 1021, 1442). The squeeze method converts this into the equivalent
     # array with shape (1021, 1442).
-    latvar = dataset.variables[lat_var_name].squeeze()
-    lonvar = dataset.variables[lon_var_name].squeeze()
+    latvar = latvar.squeeze()
+    lonvar = lonvar.squeeze()
 
     rad_factor = pi / 180.0
     latvals = latvar[:] * rad_factor
@@ -92,10 +92,9 @@ def find_nearest_grid_point(
     # scalars). Currently, this function is intended only for a single lat/lon,
     # so we redefine the results as one-dimensional arrays.
     if n > 1:
-        iy = iy[0, :]
-        ix = ix[0, :]
-
-    return iy, ix
+        return iy, ix, dist_sq
+    else:
+        return int(iy), int(ix), dist_sq
 
 
 def _find_index(lat0, lon0, kdt, shape, n=1):
@@ -126,6 +125,7 @@ def _find_index(lat0, lon0, kdt, shape, n=1):
     else:
         q = np.array(q)
         q = q[np.newaxis, :]
+
     dist_sq_min, minindex_1d = kdt.query(np.float32(q), k=n)
     iy_min, ix_min = np.unravel_index(minindex_1d, shape)
     return dist_sq_min, iy_min, ix_min

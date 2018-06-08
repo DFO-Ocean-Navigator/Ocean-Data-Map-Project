@@ -19,13 +19,13 @@ with Dataset(infile, 'r') as src, \
     Dataset(maskedfile, 'r') as masked, \
         Dataset(outfile, 'w', format='NETCDF3_CLASSIC') as dst:
 
-    for name, dimension in src.dimensions.iteritems():
+    for name, dimension in src.dimensions.items():
         dst.createDimension(
             name,
             len(dimension) if not dimension.isunlimited() else None
         )
 
-    for name, variable in src.variables.iteritems():
+    for name, variable in src.variables.items():
         print name
         dst.createVariable(name, variable.datatype, variable.dimensions)
         addMask = False
