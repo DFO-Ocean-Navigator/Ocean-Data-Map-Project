@@ -32,7 +32,7 @@ class NetCDFData(Data):
         self._dataset.close()
 
     """
-
+        Subsets a netcdf file with all depths
     """
     def subset(self, query):
         
@@ -198,6 +198,10 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
        
+    """
+        Finds and returns the xArray.IndexVariable containing
+        the time dimension in self._dataset
+    """
     def __get_time_variable(self):
         for v in self.time_variables:
             if v in self._dataset.variables.keys():
