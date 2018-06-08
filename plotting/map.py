@@ -529,7 +529,7 @@ class MapPlotter(pl.Plotter):
                 quad4=True
             if quad1 and quad2 and quad3 and quad4:
                 covers_pole = True
-            return near_pole, covers_pole
+        return near_pole, covers_pole
 
     def plot(self):
         if self.filetype == 'geotiff':
