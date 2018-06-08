@@ -3,11 +3,12 @@
     Base class for errors
 """
 class ErrorBase(Exception):
-    def __init__(self, message: str, status_code: int=None):
+    def __init__(self, message: str, status_code: int=None, link: str = ""):
         super(ErrorBase, self).__init__()
 
         self.status_code: int = status_code if status_code is not None else 500
         self.message: str = message
+        self.link: str = link
 
     """"
         Converts internal message into dictionary object.
@@ -17,6 +18,9 @@ class ErrorBase(Exception):
         rv = dict()
 
         rv['message'] = self.message
+        if self.link != "":
+            rv['link'] = self.link
+            
         return rv
 
 """
@@ -32,3 +36,7 @@ class ClientError(ErrorBase):
 class ServerError(ErrorBase):
     def __init__(self, message: str):
         super(ServerError, self).__init__(message, status_code=500)
+
+class APIError(ErrorBase):
+    def __init__(self, message: str):
+        super(APIError, self).__init__(message, status_code=400, link = "documentation")

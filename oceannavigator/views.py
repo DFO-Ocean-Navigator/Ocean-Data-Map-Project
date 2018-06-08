@@ -21,7 +21,7 @@ from oceannavigator.dataset_config import (
     is_variable_hidden, get_dataset_cache, get_dataset_help,
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
 )
-from oceannavigator.errors import ErrorBase, ClientError, ServerError
+from oceannavigator.errors import ErrorBase, ClientError, APIError
 import oceannavigator.misc
 
 from plotting.transect import TransectPlotter
@@ -75,20 +75,19 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
-"""
-/api/<string:q>/
+@app.route('/api/')
+def info():
+    raise APIError("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
-<string:q> = {
-    -points
-    -lines 
-    -areas
-    -class4
-}
-
-Returns predefined points / lines / areas / class4's
-"""
 @app.route('/api/<string:q>/')
 def query(q):
+    """
+    API Format: /api/<string:q>/
+
+    <string:q> : Zone Type Can be (points,lines, areas, or class4)
+
+    Returns predefined  points / lines / areas / class4's
+    """
 
     data = []
     
@@ -101,26 +100,22 @@ def query(q):
     elif q == 'class4':
         data = oceannavigator.misc.list_class4_files()
     else:
-        raise FAILURE
+        raise APIError("Invalid API Query - Please review the API Documentation for Help")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
     return resp
 
-"""
-/api/<string:q>/<string:q_id>.json'
 
-<string:q> = {
-
-}
-<string:q_id> = {
-
-}
-
-
-"""
 @app.route('/api/<string:q>/<string:q_id>.json')
 def query_id(q, q_id):
+    """
+    API Format: /api/<string:q>/<string:q_id>.json'
+
+    <string:q>    : Type of Data (areas, class4, drifters, observation)
+    <string:q_id> : 
+
+    """
     if q == 'areas':
         data = oceannavigator.misc.list_areas(q_id)
     elif q == 'class4':
@@ -130,7 +125,7 @@ def query_id(q, q_id):
     elif q == 'observation' and q_id == 'meta':
         data = oceannavigator.misc.observation_meta()
     else:
-        raise FAILURE
+        raise APIError("The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -140,12 +135,14 @@ def query_id(q, q_id):
 @app.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data(dataset, variable, time, depth, location):
     """
-    /api/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
+    API Format: /api/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
 
-
-
-
-
+    <string:dataset>  : Dataset to extract data - Can be found using /api/datasets
+    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <int:time>        : Time retrieved data was gathered/modeled
+    <string:Depth>    : Water Depth - found using /api/depth/?dataset='...'
+    <string:location> : Location of the data you want to retrieve (Lat, Long)
+    **All Components Must be Included**
     """
     data = oceannavigator.misc.get_point_data(
         dataset, variable, time, depth,
@@ -159,8 +156,16 @@ def get_data(dataset, variable, time, depth, location):
 @app.route('/api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file(q, projection, resolution, extent, file_id):
     """
-    /api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
+    API Format: /api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
 
+    <string:q>          : Type of data (points, lines, areas, class4, drifters, observations)
+    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
+    <int:resolution>    : Current zoom level of the map
+    <string:extent>     : The current bounds of the map view
+    <string:file_id>    : 
+
+    **All Components Must be Included**
+    **Used Primarily by WebPage**
     """
 
     data = []
@@ -197,22 +202,28 @@ def query_file(q, projection, resolution, extent, file_id):
 @app.route('/api/datasets/')
 def query_datasets():
     """
-    /api/datasets/
+    API Format: /api/datasets/
+    ?id : will show only the name and id of the dataset
 
     Will return a list of possible datasets and their corresponding data
     """
 
     data = []
-
-    for key in get_datasets():
-        data.append({
-            'id': key,
-            'value': get_dataset_name(key),
-            'quantum': get_dataset_quantum(key),
-            'help': get_dataset_help(key),
-            'attribution': get_dataset_attribution(key),
-        })
-
+    if 'id' not in request.args:
+        for key in get_datasets():
+            data.append({
+                'id': key,
+                'value': get_dataset_name(key),
+                'quantum': get_dataset_quantum(key),
+                'help': get_dataset_help(key),
+                'attribution': get_dataset_attribution(key),
+            })
+    else:
+        for key in get_datasets():
+            data.append({
+                'id': key,
+                'value': get_dataset_name(key)
+            })
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
     resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -222,7 +233,7 @@ def query_datasets():
 @app.route('/api/colors/')
 def colors():
     """
-    /api/colors/
+    API Format: /api/colors/
 
     Returns a list of colours for use in colour maps
     """
@@ -248,9 +259,9 @@ def colors():
 @app.route('/api/colormaps/')
 def colormaps():
     """
-    /api/colormaps/
+    API Format: /api/colormaps/
 
-
+    Returns a list of colourmaps
     """
 
     data = sorted([
@@ -263,15 +274,16 @@ def colormaps():
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
     resp = jsonify(data)
+    print(resp)
     return resp
 
 
 @app.route('/colormaps.png')
 def colormap_image():
     """
-    /colormaps.png
+    API Format: /colormaps.png
 
-    Returns image of colormap example configurations
+    Returns image of colourmap example configurations
     """
 
     img = plotting.colormap.plot_colormaps()
@@ -283,11 +295,10 @@ def colormap_image():
 @app.route('/api/depth/')
 def depth():
     """
-    /api/depth/?dataset=''&variable=' '
+    API Format: /api/depth/?dataset=''&variable=' '
 
-    dataset : 
-
-    variable : 
+    dataset  : Dataset to extract data - Can be found using /api/datasets
+    variable : Type of data to retrieve - found using /api/variables/?dataset='...'
 
     Returns all depths available for that variable in the dataset
     """
@@ -295,10 +306,10 @@ def depth():
     #Checking for valid Query
     if 'variable' not in request.args or ('dataset' not in request.args):
         if 'dataset' in request.args:
-            raise ServerError("Please Specify a using &variable='...' ")
+            raise APIError("Please Specify a using &variable='...' ")
         if 'variable' in request.args:
-            raise ServerError("Please Specify a Dataset using &dataset='...' ")
-        raise ServerError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
+            raise APIError("Please Specify a Dataset using &dataset='...' ")
+        raise APIError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
     #~~~~~~~~~~~~~~~~~~~~~~~~
 
     var = request.args.get('variable')
@@ -341,9 +352,9 @@ def depth():
 @app.route('/api/observationvariables/')    #Returns list of Observation variables
 def obs_vars_query():
     """
-    /api/observationvariables/
+    API Format: /api/observationvariables/
 
-
+    Returns a list of the possible observation variables
     """
 
     data = []
@@ -357,30 +368,34 @@ def obs_vars_query():
 @app.route('/api/variables/')   #Queries possible variables in a dataset
 def vars_query():
     """
-    /api/variables/
+    API Format: /api/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
 
+    **Only use variables required for your specific request**
 
+    dataset      : Dataset to extract data - Can be found using /api/datasets
+    3d_only      : Boolean Value; When True, only variables with depth will be shown
+    vectors_only : Boolean Value; When True, ONLY variables with magnitude will be shown 
+    vectors      : Boolean Value; When True, magnitude components will be included
+
+    **Boolean: True / False**
     """ 
 
     if 'dataset' not in request.args.keys():
-        raise ServerError("Please Specify a Dataset Using ?dataset='...'")
+        raise APIError("Please Specify a Dataset Using ?dataset='...' ")
 
     data = []       #Initializes empty data list
     dataset = request.args['dataset']   #Dataset Specified in query
 
     #Queries config files
     if get_dataset_climatology(dataset) != "" and 'anom' in request.args:   #If a url exists for the dataset and an anomaly
-           
-        #print(dataset)
-        #print(get_dataset_climatology(dataset))
-        #print(request.args)
             
         with open_dataset(get_dataset_climatology(dataset)) as ds:
             climatology_variables = list(map(str, ds.variables))
+    
     else:
         climatology_variables = []
 
-    three_d = '3d_only' in request.args     #Checks if 3d_only is in request.args
+    #three_d = '3d_only' in request.args     #Checks if 3d_only is in request.args
     #If three_d is true - Only 3d variables will be returned
 
     with open_dataset(get_dataset_url(dataset)) as ds:
@@ -399,7 +414,7 @@ def vars_query():
                              'nele' in v.dimensions or
                              'latitude' in v.dimensions or
                              'lat' in v.dimensions):
-                    if three_d and not (
+                    if ('3d_only' in request.args) and not (
                         set(ds.depth_dimensions) & set(v.dimensions)
                     ):
                         continue
@@ -459,9 +474,9 @@ def vars_query():
 @app.route('/api/timestamps/')  #List all the time Stamps in the provided dataset
 def time_query():
     """
-    /api/timestamps/?dataset=' '
+    API Format: /api/timestamps/?dataset=' '
 
-    dataset = /api/datasets
+    dataset : Dataset to extract data - Can be found using /api/datasets
 
     Finds all data timestamps available for a specific dataset
     """
@@ -469,7 +484,7 @@ def time_query():
     
     #Checking Query Validity
     if 'dataset' not in request.args:
-        raise ServerError("Please Specify a Dataset Using ?dataset='...' ")
+        raise APIError("Please Specify a Dataset Using ?dataset='...' ")
     #~~~~~~~~~~~~~~~~~~~~~~~
 
     data = []
@@ -503,19 +518,13 @@ def time_query():
 @app.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date(old_dataset, date, new_dataset):
     """
-    /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
+    API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
 
-    <string:old_dataset> = {
+    <string:old_dataset> : Previous dataset used
+    <int:date>           : Date of desired data - Can be found using /api/timestamps/?datasets='...'
+    <string:new_dataset> : Dataset to extract data - Can be found using /api/datasets
 
-    }
-
-    <int:date> = {
-
-    }
-
-    <string:new_dataset> = {
-
-    }
+    **Used when Changing datasets**
     """
 
     with open_dataset(get_dataset_url(old_dataset)) as ds:
@@ -536,19 +545,13 @@ def timestamp_for_date(old_dataset, date, new_dataset):
 @app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale(dataset, variable, scale):
     """
-    /scale/<string:dataset>/<string:variable>/<string:scale>.png
+    API Format: /scale/<string:dataset>/<string:variable>/<string:scale>.png
 
-    <string:dataset> = {
+    <string:dataset>  : Dataset to extract data
+    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <string:scale>    : Desired Scale
 
-    }
-
-    <string:variable> = {
-
-    }
-
-    <string:scale> = {
-
-    }
+    Returns a scale bar
     """
 
     bytesIOBuff = plotting.tile.scale({
@@ -559,13 +562,13 @@ def scale(dataset, variable, scale):
     
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-"""
-    Caches a rendered image buffer on disk and sends it to the browser
-
-    bytesIOBuff: BytesIO object containing image data
-    f: filename of image to be cached
-"""
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
+    """
+        Caches a rendered image buffer on disk and sends it to the browser
+
+        bytesIOBuff: BytesIO object containing image data
+        f: filename of image to be cached
+    """
     p = os.path.dirname(f)
     if not os.path.isdir(p):
         os.makedirs(p)
@@ -650,12 +653,11 @@ def drifter_query(q, drifter_id):
     """
     API Format: /api/drifters/<string:q>/<string:drifter_id>
 
-    <string:q> = {
+    <string:q>          : vars / time (Data Request)
+    <string:drifter_id> : ID of Drifter of Interest - Options can be found using /api/
 
-    }
-
-    <string:drifter_id> = {
-
+    Vars - Returns a list of Variables applicable to the specified drifter
+    Time - Returns the max and min time of the specified drifter
     }
     """
     
@@ -676,20 +678,16 @@ def class4_query(q, class4_id, index):
     """
     API Format: /api/class4/<string:q>/<string:class4_id>/
 
-    <string:q> = {
-        -forecasts
-        -models
-    }
+    <string:q>         : forecasts / models (Data Request)
+    <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
 
-    <string:class4_id> = {
-        ID of the desired class4
-    }
+    Returns a list of class4 datapoints for a given day 
     """
     print(q)
     print(class4_id)
 
     if class4_id == None:
-        raise ServerError("Please Specify an ID ")
+        raise APIError("Please Specify an ID ")
     
 
     if q == 'forecasts':
@@ -697,7 +695,7 @@ def class4_query(q, class4_id, index):
     elif q == 'models':
         pts = oceannavigator.misc.list_class4_models(class4_id)
     else:
-        raise ServerError("Please Specify either forecasts or models using /models/ or /forecasts/")
+        raise APIError("Please Specify either forecasts or models using /models/ or /forecasts/")
 
     resp = jsonify(pts)
     print(pts)
@@ -706,6 +704,12 @@ def class4_query(q, class4_id, index):
 
 @app.route('/subset/')
 def subset_query():
+    """
+    API Format: /subset/?query='...'
+    
+    **Query must be written in JSON and converted to encodedURI**
+    **Not all components of query are required
+    """
 
     working_dir = None
     subset_filename = None
@@ -830,18 +834,29 @@ def subset_query():
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
     """
-    
+    API Format: /plot/?query='...'
+
+    query = {
+        dataset   : Dataset to extract data
+        names     :
+        plottitle : Title of Plot (Default if blank)
+        quantum   : (year, month, day, hour)
+        showmap   : Include a map of the plots location on the map
+        station   : Coordinates of the point/line/area/etc
+        time      : Time retrieved data was gathered/modeled
+        type      : File / Plot Type (Check Navigator for Possible options)
+        variable  : Type of data to plot - Options found using /api/variables/?dataset='...'
+    }
+    **Query must be written in JSON and converted to encodedURI**
+    **Not all components of query are required
     """
 
-    if request.method == "GET":
-        if 'query' not in request.args:
-            raise FAILURE
+    if 'query' not in request.args:
+        raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
 
+    if request.method == "GET":
         query = json.loads(request.args.get('query'))
     else:
-        if 'query' not in request.form:
-            raise FAILURE
-
         query = json.loads(request.form.get('query'))
 
     if ("format" in request.args and request.args.get("format") == "json") or \
@@ -860,7 +875,7 @@ def plot():
             return Response(data, status=200, mimetype=mime)
 
     dataset = query.get('dataset')
-
+    
     opts = {
         'dpi': 72,
         'query': query,
@@ -876,6 +891,7 @@ def plot():
 
     if 'format' in request.args:
         opts['format'] = request.args.get('format')
+
 
     if size is None:
         opts['size'] = '11x9'
@@ -909,7 +925,7 @@ def plot():
     elif plottype == 'stick':
         plotter = StickPlotter(dataset, query, request.args.get('format'))
     else:
-        raise FAILURE
+        raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
 
     # Get the data from the selected plotter.
     img, mime, filename = plotter.run(size=size, dpi=request.args.get('dpi'))
@@ -931,21 +947,30 @@ def plot():
 @app.route('/stats/', methods=['GET', 'POST'])
 def stats():
     """
-    
+    API Format: /stats/?query='...'
+
+    query = {
+        dataset  : Dataset to extract data
+        variable : Type of data to plot - Options found using /api/variables/?dataset='...'
+        time     : Time retrieved data was gathered/modeled
+        depth    : Water Depth - found using /api/depth/?dataset='...'
+        area     : Selected Area
+    }
+    **Query must be written in JSON and converted to encodedURI**
+    **Not all components of query are required
     """
 
-    if request.method == "GET":
-        if 'query' not in request.args:
-            raise FAILURE
+    #Invalid API Check
+    if 'query' not in request.args: #Invalid API Check
+        raise APIError("A Query must be specified in the form /stats/?query='...' ")
 
+    #Retrieves Query as JSON based on Request Method
+    if request.method == "GET":
         query = json.loads(request.args.get('query'))
     else:
-        if 'query' not in request.form:
-            raise FAILURE
-
         query = json.loads(request.form.get('query'))
 
-    dataset = query.get('dataset')
+    dataset = query.get('dataset')  #Retrieves dataset from query
 
     data = areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')
@@ -953,7 +978,7 @@ def stats():
 
 def _is_cache_valid(dataset: str, f: str) -> bool:
     """
-
+    Returns True if the cache is valid
     """
 
     if os.path.isfile(f):
