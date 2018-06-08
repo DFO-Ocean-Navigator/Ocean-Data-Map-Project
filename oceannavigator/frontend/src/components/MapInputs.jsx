@@ -56,6 +56,7 @@ export default class MapInputs extends React.Component {
           state={this.props.state.scale}
           def=''
           onUpdate={this.props.changeHandler}
+          onSubmit={this.props.changeHandler}
           title={_("Variable Range")}
           autourl={"/api/v0.1/range/" +
                   this.props.options.interpType + "/" +

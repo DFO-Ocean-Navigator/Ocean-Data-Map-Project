@@ -119,7 +119,7 @@ export default class DatasetSelector extends React.Component {
     }
 
     let velocity_selector = null;
-    if(this.props.line && !this.props.compare && this.props.state.variable === "vozocrtx,vomecrty") {
+    if(this.props.line && !this.props.compare && (this.props.state.variable === "vozocrtx,vomecrty" || this.props.state.variable === "east_vel,north_vel")) {
       velocity_selector = [
         <VelocitySelector
           key='velocityType'
