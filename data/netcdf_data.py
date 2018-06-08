@@ -1,5 +1,6 @@
-from netCDF4 import Dataset, netcdftime
+from netCDF4 import Dataset, netcdftime, date2num
 from flask_babel import format_date
+import dateutil.parser
 from data.data import Data, Variable, VariableList
 from oceannavigator.nearest_grid_point import find_nearest_grid_point
 import xarray as xr
@@ -49,7 +50,16 @@ class NetCDFData(Data):
             top_right = [float(x) for x in query.get('max_range').split(',')]
 
         # Time range
-        time_range = [int(x) for x in query.get('time').split(',')]
+        try:
+            time_range = [int(x) for x in query.get('time').split(',')]
+        except ValueError:
+            # Time is in ISO 8601 format
+            # Get time index from dataset
+            time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
+            time_var = self.__get_time_variable()
+            time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
+            time_range = [np.where(time_var.values == x)[0] for x in time_range]
+
         apply_time_range = False
         if time_range[0] != time_range[1]:
             apply_time_range = True
@@ -61,10 +71,6 @@ class NetCDFData(Data):
             for key in variable_list:
                 if substring in key:
                     return key
-        
-        def get_coords():
-            
-            print("test")
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
         lat = find_variable("lat")
@@ -111,7 +117,7 @@ class NetCDFData(Data):
 
         # Select requested time (time range if applicable)
         if apply_time_range:
-            subset = subset.isel(**{time_variable: slice(time_range[0], time_range[1] + 1)}) # slice doesn't include the last element
+            subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[1]) + 1)}) # slice doesn't include the last element
         else:
             subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[0]) + 1)})
 
@@ -191,7 +197,13 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
-    
+       
+    def __get_time_variable(self):
+        for v in self.time_variables:
+            if v in self._dataset.variables.keys():
+                # Get the xarray.DataArray for time variable
+                return self._dataset.variables[v]
+
     """
         Returns the possible names of the depth dimension in the dataset
     """
@@ -268,12 +280,8 @@ class NetCDFData(Data):
     def timestamps(self):
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
-            var = None
-            for v in self.time_variables:
-                if v in self._dataset.variables.keys():
-                    # Get the xarray.DataArray for time variable
-                    var = self._dataset.variables[v]
-                    break
+            
+            var = self.__get_time_variable()
 
             # Convert timestamps to UTC
             t = netcdftime.utime(var.attrs['units']) # Get time units from variable
