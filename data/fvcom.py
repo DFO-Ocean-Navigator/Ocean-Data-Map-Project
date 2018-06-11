@@ -8,7 +8,7 @@ from data.data import Variable, VariableList
 import pytz
 from cachetools import TTLCache
 import dateutil.parser
-from oceannavigator.errors import ServerError
+from utils.errors import ServerError
 import re
 
 RAD_FACTOR = np.pi / 180.0

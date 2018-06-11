@@ -1,4 +1,4 @@
-from netCDF4 import Dataset, date2num
+from netCDF4 import Dataset, date2num, netcdftime
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList

@@ -21,14 +21,13 @@ from matplotlib.patches import Polygon
 from matplotlib.bezier import concatenate_paths
 from matplotlib.patches import PathPatch
 from textwrap import wrap
-from oceannavigator.misc import list_areas
+from utils.misc import list_areas
 import pyresample.utils
 from geopy.distance import VincentyDistance
 from data import open_dataset
 import copy
-from oceannavigator.errors import ClientError, ServerError
+from utils.errors import ClientError, ServerError
 from flask_babel import gettext
-
 
 class MapPlotter(pl.Plotter):
 

@@ -5,7 +5,7 @@ import plotting.utils as utils
 import plotting.point as plPoint
 from textwrap import wrap
 from oceannavigator.dataset_config import get_dataset_url
-from oceannavigator.errors import ClientError
+from utils.errors import ClientError
 from flask_babel import gettext
 from data import open_dataset
 

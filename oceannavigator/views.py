@@ -21,8 +21,8 @@ from oceannavigator.dataset_config import (
     is_variable_hidden, get_dataset_cache, get_dataset_help,
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
 )
-from oceannavigator.errors import ErrorBase, ClientError, APIError
-import oceannavigator.misc
+from utils.errors import ErrorBase, ClientError, APIError
+import utils.misc
 
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
@@ -92,13 +92,13 @@ def query(q):
     data = []
     
     if q == 'points':
-        data = oceannavigator.misc.list_kml_files('point')
+        data = utils.misc.list_kml_files('point')
     elif q == 'lines':
-        data = oceannavigator.misc.list_kml_files('line')
+        data = utils.misc.list_kml_files('line')
     elif q == 'areas':
-        data = oceannavigator.misc.list_kml_files('area')
+        data = utils.misc.list_kml_files('area')
     elif q == 'class4':
-        data = oceannavigator.misc.list_class4_files()
+        data = utils.misc.list_class4_files()
     else:
         raise APIError("Invalid API Query - Please review the API Documentation for Help")
 
@@ -117,13 +117,13 @@ def query_id(q, q_id):
 
     """
     if q == 'areas':
-        data = oceannavigator.misc.list_areas(q_id)
+        data = utils.misc.list_areas(q_id)
     elif q == 'class4':
-        data = oceannavigator.misc.list_class4(q_id)
+        data = utils.misc.list_class4(q_id)
     elif q == 'drifters' and q_id == 'meta':
-        data = oceannavigator.misc.drifter_meta()
+        data = utils.misc.drifter_meta()
     elif q == 'observation' and q_id == 'meta':
-        data = oceannavigator.misc.observation_meta()
+        data = utils.misc.observation_meta()
     else:
         raise APIError("The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
 
@@ -144,7 +144,7 @@ def get_data(dataset, variable, time, depth, location):
     <string:location> : Location of the data you want to retrieve (Lat, Long)
     **All Components Must be Included**
     """
-    data = oceannavigator.misc.get_point_data(
+    data = utils.misc.get_point_data(
         dataset, variable, time, depth,
         list(map(float, location.split(",")))
     )
@@ -173,23 +173,23 @@ def query_file(q, projection, resolution, extent, file_id):
 
 
     if q == 'points':
-        data = oceannavigator.misc.points(
+        data = utils.misc.points(
             file_id, projection, resolution, extent)
     elif q == 'lines':
-        data = oceannavigator.misc.lines(
+        data = utils.misc.lines(
             file_id, projection, resolution, extent)
     elif q == 'areas':
-        data = oceannavigator.misc.areas(
+        data = utils.misc.areas(
             file_id, projection, resolution, extent)
     elif q == 'class4':
-        data = oceannavigator.misc.class4(
+        data = utils.misc.class4(
             file_id, projection, resolution, extent)
     elif q == 'drifters':
-        data = oceannavigator.misc.drifters(
+        data = utils.misc.drifters(
             file_id, projection, resolution, extent)
         max_age = 3600
     elif q == 'observations':
-        data = oceannavigator.misc.observations(
+        data = utils.misc.observations(
             file_id, projection, resolution, extent)
     else:
         raise FAILURE
@@ -274,7 +274,6 @@ def colormaps():
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
     resp = jsonify(data)
-    print(resp)
     return resp
 
 
@@ -358,7 +357,7 @@ def obs_vars_query():
     """
 
     data = []
-    for idx, v in enumerate(oceannavigator.misc.observation_vars()):
+    for idx, v in enumerate(utils.misc.observation_vars()):
         data.append({'id': idx, 'value': v})
 
     resp = jsonify(data)
@@ -453,8 +452,6 @@ def vars_query():
                 if key in ds.variables:
                     n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
                     if re.search(rxp, n): # Extra if for datasets with non-eastward vozocrtx
-                        print(re.sub(rxp, " ",n))   #Replacing values that exist in both rxp and n
-                        print(re.sub(r" +", " ", re.sub(rxp, " ", n)))
                         data.append({
                             'id': value,
                             'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
@@ -662,9 +659,9 @@ def drifter_query(q, drifter_id):
     """
     
     if q == 'vars':
-        pts = oceannavigator.misc.drifters_vars(drifter_id)
+        pts = utils.misc.drifters_vars(drifter_id)
     elif q == 'time':
-        pts = oceannavigator.misc.drifters_time(drifter_id)
+        pts = utils.misc.drifters_time(drifter_id)
     else:
         raise FAILURE
 
@@ -683,22 +680,18 @@ def class4_query(q, class4_id, index):
 
     Returns a list of class4 datapoints for a given day 
     """
-    print(q)
-    print(class4_id)
 
     if class4_id == None:
         raise APIError("Please Specify an ID ")
-    
 
     if q == 'forecasts':
-        pts = oceannavigator.misc.list_class4_forecasts(class4_id)
+        pts = utils.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
-        pts = oceannavigator.misc.list_class4_models(class4_id)
+        pts = utils.misc.list_class4_models(class4_id)
     else:
-        raise APIError("Please Specify either forecasts or models using /models/ or /forecasts/")
+        raise APIError(gettext("Please specify either forecasts or models using /models/ or /forecasts/"))
 
     resp = jsonify(pts)
-    print(pts)
     resp.cache_control.max_age = 86400
     return resp
 

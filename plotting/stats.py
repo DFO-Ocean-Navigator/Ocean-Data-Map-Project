@@ -3,7 +3,7 @@ from oceannavigator.dataset_config import get_variable_name, get_variable_unit, 
     get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union
-from oceannavigator.misc import list_areas
+from utils.misc import list_areas
 import json
 from operator import itemgetter
 import re
@@ -11,7 +11,7 @@ from flask_babel import gettext
 from data import open_dataset
 import math
 import copy
-from oceannavigator.errors import ClientError, ServerError
+from utils.errors import ClientError, ServerError
 
 class Area:
     def __init__(self, query):
