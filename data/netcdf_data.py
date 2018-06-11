@@ -13,6 +13,7 @@ import numpy as np
 import re
 import geopy
 import pandas
+import zipfile
 
 class NetCDFData(Data):
 
@@ -138,7 +139,7 @@ class NetCDFData(Data):
         if int(query.get('should_zip')) == 1:
             myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
             myzip.write('%s%s.nc' % (working_dir, filename), os.path.basename('%s%s.nc' % (working_dir, filename)))
-            myzip.comment = 'Generated from www.navigator.oceansdata.ca'
+            myzip.comment = b"Generated from www.navigator.oceansdata.ca"
             myzip.close() # Must be called to actually create zip
             return working_dir, filename+".zip"
 
