@@ -28,8 +28,11 @@ class TransectPlotter(pl.LinePlotter):
     def parse_query(self, query):
         super(TransectPlotter, self).parse_query(query)
         depth_limit = query.get("depth_limit")
-        self.selected_velocity_plots = list(map(int, query.get("selectedPlots").split(',')))
-        
+        if 'selectedPlots' in query:
+            self.selected_velocity_plots = list(map(int, query.get("selectedPlots").split(',')))
+        else:
+            self.selected_velocity_plots = list(map(int, "0, 1, 1".split(',')))
+
         if depth_limit is None or depth_limit == '' or depth_limit is False:
             self.depth_limit = None
         else:

@@ -35,6 +35,28 @@ export default class PlotImage extends React.Component {
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
     this.toggleImageLink = this.toggleImageLink.bind(this);
+    this.generateScript = this.generateScript.bind(this);
+  }
+
+  generateScript() {
+    var url = stringify(this.generateQuery(this.props.query));
+    console.warn("URL");
+    console.warn(url);
+
+    
+
+    $.ajax({
+      url: window.location.origin + "/api/generatescript/?query=" + url,
+      dataType: "json",
+      cache: true,
+
+      success: function(data) {
+        console.warn(data);
+      }.bind(this),
+      error: function () {
+
+      }.bind(this)
+    });
   }
 
   componentDidMount() {
@@ -290,6 +312,9 @@ export default class PlotImage extends React.Component {
       case "image":
         this.toggleImageLink();
         break;
+      case "script":
+        this.generateScript();
+        break;
     }
   }
 
@@ -382,6 +407,9 @@ export default class PlotImage extends React.Component {
               eventKey="image"
               disabled={this.state.fail}
             ><Icon icon="file-image-o" /> Image</MenuItem>
+            <MenuItem
+              eventKey="script"
+            ><Icon icon="file-code-o" /> Script</MenuItem>
           </DropdownButton>
         </ButtonToolbar>
 

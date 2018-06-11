@@ -36,6 +36,7 @@ from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
 from plotting.stats import stats as areastats
+from plotting.scripter import constructScript
 import plotting.colormap
 import plotting.tile
 import plotting.scale
@@ -74,6 +75,13 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     })
     resp.cache_control.max_age = MAX_CACHE
     return resp
+
+@app.route('/api/generatescript/')
+def generateScript():
+
+    result = constructScript(request.args.get('query'))
+    return send_file(result, attachment_filename="testing.txt", as_attachment=True)
+
 
 @app.route('/api/')
 def info():
@@ -718,7 +726,7 @@ def subset_query():
             subset.to_netcdf(working_dir + filename + ".nc", format="NETCDF3_CLASSIC")
 
             # Open the GIOPS NCOM file
-            giops_file = netCDF4.Dataset(working_dir + filename + ".nc")
+            g this.loadImage(this.generateQuery(this.props.query));iops_file = netCDF4.Dataset(working_dir + filename + ".nc")
             giops_variables = giops_file.variables
                 
             # Create converted ncdf file
@@ -827,7 +835,7 @@ def subset_query():
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
     """
-    API Format: /plot/?query='...'
+    API Format: /plot/?query='...'&format
 
     query = {
         dataset   : Dataset to extract data
@@ -846,10 +854,12 @@ def plot():
 
     if 'query' not in request.args:
         raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
-
+    print(request.args.get('query'))
     if request.method == "GET":
+        print(request.args)
         query = json.loads(request.args.get('query'))
     else:
+        print(request.form)
         query = json.loads(request.form.get('query'))
 
     if ("format" in request.args and request.args.get("format") == "json") or \
