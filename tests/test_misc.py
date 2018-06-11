@@ -1,23 +1,22 @@
 import unittest
-import mock
+from unittest.mock import MagicMock, patch 
 import os
 import numpy as np
-from oceannavigator import misc
-
+from utils import misc
 
 class TestMisc(unittest.TestCase):
 
-    @mock.patch("oceannavigator.misc._get_kml")
+    @patch("utils.misc._get_kml")
     def test_points(self, m):
-        m.return_value = mock.MagicMock(), None
+        m.return_value = MagicMock(), None
         result = misc.points("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
 
-        folder = mock.MagicMock(Placemark=[
-            mock.MagicMock(),
-            mock.MagicMock(),
+        folder = MagicMock(Placemark=[
+            MagicMock(),
+            MagicMock(),
         ])
         folder.Placemark[0].Point.coordinates.text = "0,0"
         folder.Placemark[0].name.text = "Place 1"
@@ -44,17 +43,17 @@ class TestMisc(unittest.TestCase):
             }
         )
 
-    @mock.patch("oceannavigator.misc._get_kml")
+    @patch("utils.misc._get_kml")
     def test_lines(self, m):
-        m.return_value = mock.MagicMock(), None
+        m.return_value = MagicMock(), None
         result = misc.lines("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
 
-        folder = mock.MagicMock(Placemark=[
-            mock.MagicMock(),
-            mock.MagicMock(),
+        folder = MagicMock(Placemark=[
+            MagicMock(),
+            MagicMock(),
         ])
         folder.Placemark[0].LineString.coordinates.text = "0,0 0.0001,0.0001"
         folder.Placemark[0].name.text = "Line 1"
@@ -81,19 +80,19 @@ class TestMisc(unittest.TestCase):
             }
         )
 
-    @mock.patch("oceannavigator.misc._get_kml")
+    @patch("utils.misc._get_kml")
     def test_areas(self, m):
-        m.return_value = mock.MagicMock(), None
+        m.return_value = MagicMock(), None
         result = misc.areas("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
 
-        folder = mock.MagicMock(Placemark=[
-            mock.MagicMock(),
-            mock.MagicMock(),
+        folder = MagicMock(Placemark=[
+            MagicMock(),
+            MagicMock(),
         ])
-        poly0 = mock.Mock()
+        poly0 = Mock()
         poly0.outerBoundaryIs.LinearRing.coordinates.text = \
             "0,0 0,0.0001 0.0001,0.0001 0.0001,0"
         folder.Placemark[0].iterfind.return_value = [poly0]
@@ -137,7 +136,7 @@ class TestMisc(unittest.TestCase):
             }
         )
 
-    @mock.patch("oceannavigator.misc.app.config")
+    @patch("utils.misc.app.config")
     def test_list_kml_files(self, config):
         config.__getitem__.return_value = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -152,7 +151,7 @@ class TestMisc(unittest.TestCase):
             'id': 'test_points',
         })
 
-    @mock.patch("oceannavigator.misc.app.config")
+    @patch("utils.misc.app.config")
     def test_list_areas(self, config):
         config.__getitem__.return_value = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -176,7 +175,7 @@ class TestMisc(unittest.TestCase):
             ]]
         })
 
-    @mock.patch("oceannavigator.misc.Dataset")
+    @patch("utils.misc.Dataset")
     def test_drifter_meta(self, dataset):
         result = misc.drifter_meta()
         self.assertEqual(result, {
@@ -191,7 +190,7 @@ class TestMisc(unittest.TestCase):
             'wmo': [["WMO"]],
             'deployment': [['DEP']],
         }
-        with mock.patch("oceannavigator.misc.chartostring", new=lambda x: x):
+        with patch("utils.misc.chartostring", new=lambda x: x):
             result = misc.drifter_meta()
 
         self.assertEqual(result, {
