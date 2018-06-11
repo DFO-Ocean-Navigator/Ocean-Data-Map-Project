@@ -3,9 +3,8 @@ import pyresample
 import numpy as np
 import warnings
 from data.netcdf_data import NetCDFData
-from netCDF4 import Dataset
+from netCDF4 import Dataset, chartostring
 from data.data import Variable, VariableList
-from netCDF4 import chartostring
 import pytz
 from cachetools import TTLCache
 import dateutil.parser

@@ -3,7 +3,7 @@ import pyresample
 import numpy as np
 from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
-from oceannavigator.nearest_grid_point import find_nearest_grid_point
+from data.nearest_grid_point import find_nearest_grid_point
 
 class Nemo(NetCDFData):
     __depths = None
