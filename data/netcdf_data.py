@@ -1,8 +1,8 @@
-from netCDF4 import Dataset, netcdftime, date2num
+from netCDF4 import Dataset, date2num, netcdftime
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
-from oceannavigator.nearest_grid_point import find_nearest_grid_point
+from data.nearest_grid_point import find_nearest_grid_point
 import xarray as xr
 import os
 from cachetools import TTLCache
@@ -33,7 +33,7 @@ class NetCDFData(Data):
         self._dataset.close()
 
     """
-
+        Subsets a netcdf file with all depths
     """
     def subset(self, query):
         
@@ -199,6 +199,10 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
        
+    """
+        Finds and returns the xArray.IndexVariable containing
+        the time dimension in self._dataset
+    """
     def __get_time_variable(self):
         for v in self.time_variables:
             if v in self._dataset.variables.keys():

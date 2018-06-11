@@ -6,7 +6,7 @@ from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
 from cachetools import TTLCache
 from data.data import Variable, VariableList
-from oceannavigator.nearest_grid_point import find_nearest_grid_point
+from data.nearest_grid_point import find_nearest_grid_point
 import math
 import pytz
 import re

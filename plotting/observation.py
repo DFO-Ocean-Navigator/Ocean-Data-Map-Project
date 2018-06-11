@@ -6,7 +6,7 @@ import plotting.point as plPoint
 from textwrap import wrap
 import pint
 from oceannavigator.dataset_config import get_dataset_url
-from oceannavigator.errors import ClientError
+from utils.errors import ClientError
 import re
 import dateutil.parser
 import pytz

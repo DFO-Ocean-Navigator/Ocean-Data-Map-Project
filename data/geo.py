@@ -3,7 +3,6 @@ import geopy
 from geopy.distance import vincenty, VincentyDistance
 import datetime
 
-
 def bearing(lat0, lon0, lat1, lon1):
     lat0_rad = np.radians(lat0)
     lat1_rad = np.radians(lat1)

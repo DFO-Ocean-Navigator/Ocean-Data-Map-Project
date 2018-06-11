@@ -2,8 +2,7 @@ import numpy as np
 import re
 import datetime
 from mpl_toolkits.basemap import Basemap
-from flask_babel import gettext
-from oceannavigator.errors import ClientError, ServerError
+from utils.errors import ClientError, ServerError
 
 def get_filename(plot_type, dataset_name, extension):
     outname = [
@@ -144,7 +143,7 @@ def _map_plot(points, path=True, quiver=True):
                 round(lon_d / 1.5)
             ), labels=[0, 0, 0, 1])
     except:
-        raise ClientError(gettext("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection"))
+        raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
 
 
 def point_plot(points):
@@ -176,13 +175,3 @@ def get_latlon_vars(dataset):
         _find_var(dataset, ['nav_lon', 'longitude']),
     )
 
-
-def get_interpolation(query):
-    interp = query.get('interpolation')
-    if interp is None or interp == '':
-        interp = {
-            'method': 'inv_square',
-            'neighbours': 8,
-        }
-
-    return interp
