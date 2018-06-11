@@ -10,7 +10,7 @@ pipeline {
 build_dir=/home/jenkins/build/
 frontend_dir=$build_dir/oceannavigator/frontend
 
-npm --prefex $frontend_dir install
+npm --prefix $frontend_dir install
 npm --prefix $frontend_dir run build'''
         }
 
