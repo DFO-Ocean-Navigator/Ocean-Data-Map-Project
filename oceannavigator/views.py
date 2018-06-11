@@ -691,7 +691,12 @@ def class4_query(q, class4_id, index):
 
     if class4_id == None:
         raise APIError("Please Specify an ID ")
+<<<<<<< Updated upstream
 
+=======
+    
+    
+>>>>>>> Stashed changes
     if q == 'forecasts':
         pts = utils.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
