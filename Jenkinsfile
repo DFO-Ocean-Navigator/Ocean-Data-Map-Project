@@ -22,7 +22,9 @@ npm --prefix $frontend_dir run build'''
           echo 'Running Python tests'
           sh '''#!/usr/bin/env bash
 
-python -m unittest tests/test_geo.py'''
+py=/opt/tools/miniconda3/bin/python
+
+$py -m unittest tests/test_geo.py'''
         }
 
       }
