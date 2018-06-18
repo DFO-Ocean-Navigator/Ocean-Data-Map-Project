@@ -1,7 +1,7 @@
 import fcntl
 import os
 import time
-from oceannavigator import app
+from flask import current_app
 from pykml import parser
 from shapely.geometry.polygon import LinearRing
 from netCDF4 import Dataset, chartostring, netcdftime
@@ -21,7 +21,7 @@ from data import open_dataset
 import pickle as pickle
 
 def list_kml_files(subdir):
-    DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)
+    DIR = os.path.join(current_app.config['OVERLAY_KML_DIR'], subdir)
 
     files = []
     for f in os.listdir(DIR):
@@ -53,7 +53,7 @@ def _get_view(extent):
 
 
 def _get_kml(subdir, file_id):
-    DIR = os.path.join(app.config['OVERLAY_KML_DIR'], subdir)
+    DIR = os.path.join(current_app.config['OVERLAY_KML_DIR'], subdir)
     f = os.path.join(DIR, "%s.kml" % file_id)
     doc = parser.parse(f).getroot()
     return doc.Document.Folder, {"k": doc.nsmap[None]}
@@ -134,7 +134,7 @@ def lines(file_id, projection, resolution, extent):
 
 
 def list_areas(file_id, simplify=True):
-    AREA_DIR = os.path.join(app.config['OVERLAY_KML_DIR'], 'area')
+    AREA_DIR = os.path.join(current_app.config['OVERLAY_KML_DIR'], 'area')
 
     areas = []
     f = os.path.join(AREA_DIR, "%s.kml" % file_id)
@@ -258,7 +258,7 @@ def drifter_meta():
     wmo = {}
     deployment = {}
 
-    with Dataset(app.config['DRIFTER_AGG_URL'], 'r') as ds:
+    with Dataset(current_app.config['DRIFTER_AGG_URL'], 'r') as ds:
         for idx, b in enumerate(ds.variables['buoy'][:]):
             bid = str(chartostring(b))[:-3]
 
@@ -282,7 +282,7 @@ def drifter_meta():
 
 def observation_vars():
     result = []
-    with Dataset(app.config["OBSERVATION_AGG_URL"], 'r') as ds:
+    with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
         for v in sorted(ds.variables):
             if v in ['z', 'lat', 'lon', 'profile', 'time']:
                 continue
@@ -295,7 +295,7 @@ def observation_vars():
 
 
 def observation_meta():
-    with Dataset(app.config["OBSERVATION_AGG_URL"], 'r') as ds:
+    with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
         ship = chartostring(ds['ship'][:])
         trip = chartostring(ds['trip'][:])
 
@@ -321,7 +321,7 @@ def observations(observation_id, projection, resolution, extent):
     view = _get_view(extent)
 
     points = []
-    with Dataset(app.config["OBSERVATION_AGG_URL"], 'r') as ds:
+    with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
         lat = ds['lat'][:].astype(float)
         lon = ds['lon'][:].astype(float)
         profile = chartostring(ds['profile'][:])
@@ -377,13 +377,13 @@ def drifters(drifter_id, projection, resolution, extent):
     status = []
 
     if drifter_id in ['all', 'active', 'inactive', 'not responding']:
-        c = Crawl(app.config['DRIFTER_CATALOG_URL'], select=[".*.nc$"])
+        c = Crawl(current_app.config['DRIFTER_CATALOG_URL'], select=[".*.nc$"])
         drifters = [d.name[:-3] for d in c.datasets]
     else:
         drifters = drifter_id.split(",")
 
     for d in drifters:
-        with Dataset(app.config["DRIFTER_URL"] % d, 'r') as ds:
+        with Dataset(current_app.config["DRIFTER_URL"] % d, 'r') as ds:
             if drifter_id == 'active' and ds.status != 'normal':
                 continue
             elif drifter_id == 'inactive' and ds.status != 'inactive':
@@ -436,7 +436,7 @@ def drifters_vars(drifter_id):
 
     res = []
     for d in drifters:
-        with Dataset(app.config["DRIFTER_URL"] % d, 'r') as ds:
+        with Dataset(current_app.config["DRIFTER_URL"] % d, 'r') as ds:
             a = []
             for name in ds.variables:
                 if name in ["data_date", "sent_date", "received_date",
@@ -476,7 +476,7 @@ def drifters_time(drifter_id):
     mins = []
     maxes = []
     for d in drifters:
-        with Dataset(app.config["DRIFTER_URL"] % d, 'r') as ds:
+        with Dataset(current_app.config["DRIFTER_URL"] % d, 'r') as ds:
             var = ds['data_date']
             ut = netcdftime.utime(var.units)
             mins.append(ut.num2date(var[:].min()))
@@ -493,7 +493,7 @@ def drifters_time(drifter_id):
 
 def list_class4_files_slowly():
     # This function has poor performance; only use as a fallback.
-    c = Crawl(app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"],
+    c = Crawl(current_app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"],
               workers=16)
 
     result = []
@@ -516,7 +516,7 @@ def list_class4_files():
     not accessible, this function falls back to the slow method of generating
     the list on the fly.
     """
-    cache_file_name = os.path.join(app.config['CACHE_DIR'],
+    cache_file_name = os.path.join(current_app.config['CACHE_DIR'],
                                    'class4_files.pickle')
     try:
         fp = open(cache_file_name, 'rb')
@@ -564,7 +564,7 @@ def list_class4_files():
 
 
 def list_class4(d):
-    dataset_url = app.config["CLASS4_URL"] % d
+    dataset_url = current_app.config["CLASS4_URL"] % d
 
     with Dataset(dataset_url, 'r') as ds:
         lat = ds['latitude'][:]
@@ -600,7 +600,7 @@ def list_class4(d):
 
 
 def class4(class4_id, projection, resolution, extent):
-    dataset_url = app.config["CLASS4_URL"] % class4_id
+    dataset_url = current_app.config["CLASS4_URL"] % class4_id
 
     proj = pyproj.Proj(init=projection)
     view = _get_view(extent)
@@ -662,7 +662,7 @@ def class4(class4_id, projection, resolution, extent):
 
 
 def list_class4_forecasts(class4_id):
-    dataset_url = app.config["CLASS4_URL"] % class4_id
+    dataset_url = current_app.config["CLASS4_URL"] % class4_id
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
@@ -687,7 +687,7 @@ def list_class4_forecasts(class4_id):
 
 def list_class4_models(class4_id):
     select = ["(.*/)?%s.*_profile.nc$" % class4_id[:16]]
-    c = Crawl(app.config["CLASS4_CATALOG_URL"], select=select)
+    c = Crawl(current_app.config["CLASS4_CATALOG_URL"], select=select)
 
     result = []
     for dataset in c.datasets:
