@@ -32,6 +32,15 @@ class NetCDFData(Data):
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
 
+    def convert_to_timestamp(date):
+        # Time is in ISO 8601 format
+        # Get time index from dataset
+        time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
+        time_var = self.__get_time_variable()
+        time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
+        time_range = [np.where(time_var.values == x)[0] for x in time_range]
+        return time_range
+
     """
         Subsets a netcdf file with all depths
     """

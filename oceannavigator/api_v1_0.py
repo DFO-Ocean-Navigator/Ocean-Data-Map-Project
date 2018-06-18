@@ -39,47 +39,55 @@ import netCDF4
 import base64
 import pytz
 from data import open_dataset
-
+from data.netcdf_data import NetCDFData
 
 # API INTERFACE 
+
 #
+# Time Conversion Test Functions
 #
-#
-#
-#
-#
-#
+@app.route('/api/timestampconversion/')
+def conversion():
+  return convert_to_timestamp(request.args.get('date'))
+
 
 #
 #
 #
-@app.route('/api/v1.0/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<string:time>/<string:variable>/json')
+@app.route('/api/v1.0/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<string:time>/<string:variable>.json')
 def range_query_v1_0(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
-
+  return None
+  
 
 #
 #
 #
 @app.route('/api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data(dataset, variable, time, depth, location):
-
+  return None
 
 #
 #
 #
 @app.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
-
+  return None
 
 #
 #
 #
 @app.route('/api/v1.0/plot/', methods=['GET', 'POST'])
 def plot():
-
+  return None
 
 #
 #
 #
 @app.route('/api/v1.0/stats/', methods=['GET', 'POST'])
 def stats():
+  return None
+
+
+
+
+
