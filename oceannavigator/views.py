@@ -58,33 +58,6 @@ def handle_error(error):
     response.status_code = error.status_code
     return response
 
-@app.route('/timeindex/<string:dataset>/<int:date>/')
-def getTimeIndex(dataset, date):
-    
-    with open_dataset(get_dataset_url(dataset)) as ds:
-        for variable in ds:
-            print(variable)
-
-"""
-Range Query V1.0
-"""
-@app.route('/api/v1.0/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<string:time>/<string:variable>/json')
-def range_query_v1_0(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
-    
-    getTimeIndex(date)
-
-    extent = list(map(float,extent.split(",")))
-
-    min, max = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours
-    )
-    resp = jsonify({
-        'min': min,
-        'max': max,
-    })
-
-    resp.cache_control.max_age = MAX_CACHE
-    return resp
 
 """
 Range Query V0.1
@@ -176,7 +149,7 @@ def query_id(q, q_id):
     resp.cache_control.max_age = 86400
     return resp
 
-@app.route('/api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
+
 @app.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data(dataset, variable, time, depth, location):
     """
@@ -674,7 +647,6 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 # Renders the map images and sends it to the browser
-@app.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 @app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
     """
@@ -921,7 +893,7 @@ def subset_query():
             
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
-@app.route('/api/v1.0/plot/', methods=['GET', 'POST'])
+
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
     """
@@ -1036,7 +1008,7 @@ def plot():
 
     return response
 
-@app.route('/api/v1.0/stats/', methods=['GET', 'POST'])
+
 @app.route('/stats/', methods=['GET', 'POST'])
 def stats():
     """

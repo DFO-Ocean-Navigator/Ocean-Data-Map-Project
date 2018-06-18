@@ -21,7 +21,7 @@ Compress(app)
 babel = Babel(app)
 
 import oceannavigator.views
-
+import oceannavigator.api_v1_0
 
 @babel.localeselector
 def get_locale():

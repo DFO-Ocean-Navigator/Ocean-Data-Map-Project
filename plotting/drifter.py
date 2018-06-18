@@ -46,9 +46,10 @@ class DrifterPlotter(Plotter):
         self.starttime = query.get('starttime')
         self.endtime = query.get('endtime')
 
+    @profileit
     def load_data(self):
         
-        profileit(self)
+        
 
         ds_url = app.config['DRIFTER_URL']
         data_names = []
