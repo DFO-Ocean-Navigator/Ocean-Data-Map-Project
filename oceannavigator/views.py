@@ -13,6 +13,7 @@ import json
 import datetime
 from io import BytesIO
 from PIL import Image
+import io
 
 from oceannavigator import app
 from oceannavigator.dataset_config import (
@@ -51,14 +52,39 @@ from data import open_dataset
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
-"""
-
-"""
 @app.errorhandler(ErrorBase)
 def handle_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
+
+@app.route('/timeindex/<string:dataset>/<int:date>/')
+def getTimeIndex(dataset, date):
+    
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for variable in ds:
+            print(variable)
+
+"""
+Range Query V1.0
+"""
+@app.route('/api/v1.0/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<string:time>/<string:variable>/json')
+def range_query_v1_0(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
+    
+    getTimeIndex(date)
+
+    extent = list(map(float,extent.split(",")))
+
+    min, max = plotting.scale.get_scale(
+        dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours
+    )
+    resp = jsonify({
+        'min': min,
+        'max': max,
+    })
+
+    resp.cache_control.max_age = MAX_CACHE
+    return resp
 
 """
 Range Query V0.1
@@ -67,6 +93,9 @@ Range Query V0.1
 def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
     
+    print("TIME: "),
+    print(time)
+
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours)
     resp = jsonify({
@@ -76,17 +105,24 @@ def range_query_v0_1(interp, radius, neighbours, dataset, projection, extent, va
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
+@app.route('/api/v1.0/generatescript/')
 @app.route('/api/generatescript/')
 def generateScript():
+    
+    strIO = io.StringIO()
+    strIO.write("HELLO WORLD")
+    strIO.seek(0)
 
-    result = constructScript(request.args.get('query'))
-    return send_file(result, attachment_filename="testing.txt", as_attachment=True)
 
 
+    return send_file(strIO, attachment_filename="testing.txt", as_attachment=True)
+
+@app.route('/api/v1.0/')
 @app.route('/api/')
 def info():
     raise APIError("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
+@app.route('/api/v1.0/<string:q>/')
 @app.route('/api/<string:q>/')
 def query(q):
     """
@@ -115,6 +151,7 @@ def query(q):
     return resp
 
 
+@app.route('/api/v1.0/<string:q>/<string:q_id>.json')
 @app.route('/api/<string:q>/<string:q_id>.json')
 def query_id(q, q_id):
     """
@@ -139,7 +176,7 @@ def query_id(q, q_id):
     resp.cache_control.max_age = 86400
     return resp
 
-
+@app.route('/api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 @app.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data(dataset, variable, time, depth, location):
     """
@@ -161,6 +198,7 @@ def get_data(dataset, variable, time, depth, location):
     resp.cache_control.max_age = 2
     return resp
 
+@app.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 @app.route('/api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file(q, projection, resolution, extent, file_id):
     """
@@ -207,6 +245,7 @@ def query_file(q, projection, resolution, extent, file_id):
     return resp
 
 
+@app.route('/api/v1.0/datasets/')
 @app.route('/api/datasets/')
 def query_datasets():
     """
@@ -238,6 +277,7 @@ def query_datasets():
     return resp
 
 
+@app.route('/api/v1.0/colors/')
 @app.route('/api/colors/')
 def colors():
     """
@@ -263,7 +303,7 @@ def colors():
     resp = jsonify(data)
     return resp
 
-
+@app.route('/api/v1.0/colormaps/')
 @app.route('/api/colormaps/')
 def colormaps():
     """
@@ -284,7 +324,7 @@ def colormaps():
     resp = jsonify(data)
     return resp
 
-
+@app.route('/api/v1.0/colormaps.png')
 @app.route('/colormaps.png')
 def colormap_image():
     """
@@ -298,7 +338,7 @@ def colormap_image():
     resp.cache_control.max_age = 86400
     return resp
 
-
+@app.route('/api/v1.0/depth/')
 @app.route('/api/depth/')
 def depth():
     """
@@ -313,7 +353,7 @@ def depth():
     #Checking for valid Query
     if 'variable' not in request.args or ('dataset' not in request.args):
         if 'dataset' in request.args:
-            raise APIError("Please Specify a using &variable='...' ")
+            raise APIError("Please Specify a variable using &variable='...' ")
         if 'variable' in request.args:
             raise APIError("Please Specify a Dataset using &dataset='...' ")
         raise APIError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
@@ -356,6 +396,7 @@ def depth():
     return resp
 
 
+@app.route('/api/v1.0/obersvationvariables/')
 @app.route('/api/observationvariables/')    #Returns list of Observation variables
 def obs_vars_query():
     """
@@ -372,6 +413,7 @@ def obs_vars_query():
     return resp
 
 
+@app.route('/api/v1.0/variables/')
 @app.route('/api/variables/')   #Queries possible variables in a dataset
 def vars_query():
     """
@@ -476,6 +518,49 @@ def vars_query():
     return resp
 
 
+@app.route('/api/v1.0/timestamps/')
+def getTimeStamps():
+    """
+    API Format: /api/v1.0/timestamps/?dataset=' '
+
+    dataset : Desired Dataset
+    Finds all data times available for a specific dataset
+    """
+
+    #~~~~~
+    if 'dataset' not in request.args:
+        raise APIError("Please Specify a Dataset Using ?dataset='...' ")
+    #~~~~~
+
+    data = []
+    dataset = request.args['dataset']
+    quantum = request.args.get('quantum')
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for idx, date in enumerate(ds.timestamps):
+            if quantum == 'month':
+                date = datetime.datetime(
+                    date.year,
+                    date.month,
+                    15
+                )
+            
+            data.append(
+                {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)}
+            )
+    
+    data = sorted(data, key=lambda k:k['id'])
+
+    class DateTimeEncoder(json.JSONEncoder):
+    
+        def default(self, o):
+            if isinstance(o, datetime.datetime):
+                return o.isoformat()
+
+            return json.JSONEncoder.default(self, o)
+    js = json.dumps(data, cls=DateTimeEncoder)
+    resp = Response(js, status=200, mimetype='application/json')
+    return resp
+
 @app.route('/api/timestamps/')  #List all the time Stamps in the provided dataset
 def time_query():
     """
@@ -547,6 +632,7 @@ def timestamp_for_date(old_dataset, date, new_dataset):
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
+@app.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 @app.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale(dataset, variable, scale):
     """
@@ -588,6 +674,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 # Renders the map images and sends it to the browser
+@app.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 @app.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
     """
@@ -619,6 +706,7 @@ def tile_v0_1(projection, interp, radius, neighbours, dataset, variable, time, d
         return _cache_and_send_img(img, f)
 
 # Renders basemap
+@app.route('/api/v1.0/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 @app.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo(projection, zoom, x, y):
     """
@@ -637,6 +725,7 @@ def topo(projection, zoom, x, y):
 
 
 # Renders bathymetry contours
+@app.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 @app.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry(projection, zoom, x, y):
     """
@@ -652,7 +741,7 @@ def bathymetry(projection, zoom, x, y):
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
 
-
+@app.route('/api/v1.0/drifter/<string:q>/<string:drifter_id>')
 @app.route('/api/drifters/<string:q>/<string:drifter_id>')
 def drifter_query(q, drifter_id):
     """
@@ -677,7 +766,7 @@ def drifter_query(q, drifter_id):
     resp.cache_control.max_age = 3600
     return resp
 
-
+@app.route('/api/v1.0/class4/<string:q>/<string:class4_id>/<string:index>')
 @app.route('/api/class4/<string:q>/<string:class4_id>/<string:index>')
 def class4_query(q, class4_id, index):
     """
@@ -702,6 +791,7 @@ def class4_query(q, class4_id, index):
     resp.cache_control.max_age = 86400
     return resp
 
+@app.route('/api/v1.0/subset/')
 @app.route('/subset/')
 def subset_query():
     """
@@ -831,6 +921,7 @@ def subset_query():
             
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
+@app.route('/api/v1.0/plot/', methods=['GET', 'POST'])
 @app.route('/plot/', methods=['GET', 'POST'])
 def plot():
     """
@@ -945,7 +1036,7 @@ def plot():
 
     return response
 
-
+@app.route('/api/v1.0/stats/', methods=['GET', 'POST'])
 @app.route('/stats/', methods=['GET', 'POST'])
 def stats():
     """
