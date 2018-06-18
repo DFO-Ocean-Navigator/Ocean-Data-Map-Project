@@ -3,15 +3,15 @@ import json
 import oceannavigator
 import re
 import json
-from oceannavigator import app
+from flask import current_app
 
 _config = None # Hold global config dictionary
 
-def __get_dataset_config(configFile = app.config['datasetConfig']) -> dict:
+def __get_dataset_config() -> dict:
     global _config
     if _config is None:
         cwd = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(cwd, configFile), 'r') as f:
+        with open(os.path.join(cwd, current_app.config['datasetConfig']), 'r') as f:
             _config = json.load(f)
 
     return _config

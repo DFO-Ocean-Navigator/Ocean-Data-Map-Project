@@ -7,7 +7,7 @@ from oceannavigator.dataset_config import get_variable_name, get_variable_unit, 
     get_dataset_url, get_variable_scale_factor
 import pytz
 import dateutil.parser
-from oceannavigator import app
+from flask import current_app
 from plotting.plotter import Plotter
 from flask_babel import gettext
 from data import open_dataset
@@ -48,10 +48,7 @@ class DrifterPlotter(Plotter):
 
     @profileit
     def load_data(self):
-        
-        
-
-        ds_url = app.config['DRIFTER_URL']
+        ds_url = current_app.config['DRIFTER_URL']
         data_names = []
         data_units = []
         with Dataset(ds_url % self.drifter, 'r') as ds:

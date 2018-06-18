@@ -13,7 +13,7 @@ import pytz
 import numbers
 from flask_babel import gettext, format_datetime
 from data import open_dataset
-from oceannavigator import app
+from flask import current_app
 
 class ObservationPlotter(plPoint.PointPlotter):
 
@@ -25,7 +25,7 @@ class ObservationPlotter(plPoint.PointPlotter):
         if isinstance(self.observation[0], numbers.Number):
             self.observation_variable_names = []
             self.observation_variable_units = []
-            with Dataset(app.config["OBSERVATION_AGG_URL"], 'r') as ds:
+            with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
                 t = netcdftime.utime(ds['time'].units)
                 for idx, o in enumerate(self.observation):
                     observation = {}

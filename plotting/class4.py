@@ -6,7 +6,7 @@ import plotting.plotter as pl
 import matplotlib.gridspec as gridspec
 from textwrap import wrap
 from flask_babel import gettext
-from oceannavigator import app
+from flask import current_app
 
 class Class4Plotter(pl.Plotter):
 
@@ -35,7 +35,7 @@ class Class4Plotter(pl.Plotter):
 
     def load_data(self):
         indices = self.class4[:, 1].astype(int)
-        with Dataset(app.config["CLASS4_URL"] % self.class4[0][0], 'r') as ds:
+        with Dataset(current_app.config["CLASS4_URL"] % self.class4[0][0], 'r') as ds:
             self.latitude = ds['latitude'][indices]
             self.longitude = ds['longitude'][indices]
             self.ids = list(map(str.strip, chartostring(ds['id'][indices])))
@@ -77,7 +77,7 @@ class Class4Plotter(pl.Plotter):
         additional_model_names = []
         for m in self.models:
             additional_model_names.append(m.split("_")[2])
-            with Dataset(app.config["CLASS4_URL"] % m, 'r') as ds:
+            with Dataset(current_app.config["CLASS4_URL"] % m, 'r') as ds:
                 m_data = []
                 for i in indices:
                     data = []

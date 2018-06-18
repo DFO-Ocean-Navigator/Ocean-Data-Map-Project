@@ -8,7 +8,7 @@ import numpy as np
 import re
 import plotting.colormap as colormap
 import plotting.utils as utils
-from oceannavigator import app
+from flask import current_app
 from geopy.distance import VincentyDistance
 from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
@@ -285,7 +285,7 @@ class TransectPlotter(pl.LinePlotter):
                     """
 
         # Bathymetry
-        with Dataset(app.config['BATHYMETRY_FILE'], 'r') as dataset:
+        with Dataset(current_app.config['BATHYMETRY_FILE'], 'r') as dataset:
             bath_x, bath_y = bathymetry(
                 dataset.variables['y'],
                 dataset.variables['x'],

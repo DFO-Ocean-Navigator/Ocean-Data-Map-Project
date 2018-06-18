@@ -3,7 +3,7 @@ import pickle
 import hashlib
 import threading
 from cachetools import LRUCache
-from oceannavigator import app
+from flask import current_app
 import os
 import math
 
@@ -18,7 +18,7 @@ def convert_to_bounded_lon(lon):
     return bounded_lon
 
 def load_map(projection, center, height, width, min_lat=0):
-    CACHE_DIR = app.config['CACHE_DIR']
+    CACHE_DIR = current_app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
     def get_resolution(h, w):
