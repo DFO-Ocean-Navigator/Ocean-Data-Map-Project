@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from oceannavigator import dataset_config, create_app
+from oceannavigator import dataset_config
 
 class TestUtil(unittest.TestCase):
 

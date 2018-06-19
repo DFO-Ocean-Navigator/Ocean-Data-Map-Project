@@ -257,9 +257,10 @@ class Nemo(NetCDFData):
                 data = np.ma.array(data).reshape([len(time), d.shape[-2],
                                                   d.shape[-1]])
             else:
-                data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                data = np.ma.MaskedArray(np.zeros(d.values.shape[1:]),
                                          mask=True,
-                                         dtype=d.dtype)
+                                         dtype=d.values.dtype)
+
                 data[np.unravel_index(indices, data.shape)] = \
                     reshaped[depths, indices]
 
@@ -267,7 +268,7 @@ class Nemo(NetCDFData):
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
                 latitude, longitude,
-                data.values,
+                data,
             )
 
             if return_depth:
