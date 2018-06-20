@@ -51,6 +51,7 @@ from data import open_dataset
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
+
 """
 
 """
@@ -65,9 +66,6 @@ Range Query V0.1
 """
 def range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
-    
-    print("TIME: "),
-    print(time)
 
     min, max = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours)
@@ -816,7 +814,7 @@ def subset_query_impl(args):
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
 
-def plot_impl(args):
+def plot_impl(args, query = None):
     """
     API Format: /plot/?query='...'&format
 
@@ -834,12 +832,11 @@ def plot_impl(args):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
-
-    if 'query' not in args:
-        raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
+    if query == None:
+        if 'query' not in args:
+            raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
+        query = json.loads(args.get('query'))
     
-    query = json.loads(args.get('query'))
-
     if ("format" in args and args.get("format") == "json"):
         # Generates a Base64 encoded string
         def make_response(data, mime):
@@ -923,7 +920,7 @@ def plot_impl(args):
     return response
 
 
-def stats_impl(args):
+def stats_impl(args, query = None):
     """
     API Format: /stats/?query='...'
 
@@ -937,14 +934,14 @@ def stats_impl(args):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
-
-    #Invalid API Check
-    if 'query' not in args: #Invalid API Check
-        raise APIError("A Query must be specified in the form /stats/?query='...' ")
-
-    #Retrieves Query as JSON based on Request Method
-    query = json.loads(args.get('query'))
+    if query == None:
+        #Invalid API Check
+        if 'query' not in args: #Invalid API Check
+            raise APIError("A Query must be specified in the form /stats/?query='...' ")
+        #Retrieves Query as JSON based on Request Method
+        query = json.loads(args.get('query'))
     
+    print(query)
 
     dataset = query.get('dataset')  #Retrieves dataset from query
 

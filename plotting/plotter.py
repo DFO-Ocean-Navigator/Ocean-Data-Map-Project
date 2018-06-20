@@ -45,7 +45,6 @@ class Plotter(metaclass=ABCMeta):
 
     # Called by views.py to parse query, load data, and return the generated file
     # to be displayed by Javascript.
-    @profileit
     def run(self, **kwargs):
         if 'size' in kwargs and kwargs.get('size') is not None:
             self.size = kwargs.get('size')

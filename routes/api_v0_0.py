@@ -50,9 +50,8 @@ def handle_error_v0(error):
 
 
 @bp_v0_0.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query_v0(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
-    print("hello")
-    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
+def range_query_v0(interp, radius, neighbours, dataset, projection, extent, depth, time, variable):
+  return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
 
 
 @bp_v0_0.route('/api/')

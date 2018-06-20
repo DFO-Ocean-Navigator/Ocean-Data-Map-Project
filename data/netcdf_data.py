@@ -32,24 +32,34 @@ class NetCDFData(Data):
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
 
+
+    #
+    # Converts ISO 8601 Extended date, to the corresponding dataset time index
+    #
     def convert_to_timestamp(self, date):
-        # Time is in ISO 8601 format
+        
+        # Time is in ISO 8601 Extended format
         # Get time index from dataset
         time_range = [dateutil.parser.parse(x) for x in date.split(',')]
         time_var = self.__get_time_variable()
         time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
-       
-        date_formatted = {}
-        i = 0
-        print(date.split(','))
-        for x in date.split(','):
-            new_date = {x : str(time_range[i][0])}
-            date_formatted.update(new_date)
-            i += 1
-            print(date_formatted)
-        return date_formatted
 
+        #~~~~~~~~~~~~~~~~~~
+        # Format and return
+        if len(time_range) == 1:    #Single Date
+            return int(str(time_range[0][0]))       #Returns as Int
+        else:                          #Multiple Dates
+            date_formatted = {} #Initialize dictionary
+            i = 0
+            for x in date.split(','):   # x is a single date
+                new_date = {x : int(str(time_range[i][0]))}
+                date_formatted.update(new_date)     #Add Next pair
+                i += 1
+            return date_formatted                   #Returns as Key Value pair
+        #~~~~~~~~~~~~~~~~~~
+        
+        
     """
         Subsets a netcdf file with all depths
     """
