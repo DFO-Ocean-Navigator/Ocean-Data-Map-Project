@@ -44,14 +44,40 @@ import routes.routes_impl
 bp_v0_0 = Blueprint('api_v0_0', __name__)      #Creates the blueprint for the api queries
 
 
+
 @bp_v0_0.errorhandler(ErrorBase)
 def handle_error_v0(error):
-    return handle_error_impl(error)
+    return routes.routes_impl.handle_error_impl(error)
+
+def timestamp_outOfBounds(dataset, time):
+    """
+    API Format: /api/timestamps/?dataset=' '
+
+    dataset : Dataset to extract data - Can be found using /api/datasets
+
+    Finds all data timestamps available for a specific dataset
+    """
+    data = []
+
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for idx, date in enumerate(ds.timestamps):
+            data.append(
+                {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
+    data = sorted(data, key=lambda k: k['id'])
+
+    if (time >= data[0]['id'] and time <= data[len(data) - 1]['id']):
+        return False
+    else:
+        return True
 
 
 @bp_v0_0.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
 def range_query_v0(interp, radius, neighbours, dataset, projection, extent, depth, time, variable):
-  return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
+  
+    if (timestamp_outOfBounds(dataset, time)):
+        raise ValueError
+
+    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
 
 
 @bp_v0_0.route('/api/')
@@ -71,6 +97,8 @@ def query_id_v0(q, q_id):
 
 @bp_v0_0.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
 def get_data_v0(dataset, variable, time, depth, location):
+    if (timestamp_outOfBounds(dataset, time)):
+        raise ValueError
     return routes.routes_impl.get_data_impl(dataset, variable, time, depth, location)
 
 
@@ -121,6 +149,7 @@ def time_query_v0():
 
 @bp_v0_0.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date_v0(old_dataset, date, new_dataset):
+
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
@@ -131,6 +160,10 @@ def scale_v0(dataset, variable, scale):
 
 @bp_v0_0.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v0(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+    
+    if (timestamp_outOfBounds(dataset, time)):
+        raise ValueError
+    
     return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
 
 
@@ -162,16 +195,28 @@ def subset_query_v0():
 @bp_v0_0.route('/plot/', methods=['GET', 'POST'])
 def plot_v0():
     if request.method == "GET":
+        query = json.loads(request.args.get('query'))
+        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
+            raise ValueError
         return routes.routes_impl.plot_impl(request.args)
     else:
+        query = json.loads(request.form.get('query'))
+        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
+            raise ValueError
         return routes.routes_impl.plot_impl(request.form)
 
 
 @bp_v0_0.route('/stats/', methods=['GET', 'POST'])
 def stats_v0():
     if request.method == "GET":
+        query = json.loads(request.args.get('query'))
+        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
+            raise ValueError
         return routes.routes_impl.stats_impl(request.args)
     else:
+        query = json.loads(request.form.get('query'))
+        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
+            raise ValueError
         return routes.routes_impl.stats_impl(request.form)
 
 

@@ -115,7 +115,7 @@ def query_impl(q):
     return resp
 
 
-def query_id(q, q_id):
+def query_id_impl(q, q_id):
     """
     API Format: /api/<string:q>/<string:q_id>.json'
 
@@ -154,7 +154,6 @@ def get_data_impl(dataset, variable, time, depth, location):
         dataset, variable, time, depth,
         list(map(float, location.split(",")))
     )
-    
     resp = jsonify(data)
     resp.cache_control.max_age = 2
     return resp
@@ -176,7 +175,6 @@ def query_file_impl(q, projection, resolution, extent, file_id):
 
     data = []
     max_age = 86400
-
 
     if q == 'points':
         data = utils.misc.points(
