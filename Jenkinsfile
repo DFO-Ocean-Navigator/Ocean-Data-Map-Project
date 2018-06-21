@@ -24,8 +24,7 @@ npm --prefix $frontend_dir run build'''
 
 py=/opt/tools/miniconda3/bin/python
 
-$py -m unittest tests/test_geo.py
-$py -m unittest tests/test_nemo.py'''
+$py -m unittest tests/test_geo.py'''
         }
 
       }
