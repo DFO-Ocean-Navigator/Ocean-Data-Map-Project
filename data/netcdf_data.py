@@ -129,6 +129,9 @@ class NetCDFData(Data):
             if variable not in output_vars:
                 subset = subset.drop(variable)
 
+        if query.get('user_grid'):
+            print("convert to user grid..ugh")
+
         output_format = query.get('output_format')
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
