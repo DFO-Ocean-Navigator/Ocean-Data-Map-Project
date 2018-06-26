@@ -86,8 +86,10 @@ class NetCDFData(Data):
                 top_right[0], top_right[1], self._dataset, self._dataset.variables[lat], self._dataset.variables[lon]
             )
 
-            y_slice = slice(ymin_index, ymax_index)
-            x_slice = slice(xmin_index, xmax_index)
+            # Compute min/max for each slice in case the values are flipped
+            # the netCDF4 module does not support unorder slices
+            y_slice = slice(min(ymin_index, ymax_index), max(ymin_index, ymax_index))
+            x_slice = slice(min(xmin_index, xmax_index), max(xmin_index, xmax_index))
 
             # Get nicely formatted bearings
             p0 = geopy.Point(bottom_left)
