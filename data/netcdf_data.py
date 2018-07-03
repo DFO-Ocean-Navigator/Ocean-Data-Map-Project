@@ -150,6 +150,8 @@ class NetCDFData(Data):
 
         # "Special" output
         if output_format == "NETCDF3_NC":
+            # Regrids an input data array according to it's input grid definition
+            # to the output definition
             def regrid( data: np.ndarray,
                         input_def: pyresample.geometry.SwathDefinition,
                         output_def: pyresample.geometry.SwathDefinition):
