@@ -80,7 +80,7 @@ def generateScript(url, type):
     script.write("query = {\n")
     for x in url:
       print(x)
-      print(type(url.get(x)))
+      #print(type(url.get(x)))
       if isinstance(url.get(x), str):
         script.write('  "' + x + '": "' + str(url.get(x)) + '"' + ",\n" )
       else:
@@ -121,7 +121,6 @@ def generateScript(url, type):
   
   resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
   return resp
-
 
 #
 # Unchanged from v0.0
