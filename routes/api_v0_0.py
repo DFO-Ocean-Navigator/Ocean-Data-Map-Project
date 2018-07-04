@@ -27,7 +27,6 @@ from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
 from plotting.stats import stats as areastats
-from plotting.scripter import constructScript
 import plotting.colormap
 import plotting.tile
 import plotting.scale
@@ -65,7 +64,7 @@ def timestamp_outOfBounds(dataset, time):
                 {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
     data = sorted(data, key=lambda k: k['id'])
 
-    if (time >= data[0]['id'] and time <= data[len(data) - 1]['id']):
+    if (time <= data[len(data) - 1]['id']):
         return False
     else:
         return True
@@ -196,8 +195,8 @@ def subset_query_v0():
 def plot_v0():
     if request.method == "GET":
         query = json.loads(request.args.get('query'))
-        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
-            raise ValueError
+        #if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
+            #raise ValueError
         return routes.routes_impl.plot_impl(request.args)
     else:
         query = json.loads(request.form.get('query'))

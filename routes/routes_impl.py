@@ -36,7 +36,6 @@ from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
 from plotting.stats import stats as areastats
-from plotting.scripter import constructScript
 import plotting.colormap
 import plotting.tile
 import plotting.scale
@@ -75,14 +74,6 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
     })
     resp.cache_control.max_age = MAX_CACHE
     return resp
-
-
-#@bp.route('/api/generatescript/')
-#def generateScript():
-#    
-#    strIO = io.StringIO()
-#    strIO.write("HELLO WORLD")
-#    strIO.seek(0)
 
 
 def info_impl():
