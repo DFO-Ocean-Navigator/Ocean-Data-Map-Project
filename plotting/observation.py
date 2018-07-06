@@ -1,22 +1,21 @@
 from netCDF4 import Dataset, netcdftime
 import matplotlib.pyplot as plt
 import numpy as np
-import utils
+import plotting.utils
+import plotting.point as plPoint
 from textwrap import wrap
 import pint
-from oceannavigator.util import get_dataset_url
-from oceannavigator.errors import ClientError
+from oceannavigator.dataset_config import get_dataset_url
+from utils.errors import ClientError
 import re
 import dateutil.parser
 import pytz
-import point
 import numbers
 from flask_babel import gettext, format_datetime
 from data import open_dataset
-from oceannavigator import app
+from flask import current_app
 
-
-class ObservationPlotter(point.PointPlotter):
+class ObservationPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "observation"
@@ -26,7 +25,7 @@ class ObservationPlotter(point.PointPlotter):
         if isinstance(self.observation[0], numbers.Number):
             self.observation_variable_names = []
             self.observation_variable_units = []
-            with Dataset(app.config["OBSERVATION_AGG_URL"], 'r') as ds:
+            with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
                 t = netcdftime.utime(ds['time'].units)
                 for idx, o in enumerate(self.observation):
                     observation = {}
@@ -61,8 +60,7 @@ class ObservationPlotter(point.PointPlotter):
                     observation['data'] = np.ma.array(data).transpose()
                     self.observation[idx] = observation
 
-                self.points = map(lambda o: [o['latitude'], o['longitude']],
-                                  self.observation)
+                self.points = [[o['latitude'], o['longitude']] for o in self.observation]
 
         with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
             ts = dataset.timestamps
@@ -108,15 +106,11 @@ class ObservationPlotter(point.PointPlotter):
     def parse_query(self, query):
         super(ObservationPlotter, self).parse_query(query)
 
-        observation_variable = map(int, query.get("observation_variable"))
+        observation_variable = list(map(int, query.get("observation_variable")))
         observation = query.get("observation")
         if not isinstance(observation[0], numbers.Number):
-            observation_variable_names = map(
-                lambda x: re.sub(r" \[.*\]", "", x),
-                observation[0]['datatypes'])
-            observation_variable_units = map(
-                lambda x: re.match(r".*\[(.*)\]", x).group(1),
-                observation[0]['datatypes'])
+            observation_variable_names = [re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
+            observation_variable_units = [re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
 
             self.parse_names_points(
                 [str(o.get('station')) for o in observation],
@@ -182,7 +176,7 @@ class ObservationPlotter(point.PointPlotter):
                 unit_map[
                     self.observation_variable_names[idx]] = ureg.dimensionless
 
-        for k, v in unit_map.iteritems():
+        for k, v in list(unit_map.items()):
             if v == ureg.speed_of_light:
                 unit_map[k] = ureg.celsius
 
@@ -250,25 +244,28 @@ class ObservationPlotter(point.PointPlotter):
 
         ax[0].invert_yaxis()
         ax[0].set_ylabel(gettext("Depth (m)"))
-
-        if len(self.variables) > 0:
-            plt.suptitle("\n".join(
-                wrap(
-                    gettext("Profile for %s, Observed at %s, Modelled at %s")
-                    % (
-                        ", ".join(self.names),
-                        format_datetime(self.observation_time),
-                        format_datetime(self.timestamp)
-                    ), 80)
-            ))
-        else:
-            plt.suptitle("\n".join(
-                wrap(
-                    gettext("Profile for %s (%s)") % (
-                        ", ".join(self.names),
-                        format_datetime(self.observation_time)
-                    ), 80)
-            ))
+        
+        if self.plotTitle is None or self.plotTitle == "": 
+            if len(self.variables) > 0:
+                plt.suptitle("\n".join(
+                    wrap(
+                        gettext("Profile for %s, Observed at %s, Modelled at %s")
+                        % (
+                            ", ".join(self.names),
+                            format_datetime(self.observation_time),
+                            format_datetime(self.timestamp)
+                        ), 80)
+                ))
+            else:
+                plt.suptitle("\n".join(
+                    wrap(
+                        gettext("Profile for %s (%s)") % (
+                            ", ".join(self.names),
+                            format_datetime(self.observation_time)
+                        ), 80)
+                ))
+        else :
+            plt.suptitle(self.plotTitle,fontsize=15)
 
         fig.tight_layout()
         fig.subplots_adjust(top=0.85)

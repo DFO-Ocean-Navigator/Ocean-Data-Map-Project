@@ -1,9 +1,9 @@
 import numpy as np
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url, get_variable_scale_factor
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union
-from oceannavigator.misc import list_areas
+from utils.misc import list_areas
 import json
 from operator import itemgetter
 import re
@@ -11,7 +11,7 @@ from flask_babel import gettext
 from data import open_dataset
 import math
 import copy
-from oceannavigator.errors import ClientError, ServerError
+from utils.errors import ClientError, ServerError
 
 class Area:
     def __init__(self, query):
@@ -129,7 +129,7 @@ class Stats:
                 else:
                     variable_depth = "(@%d m)" % np.round(depthm)
 
-                points = [Point(p) for p in zip(lat.ravel(), lon.ravel())]
+                points = [Point(p) for p in zip(lat.values.ravel(), lon.values.ravel())]
 
                 for i, a in enumerate(area_info.area_query):
                     indices = np.where(
@@ -139,7 +139,7 @@ class Stats:
                         )
                     )
 
-                    selection = np.ma.array(d.ravel()[indices])
+                    selection = np.ma.array(d.values.ravel()[indices])
                     if len(selection) > 0 and not selection.mask.all():
                         area_info.output[i]['variables'].append({
                             'name': ("%s %s" % (variable_name,
@@ -261,7 +261,7 @@ def wrap_computer_stats(query, dataset_name, lon_values):
     elif any(p < -180 for p in lon_values):     #points to the west of the west dateline
         wrap_val=-180
     else:
-        raise ClientError(gettext("something went wrong. It seems you trying to create a plot across the international date line." + 
+        raise ClientError(gettext("something went wrong. It seems you are trying to create a plot across the international date line." + 
                                 "While we do support this function it must be done within 360 deg of the default map view. Try refreshing the page and try again"))
     
     variables = query.get('variable')
@@ -344,8 +344,7 @@ def stats(dataset_name, query):
         data = None
 
         for idx, a in enumerate(area):
-            if isinstance(a, str) or isinstance(a, unicode):
-                a = a.encode("utf-8")
+            if isinstance(a, str):
                 sp = a.split('/', 1)
                 if data is None:
                     data = list_areas(sp[0], simplify=False)
@@ -357,10 +356,10 @@ def stats(dataset_name, query):
         points_lat =[]
         for p in area[0]['polygons'][0]:
             points_lat.append(p[1])
-    except:
+    except Exception as e:
         raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
-                        Please try again or try something else. If you would like to report \
-                        this error please contact oceandatamap@gmail.com")) 
+                                Please try again or try something else. If you would like to report \
+                                this error please contact oceandatamap@gmail.com. ") + str(e))
     
     if (max(points_lat)-min(points_lat))>360:
         raise ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
@@ -372,4 +371,4 @@ def stats(dataset_name, query):
 
     raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                         Please try again or try something else. If you would like to report \
-                        this error please contact oceandatamap@gmail.com")) 
+                        this error please contact oceandatamap@gmail.com"))

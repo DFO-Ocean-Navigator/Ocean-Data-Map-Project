@@ -4,16 +4,16 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 import seawater
 import pint
-import ts
-import utils
+import plotting.utils as utils
+import plotting.ts as plTS
 from flask_babel import gettext
 
-class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
+class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "sound"
         super(
-            ts.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
+            plTS.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                           format)
         #self.size = '4x8'
 
@@ -56,9 +56,14 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
-        ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-            ", ".join(self.names), self.date_formatter(self.timestamp)
-        ), fontsize=15)
+
+        if self.plotTitle is None or self.plotTitle == "":  
+            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                ", ".join(self.names), self.date_formatter(self.timestamp)
+            ), fontsize=15)
+        else :
+            ax.set_title(self.plotTitle,fontsize=15)
+        
         ax.title.set_position([.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)
@@ -71,7 +76,7 @@ class SoundSpeedPlotter(ts.TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        return super(ts.TemperatureSalinityPlotter, self).plot(fig)
+        return super(plTS.TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
         header = [

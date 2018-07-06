@@ -1,3 +1,5 @@
+/* eslint react/no-deprecated: 0 */
+
 import React from "react";
 import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";

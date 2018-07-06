@@ -1,7 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import {Alert, DropdownButton, MenuItem, Link, Button} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import {Alert, Button} from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -25,12 +23,12 @@ export default class WarningBar extends React.Component {
     if(this.state.show){
       return (
         
-            <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
+        <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
               Please note we have found a bug related to velocity representation on the Ocean Navigator 
               (in particular with direction). We are working on a correction. 
               You may <Button bsStyle="link" onClick={this.props.showWarningInfo}>click here</Button> 
               for further detail. 
-            </Alert>
+        </Alert>
             
       );
     }

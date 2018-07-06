@@ -6,25 +6,25 @@ from scipy.ndimage.filters import gaussian_filter
 import hashlib
 from cachetools import LRUCache
 import threading
-from oceannavigator import app
+from flask import current_app
 import os
 
 _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
 
 
 def bathymetry(basemap, target_lat, target_lon, blur=None):
-    CACHE_DIR = app.config['CACHE_DIR']
-    BATHYMETRY_FILE = app.config['BATHYMETRY_FILE']
+    CACHE_DIR = current_app.config['CACHE_DIR']
+    BATHYMETRY_FILE = current_app.config['BATHYMETRY_FILE']
 
     if basemap is None:
         fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
     else:
         fname = basemap.filename
 
-    hashed = hashlib.sha1(fname +
+    hashed = hashlib.sha1("".join(fname +
                           str(target_lat.shape) +
                           str(target_lon.shape)
-                          ).hexdigest()
+                          ).encode()).hexdigest()
     if _bathymetry_cache.get(hashed) is None:
         try:
             data = np.load(CACHE_DIR + "/" + hashed + ".npy")

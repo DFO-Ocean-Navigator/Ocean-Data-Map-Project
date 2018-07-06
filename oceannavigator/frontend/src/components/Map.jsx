@@ -1,3 +1,4 @@
+/* eslint react/no-deprecated: 0 */
 import React from "react";
 import ol from "openlayers";
 import PropTypes from "prop-types";

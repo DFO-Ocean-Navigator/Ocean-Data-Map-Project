@@ -1,3 +1,5 @@
+/* eslint react/no-deprecated: 0 */
+
 import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
@@ -9,6 +11,7 @@ const i18n = require("../i18n.js");
 
 export default class ComboBox extends React.Component {
   constructor(props) {
+
     super(props);
     
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
@@ -26,12 +29,12 @@ export default class ComboBox extends React.Component {
   }
 
   componentDidMount() {
-    this._mounted = true;
+    this._mounted = true;   //Component mounted
     this.populate(this.props);
   }
 
   componentWillUnmount() {
-    this._mounted = false;
+    this._mounted = false;  //Component not mounted
   }
 
   componentWillReceiveProps(nextProps) {
@@ -81,22 +84,29 @@ export default class ComboBox extends React.Component {
     }
   }
 
-  // Load options into dropdown
+  // Populates Drop down menu
   populate(props) {
     
     this.setState({
       url: props.url
     });
 
-    if ("url" in props && "" !== props.url) {
+    
+    if ("url" in props && "" !== props.url) /* Checks if URL exists and is not empty */ {
       $.ajax({
         url: props.url,
         dataType: "json",
         cache: true,
         
+        //If server returns status code of 200 / it worked - Ajax call successful
+        //
+        // data filled by ajax
+        //
         success: function (data) {
-          if (this._mounted) {
-            const ids = data.map(function (d) { return d.id; });
+          if (this._mounted) {  //Combobox is mounted
+
+            const ids = data.map(function (d) { return d.id;});  //stores data id
+  
             if (
               (this.props.state == "" && typeof(this.props.state) == "string") ||
               this.props.state == "none"
@@ -209,12 +219,14 @@ export default class ComboBox extends React.Component {
     }
   }
 
+  //Small help icon - OPENS
   showHelp() {
     this.setState({
       showHelp: true
     });
   }
 
+  //Small help icon - CLOSES
   closeHelp() {
     this.setState({
       showHelp: false
@@ -222,12 +234,16 @@ export default class ComboBox extends React.Component {
   }
 
   render() {
+
+    //Creates one drop down function for each option sent back
     const options = this.state.data.map(function(o) {
       var opts = {
         key: o.id,
         value: o.id,
       };
 
+
+      //Checks if each value in data has id or value
       for (let key in o) {
         if (key == "id" || key == "value") {
           continue;
@@ -236,7 +252,7 @@ export default class ComboBox extends React.Component {
           opts["data-" + key] = o[key];
         }
       }
-      return React.createElement("option", opts, o.value);
+      return React.createElement("option", opts, o.value);    //Creates Option that was found
     });
 
     if (this.state.data.length > 1) {
@@ -328,5 +344,6 @@ ComboBox.propTypes = {
                             ]),
   onUpdate: PropTypes.func,
   id: PropTypes.string,
+  url: PropTypes.string,
 };
 
