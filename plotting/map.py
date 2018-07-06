@@ -108,7 +108,7 @@ class MapPlotter(pl.Plotter):
                 quad3=True
             elif 90<=p[1]<=180:
                 quad4=True
-            if sum(bool(True) for True in [quad1, quad2, quad3, quad4]) >= 3: # selected area covers (or almost covers) a pole 
+            if np.sum([quad1, quad2, quad3, quad4]) >= 3: # selected area covers (or almost covers) a pole 
                 covers_pole = True                  
         return near_pole, covers_pole
 
