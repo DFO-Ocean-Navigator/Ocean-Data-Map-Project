@@ -35,6 +35,7 @@ import os
 import netCDF4
 import base64
 import pytz
+from plotting.scriptGenerator import scriptGenerator
 from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
@@ -53,71 +54,9 @@ def generateScript(url, type):
   print(url)
 
   if type == "python":
-    #setup file
-    #script = io.BytesIO()
-    script = io.StringIO()
-
-    #FILE CONTENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    #HEADER---------------------
-
-    script.write("from urllib.request import urlopen\n")
-    script.write("from urllib.parse import urlencode\n")
-    script.write("from contextlib import closing\n")
-    script.write("from PIL import Image\n")
-    script.write("import json\n")
-    script.write("\n\n")
-
-    #Set Navigators URL
-    script.write("#Set Navigator URL\n")
-    script.write('base_url = "http://navigator.oceansdata.ca/plot/?"\n\n')
-
-    #---------------------------
-
-    #CREATE JSON OBJECT---------
-
-    script.write("#Create JSON Object\n")
-    script.write("query = {\n")
-    for x in url:
-      print(x)
-      #print(type(url.get(x)))
-      if isinstance(url.get(x), str):
-        script.write('  "' + x + '": "' + str(url.get(x)) + '"' + ",\n" )
-      else:
-        script.write('  "' + x + '": ' + str(url.get(x)) + ",\n")
-      print(url.get(x))
-    script.write("}\n")
-    #---------------------------
-
-
-
-    #Assemble full request
-    script.write('\n#Assemble full request - converts json object to url\n')
-    script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
-    script.write("print(url)")
-
-
-
-    #Open URL and read response
-    script.write("\n#Open URL and save response\n")
-    script.write("with closing(urlopen(url)) as f:\n")
-    script.write("  img = Image.open(f)\n")
-    script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["time"]) + ".png" , "PNG")\n')
-
-
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    #CONVERT TO BytesIO TO SEND
-    b = io.BytesIO()
-    script.seek(0)
-    b.write(bytes(script.read(),'utf-8'))
-    b.seek(0)
-    print("B: ")
-    print(b.read())
-    b.seek(0)
-
+    b = scriptGenerator.generatePython(url)
   elif type == "r":
-    return json.dumps("Under Construction")
+    b = scriptGenerator.generateR(url)
   
   resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
   return resp
