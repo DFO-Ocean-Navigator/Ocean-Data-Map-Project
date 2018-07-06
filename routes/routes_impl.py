@@ -696,7 +696,7 @@ def subset_query_impl(args):
             subset.to_netcdf(working_dir + filename + ".nc", format="NETCDF3_CLASSIC")
 
             # Open the GIOPS NCOM file
-            g this.loadImage(this.generateQuery(this.props.query));iops_file = netCDF4.Dataset(working_dir + filename + ".nc")
+            giops_file = netCDF4.Dataset(working_dir + filename + ".nc")
             giops_variables = giops_file.variables
                 
             # Create converted ncdf file

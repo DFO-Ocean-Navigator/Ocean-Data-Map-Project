@@ -214,7 +214,7 @@ class Mercator(NetCDFData):
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
 
-            reshaped = d.reshape([d.shape[0], -1])
+            reshaped = d.values.reshape([d.shape[0], -1])
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
             depths = edges[1, 0, :]
@@ -244,7 +244,7 @@ class Mercator(NetCDFData):
                 self.latvar[miny:maxy],
                 np.mod(self.lonvar[minx:maxx] + 360, 360),
                 [latitude], [longitude],
-                data.values,
+                data,
                 radius
             )
 

@@ -2,14 +2,14 @@ import unittest
 from unittest.mock import MagicMock, patch 
 import os
 import numpy as np
-from utils import misc
+from utils.misc import *
 
 class TestMisc(unittest.TestCase):
-
+    
     @patch("utils.misc._get_kml")
     def test_points(self, m):
         m.return_value = MagicMock(), None
-        result = misc.points("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = points("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
@@ -23,7 +23,7 @@ class TestMisc(unittest.TestCase):
         folder.Placemark[1].Point.coordinates.text = "1,2"
 
         m.return_value = folder, None
-        result = misc.points("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = points("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 1)
@@ -46,7 +46,7 @@ class TestMisc(unittest.TestCase):
     @patch("utils.misc._get_kml")
     def test_lines(self, m):
         m.return_value = MagicMock(), None
-        result = misc.lines("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = lines("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
@@ -60,7 +60,7 @@ class TestMisc(unittest.TestCase):
         folder.Placemark[1].LineString.coordinates.text = "1,2 3,4"
 
         m.return_value = folder, None
-        result = misc.lines("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = lines("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 1)
@@ -83,7 +83,7 @@ class TestMisc(unittest.TestCase):
     @patch("utils.misc._get_kml")
     def test_areas(self, m):
         m.return_value = MagicMock(), None
-        result = misc.areas("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = areas("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 0)
@@ -102,7 +102,7 @@ class TestMisc(unittest.TestCase):
         folder.Placemark[1].Point.coordinates.text = "1,2"
 
         m.return_value = folder, None
-        result = misc.areas("fid", "EPSG:3857", 0, "-10,-10,10,10")
+        result = areas("fid", "EPSG:3857", 0, "-10,-10,10,10")
 
         self.assertTrue(result['type'], 'FeatureCollection')
         self.assertEqual(len(result['features']), 1)
@@ -143,7 +143,7 @@ class TestMisc(unittest.TestCase):
             "testdata"
         )
 
-        result = misc.list_kml_files("point")
+        result = list_kml_files("point")
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], {
@@ -158,7 +158,7 @@ class TestMisc(unittest.TestCase):
             "testdata"
         )
 
-        result = misc.list_areas("test_areas")
+        result = list_areas("test_areas")
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], {
@@ -177,7 +177,7 @@ class TestMisc(unittest.TestCase):
 
     @patch("utils.misc.Dataset")
     def test_drifter_meta(self, dataset):
-        result = misc.drifter_meta()
+        result = drifter_meta()
         self.assertEqual(result, {
             'imei': {},
             'wmo': {},
@@ -191,7 +191,7 @@ class TestMisc(unittest.TestCase):
             'deployment': [['DEP']],
         }
         with patch("utils.misc.chartostring", new=lambda x: x):
-            result = misc.drifter_meta()
+            result = drifter_meta()
 
         self.assertEqual(result, {
             'imei': {'IME': ['abcd']},
