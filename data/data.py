@@ -1,18 +1,20 @@
 import abc
 import numpy as np
-import geo
+import data.geo as geo
 from scipy.interpolate import interp1d
 
 __author__ = 'Geoff Holden'
 
-
-class Data(object):
-
-    """Abstract base class for data access"""
-    __metaclass__ = abc.ABCMeta
+"""
+    Abstract base class for data access
+"""
+class Data(object, metaclass=abc.ABCMeta):
 
     def __init__(self, url):
-        self.url = url
+        self.url: str = url
+        self.interp: str = "gaussian"
+        self.radius: int = 25000 # radius in meters
+        self.neighbours: int = 10
 
     @abc.abstractmethod
     def __enter__(self):
@@ -110,7 +112,7 @@ class Data(object):
         longitude = area[1, :].ravel()
 
         self.interp = interp
-        self.radius = radius * 1000 # Convert km to m
+        self.radius = radius
         self.neighbours = neighbours
 
         if return_depth:
@@ -125,26 +127,29 @@ class Data(object):
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
                              endtime, variable, return_depth=False):
         return self.get_point(latitude, longitude, depth,
-                              range(starttime, endtime + 1),
+                              list(range(starttime, endtime + 1)),
                               variable, return_depth=return_depth)
 
     def get_timeseries_profile(self, latitude, longitude, starttime,
                                endtime, variable):
         return self.get_profile(latitude, longitude,
-                                range(starttime, endtime + 1),
+                                list(range(starttime, endtime + 1)),
                                 variable)
 
-
+"""
+    Wrapper around a netCDF variable.
+    Provides a common interface between dataset types (xarray vs netCDF4)
+"""
 class Variable(object):
 
     def __init__(self, key, name, unit, dimensions, valid_min=None,
                  valid_max=None):
-        self._key = key
-        self._name = name
-        self._unit = unit
-        self._dimensions = dimensions
-        self._valid_min = valid_min
-        self._valid_max = valid_max
+        self._key: str = key
+        self._name: str = name
+        self._unit: str = unit
+        self._dimensions: tuple = dimensions
+        self._valid_min: [int, float] = valid_min
+        self._valid_max: [int, float] = valid_max
 
     @property
     def key(self):
@@ -187,7 +192,7 @@ class Variable(object):
 class VariableList(list):
 
     def __getitem__(self, pos):
-        if isinstance(pos, basestring):
+        if isinstance(pos, str):
             for v in self:
                 if v.key == pos:
                     return v
@@ -198,7 +203,7 @@ class VariableList(list):
             return super(VariableList, self).__getitem__(pos)
 
     def __contains__(self, key):
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             for v in self:
                 if v.key == key:
                     return True

@@ -166,7 +166,7 @@ with Dataset(outfile, "w", format='NETCDF4') as ds:
             'ph': ph_var,
         }
 
-        for name, var in mapping.iteritems():
+        for name, var in mapping.items():
             if name in f.dataframe.columns.values:
                 g = interp1d(
                     f.dataframe['depth'],

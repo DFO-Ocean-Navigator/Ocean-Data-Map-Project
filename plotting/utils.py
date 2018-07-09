@@ -2,7 +2,7 @@ import numpy as np
 import re
 import datetime
 from mpl_toolkits.basemap import Basemap
-
+from utils.errors import ClientError, ServerError
 
 def get_filename(plot_type, dataset_name, extension):
     outname = [
@@ -63,7 +63,7 @@ def normalize_scale(data, name, unit):
 
 def mathtext(text):
     if text in ['Celsius', 'degree_Celsius']:
-        text = u'\u00b0C'
+        text = '\u00b0C'
     if re.search(r"-[0-9]", text):
         text = re.sub(r" ([^- ])-1", r"/\1", text)
         text = re.sub(r" ([^- ])-([2-9][0-9]*)", r"/\1^\2", text)
@@ -127,20 +127,23 @@ def _map_plot(points, path=True, quiver=True):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
 
     # Draw a realistic background "blue marble"
-    m.bluemarble()
-
-    m.drawparallels(
-        np.arange(
-            round(minlat),
-            round(maxlat),
-            round(lat_d / 1.5)
-        ), labels=[0, 1, 0, 0])
-    m.drawmeridians(
-        np.arange(
-            round(minlon),
-            round(maxlon),
-            round(lon_d / 1.5)
-        ), labels=[0, 0, 0, 1])
+    try:
+        m.bluemarble()
+    
+        m.drawparallels(
+            np.arange(
+                round(minlat),
+                round(maxlat),
+                round(lat_d / 1.5)
+            ), labels=[0, 1, 0, 0])
+        m.drawmeridians(
+            np.arange(
+                round(minlon),
+                round(maxlon),
+                round(lon_d / 1.5)
+            ), labels=[0, 0, 0, 1])
+    except:
+        raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
 
 
 def point_plot(points):
@@ -172,13 +175,3 @@ def get_latlon_vars(dataset):
         _find_var(dataset, ['nav_lon', 'longitude']),
     )
 
-
-def get_interpolation(query):
-    interp = query.get('interpolation')
-    if interp is None or interp == '':
-        interp = {
-            'method': 'inv_square',
-            'neighbours': 8,
-        }
-
-    return interp

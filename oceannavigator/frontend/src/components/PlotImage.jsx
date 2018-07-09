@@ -1,3 +1,5 @@
+/* eslint react/no-deprecated: 0 */
+
 import React from "react";
 import {Button,
   DropdownButton,
@@ -33,6 +35,28 @@ export default class PlotImage extends React.Component {
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
     this.toggleImageLink = this.toggleImageLink.bind(this);
+    this.generateScript = this.generateScript.bind(this);
+  }
+
+  generateScript() {
+    var url = stringify(this.generateQuery(this.props.query));
+    console.warn("URL");
+    console.warn(url);
+
+    
+
+    $.ajax({
+      url: window.location.origin + "/api/generatescript/?query=" + url,
+      dataType: "json",
+      cache: true,
+
+      success: function(data) {
+        console.warn(data);
+      }.bind(this),
+      error: function () {
+
+      }.bind(this)
+    });
   }
 
   componentDidMount() {
@@ -116,6 +140,10 @@ export default class PlotImage extends React.Component {
       names: q.names,
     };
 
+    if (q.plotTitle !== null) {
+      query.plotTitle = q.plotTitle;
+    }
+    
     switch(q.type) {
       case "profile":
       case "ts":
@@ -154,6 +182,8 @@ export default class PlotImage extends React.Component {
         query.name = q.name;
         query.depth_limit = q.depth_limit;
         query.colormap = q.colormap;
+        query.selectedPlots = q.selectedPlots;
+
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -209,6 +239,9 @@ export default class PlotImage extends React.Component {
         query.interp = q.interp;
         query.radius = q.radius;
         query.neighbours = q.neighbours;
+        
+        //Checks if a user specified their own title
+        
         
         if (q.compare_to) {
           query.compare_to = {
@@ -278,6 +311,9 @@ export default class PlotImage extends React.Component {
         break;
       case "image":
         this.toggleImageLink();
+        break;
+      case "script":
+        this.generateScript();
         break;
     }
   }
@@ -371,6 +407,9 @@ export default class PlotImage extends React.Component {
               eventKey="image"
               disabled={this.state.fail}
             ><Icon icon="file-image-o" /> Image</MenuItem>
+            <MenuItem
+              eventKey="script"
+            ><Icon icon="file-code-o" /> Script</MenuItem>
           </DropdownButton>
         </ButtonToolbar>
 

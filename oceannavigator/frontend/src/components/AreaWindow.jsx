@@ -1,3 +1,10 @@
+/* eslint react/no-deprecated: 0 */
+/*
+
+  Opens Window displaying the Image of a Selected Area
+
+*/
+
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
   FormControl, FormGroup, ControlLabel} from "react-bootstrap";
@@ -9,6 +16,7 @@ import ContourSelector from "./ContourSelector.jsx";
 import QuiverSelector from "./QuiverSelector.jsx";
 import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
+import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -36,6 +44,7 @@ export default class AreaWindow extends React.Component {
       surfacevariable: "none",
       linearthresh: 200,
       bathymetry: true,
+      plotTitle: undefined,
       quiver: {
         variable: "",
         magnitude: "length",
@@ -67,6 +76,7 @@ export default class AreaWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.saveData = this.saveData.bind(this);
     this.onSelect = this.onSelect.bind(this);
+    this.updatePlotTitle = this.updatePlotTitle.bind(this);
   }
 
   componentDidMount() {
@@ -108,6 +118,13 @@ export default class AreaWindow extends React.Component {
         );
       }
     } 
+  }
+
+  //Updates Plot with User Specified Title
+  updatePlotTitle (title) {
+    if (title !== this.state.plotTitle) {   //If new plot title
+      this.setState({plotTitle: title,});   //Update Plot Title
+    }
   }
 
   onLocalUpdate(key, value) {
@@ -163,7 +180,7 @@ export default class AreaWindow extends React.Component {
     }
   }
 
-  saveData(key) {
+  saveData() {
     // Find max extents of drawn area
     let lat_min = this.props.area[0].polygons[0][0][0];
     let lat_max = this.props.area[0].polygons[0][0][1];
@@ -177,20 +194,15 @@ export default class AreaWindow extends React.Component {
       lat_max = Math.max(lat_max, this.props.area[0].polygons[0][i][0]);
       long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
     }
-
-    setTimeout(() => {
-      const response = {
-        file: `/api/subset/${this.state.output_format}/` + 
-        `${this.props.dataset_0.dataset}/` + 
-        `${this.state.output_variables.join()}/` + // Comma-separate selected variables
-        `${lat_min},${long_min}/` +
-        `${lat_max},${long_max}/` + 
-        `${this.state.output_starttime},${this.state.output_endtime}/`+
-        `${this.state.zip ? 1 : 0}`
-      };
-
-      window.location.href = response.file;
-    }, 100);
+    
+    window.location.href = "/subset/?" +
+       "&output_format=" + this.state.output_format +
+       "&dataset_name=" + this.props.dataset_0.dataset +
+       "&variables=" + this.state.output_variables.join() +
+       "&min_range=" + [lat_min, long_min].join() +
+       "&max_range=" + [lat_max, long_max].join() +
+       "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+       "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
   onSelect(key) {
@@ -221,8 +233,8 @@ export default class AreaWindow extends React.Component {
       bsStyle='primary'
       key='map_settings'
     >
-      <Row>
-        <Col xs={9}>
+      <Row>   {/* Contains compare dataset and help button */}
+        <Col xs={9}> 
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
@@ -241,6 +253,8 @@ export default class AreaWindow extends React.Component {
           </Button>
         </Col>
       </Row>
+    
+      {/* Displays Options for Compare Datasets */}
       <Button
         bsStyle="default"
         key='swap_views'
@@ -277,7 +291,8 @@ export default class AreaWindow extends React.Component {
           <img src="/colormaps.png" />
         </ComboBox>
       </div>
-      
+      {/* End of Compare Datasets options */}
+
       <SelectBox 
         key='bathymetry' 
         id='bathymetry' 
@@ -296,6 +311,7 @@ export default class AreaWindow extends React.Component {
         {_("showarea_help")}
       </SelectBox>
 
+      {/* Arror Selector Drop Down menu */}
       <QuiverSelector 
         key='quiver' 
         id='quiver' 
@@ -308,6 +324,7 @@ export default class AreaWindow extends React.Component {
         {_("arrows_help")}
       </QuiverSelector>
 
+      {/* Contour Selector drop down menu */}
       <ContourSelector 
         key='contour' 
         id='contour' 
@@ -320,13 +337,24 @@ export default class AreaWindow extends React.Component {
         {_("contour_help")}
       </ContourSelector>
 
+      {/* Image Size Selection */}
       <ImageSize 
         key='size' 
         id='size' 
         state={this.state.size} 
         onUpdate={this.onLocalUpdate} 
         title={_("Saved Image Size")} 
-      />
+      ></ImageSize>
+
+      {/* Plot Title */}
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
+      ></CustomPlotLabels>
+      
     </Panel>);
 
     const subset = (<Panel
@@ -539,7 +567,7 @@ export default class AreaWindow extends React.Component {
         plot_query.interp = this.props.options.interpType;
         plot_query.radius = this.props.options.interpRadius;
         plot_query.neighbours = this.props.options.interpNeighbours;
-
+        plot_query.plotTitle = this.state.plotTitle;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
@@ -548,13 +576,12 @@ export default class AreaWindow extends React.Component {
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
 
-        leftInputs = [
-          mapSettings, subset
-        ];
-        rightInputs = [
-          dataset, compare_dataset
-        ];
+        leftInputs = [mapSettings, subset]; //Left Sidebar
+        rightInputs = [dataset];  //Right Sidebar
 
+        if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
+          rightInputs.push(compare_dataset);
+        }
         content = <PlotImage
           query={plot_query} // For image saving link.
           permlink_subquery={this.state}

@@ -6,18 +6,18 @@ import matplotlib
 import numpy as np
 import re
 from textwrap import wrap
-import colormap
-import utils
-from oceannavigator.util import get_variable_name, get_variable_unit, \
+import plotting.colormap as colormap
+import plotting.utils as utils
+import plotting.point as plPoint
+from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
     get_dataset_url
 import datetime
-import point
 from data import open_dataset
 
 LINEAR = 200
 
 
-class TimeseriesPlotter(point.PointPlotter):
+class TimeseriesPlotter(plPoint.PointPlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "timeseries"
@@ -46,7 +46,7 @@ class TimeseriesPlotter(point.PointPlotter):
             have_quiver = False
 
         if self.depth != 'all':
-            if isinstance(self.depth, str) or isinstance(self.depth, unicode):
+            if isinstance(self.depth, str) or isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
@@ -95,6 +95,14 @@ class TimeseriesPlotter(point.PointPlotter):
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds=np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data[1])<10e-6,
+                    np.abs(self.quiver_data[0])<10e-6
+                    )
+                 )
+            bearing[inds]=np.nan
 
         data = []
 
@@ -108,23 +116,11 @@ class TimeseriesPlotter(point.PointPlotter):
                     self.times[t].isoformat(),
                 ]
                 if self.depth == 'all':
-                    entry.extend(map(
-                        lambda f: "%0.3f" % f,
-                        self.data[p, 0, t, :max_dep_idx + 1]
-                    ))
+                    entry.extend(["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
                     if have_quiver:
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            self.quiver_data[0][p, t, :max_dep_idx + 1]
-                        ))
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            self.quiver_data[1][p, t, :max_dep_idx + 1]
-                        ))
-                        entry.extend(map(
-                            lambda f: "%0.3f" % f,
-                            bearing[p, t, :max_dep_idx + 1]
-                        ))
+                        entry.extend(["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
+                        entry.extend(["%0.3f" % f for f in self.quiver_data[1][p, t, :max_dep_idx + 1]])
+                        entry.extend(["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
                     if have_quiver:
@@ -162,13 +158,13 @@ class TimeseriesPlotter(point.PointPlotter):
                 if self.variable_unit == "fraction":
                     vmin = 0
                     vmax = 1
-                elif np.any(map(lambda x: re.search(x, self.variable_name,
-                                                    re.IGNORECASE), [
+                elif np.any([re.search(x, self.variable_name,
+                                                    re.IGNORECASE) for x in [
                     "free surface",
                     "surface height",
                     "velocity",
                     "wind"
-                ])):
+                ]]):
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
 
@@ -177,7 +173,7 @@ class TimeseriesPlotter(point.PointPlotter):
 
         datenum = matplotlib.dates.date2num(self.times)
         if self.depth == 'all':
-            size = map(float, self.size.split("x"))
+            size = list(map(float, self.size.split("x")))
             numpoints = len(self.points)
             figuresize = (size[0], size[1] * numpoints)
             fig, ax = plt.subplots(
@@ -261,13 +257,16 @@ class TimeseriesPlotter(point.PointPlotter):
             plt.ylim(vmin, vmax)
 
             # Title
-            wrapped_title = wrap(
-                "%s%s at %s" % (
-                    self.variable_name.title(),
-                    self.depth_label,
-                    ", ".join(self.names)
-                ), 80)
-            plt.title("\n".join(wrapped_title), fontsize=15)
+            if self.plotTitle is None or self.plotTitle == "": 
+                wrapped_title = wrap(
+                    "%s%s at %s" % (
+                        self.variable_name.title(),
+                        self.depth_label,
+                        ", ".join(self.names)
+                    ), 80)
+                plt.title("\n".join(wrapped_title), fontsize=15)
+            else :
+                plt.title(self.plotTitle,fontsize=15)
 
             plt.gca().grid(True)
 

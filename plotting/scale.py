@@ -1,12 +1,15 @@
 import numpy as np
 from pyproj import Proj
-from oceannavigator.util import (
+from oceannavigator.dataset_config import (
     get_dataset_url, get_dataset_climatology, get_variable_unit
 )
 import re
 from data import open_dataset
 
-
+"""
+    Calculates and returns the range (min, max values) of a selected variable,
+    given the current map extents.
+"""
 def get_scale(dataset, variable, depth, time, projection, extent, interp, radius, neighbours):
     x = np.linspace(extent[0], extent[2], 50)
     y = np.linspace(extent[1], extent[3], 50)
@@ -19,7 +22,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
 
     with open_dataset(get_dataset_url(dataset)) as ds:
         timestamp = ds.timestamps[time]
-
+        
         d = ds.get_area(
             np.array([lat, lon]),
             depth,
@@ -29,6 +32,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             radius,
             neighbours
         )
+        
         if len(variables) > 1:
             d0 = d
             d1 = ds.get_area(
@@ -75,7 +79,9 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
 
             d = d - c
 
-            m = max(abs(d.min()), abs(d.max()))
+            m = max(abs(d.nanmin()), abs(d.nanmax()))
             return -m, m
 
-    return d.min(), d.max()
+    # Return min and max values of selected variable, while ignoring
+    # nan values
+    return np.nanmin(d), np.nanmax(d)

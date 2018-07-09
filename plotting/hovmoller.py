@@ -5,15 +5,15 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import re
-import colormap
-import utils
-from oceannavigator.util import (get_dataset_url, get_dataset_name)
-import line
+import plotting.colormap as colormap
+import plotting.utils as utils
+import plotting.line as plLine
+from oceannavigator.dataset_config import (get_dataset_url, get_dataset_name)
 from flask_babel import gettext
 from data import open_dataset
-from oceannavigator.errors import ClientError, ServerError
+from utils.errors import ClientError, ServerError
 
-class HovmollerPlotter(line.LinePlotter):
+class HovmollerPlotter(plLine.LinePlotter):
 
     def __init__(self, dataset_name, query, format):
         self.plottype = "hovmoller"
@@ -54,7 +54,7 @@ class HovmollerPlotter(line.LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
 
             self.fix_startend_times(dataset, self.starttime, self.endtime)
-            time = range(self.starttime, self.endtime + 1)
+            time = list(range(self.starttime, self.endtime + 1))
 
             if len(self.variables) > 1:
                 v = []
@@ -100,7 +100,7 @@ class HovmollerPlotter(line.LinePlotter):
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(self.compare['depth'], len(dataset.depths) - 1, dataset)
 
                 self.fix_startend_times(dataset, self.compare['starttime'], self.compare['endtime'])
-                time = range(self.compare['starttime'], self.compare['endtime'] + 1)
+                time = list(range(self.compare['starttime'], self.compare['endtime'] + 1))
 
                 if len(self.compare['variables']) > 1:
                     v = []
@@ -153,7 +153,7 @@ class HovmollerPlotter(line.LinePlotter):
             return " at %s %s" % (depthValue, depthUnit)
 
         # Figure size
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         figuresize[1] *= 1.5 if self.compare else 1 # Vertical scaling of figure
         
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
@@ -187,14 +187,11 @@ class HovmollerPlotter(line.LinePlotter):
         else:
             vmin = np.amin(self.data)
             vmax = np.amax(self.data)
-            if np.any(map(
-                lambda x: re.search(x, self.variable_name, re.IGNORECASE),
-                [
+            if np.any([re.search(x, self.variable_name, re.IGNORECASE) for x in [
                     "velocity",
                     "surface height",
                     "wind"
-                ]
-            )):
+                ]]):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
             
@@ -222,14 +219,11 @@ class HovmollerPlotter(line.LinePlotter):
             else:
                 vmin = np.amin(self.compare['data'])
                 vmax = np.amax(self.compare['data'])
-            if np.any(map(
-                lambda x: re.search(x, self.compare['variable_name'], re.IGNORECASE),
-                [
+            if np.any([re.search(x, self.compare['variable_name'], re.IGNORECASE) for x in [
                     "velocity",
                     "surface height",
                     "wind"
-                ]
-            )):
+                ]]):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
             
@@ -266,10 +260,12 @@ class HovmollerPlotter(line.LinePlotter):
                 )
 
         # Image title
-        fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
-            self.name
-        ), fontsize=15)
-
+        if self.plotTitle is None or self.plotTitle == "":  
+            fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
+                self.name
+            ), fontsize=15)
+        else:
+            fig.suptitle(self.plotTitle,fontsize=15)
         # Subplot padding
         fig.tight_layout(pad=0, w_pad=4, h_pad=2)
         fig.subplots_adjust(top = 0.9 if self.compare else 0.85)
@@ -312,7 +308,7 @@ class HovmollerPlotter(line.LinePlotter):
         ax.set_title(title, fontsize=14) # Set title of subplot
         ax.yaxis_date()
         ax.yaxis.grid(True)
-        ax.set_axis_bgcolor('dimgray')
+        ax.set_facecolor('dimgray')
 
         plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])

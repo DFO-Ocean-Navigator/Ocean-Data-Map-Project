@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import plotter
+import plotting.plotter as pl
 from netCDF4 import Dataset
-from oceannavigator.util import get_dataset_url
+from oceannavigator.dataset_config import get_dataset_url
 import pint
 
 
-class PointPlotter(plotter.Plotter):
+class PointPlotter(pl.Plotter):
 
     def parse_query(self, query):
         super(PointPlotter, self).parse_query(query)
@@ -57,6 +57,7 @@ class PointPlotter(plotter.Plotter):
                 )
                 data.append(prof)
                 depths.append(d)
+            
             point_data.append(np.ma.array(data))
             point_depths.append(np.ma.array(depths))
 
@@ -128,7 +129,7 @@ class PointPlotter(plotter.Plotter):
         return data
 
     def figuresize(self):
-        figuresize = map(float, self.size.split("x"))
+        figuresize = list(map(float, self.size.split("x")))
         if len(self.points) > 10:
             figuresize[0] *= 1.0 / 1.25
 

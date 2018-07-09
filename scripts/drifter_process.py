@@ -109,7 +109,7 @@ for d in os.listdir(dirname):
         buoy_files[buoy_id].append(os.path.join(dirname, d, f))
 
 # For each buoy
-for buoy_id, files in buoy_files.iteritems():
+for buoy_id, files in buoy_files.items():
     if len(sys.argv) > 1:
         if buoy_id not in sys.argv[1::]:
             continue
