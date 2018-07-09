@@ -3,11 +3,11 @@
 base = /home/buildadm/src/navigator
 
 #python module to import
-app = oceannavigator
+app = oceannavigator:create_app()
 module = %(app)
 
 #home = %(base)/venv
-pythonpath = %(base)
+pythonpath = /opt/tools/miniconda3/bin
 
 #socket file's location
 socket = /tmp/ocean-navigator.sock
