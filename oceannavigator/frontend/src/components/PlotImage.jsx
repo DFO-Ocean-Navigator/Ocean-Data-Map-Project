@@ -41,13 +41,21 @@ export default class PlotImage extends React.Component {
 
   generateScript(language) {
     var url = stringify(this.generateQuery(this.props.query));
-
-    if (language == "python") {
-      url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+    
+    if (this.props.query.type == "class4") {
+      this.setState({
+        errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
+      });
+      console.warn("This Feature is not yet available for Class4's");
+    } else {
+      if (language == "python") {
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+      }
+      else if (language == "r") {
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+      }
     }
-    else if (language == "r") {
-      url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
-    }
+    
 
     window.location.href = url;
     /*

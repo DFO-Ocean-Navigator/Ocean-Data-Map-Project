@@ -55,10 +55,12 @@ def generateScript(url, type):
 
   if type == "python":
     b = scriptGenerator.generatePython(url)
+    resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
+  
   elif type == "r":
     b = scriptGenerator.generateR(url)
+    resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
   
-  resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
   return resp
 
 #
