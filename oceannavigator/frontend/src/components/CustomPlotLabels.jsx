@@ -12,7 +12,7 @@
 */
 
 import React from "react";
-import {FormControl, Row, Button, Form} from "react-bootstrap";
+import {FormControl, Row, Button, Form, OverlayTrigger, Tooltip} from "react-bootstrap";
 import PropTypes from "prop-types";
 import Icon from "./Icon.jsx";
 
@@ -23,12 +23,12 @@ export default class CustomPlotLabels extends React.Component {
   constructor (props) {
     super(props);
 
-    this.updateParent = this.updateParent.bind(this);
-    this.updateState = this. updateState.bind(this);
-    
     this.state = {
       userProvidedTitle: props.plotTitle   //Holds user defined plot title
     };
+
+    this.updateParent = this.updateParent.bind(this);
+    this.updateState = this. updateState.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -54,10 +54,7 @@ export default class CustomPlotLabels extends React.Component {
 
   render() {
     return (
-      
-      
       <div>
-        
         <div className='plotTitleInput, input'>
           <div><h1>{this.props.title}</h1></div>
           <Row>
@@ -81,13 +78,18 @@ export default class CustomPlotLabels extends React.Component {
                 placeholder={_("Default")}
               ></FormControl>
             
-              {/* Update Plot Title Button */}          
-              <Button
-                style={{width: "17%"}}
-                onClick={this.updateParent}   //Re-loads map on button click
-              >
-                <Icon icon="repeat" /> {/* button Icon */}
-              </Button>
+              {/* Update Plot Title Button */}
+              <OverlayTrigger
+                placement="right"
+                overlay={<Tooltip id="tooltip">{_("Apply Title")}</Tooltip>}
+              >    
+                <Button
+                  style={{width: "17%"}}
+                  onClick={this.updateParent}   //Re-loads map on button click
+                >
+                  <Icon icon="repeat" alt={_("Apply")}/> {/* button Icon */}
+                </Button>
+              </OverlayTrigger>
           
             </Form>
           </Row>
