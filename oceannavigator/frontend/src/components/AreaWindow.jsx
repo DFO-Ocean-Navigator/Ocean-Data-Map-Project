@@ -64,7 +64,8 @@ export default class AreaWindow extends React.Component {
       output_variables: "",
       output_starttime: props.dataset_0.time,
       output_endtime: props.dataset_0.time,
-      output_format: "NETCDF3_CLASSIC",
+      output_format: "NETCDF4",
+      convertToUserGrid: false,
       zip: false,
     };
 
@@ -202,6 +203,7 @@ export default class AreaWindow extends React.Component {
        "&min_range=" + [lat_min, long_min].join() +
        "&max_range=" + [lat_max, long_max].join() +
        "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
@@ -421,20 +423,28 @@ export default class AreaWindow extends React.Component {
         <FormGroup controlId="output_format">
           <ControlLabel>{_("Output Format")}</ControlLabel>
           <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
+            <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
             <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
-            {/*
             <option value="NETCDF3_NC" disabled={
-              this.props.dataset_0.dataset.indexOf("giops") === -1 // Disable if not a giops dataset
+              this.props.dataset_0.dataset.indexOf("giops") === -1 &&
+              this.props.dataset_0.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
             }>
               {_("NetCDF-3 NC")}
             </option>
-            */}
-            <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>
         </FormGroup>
-        
+
+{/*
+        <SelectBox
+          id='convertToUserGrid'
+          key='convertToUserGrid'
+          state={this.state.convertToUserGrid}
+          onUpdate={this.onLocalUpdate}
+          title={_("Convert to User Grid")}
+        />
+*/}        
         <SelectBox 
           id='zip'
           key='zip'
