@@ -127,6 +127,7 @@ class MapPlotter(pl.Plotter):
             near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
+            
             if self.centroid[0] > 80 or near_pole or covers_pole:
                 self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
             else:
@@ -140,6 +141,7 @@ class MapPlotter(pl.Plotter):
             else:
                 self.basemap = basemap.load_map('lcc', self.centroid, height, width)       
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
+
             height_bounds= [self.bounds[0], self.bounds[2]] 
             width_bounds= [self.bounds[1], self.bounds[3]] 
             height_buffer=(abs(height_bounds[1]-height_bounds[0]))*0.1
@@ -533,7 +535,7 @@ class MapPlotter(pl.Plotter):
     def pole_proximity(self, points):
         near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
         for p in points:
-            if p[0] > 80:
+            if abs(p[0]) > 80:
                 near_pole=True                    
             if -180<=p[1]<=-90:
                 quad1=True
@@ -545,6 +547,8 @@ class MapPlotter(pl.Plotter):
                 quad4=True
             if quad1 and quad2 and quad3 and quad4:
                 covers_pole = True
+            
+                
         return near_pole, covers_pole
 
     def plot(self):
