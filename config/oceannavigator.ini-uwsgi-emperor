@@ -7,7 +7,7 @@ app = oceannavigator:create_app()
 module = %(app)
 
 #home = %(base)/venv
-pythonpath = /opt/tools/miniconda3/bin
+pythonpath = %(base)
 
 #socket file's location
 socket = /tmp/ocean-navigator.sock
