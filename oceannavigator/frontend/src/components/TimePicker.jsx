@@ -70,6 +70,8 @@ export default class TimePicker extends React.Component {
             var revmap = {};
             var min = 0;
             var max = data.length - 1;
+            console.warn("MAX:");
+            console.warn(max);
             if (props.hasOwnProperty("min")) {
               min = parseInt(props.min) + 1;
               if (min < 0) {
@@ -78,10 +80,14 @@ export default class TimePicker extends React.Component {
             }
             if (props.hasOwnProperty("max")) {
               max = parseInt(props.max) - 1;
+
+              //If a negative index is provided, starts counting backwards
               if (max < 0) {
                 max += data.length;
               }
             }
+            console.warn("MIN/MAX: ");
+            console.warn(String(min) + "/" + String(max));
             for (let d in data) {
               var d1 = new Date(data[d].value);
               var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);

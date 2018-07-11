@@ -1,5 +1,6 @@
 /* eslint react/no-deprecated: 0 */
 
+
 import React from "react";
 import {Button,
   DropdownButton,
@@ -9,7 +10,7 @@ import {Button,
   Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-
+var FontAwesome = require('react-fontawesome');
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
@@ -38,25 +39,39 @@ export default class PlotImage extends React.Component {
     this.generateScript = this.generateScript.bind(this);
   }
 
-  generateScript() {
+  generateScript(language) {
     var url = stringify(this.generateQuery(this.props.query));
-    console.warn("URL");
-    console.warn(url);
-
+    
+    if (this.props.query.type == "class4") {
+      this.setState({
+        errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
+      });
+      console.warn("This Feature is not yet available for Class4's");
+    } else {
+      if (language == "python") {
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+      }
+      else if (language == "r") {
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+      }
+    }
     
 
+    window.location.href = url;
+    /*
     $.ajax({
-      url: window.location.origin + "/api/generatescript/?query=" + url,
+      url: window.location.origin + "/api/v1.0/generatescript/" + url + "/",
       dataType: "json",
-      cache: true,
+      cache: false,
 
       success: function(data) {
-        console.warn(data);
+        window.location.href = data;
       }.bind(this),
       error: function () {
 
       }.bind(this)
     });
+    */
   }
 
   componentDidMount() {
@@ -407,10 +422,30 @@ export default class PlotImage extends React.Component {
               eventKey="image"
               disabled={this.state.fail}
             ><Icon icon="file-image-o" /> Image</MenuItem>
+            {/*
             <MenuItem
               eventKey="script"
             ><Icon icon="file-code-o" /> Script</MenuItem>
+            */}
           </DropdownButton>
+
+          <DropdownButton
+            id="script"
+            title={<span><Icon icon="file-code-o" /> {_("API Script")}</span>}
+            bsStyle={this.state.fail ? "primary" : "default"}
+            disabled={this.state.loading}
+            onSelect={this.generateScript}
+            dropup
+          >
+            <MenuItem
+              eventKey="r"
+              disabled={this.state.fail}
+            ><Icon icon="fab fa-python" /> R</MenuItem>
+            <MenuItem
+              eventKey="python"
+            ><FontAwesome name="fab fa-python" /> Python</MenuItem>
+          </DropdownButton>
+
         </ButtonToolbar>
 
         <Modal

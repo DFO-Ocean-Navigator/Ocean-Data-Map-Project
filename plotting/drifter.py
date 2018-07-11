@@ -14,6 +14,7 @@ from data import open_dataset
 import time
 import datetime
 from scipy.interpolate import interp1d
+from utils.function_profiler import profileit
 
 class DrifterPlotter(Plotter):
 
@@ -45,6 +46,7 @@ class DrifterPlotter(Plotter):
         self.starttime = query.get('starttime')
         self.endtime = query.get('endtime')
 
+    @profileit
     def load_data(self):
         ds_url = current_app.config['DRIFTER_URL']
         data_names = []
