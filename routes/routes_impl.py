@@ -464,9 +464,7 @@ def time_query_impl(args):
 
     Finds all data timestamps available for a specific dataset
     """
-    
-    
-    #Checking Query Validity
+
     if 'dataset' not in args:
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
     #~~~~~~~~~~~~~~~~~~~~~~~
@@ -474,6 +472,7 @@ def time_query_impl(args):
     data = []
     dataset = args['dataset']
     quantum = args.get('quantum')
+    
     with open_dataset(get_dataset_url(dataset)) as ds:
         for idx, date in enumerate(ds.timestamps):
             if quantum == 'month':
@@ -495,10 +494,28 @@ def time_query_impl(args):
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
+    
     resp = Response(js, status=200, mimetype='application/json')
     return resp
+    
 
+def time_query_conversion(dataset, index):
+    """
+    API Format: /api/timestamps/?dataset=' '
 
+    dataset : Dataset to extract data - Can be found using /api/datasets
+
+    Finds all data timestamps available for a specific dataset
+    """
+
+    
+    with open_dataset(get_dataset_url(dataset)) as ds:
+        for idx, date in enumerate(ds.timestamps):
+            if idx == index:
+                return date.replace(tzinfo=pytz.UTC).isoformat()
+        return APIError("Timestamp does not exist")
+    
+    
 def timestamp_for_date_impl(old_dataset, date, new_dataset):
     """
     API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
