@@ -737,7 +737,7 @@ def subset_query_impl(args):
             longitudes.NAVO_code = 2
             times.long_name = "Validity time"
             times.units = "hours since 1950-01-01 00:00:00"
-            times.time_origin = "1950-01-01 00:00:00"
+            times.time_origin = "hours since 1950-01-01 00:00:00"
 
             levels = ds.createVariable('depth', 'i', ('depth',))
             levels = giops_variables[depth_var][:]

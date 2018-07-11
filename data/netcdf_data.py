@@ -1,4 +1,4 @@
-from netCDF4 import Dataset, date2num, netcdftime
+import netCDF4
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
@@ -12,13 +12,15 @@ import pyresample
 import numpy as np
 import re
 import geopy
+import datetime
+import uuid
 import pandas
 import zipfile
 
 class NetCDFData(Data):
 
     def __init__(self, url: str):
-        self._dataset: [xr.core.dataset.Dataset, Dataset] = None
+        self._dataset: [xr.core.dataset.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         super(NetCDFData, self).__init__(url)
@@ -32,6 +34,9 @@ class NetCDFData(Data):
     def __exit__(self, exc_type, exc_value, traceback):
         self._dataset.close()
 
+    def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
+        pass
+  
 
     #
     # Converts ISO 8601 Extended date, to the corresponding dataset time index
@@ -66,7 +71,7 @@ class NetCDFData(Data):
         Subsets a netcdf file with all depths
     """
     def subset(self, query):
-        
+             
         # Ensure we have an output folder that will be cleaned by tmpreaper
         if not os.path.isdir("/tmp/subset"):
             os.makedirs("/tmp/subset")
@@ -89,7 +94,7 @@ class NetCDFData(Data):
             
             time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
             time_var = self.__get_time_variable()
-            time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
+            time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
             time_range = [np.where(time_var.values == x)[0] for x in time_range]
 
         apply_time_range = False
@@ -98,64 +103,74 @@ class NetCDFData(Data):
 
         # Finds a variable in a dictionary given a substring containing common characters
         # Not a fool-proof method but I want to avoid regex because I hate it.
-        variable_list = list(self._dataset.variables.keys())
-        def find_variable(substring):
-            for key in variable_list:
+        def find_variable(substring: str, variables: list):
+            for key in variables:
                 if substring in key:
                     return key
+            return None
+
+        variable_list = list(self._dataset.variables.keys())
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat = find_variable("lat")
-        lon = find_variable("lon")
+        lat_var = find_variable("lat", variable_list)
+        lon_var = find_variable("lon", variable_list)
+
+        depth_var = find_variable("depth", variable_list)
 
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self._dataset, self._dataset.variables[lat], self._dataset.variables[lon]
+                bottom_left[0], bottom_left[1], self._dataset, self._dataset.variables[lat_var], self._dataset.variables[lon_var]
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self._dataset, self._dataset.variables[lat], self._dataset.variables[lon]
+                top_right[0], top_right[1], self._dataset, self._dataset.variables[lat_var], self._dataset.variables[lon_var]
             )
 
-            y_slice = slice(ymin_index, ymax_index)
-            x_slice = slice(xmin_index, xmax_index)
+            # Compute min/max for each slice in case the values are flipped
+            # the netCDF4 module does not support unordered slices
+            y_slice = slice(min(ymin_index, ymax_index), max(ymin_index, ymax_index))
+            x_slice = slice(min(xmin_index, xmax_index), max(xmin_index, xmax_index))
 
             # Get nicely formatted bearings
             p0 = geopy.Point(bottom_left)
             p1 = geopy.Point(top_right)
         else:
-            y_slice = slice(self._dataset.variables[lat].size)
-            x_slice = slice(self._dataset.variables[lon].size)
+            y_slice = slice(self._dataset.variables[lat_var].size)
+            x_slice = slice(self._dataset.variables[lon_var].size)
 
             p0 = geopy.Point([-85.0, -180.0])
             p1 = geopy.Point([85.0, 180.0])
 
         # Get timestamp
-        time_variable = find_variable("time")
-        timestamp = str(format_date(pandas.to_datetime(np.float64(self._dataset[time_variable][time_range[0]].values)), "yyyyMMdd"))
+        time_var = find_variable("time", variable_list)
+        timestamp = str(format_date(pandas.to_datetime(np.float64(self._dataset[time_var][time_range[0]].values)), "yyyyMMdd"))
         endtimestamp = ""
         if apply_time_range:
-            endtimestamp = "-" + str(format_date(pandas.to_datetime(np.float64(self._dataset[time_variable][time_range[1]].values)), "yyyyMMdd"))
+            endtimestamp = "-" + str(format_date(pandas.to_datetime(np.float64(self._dataset[time_var][time_range[1]].values)), "yyyyMMdd"))
         
         dataset_name = query.get('dataset_name')
-        # Do subsetting
+        # Figure out coordinate dimension names
         if "riops" in dataset_name:
-            # Riops has different coordinate names...why? ¯\_(ツ)_/¯
-            subset = self._dataset.isel(yc=y_slice, xc=x_slice)
+            lon_coord = "xc"
+            lat_coord = "yc"
         elif dataset_name == "giops_forecast":
-            subset = self._dataset.isel(latitude=y_slice, longitude=x_slice)
+            lon_coord = "longitude"
+            lat_coord = "latitude"
         else:
-            subset = self._dataset.isel(y=y_slice, x=x_slice)
+            lon_coord = "y"
+            lat_coord = "y"
+        # Do subset along coordinates
+        subset = self._dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
 
         # Select requested time (time range if applicable)
         if apply_time_range:
-            subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[1]) + 1)}) # slice doesn't include the last element
+            subset = subset.isel(**{time_var: slice(int(time_range[0]), int(time_range[1]) + 1)}) # slice doesn't include the last element
         else:
-            subset = subset.isel(**{time_variable: slice(int(time_range[0]), int(time_range[0]) + 1)})
+            subset = subset.isel(**{time_var: slice(int(time_range[0]), int(time_range[0]) + 1)})
 
         # Filter out unwanted variables
         output_vars = query.get('variables').split(',')
-        output_vars.extend([find_variable("depth"), time_variable, lat, lon]) # Keep the coordinate variables
+        output_vars.extend([depth_var, time_var, lat_var, lon_var]) # Keep the coordinate variables
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
@@ -164,8 +179,141 @@ class NetCDFData(Data):
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
 
-        # Save subset normally
-        subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
+        # "Special" output
+        if output_format == "NETCDF3_NC":
+            # Regrids an input data array according to it's input grid definition
+            # to the output definition
+            def regrid( data: np.ndarray,
+                        input_def: pyresample.geometry.SwathDefinition,
+                        output_def: pyresample.geometry.SwathDefinition):
+                
+                data = np.rollaxis(data, 0, 4) # Roll time axis backward
+                data = np.rollaxis(data, 0, 4) # Roll depth axis backward
+                data = data.reshape([data.shape[0], data.shape[1], -1]) # Merge time + depth axis together
+                
+                # Perform regridding using nearest neighbour weighting
+                regridded = pyresample.kd_tree.resample_nearest(input_def, data, output_def, 50000, fill_value=None, nprocs=8)
+                return np.moveaxis(regridded, -1, 0) # Move merged axis back to front
+
+            GRID_RESOLUTION = 50
+
+            # Check lat/lon wrapping
+            lon_vals, lat_vals = pyresample.utils.check_and_wrap(lons=subset[lon_var].values, lats=subset[lat_var].values)
+
+            # Generate our lat/lon grid of 50x50 resolution
+            min_lon, max_lon = np.amin(lon_vals), np.amax(lon_vals)
+            min_lat, max_lat = np.amin(lat_vals), np.amax(lat_vals)
+            XI = np.linspace(min_lon, max_lon, num=GRID_RESOLUTION, dtype=lon_vals.dtype)
+            YI = np.linspace(min_lat, max_lat, num=GRID_RESOLUTION, dtype=lat_vals.dtype)
+            XI_mg, YI_mg = np.meshgrid(XI, YI)
+
+            # Define input/output grid definitions
+            input_def = pyresample.geometry.SwathDefinition(lons=lon_vals, lats=lat_vals)
+            output_def = pyresample.geometry.SwathDefinition(lons=XI_mg, lats=YI_mg)
+
+            # Find correct variable names in subset
+            temp_var = find_variable('temp', subset.variables)
+            saline_var = find_variable('salin', subset.variables)
+            x_vel_var = find_variable('crtx', subset.variables)
+            y_vel_var = find_variable('crty', subset.variables)
+
+            # Create file
+            time_range = len(subset[time_var][:]) - 1
+            filename = dataset_name.upper() + "_" + \
+                datetime.date.today().strftime("%Y%m%d") +"_d0" + \
+                (("-"+str(time_range)) if time_range > 0 else "") + "_" + \
+                str(np.round(min_lat).astype(int)) + "N" + str(np.abs(np.round(max_lon).astype(int))) + "W-" + \
+                str(np.round(min_lat).astype(int)) + "N" + str(np.abs(np.round(min_lon)).astype(int)) + "W"
+            ds = netCDF4.Dataset(working_dir + filename + ".nc", 'w', format="NETCDF3_CLASSIC")
+            ds.description = "Converted " + dataset_name
+            ds.history = "Created: " + str(datetime.datetime.now())
+            ds.source = "www.navigator.oceansdata.ca"
+
+            # Create the netcdf dimensions
+            ds.createDimension('lat', GRID_RESOLUTION)
+            ds.createDimension('lon', GRID_RESOLUTION)
+            ds.createDimension('time', len(subset[time_var][:]))
+
+            # Create the netcdf variables and assign the values
+            latitudes = ds.createVariable('lat', 'd', ('lat',))
+            longitudes = ds.createVariable('lon', 'd', ('lon',))
+            latitudes[:] = YI
+            longitudes[:] = XI
+            
+            # Variable Attributes
+            latitudes.long_name = "Latitude"
+            latitudes.units = "degrees_north"
+            latitudes.NAVO_code = 1
+
+            longitudes.long_name = "Longitude"
+            longitudes.units = "degrees_east"
+            longitudes.NAVO_code = 2
+
+            # LOL I had CreateDimension vs createDimension here >.< Stumped Clyde too hehe :P
+            ds.createDimension('depth', len(subset[depth_var][:]))
+            levels = ds.createVariable('depth', 'i', ('depth',))
+            levels[:] = subset[depth_var][:]
+            levels.long_name = "Depth"
+            levels.units = "meter"
+            levels.positive = "down"
+            levels.NAVO_code = 5
+
+            if temp_var is not None:
+                origshape = subset[temp_var].shape
+                temp_data = regrid(subset[temp_var].values, input_def, output_def)
+                temp_data = np.reshape(temp_data, (origshape[0], origshape[1], GRID_RESOLUTION, GRID_RESOLUTION))
+                
+                temp = ds.createVariable('water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                # Convert from Kelvin to Celcius
+                for i in range(0, len(subset[depth_var][:])):
+                    temp[:,i, :, :] = temp_data[:,i,:,:] - 273.15
+                temp.valid_min = -100.0
+                temp.valid_max = 100.0
+                temp.long_name = "Water Temperature"
+                temp.units = "degC"
+                temp.NAVO_code = 15
+            if saline_var is not None:
+                salinity = ds.createVariable('salinity', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[:] # Note the automatic reshaping by numpy here ^.^
+                salinity.long_name = "Salinity"
+                salinity.units = "psu"
+                salinity.valid_min = 0.0
+                salinity.valid_max = 45.0
+                salinity.NAVO_code = 16
+            if x_vel_var is not None:
+                x_velo = ds.createVariable('water_u', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                x_velo[:] = regrid(subset[x_vel_var].values, input_def, output_def)[:]
+                x_velo.long_name = "Eastward Water Velocity"
+                x_velo.units = "meter/sec"
+                x_velo.NAVO_code = 17
+            if y_vel_var is not None:
+                y_velo = ds.createVariable('water_v', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                y_velo[:] = regrid(subset[y_vel_var].values, input_def, output_def)[:]
+                y_velo.long_name = "Northward Water Velocity"
+                y_velo.units = "meter/sec"
+                y_velo.NAVO_code = 18
+
+            temp_file_name = working_dir + str(uuid.uuid4()) + ".nc"
+            subset.to_netcdf(temp_file_name)
+            subset.close()
+
+            # Reopen using netCDF4 to get non-encoded time values
+            subset = netCDF4.Dataset(temp_file_name, 'r')
+
+            times = ds.createVariable('time', 'i', ('time',))
+            # Convert time from seconds to hours
+            for i in range(0, len(subset[time_var])):
+                times[i] = subset[time_var][i] / 3600
+
+            times.long_name = "Validity time"
+            times.units = "hours since 1950-01-01 00:00:00"
+            times.time_origin = "1950-01-01 00:00:00"
+
+            ds.close()
+            subset.close()
+        else:
+            # Save subset normally
+            subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
         if int(query.get('should_zip')) == 1:
             myzip = zipfile.ZipFile('%s%s.zip' % (working_dir, filename), mode='w')
@@ -320,7 +468,7 @@ class NetCDFData(Data):
             var = self.__get_time_variable()
 
             # Convert timestamps to UTC
-            t = netcdftime.utime(var.attrs['units']) # Get time units from variable
+            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values

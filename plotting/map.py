@@ -95,8 +95,25 @@ class MapPlotter(pl.Plotter):
 
         self.contour = query.get('contour')
 
+    def pole_proximity(self, points):
+        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
+        for p in points:
+            if abs(p[0]) > 80:       # is point close to pole
+                near_pole=True                    
+            if -180<=p[1]<=-90:
+                quad1=True
+            elif -90<=p[1]<=0:
+                quad2=True
+            elif 0<=p[1]<=90:
+                quad3=True
+            elif 90<=p[1]<=180:
+                quad4=True
+            if np.sum([quad1, quad2, quad3, quad4]) >= 3: # selected area covers (or almost covers) a pole 
+                covers_pole = True                  
+        return near_pole, covers_pole
+
     def load_data(self):
-        distance = VincentyDistance()
+        distance = VincentyDistance()        
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
             (self.bounds[2], self.centroid[1])
@@ -105,9 +122,9 @@ class MapPlotter(pl.Plotter):
             (self.centroid[0], self.bounds[1]),
             (self.centroid[0], self.bounds[3])
             ) * 1000 * 1.25
-
-        if self.projection == 'EPSG:32661':
-            near_pole, covers_pole = self.pole_proximity(self.area[0]['polygons'][0])
+        
+        if self.projection == 'EPSG:32661':             # north pole projection
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
             
@@ -115,15 +132,14 @@ class MapPlotter(pl.Plotter):
                 self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
             else:
                 self.basemap = basemap.load_map('lcc', self.centroid, height, width)
-        elif self.projection == 'EPSG:3031':
-            near_pole, covers_pole = self.pole_proximity(self.area[0]['polygons'][0])
+        elif self.projection == 'EPSG:3031':            # south pole projection
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
-            blat = 5 * np.ceil(blat / 5)   
-
-            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole): # is centerered close to the south pole
-                self.basemap = basemap.load_map('spstere', (blat, 180), height, width)
+            blat = 5 * np.ceil(blat / 5)
+            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole) or near_pole: # is centerered close to the south pole
+                self.basemap = basemap.load_map('spstere', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))
             else:
-                self.basemap = basemap.load_map('lcc', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))       
+                self.basemap = basemap.load_map('lcc', self.centroid, height, width)       
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
             height_bounds= [self.bounds[0], self.bounds[2]] 
