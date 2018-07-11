@@ -17,6 +17,7 @@ import uuid
 import pandas
 import zipfile
 
+
 class NetCDFData(Data):
 
     def __init__(self, url: str):
@@ -49,7 +50,7 @@ class NetCDFData(Data):
         time_range = [dateutil.parser.parse(x) for x in date.split(',')]
         time_var = self.__get_time_variable()
         time_range[0] = time_range[0].replace(tzinfo=None)
-        time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
+        time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
 
         #~~~~~~~~~~~~~~~~~~
@@ -65,7 +66,6 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted                   #Returns as Key Value pair
         #~~~~~~~~~~~~~~~~~~
-        
         
     """
         Subsets a netcdf file with all depths

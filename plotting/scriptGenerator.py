@@ -26,7 +26,7 @@ import netCDF4
 import base64
 import pytz
 from data import open_dataset
-
+import routes.routes_impl
 
 class scriptGenerator():
 
@@ -68,7 +68,13 @@ class scriptGenerator():
           if isinstance(url.get(x), str):
             script.write('  "' + x + '": "' + str(url.get(x)) + '"' + ",\n" )
           else:
-            script.write('  "' + x + '": ' + str(url.get(x)) + ",\n")
+            
+            if x == 'time':
+                formatted_date = routes.routes_impl.time_query_conversion(url.get('dataset'),url.get('time'))
+                script.write('  "' + x + '": ' + "'" + formatted_date + "',\n")
+            else:
+                script.write('  "' + x + '": ' + str(url.get(x)) + ",\n")
+
           print(url.get(x))
         script.write("}\n")
         #---------------------------
