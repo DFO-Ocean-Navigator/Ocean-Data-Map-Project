@@ -54,7 +54,7 @@ class scriptGenerator():
 
         #Set Navigators URL
         script.write("#Set Navigator URL\n")
-        script.write('base_url = "http://navigator.oceansdata.ca/plot/?"\n\n')
+        script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"\n\n')
 
         #---------------------------
 
@@ -115,7 +115,7 @@ class scriptGenerator():
         #FILE CONTENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         script.write("#Assigns Base Url\n\n")
-        script.write('base_url <- "http://navigator.oceansdata.ca/plot/"\n\n\n')
+        script.write('base_url <- "http://navigator.oceansdata.ca/api/v1.0/plot/"\n\n\n')
         old_query = dict(url)
         print("OLD QUERY: ")
         print(old_query)
