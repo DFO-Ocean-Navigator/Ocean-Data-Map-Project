@@ -40,8 +40,10 @@ class NetCDFData(Data):
         
         # Time is in ISO 8601 Extended format
         # Get time index from dataset
+
         time_range = [dateutil.parser.parse(x) for x in date.split(',')]
         time_var = self.__get_time_variable()
+        time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
 
@@ -84,7 +86,7 @@ class NetCDFData(Data):
         except ValueError:
             # Time is in ISO 8601 format
             # Get time index from dataset
-            [print(x) for x in query.get('time').split(',')]
+            
             time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
             time_var = self.__get_time_variable()
             time_range = [date2num(x, time_var.attrs['units']) for x in time_range]
