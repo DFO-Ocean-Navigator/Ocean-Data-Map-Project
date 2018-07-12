@@ -3,9 +3,11 @@ pipeline {
   stages {
     stage('Build') {
       steps {
+        echo 'Pulling...'+env.BRANCH_NAME
+        echo "CURRENT DIR:"+pwd()
         ws(dir: '/home/jenkins/build') {
           echo 'Pulling...'+env.BRANCH_NAME
-          echo "CURRENT DIR:" + pwd()
+          echo "CURRENT DIR:"+pwd()
           echo 'Building Javascript files'
           sh '''
                 #!/usr/bin/env bash
