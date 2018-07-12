@@ -443,7 +443,7 @@ export default class PlotImage extends React.Component {
             ><Icon icon="fab fa-python" /> R</MenuItem>
             <MenuItem
               eventKey="python"
-            ><FontAwesome name="fab fa-python" /> Python</MenuItem>
+            ><FontAwesome name="fab fa-python" /> Python 3</MenuItem>
           </DropdownButton>
 
         </ButtonToolbar>
