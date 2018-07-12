@@ -5,6 +5,7 @@ pipeline {
       steps {
         ws(dir: '/home/jenkins/build') {
           echo 'Pulling...'+env.BRANCH_NAME
+          echo 'CURRENT DIR: '+${WORKSPACE}
           echo 'Building Javascript files'
           sh '''
                 #!/usr/bin/env bash
