@@ -56,18 +56,16 @@ def timestamp_outOfBounds(dataset, time):
 
     Finds all data timestamps available for a specific dataset
     """
-    data = []
 
     with open_dataset(get_dataset_url(dataset)) as ds:
-        for idx, date in enumerate(ds.timestamps):
-            data.append(
-                {'id': idx, 'value': date.replace(tzinfo=pytz.UTC)})
-    data = sorted(data, key=lambda k: k['id'])
-
-    if (time <= data[len(data) - 1]['id']):
-        return False
+        length = len(ds.timestamps)
+        
+    if time < length:
+        return False   #Valid timestamp
     else:
+        print("Timestamp out of bounds")
         return True
+
 
 
 @bp_v0_0.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
