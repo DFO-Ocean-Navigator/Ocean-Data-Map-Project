@@ -4,14 +4,6 @@ pipeline {
     stage('Build') {
       steps {
         ws(dir: '/home/jenkins/build') {
-          echo 'Setting Python Environment variables'
-          sh '''
-                #!/usr/bin/env bash
-
-                # https://unix.stackexchange.com/a/217626/236950
-                # Check if Miniconda path is set. If not, set it.
-                [[ ":$PATH:" != *":/opt/tools/miniconda3/bin/:"* ]] && PATH="/opt/tools/miniconda3/bin/:${PATH}"
-            '''
           echo 'Building Javascript files'
           sh '''
                 #!/usr/bin/env bash
