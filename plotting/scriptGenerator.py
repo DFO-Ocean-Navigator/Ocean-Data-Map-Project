@@ -95,7 +95,7 @@ class scriptGenerator():
         if url.get("type") == "drifter":
             script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["drifter"]) + ".png", "PNG")\n')
         else:
-            script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["time"]) + ".png" , "PNG")\n')
+            script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["variable"]) + ".png" , "PNG")\n')
 
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,7 +145,12 @@ class scriptGenerator():
                 
                 script.write( x + '= "' + updated_value + '"\n')
             elif isinstance(url.get(x), int):
-                script.write( x + '= ' + updated_value + '\n')
+                if x == 'time':
+                    formatted_date = routes.routes_impl.time_query_conversion(url.get('dataset'),url.get('time'))
+                    script.write( x + '= ' + "'" + '"' + formatted_date + '"' + "'" + '\n')
+                else:
+                    script.write( x + '= ' + updated_value + '\n')
+
             else:
                 print("SOMETHING ELSE")
                 script.write( x + '= ' + "'" + updated_value + "'\n")

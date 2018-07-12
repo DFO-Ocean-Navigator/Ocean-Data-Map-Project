@@ -56,7 +56,6 @@ def timestamp_outOfBounds(dataset, time):
 
     Finds all data timestamps available for a specific dataset
     """
-    data = []
 
     with open_dataset(get_dataset_url(dataset)) as ds:
         length = len(ds.timestamps)
