@@ -180,15 +180,6 @@ class scriptGenerator():
         query_template = re.sub("'%s'","%s", query_template)
         query_template = re.sub("'", '"', query_template)   #Replace signle quotes with double quotes
         
-
-            #if isinstance(url.get(x), str):
-            #    script.write( x + "= '" + '"' + str(url.get(x)) + '"' + "'")
-            #elif isinstance(url.get(x), int):
-            #    script.write( x + "= " + str(url.get(x)) + "")
-            #else:
-            #    script.write( x + "= '" + str(url.get(x)) + "'" )
-
-        
         script.write(query_template)
         #queryVariables = re.sub(',', '', queryVariables, 1)
         script.write("'")
@@ -203,7 +194,10 @@ class scriptGenerator():
         if old_query.get("type") == "drifter":
             script.write('filename = paste0("script_template_", dataset, "_", drifter, ".png")\n')
         else:
-            script.write('filename = paste0("script_template_image_", time, ".png")\n')
+            script.write("#Format time to be used in file name\n")
+            script.write("time_ = gsub(':.*','', time)\n")
+            script.write("time_ = gsub('\\" + '"' + "'," + '"",' + "time_)\n\n")
+            script.write('filename = paste0("script_template_image_", time_, ".png")\n')
         
         script.write('download.file(full_url, filename, extra = "curl", mode = "wb")\n')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
