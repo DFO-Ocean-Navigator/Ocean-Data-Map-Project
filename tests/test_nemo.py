@@ -63,7 +63,6 @@ class TestNemo(unittest.TestCase):
             self.assertAlmostEqual(p[4], 292.48, places=2)
             self.assertAlmostEqual(p[7], 277.90, places=2)
 
-    @unittest.skip("Bottom is bugged atm")
     def test_bottom_point(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:
             self.assertAlmostEqual(

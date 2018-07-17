@@ -160,7 +160,7 @@ class Mercator(NetCDFData):
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
 
-            reshaped = d.reshape([d.shape[0], -1])
+            reshaped = np.ma.masked_invalid(d.reshape([d.shape[0], -1]))
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
             depths = edges[1, 0, :]
@@ -214,7 +214,7 @@ class Mercator(NetCDFData):
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
 
-            reshaped = d.values.reshape([d.shape[0], -1])
+            reshaped = np.ma.masked_invalid(d.values.reshape([d.shape[0], -1]))
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
             depths = edges[1, 0, :]
