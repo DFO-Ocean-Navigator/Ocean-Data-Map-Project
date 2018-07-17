@@ -60,15 +60,15 @@ class Fvcom(NetCDFData):
     @property
     def timestamps(self):
         if self.__timestamp_cache.get("timestamps") is None:
-            var = None
-            for v in self.time_variables:
+            for v in ['Times']:
                 if v in self._dataset.variables:
                     var = self._dataset.variables[v]
                     break
 
             tz = pytz.timezone(var.time_zone)
             time_list = list(map(
-                lambda dateStr: dateutil.parser.parse(dateStr).replace(tzinfo=tz),
+                lambda dateStr: 
+                dateutil.parser.parse(dateStr).replace(tzinfo=tz),
                 chartostring(var[:])
             ))
             timestamps = np.array(time_list)
