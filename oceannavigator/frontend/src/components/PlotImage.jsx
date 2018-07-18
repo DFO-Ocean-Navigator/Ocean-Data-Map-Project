@@ -40,7 +40,7 @@ export default class PlotImage extends React.Component {
   }
 
   generateScript(language) {
-    var url = stringify(this.generateQuery(this.props.query));
+    
     
     if (this.props.query.type == "class4") {
       this.setState({
@@ -48,30 +48,32 @@ export default class PlotImage extends React.Component {
       });
       console.warn("This Feature is not yet available for Class4's");
     } else {
-      if (language == "python") {
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
-      }
-      else if (language == "r") {
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/" + language + "/";
+      if (language == "pythonPlot") {
+
+        var url = stringify(this.generateQuery(this.props.query));
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+      
+      } else if (language == "rPlot") {
+
+        var url = stringify(this.generateQuery(this.props.query));
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+      
+      } else if (language == "pythonCSV") {
+
+        console.warn(this.props.query);
+        console.warn(this.generateQuery(this.props.query))
+        var url = stringify(this.generateQuery(this.props.query)) +
+        `&save&format=csv&size=${this.props.query.size}` +
+        `&dpi=${this.props.query.dpi}`;
+        //url = stringify(url);
+        console.warn(url)
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        console.warn(url)
       }
     }
     
 
-    window.location.href = url;
-    /*
-    $.ajax({
-      url: window.location.origin + "/api/v1.0/generatescript/" + url + "/",
-      dataType: "json",
-      cache: false,
-
-      success: function(data) {
-        window.location.href = data;
-      }.bind(this),
-      error: function () {
-
-      }.bind(this)
-    });
-    */
+    //window.location.href = url;
   }
 
   componentDidMount() {
@@ -438,12 +440,15 @@ export default class PlotImage extends React.Component {
             dropup
           >
             <MenuItem
-              eventKey="r"
+              eventKey="rPlot"
               disabled={this.state.fail}
-            ><Icon icon="fab fa-python" /> R</MenuItem>
+            ><Icon icon="fab fa-python" /> R - PLOT</MenuItem>
             <MenuItem
-              eventKey="python"
-            ><FontAwesome name="fab fa-python" /> Python 3</MenuItem>
+              eventKey="pythonPlot"
+            ><FontAwesome name="fab fa-python" /> Python 3 - PLOT</MenuItem>
+            <MenuItem
+              eventKey="pythonCSV"
+            ><Icon icon="fab fa-python" />Python 3 - CSV</MenuItem>
           </DropdownButton>
 
         </ButtonToolbar>
