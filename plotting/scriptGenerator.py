@@ -10,7 +10,8 @@ class scriptGenerator():
     def generatePython(url):
         
         notPlot = False
-        
+        netcdf = False
+        data_type = "plot"
         try:
             url = json.loads(url)
         except:
@@ -23,7 +24,13 @@ class scriptGenerator():
             print(url_tail)
             print(url)
             url = json.loads(url)
+            fileExtension = "csv"
 
+        if 'output_format' in url:
+            netcdf = True
+            fileExtension = "nc"
+            data_type = "subset"
+        
         #setup file
         script = StringIO()
 
@@ -31,7 +38,7 @@ class scriptGenerator():
 
         #HEADER---------------------
 
-        if notPlot == True:
+        if notPlot == True or netcdf == True:
             script.write("import requests\n")
             script.write("import os\n")
             script.write("import shutil\n")
@@ -49,7 +56,7 @@ class scriptGenerator():
 
         #Set Navigators URL
         script.write("#Set Navigator URL\n")
-        script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"\n\n')
+        script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/%s/?"\n\n' % (data_type))
 
         #---------------------------
 
@@ -91,7 +98,7 @@ class scriptGenerator():
 
         #Open URL and read response
 
-        if notPlot == False:
+        if notPlot == False and netcdf == False:
             script.write("\n#Open URL and save response\n")
             script.write("with closing(urlopen(url)) as f:\n")
             script.write("  img = Image.open(f)\n")
@@ -103,8 +110,8 @@ class scriptGenerator():
             script.write("\n#Open URL and save response\n")
             script.write("data_file = requests.get(url, stream=True)\n")
             script.write("dump = data_file.raw\n")
-            script.write("location = os.path.abspath('/home/csv_test.csv')\n")
-            script.write('with open("csv_test.csv", "wb") as location:\n')
+            script.write("location = os.path.abspath('/home/script_output.%s')\n" % (fileExtension))
+            script.write('with open("script_output.%s", "wb") as location:\n' % (fileExtension))
             script.write("  print('Saving File')\n")
             script.write("  shutil.copyfileobj(dump, location)\n")
             script.write("  print('Done')\n")

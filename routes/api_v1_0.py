@@ -169,7 +169,8 @@ def stats_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
-    return routes.routes_impl.subset_query_impl(request.args)
+    query = json.loads(request.args.get('query'))
+    return routes.routes_impl.subset_query_impl(query)
 
 
 #
@@ -243,7 +244,7 @@ def query_id_v1_0(q, q_id):
 #
 # Unchanged from v0.0
 #
-@bp_v1_0.route('/api/v1.0/<string:q>/<stringLprojection>/<int:resolution>/<string:extent>/<string:file_id>.json')
+@bp_v1_0.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file_v1_0(q, projection, resolution, extent, file_id):
   return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
 

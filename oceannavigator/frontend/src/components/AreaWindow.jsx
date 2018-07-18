@@ -78,6 +78,7 @@ export default class AreaWindow extends React.Component {
     this.saveData = this.saveData.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+    this.saveScript = this.saveScript.bind(this);
   }
 
   componentDidMount() {
@@ -205,6 +206,38 @@ export default class AreaWindow extends React.Component {
        "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
        "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
+  }
+
+  saveScript() {
+
+
+    let lat_min = this.props.area[0].polygons[0][0][0];
+    let lat_max = this.props.area[0].polygons[0][0][1];
+    let long_min = this.props.area[0].polygons[0][0][0];
+    let long_max = this.props.area[0].polygons[0][0][1];
+
+    for (let i = 0; i < this.props.area[0].polygons[0].length; ++i) {
+      lat_min = Math.min(lat_min, this.props.area[0].polygons[0][i][0]);
+      long_min = Math.min(long_min, this.props.area[0].polygons[0][i][1]);
+
+      lat_max = Math.max(lat_max, this.props.area[0].polygons[0][i][0]);
+      long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
+    }
+    
+    let query = {
+      "output_format": this.state.output_format,
+      "dataset_name": this.props.dataset_0.dataset,
+      "variables": this.state.output_variables.join(),
+      "min_range": [lat_min, long_min].join(),
+      "max_range": [lat_max, long_max].join(),
+      "time": [this.state.output_starttime, this.state.output_endtime].join(),
+      "user_grid": (this.state.convertToUserGrid ? 1:0),
+      "should_zip": (this.state.zip ? 1:0)
+    }
+
+
+    let url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/python/";
+    window.location.href = url;
   }
 
   onSelect(key) {
@@ -460,6 +493,13 @@ export default class AreaWindow extends React.Component {
           onClick={this.saveData}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
+        <Button
+          bsStyle="default"
+          key='script'
+          id='script'
+          onClick={this.saveScript}
+          disabled={this.state.output_variables == ""}
+        ><Icon icon="script" /> {_("Script")}</Button>
       </form>
     </Panel>
     );

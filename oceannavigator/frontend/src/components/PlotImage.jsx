@@ -72,7 +72,6 @@ export default class PlotImage extends React.Component {
       }
     }
     
-
     window.location.href = url;
   }
 
