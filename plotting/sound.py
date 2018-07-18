@@ -111,7 +111,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
                     "%0.1f" % self.sspeed[idx][idx2]
                 ])
 
-        return super(ts.TemperatureSalinityPlotter, self).csv(
+        return super(plTS.TemperatureSalinityPlotter, self).csv(
             header, columns, data
         )
 

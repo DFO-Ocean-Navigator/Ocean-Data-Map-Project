@@ -39,9 +39,9 @@ class NetCDFData(Data):
         pass
   
 
-    #
-    # Converts ISO 8601 Extended date, to the corresponding dataset time index
-    #
+    """
+        Converts ISO 8601 Extended date, to the corresponding dataset time index
+    """
     def convert_to_timestamp(self, date):
         
         # Time is in ISO 8601 Extended format
@@ -53,19 +53,16 @@ class NetCDFData(Data):
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
 
-        #~~~~~~~~~~~~~~~~~~
-        # Format and return
         if len(time_range) == 1:    #Single Date
-            return int(str(time_range[0][0]))       #Returns as Int
+            return int(str(time_range[0][0]))
         else:                          #Multiple Dates
-            date_formatted = {} #Initialize dictionary
+            date_formatted = {}
             i = 0
             for x in date.split(','):   # x is a single date
                 new_date = {x : int(str(time_range[i][0]))}
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
-            return date_formatted                   #Returns as Key Value pair
-        #~~~~~~~~~~~~~~~~~~
+            return date_formatted
         
     """
         Subsets a netcdf file with all depths
@@ -157,7 +154,7 @@ class NetCDFData(Data):
             lon_coord = "longitude"
             lat_coord = "latitude"
         else:
-            lon_coord = "y"
+            lon_coord = "x"
             lat_coord = "y"
         # Do subset along coordinates
         subset = self._dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
@@ -216,14 +213,14 @@ class NetCDFData(Data):
             saline_var = find_variable('salin', subset.variables)
             x_vel_var = find_variable('crtx', subset.variables)
             y_vel_var = find_variable('crty', subset.variables)
-
+            
             # Create file
             time_range = len(subset[time_var][:]) - 1
             filename = dataset_name.upper() + "_" + \
                 datetime.date.today().strftime("%Y%m%d") +"_d0" + \
                 (("-"+str(time_range)) if time_range > 0 else "") + "_" + \
-                str(np.round(min_lat).astype(int)) + "N" + str(np.abs(np.round(max_lon).astype(int))) + "W-" + \
-                str(np.round(min_lat).astype(int)) + "N" + str(np.abs(np.round(min_lon)).astype(int)) + "W"
+                str(np.round(top_right[0]).astype(int)) + "N" + str(np.abs(np.round(bottom_left[1]).astype(int))) + "W" + \
+                str(np.round(bottom_left[0]).astype(int)) + "S" + str(np.abs(np.round(top_right[1])).astype(int)) + "E"
             ds = netCDF4.Dataset(working_dir + filename + ".nc", 'w', format="NETCDF3_CLASSIC")
             ds.description = "Converted " + dataset_name
             ds.history = "Created: " + str(datetime.datetime.now())

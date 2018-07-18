@@ -5,13 +5,6 @@ import pytz
 
 class TestFvcom(unittest.TestCase):
 
-    def test_init(self):
-        Fvcom(None)
-
-    def test_open(self):
-        with Fvcom('tests/testdata/fvcom_test.nc'):
-            pass
-
     def test_depths(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             depths = n.depths
@@ -33,8 +26,8 @@ class TestFvcom(unittest.TestCase):
             data, depth = n.get_point(45.3, -64.0, 0, 0, 'temp',
                                       return_depth=True)
 
-            self.assertAlmostEqual(data, 6.76, places=2)
-            self.assertAlmostEqual(depth, 6.50, places=2)
+            self.assertAlmostEqual(data, 6.78, places=2)
+            self.assertAlmostEqual(depth, 6.51, places=2)
 
     def test_get_raw_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
@@ -50,14 +43,14 @@ class TestFvcom(unittest.TestCase):
     def test_get_profile(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             p, d = n.get_profile(45.3, -64.0, 0, 'temp')
-            self.assertAlmostEqual(p[0], 6.76, places=2)
-            self.assertAlmostEqual(p[10], 6.76, places=2)
+            self.assertAlmostEqual(p[0], 6.78, places=2)
+            self.assertAlmostEqual(p[10], 6.78, places=2)
 
     def test_bottom_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             self.assertAlmostEqual(
                 n.get_point(45.3, -64.0, 'bottom', 0, 'temp'),
-                6.76, places=2
+                6.78, places=2
             )
 
     def test_timestamps(self):
