@@ -9,12 +9,32 @@ class scriptGenerator():
 
     def generatePython(url):
         
+        notPlot = False
+        
+        try:
+            url = json.loads(url)
+        except:
+            notPlot = True
+            print(url)
+            print(type(url))
+            url_tail = "&" + re.findall("&(.*)", url)[0]
+            url = re.sub("&(.*)", "", url)
+            print("SDFSLDFKJSDLFJSDLFKDSJFl")
+            print(url_tail)
+            print(url)
+            url = json.loads(url)
+
         #setup file
         script = StringIO()
 
         #FILE CONTENTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         #HEADER---------------------
+
+        if notPlot == True:
+            script.write("import requests\n")
+            script.write("import os\n")
+            script.write("import shutil\n")
 
         script.write("from urllib.request import urlopen\n")
         script.write("from urllib.parse import urlencode\n")
@@ -32,6 +52,10 @@ class scriptGenerator():
         script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"\n\n')
 
         #---------------------------
+
+        
+            
+
 
         #CREATE JSON OBJECT---------
 
@@ -56,20 +80,34 @@ class scriptGenerator():
 
         #Assemble full request
         script.write('\n#Assemble full request - converts json object to url\n')
-        script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
-        script.write("print(url)")
+        if notPlot == False:
+            script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
+        else:
+            script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)}) + '" + url_tail + "'\n")
+        
+        script.write("print(url)\n")
 
 
 
         #Open URL and read response
-        script.write("\n#Open URL and save response\n")
-        script.write("with closing(urlopen(url)) as f:\n")
-        script.write("  img = Image.open(f)\n")
-        if url.get("type") == "drifter":
-            script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["drifter"]) + ".png", "PNG")\n')
-        else:
-            script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["variable"]) + ".png" , "PNG")\n')
 
+        if notPlot == False:
+            script.write("\n#Open URL and save response\n")
+            script.write("with closing(urlopen(url)) as f:\n")
+            script.write("  img = Image.open(f)\n")
+            if url.get("type") == "drifter":
+                script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["drifter"]) + ".png", "PNG")\n')
+            else:
+                script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["variable"]) + ".png" , "PNG")\n')
+        else:
+            script.write("\n#Open URL and save response\n")
+            script.write("data_file = requests.get(url, stream=True)\n")
+            script.write("dump = data_file.raw\n")
+            script.write("location = os.path.abspath('/home/csv_test.csv')\n")
+            script.write('with open("csv_test.csv", "wb") as location:\n')
+            script.write("  print('Saving File')\n")
+            script.write("  shutil.copyfileobj(dump, location)\n")
+            script.write("  print('Done')\n")
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -84,6 +122,8 @@ class scriptGenerator():
 
     def generateR(url):
         
+        url = json.loads(url)
+
         #setup file
         script = StringIO()
         

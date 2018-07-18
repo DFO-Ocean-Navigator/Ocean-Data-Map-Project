@@ -49,8 +49,6 @@ bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api querie
 @bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
 def generateScript(url, type):
 
-  url = json.loads(url)
-
   if type == "python":
     b = scriptGenerator.generatePython(url)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')

@@ -51,13 +51,13 @@ export default class PlotImage extends React.Component {
       if (language == "pythonPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
-      
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        console.warn(url)
       } else if (language == "rPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
-      
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+        console.warn(url)
       } else if (language == "pythonCSV") {
 
         console.warn(this.props.query);
@@ -73,7 +73,7 @@ export default class PlotImage extends React.Component {
     }
     
 
-    //window.location.href = url;
+    window.location.href = url;
   }
 
   componentDidMount() {
