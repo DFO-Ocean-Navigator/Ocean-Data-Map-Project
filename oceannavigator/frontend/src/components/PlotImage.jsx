@@ -58,7 +58,7 @@ export default class PlotImage extends React.Component {
         var url = stringify(this.generateQuery(this.props.query));
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
         console.warn(url)
-      } else if (language == "pythonCSV") {
+      } else {
 
         console.warn(this.props.query);
         console.warn(this.generateQuery(this.props.query))
@@ -67,7 +67,12 @@ export default class PlotImage extends React.Component {
         `&dpi=${this.props.query.dpi}`;
         //url = stringify(url);
         console.warn(url)
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        if (language == "pythonCSV") {
+          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        } else if (language == "rCSV") {
+          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+        }
+        
         console.warn(url)
       }
     }
@@ -444,10 +449,13 @@ export default class PlotImage extends React.Component {
             ><Icon icon="fab fa-python" /> R - PLOT</MenuItem>
             <MenuItem
               eventKey="pythonPlot"
-            ><FontAwesome name="fab fa-python" /> Python 3 - PLOT</MenuItem>
+            ><Icon icon="fab fa-python" /> Python 3 - PLOT</MenuItem>
             <MenuItem
               eventKey="pythonCSV"
             ><Icon icon="fab fa-python" />Python 3 - CSV</MenuItem>
+            <MenuItem
+              eventKey="rCSV"
+            ><Icon icon="fab fa-python"/>R - CSV</MenuItem>
           </DropdownButton>
 
         </ButtonToolbar>

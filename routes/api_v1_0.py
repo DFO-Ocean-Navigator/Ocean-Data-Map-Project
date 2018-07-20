@@ -5,6 +5,7 @@ import datetime
 from io import BytesIO
 from PIL import Image
 import io
+import hashlib
 from oceannavigator.dataset_config import (
     get_variable_name, get_datasets,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
@@ -35,7 +36,7 @@ import os
 import netCDF4
 import base64
 import pytz
-from plotting.scriptGenerator import scriptGenerator
+from plotting.scriptGenerator import generatePython, generateR
 from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
@@ -49,12 +50,14 @@ bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api querie
 @bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
 def generateScript(url, type):
 
+  print(url)
+
   if type == "python":
-    b = scriptGenerator.generatePython(url)
+    b = generatePython(url)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
-  
+    
   elif type == "r":
-    b = scriptGenerator.generateR(url)
+    b = generateR(url)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
   
   return resp

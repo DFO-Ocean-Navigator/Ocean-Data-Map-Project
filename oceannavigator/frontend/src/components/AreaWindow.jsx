@@ -7,7 +7,7 @@
 
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
-  FormControl, FormGroup, ControlLabel} from "react-bootstrap";
+  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -22,6 +22,7 @@ import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
+var FontAwesome = require('react-fontawesome');
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 
@@ -208,7 +209,7 @@ export default class AreaWindow extends React.Component {
        "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
-  saveScript() {
+  saveScript(key) {
 
 
     let lat_min = this.props.area[0].polygons[0][0][0];
@@ -234,9 +235,13 @@ export default class AreaWindow extends React.Component {
       "user_grid": (this.state.convertToUserGrid ? 1:0),
       "should_zip": (this.state.zip ? 1:0)
     }
-
-
-    let url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/python/";
+    let url = "";
+    if (key == "r") {
+      url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    } else {
+      url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    }
+    console.warn(url);
     window.location.href = url;
   }
 
@@ -493,13 +498,21 @@ export default class AreaWindow extends React.Component {
           onClick={this.saveData}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
-        <Button
-          bsStyle="default"
-          key='script'
-          id='script'
-          onClick={this.saveScript}
+        <DropdownButton
+          id="script"
+          title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
+          bsStyle={"default"}
           disabled={this.state.output_variables == ""}
-        ><Icon icon="script" /> {_("Script")}</Button>
+          onSelect={this.saveScript}
+          dropup
+        >
+          <MenuItem
+            eventKey="python"
+          ><Icon icon="fab fa-python" />Python 3</MenuItem>
+          <MenuItem
+            eventKey="r"
+          ><FontAwesome name="fab fa-python" />R</MenuItem>
+        </DropdownButton>
       </form>
     </Panel>
     );
