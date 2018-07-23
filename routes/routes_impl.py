@@ -495,22 +495,7 @@ def time_query_impl(args):
     return resp
     
 
-def time_query_conversion(dataset, index):
-    """
-    API Format: /api/timestamps/?dataset=' '
 
-    dataset : Dataset to extract data - Can be found using /api/datasets
-
-    Finds all data timestamps available for a specific dataset
-    """
-
-    
-    with open_dataset(get_dataset_url(dataset)) as ds:
-        for idx, date in enumerate(ds.timestamps):
-            if idx == index:
-                return date.replace(tzinfo=pytz.UTC).isoformat()
-        return APIError("Timestamp does not exist")
-    
     
 def timestamp_for_date_impl(old_dataset, date, new_dataset):
     """

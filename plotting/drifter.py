@@ -14,7 +14,6 @@ from data import open_dataset
 import time
 import datetime
 from scipy.interpolate import interp1d
-from utils.function_profiler import profileit
 
 class DrifterPlotter(Plotter):
 
@@ -46,7 +45,6 @@ class DrifterPlotter(Plotter):
         self.starttime = query.get('starttime')
         self.endtime = query.get('endtime')
 
-    @profileit
     def load_data(self):
         ds_url = current_app.config['DRIFTER_URL']
         data_names = []
@@ -92,18 +90,7 @@ class DrifterPlotter(Plotter):
 
         if self.starttime is not None:
             d = dateutil.parser.parse(self.starttime)
-            print(d)
-            print(self.times)
-            print(np)
-            print(np.where(self.times>=d))
-            try :
-                self.start = np.where(self.times >= d)[0].min()
-            except e:
-                print("ERROR: ")
-                print(str(e))
-                self.start = 0
-            
-            print(self.start)
+            self.start = np.where(self.times >= d)[0].min()
         else:
             self.start = 0
 
