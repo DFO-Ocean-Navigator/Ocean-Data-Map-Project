@@ -50,7 +50,7 @@ bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api querie
 @bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
 def generateScript(url, type):
 
-  print(url)
+  #print(url)
 
   if type == "python":
     b = generatePython(url)
@@ -127,7 +127,7 @@ def range_query_v1_0(dataset, variable, interp, radius, neighbours, projection, 
 def get_data_v1_0(dataset, variable, time, depth, location):
   with open_dataset(get_dataset_url(dataset)) as ds:
     date = ds.convert_to_timestamp(time)
-    print(date)
+    #print(date)
     return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
 
 
