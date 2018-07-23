@@ -10,6 +10,11 @@ require("bootstrap/dist/css/bootstrap.css");
 require("./stylesheets/utils/bootstrap.css");
 require("./stylesheets/main.scss");
 
+import ReactGA from 'react-ga'
+
+ReactGA.initialize('UA-122671965-2')
+ReactGA.pageview(window.location.pathname + window.location.search)
+
 class App extends React.Component {
   render () {
     return (
