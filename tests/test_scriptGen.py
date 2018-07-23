@@ -79,7 +79,7 @@ class TestScriptGenerator(unittest.TestCase):
             m = hashlib.md5()
             m.update(newData)
 
-            expectedHash = 'f3db6f2d924c95a57f766bc58f9dc2cc'
+            expectedHash = '7442e1b8ac4b92d9a8aafa7edf6a8400'
 
             self.assertEqual(m.hexdigest(), expectedHash)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,7 +96,7 @@ class TestScriptGenerator(unittest.TestCase):
             m = hashlib.md5()
             m.update(newData)
 
-            expectedHash = '1eb755f319c16a631e90ac2f62e3394b'
+            expectedHash = '4afa74cd7db4226c78fb7f5e2ae0a22f'
 
             self.assertEqual(m.hexdigest(), expectedHash)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,7 +113,7 @@ class TestScriptGenerator(unittest.TestCase):
             m = hashlib.md5()
             m.update(newData)
 
-            expectedHash = '3ef1774025f9ec22006a10ccea391c2b'
+            expectedHash = '9c4552b8e34e8856bd8bde64125e7f2d'
 
             self.assertEqual(m.hexdigest(), expectedHash)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -135,16 +135,16 @@ def generateR(url):
     data_type = "plot"
     try:
         url = json.loads(url)
-        fileExtension = "png"
+        fileExtension = ".png"
     except:
         notPlot = True
         url_tail = "&" + re.findall("&(.*)", url)[0]
         url = re.sub("&(.*)", "", url)
         url = json.loads(url)
-        fileExtension = "csv"
+        fileExtension = ".csv"
     if 'output_format' in url:
         netcdf = True
-        fileExtension = "nc"
+        fileExtension = ".nc"
         data_type = "subset"
     #setup file
     script = StringIO()
@@ -218,6 +218,14 @@ def generateR(url):
     script.seek(0)
     b.write(bytes(script.read(), 'utf-8'))
     b.seek(0)
+
+    #Hash Result (For Testing)
+    #data = b.read()
+    #m = hashlib.md5()
+    #m.update(data)
+    #print(m.hexdigest())
+    #b.seek(0)
+
     return b
 
 
