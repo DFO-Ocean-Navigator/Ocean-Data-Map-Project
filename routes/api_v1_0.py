@@ -5,6 +5,7 @@ import datetime
 from io import BytesIO
 from PIL import Image
 import io
+import hashlib
 from oceannavigator.dataset_config import (
     get_variable_name, get_datasets,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
@@ -35,7 +36,7 @@ import os
 import netCDF4
 import base64
 import pytz
-from plotting.scriptGenerator import scriptGenerator
+from plotting.scriptGenerator import generatePython, generateR
 from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
@@ -49,14 +50,14 @@ bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api querie
 @bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
 def generateScript(url, type):
 
-  url = json.loads(url)
+  #print(url)
 
   if type == "python":
-    b = scriptGenerator.generatePython(url)
+    b = generatePython(url)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
-  
+    
   elif type == "r":
-    b = scriptGenerator.generateR(url)
+    b = generateR(url)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
   
   return resp
@@ -126,7 +127,7 @@ def range_query_v1_0(dataset, variable, interp, radius, neighbours, projection, 
 def get_data_v1_0(dataset, variable, time, depth, location):
   with open_dataset(get_dataset_url(dataset)) as ds:
     date = ds.convert_to_timestamp(time)
-    print(date)
+    #print(date)
     return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
 
 
@@ -171,7 +172,8 @@ def stats_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
-    return routes.routes_impl.subset_query_impl(request.args)
+    query = json.loads(request.args.get('query'))
+    return routes.routes_impl.subset_query_impl(query)
 
 
 #
@@ -245,7 +247,7 @@ def query_id_v1_0(q, q_id):
 #
 # Unchanged from v0.0
 #
-@bp_v1_0.route('/api/v1.0/<string:q>/<stringLprojection>/<int:resolution>/<string:extent>/<string:file_id>.json')
+@bp_v1_0.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file_v1_0(q, projection, resolution, extent, file_id):
   return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
 

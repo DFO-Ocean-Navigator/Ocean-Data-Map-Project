@@ -37,7 +37,6 @@ class NetCDFData(Data):
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         pass
-  
 
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
@@ -84,22 +83,29 @@ class NetCDFData(Data):
 
         # Time range
         try:
+            # Time is an index into timestamps array
             time_range = [int(x) for x in query.get('time').split(',')]
         except ValueError:
             # Time is in ISO 8601 format
-            # Get time index from dataset
             
+            def find_time_index(isoDate: datetime.datetime):
+                for idx, date in enumerate(self.timestamps):
+                    # Only compare year, month, day for now.
+                    # Some daily average datasets have an hour and minute offset
+                    # that messes up the index search.
+                    if date.date() == isoDate.date():
+                        return idx
+
             time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
-            time_var = self.__get_time_variable()
-            time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
-            time_range = [np.where(time_var.values == x)[0] for x in time_range]
+            time_range = [find_time_index(x) for x in time_range]
 
         apply_time_range = False
         if time_range[0] != time_range[1]:
             apply_time_range = True
 
-        # Finds a variable in a dictionary given a substring containing common characters
-        # Not a fool-proof method but I want to avoid regex because I hate it.
+        # Finds a variable in a dictionary given a substring containing common characters.
+        # Don't use regex here since compiling a new pattern every call WILL add huge overhead.
+        # This is guarenteed to be the fastest method.
         def find_variable(substring: str, variables: list):
             for key in variables:
                 if substring in key:
@@ -219,8 +225,9 @@ class NetCDFData(Data):
             filename = dataset_name.upper() + "_" + \
                 datetime.date.today().strftime("%Y%m%d") +"_d0" + \
                 (("-"+str(time_range)) if time_range > 0 else "") + "_" + \
-                str(np.round(top_right[0]).astype(int)) + "N" + str(np.abs(np.round(bottom_left[1]).astype(int))) + "W" + \
-                str(np.round(bottom_left[0]).astype(int)) + "S" + str(np.abs(np.round(top_right[1])).astype(int)) + "E"
+                str(np.round(top_right[0]).astype(int)) + "N" + str(np.abs(np.round(bottom_left[1]).astype(int))).zfill(3) + "W" + \
+                str(np.round(bottom_left[0]).astype(int)) + "N" + str(np.abs(np.round(top_right[1])).astype(int)).zfill(3) + "W" + \
+                "_" + output_format
             ds = netCDF4.Dataset(working_dir + filename + ".nc", 'w', format="NETCDF3_CLASSIC")
             ds.description = "Converted " + dataset_name
             ds.history = "Created: " + str(datetime.datetime.now())

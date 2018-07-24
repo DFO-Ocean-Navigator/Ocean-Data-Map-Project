@@ -24,6 +24,7 @@
     "detect-browser": "^1.7.0",
     "detect-mobile-browser": "^5.0.0",
     "es6-promise": "~4.1.1",
+    "fast-stable-stringify": "1.0.0",
     "font-awesome": "^4.7.0",
     "i18next": "^8.4.2",
     "i18next-browser-languagedetector": "^2.0.0",
@@ -38,10 +39,11 @@
     "react-bootstrap": "^0.31.0",
     "react-dom": "~15.6.1",
     "react-fontawesome": "^1.6.1",
+    "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
-    "webfontloader": "^1.6.28",
-    "fast-stable-stringify": "1.0.0"
+    "react-tracker": "0.0.8",
+    "webfontloader": "^1.6.28"
   },
   "devDependencies": {
     "babel-polyfill": "^6.26.0",

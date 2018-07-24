@@ -7,7 +7,7 @@
 
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
-  FormControl, FormGroup, ControlLabel} from "react-bootstrap";
+  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -22,6 +22,7 @@ import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
+var FontAwesome = require('react-fontawesome');
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 
@@ -78,6 +79,7 @@ export default class AreaWindow extends React.Component {
     this.saveData = this.saveData.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+    this.saveScript = this.saveScript.bind(this);
   }
 
   componentDidMount() {
@@ -205,6 +207,42 @@ export default class AreaWindow extends React.Component {
        "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
        "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
+  }
+
+  saveScript(key) {
+
+
+    let lat_min = this.props.area[0].polygons[0][0][0];
+    let lat_max = this.props.area[0].polygons[0][0][1];
+    let long_min = this.props.area[0].polygons[0][0][0];
+    let long_max = this.props.area[0].polygons[0][0][1];
+
+    for (let i = 0; i < this.props.area[0].polygons[0].length; ++i) {
+      lat_min = Math.min(lat_min, this.props.area[0].polygons[0][i][0]);
+      long_min = Math.min(long_min, this.props.area[0].polygons[0][i][1]);
+
+      lat_max = Math.max(lat_max, this.props.area[0].polygons[0][i][0]);
+      long_max = Math.max(long_max, this.props.area[0].polygons[0][i][1]);
+    }
+    
+    let query = {
+      "output_format": this.state.output_format,
+      "dataset_name": this.props.dataset_0.dataset,
+      "variables": this.state.output_variables.join(),
+      "min_range": [lat_min, long_min].join(),
+      "max_range": [lat_max, long_max].join(),
+      "time": [this.state.output_starttime, this.state.output_endtime].join(),
+      "user_grid": (this.state.convertToUserGrid ? 1:0),
+      "should_zip": (this.state.zip ? 1:0)
+    }
+    let url = "";
+    if (key == "r") {
+      url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    } else {
+      url = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    }
+    console.warn(url);
+    window.location.href = url;
   }
 
   onSelect(key) {
@@ -460,6 +498,21 @@ export default class AreaWindow extends React.Component {
           onClick={this.saveData}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
+        <DropdownButton
+          id="script"
+          title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
+          bsStyle={"default"}
+          disabled={this.state.output_variables == ""}
+          onSelect={this.saveScript}
+          dropup
+        >
+          <MenuItem
+            eventKey="python"
+          ><Icon icon="fab fa-python" />Python 3</MenuItem>
+          <MenuItem
+            eventKey="r"
+          ><FontAwesome name="fab fa-python" />R</MenuItem>
+        </DropdownButton>
       </form>
     </Panel>
     );

@@ -16,7 +16,6 @@ from oceannavigator.dataset_config import (
 from flask_babel import format_date, format_datetime
 import contextlib
 from PIL import Image
-from utils.function_profiler import profileit
 
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
