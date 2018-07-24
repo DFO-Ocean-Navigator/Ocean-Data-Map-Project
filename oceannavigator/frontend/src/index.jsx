@@ -11,7 +11,7 @@ require("bootstrap/dist/css/bootstrap.css");
 require("./stylesheets/utils/bootstrap.css");
 require("./stylesheets/main.scss");
 
-ReactGA.initialize('UA-122671965-2')
+ReactGA.initialize('UA-122671965-3')
 ReactGA.pageview(window.location.pathname + window.location.search)
 
 class App extends React.Component {
