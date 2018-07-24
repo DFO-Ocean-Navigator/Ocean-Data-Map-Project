@@ -15,6 +15,7 @@ import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import { t } from "i18next/dist/commonjs";
 
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
@@ -118,7 +119,7 @@ export default class OceanNavigator extends React.Component {
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
   }
-
+  
   //Updates the page language upon user request
   updateLanguage() {
     this.forceUpdate();
