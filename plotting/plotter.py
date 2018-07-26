@@ -42,9 +42,8 @@ class Plotter(metaclass=ABCMeta):
             self.filetype
         )
 
-    # Called by views.py to parse query, load data, and return the generated file
-    # to be displayed by Javascript.
-    def run(self, **kwargs):
+    
+    def prepare_plot(self, **kwargs):
         if 'size' in kwargs and kwargs.get('size') is not None:
             self.size = kwargs.get('size')
 
@@ -53,8 +52,14 @@ class Plotter(metaclass=ABCMeta):
 
         # Extract requested data
         self.parse_query(self.query)
-
         self.load_data()
+
+        return self.data
+
+    # Called by views.py to parse query, load data, and return the generated file
+    # to be displayed by Javascript.
+    def run(self, **kwargs):
+        self.prepare_plot(**kwargs)
 
         if self.filetype == 'csv':
             return self.csv()
