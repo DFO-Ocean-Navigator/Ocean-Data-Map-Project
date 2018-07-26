@@ -42,7 +42,7 @@ class Plotter(metaclass=ABCMeta):
             self.filetype
         )
 
-    # Called by views.py to parse query, load data, and return the generated file
+    # Called by route_impl.py to parse query, load data, and return the generated file
     # to be displayed by Javascript.
     def run(self, **kwargs):
         if 'size' in kwargs and kwargs.get('size') is not None:
