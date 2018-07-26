@@ -234,6 +234,10 @@ export default class MapInputs extends React.Component {
 
           </Tab>
         </Tabs>
+        <div class='cookieBanner'>
+                This website uses Google Analytics. By continuing, you accept the usage of cookies.
+                <a target="_blank" href="https://www.wikihow.com/Disable-Cookies"> How to Disable Cookies</a>
+        </div>
       </div>
     );
   }

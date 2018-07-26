@@ -189,11 +189,19 @@ def plot_v1_0():
   query = json.loads(args.get('query'))
 
   with open_dataset(get_dataset_url(query.get('dataset'))) as dataset:
-    date = dataset.convert_to_timestamp(query.get('time'))
-    date = {'time' : date}
-    query.update(date)
+    if 'time' in query:
+      query['time'] = dataset.convert_to_timestamp(query.get('time'))  
+    else:
+      query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
+      query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
+      
+    resp = routes.routes_impl.plot_impl(args,query)
 
-    return routes.routes_impl.plot_impl(args, query)
+    m = hashlib.md5()
+    m.update(str(resp).encode())
+    print(m.hexdigest())
+    print("HERE")
+    return resp
 
 
 #
