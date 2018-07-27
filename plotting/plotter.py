@@ -41,7 +41,6 @@ class Plotter(metaclass=ABCMeta):
             dataset_name,
             self.filetype
         )
-
     
     def prepare_plot(self, **kwargs):
         if 'size' in kwargs and kwargs.get('size') is not None:
@@ -56,7 +55,7 @@ class Plotter(metaclass=ABCMeta):
 
         return self.data
 
-    # Called by views.py to parse query, load data, and return the generated file
+    # Called by routes_impl.py to parse query, load data, and return the generated file
     # to be displayed by Javascript.
     def run(self, **kwargs):
         self.prepare_plot(**kwargs)
