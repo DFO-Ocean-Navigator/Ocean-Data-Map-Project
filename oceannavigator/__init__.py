@@ -20,7 +20,7 @@ def create_app():
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
 
     datasetConfig = argv[-1]
-    if 'datasetConfig' in datasetConfig:
+    if '.json' in datasetConfig:
         app.config['datasetConfig'] = datasetConfig
     else:
         app.config['datasetConfig'] = "datasetconfig.json"
