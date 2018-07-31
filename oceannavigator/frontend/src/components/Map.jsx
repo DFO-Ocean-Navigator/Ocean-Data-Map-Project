@@ -1078,6 +1078,7 @@ export default class Map extends React.Component {
           ref={(c) => this.infoPopup = c}
         >
           <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+          <a href="#" title={_("Plot")} ref={(c) => console.warn("hello")}></a>
           <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>

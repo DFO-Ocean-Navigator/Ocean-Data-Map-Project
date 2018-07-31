@@ -12,24 +12,74 @@ import data
 import requests
 import routes
 from urllib.parse import urlencode
-
+from oceannavigator.dataset_config import __get_dataset_config, get_datasets, get_variables
+import warnings
+import sys
+from flask import current_app
 def geturl(query):
-    request = "/plot/?" + urlencode({"query": json.dumps(query)})
-    return request
+        request = "/plot/?" + urlencode({"query": json.dumps(query)})
+        return request
+
+
+
+class SetUpTest:
+    
+    def basic(self):
+        return {
+            'datasets': 'giops_day',
+            'variables': 'votemper'
+        }
+
+    def thorough(self):
+        
+            self.app = create_app()
+            with self.app.app_context():
+
+                datasets = get_datasets()
+                variables = {}
+                for dataset in datasets:
+                    variables.update({dataset: get_variables(dataset)})
+                data = {
+                    'datasets': datasets,
+                    'variables': variables
+                }
+                print('DATA: ')
+                print(data)
+                return data    
 
 #
 # This Class Tests various different point plot requests
 #
 class TestLinePlot(unittest.TestCase):
 
+    test_data = None
+
     @classmethod
     def setUpClass(self):
         self.app = create_app().test_client()
+        test_config = SetUpTest()
+        #Suppressing Unclosed File Warning in basemap.py line 40,76
+        warnings.simplefilter("ignore", ResourceWarning)
+        warnings.simplefilter("ignore", UserWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
+
+
+        test_level = sys.argv.pop()
+        
+        print(test_level)
+        
+        
+        if test_level == 'thorough':
+            self.test_data = test_config.thorough()
+        else:
+            self.test_data = test_config.basic()
 
     #
     # Tests Basic Plot Near NL
     #
     def test_basic_plot(self):
+
+        test_data = self.test_data
 
         query = {
           "colormap": "default",
@@ -47,9 +97,21 @@ class TestLinePlot(unittest.TestCase):
           "type": "transect",
           "variable": "votemper",
         }
+        print(test_data['datasets'])
+        print(type(test_data['datasets']))
+        for dataset in test_data['datasets']:
+            print(dataset)
 
-        resp = self.app.get(geturl(query))
-        self.assertEqual(resp.status_code, 200)
+            if dataset != 'gem':
+
+                query['dataset'] = dataset
+                for variable in test_data['variables'][dataset]:
+                    print(variable)
+                    query['variable'] = variable
+                    
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         
     #
     # Tests Arctic Plot
