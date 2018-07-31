@@ -86,15 +86,29 @@ class NetCDFData(Data):
             # Time is an index into timestamps array
             time_range = [int(x) for x in query.get('time').split(',')]
         except ValueError:
-            # Time is in ISO 8601 format
+            # Time is in ISO 8601 format and we need the dataset quantum
             
-            def find_time_index(isoDate: datetime.datetime):
-                for idx, date in enumerate(self.timestamps):
-                    # Only compare year, month, day for now.
-                    # Some daily average datasets have an hour and minute offset
-                    # that messes up the index search.
-                    if date.date() == isoDate.date():
-                        return idx
+            quantum = query.get('quantum')
+            if quantum == 'hour':
+                def find_time_index(isoDate: datetime.datetime):
+                    return
+
+            elif quantum == 'day':
+                def find_time_index(isoDate: datetime.datetime):
+                    for idx, date in enumerate(self.timestamps):
+                        # Only compare year, month, day.
+                        # Some daily average datasets have an hour and minute offset
+                        # that messes up the index search.
+                        if date.date() == isoDate.date():
+                            return idx
+
+            elif quantum == 'month':
+                def find_time_index(isoDate: datetime.datetime):
+                    for idx, date in enumerate(self.timestamps):
+                        # Only compare year and month
+                        if date.date().year == isoDate.date().year and \
+                        date.date().month == isoDate.date().month:
+                            return idx
 
             time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
             time_range = [find_time_index(x) for x in time_range]
@@ -105,7 +119,7 @@ class NetCDFData(Data):
 
         # Finds a variable in a dictionary given a substring containing common characters.
         # Don't use regex here since compiling a new pattern every call WILL add huge overhead.
-        # This is guarenteed to be the fastest method.
+        # This is guaranteed to be the fastest method.
         def find_variable(substring: str, variables: list):
             for key in variables:
                 if substring in key:

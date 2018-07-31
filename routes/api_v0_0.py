@@ -192,11 +192,15 @@ def subset_query_v0():
 @bp_v0_0.route('/plot/', methods=['GET', 'POST'])
 def plot_v0():
     if request.method == "GET":
+        if 'query' not in request.args:
+            raise APIError("Please Provide a Query")
         query = json.loads(request.args.get('query'))
         #if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
             #raise ValueError
         return routes.routes_impl.plot_impl(request.args)
     else:
+        if 'query' not in request.args:
+            raise APIError("Please Provide a Query")
         query = json.loads(request.form.get('query'))
         if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
             raise ValueError

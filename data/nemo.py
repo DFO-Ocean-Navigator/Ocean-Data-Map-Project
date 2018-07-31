@@ -30,12 +30,14 @@ class Nemo(NetCDFData):
                     # Get DataArray for depth
                     var = self._dataset.variables[v]
                     break
-
-            ureg = UnitRegistry()
-            unit = ureg.parse_units(var.attrs['units'].lower())
-            self.__depths = ureg.Quantity(
-                var.values, unit
-            ).to(ureg.meters).magnitude
+            if var is not None:
+                ureg = UnitRegistry()
+                unit = ureg.parse_units(var.attrs['units'].lower())
+                self.__depths = ureg.Quantity(
+                    var.values, unit
+                ).to(ureg.meters).magnitude            
+            else:
+                self.__depths = np.array([0])
             self.__depths.setflags(write=False) # Make immutable
 
         return self.__depths

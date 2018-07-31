@@ -109,7 +109,7 @@ def get_variables(dataset: str) -> list:
     for key in variable_keys:
         is_hidden = __get_dataset_config()[dataset]["variables"][key].get("hide")
 
-        if is_hidden is None or is_hidden in ['false', 'False']:
+        if is_hidden is False or is_hidden is None or is_hidden in ['false', 'False']:
             variables.append(key)
     return variables
 
