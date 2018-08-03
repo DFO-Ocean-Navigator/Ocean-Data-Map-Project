@@ -766,7 +766,7 @@ export default class Map extends React.Component {
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
       // Pass point to PointWindow
-      this.props.action("point", lonlat);
+      this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
       this.map.removeInteraction(draw);
       this.drawing = false;
       setTimeout(
@@ -775,15 +775,6 @@ export default class Map extends React.Component {
       );
     }.bind(this));
     this.map.addInteraction(draw);
-  }
-
-  //Launches the point window using the LatLon in this.state.location
-  pointLaunch() {
-    
-    setTimeout(
-      function() {this.controlDoubleClickZoom(true); }.bind(this),
-      251
-    );
   }
 
   line() {
