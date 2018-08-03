@@ -127,6 +127,10 @@ export default class Map extends React.Component {
 
     this.drawing = false;
 
+    this.state = {
+      location: [0,90]
+    }
+
     this.loader = function(extent, resolution, projection) {
       if (this.props.state.vectortype) {
         $.ajax({
@@ -430,7 +434,9 @@ export default class Map extends React.Component {
         this.infoRequest.abort();
       }
       const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
-      
+      this.setState({
+        location: [location[0], location[1]]
+      })
       this.infoRequest = $.ajax({
         url: (
           `/api/data/${this.props.state.dataset}` +
@@ -687,6 +693,13 @@ export default class Map extends React.Component {
       return false;
     }.bind(this);
 
+    this.infoPopupLauncher.onclick = function() {
+      this.infoOverlay.setPosition(undefined);
+      this.infoPopupLauncher.blur();
+      this.props.action("point", this.state.location);
+      return false;
+    }.bind(this);
+
     // Tracks if this component is mounted
     this._mounted = true;
   }
@@ -739,6 +752,7 @@ export default class Map extends React.Component {
 
     this.drawing = true;
 
+    //Resets map (in case other plots have been drawn)
     this.resetMap();
     const draw = new ol.interaction.Draw({
       source: this.vectorSource,
@@ -761,6 +775,15 @@ export default class Map extends React.Component {
       );
     }.bind(this));
     this.map.addInteraction(draw);
+  }
+
+  //Launches the point window using the LatLon in this.state.location
+  pointLaunch() {
+    
+    setTimeout(
+      function() {this.controlDoubleClickZoom(true); }.bind(this),
+      251
+    );
   }
 
   line() {
@@ -1077,9 +1100,14 @@ export default class Map extends React.Component {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-          <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
-          <a href="#" title={_("Plot")} ref={(c) => console.warn("hello")}></a>
-          <div ref={(c) => this.infoPopupContent = c}></div>
+        <div className={'balloonClose'}>
+        <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+        </div>
+        <div className={'balloonLaunch'}>
+        <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+        </div>      
+        
+        <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>
     );
