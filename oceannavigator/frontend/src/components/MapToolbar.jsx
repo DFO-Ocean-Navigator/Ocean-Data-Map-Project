@@ -724,7 +724,18 @@ export default class MapToolbar extends React.Component {
               />
               
             </OverlayTrigger>
-
+            <OverlayTrigger
+              placement="bottom"
+              overlay={<Tooltip id="tooltip">{_("API Documentation")}</Tooltip>}
+            >
+              <NavItem
+                name='api'
+                target="_blank"
+                href="/documentation/"
+              >
+                API
+              </NavItem>
+            </OverlayTrigger>
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("Help")}</Tooltip>}

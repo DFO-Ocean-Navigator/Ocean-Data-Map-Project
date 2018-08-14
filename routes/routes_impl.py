@@ -706,6 +706,8 @@ def plot_impl(args, query = None):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
+
+    #Checks if query has already been extracted from args
     if query == None:
         if 'query' not in args:
             raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
@@ -750,6 +752,7 @@ def plot_impl(args, query = None):
 
     filename = 'png'
     img = ""
+
 
     # Determine which plotter we need.
     if plottype == 'map':
