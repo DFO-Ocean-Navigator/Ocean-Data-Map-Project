@@ -58,6 +58,7 @@ export default class OceanNavigator extends React.Component {
       showBugs: false,
       showCompareHelp: false,
       extent: [],
+      setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
         dataset: "giops_day",
