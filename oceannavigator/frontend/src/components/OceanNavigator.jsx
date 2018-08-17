@@ -340,9 +340,7 @@ export default class OceanNavigator extends React.Component {
           }
         }
         break;
-      case "area":
-        console.warn("Creating Plot")
-        
+      case "area":        
         if (typeof(arg) === "object") {
           // Disable area drawing on both maps
           this.setState({
@@ -654,6 +652,7 @@ export default class OceanNavigator extends React.Component {
             action={this.action}
             plotEnabled={this.state.plotEnabled}
             dataset_compare={this.state.dataset_compare}
+            updateState={this.updateState}
             toggleSidebar={this.toggleSidebar}
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}

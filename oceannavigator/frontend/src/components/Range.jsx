@@ -208,6 +208,6 @@ Range.propTypes = {
   onUpdate: PropTypes.func,
   setDefaultScale: PropTypes.bool,
   default_scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  state: PropTypes.string,
+  state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   autourl: PropTypes.string,
 };

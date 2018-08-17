@@ -475,7 +475,7 @@ LineWindow.propTypes = {
   quantum: PropTypes.string,
   dataset_0: PropTypes.object,
   onUpdate: PropTypes.func,
-  scale: PropTypes.string,
+  scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   scale_1: PropTypes.string,
   init: PropTypes.object,
   starttime: PropTypes.number,
