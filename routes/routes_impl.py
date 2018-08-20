@@ -432,7 +432,8 @@ def vars_query_impl(args):
 
         #If Vectors are needed
         if 'vectors' in args or 'vectors_only' in args:
-            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward)"
+            
+            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
             for key, value in list(VECTOR_MAP.items()):
                 if key in ds.variables:
                     n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   

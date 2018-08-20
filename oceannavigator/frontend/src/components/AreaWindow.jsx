@@ -707,7 +707,7 @@ AreaWindow.propTypes = {
   quantum: PropTypes.string,
   name: PropTypes.string,
   onUpdate: PropTypes.func,
-  scale: PropTypes.string,
+  scale: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   init: PropTypes.object,
   action: PropTypes.func,
   showHelp: PropTypes.func,

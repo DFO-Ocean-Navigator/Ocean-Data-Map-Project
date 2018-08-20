@@ -693,7 +693,11 @@ export default class MapToolbar extends React.Component {
             >
               <NavItem
                 name="reset"
-                onClick={this.buttonHandler}
+                onClick={(e) => {
+                    this.buttonHandler(e); 
+                    this.props.updateState("plotEnabled", false);
+                  }
+                }
               >
                 <Icon icon='undo' alt={_("Reset Map")} />
               </NavItem>
@@ -908,6 +912,7 @@ export default class MapToolbar extends React.Component {
 //***********************************************************************
 MapToolbar.propTypes = {
   plotEnabled: PropTypes.bool,
+  updateState: PropTypes.func,
   toggleSidebar: PropTypes.func,
   action: PropTypes.func,
   toggleOptionsSidebar: PropTypes.func,
