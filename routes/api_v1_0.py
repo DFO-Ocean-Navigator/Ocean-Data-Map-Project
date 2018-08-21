@@ -196,23 +196,16 @@ def plot_v1_0():
       query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
       query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
       
-    print("Sending Response")
     resp = routes.routes_impl.plot_impl(args,query)
 
     m = hashlib.md5()
     m.update(str(resp).encode())
-    print(m.hexdigest())
-    print("HERE")
-    print(resp)
     if 'data' in request.args:
-      print(resp.shape)
-      print(str(resp.mask))
       plotData = {
         'data': str(resp),
         'shape': resp.shape,
         'mask': str(resp.mask)
       }
-      print(plotData)
       plotData = json.dumps(plotData)
       return Response(plotData, status=200, mimetype='application/json')
     return resp

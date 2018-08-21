@@ -187,7 +187,6 @@ class TransectPlotter(pl.LinePlotter):
 
             with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
                 # Get and format date
-                print(type(self.compare['time']))
                 self.compare['date'] = np.clip(np.int64(self.compare['time']), 0, len(dataset.timestamps) - 1)
                 self.compare['date'] = dataset.timestamps[int(self.compare['date'])]
 

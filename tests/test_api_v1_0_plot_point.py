@@ -175,9 +175,6 @@ class TestPointPlot(unittest.TestCase):
         for t in tests:
             query['type'] = t
             resp = self.app.get(geturl(query))
-            
-            print("RESPONSE")
-            print(resp)
         
             #self.assertEqual(m.hexdigest(), tests[t])
             
