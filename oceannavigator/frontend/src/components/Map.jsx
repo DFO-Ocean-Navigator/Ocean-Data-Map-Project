@@ -127,6 +127,10 @@ export default class Map extends React.Component {
 
     this.drawing = false;
 
+    this.state = {
+      location: [0,90]
+    }
+
     this.loader = function(extent, resolution, projection) {
       if (this.props.state.vectortype) {
         $.ajax({
@@ -430,7 +434,9 @@ export default class Map extends React.Component {
         this.infoRequest.abort();
       }
       const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
-      
+      this.setState({
+        location: [location[0], location[1]]
+      })
       this.infoRequest = $.ajax({
         url: (
           `/api/data/${this.props.state.dataset}` +
@@ -555,14 +561,11 @@ export default class Map extends React.Component {
         }
       }.bind(this));
 
-      if (t && ((t != "line" && t != "drifter" && t != "class4") || content.length == 1)) {
-        this.props.updateState(t, content);
-        this.props.updateState("modal", t);
-        this.props.updateState("names", names);
-        this.props.updateState("plotEnabled", true);
-      } else {
-        this.props.updateState("plotEnabled", false);
-      }
+      
+      this.props.updateState(t, content);
+      this.props.updateState("modal", t);
+      this.props.updateState("names", names);
+
     }.bind(this);
 
     select.on("select", function(e) {
@@ -687,6 +690,13 @@ export default class Map extends React.Component {
       return false;
     }.bind(this);
 
+    this.infoPopupLauncher.onclick = function() {
+      this.infoOverlay.setPosition(undefined);
+      this.infoPopupLauncher.blur();
+      this.props.action("point", this.state.location);
+      return false;
+    }.bind(this);
+
     // Tracks if this component is mounted
     this._mounted = true;
   }
@@ -739,6 +749,7 @@ export default class Map extends React.Component {
 
     this.drawing = true;
 
+    //Resets map (in case other plots have been drawn)
     this.resetMap();
     const draw = new ol.interaction.Draw({
       source: this.vectorSource,
@@ -751,8 +762,9 @@ export default class Map extends React.Component {
       const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      this.props.updateState("plotEnabled", true)
       // Pass point to PointWindow
-      this.props.action("point", lonlat);
+      this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
       this.map.removeInteraction(draw);
       this.drawing = false;
       setTimeout(
@@ -787,6 +799,7 @@ export default class Map extends React.Component {
       );
       // Draw line(s) on map(s)
       this.props.action("add", "line", points);
+      this.props.updateState("plotEnabled", true)
       // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
@@ -828,6 +841,7 @@ export default class Map extends React.Component {
       };
       // Draw area on map(s)
       this.props.action("add", "area", points);
+      this.props.updateState("plotEnabled", true)
       // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
@@ -1077,8 +1091,14 @@ export default class Map extends React.Component {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-          <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
-          <div ref={(c) => this.infoPopupContent = c}></div>
+        <div className={'balloonClose'}>
+        <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+        </div>
+        <div className={'balloonLaunch'}>
+        <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+        </div>      
+        
+        <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>
     );
@@ -1090,7 +1110,7 @@ Map.propTypes = {
   state: PropTypes.object,
   projection: PropTypes.string,
   updateState: PropTypes.func,
-  scale: PropTypes.string,
+  scale: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   action: PropTypes.func,
   partner: PropTypes.object,
   options: PropTypes.object,

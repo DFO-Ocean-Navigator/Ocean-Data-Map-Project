@@ -432,7 +432,8 @@ def vars_query_impl(args):
 
         #If Vectors are needed
         if 'vectors' in args or 'vectors_only' in args:
-            rxp = r"(?i)(x | y | zonal |meridional |northward |eastward)"
+            
+            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
             for key, value in list(VECTOR_MAP.items()):
                 if key in ds.variables:
                     n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
@@ -706,6 +707,8 @@ def plot_impl(args, query = None):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
+
+    #Checks if query has already been extracted from args
     if query == None:
         if 'query' not in args:
             raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
@@ -751,6 +754,7 @@ def plot_impl(args, query = None):
     filename = 'png'
     img = ""
 
+
     # Determine which plotter we need.
     if plottype == 'map':
         plotter = MapPlotter(dataset, query, args.get('format'))
@@ -778,6 +782,10 @@ def plot_impl(args, query = None):
         raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
 
     # Get the data from the selected plotter.
+    if 'data' in request.args:
+        data = plotter.prepare_plot(size=size, dpi=args.get('dpi'))
+        return data   
+    
     img, mime, filename = plotter.run(size=size, dpi=args.get('dpi'))
     
     if img != "":

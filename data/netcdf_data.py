@@ -89,20 +89,17 @@ class NetCDFData(Data):
             # Time is in ISO 8601 format and we need the dataset quantum
             
             quantum = query.get('quantum')
-            if quantum == 'hour':
-                def find_time_index(isoDate: datetime.datetime):
-                    return
-
-            elif quantum == 'day':
+            if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
                         # Only compare year, month, day.
-                        # Some daily average datasets have an hour and minute offset
-                        # that messes up the index search.
+                        # Some daily/hourly average datasets have an 
+                        # hour and minute offset that messes up 
+                        # the index search.
                         if date.date() == isoDate.date():
                             return idx
 
-            elif quantum == 'month':
+            else:
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
                         # Only compare year and month

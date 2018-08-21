@@ -54,6 +54,7 @@ export default class MapInputs extends React.Component {
         <Range
           id='scale'
           state={this.props.state.scale}
+          setDefaultScale={this.props.state.setDefaultScale}
           def=''
           onUpdate={this.props.changeHandler}
           onSubmit={this.props.changeHandler}
@@ -95,6 +96,7 @@ export default class MapInputs extends React.Component {
             key='scale_1'
             id='scale_1'
             state={this.props.state.scale_1}
+            setDefaultScale={this.props.state.setDefaultScale}
             def=''
             onUpdate={this.props.changeHandler}
             title={_("Variable Range")}

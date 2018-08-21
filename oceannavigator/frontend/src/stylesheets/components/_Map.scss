@@ -190,11 +190,21 @@
                 position: absolute;
                 top: 5px;
                 right: 5px;
+            }
 
+            .balloonClose a {
                 &:after {
-                    content: "✖";
+                    content: "✖"
                 }
             }
+
+            
+            .balloonLaunch a {
+                &:after {
+                    content:"↪";
+                }
+            }
+            
 
             p {
                 white-space: nowrap;
@@ -206,6 +216,8 @@
     }
     .ol-popup {
     }
+
+    
 
     .ol-popup:before {
     }

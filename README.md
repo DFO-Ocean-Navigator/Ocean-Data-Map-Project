@@ -1,5 +1,8 @@
 # Ocean Navigator
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/13f9b6c4f4b343e78806c82ee0ffce34)](https://www.codacy.com/project/oceandatamap/Ocean-Data-Map-Project/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DFO-Ocean-Navigator/Ocean-Data-Map-Project&amp;utm_campaign=Badge_Grade_Dashboard)
+[![CodeFactor](https://www.codefactor.io/repository/github/dfo-ocean-navigator/ocean-data-map-project/badge)](https://www.codefactor.io/repository/github/dfo-ocean-navigator/ocean-data-map-project)
+
 ## Contents
 * Overview
 * Development

@@ -175,12 +175,7 @@ class TestPointPlot(unittest.TestCase):
         for t in tests:
             query['type'] = t
             resp = self.app.get(geturl(query))
-            img = Image.open(resp)
-            img.save("test_" + t + ".png", "PNG")
-            m = hashlib.md5()
-            m.update(str(resp).encode())
-            print(t)
-            print(m.hexdigest())
+        
             #self.assertEqual(m.hexdigest(), tests[t])
             
         #Virtual Mooring

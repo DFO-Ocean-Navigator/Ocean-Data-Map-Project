@@ -41,6 +41,7 @@ from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
 
+
 bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api queries
 
 #~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,10 +200,15 @@ def plot_v1_0():
 
     m = hashlib.md5()
     m.update(str(resp).encode())
-    print(m.hexdigest())
-    print("HERE")
+    if 'data' in request.args:
+      plotData = {
+        'data': str(resp),
+        'shape': resp.shape,
+        'mask': str(resp.mask)
+      }
+      plotData = json.dumps(plotData)
+      return Response(plotData, status=200, mimetype='application/json')
     return resp
-
 
 #
 # Unchanged from v0.0

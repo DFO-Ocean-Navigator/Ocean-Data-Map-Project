@@ -584,7 +584,7 @@ PointWindow.propTypes = {
   quantum: PropTypes.string,
   dataset: PropTypes.string,
   onUpdate: PropTypes.func,
-  scale: PropTypes.string,
+  scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   depth: PropTypes.number,
   init: PropTypes.object,
   action: PropTypes.func,
