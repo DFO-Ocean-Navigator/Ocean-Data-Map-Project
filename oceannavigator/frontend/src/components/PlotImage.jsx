@@ -52,12 +52,10 @@ export default class PlotImage extends React.Component {
 
         var url = stringify(this.generateQuery(this.props.query));
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
-        console.warn(url)
       } else if (language == "rPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
-        console.warn(url)
       } else {
 
         console.warn(this.props.query);
@@ -65,15 +63,12 @@ export default class PlotImage extends React.Component {
         var url = stringify(this.generateQuery(this.props.query)) +
         `&save&format=csv&size=${this.props.query.size}` +
         `&dpi=${this.props.query.dpi}`;
-        //url = stringify(url);
-        console.warn(url)
         if (language == "pythonCSV") {
           url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
         } else if (language == "rCSV") {
           url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
         }
-        
-        console.warn(url)
+      
       }
     }
     
@@ -260,10 +255,7 @@ export default class PlotImage extends React.Component {
         query.interp = q.interp;
         query.radius = q.radius;
         query.neighbours = q.neighbours;
-        
-        //Checks if a user specified their own title
-        
-        
+              
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -318,10 +310,13 @@ export default class PlotImage extends React.Component {
     return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
-  saveImage(key) {
-    const url = `${this.urlFromQuery(this.props.query)}` +
-      `&save&format=${key}&size=${this.props.query.size}` +
-      `&dpi=${this.props.query.dpi}`;
+  saveImage(format) {
+    let url = `${this.urlFromQuery(this.props.query)}` + `&save&format=${format}`;
+      
+    if (format !== "odv" || format !== "csv") {
+      url += `&size=${this.props.query.size}` + `&dpi=${this.props.query.dpi}`;
+    }
+
     window.location.href = url;
   }
 
@@ -423,16 +418,11 @@ export default class PlotImage extends React.Component {
           >
             <MenuItem
               eventKey="web"
-            ><Icon icon="globe" /> Web</MenuItem>
+            ><Icon icon="globe" /> {_("Web")}</MenuItem>
             <MenuItem
               eventKey="image"
               disabled={this.state.fail}
-            ><Icon icon="file-image-o" /> Image</MenuItem>
-            {/*
-            <MenuItem
-              eventKey="script"
-            ><Icon icon="file-code-o" /> Script</MenuItem>
-            */}
+            ><Icon icon="file-image-o" /> {_("Image")}</MenuItem>
           </DropdownButton>
 
           <DropdownButton
@@ -446,16 +436,16 @@ export default class PlotImage extends React.Component {
             <MenuItem
               eventKey="rPlot"
               disabled={this.state.fail}
-            ><Icon icon="fab fa-python" /> R - PLOT</MenuItem>
+            ><Icon icon="code" /> R - PLOT</MenuItem>
             <MenuItem
               eventKey="pythonPlot"
-            ><Icon icon="fab fa-python" /> Python 3 - PLOT</MenuItem>
+            ><Icon icon="code" /> Python 3 - PLOT</MenuItem>
             <MenuItem
               eventKey="pythonCSV"
-            ><Icon icon="fab fa-python" />Python 3 - CSV</MenuItem>
+            ><Icon icon="code" /> Python 3 - CSV</MenuItem>
             <MenuItem
               eventKey="rCSV"
-            ><Icon icon="fab fa-python"/>R - CSV</MenuItem>
+            ><Icon icon="code"/>R - CSV</MenuItem>
           </DropdownButton>
 
         </ButtonToolbar>
