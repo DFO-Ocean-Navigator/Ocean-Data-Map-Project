@@ -2,7 +2,7 @@ import React from "react";
 import {Checkbox} from "react-bootstrap";
 import PropTypes from "prop-types";
 
-export default class SelectBox extends React.Component {
+export default class SelectBox extends React.PureComponent {
   constructor(props) {
     super(props);
 

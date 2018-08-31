@@ -10,13 +10,13 @@ import {Button,
   Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-var FontAwesome = require('react-fontawesome');
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif");
 
-export default class PlotImage extends React.Component {
+export default class PlotImage extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -41,7 +41,6 @@ export default class PlotImage extends React.Component {
 
   generateScript(language) {
     
-    
     if (this.props.query.type == "class4") {
       this.setState({
         errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
@@ -58,8 +57,6 @@ export default class PlotImage extends React.Component {
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
       } else {
 
-        console.warn(this.props.query);
-        console.warn(this.generateQuery(this.props.query))
         var url = stringify(this.generateQuery(this.props.query)) +
         `&save&format=csv&size=${this.props.query.size}` +
         `&dpi=${this.props.query.dpi}`;

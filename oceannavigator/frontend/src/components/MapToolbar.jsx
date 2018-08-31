@@ -2,14 +2,15 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {Button, MenuItem, Modal, Navbar, Nav, NavItem, NavDropdown, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Papa from "papaparse";
+
 import Icon from "./Icon.jsx";
 import DrifterSelector from "./DrifterSelector.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import EnterPoint from "./EnterPoint.jsx";
 import EnterLine from "./EnterLine.jsx";
 import EnterArea from "./EnterArea.jsx";
+import ToggleLanguage from "./ToggleLanguage.jsx";
 import PropTypes from "prop-types";
-import ToggleSwitch from "./ToggleSwitch.jsx";
 
 const currentLanguage = require("../currentLanguage.js");
 const i18n = require("../i18n.js");
@@ -701,6 +702,8 @@ export default class MapToolbar extends React.Component {
               </NavItem>
             </OverlayTrigger>
           </Nav>
+
+          {/* Right-hand menu items*/}
           <Nav pullRight>
             <OverlayTrigger
               placement="bottom"
@@ -714,18 +717,11 @@ export default class MapToolbar extends React.Component {
               </NavItem>
             </OverlayTrigger>
 
-            <OverlayTrigger
-              placement="bottom"
-              overlay={<Tooltip id="tooltip">{_("Language")}</Tooltip>}
-            >
-              
-              <ToggleSwitch className = "languageButton"
-                leftButton={"EN"}
-                rightButton={"FR"}
-                updateLanguage={this.props.updateLanguage}   
-              />
-              
-            </OverlayTrigger>
+            <ToggleLanguage
+              className="languageButton"
+              updateLanguage={this.props.updateLanguage}   
+            />
+
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("API Documentation")}</Tooltip>}

@@ -2,7 +2,7 @@ import React from "react";
 import Map from "./Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
-import WarningBar from "./warning.jsx";
+import WarningBar from "./WarningBar.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -13,8 +13,7 @@ import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
-import { t } from "i18next/dist/commonjs";
-import ReactGA from 'react-ga'
+import ReactGA from "react-ga";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");

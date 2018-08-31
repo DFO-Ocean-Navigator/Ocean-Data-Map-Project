@@ -4,14 +4,10 @@ import PropTypes from "prop-types";
 
 require("font-awesome/scss/font-awesome.scss");
 
-export default class Icon extends React.Component {
+export default class Icon extends React.PureComponent {
 
-  // Only update if the requested icon changes.
-  // This normally doesn't happen so we should
-  // prevent each instance from re-rendering
-  // ~30 times for no reason.
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.icon !== this.props.icon;
+  constructor(props) {
+    super(props);
   }
 
   render() {
