@@ -580,7 +580,7 @@ export default class Map extends React.Component {
       if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
         this.props.action("plot");
       }
-      if (this.infoRequest != undefined) {
+      if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
       this.infoOverlay.setPosition(undefined);

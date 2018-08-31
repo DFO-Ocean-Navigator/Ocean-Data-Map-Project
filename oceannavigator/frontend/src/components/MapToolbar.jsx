@@ -11,10 +11,8 @@ import EnterArea from "./EnterArea.jsx";
 import PropTypes from "prop-types";
 import ToggleSwitch from "./ToggleSwitch.jsx";
 
-
 const currentLanguage = require("../currentLanguage.js");
 const i18n = require("../i18n.js");
-
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -63,9 +61,9 @@ export default class MapToolbar extends React.Component {
   }
 
   buttonHandler(e) {
-    var elem = e.target;
-    var name = elem.name;
-    while (name == undefined) {
+    let elem = e.target;
+    let name = elem.name;
+    while (name === undefined) {
       elem = elem.parentElement;
       name = elem.name;
     }
@@ -193,7 +191,7 @@ export default class MapToolbar extends React.Component {
 
   // Point -> Observation button
   observationSelect(selection) {
-    var result = "";
+    let result = "";
     if (selection.ship.length > 0) {
       result += "ship:";
       result += selection.ship.join(",");

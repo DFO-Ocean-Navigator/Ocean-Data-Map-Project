@@ -445,7 +445,7 @@ export default class PlotImage extends React.Component {
             ><Icon icon="code" /> Python 3 - CSV</MenuItem>
             <MenuItem
               eventKey="rCSV"
-            ><Icon icon="code"/>R - CSV</MenuItem>
+            ><Icon icon="code"/> R - CSV</MenuItem>
           </DropdownButton>
 
         </ButtonToolbar>

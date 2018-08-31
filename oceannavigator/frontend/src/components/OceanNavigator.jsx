@@ -305,7 +305,8 @@ export default class OceanNavigator extends React.Component {
             category: 'PointPlot',
             action: 'click',
             label: 'PointPlot'
-          })
+          });
+
           this.showModal();
         } 
         else {
@@ -330,7 +331,8 @@ export default class OceanNavigator extends React.Component {
             category: 'LinePlot',
             action: 'click',
             label: 'LinePlot'
-          })
+          });
+
           this.showModal();
         } else {
           // Enable line drawing in both maps
@@ -353,7 +355,7 @@ export default class OceanNavigator extends React.Component {
             category: 'AreaPlot',
             action: 'click',
             label: 'AreaPlot'
-          })
+          });
           this.showModal();
         } else {
           // Enable area drawing on both maps
@@ -373,7 +375,7 @@ export default class OceanNavigator extends React.Component {
           category: 'DrifterPlot',
           action: 'click',
           label: 'DrifterPlot'
-        })
+        });
         this.showModal();
         break;
       case "show":
@@ -389,7 +391,6 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "plot":
-        
         this.showModal();
         break;
       case "reset":
