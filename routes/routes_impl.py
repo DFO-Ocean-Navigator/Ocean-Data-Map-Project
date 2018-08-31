@@ -826,6 +826,7 @@ def stats_impl(args, query = None):
     dataset = query.get('dataset')  #Retrieves dataset from query
 
     data = areastats(dataset, query)
+    print(data)
     return Response(data, status=200, mimetype='application/json')
 
 

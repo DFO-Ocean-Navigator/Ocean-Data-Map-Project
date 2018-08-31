@@ -140,6 +140,7 @@ class Stats:
                     )
 
                     selection = np.ma.array(d.values.ravel()[indices])
+
                     if len(selection) > 0 and not selection.mask.all():
                         area_info.output[i]['variables'].append({
                             'name': ("%s %s" % (variable_name,
@@ -275,25 +276,29 @@ def wrap_computer_stats(query, dataset_name, lon_values):
     area_data.split_area(wrap_val)
 
     variables = [re.sub('_anom$', '', v) for v in variables]
+    
+    # I have no idea what these do
+    innerArea = area_data.inner_area
+    outterArea = area_data.outter_area
 
-    area_data.names, area_data.inner_area.all_rings = get_names_rings(area_data.inner_area.area_query)
-    _, area_data.outter_area.all_rings = get_names_rings(area_data.outter_area.area_query)
+    area_data.names, innerArea.all_rings = get_names_rings(innerArea.area_query)
+    _, outterArea.all_rings = get_names_rings(outterArea.area_query)
 
-    area_data.inner_area.bounds = compute_bounds(area_data.inner_area.all_rings)
-    area_data.outter_area.bounds = compute_bounds(area_data.outter_area.all_rings)
+    innerArea.bounds = compute_bounds(innerArea.all_rings)
+    outterArea.bounds = compute_bounds(outterArea.all_rings)
 
-    area_data.inner_area.area_polys, area_data.inner_area.output = fill_polygons(area_data.inner_area.area_query)
-    area_data.outter_area.area_polys, area_data.outter_area.output = fill_polygons(area_data.outter_area.area_query)
+    innerArea.area_polys, innerArea.output = fill_polygons(innerArea.area_query)
+    outterArea.area_polys, outterArea.output = fill_polygons(outterArea.area_query)
 
-    area_data.inner_area.width = area_data.inner_area.bounds[3] - area_data.inner_area.bounds[1] 
-    area_data.outter_area.width = area_data.outter_area.bounds[3] - area_data.outter_area.bounds[1]
+    innerArea.width = innerArea.bounds[3] - innerArea.bounds[1] 
+    outterArea.width = outterArea.bounds[3] - outterArea.bounds[1]
 
-    spacing = math.floor((area_data.inner_area.width/(area_data.inner_area.width+area_data.outter_area.width))*50)
-    area_data.inner_area.spaced_points = np.linspace(area_data.inner_area.bounds[1], area_data.inner_area.bounds[3], spacing)
-    area_data.outter_area.spaced_points = np.linspace(area_data.outter_area.bounds[1], area_data.outter_area.bounds[3], 50-spacing)
+    spacing = math.floor((area_data.inner_area.width/(innerArea.width+outterArea.width))*50)
+    innerArea.spaced_points = np.linspace(innerArea.bounds[1], innerArea.bounds[3], spacing)
+    outterArea.spaced_points = np.linspace(outterArea.bounds[1], outterArea.bounds[3], 50-spacing)
 
-    area_data.get_values(area_data.inner_area , dataset_name, variables)
-    area_data.get_values(area_data.outter_area, dataset_name, variables)
+    area_data.get_values(innerArea , dataset_name, variables)
+    area_data.get_values(outterArea, dataset_name, variables)
     area_data.combine_stats()    
 
     if int(area_data.area.stats[0]['variables'][0]['num']) == 0:
@@ -305,14 +310,19 @@ def wrap_computer_stats(query, dataset_name, lon_values):
     return json.dumps(sorted(area_data.area.stats, key=itemgetter('name')))
 
 def computer_stats(area, query, dataset_name):
+
     area_data = Stats(query)
+    
     lon_values = []
+
     for p in area_data.area.area_query[0]['polygons'][0]:
+
         p[1] = convert_to_bounded_lon(p[1])
         lon_values.append(p[1])
     area_data.set_lons(lon_values)
 
     variables = query.get('variable')
+
     if isinstance(variables, str) or isinstance(variables, unicode):
         variables = variables.split(',')
 
@@ -334,11 +344,17 @@ def computer_stats(area, query, dataset_name):
                                             have an ara that is too small. \
                                             Try selection a different area or \
                                             a larger area"))
+
     return json.dumps(sorted(area_data.area.stats, key=itemgetter('name')))
     
 
-
-def stats(dataset_name, query):
+# 
+# Finds the statistics for a particular area
+#
+# dataset: the dataset id
+# query: the information sent with the request
+#
+def stats(dataset, query):
     try:
         area = query.get('area')
         data = None
@@ -356,6 +372,7 @@ def stats(dataset_name, query):
         points_lat =[]
         for p in area[0]['polygons'][0]:
             points_lat.append(p[1])
+
     except Exception as e:
         raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                                 Please try again or try something else. If you would like to report \
@@ -365,9 +382,9 @@ def stats(dataset_name, query):
         raise ClientError(gettext("Error: you are trying to create a plot that is wider than the world. \
         The desired information is ambiguous please select a smaller area and try again"))
     elif any((p > 180 or p < -180) for p in points_lat) and any(-180 <= p <= 180 for p in points_lat): #if there area points on both sides of the date line 
-        return wrap_computer_stats(query, dataset_name, points_lat)
+        return wrap_computer_stats(query, dataset, points_lat)
     else:   # no world wrap
-        return computer_stats(area, query, dataset_name)   
+        return computer_stats(area, query, dataset)   
 
     raise ServerError(gettext("Unknown Error: you have tried something that we did not expect. \
                         Please try again or try something else. If you would like to report \

@@ -46,6 +46,7 @@ export default class MapToolbar extends React.Component {
     // Function bindings
     this.buttonHandler = this.buttonHandler.bind(this);
     this.pointSelect = this.pointSelect.bind(this);
+    this.multiPointSelect = this.multiPointSelect.bind(this);
     this.observationSelect = this.observationSelect.bind(this);
     this.lineSelect = this.lineSelect.bind(this);
     this.areaSelect = this.areaSelect.bind(this);
@@ -168,6 +169,7 @@ export default class MapToolbar extends React.Component {
 
   // Handles when an option is clicked in the Point dropdown button
   pointSelect(key) {
+    
     switch (key) {
       case "csv":
         this.setState({parser: "point",});
@@ -176,8 +178,12 @@ export default class MapToolbar extends React.Component {
       case "odv":
         this.odvinput.click();
         break;
-      case "draw":
+      case "draw": 
         this.props.action("point");
+        break;
+      case "draw-multi":
+        console.warn("pointSelect()")
+        this.multiPointSelect()
         break;
       case "observation":
         this.setState({showObservationSelect: true,});
@@ -189,6 +195,14 @@ export default class MapToolbar extends React.Component {
         this.props.action("show", "points", key);
         break;
     }
+  }
+
+  multiPointSelect() {
+    console.warn("multi point initial")
+    this.props.multiPointAction("enable")
+    //this.props.updateState("multiPoint", true)
+    ///this.props.updateState("point", [])
+    //this.props.action("multi-point");
   }
 
   // Point -> Observation button
@@ -546,6 +560,200 @@ export default class MapToolbar extends React.Component {
     _("Drifters");
     _("Reset Map");
     _("Link");
+    let plotTypes = null;
+    
+    if (this.props.multiPoint) {
+      plotTypes = <div>
+      <Nav>
+      <NavItem
+        name="disable-multi"
+        onClick={(e) => {
+          this.props.multiPointAction("disable");
+        }}
+        
+      >
+       <Icon icon='times-circle'/> {_("Disable Multi-Select")} 
+      </NavItem>
+      <NavItem 
+        name="plot"
+        onClick={this.buttonHandler}
+        disabled={!this.props.plotEnabled}
+      >
+        <Icon icon='line-chart' /> {_("Plot")}
+      </NavItem>
+          
+      <OverlayTrigger
+        placement="bottom"
+        overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
+      >
+        <NavItem
+          name="reset"
+          onClick={(e) => {
+              this.buttonHandler(e); 
+              this.props.updateState("plotEnabled", false);
+              this.props.updateState("modal", "");
+              this.props.updateState("multiPoint", false);
+              this.props.updateState("point", [this.props.point[0]])
+            }
+          }
+        >
+          <Icon icon='undo' alt={_("Reset Map")} />
+        </NavItem>
+      </OverlayTrigger>
+      </Nav>
+      </div>
+    } else {
+    plotTypes = <div>
+      
+      <Nav>
+            
+      <NavDropdown
+      name="point"
+      id="point"
+      title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
+      onSelect={this.pointSelect}
+      >
+        <MenuItem
+          eventKey='draw'
+          key='draw'
+        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+        <MenuItem
+          eventKey='draw-multi'
+          key='draw-multi'
+        ><Icon icon="pencil" /> {_("Draw Multi Point")}</MenuItem>
+        <MenuItem divider />
+        {pointFiles}
+        <MenuItem divider />
+        <MenuItem
+          eventKey='observation'
+          key='observation'
+        ><Icon icon='list'/> {_("Observations…")}</MenuItem>
+        <MenuItem divider />
+        <MenuItem
+          eventKey='coordinates'
+          key='coordinates'
+        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+        <MenuItem
+          eventKey='csv'
+          key='csv'
+        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+        <MenuItem
+          eventKey='odv'
+          key='odv'
+        ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
+      </NavDropdown>
+      <NavDropdown 
+        name="line"
+        id="line"
+        title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
+        onSelect={this.lineSelect}
+      >
+        <MenuItem
+          eventKey='draw'
+          key='draw'
+        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+        <MenuItem divider />
+        {lineFiles}
+        <MenuItem divider />
+        <MenuItem
+          eventKey='coordinates'
+          key='coordinates'
+        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+        <MenuItem
+          eventKey='csv'
+          key='csv'
+        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+      </NavDropdown>
+      <NavDropdown
+        name="area"
+        id="area"
+        title={<span><Icon icon="square-o" /> {_("Area")}</span>}
+        onSelect={this.areaSelect}
+      >
+        <MenuItem
+          eventKey='draw'
+          key='draw'
+        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+        <MenuItem divider />
+        {areaFiles}
+        <MenuItem divider />
+        <MenuItem
+          eventKey='coordinates'
+          key='coordinates'
+        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+        <MenuItem
+          eventKey='csv'
+          key='csv'
+        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+      </NavDropdown>
+      <NavDropdown
+        id="class4"
+        name="class4"
+        title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
+        onClick={this.class4ButtonHandler}
+        ref={(b) => this.class4button = b}
+      >
+        <MenuItem>
+          <div ref={(d) => this.class4div = d}/>
+        </MenuItem>
+      </NavDropdown>
+      <NavDropdown
+        name="drifter"
+        id="drifter"
+        title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
+        onSelect={this.drifterSelect}
+      >
+        <MenuItem
+          eventKey='all'
+          key='all'
+        >{_("All")}</MenuItem>
+        <MenuItem
+          eventKey='active'
+          key='active'
+        >{_("Active")}</MenuItem>
+        <MenuItem
+          eventKey='not responding'
+          key='not responding'
+        >{_("Not Responding")}</MenuItem>
+        <MenuItem
+          eventKey='inactive'
+          key='inactive'
+        >{_("Inactive")}</MenuItem>
+        <MenuItem divider />
+        <MenuItem
+          eventKey='select'
+          key='select'
+        ><Icon icon='list'/> {_("Select…")}</MenuItem>
+      </NavDropdown>
+
+      <NavItem 
+        name="plot"
+        onClick={this.buttonHandler}
+        disabled={!this.props.plotEnabled}
+      >
+        <Icon icon='line-chart' /> {_("Plot")}
+      </NavItem>
+          
+      <OverlayTrigger
+        placement="bottom"
+        overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
+      >
+        <NavItem
+          name="reset"
+          onClick={(e) => {
+              this.buttonHandler(e); 
+              this.props.multiPointAction("reset")
+              this.props.updateState("plotEnabled", false);
+              this.props.updateState("modal", "");
+            }
+          }
+        >
+          <Icon icon='undo' alt={_("Reset Map")} />
+        </NavItem>
+      </OverlayTrigger>
+      </Nav>
+      </div>
+    }
 
     return (
       <Navbar inverse>
@@ -559,150 +767,9 @@ export default class MapToolbar extends React.Component {
         </Navbar.Header>
           
         <Navbar.Collapse>
-          <Nav>
-            <NavDropdown
-              name="point"
-              id="point"
-              title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
-              onSelect={this.pointSelect}
-            >
-              <MenuItem
-                eventKey='draw'
-                key='draw'
-              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-              <MenuItem divider />
-              {pointFiles}
-              <MenuItem divider />
-              <MenuItem
-                eventKey='observation'
-                key='observation'
-              ><Icon icon='list'/> {_("Observations…")}</MenuItem>
-              <MenuItem divider />
-              <MenuItem
-                eventKey='coordinates'
-                key='coordinates'
-              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-              <MenuItem
-                eventKey='csv'
-                key='csv'
-              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-              <MenuItem
-                eventKey='odv'
-                key='odv'
-              ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
-            </NavDropdown>
-        
-            <NavDropdown 
-              name="line"
-              id="line"
-              title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
-              onSelect={this.lineSelect}
-            >
-              <MenuItem
-                eventKey='draw'
-                key='draw'
-              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-              <MenuItem divider />
-              {lineFiles}
-              <MenuItem divider />
-              <MenuItem
-                eventKey='coordinates'
-                key='coordinates'
-              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-              <MenuItem
-                eventKey='csv'
-                key='csv'
-              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-            </NavDropdown>
-        
-            <NavDropdown
-              name="area"
-              id="area"
-              title={<span><Icon icon="square-o" /> {_("Area")}</span>}
-              onSelect={this.areaSelect}
-            >
-              <MenuItem
-                eventKey='draw'
-                key='draw'
-              ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-              <MenuItem divider />
-              {areaFiles}
-              <MenuItem divider />
-              <MenuItem
-                eventKey='coordinates'
-                key='coordinates'
-              ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-              <MenuItem
-                eventKey='csv'
-                key='csv'
-              ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-            </NavDropdown>
-
-            <NavDropdown
-              id="class4"
-              name="class4"
-              title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
-              onClick={this.class4ButtonHandler}
-              ref={(b) => this.class4button = b}
-            >
-              <MenuItem>
-                <div ref={(d) => this.class4div = d}/>
-              </MenuItem>
-            </NavDropdown>
-
-            <NavDropdown
-              name="drifter"
-              id="drifter"
-              title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
-              onSelect={this.drifterSelect}
-            >
-              <MenuItem
-                eventKey='all'
-                key='all'
-              >{_("All")}</MenuItem>
-              <MenuItem
-                eventKey='active'
-                key='active'
-              >{_("Active")}</MenuItem>
-              <MenuItem
-                eventKey='not responding'
-                key='not responding'
-              >{_("Not Responding")}</MenuItem>
-              <MenuItem
-                eventKey='inactive'
-                key='inactive'
-              >{_("Inactive")}</MenuItem>
-              <MenuItem divider />
-              <MenuItem
-                eventKey='select'
-                key='select'
-              ><Icon icon='list'/> {_("Select…")}</MenuItem>
-            </NavDropdown>
-
-            <NavItem 
-              name="plot"
-              onClick={this.buttonHandler}
-              disabled={!this.props.plotEnabled}
-            >
-              <Icon icon='line-chart' /> {_("Plot")}
-            </NavItem>
           
-            <OverlayTrigger
-              placement="bottom"
-              overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
-            >
-              <NavItem
-                name="reset"
-                onClick={(e) => {
-                    this.buttonHandler(e); 
-                    this.props.updateState("plotEnabled", false);
-                  }
-                }
-              >
-                <Icon icon='undo' alt={_("Reset Map")} />
-              </NavItem>
-            </OverlayTrigger>
-          </Nav>
+          {plotTypes}
+
           <Nav pullRight>
             <OverlayTrigger
               placement="bottom"
@@ -911,6 +978,9 @@ export default class MapToolbar extends React.Component {
 
 //***********************************************************************
 MapToolbar.propTypes = {
+  point: PropTypes.array,
+  multiPoint: PropTypes.bool,
+  multiPointAction: PropTypes.func,
   plotEnabled: PropTypes.bool,
   updateState: PropTypes.func,
   toggleSidebar: PropTypes.func,
