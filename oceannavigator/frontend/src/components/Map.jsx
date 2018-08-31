@@ -531,11 +531,13 @@ export default class Map extends React.Component {
               var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
               content.push([c[1], c[0], feature.get("observation")]);
               break;
-            case "multi-point":
+            /*
+              case "multi-point":
               var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
               content.push([c[1], c[0], feature.get("observation")]);
               break;
-            case "line":
+            */
+              case "line":
               content.push(feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function(o) {
                 return [o[1], o[0]];
               }));
@@ -582,24 +584,8 @@ export default class Map extends React.Component {
       }
       pushSelection();
       console.warn("before multiPoint if")
-      if (this.props.state.multiPoint) {
-        console.warn("here")
-        // Disable zooming when drawing
-        this.controlDoubleClickZoom(false);
-        const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
-        // Draw point on map(s)
-        //if (this.props.state.multiPoint != true) {
-        this.props.action("add", "multi-point", [[lonlat[1], lonlat[0]]]);
-        //}
-        this.props.updateState("plotEnabled", true)
-        // Pass point to PointWindow
-        this.props.action("multi-point", lonlat);
-       
-        setTimeout(
-          function() { this.controlDoubleClickZoom(true); }.bind(this),
-          251
-        );
-      } else if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
+      
+      if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
         console.warn("select")
         this.props.action("plot");
       }
@@ -609,6 +595,7 @@ export default class Map extends React.Component {
       this.infoOverlay.setPosition(undefined);
     }.bind(this));
 
+    // Controls CTRL+Drag functionality
     dragBox.on("boxend", function() {
       var extent = dragBox.getGeometry().getExtent();
       this.vectorSource.forEachFeatureIntersectingExtent(
