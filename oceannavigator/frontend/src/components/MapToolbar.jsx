@@ -2,19 +2,18 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {Button, MenuItem, Modal, Navbar, Nav, NavItem, NavDropdown, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Papa from "papaparse";
+
 import Icon from "./Icon.jsx";
 import DrifterSelector from "./DrifterSelector.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import EnterPoint from "./EnterPoint.jsx";
 import EnterLine from "./EnterLine.jsx";
 import EnterArea from "./EnterArea.jsx";
+import ToggleLanguage from "./ToggleLanguage.jsx";
 import PropTypes from "prop-types";
-import ToggleSwitch from "./ToggleSwitch.jsx";
-
 
 const currentLanguage = require("../currentLanguage.js");
 const i18n = require("../i18n.js");
-
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
@@ -63,9 +62,9 @@ export default class MapToolbar extends React.Component {
   }
 
   buttonHandler(e) {
-    var elem = e.target;
-    var name = elem.name;
-    while (name == undefined) {
+    let elem = e.target;
+    let name = elem.name;
+    while (name === undefined) {
       elem = elem.parentElement;
       name = elem.name;
     }
@@ -193,7 +192,7 @@ export default class MapToolbar extends React.Component {
 
   // Point -> Observation button
   observationSelect(selection) {
-    var result = "";
+    let result = "";
     if (selection.ship.length > 0) {
       result += "ship:";
       result += selection.ship.join(",");
@@ -703,6 +702,8 @@ export default class MapToolbar extends React.Component {
               </NavItem>
             </OverlayTrigger>
           </Nav>
+
+          {/* Right-hand menu items*/}
           <Nav pullRight>
             <OverlayTrigger
               placement="bottom"
@@ -716,18 +717,11 @@ export default class MapToolbar extends React.Component {
               </NavItem>
             </OverlayTrigger>
 
-            <OverlayTrigger
-              placement="bottom"
-              overlay={<Tooltip id="tooltip">{_("Language")}</Tooltip>}
-            >
-              
-              <ToggleSwitch className = "languageButton"
-                leftButton={"EN"}
-                rightButton={"FR"}
-                updateLanguage={this.props.updateLanguage}   
-              />
-              
-            </OverlayTrigger>
+            <ToggleLanguage
+              className="languageButton"
+              updateLanguage={this.props.updateLanguage}   
+            />
+
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("API Documentation")}</Tooltip>}

@@ -20,7 +20,7 @@ export default class ContourSelector extends React.Component {
   }
 
   onUpdate(key, value) {
-    if (!$.isArray(key)) {
+    if (!Array.isArray(key)) {
       key = [key];
       value = [value];
     }

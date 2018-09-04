@@ -31,8 +31,8 @@ export default class DatasetSelector extends React.Component {
   }
 
   variableUpdate(key, value) {
-    this.props.onUpdate("setDefaultScale", true)
-    this.onUpdate(key, value)
+    this.props.onUpdate("setDefaultScale", true);
+    this.onUpdate(key, value);
   }
 
   onUpdate(key, value) {
@@ -59,22 +59,20 @@ export default class DatasetSelector extends React.Component {
     _("Depth");
     _("Time (UTC)");
 
-    var variables = "";
+    let variables = "";
     switch (this.props.variables) {
       case "3d":
         variables = "&3d_only";
         break;
-      case "all":
       default:
-        variables = "";
         break;
     }
 
     // Determine which timepicker we need
-    var time = "";
+    let time = "";
     switch (this.props.time) {
       case "range":
-        time = <div>
+        time = (<div>
           <TimePicker
             key='starttime'
             id='starttime'
@@ -104,7 +102,7 @@ export default class DatasetSelector extends React.Component {
             onUpdate={this.onUpdate}
             min={this.props.state.starttime}
           />
-        </div>;
+        </div>);
         break;
       case "single":
       default:

@@ -2,7 +2,7 @@ import React from "react";
 import Map from "./Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
-import WarningBar from "./warning.jsx";
+import WarningBar from "./WarningBar.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -13,8 +13,7 @@ import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
-import { t } from "i18next/dist/commonjs";
-import ReactGA from 'react-ga'
+import ReactGA from "react-ga";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -305,7 +304,8 @@ export default class OceanNavigator extends React.Component {
             category: 'PointPlot',
             action: 'click',
             label: 'PointPlot'
-          })
+          });
+
           this.showModal();
         } 
         else {
@@ -330,7 +330,8 @@ export default class OceanNavigator extends React.Component {
             category: 'LinePlot',
             action: 'click',
             label: 'LinePlot'
-          })
+          });
+
           this.showModal();
         } else {
           // Enable line drawing in both maps
@@ -353,7 +354,7 @@ export default class OceanNavigator extends React.Component {
             category: 'AreaPlot',
             action: 'click',
             label: 'AreaPlot'
-          })
+          });
           this.showModal();
         } else {
           // Enable area drawing on both maps
@@ -373,7 +374,7 @@ export default class OceanNavigator extends React.Component {
           category: 'DrifterPlot',
           action: 'click',
           label: 'DrifterPlot'
-        })
+        });
         this.showModal();
         break;
       case "show":
@@ -389,7 +390,6 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "plot":
-        
         this.showModal();
         break;
       case "reset":

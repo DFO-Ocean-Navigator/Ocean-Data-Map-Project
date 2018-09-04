@@ -19,7 +19,7 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-const currentLanguage = require("../i18n.js");
+const i18n = require("../i18n.js");
  
 export default class TimePicker extends React.Component {
   constructor(props) {
@@ -65,7 +65,6 @@ export default class TimePicker extends React.Component {
         cache: false,
         
         success: function(data) {
-          //if (true) {
             var map = {};
             var revmap = {};
             var min = 0;
@@ -183,7 +182,6 @@ export default class TimePicker extends React.Component {
               this.pickerChange();
 
             }.bind(this));
-          //}
         }.bind(this),
 
         error: function(xhr, status, err) {
@@ -191,7 +189,6 @@ export default class TimePicker extends React.Component {
         }.bind(this)
       });
 
-      var date;
       var value = parseInt(props.state);
   
       if (value < 0) {
@@ -202,7 +199,7 @@ export default class TimePicker extends React.Component {
         value = 0;
       }
   
-      date = new Date(this.state.map[value]);
+      //const date = new Date(this.state.map[value]);
     }
   }
 
@@ -333,10 +330,9 @@ export default class TimePicker extends React.Component {
   }
 
   render() {
+    $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
 
-    $.datepicker.setDefaults($.datepicker.regional[currentLanguage.language]);
-
-    var value = parseInt(this.props.state);
+    let value = parseInt(this.props.state);
 
     if (value < 0) {
       value += this.state.data.length;

@@ -7,8 +7,6 @@
   
   Component Allowing for Custom Plot Titles provided by the user
 
-  ~~User Requested~~
-
 */
 
 import React from "react";
@@ -18,7 +16,7 @@ import Icon from "./Icon.jsx";
 
 const i18n = require("../i18n.js");
 
-export default class CustomPlotLabels extends React.Component {
+export default class CustomPlotLabels extends React.PureComponent {
 
   constructor (props) {
     super(props);
@@ -49,14 +47,14 @@ export default class CustomPlotLabels extends React.Component {
       e.preventDefault();
     }
     
-    this.props.updatePlotTitle(this.state.userProvidedTitle); //Calls function in AreaWindow
+    this.props.updatePlotTitle(this.state.userProvidedTitle);
   }
 
   render() {
     return (
       <div>
         <div className='plotTitleInput, input'>
-          <div><h1>{this.props.title}</h1></div>
+          <h1>{this.props.title}</h1>
           <Row>
             <Form   //Keeps everything in the same row
               style={{
@@ -74,7 +72,7 @@ export default class CustomPlotLabels extends React.Component {
                 ref = {(input) => this.textInput = input}
                 style = {{width: "83%"}}
                 type="text"
-                onChange={this.updateState}   //Updates as user types
+                onChange={this.updateState}
                 placeholder={_("Default")}
               ></FormControl>
             
@@ -85,9 +83,9 @@ export default class CustomPlotLabels extends React.Component {
               >    
                 <Button
                   style={{width: "17%"}}
-                  onClick={this.updateParent}   //Re-loads map on button click
+                  onClick={this.updateParent}
                 >
-                  <Icon icon="repeat" alt={_("Apply")}/> {/* button Icon */}
+                  <Icon icon="repeat" alt={_("Apply")}/>
                 </Button>
               </OverlayTrigger>
           

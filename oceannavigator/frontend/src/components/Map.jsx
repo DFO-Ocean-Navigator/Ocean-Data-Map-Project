@@ -121,15 +121,17 @@ proj3031.setExtent([
   3087442.345821846
 ]);
 
-export default class Map extends React.Component {
+export default class Map extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.drawing = false;
+    this._drawing = false;
+    // Track if mounted to prevent no-op errors with the Ajax callbacks.
+    this._mounted = false;
 
     this.state = {
       location: [0,90]
-    }
+    };
 
     this.loader = function(extent, resolution, projection) {
       if (this.props.state.vectortype) {
@@ -367,10 +369,10 @@ export default class Map extends React.Component {
     });
     this.map.on("moveend", this.refreshFeatures.bind(this));
     this.map.on("moveend", function() {
-      var c = ol.proj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
+      const c = ol.proj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
       this.props.updateState("center", c);
       this.props.updateState("zoom", this.mapView.getZoom());
-      var extent = this.mapView.calculateExtent(this.map.getSize());
+      const extent = this.mapView.calculateExtent(this.map.getSize());
       this.props.updateState("extent", extent);
       this.map.render();
       if (this.props.partner) {
@@ -421,13 +423,13 @@ export default class Map extends React.Component {
       }
     }.bind(this));
 
-    // Info popup
+    // Info popup balloon
     this.map.on("singleclick", function(e) {
-      if (this.drawing) { // Prevent conflict with drawing
+      if (this._drawing) { // Prevent conflict with drawing
         return;
       }
       
-      const coord = e.coordinate;
+      const coord = e.coordinate; // Click location
       
       this.infoPopupContent.innerHTML = _("Loading...");
       if (this.infoRequest !== undefined) {
@@ -436,7 +438,9 @@ export default class Map extends React.Component {
       const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
       this.setState({
         location: [location[0], location[1]]
-      })
+      });
+      this.infoOverlay.setPosition(coord); // Set balloon position
+
       this.infoRequest = $.ajax({
         url: (
           `/api/data/${this.props.state.dataset}` +
@@ -446,17 +450,16 @@ export default class Map extends React.Component {
           `/${location[1]},${location[0]}.json`
         ),
         success: function(response) {
-          var text = "<p>" + 
+          let text = "<p>" + 
                         "Location: " + response.location[0].toFixed(4) + ", " + response.location[1].toFixed(4);
-          for (let i = 0; i < response.name.length; i++) {
+          for (let i = 0; i < response.name.length; ++i) {
             if (response.value[i] != "nan") {
-              text += "<br />" +
+              text += "<br />" + 
                             response.name[i] + ": " + response.value[i] + " " + response.units[i];
             }
           }
           text += "</p>";
           this.infoPopupContent.innerHTML = text;
-          this.infoOverlay.setPosition(coord);
         }.bind(this),
       });
     }.bind(this));
@@ -580,7 +583,7 @@ export default class Map extends React.Component {
       if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
         this.props.action("plot");
       }
-      if (this.infoRequest != undefined) {
+      if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
       this.infoOverlay.setPosition(undefined);
@@ -662,6 +665,8 @@ export default class Map extends React.Component {
         case "area":
           this.add(this.props.state.modal, this.props.state.area[0].polygons[0]);
           break;
+        default:
+          break;
       }
     }
   }
@@ -716,15 +721,15 @@ export default class Map extends React.Component {
   }
 
   removeMapInteractions(type) {
-    var interactions = this.map.getInteractions();
-    var stat = {
+    const interactions = this.map.getInteractions();
+    const stat = {
       coll: interactions,
       ret: false,
     };
     interactions.forEach(function(e, i, a) {
       if (e instanceof ol.interaction.Draw) {
         stat.coll.remove(e);
-        if (e.get("type") == type) {
+        if (e.get("type") === type) {
           stat.ret = true;
         }
       }
@@ -733,9 +738,9 @@ export default class Map extends React.Component {
   }
 
   controlDoubleClickZoom(active) {
-    var interactions = this.map.getInteractions();
-    for (var i = 0; i < interactions.getLength(); i++) {
-      var interaction = interactions.item(i);
+    const interactions = this.map.getInteractions();
+    for (let i = 0; i < interactions.getLength(); i++) {
+      const interaction = interactions.item(i);
       if (interaction instanceof ol.interaction.DoubleClickZoom) {
         interaction.setActive(active);
       }
@@ -747,7 +752,7 @@ export default class Map extends React.Component {
       return;
     }
 
-    this.drawing = true;
+    this._drawing = true;
 
     //Resets map (in case other plots have been drawn)
     this.resetMap();
@@ -766,7 +771,7 @@ export default class Map extends React.Component {
       // Pass point to PointWindow
       this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
       this.map.removeInteraction(draw);
-      this.drawing = false;
+      this._drawing = false;
       setTimeout(
         function() { this.controlDoubleClickZoom(true); }.bind(this),
         251
@@ -780,7 +785,7 @@ export default class Map extends React.Component {
       return;
     }
 
-    this.drawing = true;
+    this._drawing = true;
 
     this.resetMap();
     const draw = new ol.interaction.Draw({
@@ -803,7 +808,7 @@ export default class Map extends React.Component {
       // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
-      this.drawing = false;
+      this._drawing = false;
       setTimeout(
         function() { this.controlDoubleClickZoom(true); }.bind(this),
         251
@@ -817,7 +822,7 @@ export default class Map extends React.Component {
       return;
     }
 
-    this.drawing = true;
+    this._drawing = true;
 
     this.resetMap();
     const draw = new ol.interaction.Draw({
@@ -845,7 +850,7 @@ export default class Map extends React.Component {
       // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
-      this.drawing = false;
+      this._drawing = false;
       setTimeout(
         function() {this.controlDoubleClickZoom(true); }.bind(this),
         251
