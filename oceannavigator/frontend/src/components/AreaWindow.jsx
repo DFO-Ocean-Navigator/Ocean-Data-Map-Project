@@ -84,7 +84,7 @@ export default class AreaWindow extends React.Component {
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
-    this.saveData = this.subsetArea.bind(this);
+    this.subsetArea = this.subsetArea.bind(this);
     this.onTabChange = this.onTabChange.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.saveScript = this.saveScript.bind(this);
