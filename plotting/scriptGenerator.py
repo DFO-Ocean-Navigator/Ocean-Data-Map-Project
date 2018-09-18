@@ -198,9 +198,9 @@ def generateR(url):
     #Request and Save Image
     script.write("#Request and Save Image\n")
     if notPlot == False:
-        script.write('full_url <- paste0(base_url, "?query=", query)\n')
+        script.write('full_url <- paste0(base_url, "?query=", URLencode(query, reserved=TRUE))\n')
     else:
-        script.write('full_url <- paste0(base_url, "?query=", query, url_tail)\n')
+        script.write('full_url <- paste0(base_url, "?query=", URLencode(query, reserved=TRUE), url_tail)\n')
     
 
     
