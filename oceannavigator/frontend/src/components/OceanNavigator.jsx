@@ -811,7 +811,7 @@ export default class OceanNavigator extends React.Component {
             <p>
               you would like more detailed information you can view our bug tracking this problem on 
               our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
-              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/188" target="_blank">"Direction of velocity vectors in different projections don't match"</a> <br/>
+              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/213" target="_blank">"Bearing and vector representation"</a> <br/>
               If you still need more information about the problem contact oceandatamap@gmail.com <br/>
               <br/>
             </p>
