@@ -221,11 +221,12 @@ class MapPlotter(pl.Plotter):
                 self.variable_name = self.vector_name(self.variable_name)
 
             if self.depth == 'bottom':
-                depth_value = 'Bottom'
+                depth_value_map = 'Bottom'
             else:
                 self.depth = np.clip(
                     int(self.depth), 0, len(dataset.depths) - 1)
                 depth_value = dataset.depths[self.depth]
+                depth_value_map = depth_value
 
             data = []
             allvars = []
@@ -233,7 +234,7 @@ class MapPlotter(pl.Plotter):
                 var = dataset.variables[v]
                 allvars.append(v)
                 if self.filetype in ['csv', 'odv', 'txt']:
-                    d, depth_value = dataset.get_area(
+                    d, depth_value_map = dataset.get_area(
                         np.array([self.latitude, self.longitude]),
                         self.depth,
                         self.time,
@@ -266,7 +267,7 @@ class MapPlotter(pl.Plotter):
                         self.depth_label = " at Bottom"
                     else:
                         self.depth_label = " at " + \
-                            str(int(np.round(depth_value))) + " m"
+                            str(int(np.round(depth_value_map))) + " m"
 
             if len(data) == 2:
                 data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
@@ -395,11 +396,11 @@ class MapPlotter(pl.Plotter):
                 quiver_bathymetry = overlays.bathymetry(
                     self.basemap, quiver_lat, quiver_lon)
 
-            self.data[np.where(self.bathymetry < depth_value)] = np.ma.masked
+            self.data[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
             for d in self.quiver_data:
                 d[np.where(quiver_bathymetry < depth_value)] = np.ma.masked
             for d in self.contour_data:
-                d[np.where(self.bathymetry < depth_value)] = np.ma.masked
+                d[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
         else:
             mask = maskoceans(self.longitude, self.latitude, self.data, True, 'h', 1.25).mask
             self.data[~mask] = np.ma.masked
@@ -445,7 +446,7 @@ class MapPlotter(pl.Plotter):
             newmask[np.unravel_index(indicies, newmask.shape)] = False
             self.data.mask |= newmask
 
-        self.depth_value = depth_value
+        self.depth_value_map = depth_value_map
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
@@ -455,7 +456,7 @@ class MapPlotter(pl.Plotter):
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
         time = np.repeat(self.timestamp, data.shape[0])
-        depth = self.depth_value.ravel()[::5]
+        depth = self.depth_value_map.ravel()[::5]
 
         return super(MapPlotter, self).odv_ascii(
             self.dataset_name,
@@ -509,7 +510,7 @@ class MapPlotter(pl.Plotter):
 
         latitude = self.latitude.ravel()[::5]
         longitude = self.longitude.ravel()[::5]
-        depth = self.depth_value.ravel()[::5]
+        depth = self.depth_value_map.ravel()[::5]
 
         data = []
         for idx in range(0, len(latitude)):
