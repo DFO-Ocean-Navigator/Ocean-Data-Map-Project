@@ -398,8 +398,7 @@ class MapPlotter(pl.Plotter):
 
             self.data[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
             for d in self.quiver_data:
-                temp1=np.where(quiver_bathymetry < depth_value)
-                d[temp1] = np.ma.masked
+                d[np.where(quiver_bathymetry < depth_value)] = np.ma.masked
             for d in self.contour_data:
                 d[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
         else:
