@@ -40,7 +40,7 @@ from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
 
-bp_v0_0 = Blueprint('api_v0_0', __name__)      #Creates the blueprint for the api queries
+bp_v0_0 = Blueprint('api_v0_0', __name__)
 
 
 
@@ -48,34 +48,23 @@ bp_v0_0 = Blueprint('api_v0_0', __name__)      #Creates the blueprint for the ap
 def handle_error_v0(error):
     return routes.routes_impl.handle_error_impl(error)
 
-def timestamp_outOfBounds(dataset, time):
-    """
-    API Format: /api/timestamps/?dataset=' '
+# Check if a given time index is within the bounds of
+# the given dataset time index range
+def timestamp_outOfBounds(dataset: str, time: int):
 
-    dataset : Dataset to extract data - Can be found using /api/datasets
-
-    Finds all data timestamps available for a specific dataset
-    """
-
+    length = 0
     with open_dataset(get_dataset_url(dataset)) as ds:
         length = len(ds.timestamps)
         
-    if time < length:
-        return False   #Valid timestamp
-    else:
-        print("Timestamp out of bounds")
-        return True
-
-
+    return not (0 <= time < length)
 
 @bp_v0_0.route('/api/v0.1/range/<string:interp>/<int:radius>/<int:neighbours>/<string:dataset>/<string:projection>/<string:extent>/<string:depth>/<int:time>/<string:variable>.json')
-def range_query_v0(interp, radius, neighbours, dataset, projection, extent, depth, time, variable):
+def range_query_v0(interp: str, radius: int, neighbours: int, dataset: str, projection: str, extent: str, depth: str, time: int, variable: str):
   
     if (timestamp_outOfBounds(dataset, time)):
         raise ValueError
 
     return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
-
 
 @bp_v0_0.route('/api/')
 def info_v0():
@@ -83,24 +72,26 @@ def info_v0():
 
 
 @bp_v0_0.route('/api/<string:q>/')
-def query_v0(q):
+def query_v0(q: str):
     return routes.routes_impl.query_impl(q)
 
 
 @bp_v0_0.route('/api/<string:q>/<string:q_id>.json')
-def query_id_v0(q, q_id):
+def query_id_v0(q: str, q_id: str):
     return routes.routes_impl.query_id_impl(q, q_id)
 
 
 @bp_v0_0.route('/api/data/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:location>.json')
-def get_data_v0(dataset, variable, time, depth, location):
+def get_data_v0(dataset: str, variable: str, time: int, depth: str, location: str):
+    
     if (timestamp_outOfBounds(dataset, time)):
         raise ValueError
+    
     return routes.routes_impl.get_data_impl(dataset, variable, time, depth, location)
 
 
 @bp_v0_0.route('/api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
-def query_file_v0(q, projection, resolution, extent, file_id):
+def query_file_v0(q: str, projection: str, resolution: int, extent: str, file_id: str):
     return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
 
 
@@ -129,34 +120,37 @@ def depth_v0():
     return routes.routes_impl.depth_impl(request.args)
 
 
-@bp_v0_0.route('/api/observationvariables/')    #Returns list of Observation variables
+# Lists all observation variables
+@bp_v0_0.route('/api/observationvariables/')
 def obs_vars_query_v0():
     return routes.routes_impl.obs_vars_query_impl()
 
 
-@bp_v0_0.route('/api/variables/')   #Queries possible variables in a dataset
+# Lists available variable from the given dataset argument and vector flags
+@bp_v0_0.route('/api/variables/')
 def vars_query_v0():
     return routes.routes_impl.vars_query_impl(request.args)
 
 
-@bp_v0_0.route('/api/timestamps/')  #List all the time Stamps in the provided dataset
+# List all the timestamps from the given dataset argument
+@bp_v0_0.route('/api/timestamps/')
 def time_query_v0():
     return routes.routes_impl.time_query_impl(request.args)
 
 
 @bp_v0_0.route('/api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
-def timestamp_for_date_v0(old_dataset, date, new_dataset):
+def timestamp_for_date_v0(old_dataset: str, date: int, new_dataset: str):
 
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
 @bp_v0_0.route('/scale/<string:dataset>/<string:variable>/<string:scale>.png')
-def scale_v0(dataset, variable, scale):
+def scale_v0(dataset: str, variable: str, scale: str):
     return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 
 @bp_v0_0.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v0(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+def tile_v0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     
     if (timestamp_outOfBounds(dataset, time)):
         raise ValueError
@@ -165,22 +159,22 @@ def tile_v0(projection, interp, radius, neighbours, dataset, variable, time, dep
 
 
 @bp_v0_0.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
-def topo_v0(projection, zoom, x, y):
+def topo_v0(projection: str, zoom: int, x: int, y: int):
     return routes.routes_impl.topo_impl(projection, zoom, x, y)
 
 
 @bp_v0_0.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
-def bathymetry_v0(projection, zoom, x, y):
+def bathymetry_v0(projection: str, zoom: int, x: int, y: int):
     return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
 
 @bp_v0_0.route('/api/drifters/<string:q>/<string:drifter_id>')
-def drifter_query_v0(q, drifter_id):
+def drifter_query_v0(q: str, drifter_id: str):
     return routes.routes_impl.drifter_query_impl(q, drifter_id)
 
 
 @bp_v0_0.route('/api/class4/<string:q>/<string:class4_id>/<string:index>')
-def class4_query_v0(q, class4_id, index):
+def class4_query_v0(q: str, class4_id: str, index: str):
     return routes.routes_impl.class4_query_impl(q, class4_id, index)
 
 

@@ -52,7 +52,7 @@ FAILURE = ClientError("Bad API usage")
 
 
 """
-
+    Error handler
 """
 def handle_error_impl(error):
     response = jsonify(error.to_dict())
@@ -61,7 +61,7 @@ def handle_error_impl(error):
 
 
 """
-Range Query V0.1
+    Range Query V0.1
 """
 def range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
@@ -79,7 +79,7 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
 def info_impl():
     raise APIError("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
-def query_impl(q):
+def query_impl(q: str):
     """
     API Format: /api/<string:q>/
 
@@ -99,14 +99,14 @@ def query_impl(q):
     elif q == 'class4':
         data = utils.misc.list_class4_files()
     else:
-        raise APIError("Invalid API Query - Please review the API Documentation for Help")
+        raise APIError("Invalid API Query - Please review the API documentation for help.")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
     return resp
 
 
-def query_id_impl(q, q_id):
+def query_id_impl(q: str, q_id: str):
     """
     API Format: /api/<string:q>/<string:q_id>.json'
 
@@ -130,15 +130,16 @@ def query_id_impl(q, q_id):
     return resp
 
 
-def get_data_impl(dataset, variable, time, depth, location):
+def get_data_impl(dataset: str, variable: str, time: int, depth: str, location: str):
     """
     API Format: /api/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
 
     <string:dataset>  : Dataset to extract data - Can be found using /api/datasets
     <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
     <int:time>        : Time retrieved data was gathered/modeled
-    <string:Depth>    : Water Depth - found using /api/depth/?dataset='...'
+    <string:depth>    : Water Depth - found using /api/depth/?dataset='...'
     <string:location> : Location of the data you want to retrieve (Lat, Long)
+    
     **All Components Must be Included**
     """
     data = utils.misc.get_point_data(
@@ -150,7 +151,7 @@ def get_data_impl(dataset, variable, time, depth, location):
     return resp
 
 
-def query_file_impl(q, projection, resolution, extent, file_id):
+def query_file_impl(q: str, projection: str, resolution: int, extent: str, file_id: str):
     """
     API Format: /api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
 
@@ -160,7 +161,7 @@ def query_file_impl(q, projection, resolution, extent, file_id):
     <string:extent>     : The current bounds of the map view
     <string:file_id>    : 
 
-    **All Components Must be Included**
+    **All components must be included**
     **Used Primarily by WebPage**
     """
 
@@ -299,7 +300,6 @@ def depth_impl(args):
         if 'variable' in args:
             raise APIError("Please Specify a Dataset using &dataset='...' ")
         raise APIError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
-    #~~~~~~~~~~~~~~~~~~~~~~~~
 
     var = args.get('variable')
     variables = var.split(',')
@@ -464,7 +464,6 @@ def time_query_impl(args):
 
     if 'dataset' not in args:
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
-    #~~~~~~~~~~~~~~~~~~~~~~~
 
     data = []
     dataset = args['dataset']
@@ -498,7 +497,7 @@ def time_query_impl(args):
 
 
     
-def timestamp_for_date_impl(old_dataset, date, new_dataset):
+def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     """
     API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
 
@@ -506,7 +505,7 @@ def timestamp_for_date_impl(old_dataset, date, new_dataset):
     <int:date>           : Date of desired data - Can be found using /api/timestamps/?datasets='...'
     <string:new_dataset> : Dataset to extract data - Can be found using /api/datasets
 
-    **Used when Changing datasets**
+    **Used when changing datasets.**
     """
 
     with open_dataset(get_dataset_url(old_dataset)) as ds:
@@ -524,7 +523,7 @@ def timestamp_for_date_impl(old_dataset, date, new_dataset):
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
-def scale_impl(dataset, variable, scale):
+def scale_impl(dataset: str, variable: str, scale: str):
     """
     API Format: /scale/<string:dataset>/<string:variable>/<string:scale>.png
 
@@ -563,10 +562,9 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-# Renders the map images and sends it to the browser
-def tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     """
-    Produces the Main Map Tiles
+        Produces the data tiles
     """
     
     cache_dir = current_app.config['CACHE_DIR']
@@ -593,10 +591,9 @@ def tile_impl(projection, interp, radius, neighbours, dataset, variable, time, d
 
         return _cache_and_send_img(img, f)
 
-# Renders basemap
-def topo_impl(projection, zoom, x, y):
+def topo_impl(projection: str, zoom: int, x: int, y: int):
     """
-    Generates Topographical Tiles for the Main Map
+        Generates topographical tiles
     """
 
     cache_dir = current_app.config['CACHE_DIR']
@@ -610,10 +607,9 @@ def topo_impl(projection, zoom, x, y):
         return _cache_and_send_img(bytesIOBuff, f)
 
 
-# Renders bathymetry contours
-def bathymetry_impl(projection, zoom, x, y):
+def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
     """
-    Generates Bathymetry Tiles for the Main Map
+       Generates bathymetry tiles
     """
 
     cache_dir = current_app.config['CACHE_DIR']
@@ -626,7 +622,7 @@ def bathymetry_impl(projection, zoom, x, y):
         return _cache_and_send_img(img, f)
 
 
-def drifter_query_impl(q, drifter_id):
+def drifter_query_impl(q: str, drifter_id: str):
     """
     API Format: /api/drifters/<string:q>/<string:drifter_id>
 
@@ -650,7 +646,7 @@ def drifter_query_impl(q, drifter_id):
     return resp
 
 
-def class4_query_impl(q, class4_id, index):
+def class4_query_impl(q: str, class4_id: str, index: str):
     """
     API Format: /api/class4/<string:q>/<string:class4_id>/
 
@@ -662,6 +658,7 @@ def class4_query_impl(q, class4_id, index):
 
     if class4_id == None:
         raise APIError("Please Specify an ID ")
+    
     if q == 'forecasts':
         pts = utils.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
@@ -831,7 +828,7 @@ def stats_impl(args, query = None):
 
 def _is_cache_valid(dataset: str, f: str) -> bool:
     """
-    Returns True if the cache is valid
+        Returns True if dataset cache is valid
     """
 
     if os.path.isfile(f):

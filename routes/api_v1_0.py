@@ -42,16 +42,14 @@ from data.netcdf_data import NetCDFData
 import routes.routes_impl
 
 
-bp_v1_0 = Blueprint('api_v1_0', __name__) # Creates the blueprint for api queries
+bp_v1_0 = Blueprint('api_v1_0', __name__)
 
 #~~~~~~~~~~~~~~~~~~~~~~~
 # API INTERFACE 
 #~~~~~~~~~~~~~~~~~~~~~~~
 
 @bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
-def generateScript(url, type):
-
-  #print(url)
+def generateScript(url: str, type: str):
 
   if type == "python":
     b = generatePython(url)
@@ -107,7 +105,7 @@ def depth_v1():
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
-def scale_v1_0(dataset, variable, scale):
+def scale_v1_0(dataset: str, variable: str, scale: str):
   return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 
@@ -115,7 +113,8 @@ def scale_v1_0(dataset, variable, scale):
 # Change to timestamp from v0.0
 #
 @bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
-def range_query_v1_0(dataset, variable, interp, radius, neighbours, projection, extent, depth, time):
+def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
+  
   with open_dataset(get_dataset_url(dataset)) as ds:
     date = ds.convert_to_timestamp(time)
     return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, date)
@@ -125,7 +124,8 @@ def range_query_v1_0(dataset, variable, interp, radius, neighbours, projection, 
 # ~ Added timestamp conversion
 # 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
-def get_data_v1_0(dataset, variable, time, depth, location):
+def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+  
   with open_dataset(get_dataset_url(dataset)) as ds:
     date = ds.convert_to_timestamp(time)
     #print(date)
@@ -136,7 +136,7 @@ def get_data_v1_0(dataset, variable, time, depth, location):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
-def class4_query_v1_0(q, class4_id):
+def class4_query_v1_0(q: str, class4_id: str):
     return routes.routes_impl.class4_query_impl(q, class4_id, 0)
 
 
@@ -144,7 +144,7 @@ def class4_query_v1_0(q, class4_id):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/drifters/<string:q>/<string:drifter_id>')
-def drifter_query_v1_0(q, drifter_id):
+def drifter_query_v1_0(q: str, drifter_id: str):
   return routes.routes_impl.drifter_query_impl(q, drifter_id)
 
 
@@ -246,7 +246,7 @@ def info_v1_0():
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/<string:q>/')
-def query_v1_0(q):
+def query_v1_0(q: str):
   return routes.routes_impl.query_impl(q)
 
 
@@ -254,7 +254,7 @@ def query_v1_0(q):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/<string:q>/<string:q_id>.json')
-def query_id_v1_0(q, q_id):
+def query_id_v1_0(q: str, q_id: str):
   return routes.routes_impl.query_id_impl(q, q_id)
 
 
@@ -262,7 +262,7 @@ def query_id_v1_0(q, q_id):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
-def query_file_v1_0(q, projection, resolution, extent, file_id):
+def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_id: str):
   return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
 
 
@@ -270,7 +270,7 @@ def query_file_v1_0(q, projection, resolution, extent, file_id):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
-def timestamp_for_date_v1_0(old_dataset, date, new_dataset):
+def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
   return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
@@ -278,7 +278,8 @@ def timestamp_for_date_v1_0(old_dataset, date, new_dataset):
 # Change to timestamp from v0.0
 #
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y):
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+  
   with open_dataset(get_dataset_url(dataset)) as ds:
     date = ds.convert_to_timestamp(time)
     return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
@@ -288,7 +289,7 @@ def tile_v1_0(projection, interp, radius, neighbours, dataset, variable, time, d
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
-def topo_v1_0(projection, zoom, x, y):
+def topo_v1_0(projection: str, zoom: int, x: int, y: int):
   return routes.routes_impl.topo_impl(projection, zoom, x, y)
 
 
@@ -296,6 +297,6 @@ def topo_v1_0(projection, zoom, x, y):
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
-def bathymetry_v1_0(projection, zoom, x, y):
+def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
   return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
