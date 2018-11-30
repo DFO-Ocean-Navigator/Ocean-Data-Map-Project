@@ -12,8 +12,8 @@ from data import open_dataset
 
 class ProfilePlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "profile"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "profile"
         super(ProfilePlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):

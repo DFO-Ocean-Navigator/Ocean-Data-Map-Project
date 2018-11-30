@@ -10,8 +10,8 @@ from flask import current_app
 
 class Class4Plotter(pl.Plotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "class4"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "class4"
         super(Class4Plotter, self).__init__(dataset_name, query, format)
 
     def parse_query(self, query):

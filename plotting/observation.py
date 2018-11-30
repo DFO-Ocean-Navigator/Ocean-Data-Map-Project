@@ -17,8 +17,8 @@ from flask import current_app
 
 class ObservationPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "observation"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "observation"
         super(ObservationPlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):

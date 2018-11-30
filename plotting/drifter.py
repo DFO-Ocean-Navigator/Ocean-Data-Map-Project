@@ -17,10 +17,10 @@ from scipy.interpolate import interp1d
 
 class DrifterPlotter(Plotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "drifter"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "drifter"
         super(DrifterPlotter, self).__init__(dataset_name, query, format)
-        self.size = '11x5'
+        self.size: str = '11x5'
 
     def parse_query(self, query):
         super(DrifterPlotter, self).parse_query(query)

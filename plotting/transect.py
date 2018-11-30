@@ -19,10 +19,10 @@ from data import open_dataset, geo
 
 class TransectPlotter(pl.LinePlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "transect"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "transect"
         super(TransectPlotter, self).__init__(dataset_name, query, format)
-        self.size = '11x5'
+        self.size: str = '11x5'
         self.selected_velocity_plots = None  #Holds Velocity Plot Type [magnitude, parallel, perpendicular]
 
     def parse_query(self, query):

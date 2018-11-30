@@ -19,7 +19,7 @@ from PIL import Image
 
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
-    def __init__(self, dataset_name, query, format):
+    def __init__(self, dataset_name: str, query: str, format: str):
         self.dataset_name: str = dataset_name
         self.query: dict = query
         self.format: str = format

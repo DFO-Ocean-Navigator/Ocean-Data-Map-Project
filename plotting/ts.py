@@ -11,8 +11,8 @@ from data import open_dataset
 # Temperature/Salinity Diagram for a Point
 class TemperatureSalinityPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "ts"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "ts"
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                          format)
 

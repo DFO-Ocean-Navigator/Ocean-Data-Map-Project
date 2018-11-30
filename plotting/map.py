@@ -31,8 +31,8 @@ from flask_babel import gettext
 
 class MapPlotter(pl.Plotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = 'map'
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = 'map'
         
         super(MapPlotter, self).__init__(dataset_name, query, format)
 

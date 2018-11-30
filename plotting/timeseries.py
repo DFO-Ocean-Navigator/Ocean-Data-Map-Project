@@ -19,10 +19,10 @@ LINEAR = 200
 
 class TimeseriesPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "timeseries"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "timeseries"
         super(TimeseriesPlotter, self).__init__(dataset_name, query, format)
-        self.size = '11x5'
+        self.size: str = '11x5'
 
     def csv(self):
         header = [
