@@ -160,7 +160,7 @@ def tile_v0(projection: str, interp: str, radius: int, neighbours: int, dataset:
 
 @bp_v0_0.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo_v0(projection: str, zoom: int, x: int, y: int):
-    return routes.routes_impl.topo_impl(projection, zoom, x, y)
+    return routes.routes_impl.topo_impl(projection, zoom, x, y, True)
 
 
 @bp_v0_0.route('/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')

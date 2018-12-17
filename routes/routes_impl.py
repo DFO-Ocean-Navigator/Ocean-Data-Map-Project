@@ -591,7 +591,7 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
 
         return _cache_and_send_img(img, f)
 
-def topo_impl(projection: str, zoom: int, x: int, y: int):
+def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
     """
@@ -602,7 +602,7 @@ def topo_impl(projection: str, zoom: int, x: int, y: int):
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
-        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, {})
+        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, shaded_relief)
         
         return _cache_and_send_img(bytesIOBuff, f)
 

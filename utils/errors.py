@@ -14,7 +14,7 @@ class ErrorBase(Exception):
         Converts internal message into dictionary object.
         This is what is sent back to the browser.
     """
-    def to_dict(self):
+    def to_dict(self) -> dict:
         rv = dict()
 
         rv['message'] = self.message

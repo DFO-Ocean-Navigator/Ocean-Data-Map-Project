@@ -2,6 +2,7 @@ import React from "react";
 import {Row, FormControl, ControlLabel, Col, Panel, Button} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 import Icon from "./Icon.jsx";
+import SelectBox from "./SelectBox.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
@@ -16,7 +17,9 @@ export default class Options extends React.Component {
       interpRadius: props.options.interpRadius,
       interpNeighbours: props.options.interpNeighbours,
       // Map
+      bathymetry: props.options.bathymetry,
       mapBathymetryOpacity: props.options.mapBathymetryOpacity,
+      topoShadedRelief: props.options.topoShadedRelief,
     };
 
     this.updateOptions = this.updateOptions.bind(this);
@@ -117,6 +120,18 @@ export default class Options extends React.Component {
               />
             </Col>
           </Row>
+          <SelectBox
+            id='bathymetry'
+            state={this.state.bathymetry}
+            onUpdate={(e, val) => {this.setState({"bathymetry": val,})} }
+            title={_("Show Bathymetry Contours")}
+          />
+          <SelectBox
+            id='topoShadedRelief'
+            state={this.state.topoShadedRelief}
+            onUpdate={(e, val) => {this.setState({"topoShadedRelief": val,})}}
+            title={_("Topography Shaded Relief")}
+          />
           <Row>
             <br />
             <Button

@@ -14,7 +14,7 @@ def get_filename(plot_type, dataset_name, extension):
     return "%s.%s" % ("_".join(map(str, outname)), extension)
 
 
-def get_mimetype(filetype):
+def get_mimetype(filetype: str):
     if filetype == 'png':
         mime = 'image/png'
     elif filetype == 'jpeg':

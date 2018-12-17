@@ -95,23 +95,6 @@ class MapPlotter(pl.Plotter):
 
         self.contour = query.get('contour')
 
-    def pole_proximity(self, points):
-        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
-        for p in points:
-            if abs(p[0]) > 80:       # is point close to pole
-                near_pole=True                    
-            if -180<=p[1]<=-90:
-                quad1=True
-            elif -90<=p[1]<=0:
-                quad2=True
-            elif 0<=p[1]<=90:
-                quad3=True
-            elif 90<=p[1]<=180:
-                quad4=True
-            if np.sum([quad1, quad2, quad3, quad4]) >= 3: # selected area covers (or almost covers) a pole 
-                covers_pole = True                  
-        return near_pole, covers_pole
-
     def load_data(self):
         distance = VincentyDistance()        
         height = distance.measure(

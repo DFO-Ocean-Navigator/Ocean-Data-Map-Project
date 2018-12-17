@@ -205,7 +205,7 @@ export default class Map extends React.PureComponent {
           projection: this.props.state.projection,
         }),
         opacity: this.props.options.mapBathymetryOpacity,
-        visible: this.props.state.bathymetry,
+        visible: this.props.options.bathymetry,
         preload: Infinity,
       });
 
@@ -611,10 +611,14 @@ export default class Map extends React.PureComponent {
   getBasemap(source, projection, attribution) {
     switch(source) {
       case "topo":
+
+        const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
+        console.warn(shadedRelief);
+
         return new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
-            url: `/tiles/topo/${projection}/{z}/{x}/{y}.png`,
+            url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
             attributions: [
               new ol.Attribution({
@@ -936,8 +940,8 @@ export default class Map extends React.PureComponent {
     }
 
     if (prevProps.state.basemap != this.props.state.basemap ||
-      prevProps.state.basemap_attribution != 
-      this.props.state.basemap_attribution
+        prevProps.state.basemap_attribution != this.props.state.basemap_attribution ||
+        prevProps.options.topoShadedRelief != this.props.options.topoShadedRelief
     ) {
       this.layer_basemap = this.getBasemap(
         this.props.state.basemap,
@@ -955,7 +959,7 @@ export default class Map extends React.PureComponent {
     }
 
     this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
-    this.layer_bath.setVisible(this.props.state.bathymetry);
+    this.layer_bath.setVisible(this.props.options.bathymetry);
 
     this.map.render();
   }
