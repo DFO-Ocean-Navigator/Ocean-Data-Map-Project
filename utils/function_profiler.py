@@ -17,7 +17,7 @@ from os.path import join
     Example:
 
     # Import our stuff
-    from oceannavigator.profile import profileit
+    from utils.function_profiler import profileit
 
     @profileit
     def my_function(some_argument):

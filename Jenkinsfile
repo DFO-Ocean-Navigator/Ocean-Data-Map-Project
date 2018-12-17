@@ -23,6 +23,7 @@ pipeline {
 
                 $py -m unittest tests/test_geo.py
                 $py -m unittest tests/test_nemo.py
+                $py -m unittest tests/test_api_v1_0_plot_line.py
            '''
       }
     }

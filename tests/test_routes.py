@@ -362,8 +362,8 @@ class TestRoutes(unittest.TestCase):
         open_dataset.return_value = open_dataset
         open_dataset.__enter__ = open_dataset
         open_dataset.configure_mock(timestamps=[
-            datetime.datetime(2017, 04, 01, 0, 0, 0),
-            datetime.datetime(2017, 05, 01, 0, 0, 0),
+            datetime.datetime(2017, 4, 1, 0, 0, 0),
+            datetime.datetime(2017, 5, 1, 0, 0, 0),
         ])
         resp = self.app.get('/api/timestamps/?dataset=dataset')
         self.assertEquals(resp.status_code, 200)
@@ -515,16 +515,16 @@ class TestRoutes(unittest.TestCase):
 
         mocks = [
             mock.MagicMock(timestamps=np.array([
-                datetime.datetime(2017, 04, 01, 0, 0, 0),
-                datetime.datetime(2017, 05, 01, 0, 0, 0),
-                datetime.datetime(2017, 06, 01, 0, 0, 0),
+                datetime.datetime(2017, 4, 1, 0, 0, 0),
+                datetime.datetime(2017, 0, 1, 0, 0, 0),
+                datetime.datetime(2017, 6, 1, 0, 0, 0),
             ])),
             mock.MagicMock(timestamps=np.array([
-                datetime.datetime(2017, 02, 01, 0, 0, 0),
-                datetime.datetime(2017, 03, 01, 0, 0, 0),
-                datetime.datetime(2017, 04, 06, 0, 0, 0),
-                datetime.datetime(2017, 05, 01, 0, 0, 0),
-                datetime.datetime(2017, 06, 01, 0, 0, 0),
+                datetime.datetime(2017, 2, 1, 0, 0, 0),
+                datetime.datetime(2017, 3, 1, 0, 0, 0),
+                datetime.datetime(2017, 4, 6, 0, 0, 0),
+                datetime.datetime(2017, 5, 1, 0, 0, 0),
+                datetime.datetime(2017, 6, 1, 0, 0, 0),
             ]))
         ]
         mocks[0].return_value = mocks[0]

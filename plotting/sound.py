@@ -10,8 +10,8 @@ from flask_babel import gettext
 
 class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "sound"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "sound"
         super(
             plTS.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                           format)

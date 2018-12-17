@@ -9,10 +9,10 @@ from data import open_dataset
 
 class StickPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "profile"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "profile"
         super(StickPlotter, self).__init__(dataset_name, query, format)
-        self.size = '11x5'
+        self.size: str = '11x5'
 
     def csv(self):
         header = [

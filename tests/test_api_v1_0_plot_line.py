@@ -1,36 +1,28 @@
 from routes.api_v1_0 import plot_v1_0
 from oceannavigator import create_app
-import hashlib
 import json
 import unittest
-from flask import Response, Flask
-from unittest import mock
-import json
-import base64
-import os
-import data
-import requests
-import routes
 from urllib.parse import urlencode
 
-def geturl(query):
-    request = "/api/v1.0/plot/?" + urlencode({"query": json.dumps(query)})
-    return request
-
-#
-# This Class Tests various different point plot requests
-#
+# Tests Transect and Hovmoller plot requests.
+# We only are considering the status code
+# of the responses. Not the validity of
+# the data returned.
 class TestLinePlot(unittest.TestCase):
+
+
+    def geturl(self, query: str):
+      request = "/api/v1.0/plot/?" + urlencode({"query": json.dumps(query)})
+      return request
 
     @classmethod
     def setUpClass(self):
         self.app = create_app().test_client()
 
-    #
-    # Tests Basic Plot Near NL
-    #
-    def test_basic_plot(self):
+    # Checks global projection
+    def test_global_projection(self):
 
+        # Transect plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -48,9 +40,10 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
 
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
         
+        # Hovmoller plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -66,16 +59,14 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
     
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
-    #
-    # Tests Arctic Plot
-    #
+    
+    # Arctic
     @unittest.expectedFailure
     def test_arctic_plot(self):
-
-        tests = ['transect','hovmoller']
         
+        # Transect plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -93,9 +84,10 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
 
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
 
+        # Hovmoller plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -111,15 +103,14 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
 
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
-    #
-    # Tests Antarctic Plot
-    #
+    
+    # Check Antarctic
     @unittest.expectedFailure
     def test_antarctic_plot(self):
 
-        tests = ['transect','hovmoller']
+        # Transect plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -137,9 +128,10 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
 
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
     
+        # Hovmoller plot
         query = {
           "colormap": "default",
           "dataset": "giops_day",
@@ -155,6 +147,6 @@ class TestLinePlot(unittest.TestCase):
           "variable": "votemper",
         }
     
-        resp = self.app.get(geturl(query))
+        resp = self.app.get(self.geturl(query))
         self.assertEqual(resp.status_code, 200)
     

@@ -8,9 +8,10 @@ from data.nearest_grid_point import find_nearest_grid_point
 class Nemo(NetCDFData):
     __depths = None
 
-    def __init__(self, url):
+    def __init__(self, url: str):
         super(Nemo, self).__init__(url)
 
+    
     def __enter__(self):
         super(Nemo, self).__enter__()
 
@@ -20,7 +21,7 @@ class Nemo(NetCDFData):
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
-    def depths(self):
+    def depths(self) -> np.ndarray:
         if self.__depths is None:
             var = None
             # Look through possible dimension names

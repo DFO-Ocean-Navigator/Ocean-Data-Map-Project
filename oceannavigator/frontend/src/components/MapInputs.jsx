@@ -76,7 +76,7 @@ export default class MapInputs extends React.Component {
       </Panel>
     ];
 
-    //Creates Right Map Panel when comparing datasets
+    // Creates Right Map Panel when comparing datasets
     if (this.props.state.dataset_compare) {
       inputs.push(
         <Panel
@@ -219,12 +219,6 @@ export default class MapInputs extends React.Component {
                   },
                 ]}
                 title={_("Basemap")}
-              />
-              <SelectBox
-                id='bathymetry'
-                state={this.props.state.bathymetry}
-                onUpdate={this.props.changeHandler}
-                title={_("Show Bathymetry Contours")}
               />
               
             </Panel>

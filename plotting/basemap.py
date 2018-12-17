@@ -6,38 +6,38 @@ from cachetools import LRUCache
 from flask import current_app
 import os
 import math
+from utils import return_type
 
-_loaded_maps = {}
 _maps_cache = LRUCache(maxsize=64)
 
-def convert_to_bounded_lon(lon):
-    if (math.degrees(math.sin(math.radians(lon)))<0):
-        bounded_lon = ((lon%180)-180)
-    else:
-        bounded_lon = (lon%180)
-    return bounded_lon
+def _convert_to_bounded_lon(lon: float) -> float:
 
-def load_map(projection, center, height, width, min_lat=0):
+    return math.fmod(lon, 360.0)
+
+def load_map(projection: str, center: tuple, height: float, width: float, min_lat: float=0) -> Basemap:
+
     CACHE_DIR = current_app.config['CACHE_DIR']
     filename = _get_filename(projection, center, height, width)
 
-    def get_resolution(h, w):
+    def get_resolution(h: float, w: float) -> str:
         area_km=(h*w)/(1000*1000)
+        
         if area_km < 10000:
-            res='f'         #full resolution
+            return 'f'         # full resolution
         elif area_km < 100000:
-            res='h'         #high resolution
+            return 'h'         # high resolution
         elif area_km < 1000000:
-            res='i'         #intermediate resolution
+            return 'i'         # intermediate resolution
         elif area_km < 10000000:
-            res='l'         #low resolution
+            return 'l'         # low resolution
         else:
-            res='c'         #crude resolution
-        return res
+            return 'c'         # crude resolution
 
     if _maps_cache.get(filename) is None or True:
+        filename = "".join([CACHE_DIR, "/", filename])
+
         try:
-            basemap = pickle.load(open(CACHE_DIR + "/" + filename))
+            basemap = pickle.load(open(filename))
         except:
             if projection in ['npstere', 'spstere']:
                 basemap = Basemap(
@@ -66,22 +66,22 @@ def load_map(projection, center, height, width, min_lat=0):
                     ellps='WGS84',
                     projection=projection,
                     lat_0=center[0],
-                    lon_0=convert_to_bounded_lon(center[1]),
+                    lon_0=_convert_to_bounded_lon(center[1]),
                     height=height,
                     width=width
                 )
             basemap.filename = filename
 
-            def do_pickle(basemap, filename):
+            def do_pickle(basemap: Basemap, filename: str) -> None:
                 pickle.dump(basemap, open(filename, 'wb'), -1)
 
             if not os.path.isdir(CACHE_DIR):
                 os.makedirs(CACHE_DIR)
 
-            t = threading.Thread(target=do_pickle, args=(basemap, CACHE_DIR +
-                                                         "/" + filename))
+            t = threading.Thread(target=do_pickle, args=(basemap, filename))
             t.daemon = True
             t.start()
+
         _maps_cache[filename] = basemap
     else:
         basemap = _maps_cache[filename]
@@ -89,23 +89,23 @@ def load_map(projection, center, height, width, min_lat=0):
     return basemap
 
 
-def load_nwatlantic():
+def load_nwatlantic() -> return_type(load_map):
     return load_map('lcc', (55, -60), 5e6, 3.5e6)
 
 
-def load_arctic():
+def load_arctic() -> return_type(load_map):
     return load_map('npstere', (65, 0), None, None)
 
 
-def load_pacific():
+def load_pacific() -> return_type(load_map):
     return load_map('lcc', (53, -137), 2e6, 2.5e6)
 
 
-def load_nwpassage():
+def load_nwpassage() -> return_type(load_map):
     return load_map('lcc', (74, -95), 1.5e6, 2.5e6)
 
 
-def _get_filename(projection, center, height, width):    
+def _get_filename(projection: str, center: tuple, height: float, width: float) -> str:
     hash = hashlib.sha1(";".join(
         str(x) for x in [projection, center, height, width]).encode()
     ).hexdigest()

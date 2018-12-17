@@ -6,7 +6,7 @@ from cachetools import LRUCache
 
 __dataset_cache = LRUCache(maxsize=10, getsizeof=lambda x: 1)
 
-def open_dataset(url):
+def open_dataset(url: str):
     if url is not None:
         if __dataset_cache.get(url) is None:
             if url.startswith("http") or url.endswith(".nc"):

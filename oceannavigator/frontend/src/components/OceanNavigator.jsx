@@ -52,7 +52,6 @@ export default class OceanNavigator extends React.Component {
       vectorid: null,
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
-      bathymetry: true, // Show bathymetry contours
       showHelp: false,
       showBugs: false,
       showCompareHelp: false,
@@ -75,7 +74,9 @@ export default class OceanNavigator extends React.Component {
         interpRadius: 25,
         interpNeighbours: 10,
         // Map
-        mapBathymetryOpacity: 0.75,
+        mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
+        topoShadedRelief: false,    // Show hill shading (relief mapping) on topography
+        bathymetry: true,           // Show bathymetry contours
       },
     };
 
@@ -174,6 +175,8 @@ export default class OceanNavigator extends React.Component {
     options.interpRadius = newOptions.interpRadius;
     options.interpNeighbours = newOptions.interpNeighbours;
     options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity;
+    options.bathymetry = newOptions.bathymetry;
+    options.topoShadedRelief = newOptions.topoShadedRelief;
 
     this.setState({options});
   }

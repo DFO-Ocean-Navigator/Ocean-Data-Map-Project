@@ -15,8 +15,8 @@ from utils.errors import ClientError, ServerError
 
 class HovmollerPlotter(plLine.LinePlotter):
 
-    def __init__(self, dataset_name, query, format):
-        self.plottype = "hovmoller"
+    def __init__(self, dataset_name: str, query: str, format: str):
+        self.plottype: str = "hovmoller"
         super(HovmollerPlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):

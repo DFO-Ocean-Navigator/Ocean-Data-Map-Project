@@ -10,7 +10,7 @@ __author__ = 'Geoff Holden'
 """
 class Data(object, metaclass=abc.ABCMeta):
 
-    def __init__(self, url):
+    def __init__(self, url: str):
         self.url: str = url
         self.interp: str = "gaussian"
         self.radius: int = 25000 # radius in meters
@@ -191,7 +191,7 @@ class Variable(object):
 
 class VariableList(list):
 
-    def __getitem__(self, pos):
+    def __getitem__(self, pos) -> Variable:
         if isinstance(pos, str):
             for v in self:
                 if v.key == pos:

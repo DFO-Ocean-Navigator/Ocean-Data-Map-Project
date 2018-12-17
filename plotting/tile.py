@@ -283,7 +283,7 @@ def plot(projection, x, y, z, args):
     return buf
 
 
-def topo(projection, x, y, z, args):
+def topo(projection, x, y, z, shaded_relief):
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -299,22 +299,25 @@ def topo(projection, x, y, z, args):
     colors = np.vstack((water_colors, land_colors))
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list('topo', colors)
 
+    data = None
     with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
         data = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
 
-    # Try shaded relief
-    x, y = np.gradient(data)
-    slope = np.pi / 2. - np.arctan(np.sqrt(x * x + y * y))
-    aspect = np.arctan2(-x, y)
-    altitude = np.pi / 4.
-    azimuth = np.pi / 2.
+    shade = 0
+    if shaded_relief:
+        x, y = np.gradient(data)
+        slope = np.pi / 2. - np.arctan(np.sqrt(x * x + y * y))
+        aspect = np.arctan2(-x, y)
+        altitude = np.pi / 4.
+        azimuth = np.pi / 2.
 
-    shaded = np.sin(altitude) * np.sin(slope)\
-        + np.cos(altitude) * np.cos(slope)\
-        * np.cos((azimuth - np.pi / 2.) - aspect)
-    shade = (shaded + 1) / 8
-    shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
-    shade[:, :, 3] = 0
+        shaded = np.sin(altitude) * np.sin(slope)\
+            + np.cos(altitude) * np.cos(slope)\
+            * np.cos((azimuth - np.pi / 2.) - aspect)
+        shade = (shaded + 1) / 8
+        shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
+        shade[:, :, 3] = 0
+
 
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.SymLogNorm(linthresh=0.1,

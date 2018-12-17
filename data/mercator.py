@@ -37,7 +37,7 @@ class Mercator(NetCDFData):
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
-    def depths(self):
+    def depths(self) -> np.ndarray:
         if self.__depths is None:
             var = None
             for v in self.depth_dimensions:
