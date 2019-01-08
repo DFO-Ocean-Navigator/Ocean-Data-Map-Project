@@ -92,6 +92,20 @@ def obs_vars_query_v1():
 def time_query_v1_0():
   return routes.routes_impl.time_query_impl(request.args)
 
+#
+#
+#
+@bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
+def convert(dataset: str, date: str):
+  print("Dataset: ", dataset)
+  with open_dataset(get_dataset_url(dataset)) as ds:
+    print("Original Date: ", date)
+    date = ds.convert_to_timestamp(date)
+    print("New Date: ", date)
+    resp = jsonify({
+        'date': date,
+    })
+    return resp
 
 #
 # Unchanged from v0.0
