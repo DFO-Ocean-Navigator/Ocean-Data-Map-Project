@@ -65,8 +65,8 @@ class SetUpTest:
                     'datasets': datasets,
                     'variables': variables
                 }
+                print(data)
                 return data
-
     def get_var_num(self):
         return self.variable_num
 
@@ -101,132 +101,35 @@ class TestLinePlot(unittest.TestCase):
             self.test_data = test_config.basic()
 
         self.variable_num = test_config.get_var_num()
-        self.total_vars_num = self.variable_num * 3
+        self.total_vars_num = self.variable_num * 8
 
-    '''
+
     #
-    # Tests Basic Plot Near NL
+    # Tests Basic Hovmoller Plot
     #
     def test_basic_plot(self):
         
         print("BASIC PLOT - TESTING")
         test_data = self.test_data
-        query = {
-          "colormap": "default",
-          "dataset": "giops_day",
-          "depth_limit": False,
-          "linearthresh": 200,
-          "path": [[57.99507897448629, -52.62298583984375], [43.41023307594466, -47.6913769206096]],
-          "plotTitle": "",
-          "quantum": "day",
-          "scale": "-5,30,auto",
-          "selectedPlots": "0,1,1",
-          "showmap": True,
-          "surfacevariable": "none",
-          "time": '820',
-          "type": "transect",
-          "variable": "votemper",
-        }
-        var = 0            
-        for dataset in test_data['datasets']:
-            if dataset != 'gem':
-
-                query['dataset'] = dataset
-                
-                for variable in test_data['variables'][dataset]:
-                    #print(".", end="", flush=True)
-                    query['variable'] = variable
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_velocity' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-    '''
-    
-    #
-    # Tests Arctic Plot
-    #
-    @unittest.expectedFailure
-    def test_arctic_plot(self):
-
-        print("ARCTIC PLOT - TESTING")
-        test_data = self.test_data
-        query = {
-          "colormap": "default",
-          "dataset": "giops_day",
-          "depth_limit": False,
-          "linearthresh": 200,
-          "path": [[81, -142], [82, 43]],
-          "plotTitle": "",
-          "quantum": "day",
-          "scale": "-5,30,auto",
-          "selectedPlots": "0,1,1",
-          "showmap": True,
-          "surfacevariable": "none",
-          "time": '820',
-          "type": "transect",
-          "variable": "votemper",
-        }
-        var = 0
-        for dataset in test_data['datasets']:
-            if dataset != 'gem':
-                
-                query['dataset'] = dataset
-
-                for variable in test_data['variables'][dataset]:
-
-                    query['variable'] = variable
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_velocity' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-
-                            resp = self.app.get(geturl(query))
-                            #self.assertEqual(resp.status_code, 200)
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-        print("PASSED")
-    
-    
-    #
-    # Tests Antarctic Plot
-    #
-    #@unittest.expectedFailure
-    def test_antarctic_plot(self):
-
-        print("ANTARCTIC PLOT - TESTING")
-        test_data = self.test_data
 
         query = {
           "colormap": "default",
           "dataset": "giops_day",
-          "depth_limit": False,
-          "linearthresh": 200,
-          "path": [[80, -128], [79, 54]],
+          "depth": 0,
+          "endtime": 867,
+          "path": [[57.194401443709836, -58.68743896484375], [46.329965491227455, -45.94329833984375]],
           "plotTitle": "",
           "quantum": "day",
           "scale": "-5,30,auto",
-          "selectedPlots": "0,1,1",
           "showmap": True,
-          "surfacevariable": "none",
-          "time": '820',
-          "type": "transect",
+          "starttime": '866',
+          "type": "hovmoller",
           "variable": "votemper",
         }
-        var = 0
+
         for dataset in test_data['datasets']:
             if dataset != 'gem':
-                
+                var = 0
                 query['dataset'] = dataset
                 #print("\n dataset: " + dataset)
                 for variable in test_data['variables'][dataset]:
@@ -245,4 +148,102 @@ class TestLinePlot(unittest.TestCase):
                             var += 1
                             self.__class__.total_vars += 1
 
-    print("PASSED")
+        print("PASSED")
+
+
+    #
+    # Tests Arctic Plot
+    #
+    #@unittest.expectedFailure
+    def test_arctic_plot(self):
+
+        print("ARCTIC PLOT - TESTING")
+        test_data = self.test_data
+
+        query = {
+          "colormap": "default",
+          "dataset": "giops_day",
+          "depth": 0,
+          "endtime": 867,
+          "path": [[81, -142], [82, 43]],
+          "plotTitle": "",
+          "quantum": "day",
+          "scale": "-5,30,auto",
+          "showmap": True,
+          "starttime": '866',
+          "type": "hovmoller",
+          "variable": "votemper",
+        }
+
+        for dataset in test_data['datasets']:
+            if dataset != 'gem':
+                var = 0
+                query['dataset'] = dataset
+                
+                for variable in test_data['variables'][dataset]:
+                    query['variable'] = variable
+                    with self.app:
+
+
+                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_velocity' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+
+                            resp = self.app.get(geturl(query))
+                            #self.assertEqual(resp.status_code, 200)
+
+                            var += 1
+                            self.__class__.total_vars += 1
+                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
+                        else:
+                            var += 1
+                            self.__class__.total_vars += 1
+
+        print("PASSED")
+                        
+
+    #
+    # Tests Antarctic Plot
+    #
+    #@unittest.expectedFailure
+    def test_antarctic_plot(self):
+
+        print("ANTARCTIC PLOT - TESTING")
+        test_data = self.test_data
+
+        query = {
+          "colormap": "default",
+          "dataset": "giops_day",
+          "depth": 0,
+          "endtime": 867,
+          "path": [[80, -128], [79, 54]],
+          "plotTitle": "",
+          "quantum": "day",
+          "scale": "-5,30,auto",
+          "showmap": True,
+          "starttime": '866',
+          "type": "hovmoller",
+          "variable": "votemper",
+        }
+        var = 0
+        for dataset in test_data['datasets']:
+            if dataset != 'gem':
+                
+                query['dataset'] = dataset
+                
+                for variable in test_data['variables'][dataset]:
+                    query['variable'] = variable
+                    with self.app:
+
+
+                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_velocity' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+
+                            resp = self.app.get(geturl(query))
+                            #self.assertEqual(resp.status_code, 200)
+
+                            var += 1
+                            self.__class__.total_vars += 1
+                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
+                        else:
+                            var += 1
+                            self.__class__.total_vars += 1
+
+        print("PASSED")
