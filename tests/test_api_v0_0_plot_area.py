@@ -36,16 +36,12 @@ def geturl(query):
 
 
 class SetUpTest:
-
-    variable_num = 0
-
+    
     def basic(self):
-        data = {
-            'datasets': ['giops_day'],
-            'variables': {'giops_day':['votemper', 'vosaline']}
+        return {
+            'datasets': 'giops_day',
+            'variables': 'votemper'
         }
-        self.variable_num = 2
-        return data
 
     def thorough(self):
         
@@ -54,23 +50,13 @@ class SetUpTest:
 
                 datasets = get_datasets()
                 variables = {}
-                
                 for dataset in datasets:
-                    dataset_var = get_variables(dataset)
-                    self.variable_num += len(dataset_var)
-                    variables.update({dataset: dataset_var})
-
-                print(self.variable_num)
-
+                    variables.update({dataset: get_variables(dataset)})
                 data = {
                     'datasets': datasets,
                     'variables': variables
                 }
                 return data
-    def get_var_num(self):
-        return self.variable_num
-
-
 
 #
 # This Class Tests various different point plot requests
@@ -78,9 +64,6 @@ class SetUpTest:
 class TestLinePlot(unittest.TestCase):
 
     test_data = None
-    variable_num = 0
-    total_vars = 0
-    total_vars_num = 0
 
     @classmethod
     def setUpClass(self):
@@ -90,11 +73,10 @@ class TestLinePlot(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
         warnings.simplefilter("ignore", UserWarning)
         warnings.simplefilter("ignore", DeprecationWarning)
-        warnings.simplefilter("ignore", ImportError)
 
 
         test_level = sys.argv.pop()
-        del sys.argv[1]
+
         if test_level == 'thorough':
             print("\n\nTEST LEVEL : THOROUGH")
             print("WARNING : THIS MAY TAKE SEVERAL HOURS\n\n")
@@ -103,11 +85,6 @@ class TestLinePlot(unittest.TestCase):
             print("\n\nTEST LEVEL : BASIC\n\n")
             self.test_data = test_config.basic()
 
-        self.variable_num = test_config.get_var_num()
-        self.total_vars_num = self.variable_num * 8
-        
-    
-    # TESTED - WORKING
     #
     # Tests Basic Plot Near NL
     #
@@ -134,32 +111,31 @@ class TestLinePlot(unittest.TestCase):
         }
         for dataset in test_data['datasets']:
             if dataset != 'gem':
-                var = 0
+
                 query['dataset'] = dataset
-                #print("\n dataset: " + dataset)
+                print("\n dataset: " + dataset)
                 for variable in test_data['variables'][dataset]:
-                    #print(".", end="", flush=True)
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_velocity' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            
+                        if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
                             resp = self.app.get(geturl(query))
                             self.assertEqual(resp.status_code, 200)
+                            print("Request OK")
+                            print("Creating Plot")
                             plotter = MapPlotter(dataset, query, 'json')
+                            print("Plot Created")
                             plot = plotter.prepare_plot(size=None, dpi=None)
                             
+                            print(plot)
+                            print(plot.shape)
+                        
                             self.assertEqual(plot.shape, ((500,444)))
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-        
-        print("PASSED")
+                            print(type(plot))
+                            self.assertEqual(type(plot), 'numpy.ma.core.MaskedArray')
+                            #self.assertEqual(type(plot), type(plot)
+                        
 
-    '''
-    # TESTED - WORKING
     #
     # Tests Arctic Plot
     # Single Quadrant
@@ -168,46 +144,36 @@ class TestLinePlot(unittest.TestCase):
         print("\nARCTIC SINGLE QUADRANT - TESTING")
         test_data = self.test_data
         query = {
-            "area": [{'innerrings': [], 'name': '', 'polygons': [[[70.61599666750213, -132.48690912244984], [76.33225862899116, -162.6089605518461], [84.74968635370459, -121.23323854769576], [75.15953587228074, -100.95402112796245], [70.61599666750213, -132.48690912244984]]]}],
-            "bathymetry": True,
-            "colormap": "default",
-            "contour": {'colormap': 'default', 'hatch': False, 'legend': True, 'levels': 'auto', 'variable': 'none'},
-            "dataset": "giops_day",
-            "depth": 0,
-            "interp": "gaussian",
-            "neighbours": 10,
-            "projection": "EPSG:32661",
-            "quiver": {'colormap': 'default', 'magnitude': 'length', 'variable': 'none'},
-            "radius": 25,
-            "scale": "-5,30,auto",
-            "showarea": True,
-            "time": '820',
-            "type": "map",
-            "variable": "votemper",
+          "area": [{'innerrings': [], 'name': '', 'polygons': [[[70.61599666750213, -132.48690912244984], [76.33225862899116, -162.6089605518461], [84.74968635370459, -121.23323854769576], [75.15953587228074, -100.95402112796245], [70.61599666750213, -132.48690912244984]]]}],
+          "bathymetry": True,
+          "colormap": "default",
+          "contour": {'colormap': 'default', 'hatch': False, 'legend': True, 'levels': 'auto', 'variable': 'none'},
+          "dataset": "giops_day",
+          "depth": 0,
+          "interp": "gaussian",
+          "neighbours": 10,
+          "projection": "EPSG:32661",
+          "quiver": {'colormap': 'default', 'magnitude': 'length', 'variable': 'none'},
+          "radius": 25,
+          "scale": "-5,30,auto",
+          "showarea": True,
+          "time": '820',
+          "type": "map",
+          "variable": "votemper",
         }
-        var = 0
         for dataset in test_data['datasets']:
-            if dataset != 'gem':    
+            if dataset != 'gem':
+
                 query['dataset'] = dataset
                 for variable in test_data['variables'][dataset]:
+                    print(".", end="", flush=True)
                     query['variable'] = variable
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)     #Confirms response was received
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((500,500)))   #Confirms shape is correct
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
+                    
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         print("PASSED")
-    
-    
+
     #
     # Tests Arctic Plot
     # All 4 Quadrants near pole
@@ -234,33 +200,21 @@ class TestLinePlot(unittest.TestCase):
           "type": "map",
           "variable": "votemper",
         }
-        var = 0
+        
         for dataset in test_data['datasets']:
             if dataset != 'gem':
 
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-                            
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((500,500))) # Confirms shape is correct
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
+                    
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         
         print("PASSED")
-    
+
     #
     # Test Arctic Plot
     # Entire Map
@@ -286,33 +240,19 @@ class TestLinePlot(unittest.TestCase):
           "type": "map",
           "variable": "votemper",
         }
-        var = 0
+
         for dataset in test_data['datasets']:
             if dataset != 'gem':
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((499,500))) # Confirms shape is correct
-                            
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-                        
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         print("PASSED")
-    
+
     #
     # Tests Antarctic Plot
     # Single Quadrant
@@ -339,32 +279,18 @@ class TestLinePlot(unittest.TestCase):
           "type": "map",
           "variable": "votemper",
         }
-        var = 0
+
         for dataset in test_data['datasets']:
             if dataset != 'gem':
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-                        
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((500,500))) # Confirms the shape is correct
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-        print("PASSED")
-    
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
+        
     #
     # Tests Antarctic Plot
     # Pole Covered
@@ -388,36 +314,20 @@ class TestLinePlot(unittest.TestCase):
           "showarea": True,
           "time": '820',
           "type": "map",
-
           "variable": "votemper",
         }
-        var = 0
         for dataset in test_data['datasets']:
             if dataset != 'gem':
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-                            
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((500,500))) # Confirms the shape is correct
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         print("PASSED")
-    
+
     #
     # Tests Antarctic Plot
     # Full Map
@@ -443,33 +353,19 @@ class TestLinePlot(unittest.TestCase):
           "type": "map",
           "variable": "votemper",
         }
-        var = 0
+
         for dataset in test_data['datasets']:
             if dataset != 'gem':
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-                            
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((500,500))) # Confirms a correct shape
-                            
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-        
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         print("PASSED")
-    
+
     #
     # Tests Plot across international dateline
     #
@@ -494,30 +390,15 @@ class TestLinePlot(unittest.TestCase):
           "type": "map",
           "variable": "votemper",
         }
-        var = 0
         for dataset in test_data['datasets']:
             if dataset != 'gem':
                 query['dataset'] = dataset
-                
                 for variable in test_data['variables'][dataset]:
-
+                    print(".", end="", flush=True)
                     query['variable'] = variable
                     
-                    with self.app:
-                        if variable != 'wind_stress_east_vel' and variable != 'wind_stress_north_vel' and variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
-                            resp = self.app.get(geturl(query))
-                            self.assertEqual(resp.status_code, 200)
-
-                            plotter = MapPlotter(dataset, query, 'json')
-                            plot = plotter.prepare_plot(size=None, dpi=None)
-                            self.assertEqual(plot.shape, ((248,500))) # Confirms correct shape
-
-                            var += 1
-                            self.__class__.total_vars += 1
-                            print("Total: " + str(round(self.__class__.total_vars / int(self.__class__.total_vars_num) * 100, 2)) + "% | Current: " + str(round((var / int(self.variable_num) * 100), 2)) + "%      | " + "dataset: " + dataset + " | variable: " + variable + " |         ",end='\r')
-                        else:
-                            var += 1
-                            self.__class__.total_vars += 1
-        
+                    if variable != 'aice' and variable != 'vice' and variable != 'u-component_of_wind_height_above_ground' and variable != 'v-component_of_wind_height_above_ground':
+                        resp = self.app.get(geturl(query))
+                        self.assertEqual(resp.status_code, 200)
         print("PASSED")
-    '''
+
