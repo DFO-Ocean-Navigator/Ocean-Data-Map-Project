@@ -33,6 +33,7 @@ export default class TimePicker extends React.Component {
       map: {},
       revmap: {},
       times: [],
+      dataset: undefined,
     };
 
     // Function bindings
@@ -40,6 +41,8 @@ export default class TimePicker extends React.Component {
     this.pickerChange = this.pickerChange.bind(this);
     this.nextTime = this.nextTime.bind(this);
     this.prevTime = this.prevTime.bind(this);
+    this.todayTime = this.todayTime.bind(this);
+    this.loadToday = this.loadToday.bind(this);
   }
 
   componentDidMount() {
@@ -198,12 +201,61 @@ export default class TimePicker extends React.Component {
       if (value < 0) {
         value = 0;
       }
+
+      this.loadToday();
   
       //const date = new Date(this.state.map[value]);
     }
   }
 
+  loadToday() {
+    //console.warn("Quantum: ", this.props.quantum)
+
+    let hash;
+    let urlParams = {};
+    let hashes = this.props.url.slice(this.props.url.indexOf('?') + 1).split('&');
+    for (let i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        urlParams[hash[0]] = hash[1];
+    }
+    if (urlParams.dataset !== this.state.dataset || urlParams.dataset !== undefined) {
+      this.setState({
+        dataset: urlParams.dataset
+      })
+    
+      let date = new Date()
+      date.setHours(0,0,0,0)
+      let today = date.getUTCFullYear() + '-' + date.getUTCMonth() + 1 + '-' + date.getUTCDate() + 'T' + '00:00:00+00:00'
+      
+      //console.warn("Date: ", today)
+      //console.warn("URL Params: " + urlParams)
+      
+      //Requesting time to timestamp conversion
+      $.ajax({
+      
+        url: '/api/v1.0/timestamps/convert/' + urlParams.dataset + '/' + today + '/',
+        dataType: "json",
+        cache: true,
+        success: function(data) {
+          console.warn("Today's Date: ", data.date)
+          this.setState({
+            today: data.date
+          });
+        }.bind(this),
+        error: function() {
+          this.setState({
+            today: null
+          });
+          console.error("No data available for today.")
+        }.bind(this)
+      });
+    }
+  }
+
   pickerChange() {
+
+    this.loadToday()
+
     var min = 0;
     var max = -1;
     if (this.props.hasOwnProperty("min")) {
@@ -329,21 +381,52 @@ export default class TimePicker extends React.Component {
     return parseInt(this.props.state) === this.state.max;
   }
 
+
+  isTodayTime() {
+    console.warn("testing today: ", this.state.today)
+    if (this.state.today === undefined) {
+      return true;  
+    } else if (this.state.today === this.props.state) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  todayTime() {
+    const value = this.state.today;
+    
+    this.setState({
+      value: value
+    }, function() {
+      this.updatePicker(value + 1, value);
+    }.bind(this));
+    
+    this.props.onUpdate(this.props.id, value);
+  }
+
   render() {
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
 
     let value = parseInt(this.props.state);
-
+    console.warn("Value: ", value)
+    console.warn("Quantum: ", this.props.quantum)
     if (value < 0) {
       value += this.state.data.length;
     }
-
     if (value < 0) {
       value = 0;
     }
 
     const date = new Date(this.state.map[value]);
-    let input = null;
+    let input = input = <input
+      readOnly
+      ref='picker'
+      type="text"
+      value={'Loading'}
+    />;;
+    let timeinput = undefined;
+
     switch(this.props.quantum) {
       case "month":
         input = <input
@@ -354,7 +437,6 @@ export default class TimePicker extends React.Component {
         />;
         break;
       case "day":
-      case "hour":
         input = <input
           readOnly
           ref='picker'
@@ -362,23 +444,31 @@ export default class TimePicker extends React.Component {
           value={$.datepicker.formatDate("dd MM yy", date)}
         />;
         break;
+      case "hour":
+        input = <input
+          readOnly
+          ref='picker'
+          type="text"
+          value={$.datepicker.formatDate("dd MM yy", date)}
+        />;
+        const options = this.state.times.map(function (t) {
+          return (
+            <option key={t.id} value={t.id}>
+              {t.value}
+            </option>
+          );
+        });
+        
+        timeinput = <select
+          value={this.state.value}
+          onChange={this.timeChange}>
+          {options}
+        </select>;
+        
+        break;
     }
 
-    let timeinput = null;
-    const options = this.state.times.map(function (t) {
-      return (
-        <option key={t.id} value={t.id}>
-          {t.value}
-        </option>
-      );
-    });
-    if (this.props.quantum == "hour") {
-      timeinput = <select
-        value={this.state.value}
-        onChange={this.timeChange}>
-        {options}
-      </select>;
-    }
+    
 
     return (
       <div key={this.props.url} className='TimePicker input'>
@@ -397,6 +487,10 @@ export default class TimePicker extends React.Component {
             onClick={this.nextTime}
             disabled={this.isLastTime()}
           ><Icon icon='caret-right' alt=">" /></Button>
+          <Button
+            onClick={this.todayTime}
+            disabled={this.isTodayTime()}
+          ><Icon icon='calendar' alt='>' /></Button>
         </div>
       </div>
     );
