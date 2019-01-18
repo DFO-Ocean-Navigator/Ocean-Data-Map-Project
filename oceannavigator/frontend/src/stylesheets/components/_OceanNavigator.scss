@@ -8,10 +8,103 @@ body {
     .nav-tabs {
         font-size: 0.8em;
     }
+    #app {
+        height:100%;
+        >div {
+            height:100%;
+        }
+    }
 }
 .OceanNavigator {
+
+    height:100%;
+    .LayerOptions {
+        width: 20%;
+        height: 100%;
+    }
+    .LayerSelection {
+        float: left;
+        width: 13.75%;
+        height:100%;
+        .nav {
+            background-color: #008cba;
+            height:100%;
+            
+        }
+        .hiddenButton {
+            height: 20%;
+            >a {
+                height:100%;
+                
+            }
+        }
+        
+        .currentButton {
+            height: 20%;
+            background-color: #006687;
+            
+            >a {
+                height:100%;
+                
+            }
+        }
+        .settingsButton {
+            font-size: 50px!important;
+        }
+
+        .vertical {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            height: 100%;
+            text-align: center;
+            color: white;
+        }
+    }
+    .LayerPanels {
+        height: calc(100% - 70px);
+        float: right;
+        width: 86.25%;
+
+        .settings {
+            background-color: #006687;
+            float: bottom;
+            height: 70px;
+
+            >button {
+                padding: 0px;
+                padding-right: 20px;
+                padding-left: 20px;
+                vertical-align: middle;
+    
+                background-color: #006687;
+                float: right;
+                height: 100%;
+                border: none;
+                outline: none;
+                font-size: 40px;
+                color: white;
+                
+                :hover {
+                    font-size: 50px;
+                }
+
+            }
+
+        }
+
+        .hiddenPanel {
+            display: none;
+        }
+        .currentPanel {
+            display: block;
+            background-color: #006687;
+            height: 100%;
+        }
+        
+    }
     .MapInputs {
-        width: 0;
+        width: 17.25%;
+        left: 2.75%;
         position: absolute;
         top: 0;
         bottom: 0;

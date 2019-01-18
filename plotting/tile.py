@@ -201,7 +201,7 @@ def plot(projection, x, y, z, args):
             time += len(dataset.timestamps)
 
         timestamp = dataset.timestamps[time]
-
+        
         for v in variable:
             data.append(dataset.get_area(
                 np.array([lat, lon]),

@@ -28,9 +28,10 @@ export default class FoundationTab extends React.Component {
 
   render() {
       
-    
+    const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
+
     return (
-      <div>
+      <div className={className}>
         <Tabs //Creates Tabs Container
           activeKey={this.state.currentTab}
           onSelect={this.handleTabs}
@@ -38,7 +39,7 @@ export default class FoundationTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Maps")}</span></span>}>
+            <Tab eventKey={1} title={<span>{_("Maps")}</span>}>
                 <Panel
                   collapsible
                   defaultExpanded

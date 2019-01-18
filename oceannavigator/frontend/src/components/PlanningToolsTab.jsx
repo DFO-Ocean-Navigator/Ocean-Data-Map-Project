@@ -28,13 +28,13 @@ export default class PlannningToolsTab extends React.Component {
  
   render() {
       
-    
+    const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
     return (
-      <div>
+      <div className={className}>
         <Tabs //Creates Tabs Container
           activeKey={this.state.currentTab}
           onSelect={this.handleTabs}
-          id="IntelligenceTab"
+          id="MapInputTabs"
         >
 
           {/* Creates the Data Selection Tab */}

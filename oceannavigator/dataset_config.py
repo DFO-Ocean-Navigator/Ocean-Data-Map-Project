@@ -183,6 +183,19 @@ def get_variable_scale_factor(dataset: str, variable) -> float:
 
     return 1.0
 
+def get_variable_type(dataset: str, variable) -> str:
+    ds_vars = get_variables(dataset)
+
+    key = variable.key.lower()
+    print(key)
+    if key in ds_vars:
+        envtype = __get_dataset_config()[dataset]["variables"][key].get("envtype")
+        print("envtype: ", envtype)
+        if envtype is not None:
+            return envtype
+    
+    return KeyError
+
 """
     Is the given variable marked as hidden in the dataset config file
     

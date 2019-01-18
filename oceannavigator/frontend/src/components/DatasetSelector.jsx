@@ -64,6 +64,10 @@ export default class DatasetSelector extends React.Component {
       case "3d":
         variables = "&3d_only";
         break;
+      case "ice":
+        variables = "&envtype=ice";
+        break;
+      
       default:
         break;
     }
@@ -137,6 +141,16 @@ export default class DatasetSelector extends React.Component {
       <div className='DatasetSelector'>
 
         <ComboBox
+          id='variable'
+          multiple={this.props.multiple}
+          state={this.props.state.variable}
+          def={"defaults.dataset"}
+          onUpdate={this.variableUpdate}
+          url={"/api/variables/?vectors&dataset=" + this.props.dataset + variables
+          }
+          title={_("Variable")}
+        ><h1>{_("Variable")}</h1></ComboBox>
+        <ComboBox
           id='dataset'
           state={this.props.state.dataset}
           def={"defaults.dataset"}
@@ -144,16 +158,7 @@ export default class DatasetSelector extends React.Component {
           url='/api/datasets/'
           title={_("Dataset")}></ComboBox>
 
-        <ComboBox
-          id='variable'
-          multiple={this.props.multiple}
-          state={this.props.state.variable}
-          def={"defaults.dataset"}
-          onUpdate={this.variableUpdate}
-          url={"/api/variables/?vectors&dataset=" + this.props.state.dataset + variables
-          }
-          title={_("Variable")}
-        ><h1>{_("Variable")}</h1></ComboBox>
+        
 
         {velocity_selector}
 
@@ -193,5 +198,6 @@ DatasetSelector.propTypes = {
   line: PropTypes.bool,
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
+  envtype: PropTypes.string,
 };
 

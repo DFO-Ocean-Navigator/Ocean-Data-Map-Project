@@ -8,6 +8,7 @@ import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
+import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
@@ -48,6 +49,7 @@ export default class OceanNavigator extends React.Component {
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
+      layers: [],
       vectortype: null,
       vectorid: null,
       busy: false, // Controls if the busyModal is visible
@@ -763,10 +765,10 @@ export default class OceanNavigator extends React.Component {
 
     return (
       <div className='OceanNavigator'>
-        <MapInputs
+        <LayerSelection
           state={this.state}
           swapViews={this.swapViews}
-          changeHandler={this.updateState}
+          updateState={this.updateState}
           showHelp={this.toggleCompareHelp}
           options={this.state.options}
           updateOptions={this.updateOptions}

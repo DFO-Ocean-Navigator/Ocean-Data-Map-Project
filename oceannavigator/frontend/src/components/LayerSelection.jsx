@@ -1,11 +1,13 @@
 import React from 'react';
 import Icon from "./Icon.jsx";
-import { Nav, NavItem, NavLink } from 'react-bootstrap';
+import { Button, Nav, NavItem, NavLink } from 'react-bootstrap';
 import MapInputs from './MapInputs.jsx';
 import FoundationTab from './FoundationTab.jsx';
 import IntelligenceTab from './IntelligenceTab.jsx';
 import DerivedProductsTab from './DerivedProductsTab.jsx';
 import PlanningToolsTab from './PlanningToolsTab.jsx';
+import SettingsTab from './SettingsTab.jsx';
+import EnvironmentTab from './EnvironmentTab.jsx';
 
 export default class LayerSelection extends React.Component {
     
@@ -18,8 +20,8 @@ export default class LayerSelection extends React.Component {
         this.state = {
           public: false,
           tab: 2,
-          panels: ['hiddenPanel', 'currentPanel', 'hiddenPanel', 'hiddenPanel', 'hiddenPanel'],
-          buttons: ['hiddenButton', 'currentButton', 'hiddenButton', 'hiddenButton', 'hiddenButton']
+          panels: ['hiddenPanel', 'currentPanel', 'hiddenPanel', 'hiddenPanel', 'hiddenPanel', 'hiddenPanel'],
+          buttons: ['hiddenButton', 'currentButton', 'hiddenButton', 'hiddenButton', 'hiddenButton', 'hiddenButton']
         };
     
         this.tabSelect = this.tabSelect.bind(this)
@@ -37,7 +39,7 @@ export default class LayerSelection extends React.Component {
         console.warn("Selected Key: ", selectedKey)
         
         if (selectedKey === 0) {
-            for (i=0; i < 5; i++) {
+            for (i=0; i < 6; i++) {
 
             }
         } else {
@@ -50,24 +52,28 @@ export default class LayerSelection extends React.Component {
                 newPanels[i] = 'hiddenPanel'
                 newButtons[i] = 'hiddenButton'
             }
-            for (i=selectedKey; i < 5; i++) {
+            for (i=selectedKey; i < 6; i++) {
                 console.warn("After Key: ", i)
                 newPanels[i] = 'hiddenPanel'
                 newButtons[i] = 'hiddenButton'
             }
 
             newPanels[selectedKey - 1] = 'currentPanel'
-            newButtons[selectedKey - 1] = 'currentButton'
-
+            if (selectedKey === 6) {
+                newButtons[selectedKey - 1] = 'settingsButton'
+            } else {
+                newButtons[selectedKey - 1] = 'currentButton'
+            }
+            
             this.setState({
                 panels: newPanels,
                 buttons: newButtons,
             })
         }
     }
-
+    
     render() {
-        
+
 
         return (
             <div className='LayerOptions'>
@@ -91,63 +97,80 @@ export default class LayerSelection extends React.Component {
                         
                     </Nav>
                 </div>
-                <div className='LayerPanels'>
-                    <div className={this.state.panels[0]} id='panel1'>
-                        <FoundationTab
-                            state={this.props.state}
-                            swapViews={this.props.swapViews}
-                            changeHandler={this.props.updateState}
-                            showHelp={this.props.toggleCompareHelp}
-                            options={this.props.state.options}
-                            updateOptions={this.props.updateOptions}
-                        />
-                    </div>
-                    
-                    <div className={this.state.panels[1]} id='panel2'>
-                        <MapInputs
-                            state={this.props.state}
-                            swapViews={this.props.swapViews}
-                            changeHandler={this.props.updateState}
-                            showHelp={this.props.toggleCompareHelp}
-                            options={this.props.state.options}
-                            updateOptions={this.props.updateOptions}
-                        />
-                    </div>
 
-                    <div className={this.state.panels[2]} id='panel3'>
-                        <IntelligenceTab
-                            state={this.props.state}
-                            swapViews={this.props.swapViews}
-                            changeHandler={this.props.updateState}
-                            showHelp={this.props.toggleCompareHelp}
-                            options={this.props.state.options}
-                            updateOptions={this.props.updateOptions}
-                        />
-                    </div>
+                    <div className='LayerPanels'>
+                        <div className={this.state.panels[0]} id='panel1'>
+                            <FoundationTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
 
-                    <div className={this.state.panels[3]} id='panel4'>
-                        <DerivedProductsTab
-                            state={this.props.state}
-                            swapViews={this.props.swapViews}
-                            changeHandler={this.props.updateState}
-                            showHelp={this.props.toggleCompareHelp}
-                            options={this.props.state.options}
-                            updateOptions={this.props.updateOptions}
-                        />
-                    </div>
-                    
-                    <div className={this.state.panels[4]} id='panel5'>
-                        <PlanningToolsTab
-                            state={this.props.state}
-                            swapViews={this.props.swapViews}
-                            changeHandler={this.props.updateState}
-                            showHelp={this.props.toggleCompareHelp}
-                            options={this.props.state.options}
-                            updateOptions={this.props.updateOptions}
-                        />
-                    </div>
+                        <div className={this.state.panels[1]} id='panel2'>
+                            <EnvironmentTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
+
+                        <div className={this.state.panels[2]} id='panel3'>
+                            <IntelligenceTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
+
+                        <div className={this.state.panels[3]} id='panel4'>
+                            <DerivedProductsTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
+
+                        <div className={this.state.panels[4]} id='panel5'>
+                            <PlanningToolsTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
+                        <div className={this.state.panels[5]} id='panel6'>
+                            <SettingsTab
+                                state={this.props.state}
+                                swapViews={this.props.swapViews}
+                                changeHandler={this.props.updateState}
+                                showHelp={this.props.toggleCompareHelp}
+                                options={this.props.state.options}
+                                updateOptions={this.props.updateOptions}
+                            />
+                        </div>
+                        <div className='settings'>
+                            <Button className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
+                                <Icon icon='gear'/>
+                            </Button>
+                        </div>
 
                 </div>
+                
             </div>
         );
     }

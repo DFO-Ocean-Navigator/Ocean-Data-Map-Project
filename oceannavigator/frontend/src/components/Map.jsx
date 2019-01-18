@@ -129,7 +129,8 @@ export default class Map extends React.PureComponent {
     this.drawing = false;
 
     this.state = {
-      location: [0,90]
+      location: [0,90],
+      
     };
 
     //This loads the pre-defined KML Shapes
@@ -346,7 +347,7 @@ export default class Map extends React.PureComponent {
         this.layer_data,
         this.layer_bath,
         this.layer_vector,
-      ],
+      ].concat(this.props.state.layers),
       controls: ol.control.defaults({
         zoom: true,
         attributionOptions: ({
@@ -616,6 +617,7 @@ export default class Map extends React.PureComponent {
       this.props.updateState("plotEnabled", true);
     }.bind(this));
   }
+  
 
   getBasemap(source, projection, attribution) {
     switch(source) {
@@ -742,7 +744,7 @@ export default class Map extends React.PureComponent {
       console.warn(converted)
       features.push([converted[1], converted[0]])
     });
-
+    //this.drawing = true;
     console.warn(features);
     //this.props.updateState("point", features)
     this.props.action("multi-point", features)

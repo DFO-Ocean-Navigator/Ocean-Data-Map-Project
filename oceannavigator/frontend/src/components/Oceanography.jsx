@@ -1,9 +1,3 @@
-/*
-
-  Left Side bar on main page
-
-*/
-
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -16,7 +10,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-export default class MapInputs extends React.Component {
+export default class Oceanography extends React.Component {
   constructor(props) {
     super(props);
 
@@ -31,8 +25,9 @@ export default class MapInputs extends React.Component {
   handleTabs(key) {
     this.setState({currentTab: key,});
   }
- 
+
   render() {
+
     _("Variable Range");
     _("Show Bathymetry Contours");
 
@@ -48,6 +43,7 @@ export default class MapInputs extends React.Component {
         <DatasetSelector
           id='dataset_0'
           state={this.props.state}
+          dataset={this.props.state.dataset}
           onUpdate={this.props.changeHandler}
           depth={true}
         />
@@ -116,76 +112,9 @@ export default class MapInputs extends React.Component {
         </Panel>
       );
     }
-
-    if (this.props.private === true) {
-      this.settings_panel = undefined;
-    } else {
-      this.settings_panel = <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Settings")}</span></span>}>
-
-        <Panel    //Settings Panel
-          collapsible
-          defaultExpanded
-          header={_("Map")} 
-          bsStyle='primary' 
-        >
-          <ComboBox   //Projection Drop Down - Hardcoded
-            id='projection'
-            state={this.props.state.projection}
-            onUpdate={this.props.changeHandler}
-            data={[
-              { id: "EPSG:3857", value: _("Global") },
-              { id: "EPSG:32661", value: _("Arctic") },
-              { id: "EPSG:3031", value: _("Antarctic") },
-            ]}
-            title={_("Projection")}
-          />
-          <ComboBox   //Basemap Drop Down - Hardcoded
-            id='basemap'
-            state={this.props.state.basemap}
-            onUpdate={this.props.changeHandler}
-            data={[
-              {
-                id: "topo",
-                value: _("ETOPO1 Topography"),
-                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
-              },
-              {
-                id: "ocean",
-                value: _("Esri Ocean Basemap"),
-                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
-              },
-              {
-                id: "world",
-                value: _("Esri World Imagery"),
-                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
-              },
-            ]}
-            title={_("Basemap")}
-          />
-
-        </Panel>
-
-        <Options
-          options={this.props.options}
-          updateOptions={this.props.updateOptions}
-        />
-
-      </Tab>
-    }
-    const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
-
+    
     return (
-      <div className={className}>
-
-        
-        <Tabs //Creates Tabs Container
-          activeKey={this.state.currentTab}
-          onSelect={this.handleTabs}
-          id="MapInputTabs"
-        >
-
-          {/* Creates the Data Selection Tab */}
-          <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Data Selection")}</span></span>}>
+        <div>
             <Panel
               collapsible
               defaultExpanded
@@ -229,20 +158,13 @@ export default class MapInputs extends React.Component {
             </Panel>
             
             {inputs  /* Renders Side Panel */}
-            
-          </Tab>
-
-          {/* Creates Settings Tab */}
-          {this.settings_panel}
-        </Tabs>
-        
-      </div>
+        </div>
     );
   }
 }
 
 //***********************************************************************
-MapInputs.propTypes = {
+Oceanography.propTypes = {
   state: PropTypes.object,
   sidebarOpen: PropTypes.bool,
   basemap: PropTypes.string,

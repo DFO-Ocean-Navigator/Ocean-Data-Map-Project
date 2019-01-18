@@ -16,7 +16,7 @@ from PIL import Image
 import io
 
 from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets,
+    get_variable_name, get_datasets, get_variable_type,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache, get_dataset_help,
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
@@ -369,86 +369,118 @@ def vars_query_impl(args):
 
     if 'dataset' not in args.keys():
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
-
-    data = []       #Initializes empty data list
-    dataset = args['dataset']   #Dataset Specified in query
-
-    #Queries config files
-    if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
-            
-        with open_dataset(get_dataset_climatology(dataset)) as ds:
-            climatology_variables = list(map(str, ds.variables))
     
+    if args['dataset'] == 'all':
+        print("ALL DATASETS")
+        datasets = []
+        for key in get_datasets():
+            print(key)
+            datasets += [key]
     else:
-        climatology_variables = []
+        datasets = [args['dataset']]   #Dataset Specified in query
+    print(datasets)
+    data = []       #Initializes empty data list
+    
+    for dataset in datasets:
+        #Queries config files
+        if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
 
-    #three_d = '3d_only' in args     #Checks if 3d_only is in args
-    #If three_d is true - Only 3d variables will be returned
+            with open_dataset(get_dataset_climatology(dataset)) as ds:
+                climatology_variables = list(map(str, ds.variables))
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
-        if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
+        else:
+            climatology_variables = []
 
-            # 'v' is a Variable in the Dataset
-            #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-            for v in ds.variables:  #Iterates through all the variables in the dataset
+        #three_d = '3d_only' in args     #Checks if 3d_only is in args
+        #If three_d is true - Only 3d variables will be returned
 
-                #If a time period and at least one other unit type is specified
-                if ('time_counter' in v.dimensions or   
-                    'time' in v.dimensions) \
-                        and ('y' in v.dimensions or
-                             'yc' in v.dimensions or
-                             'node' in v.dimensions or
-                             'nele' in v.dimensions or
-                             'latitude' in v.dimensions or
-                             'lat' in v.dimensions):
-                    if ('3d_only' in args) and not (
-                        set(ds.depth_dimensions) & set(v.dimensions)
-                    ):
-                        continue
-                    else:
-                        if not is_variable_hidden(dataset, v):
-                             
-                            data.append({
-                                'id': v.key,
-                                'value': get_variable_name(dataset, v),
-                                'scale': get_variable_scale(dataset, v)
-                            })
-                            if v.key in climatology_variables:
-                                data.append({
-                                    'id': v.key + "_anom",
-                                    'value': get_variable_name(dataset, v) + " Anomaly",
-                                    'scale': [-10, 10]
-                                })
-     
-        VECTOR_MAP = {
-            'vozocrtx': 'vozocrtx,vomecrty',
-            'itzocrtx': 'itzocrtx,itmecrty',
-            'iicevelu': 'iicevelu,iicevelv',
-            'u_wind': 'u_wind,v_wind',
-            'u': 'u,v',
-            'ua': 'ua,va',
-            'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
-        }
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
 
-        #If Vectors are needed
-        if 'vectors' in args or 'vectors_only' in args:
-            
-            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
-            for key, value in list(VECTOR_MAP.items()):
-                if key in ds.variables:
-                    n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
-                    data.append({
-                        'id': value,
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                        'scale': [0, get_variable_scale(
-                            dataset,
-                            ds.variables[key]
-                        )[1]]
-                    })
+                # 'v' is a Variable in the Dataset
+                #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
+                for v in ds.variables:  #Iterates through all the variables in the dataset
+
+                    #If a time period and at least one other unit type is specified
+                    if ('time_counter' in v.dimensions or   
+                        'time' in v.dimensions) \
+                            and ('y' in v.dimensions or
+                                 'yc' in v.dimensions or
+                                 'node' in v.dimensions or
+                                 'nele' in v.dimensions or
+                                 'latitude' in v.dimensions or
+                                 'lat' in v.dimensions):
+                        if ('3d_only' in args) and not (
+                            set(ds.depth_dimensions) & set(v.dimensions)
+                        ):
+                            continue
+                        else:
+                            if not is_variable_hidden(dataset, v):
+                                print(args)
+                                if 'envtype' in args:
+                                    envType = get_variable_type(dataset, v)
+                                    if envType in args['envtype']:
+                                        data.append({
+                                            'id': v.key,
+                                            'value': get_variable_name(dataset, v),
+                                            'scale': get_variable_scale(dataset, v),
+                                            'envtype': envType
+                                        })
+                                        if v.key in climatology_variables:
+                                            data.append({
+                                                'id': v.key + "_anom",
+                                                'value': get_variable_name(dataset, v) + " Anomaly",
+                                                'scale': [-10, 10],
+                                                'envtype': envType
+                                            })
+                                else:
+                                    data.append({
+                                        'id': v.key,
+                                        'value': get_variable_name(dataset, v),
+                                        'scale': get_variable_scale(dataset, v),
+                                        'envtype': get_variable_type(dataset, v)
+                                    })
+                                    if v.key in climatology_variables:
+                                        data.append({
+                                            'id': v.key + "_anom",
+                                            'value': get_variable_name(dataset, v) + " Anomaly",
+                                            'scale': [-10, 10],
+                                            'envtype': get_variable_type(dataset, v)
+                                        })
+
+            VECTOR_MAP = {
+                'vozocrtx': 'vozocrtx,vomecrty',
+                'itzocrtx': 'itzocrtx,itmecrty',
+                'iicevelu': 'iicevelu,iicevelv',
+                'u_wind': 'u_wind,v_wind',
+                'u': 'u,v',
+                'ua': 'ua,va',
+                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
+            }
+
+            #If Vectors are needed
+            if 'vectors' in args or 'vectors_only' in args:
+
+                rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
+                for key, value in list(VECTOR_MAP.items()):
+                    if key in ds.variables:
+                        n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
+                        data.append({
+                            'id': value,
+                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                            'scale': [0, get_variable_scale(
+                                dataset,
+                                ds.variables[key]
+                            )[1]],
+                            'envtype': get_variable_type(dataset, v)
+                        })
+
+    # END OF DATASET LOOP
 
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     
     #Data is set of scale, id, value objects
+    print(data)
     resp = jsonify(data)
     return resp
 
@@ -566,6 +598,7 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     """
         Produces the data tiles
     """
+
     
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
@@ -575,6 +608,7 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
     else:
+
         if depth != "bottom" and depth != "all":
             depth = int(depth)
 

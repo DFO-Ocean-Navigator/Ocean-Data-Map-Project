@@ -64,12 +64,17 @@ def generateScript(url: str, type: str):
 #
 # Unchanged from v0.0
 #
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
 @bp_v1_0.route('/api/v1.0/datasets/')
 def query_datasets_v1_0():
   return routes.routes_impl.query_datasets_impl(request.args)
 
+
 #
 # Unchanged from v0.0
+#
+# Will be capable of processing additional arguments for meteorology, oceanography, and ice
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
@@ -97,15 +102,19 @@ def time_query_v1_0():
 @bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
 def convert(dataset: str, date: str):
   print("Dataset: ", dataset)
-  with open_dataset(get_dataset_url(dataset)) as ds:
-    print("Original Date: ", date)
-    date = ds.convert_to_timestamp(date)
-    print("New Date: ", date)
-    resp = jsonify({
-        'date': date,
-    })
+  
+  try:
+    with open_dataset(get_dataset_url(dataset)) as ds:
+      print("Original Date: ", date)
+      date = ds.convert_to_timestamp(date)
+      print("New Date: ", date)
+      resp = jsonify({
+          'date': date,
+      })
     return resp
-
+  except:
+    print("Done")
+    return Response(status=500)
 #
 # Unchanged from v0.0
 #

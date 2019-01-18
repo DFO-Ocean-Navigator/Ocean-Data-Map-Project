@@ -384,7 +384,7 @@ export default class TimePicker extends React.Component {
 
   isTodayTime() {
     console.warn("testing today: ", this.state.today)
-    if (this.state.today === undefined) {
+    if (this.state.today === undefined || this.state.today === null) {
       return true;  
     } else if (this.state.today === this.props.state) {
       return true;
