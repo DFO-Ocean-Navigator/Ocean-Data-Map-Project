@@ -732,6 +732,26 @@ def plot_impl(args, query = None):
     }
     plottype = query.get('type')
 
+    if 'station' in query:
+        station = query.get('station')
+
+        def wrapdeg(num):   #Ensures the lat and lon are between -180 and 180deg
+            num = num % 360
+            if num > 180:
+                num = num - 360
+            return num
+
+        for index in range(0, len(station)):
+            if station[index][0] >= 0:
+                station[index][0] = wrapdeg(station[index][0])
+            else:
+                station[index][0] = wrapdeg(station[index][0])
+
+            if station[index][1] >= 0:
+                station[index][1] = wrapdeg(station[index][1])
+            else:
+                station[index][1] = wrapdeg(station[index][1])
+
     size = None
     if 'save' in args:
         if 'size' in args:
