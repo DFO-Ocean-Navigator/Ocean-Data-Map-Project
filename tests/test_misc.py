@@ -1,10 +1,22 @@
 import unittest
-from unittest.mock import MagicMock, patch 
+from unittest.mock import MagicMock, Mock, patch 
 import os
 import numpy as np
 from utils.misc import *
+from oceannavigator import create_app
 
 class TestMisc(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(TestMisc, self).__init__(*args, **kwargs)
+        self.app = create_app()
+
+    def setUp(self):
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
     
     @patch("utils.misc._get_kml")
     def test_points(self, m):
@@ -136,7 +148,7 @@ class TestMisc(unittest.TestCase):
             }
         )
 
-    @patch("utils.misc.app.config")
+    @patch("utils.misc.current_app.config")
     def test_list_kml_files(self, config):
         config.__getitem__.return_value = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -151,7 +163,7 @@ class TestMisc(unittest.TestCase):
             'id': 'test_points',
         })
 
-    @patch("utils.misc.app.config")
+    @patch("utils.misc.current_app.config")
     def test_list_areas(self, config):
         config.__getitem__.return_value = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
