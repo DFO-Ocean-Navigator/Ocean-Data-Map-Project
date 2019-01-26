@@ -434,6 +434,8 @@ class NetCDFData(Data):
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
                 var = self._dataset.variables[name]
+                if (len(var.dims) == 0):
+                    continue
 
                 # Get variable attributes
                 attrs = list(var.attrs.keys())
