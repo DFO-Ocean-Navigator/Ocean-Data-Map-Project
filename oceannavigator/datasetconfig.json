@@ -7,7 +7,7 @@
         "name": "GIOPS Daily",
         "quantum": "day",
         "envtypes": ["oceanography", "meteorology", "ice"],
-        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/daily/aggregated.ncml",
+        "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
         "variables": {
             "aice": {
                 "envtype": "ice",
@@ -110,6 +110,53 @@
             }
         }
     },
+    "gem": {
+        "attribution": "GEM Global from Environment and Climate Change Canada",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "name": "GEM Global Atmospheric",
+        "quantum": "hour",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/gemCollection/TP",
+        "variables": {
+            "pressure_surface": {
+                "envtype": "meteorology",
+                "name": "Pressure",
+                "scale": [
+                    90,
+                    105
+                ],
+                "scale_factor": 0.001,
+                "unit": "kPa"
+            },
+            "temperature_height_above_ground": {
+                "envtype": "meteorology",
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "unit": "Kelvin"
+            },
+            "u-component_of_wind_height_above_ground": {
+                "envtype": "meteorology",
+                "name": "Zonal Wind",
+                "scale": [
+                    -30,
+                    30
+                ],
+                "unit": "m/s"
+            },
+            "v-component_of_wind_height_above_ground": {
+                "envtype": "meteorology",
+                "name": "Meridional Wind",
+                "scale": [
+                    -30,
+                    30
+                ],
+                "unit": "m/s"
+            }
+        }
+    },
     "riops": {
         "attribution": "RIOPS Values from CONCEPTS",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -117,7 +164,7 @@
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "name": "RIOPS",
         "quantum": "hour",
-        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/daily/aggregated.ncml",
+        "url": "http://localhost:8080/thredds/dodsC/riops/daily/aggregated.ncml",
         "variables": {
             "east_vel": {
                 "envtype": "oceanography",

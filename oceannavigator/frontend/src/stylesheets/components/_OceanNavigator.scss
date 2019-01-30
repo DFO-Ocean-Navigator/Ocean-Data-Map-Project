@@ -17,6 +17,17 @@ body {
 }
 .OceanNavigator {
 
+    .addIceButton {
+        clear: right;
+        margin-top: 5px;
+        float: right;
+    }
+
+    .iceSlider {
+        clear: right;
+        float: right;
+    }
+
     height:100%;
     .LayerOptions {
         width: 20%;
@@ -161,3 +172,4 @@ body {
         }
     }
 }
+

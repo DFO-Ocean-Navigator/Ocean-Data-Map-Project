@@ -46,9 +46,9 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 8,
-  "EPSG:32661": 5,
-  "EPSG:3031": 5,
+  "EPSG:3857": 15,
+  "EPSG:32661": 10,
+  "EPSG:3031": 10,
 };
 
 var drifter_color = {};
@@ -132,6 +132,8 @@ export default class Map extends React.PureComponent {
       location: [0,90],
       
     };
+
+    
 
     //This loads the pre-defined KML Shapes
     this.loader = function(extent, resolution, projection) {
@@ -340,6 +342,8 @@ export default class Map extends React.PureComponent {
         }.bind(this),
       });
 
+      
+
     // Construct our map
     this.map = new ol.Map({
       layers: [
@@ -404,12 +408,14 @@ export default class Map extends React.PureComponent {
     this.map.setView(this.mapView);
 
     this.map.on("pointermove", function(e) {
+
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
         function(feature, layer) {
           return feature;
         }
       );
+      
       if (feature && feature.name) {
         this.overlay.setPosition(e.coordinate);
         this.popupElement.innerHTML = feature.name;
@@ -418,6 +424,24 @@ export default class Map extends React.PureComponent {
         this.overlay.setPosition(e.coordinate);
         this.popupElement.innerHTML = feature.get("name");
         $(this.map.getTarget()).css("cursor", "pointer");
+      } else if (feature && feature.get("identity_name")) {
+        //console.warn(feature)
+        let type = ''
+        if (feature.get("identity_type")) {
+          type = feature.get("identity_type")
+        } else if (feature.get("known_identity_type")) {
+          type = feature.get("known_identity_type")
+        } else {
+          type = 'Unknown';
+        }
+
+        let text = "<p>" + "Contact Name: " + feature.get("identity_name") + "</p>";
+
+        text += "<p>Contact Type: " + type;
+        text += "</p>";
+
+        this.overlay.setPosition(e.coordinate);
+        this.popupElement.innerHTML = text;
       } else {
         this.overlay.setPosition(undefined);
         $(this.map.getTarget()).css("cursor", "");
@@ -512,6 +536,8 @@ export default class Map extends React.PureComponent {
         });
       }.bind(this)
     });
+
+    
     this.selectedFeatures = select.getFeatures();
     this.map.addInteraction(select);
 
@@ -585,10 +611,8 @@ export default class Map extends React.PureComponent {
         this.selectedFeatures.push(e.selected[0]);
       }
       pushSelection();
-      console.warn("before multiPoint if")
       
       if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
-        console.warn("select")
         this.props.action("plot");
       }
       if (this.infoRequest !== undefined) {
@@ -613,19 +637,19 @@ export default class Map extends React.PureComponent {
     // clear selection when drawing a new box and when clicking on the map
     dragBox.on("boxstart", function() {
       this.selectedFeatures.clear();
-      console.warn("dragBox")
       this.props.updateState("plotEnabled", true);
     }.bind(this));
+
+    this.toggleLayer = this.toggleLayer.bind(this);
+    this.reloadLayer = this.reloadLayer.bind(this);
   }
-  
 
   getBasemap(source, projection, attribution) {
     switch(source) {
       case "topo":
 
         const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
-        console.warn(shadedRelief);
-
+        
         return new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
@@ -720,6 +744,9 @@ export default class Map extends React.PureComponent {
       return false;
     }.bind(this);
 
+    this.setState({
+      layers: this.props.state.layers,
+    });
     // Tracks if this component is mounted
     this._mounted = true;
   }
@@ -729,23 +756,19 @@ export default class Map extends React.PureComponent {
   }
 
   disableMulti() {
-    console.warn("disableMulti()")
-
+    
     // Disable zooming when drawing
     this.controlDoubleClickZoom(false);
     
     //Get Map Features
     let features = [];
     let lonlat = this.vectorSource.getFeatures();
-    console.warn(lonlat)
     
     lonlat.forEach((t) => {
       const converted = ol.proj.transform(t.getGeometry().getCoordinates(),"EPSG:3857","EPSG:4326")
-      console.warn(converted)
       features.push([converted[1], converted[0]])
     });
     //this.drawing = true;
-    console.warn(features);
     //this.props.updateState("point", features)
     this.props.action("multi-point", features)
     // Draw point on map(s)
@@ -759,6 +782,23 @@ export default class Map extends React.PureComponent {
     );
     
   }
+
+  toggleLayer(layer, state) {
+    if (state === 'add') {
+      
+      this.map.addLayer(layer);
+      let new_layers = this.map.getLayers();
+      
+    } else if (state === 'remove') {
+      this.map.removeLayer(layer);
+      }
+    
+  }
+
+  reloadLayer() {
+    this.map.render();
+  }
+
 
   resetMap() {
     this.removeMapInteractions("all");
@@ -860,9 +900,6 @@ export default class Map extends React.PureComponent {
     });
 
     draw.set("type", "multiPoint");
-    console.warn(this.props.state.multiPoint)
-    
-    console.warn("drawing")
     /*
     draw.on("drawend", function(e) {
       // Disable zooming when drawing
@@ -968,6 +1005,7 @@ export default class Map extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
@@ -981,6 +1019,7 @@ export default class Map extends React.PureComponent {
                 `/${this.props.state.time}` + 
                 `/${this.props.state.depth}` + 
                 `/${this.props.scale}` + 
+                `/0` +
                 `/{z}/{x}/{y}.png`;
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -1041,6 +1080,7 @@ export default class Map extends React.PureComponent {
       //this.mapView.on("change:resolution", this.constrainPan.bind(this));
       //this.mapView.on("change:center", this.constrainPan.bind(this));
       this.map.setView(this.mapView);
+      console.warn("this.map: ", this.map)
     }
 
     if (prevProps.state.basemap != this.props.state.basemap ||
@@ -1235,6 +1275,7 @@ export default class Map extends React.PureComponent {
 //***********************************************************************
 Map.propTypes = {
   state: PropTypes.object,
+  layers: PropTypes.array,
   projection: PropTypes.string,
   updateState: PropTypes.func,
   scale: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),

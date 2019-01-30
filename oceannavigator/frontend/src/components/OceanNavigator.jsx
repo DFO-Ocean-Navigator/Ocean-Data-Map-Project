@@ -1,5 +1,6 @@
 import React from "react";
 import Map from "./Map.jsx";
+import ol from "openlayers";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
 import WarningBar from "./WarningBar.jsx";
@@ -57,6 +58,7 @@ export default class OceanNavigator extends React.Component {
       showHelp: false,
       showBugs: false,
       showCompareHelp: false,
+      availableTypes: ['colour', 'contour', 'hatching'],
       extent: [],
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
@@ -183,6 +185,8 @@ export default class OceanNavigator extends React.Component {
 
     this.setState({options});
   }
+
+  
 
   // Updates global app state
   updateState(key, value) {
@@ -336,7 +340,6 @@ export default class OceanNavigator extends React.Component {
       case "multi-point":
 
         
-        console.warn("multi point action")
         //Tracks Google Analytics Event
         
         if (arg === undefined) {
@@ -353,54 +356,14 @@ export default class OceanNavigator extends React.Component {
           this.mapComponent.multiPoint();  
         
         } else {
-          console.warn("pass the information to the plot modal")
+         
           this.setState({
             point: arg,
             modal: "point",
             names: [],
           })
         }
-        
-        /*
-        if (this.mapComponent2) {
-          this.mapComponent2.point();
-        }
-        /*
-        if (typeof(arg) === "object") {
-          console.warn("multi point action: if")
-          // The EnterPoint component correctly orders the coordinate
-          // pair, so no need to swap it.
-          if (arg2 === "enterPoint") {
-            
-            let points = this.state.points
-            if (this.state.point != undefined) {
-              points.push([arg[0], arg[1]])
-            } else {
-              points = [[arg[0], arg[1]]];
-            }
-            this.setState({
-              point: points,
-              modal: "point",
-              names: [],
-            });
-
-          } else {
-            if (this.state.point != undefined) {
-              points.push([arg[1], arg[0]])
-            } else {
-              points = [[arg[1], arg[0]]];
-            }
-            console.warn("points")
-            console.warn(points)
-            this.setState({
-              point: points,
-              modal: "point",
-              names: [],
-            });
-          }
-          
-        }
-        */
+      
         break;
         
       case "line":
@@ -735,6 +698,7 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent = m}
           state={this.state}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
@@ -744,6 +708,7 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent2 = m}
           state={secondState}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
@@ -755,6 +720,7 @@ export default class OceanNavigator extends React.Component {
     else {
       map = <Map
         ref={(m) => this.mapComponent = m}
+        layers={this.state.layers}
         state={this.state}
         action={this.action}
         updateState={this.updateState}
@@ -763,16 +729,27 @@ export default class OceanNavigator extends React.Component {
       />;
     }
 
+    let layerSelect = null; 
+    
+    if (this.mapComponent !== null) {
+      layerSelect = <LayerSelection
+        state={this.state}
+        swapViews={this.swapViews}
+        toggleLayer={this.mapComponent.toggleLayer}
+        reloadLayer={this.mapComponent.reloadLayer}
+        mapComponent={this.mapComponent}
+        updateState={this.updateState}
+        showHelp={this.toggleCompareHelp}
+        options={this.state.options}
+        updateOptions={this.updateOptions}
+      />
+    }
+    
+
     return (
       <div className='OceanNavigator'>
-        <LayerSelection
-          state={this.state}
-          swapViews={this.swapViews}
-          updateState={this.updateState}
-          showHelp={this.toggleCompareHelp}
-          options={this.state.options}
-          updateOptions={this.updateOptions}
-        />
+        
+        {layerSelect}
         <div className={contentClassName}>
           <MapToolbar
             point={this.state.point}

@@ -15,7 +15,7 @@ export default class ContactButton extends React.Component {
     super(props);
 
     this.state = {
-      enabled: false,
+      showing: true,
       displayState: 'Add',
     };
 
@@ -30,32 +30,29 @@ export default class ContactButton extends React.Component {
 
 
   toggle() {
-
-    switch(this.state.enabled) {
+    switch(this.state.showing) {
         case true:
 
-            this.props.toggleTraffic(this.props.name, this.state.enabled);
-
+            this.props.toggleTraffic(this.props.name, !this.state.showing);
             this.setState({
-                enabled: false,
-                displayState: 'Add'
+                showing: false,
             });
+            break;
 
         case false:
                 
-            this.props.toggleTraffic(this.props.name, this.state.enabled);
+            this.props.toggleTraffic(this.props.name, !this.state.showing);
 
             this.setState({
-                enabled: true,
-                displayState: 'Remove'
+                showing: true,
             });
-
+            break;
     }
   }
 
   render() {
 
-    this.add_remove = this.state.enabled ? 'Remove' : 'Add';
+    let add_remove = this.state.showing ? 'Add' : 'Remove';
     
     return (
         <div>
@@ -64,7 +61,7 @@ export default class ContactButton extends React.Component {
                 {this.props.name}
             </div>
             <Button onClick={this.toggle}>
-                {this.add_remove}
+                {add_remove}
             </Button>
             </span>
         </div>

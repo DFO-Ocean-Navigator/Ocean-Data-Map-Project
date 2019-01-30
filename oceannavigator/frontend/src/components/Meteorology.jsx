@@ -9,11 +9,11 @@ import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import DisplayType from "./DisplayType.jsx";
 import ol from "openlayers";
-import IceLayer from "./IceLayer.jsx";
+import MetLayer from "./MetLayer.jsx";
 
 const i18n = require("../i18n.js");
 
-export default class Ice extends React.Component {
+export default class Meteorology extends React.Component {
   constructor(props) {
     super(props);
 
@@ -24,7 +24,7 @@ export default class Ice extends React.Component {
     
     return (
         <div>
-            <IceLayer
+            <MetLayer
               state={this.props.state}
               swapViews={this.props.swapViews}
               toggleLayer={this.props.toggleLayer}
@@ -42,7 +42,7 @@ export default class Ice extends React.Component {
 }
 
 //***********************************************************************
-Ice.propTypes = {
+Meteorology.propTypes = {
   state: PropTypes.object,
   sidebarOpen: PropTypes.bool,
   basemap: PropTypes.string,

@@ -37,7 +37,7 @@ export default class Oceanography extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Oceanography Layer")}
         bsStyle='primary'
       >
         <DatasetSelector

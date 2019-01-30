@@ -19,6 +19,7 @@ export default class Contacts extends React.Component {
     this.state = {
       currentTab: 1,
       trafficTypes: ['All', 'Fishing'],
+      displayTraffic: true
     };
 
 
@@ -39,45 +40,97 @@ export default class Contacts extends React.Component {
     switch(status) {
         //Add to Contacts layer
         case true:
-            
-            let newlayers = this.props.state.layers
-            if (type in layers) {
-                newlayers.remove(type);
-            }
-
+          
+            this.props.toggleLayer(this.layer_contacts, 'remove')
             this.setState({
-                layers: newlayers,
+              displayTraffic: true
             })
-
+            break;
+        
         //Remove from Contacts layer
         case false:
-
-            let layers = this.props.state.layers;
-
-            //Create layer
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-            //process.env.GEOSERVER_USER = 'oceannavigator';
-            //process.env.GEOSERVER_PASSWORD = ''
-
-            var AUTH = "Basic " + new Buffer(process.env.GEOSERVER_USER + ":" + process.env.GEOSERVER_PASSWORD).toString("base64");
-    
-            app.get("/proxy", function(req, res) {
+            this.setState({
+              displayTraffic: false
+            })
+            this.props.mapComponent.removeMapInteractions('Circle')
             
-              var url = req.url.replace("/proxy?url=", "https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&outputFormat=json&typeName=postgis:vi_m_identities_all&srsname=EPSG:3857&CQL_FILTER=BBOX(geopoint, -90, 40, -60, 45)");
+            //CREATE A VECTOR SOURCE
+            let vectorSource = new ol.source.Vector({wrapX: false})
             
-              console.log(url)
             
-              request({
-                method: "GET",
-                url: url,
-                headers: {
-                  Authorization: AUTH
+            var draw = new ol.interaction.Draw({
+              source: vectorSource,
+              type: 'Circle',
+              stopClick: true
+            })
+            this.props.mapComponent._drawing = true;
+
+            draw.on("drawend", function(e) {
+              // Disable zooming when drawing
+              this.props.mapComponent.controlDoubleClickZoom(false);
+              
+              let geometry = e.feature.getGeometry();
+              geometry = geometry.clone().transform(this.props.state.projection, "EPSG:4326")
+              let draw_radius = geometry.getRadius();
+              let draw_center = geometry.getCenter();
+                
+
+              
+              let boats_url = '' // BBOX' //+ geopoint
+              
+              
+              let vectorSource = new ol.source.Vector({
+                url: boats_url,
+                format: new ol.format.GeoJSON(),
+              })
+              
+
+              //Places a circle on the map
+              let feature = new ol.Feature(geometry)
+              vectorSource.addFeature(feature)
+
+              this.layer_contacts = new ol.layer.Vector({
+                source: vectorSource,
+                style: function(feat, res) {
+                  const red = 255;
+                  //const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
+                  
+                  return new ol.style.Style({
+                    image: new ol.style.Circle({
+                      radius: 4,
+                      fill: new ol.style.Fill({
+                        color: [red, red, 0, 1],
+                      }),
+                      stroke: new ol.style.Stroke({
+                        color: "#000000",
+                        width: 1
+                      }),
+                    }),
+                  });
                 }
-              }).pipe(res);
-            });
 
-            console.warn(res)
-            this.props.changeHandler('layers', newlayers);
+              });
+
+              // ADDS LAYER TO THE MAP
+              this.props.toggleLayer(this.layer_contacts, 'add')
+
+              this.props.mapComponent.map.removeInteraction(draw);
+              
+              this.props.mapComponent.drawing = false;
+        
+              setTimeout(
+                function() { this.props.mapComponent.controlDoubleClickZoom(true); }.bind(this),
+                251
+              );
+            }.bind(this));
+          
+            this.props.mapComponent.map.addInteraction(draw)
+            break;
+
+
+            
+           
+
 
     }
   }
@@ -86,6 +139,7 @@ export default class Contacts extends React.Component {
 
     this.availableTypes = <ContactButton
                 name={this.state.trafficTypes[0]}
+                displayTraffic={this.state.displayTraffic}
                 toggleTraffic={this.toggleTraffic}
             />
     

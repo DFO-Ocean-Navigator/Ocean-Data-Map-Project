@@ -371,14 +371,13 @@ def vars_query_impl(args):
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
     
     if args['dataset'] == 'all':
-        print("ALL DATASETS")
-        datasets = []
-        for key in get_datasets():
-            print(key)
-            datasets += [key]
+        resp = all_vars_query_impl(args)
+        
+        return resp
+    
     else:
         datasets = [args['dataset']]   #Dataset Specified in query
-    print(datasets)
+    
     data = []       #Initializes empty data list
     
     for dataset in datasets:
@@ -416,37 +415,29 @@ def vars_query_impl(args):
                             continue
                         else:
                             if not is_variable_hidden(dataset, v):
-                                print(args)
-                                if 'envtype' in args:
-                                    envType = get_variable_type(dataset, v)
-                                    if envType in args['envtype']:
-                                        data.append({
-                                            'id': v.key,
-                                            'value': get_variable_name(dataset, v),
-                                            'scale': get_variable_scale(dataset, v),
-                                            'envtype': envType
-                                        })
-                                        if v.key in climatology_variables:
-                                            data.append({
-                                                'id': v.key + "_anom",
-                                                'value': get_variable_name(dataset, v) + " Anomaly",
-                                                'scale': [-10, 10],
-                                                'envtype': envType
-                                            })
-                                else:
+                                data.append({
+                                    'id': v.key,
+                                    'value': get_variable_name(dataset, v),
+                                    'scale': get_variable_scale(dataset, v),
+                                })
+                                if v.key in climatology_variables:
                                     data.append({
-                                        'id': v.key,
-                                        'value': get_variable_name(dataset, v),
-                                        'scale': get_variable_scale(dataset, v),
-                                        'envtype': get_variable_type(dataset, v)
+                                        'id': v.key + "_anom",
+                                        'value': get_variable_name(dataset, v) + " Anomaly",
+                                        'scale': [-10, 10],
                                     })
-                                    if v.key in climatology_variables:
-                                        data.append({
-                                            'id': v.key + "_anom",
-                                            'value': get_variable_name(dataset, v) + " Anomaly",
-                                            'scale': [-10, 10],
-                                            'envtype': get_variable_type(dataset, v)
-                                        })
+                            else:
+                                data.append({
+                                    'id': v.key,
+                                    'value': get_variable_name(dataset, v),
+                                    'scale': get_variable_scale(dataset, v),
+                                })
+                                if v.key in climatology_variables:
+                                    data.append({
+                                        'id': v.key + "_anom",
+                                        'value': get_variable_name(dataset, v) + " Anomaly",
+                                        'scale': [-10, 10],
+                                    })
 
             VECTOR_MAP = {
                 'vozocrtx': 'vozocrtx,vomecrty',
@@ -459,11 +450,14 @@ def vars_query_impl(args):
             }
 
             #If Vectors are needed
+
+            
+
             if 'vectors' in args or 'vectors_only' in args:
 
                 rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
                 for key, value in list(VECTOR_MAP.items()):
-                    if key in ds.variables:
+                    if key in data:
                         n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
                         data.append({
                             'id': value,
@@ -472,17 +466,64 @@ def vars_query_impl(args):
                                 dataset,
                                 ds.variables[key]
                             )[1]],
-                            'envtype': get_variable_type(dataset, v)
                         })
 
     # END OF DATASET LOOP
-
+        
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     
     #Data is set of scale, id, value objects
-    print(data)
+    
     resp = jsonify(data)
     return resp
+
+def all_vars_query_impl(args):
+    print('all_vars_query_impl')
+
+    variables = dict()
+    for dataset in get_datasets():
+
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for v in ds.variables:
+                if not is_variable_hidden(dataset, v):
+                    #print("VARIABLE TYPE: ", get_variable_type(dataset, v)),
+                    var_name = get_variable_name(dataset, v)
+                    if var_name not in variables:
+                        var_type = get_variable_type(dataset, v)
+        
+                        if not ('env_type' in args and var_type not in args['env_type']):
+                            variables[var_name] = {
+                                'id': var_name,
+                                'datasets': [dataset],
+                                'env_type': var_type,
+                                'info': {
+                                    dataset: {
+                                        'id': v.key,
+                                        'scale': get_variable_scale(dataset, v),
+                                    }
+                                }    
+                            }
+                    else:
+                        print("CURRENT DATASET: ", dataset)
+                        variables[var_name]['datasets'].append(dataset)
+
+                        variables[var_name]['info'][dataset] = {
+                           'id': v.key,
+                           'scale': get_variable_scale(dataset, v),
+                        }
+                        print("ELSE")
+    
+    
+    #data = dict()
+    #data = sorted(variables.items())
+    data = variables
+    print("\nPRINTING OUTPUT")
+    print(data)
+    print(" ")
+    print('\n')
+    data = jsonify(data)
+    print(data)
+    return data
 
 
 def time_query_impl(args):
@@ -594,7 +635,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
+def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, zoom: int, x: int, y: int):
     """
         Produces the data tiles
     """
@@ -604,26 +645,25 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     f = os.path.join(cache_dir, request.path[1:])
     
     # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    #if _is_cache_valid(dataset, f):
+    #    return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
-    else:
+    #else:
 
-        if depth != "bottom" and depth != "all":
-            depth = int(depth)
-
-        img = plotting.tile.plot(projection, x, y, zoom, {
-            'interp': interp,
-            'radius': radius*1000,
-            'neighbours': neighbours,
-            'dataset': dataset,
-            'variable': variable,
-            'time': time,
-            'depth': depth,
-            'scale': scale,
-        })
-
-        return _cache_and_send_img(img, f)
+    if depth != "bottom" and depth != "all":
+        depth = int(depth)
+    img = plotting.tile.plot(projection, x, y, zoom, {
+        'interp': interp,
+        'radius': radius*1000,
+        'neighbours': neighbours,
+        'dataset': dataset,
+        'variable': variable,
+        'time': time,
+        'depth': depth,
+        'scale': scale,
+        'masked': masked,
+    })
+    return _cache_and_send_img(img, f)
 
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """

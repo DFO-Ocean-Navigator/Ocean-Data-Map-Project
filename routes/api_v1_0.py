@@ -101,19 +101,15 @@ def time_query_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
 def convert(dataset: str, date: str):
-  print("Dataset: ", dataset)
   
   try:
     with open_dataset(get_dataset_url(dataset)) as ds:
-      print("Original Date: ", date)
       date = ds.convert_to_timestamp(date)
-      print("New Date: ", date)
       resp = jsonify({
           'date': date,
       })
     return resp
   except:
-    print("Done")
     return Response(status=500)
 #
 # Unchanged from v0.0
@@ -302,12 +298,13 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 #
 # Change to timestamp from v0.0
 #
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, zoom: int, x: int, y: int):
   
   with open_dataset(get_dataset_url(dataset)) as ds:
+    print("TIME: ", time)
     date = ds.convert_to_timestamp(time)
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, masked, zoom, x, y)
 
 
 #

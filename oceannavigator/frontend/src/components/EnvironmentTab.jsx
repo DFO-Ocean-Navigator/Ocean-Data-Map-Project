@@ -8,7 +8,8 @@ import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import Oceanography from "./Oceanography.jsx";
-import Ice from "./Ice.jsx"
+import Ice from "./Ice.jsx";
+import Meteorology from "./Meteorology.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -52,18 +53,26 @@ export default class EnvironmentTab extends React.Component {
                 />
             </Tab>
             <Tab eventKey={2} title={<span>{_("Meteorology")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Meteorology")}
-                  bsStyle='primary'
-                > 
-                </Panel>
+                <Meteorology
+                  state={this.props.state}
+                  swapViews={this.props.swapViews}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
+                  globalUpdate={this.props.changeHandler}
+                  showHelp={this.props.showHelp}
+                  options={this.props.state.options}
+                  updateOptions={this.props.updateOptions}
+                />
             </Tab>
             <Tab eventKey={3} title={<span>{_("Ice")}</span>}>
                 <Ice
                   state={this.props.state}
                   swapViews={this.props.swapViews}
-                  changeHandler={this.props.changeHandler}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
+                  globalUpdate={this.props.changeHandler}
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
                   updateOptions={this.props.updateOptions}
@@ -98,4 +107,5 @@ EnvironmentTab.propTypes = {
   options: PropTypes.object,
   updateOptions: PropTypes.func,
   private: PropTypes.bool,
+  toggleLayer: PropTypes.func,
 };

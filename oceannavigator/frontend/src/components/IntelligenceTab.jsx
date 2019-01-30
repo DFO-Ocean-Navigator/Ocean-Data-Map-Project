@@ -44,6 +44,9 @@ export default class IntelligenceTab extends React.Component {
                 <Contacts
                   state={this.props.state}
                   swapViews={this.props.swapViews}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
                   changeHandler={this.props.changeHandler}
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}

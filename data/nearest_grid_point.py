@@ -17,12 +17,7 @@ from pykdtree.kdtree import KDTree
 def find_nearest_grid_point(
         lat, lon, dataset, latvar, lonvar, n=1
 ):
-    print("Lat: ", lat)
-    print("Lon: ", lon)
-    print("dataset: ", dataset)
-    print("latvar: ", latvar)
-    print("lonvar: ", lonvar)
-    print("n: ", n)
+    
     """Find the nearest grid point to a given lat/lon pair.
 
     Parameters

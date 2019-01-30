@@ -36,8 +36,7 @@ export default class LayerSelection extends React.Component {
     }
     
     tabSelect(selectedKey) {
-        console.warn("Selected Key: ", selectedKey)
-        
+       
         if (selectedKey === 0) {
             for (i=0; i < 6; i++) {
 
@@ -48,12 +47,10 @@ export default class LayerSelection extends React.Component {
             let newButtons = []
 
             for (i=0; i<selectedKey - 1;i++) {
-                console.warn("Before Key: ", i)
                 newPanels[i] = 'hiddenPanel'
                 newButtons[i] = 'hiddenButton'
             }
             for (i=selectedKey; i < 6; i++) {
-                console.warn("After Key: ", i)
                 newPanels[i] = 'hiddenPanel'
                 newButtons[i] = 'hiddenButton'
             }
@@ -114,6 +111,9 @@ export default class LayerSelection extends React.Component {
                             <EnvironmentTab
                                 state={this.props.state}
                                 swapViews={this.props.swapViews}
+                                toggleLayer={this.props.toggleLayer}
+                                reloadLayer={this.props.reloadLayer}
+                                mapComponent={this.props.mapComponent}
                                 changeHandler={this.props.updateState}
                                 showHelp={this.props.toggleCompareHelp}
                                 options={this.props.state.options}
@@ -125,6 +125,9 @@ export default class LayerSelection extends React.Component {
                             <IntelligenceTab
                                 state={this.props.state}
                                 swapViews={this.props.swapViews}
+                                toggleLayer={this.props.toggleLayer}
+                                reloadLayer={this.props.reloadLayer}
+                                mapComponent={this.props.mapComponent}
                                 changeHandler={this.props.updateState}
                                 showHelp={this.props.toggleCompareHelp}
                                 options={this.props.state.options}

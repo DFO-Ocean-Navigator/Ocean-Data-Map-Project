@@ -68,6 +68,7 @@ export default class TimePicker extends React.Component {
         cache: false,
         
         success: function(data) {
+            
             var map = {};
             var revmap = {};
             var min = 0;
@@ -227,9 +228,6 @@ export default class TimePicker extends React.Component {
       date.setHours(0,0,0,0)
       let today = date.getUTCFullYear() + '-' + date.getUTCMonth() + 1 + '-' + date.getUTCDate() + 'T' + '00:00:00+00:00'
       
-      //console.warn("Date: ", today)
-      //console.warn("URL Params: " + urlParams)
-      
       //Requesting time to timestamp conversion
       $.ajax({
       
@@ -237,7 +235,6 @@ export default class TimePicker extends React.Component {
         dataType: "json",
         cache: true,
         success: function(data) {
-          console.warn("Today's Date: ", data.date)
           this.setState({
             today: data.date
           });
@@ -383,7 +380,6 @@ export default class TimePicker extends React.Component {
 
 
   isTodayTime() {
-    console.warn("testing today: ", this.state.today)
     if (this.state.today === undefined || this.state.today === null) {
       return true;  
     } else if (this.state.today === this.props.state) {
@@ -409,8 +405,7 @@ export default class TimePicker extends React.Component {
     $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
 
     let value = parseInt(this.props.state);
-    console.warn("Value: ", value)
-    console.warn("Quantum: ", this.props.quantum)
+
     if (value < 0) {
       value += this.state.data.length;
     }
