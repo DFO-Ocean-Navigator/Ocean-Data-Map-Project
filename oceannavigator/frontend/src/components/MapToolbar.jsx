@@ -169,6 +169,7 @@ export default class MapToolbar extends React.Component {
   pointSelect(key) {
     switch (key) {
       case "csv":
+        this.props.updateState("plotEnabled", true);
         this.setState({parser: "point",});
         this.fileinput.click();
         break;
@@ -182,6 +183,7 @@ export default class MapToolbar extends React.Component {
         this.setState({showObservationSelect: true,});
         break;
       case "coordinates":
+        this.props.updateState("plotEnabled", true);
         this.setState({showPointCoordModal: true,});
         break;
       default:
@@ -213,13 +215,15 @@ export default class MapToolbar extends React.Component {
   lineSelect(key) { 
     switch(key) {
       case "csv":
-        this.setState({parser: "point",});
+        this.setState({parser: "line",});
+        this.props.updateState("plotEnabled", true);
         this.fileinput.click();
         break;
       case "draw":
         this.props.action("line");
         break;
       case "coordinates":
+      this.props.updateState("plotEnabled", true);
         this.setState({showLineCoordModal: true,});
         break;
       default:
@@ -232,6 +236,7 @@ export default class MapToolbar extends React.Component {
   areaSelect(key) {
     switch (key) {
       case "csv":
+        this.props.updateState("plotEnabled", true);
         this.setState({parser: "area"});
         this.fileinput.click();
         break;
@@ -239,6 +244,7 @@ export default class MapToolbar extends React.Component {
         this.props.action("area");
         break;
       case "coordinates":
+        this.props.updateState("plotEnabled", true);
         this.setState({showAreaCoordModal: true,});
         break;
       default:
