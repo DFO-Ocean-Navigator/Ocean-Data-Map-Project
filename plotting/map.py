@@ -706,7 +706,7 @@ class MapPlotter(pl.Plotter):
             if (self.contour_data[0].min() != self.contour_data[0].max()):
                 cmin, cmax = utils.normalize_scale(
                     self.contour_data[0],
-                    self.dataseti_config.variable[self.contour['variable']]
+                    self.dataset_config.variable[self.contour['variable']]
                 )
                 levels = None
                 if self.contour.get('levels') is not None and \
