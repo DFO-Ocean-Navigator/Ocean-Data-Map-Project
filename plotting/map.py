@@ -597,6 +597,8 @@ class MapPlotter(pl.Plotter):
                                                       self.quiver_longitude,
                                                       self.quiver_latitude,
                                                       returnxy=True)
+            qx = np.ma.masked_where(np.ma.getmask(self.quiver_data[0]), qx)
+            qy = np.ma.masked_where(np.ma.getmask(self.quiver_data[1]), qy)
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
