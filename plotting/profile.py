@@ -4,7 +4,6 @@ import numpy as np
 import plotting.utils as utils
 import plotting.point as plPoint
 from textwrap import wrap
-from oceannavigator.dataset_config import get_dataset_url
 from utils.errors import ClientError
 from flask_babel import gettext
 from data import open_dataset
@@ -17,7 +16,7 @@ class ProfilePlotter(plPoint.PointPlotter):
         super(ProfilePlotter, self).__init__(dataset_name, query, format)
 
     def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as d:
+        with open_dataset(self.dataset_config) as d:
             if self.time < 0:
                 self.time += len(d.timestamps)
             time = np.clip(self.time, 0, len(d.timestamps) - 1)

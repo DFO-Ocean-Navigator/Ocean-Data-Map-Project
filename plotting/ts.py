@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from oceannavigator.dataset_config import get_dataset_url, get_dataset_name, get_variable_unit
 import seawater
 import plotting.point as plPoint
 import matplotlib.gridspec as gridspec
@@ -134,7 +133,7 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
         return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             if self.time < 0:
                 self.time += len(dataset.timestamps)
             time = np.clip(self.time, 0, len(dataset.timestamps) - 1)

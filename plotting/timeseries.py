@@ -9,8 +9,6 @@ from textwrap import wrap
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.point as plPoint
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url
 import datetime
 from data import open_dataset
 
@@ -295,19 +293,17 @@ class TimeseriesPlotter(plPoint.PointPlotter):
         self.depth = depth
 
     def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             self.load_misc(dataset, self.variables)
             self.fix_startend_times(dataset, self.starttime, self.endtime)
 
             if len(self.variables) == 1:
-                self.variable_unit = get_variable_unit(
-                    self.dataset_name,
+                self.variable_unit = self.dataset_config.variable[
                     dataset.variables[self.variables[0]]
-                )
-                self.variable_name = get_variable_name(
-                    self.dataset_name,
+                ].unit
+                self.variable_name = self.dataset_config.variable[
                     dataset.variables[self.variables[0]]
-                )
+                ].name
             else:
                 self.variable_name = self.vector_name(self.variable_names[0])
                 self.variable_unit = self.variable_units[0]

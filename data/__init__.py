@@ -6,15 +6,20 @@ from cachetools import LRUCache
 
 __dataset_cache = LRUCache(maxsize=10, getsizeof=lambda x: 1)
 
-def open_dataset(url: str):
+def open_dataset(dataset):
+    if hasattr(dataset, "url"):
+        url = dataset.url
+    else:
+        url = dataset
+
     if url is not None:
         if __dataset_cache.get(url) is None:
             if url.startswith("http") or url.endswith(".nc"):
                 
                 # Open dataset (can't use xarray here since it doesn't like FVCOM files)
-                dataset = Dataset(url, 'r')
+                ds = Dataset(url, 'r')
                 # Get variable names from dataset
-                variable_list = [var for var in dataset.variables]
+                variable_list = [var for var in ds.variables]
 
                 # Figure out which wrapper we need and cache it by URL
                 if 'latitude_longitude' in variable_list or \
@@ -32,6 +37,6 @@ def open_dataset(url: str):
                     __dataset_cache[url] = nemo.Nemo(url)
 
                 # Clean up
-                dataset.close()
+                ds.close()
 
     return __dataset_cache.get(url)

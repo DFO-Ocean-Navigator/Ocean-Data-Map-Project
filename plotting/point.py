@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotting.plotter as pl
 from netCDF4 import Dataset
-from oceannavigator.dataset_config import get_dataset_url
+from oceannavigator import DatasetConfig
 import pint
 
 
@@ -65,8 +65,9 @@ class PointPlotter(pl.Plotter):
 
     def subtract_other(self, data):
         if self.compare:
+            compare_config = DatasetConfig(self.compare['dataset'])
             with Dataset(
-                get_dataset_url(self.compare['dataset']), 'r'
+                compare_config.url, 'r'
             ) as dataset:
                 cli = self.get_data(
                     dataset, self.compare['variables'], self.compare['time']

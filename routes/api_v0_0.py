@@ -5,13 +5,7 @@ import datetime
 from io import BytesIO
 from PIL import Image
 import io
-
-from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets,
-    get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden, get_dataset_cache, get_dataset_help,
-    get_dataset_name, get_dataset_quantum, get_dataset_attribution
-)
+from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
 
@@ -51,9 +45,9 @@ def handle_error_v0(error):
 # Check if a given time index is within the bounds of
 # the given dataset time index range
 def timestamp_outOfBounds(dataset: str, time: int):
-
+    config = DatasetConfig(dataset)
     length = 0
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         length = len(ds.timestamps)
         
     return not (0 <= time < length)

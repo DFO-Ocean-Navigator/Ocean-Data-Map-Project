@@ -8,7 +8,7 @@ import re
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.line as plLine
-from oceannavigator.dataset_config import (get_dataset_url, get_dataset_name)
+from oceannavigator import DatasetConfig
 from flask_babel import gettext
 from data import open_dataset
 from utils.errors import ClientError, ServerError
@@ -48,7 +48,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             return (depth, depth_value, depth_unit)
 
         # Load left/Main Map
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(dataset_config) as dataset:
             
             latvar, lonvar = utils.get_latlon_vars(dataset)
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
@@ -94,8 +94,8 @@ class HovmollerPlotter(plLine.LinePlotter):
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
-            with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
-
+            compare_config = DatasetConfig(self.compare['dataset'])
+            with open_dataset(compare_config) as dataset:
                 latvar, lonvar = utils.get_latlon_vars(dataset)
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(self.compare['depth'], len(dataset.depths) - 1, dataset)
 

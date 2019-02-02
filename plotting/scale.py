@@ -1,8 +1,6 @@
 import numpy as np
 from pyproj import Proj
-from oceannavigator.dataset_config import (
-    get_dataset_url, get_dataset_climatology, get_variable_unit
-)
+from oceannavigator import DatasetConfig
 import re
 from data import open_dataset
 
@@ -20,7 +18,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
     variables_anom = variable.split(",")
     variables = [re.sub('_anom$', '', v) for v in variables_anom]
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         timestamp = ds.timestamps[time]
         
         d = ds.get_area(

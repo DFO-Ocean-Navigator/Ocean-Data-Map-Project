@@ -7,12 +7,7 @@ import plotting.utils as utils
 import plotting.colormap as colormap
 import re
 import pint
-from oceannavigator.dataset_config import (
-    get_variable_unit,
-    get_variable_name,
-    get_variable_scale_factor,
-    get_dataset_attribution
-)
+from oceannavigator import DatasetConfig
 from flask_babel import format_date, format_datetime
 import contextlib
 from PIL import Image
@@ -21,6 +16,7 @@ from PIL import Image
 class Plotter(metaclass=ABCMeta):
     def __init__(self, dataset_name: str, query: str, format: str):
         self.dataset_name: str = dataset_name
+        self.dataset_config: DatasetConfig = DatasetConfig(dataset_name)
         self.query: dict = query
         self.format: str = format
         self.dpi: int = 72
@@ -183,10 +179,10 @@ class Plotter(metaclass=ABCMeta):
         if fig is None:
             fig = plt.gcf()
 
-        fig.text(1.0, 0.015, get_dataset_attribution(self.dataset_name),
+        fig.text(1.0, 0.015, self.dataset_config.attribution,
                 ha='right', size='small', va='top')
         if self.compare:
-            fig.text(1.0, 0.0, get_dataset_attribution(self.compare['dataset']),
+            fig.text(1.0, 0.0, DatasetConfig(self.compare['dataset']).attribution,
                 ha='right', size='small', va='top')
 
         with contextlib.closing(BytesIO()) as buf:
@@ -293,28 +289,37 @@ class Plotter(metaclass=ABCMeta):
         names = []
 
         for idx, v in enumerate(variables):
-            names.append(get_variable_name(self.dataset_name,
-                                           dataset.variables[v]))
+            names.append(self.dataset_config.variable[dataset.variables[v]].name)
 
         return names
+
+    def get_vector_variable_name(self, dataset, variables):
+        v = ",".join(variables)
+        return self.dataset_config.variable[v].name
 
     def get_variable_units(self, dataset, variables):
         units = []
 
         for idx, v in enumerate(variables):
-            units.append(get_variable_unit(self.dataset_name,
-                                           dataset.variables[v]))
+            units.append(self.dataset_config.variable[dataset.variables[v]].unit)
 
         return units
+
+    def get_vector_variable_unit(self, dataset, variables):
+        v = ",".join(variables)
+        return self.dataset_config.variable[v].unit
 
     def get_variable_scale_factors(self, dataset, variables):
         factors = []
 
         for idx, v in enumerate(variables):
-            factors.append(get_variable_scale_factor(self.dataset_name,
-                                                     dataset.variables[v]))
+            factors.append(self.dataset_config.variable[dataset.variables[v]].scale_factor)
 
         return factors
+
+    def get_vector_variable_scale_factor(self, dataset, variables):
+        v = ",".join(variables)
+        return self.dataset_config.variable[v].scale_factor
 
     def clip_value(self, input_value, variable):
         output = input_value

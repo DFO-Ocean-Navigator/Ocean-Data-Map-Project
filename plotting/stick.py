@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotting.utils as utils
 import plotting.point as plPoint
-from oceannavigator.dataset_config import get_dataset_url
 from flask_babel import gettext
 from matplotlib.dates import date2num
 from data import open_dataset
@@ -161,7 +160,7 @@ class StickPlotter(plPoint.PointPlotter):
 
         self.depth = sorted(self.depth)
 
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             if self.starttime < 0:
                 self.starttime += len(dataset.timestamps)
             if self.endtime < 0:

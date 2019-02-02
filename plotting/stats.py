@@ -1,6 +1,5 @@
 import numpy as np
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_variable_scale_factor
+from oceannavigator import DatasetConfig
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union
 from utils.misc import list_areas
@@ -66,7 +65,8 @@ class Stats:
             self.area.stats = self.inner_area.stats
 
     def get_values(self, area_info, dataset_name, variables):
-        with open_dataset(get_dataset_url(dataset_name)) as dataset:
+        config = DatasetConfig(dataset_name)
+        with open_dataset(config) as dataset:
 
             if self.time is None or (type(self.time) == str and
                                             len(self.time) == 0):
@@ -101,9 +101,9 @@ class Stats:
             for v_idx, v in enumerate(variables):
                 var = dataset.variables[v]
 
-                variable_name = get_variable_name(dataset_name, var)
-                variable_unit = get_variable_unit(dataset_name, var)
-                scale_factor = get_variable_scale_factor(dataset_name, var)
+                variable_name = config.variable[var].name
+                variable_unit = config.variable[var].unit
+                scale_factor = config.variable[var].scale_factor
 
                 lat, lon, d = dataset.get_raw_point(
                     lat.ravel(),

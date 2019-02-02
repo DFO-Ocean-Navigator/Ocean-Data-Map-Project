@@ -10,8 +10,7 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 from flask import current_app
 from geopy.distance import VincentyDistance
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_variable_scale_factor
+from oceannavigator import DatasetConfig
 import plotting.line as pl
 from flask_babel import gettext
 from scipy.interpolate import interp1d
@@ -48,7 +47,7 @@ class TransectPlotter(pl.LinePlotter):
                 break
 
     def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             if self.time < 0:
                 self.time += len(dataset.timestamps)
             time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
@@ -142,18 +141,10 @@ class TransectPlotter(pl.LinePlotter):
                         time,
                         self.surface,
                     )
-                surface_unit = get_variable_unit(
-                    self.dataset_name,
-                    dataset.variables[self.surface]
-                )
-                surface_name = get_variable_name(
-                    self.dataset_name,
-                    dataset.variables[self.surface]
-                )
-                surface_factor = get_variable_scale_factor(
-                    self.dataset_name,
-                    dataset.variables[self.surface]
-                )
+                vc = self.dataset_config.variable[dataset.variables[self.surface]]
+                surface_unit = vc.unit
+                surface_name = vc.name
+                surface_factor = vc.scale_factor
                 surface_value = np.multiply(surface_value, surface_factor)
                 surface_unit, surface_value = self.kelvin_to_celsius(
                     surface_unit,
@@ -185,7 +176,8 @@ class TransectPlotter(pl.LinePlotter):
 
                 return np.ma.masked_invalid(output).transpose()
 
-            with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
+            compare_config = DatasetConfig(self.compare['dataset'])
+            with open_dataset(compare_config) as dataset:
                 # Get and format date
                 self.compare['date'] = np.clip(np.int64(self.compare['time']), 0, len(dataset.timestamps) - 1)
                 self.compare['date'] = dataset.timestamps[int(self.compare['date'])]

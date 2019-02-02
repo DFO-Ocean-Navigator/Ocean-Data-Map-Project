@@ -1,6 +1,5 @@
 {
     "giops_month": {
-        "giops_month": {
         "attribution": "GIOPS Monthly Averages from CONCEPTS",
         "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": true,
@@ -27,7 +26,8 @@
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "north_vel": {
                 "hide": "false",
@@ -37,7 +37,8 @@
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "sossheig": {
                 "hide": "false",
@@ -47,7 +48,8 @@
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m"
+                "unit": "m",
+                "zero_centered": "true"
             },
             "u_wind": {
                 "hide": "false",
@@ -57,7 +59,8 @@
                     20
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "v_wind": {
                 "hide": "false",
@@ -67,7 +70,8 @@
                     20
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "vice": {
                 "hide": "false",
@@ -87,7 +91,8 @@
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "vosaline": {
                 "hide": "false",
@@ -117,10 +122,21 @@
                     3
                 ],
                 "scale_factor": 1,
+                "unit": "m/s",
+                "zero_centered": "true"
+            },
+            },
+            "vozocrtx,vomecrty": {
+                "hide": "false",
+                "name": "Water Velocity",
+                "scale": [
+                    0,
+                    3
+                ],
+                "scale_factor": 1,
                 "unit": "m/s"
-            }
+            },
         }
-    }
     },
     "giops_day": {
         "name": "GIOPS Daily",
@@ -134,6 +150,7 @@
         "variables": {
             "vozocrtx": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3] },
             "vomecrty": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "vozocrtx,vomecrty": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3] },
             "votemper": { "name": "Temperature", "unit": "Kelvin", "scale": [-5, 30] },
             "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
@@ -141,8 +158,7 @@
             "vice": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10] },
             "u_wind": { "name": "Zonal Wind",      "unit": "m/s", "scale": [-20, 20] },
             "v_wind": { "name": "Meridional Wind", "unit": "m/s", "scale": [-20, 20] },
-            "north_vel": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
-            "east_vel": {"name": "Water East Velocity",   "unit": "m/s", "scale": [-3, 3] }
+            "wind":   { "name": "Wind",            "unit": "m/s", "scale": [0, 20] }
         }
     },
     "giops_forecast": {
@@ -158,6 +174,7 @@
         "variables": {
             "vozocrtx": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
             "vomecrty": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "vozocrtx,vomecrty": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3] },
             "votemper": { "name": "Temperature", "unit": "Kelvin", "scale": [-5, 30] },
             "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
@@ -286,6 +303,16 @@
                 "scale_factor": 1,
                 "unit": "m/s"
             },
+            "itzocrtx,itmecrty": {
+                "hide": "false",
+                "name": "Sea Ice Velocity",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
             "north_vel": {
                 "hide": "false",
                 "name": "Water North Velocity",
@@ -365,6 +392,16 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s"
+            },
+            "vozocrtx,vomecrty": {
+                "hide": "false",
+                "name": "Water Velocity",
+                "scale": [
+                    0,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
             }
         }
     },
@@ -404,6 +441,11 @@
                     "name": "Water Y Velocity",
                     "unit": "m/s",
                     "scale": [-3, 3]
+                },
+                "vozocrtx,vomecrty": {
+                    "name": "Water Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 3]
                 },
                 "votemper": {
                     "name": "Temperature",
@@ -450,6 +492,11 @@
                     "unit": "m/s",
                     "scale": [-1, 1]
                 },
+                "itzocrtx,itmecrty": { 
+                    "name": "Sea Ice Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 1]
+                },
                 "iicepressure": { 
                     "name": "Internal Sea Ice Pressure",
                     "unit": "N/m",
@@ -491,6 +538,11 @@
                     "name": "Water Y Velocity",
                     "unit": "m/s",
                     "scale": [-3, 3]
+                },
+                "vozocrtx,vomecrty": {
+                    "name": "Water Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 3]
                 },
                 "votemper": {
                     "name": "Temperature",
@@ -536,6 +588,11 @@
                     "name": "Sea Ice Y Velocity",
                     "unit": "m/s",
                     "scale": [-1, 1]
+                },
+                "itzocrtx,itmecrty": { 
+                    "name": "Sea Ice Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 1]
                 },
                 "iicepressure": { 
                     "name": "Internal Sea Ice Pressure",
@@ -580,6 +637,11 @@
                     "unit": "m/s",
                     "scale": [-3, 3]
                 },
+                "vozocrtx,vomecrty": {
+                    "name": "Water Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 3]
+                },
                 "votemper": {
                     "name": "Temperature",
                     "unit": "Celsius",
@@ -624,6 +686,11 @@
                     "name": "Sea Ice Y Velocity",
                     "unit": "m/s",
                     "scale": [-1, 1]
+                },
+                "itzocrtx,itmecrty": { 
+                    "name": "Sea Ice Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 1]
                 },
                 "iicepressure": { 
                     "name": "Internal Sea Ice Pressure",
@@ -686,6 +753,16 @@
                 "scale_factor": 1,
                 "unit": "m/s"
             },
+            "iicevelu,iicevelv": {
+                "hide": "false",
+                "name": "Sea Ice Velocity",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
             "ileadfra": {
                 "hide": "false",
                 "name": "Ice Concentration",
@@ -741,6 +818,16 @@
                 "name": "Water X Velocity",
                 "scale": [
                     -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vozocrtx,vomecrty": {
+                "hide": "false",
+                "name": "Water Velocity",
+                "scale": [
+                    0,
                     3
                 ],
                 "scale_factor": 1,
@@ -817,6 +904,16 @@
                 "scale_factor": 1,
                 "unit": "m/s"
             },
+            "iicevelu,iicevelv": {
+                "hide": "false",
+                "name": "Sea Ice Velocity",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
             "ileadfra": {
                 "hide": "false",
                 "name": "Ice Concentration",
@@ -886,6 +983,16 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s"
+            },
+            "vozocrtx,vomecrty": {
+                "hide": "false",
+                "name": "Water Velocity",
+                "scale": [
+                    0,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
             }
         }
     },
@@ -903,10 +1010,12 @@
                 "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
                 "vozocrtx": { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3] },
                 "vomecrty": { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3] },
+                "vozocrtx,vomecrty": { "name": "Water Velocity",   "unit": "m/s", "scale": [0, 3] },
                 "ileadfra": { "name": "Ice Concentration",  "unit": "fraction", "scale": [0, 1] },
                 "iicethic": { "name": "Ice Thickness",      "unit": "m", "scale": [0, 10] },
                 "iicevelu": { "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1] },
                 "iicevelv": { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1] },
+                "iicevelu,iicevelv": { "name": "Sea Ice Velocity", "unit": "m/s", "scale": [0, 1] },
                 "east_vel": {
                 "hide": "false",
                 "name": "Water East Velocity",
@@ -979,6 +1088,16 @@
                 "scale_factor": 1,
                 "unit": "m/s"
             },
+            "iicevelu,iicevelv": {
+                "hide": "false",
+                "name": "Sea Ice Velocity",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
             "ileadfra": {
                 "hide": "false",
                 "name": "Ice Concentration",
@@ -1034,6 +1153,16 @@
                 "name": "Water X Velocity",
                 "scale": [
                     -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vozocrtx,vomecrty": {
+                "hide": "false",
+                "name": "Water Velocity",
+                "scale": [
+                    0,
                     3
                 ],
                 "scale_factor": 1,
@@ -1241,6 +1370,7 @@
             "wind_north_vel":{"hide": true},
             "vozocrtx"     : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3] },
             "vomecrty"     : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3] },
+            "vozocrtx,vomecrty" : { "name": "Water Velocity",   "unit": "m/s", "scale": [0, 3] },
             "votemper"     : { "name": "Temperature",        "unit": "Kelvin", "scale": [-5, 30] },
             "vosaline"     : { "name": "Salinity",           "unit": "PSU", "scale": [30, 40] },
             "sossheig"     : { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
@@ -1250,16 +1380,20 @@
             "iicesurftemp" : { "name": "Ice/Snow Surface Temperature", "unit": "Kelvin", "scale": [-5, 10] },
             "itzocrtx"     : { "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1] },
             "itmecrty"     : { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1] },
+            "itmecrty"     : { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1] },
             "iicepressure" : { "name": "Internal Sea Ice Pressure", "unit": "N/m", "scale": [0, 200000] },
             "iicestrength" : { "name": "Compressive Sea Ice Strength", "unit": "N/m", "scale": [0, 60000] },
             "east_vel"     : { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
             "north_vel"     : { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
             "ice_east_vel"     : { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-1, 1] },
             "ice_north_vel"     : { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-1, 1] },
+            "ice_east_vel,ice_north_vel" : { "name": "Sea Ice Velocity", "unit": "m/s", "scale": [0, 1] },
             "wind_east_vel"     : { "name": "Wind East Velocity", "unit": "m/s", "scale": [-3, 3] },
             "wind_north_vel"     : { "name": "Wind North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "wind_east_vel,wind_north_vel" : { "name": "Wind Velocity", "unit": "m/s", "scale": [0, 3] },
             "wind_stress_east_vel"     : { "name": "Wind Stress East Velocity", "unit": "m/s", "scale": [-3, 3] },
-            "wind_stress_north_vel"     : { "name": "Wind Stress North Velocity", "unit": "m/s", "scale": [-3, 3] }
+            "wind_stress_north_vel"     : { "name": "Wind Stress North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "wind_stress_east_vel,wind_stress_north_vel" : { "name": "Wind Stress Velocity", "unit": "m/s", "scale": [0, 3] }
         }
 
     },
@@ -1273,6 +1407,7 @@
         "variables": {
             "vozocrtx"    : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3] },
             "vomecrty"    : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3] },
+            "vozocrtx,vomecrty" : { "name": "Water Velocity",   "unit": "m/s", "scale": [0, 3] },
             "votemper"    : { "name": "Temperature",        "unit": "Kelvin", "scale": [-5, 30] },
             "vosaline"    : { "name": "Salinity",           "unit": "PSU", "scale": [30, 40] },
             "sossheig"    : { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
@@ -1282,6 +1417,7 @@
             "iicesurftemp": { "name": "Ice/Snow Surface Temperature", "unit": "Kelvin", "scale": [-5, 10] },
             "itzocrtx"    : { "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1] },
             "itmecrty"    : { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1] },
+            "itzocrtx,itmecrty" : { "name": "Sea Ice Velocity", "unit": "m/s", "scale": [0, 1] },
             "iicepressure": {"name": "Internal Sea Ice Pressure", "unit": "N/m", "scale": [0, 200000] },
             "iicestrength": { "name": "Compressive Sea Ice Strength", "unit": "N/m", "scale": [0, 60000] },
             "sometauy"    : {"hide": true},
@@ -1300,6 +1436,7 @@
         "variables": {
             "vozocrtx"     : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3] },
             "vomecrty"     : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3] },
+            "vozocrtx,vomecrty" : { "name": "Water Velocity",   "unit": "m/s", "scale": [0, 3] },
             "votemper"     : { "name": "Temperature",        "unit": "Kelvin", "scale": [-5, 30] },
             "vosaline"     : { "name": "Salinity",           "unit": "PSU", "scale": [30, 40] },
             "sossheig"     : { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
@@ -1309,6 +1446,7 @@
             "iicesurftemp" : { "name": "Ice/Snow Surface Temperature", "unit": "Kelvin", "scale": [-5, 10] },
             "itzocrtx"     : { "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1] },
             "itmecrty"     : { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1] },
+            "itzocrtx,itmecrty" : { "name": "Sea Ice Velocity", "unit": "m/s", "scale": [0, 1] },
             "iicepressure" : { "name": "Internal Sea Ice Pressure", "unit": "N/m", "scale": [0, 200000] },
             "iicestrength" : { "name": "Compressive Sea Ice Strength", "unit": "N/m", "scale": [0, 60000] },
             "sometauy"    : {"hide": true},

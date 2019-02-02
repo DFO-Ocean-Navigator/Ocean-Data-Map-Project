@@ -11,8 +11,7 @@ import plotting.utils as utils
 from io import BytesIO
 import os
 import math
-from oceannavigator.dataset_config import get_dataset_url, get_variable_name, \
-    get_variable_unit, get_dataset_climatology, get_variable_scale_factor
+from oceannavigator import DatasetConfig
 from pyproj import Proj
 import pyproj
 from scipy.ndimage.filters import gaussian_filter
@@ -108,6 +107,7 @@ def get_latlon_coords(projection, x, y, z):
 """
 def scale(args):
     dataset_name = args.get('dataset')
+    config = DatasetConfig(dataset_name)
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
 
@@ -119,11 +119,9 @@ def scale(args):
 
     variable = variable.split(',')
 
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variable[0]])
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variable[0]])
+    with open_dataset(config) as dataset:
+        variable_unit = config.variable[dataset.variables[variable[0]]].unit
+        variable_name = config.variable[dataset.variables[variable[0]]].name
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
@@ -171,6 +169,7 @@ def plot(projection, x, y, z, args):
         lat, lon = np.meshgrid(lat, lon)
 
     dataset_name = args.get('dataset')
+    config = DatasetConfig(dataset_name)
     variable = args.get('variable')
     if variable.endswith('_anom'):
         variable = variable[0:-5]
@@ -213,14 +212,6 @@ def plot(projection, x, y, z, args):
                 args.get('neighbours')
             ))
 
-        variable_name = get_variable_name(dataset_name,
-                                          dataset.variables[variable[0]])
-        variable_unit = get_variable_unit(dataset_name,
-                                          dataset.variables[variable[0]])
-        scale_factor = get_variable_scale_factor(
-            dataset_name,
-            dataset.variables[variable[0]]
-        )
         if anom:
             cmap = colormap.colormaps['anomaly']
         else:
