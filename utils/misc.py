@@ -700,8 +700,7 @@ def list_class4_models(class4_id):
 
 
 def get_point_data(dataset, variable, time, depth, location):
-    variables_anom = variable.split(",")
-    variables = [re.sub('_anom$', '', v) for v in variables_anom]
+    variables = variable.split(",")
 
     data = []
     names = []
@@ -727,20 +726,6 @@ def get_point_data(dataset, variable, time, depth, location):
             data.append(d)
             names.append(variable_name)
             units.append(variable_unit)
-
-    if variables != variables_anom:
-        with open_dataset(get_dataset_climatology(dataset)) as ds:
-            for idx, v in enumerate(variables):
-                d = ds.get_point(
-                    location[0],
-                    location[1],
-                    depth,
-                    timestamp.month,
-                    v
-                )
-
-                data[idx] = data[idx] - d
-                names[idx] = names[idx] + " Anomaly"
 
     result = {
         'value': ['%s' % float('%.4g' % f) for f in data],

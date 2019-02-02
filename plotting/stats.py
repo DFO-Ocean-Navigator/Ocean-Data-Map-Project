@@ -274,8 +274,6 @@ def wrap_computer_stats(query, dataset_name, lon_values):
 
     area_data.split_area(wrap_val)
 
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
     area_data.names, area_data.inner_area.all_rings = get_names_rings(area_data.inner_area.area_query)
     _, area_data.outter_area.all_rings = get_names_rings(area_data.outter_area.area_query)
 
@@ -315,11 +313,6 @@ def computer_stats(area, query, dataset_name):
     variables = query.get('variable')
     if isinstance(variables, str) or isinstance(variables, unicode):
         variables = variables.split(',')
-
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
 
     area_data.names, area_data.area.all_rings = get_names_rings(area_data.area.area_query)
     area_data.area.bounds = compute_bounds(area_data.area.all_rings)

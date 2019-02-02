@@ -15,8 +15,8 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
     dest = Proj(init=projection)
     lon, lat = dest(xx, yy, inverse=True)
 
-    variables_anom = variable.split(",")
-    variables = [re.sub('_anom$', '', v) for v in variables_anom]
+    variables = variable.split(",")
+    config = DatasetConfig(dataset)
 
     with open_dataset(config) as ds:
         timestamp = ds.timestamps[time]
@@ -49,36 +49,6 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
         if variable_unit.startswith("Kelvin"):
             variable_unit = "Celsius"
             d = np.add(d, -273.15)
-
-    if variables != variables_anom:
-        with open_dataset(get_dataset_climatology(dataset), 'r') as ds:
-            c = ds.get_area(
-                np.array([lat, lon]),
-                depth,
-                timestamp.month - 1,
-                variables[0],
-                interp,
-                radius,
-                neighbours
-            )
-
-            if len(variables) > 1:
-                c0 = c
-                c1 = ds.get_area(
-                    np.array([lat, lon]),
-                    depth,
-                    timestamp.month - 1,
-                    variables[1],
-                    interp,
-                    radius,
-                    neighbours
-                )
-                c = np.sqrt(c0 ** 2 + c1 ** 2)
-
-            d = d - c
-
-            m = max(abs(d.nanmin()), abs(d.nanmax()))
-            return -m, m
 
     # Return min and max values of selected variable, while ignoring
     # nan values

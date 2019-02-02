@@ -300,7 +300,6 @@ def depth_impl(args):
 
     var = args.get('variable')
     variables = var.split(',')
-    variables = [re.sub('_anom$', '', v) for v in variables]
 
     data = []
    
@@ -372,16 +371,6 @@ def vars_query_impl(args):
     dataset = args['dataset']   #Dataset Specified in query
     config = DatasetConfig(dataset)
 
-    #Queries config files
-    if config.climatology != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
-        climatology_config = DatasetConfig(config.climatology)
-            
-        with open_dataset(climatology_config) as ds:
-            climatology_variables = list(map(str, ds.variables))
-    
-    else:
-        climatology_variables = []
-
     #three_d = '3d_only' in args     #Checks if 3d_only is in args
     #If three_d is true - Only 3d variables will be returned
 
@@ -413,12 +402,6 @@ def vars_query_impl(args):
                                 'value': config.variable[v].name,
                                 'scale': config.variable[v].scale
                             })
-                            if v.key in climatology_variables:
-                                data.append({
-                                    'id': v.key + "_anom",
-                                    'value': get_variable_name(dataset, v) + " Anomaly",
-                                    'scale': [-10, 10]
-                                })
      
         """
         VECTOR_MAP = {

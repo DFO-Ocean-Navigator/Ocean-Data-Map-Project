@@ -112,11 +112,6 @@ def scale(args):
     scale = [float(component) for component in scale.split(',')]
 
     variable = args.get('variable')
-    anom = False
-    if variable.endswith('_anom'):
-        variable = variable[0:-5]
-        anom = True
-
     variable = variable.split(',')
 
     with open_dataset(config) as dataset:
@@ -126,15 +121,10 @@ def scale(args):
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
 
-    if anom:
-        cmap = colormap.colormaps['anomaly']
-        variable_name = gettext("%s Anomaly") % variable_name
-    else:
-        cmap = colormap.find_colormap(variable_name)
+    cmap = colormap.find_colormap(variable_name)
 
     if len(variable) == 2:
-        if not anom:
-            cmap = colormap.colormaps.get('speed')
+        cmap = colormap.colormaps.get('speed')
 
         variable_name = re.sub(
             r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
@@ -171,11 +161,6 @@ def plot(projection, x, y, z, args):
     dataset_name = args.get('dataset')
     config = DatasetConfig(dataset_name)
     variable = args.get('variable')
-    if variable.endswith('_anom'):
-        variable = variable[0:-5]
-        anom = True
-    else:
-        anom = False
 
     variable = variable.split(',')
 
@@ -185,7 +170,7 @@ def plot(projection, x, y, z, args):
     scale = [float(component) for component in scale.split(',')]
 
     data = []
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
+    with open_dataset(config) as dataset:
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
             time = -1
@@ -212,10 +197,11 @@ def plot(projection, x, y, z, args):
                 args.get('neighbours')
             ))
 
-        if anom:
-            cmap = colormap.colormaps['anomaly']
-        else:
-            cmap = colormap.find_colormap(variable_name)
+        vc = config.variable[dataset.variables[variable[0]]]
+        variable_name = vc.name
+        variable_unit = vc.unit
+        scale_factor = vc.scale_factor
+        cmap = colormap.find_colormap(variable_name)
 
         if depth != 'bottom':
             depthm = dataset.depths[depth]
@@ -236,21 +222,8 @@ def plot(projection, x, y, z, args):
 
     if len(data) == 2:
         data = np.sqrt(data[0] ** 2 + data[1] ** 2)
-        if not anom:
-            cmap = colormap.colormaps.get('speed')
+        cmap = colormap.colormaps.get('speed')
     
-    if anom:
-        with open_dataset(get_dataset_climatology(dataset_name)) as dataset:
-            a = dataset.get_area(
-                np.array([lat, lon]),
-                depth,
-                timestamp.month - 1,
-                v,
-                args.get('interp'),
-                args.get('radius'),
-                args.get('neighbours')
-            )
-            data -= a
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
