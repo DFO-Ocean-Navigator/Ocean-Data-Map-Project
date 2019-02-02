@@ -185,15 +185,8 @@ class HovmollerPlotter(plLine.LinePlotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin = np.amin(self.data)
-            vmax = np.amax(self.data)
-            if np.any([re.search(x, self.variable_name, re.IGNORECASE) for x in [
-                    "velocity",
-                    "surface height",
-                    "wind"
-                ]]):
-                vmin = min(vmin, -vmax)
-                vmax = max(vmax, -vmin)
+            vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[self.variables[0]])
             
             if len(self.variables) > 1:
                 vmin = 0

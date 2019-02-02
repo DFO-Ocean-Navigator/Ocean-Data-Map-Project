@@ -585,11 +585,8 @@ class MapPlotter(pl.Plotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin = np.amin(self.data)
-            vmax = np.amax(self.data)
-            if self.compare:
-                vmax = max(abs(vmax), abs(vmin))
-                vmin = -vmax
+            vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[",".join(self.variables)])
 
         c = self.basemap.imshow(
             self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)

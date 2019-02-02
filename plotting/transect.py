@@ -784,15 +784,8 @@ class TransectPlotter(pl.LinePlotter):
                     vmin = self.scale[0]
                     vmax = self.scale[1]
                 else:
-                    vmin = np.amin(self.transect_data['data'])
-                    vmax = np.amax(self.transect_data['data'])
-                    if re.search(
-                        "velocity",
-                        self.transect_data['name'],
-                        re.IGNORECASE
-                    ):
-                        vmin = min(vmin, -vmax)
-                        vmax = max(vmax, -vmin)
+                    vmin, vmax = utils.normalize_scale(self.transect_data['data'],
+                            self.dataset_config.variable[self.variables[0]])
 
                 do_plot(
                     gs, [0, Col],

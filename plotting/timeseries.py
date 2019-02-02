@@ -150,21 +150,8 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                 vmin = self.scale[0]
                 vmax = self.scale[1]
             else:
-                vmin = self.data.min()
-                vmax = self.data.max()
-
-                if self.variable_unit == "fraction":
-                    vmin = 0
-                    vmax = 1
-                elif np.any([re.search(x, self.variable_name,
-                                                    re.IGNORECASE) for x in [
-                    "free surface",
-                    "surface height",
-                    "velocity",
-                    "wind"
-                ]]):
-                    vmin = min(vmin, -vmax)
-                    vmax = max(vmax, -vmin)
+                vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[self.variables[0]])
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
