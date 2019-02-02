@@ -115,8 +115,12 @@ def scale(args):
     variable = variable.split(',')
 
     with open_dataset(config) as dataset:
-        variable_unit = config.variable[dataset.variables[variable[0]]].unit
-        variable_name = config.variable[dataset.variables[variable[0]]].name
+        if len(variable) > 1:
+            variable_unit = config.variable[",".join(variable)].unit
+            variable_name = config.variable[",".join(variable)].name
+        else:
+            variable_unit = config.variable[dataset.variables[variable[0]]].unit
+            variable_name = config.variable[dataset.variables[variable[0]]].name
 
     if variable_unit.startswith("Kelvin"):
         variable_unit = "Celsius"
@@ -125,11 +129,6 @@ def scale(args):
 
     if len(variable) == 2:
         cmap = colormap.colormaps.get('speed')
-
-        variable_name = re.sub(
-            r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
-            variable_name)
-        variable_name = re.sub(r" +", " ", variable_name)
 
     fig = plt.figure(figsize=(2, 5), dpi=75)
     ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])

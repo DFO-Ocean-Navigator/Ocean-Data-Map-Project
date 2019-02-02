@@ -38,6 +38,10 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'curl': cmocean.cm.curl,
+    'vorticity': cmocean.cm.curl,
+    'divergence': cmocean.cm.curl,
+    'gradient': cmocean.cm.curl,
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
@@ -131,8 +135,6 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
     'temperature': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
-    'curl': cmocean.cm.curl,
-    'vorticity': cmocean.cm.curl,
 }
 colormaps['wind'] = colormaps['velocity']
 
