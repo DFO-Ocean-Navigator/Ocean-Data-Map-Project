@@ -125,8 +125,31 @@
                 "unit": "m/s",
                 "zero_centered": "true"
             },
+            "vozocrte": {
+                "hide": "false",
+                "name": "Water East Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                "zero_centered": "true"
             },
-            "vozocrtx,vomecrty": {
+            "vomecrtn": {
+                "hide": "false",
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                "zero_centered": "true"
+            },
+            "vozocrte,vomecrtn": {
                 "hide": "false",
                 "name": "Water Velocity",
                 "scale": [
@@ -136,6 +159,70 @@
                 "scale_factor": 1,
                 "unit": "m/s"
             },
+            "divergence": {
+                "hide": "false",
+                "name": "Water Velocity Divergence",
+                "scale": [
+                    -50,
+                    50
+                ],
+                "scale_factor": 1e6,
+                "unit": "1/10^6 s",
+                "equation": "divergence(vozocrtx, vomecrty, nav_lat, nav_lon)",
+                "zero_centered": "true"
+            },
+            "vorticity": {
+                "hide": "false",
+                "name": "Water Velocity Vorticity",
+                "scale": [
+                    -50,
+                    50
+                ],
+                "scale_factor": 1e6,
+                "unit": "1/10^6 s",
+                "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)",
+                "zero_centered": "true"
+            },
+            "sspeed": {
+                "hide": "false",
+                "name": "Speed of Sound",
+                "scale": [1400, 1600],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "sspeed(deptht, nav_lat, vosaline, votemper - 273.15)"
+            },
+            "temp_gradientx": {
+                "hide": "true",
+                "name": "Temperature Gradient X",
+                "scale": [
+                    -0.5,
+                    0.5
+                ],
+                "scale_factor": 1000,
+                "unit": "degree Celsius/km",
+                "equation": "gradient_x(votemper, nav_lat, nav_lon)",
+                "dims": ["time_counter", "deptht", "y", "x"],
+                "zero_centered": "True"
+            },
+            "temp_gradienty": {
+                "hide": "true",
+                "name": "Temperature Gradient Y",
+                "scale": [
+                    -0.5,
+                    0.5
+                ],
+                "scale_factor": 1000,
+                "unit": "degree Celsius/km",
+                "equation": "gradient_y(votemper, nav_lat, nav_lon)",
+                "dims": ["time_counter", "deptht", "y", "x"],
+                "zero_centered": "True"
+            },
+            "temp_gradientx,temp_gradienty": {
+                "name": "Temperature Gradient",
+                "unit": "degree Celsius/km",
+                "scale_factor": 1000,
+                "scale": [0, 0.5]
+            }
         }
     },
     "giops_day": {

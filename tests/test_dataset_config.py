@@ -140,6 +140,25 @@ class TestUtil(unittest.TestCase):
         self.assertIn('key', result)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_get_calculated_(self, m):
+        m.return_value = {
+            "ds": {
+                "variables": {
+                    "k": {
+                    },
+                    "key": {
+                        "equation": "1+1",
+                    }
+                }
+            }
+        }
+
+        result = DatasetConfig("ds").calculated_variables
+        self.assertEqual(len(result), 1)
+        self.assertIn('key', result)
+        self.assertEqual(result['key']['equation'], "1+1")
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_variable_misc(self, m):
         m.return_value = {
             "dataset": {

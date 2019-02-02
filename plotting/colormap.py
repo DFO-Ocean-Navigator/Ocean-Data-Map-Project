@@ -131,7 +131,8 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
     'temperature': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
-
+    'curl': cmocean.cm.curl,
+    'vorticity': cmocean.cm.curl,
 }
 colormaps['wind'] = colormaps['velocity']
 
@@ -164,6 +165,7 @@ gettext('Thermal')
 gettext('NEO SST')
 gettext('Color Brewer Blue-Yellow-Red')
 gettext('Temperature (old)')
+gettext('Vorticity')
 
 colormap_names = {
     'anomaly': 'Anomaly',
@@ -190,6 +192,7 @@ colormap_names = {
     'neo_sst': 'NEO SST',
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
     'temperature-old': 'Temperature (old)',
+    'vorticity': 'Vorticity',
 }
 
 

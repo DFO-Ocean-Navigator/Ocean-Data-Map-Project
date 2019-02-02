@@ -44,12 +44,6 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             )
             d = np.sqrt(d0 ** 2 + d1 ** 2)
 
-        variable_unit = get_variable_unit(dataset,
-                                          ds.variables[variables[0]])
-        if variable_unit.startswith("Kelvin"):
-            variable_unit = "Celsius"
-            d = np.add(d, -273.15)
-
     # Return min and max values of selected variable, while ignoring
     # nan values
     return np.nanmin(d), np.nanmax(d)

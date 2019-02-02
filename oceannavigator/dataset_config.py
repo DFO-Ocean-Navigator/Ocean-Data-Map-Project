@@ -127,6 +127,17 @@ class DatasetConfig():
         return variables
 
     @property
+    def calculated_variables(self) -> dict:
+        """
+            Returns a dict of the calculated variables for the specified dataset
+        """
+        variables = {}
+        for key,data in self._get_attribute("variables").items():
+            if "equation" in data.keys():
+                variables[key] = data
+        return variables
+
+    @property
     def variable(self):
         return self._VariableGetter(self)
 
