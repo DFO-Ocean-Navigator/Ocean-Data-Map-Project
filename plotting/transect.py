@@ -152,6 +152,7 @@ class TransectPlotter(pl.LinePlotter):
                 )
 
                 self.surface_data = {
+                    "config": vc,
                     "points": surface_pts,
                     "distance": surface_dist,
                     "data": surface_value,
@@ -176,8 +177,8 @@ class TransectPlotter(pl.LinePlotter):
 
                 return np.ma.masked_invalid(output).transpose()
 
-            compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config) as dataset:
+            self.compare_config = DatasetConfig(self.compare['dataset'])
+            with open_dataset(self.compare_config) as dataset:
                 # Get and format date
                 self.compare['date'] = np.clip(np.int64(self.compare['time']), 0, len(dataset.timestamps) - 1)
                 self.compare['date'] = dataset.timestamps[int(self.compare['date'])]
@@ -679,15 +680,8 @@ class TransectPlotter(pl.LinePlotter):
                     )
 
             else:
-                # Get range min/max
-                vmin, vmax = find_minmax(self.scale, self.transect_data['data'])
-                if re.search(
-                    "velocity",
-                    self.transect_data['name'],
-                    re.IGNORECASE
-                ):   
-                    vmin = min(vmin, -vmax)
-                    vmax = max(vmax, -vmin)
+                vmin, vmax = utils.normalize_scale(self.transect_data['data'],
+                        self.dataset_config.variable[self.variables[0]])
 
                 # Render primary/Left Map
                 if self.showmap:
@@ -707,7 +701,8 @@ class TransectPlotter(pl.LinePlotter):
                 )
 
                 # Render Right Map
-                vmin, vmax = find_minmax(self.compare['scale'], self.transect_data['compare_data'])
+                vmin, vmax = utils.normalize_scale(
+                        self.transect_data['compare_data'], self.compare_config)
                 if self.showmap:
                     Col = 1
                 else:
@@ -826,13 +821,9 @@ class TransectPlotter(pl.LinePlotter):
         plt.setp(label, size='smaller')
         plt.setp(ax.get_yticklabels(), size='x-small')
         plt.xlim([0, self.surface_data['distance'][-1]])
-        if np.any([re.search(x, self.surface_data['name'], re.IGNORECASE) for x in [
-                "free surface",
-                "surface height"
-            ]]):
-            ylim = plt.ylim()
-            plt.ylim([min(ylim[0], -ylim[1]), max([-ylim[0], ylim[1]])])
-            ax.yaxis.grid(True)
+        plt.ylim(utils.normalize_scale(self.surface_data['data'],
+            self.surface_data['config']))
+        ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
     def _transect_plot(self, values, depths, plotTitle, vmin, vmax, cmapLabel, unit, cmap):
