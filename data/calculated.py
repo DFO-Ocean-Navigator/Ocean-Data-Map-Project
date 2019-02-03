@@ -19,6 +19,8 @@ class CalculatedData(NetCDFData):
 
     """
         Returns the value of a given variable name from the dataset
+
+        key: The raw name of the variable
     """
     def get_dataset_variable(self, key: str):
         if key in self._calculated:
@@ -137,6 +139,29 @@ class CalculatedArray():
                 result = d
 
         return result
+
+    def isel(self, **kwargs):
+        """
+        Selects from the array without knowledge of the dimension order
+
+        params:
+        key, value pairs where the key the the dimension name and the value is
+        the slice to select.
+        """
+        keys = {}
+        shape = self.shape
+        for idx, d in enumerate(self.dims):
+            keys[d] = slice(0, shape[idx])
+
+        for k,v in kwargs.items():
+            keys[k] = v
+
+        key = []
+        for d in self.dims:
+            key.append(keys[d])
+
+        return self[tuple(key)]
+
 
 def get_with_default(d, key, default):
     try:
