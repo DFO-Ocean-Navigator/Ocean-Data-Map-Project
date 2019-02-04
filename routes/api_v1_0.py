@@ -176,9 +176,7 @@ def stats_v1_0():
     args = request.args
   else:
     args = request.form
- 
   query = json.loads(args.get('query'))
-
 
   with open_dataset(get_dataset_url(query.get('dataset'))) as dataset:
     date = dataset.convert_to_timestamp(query.get('time'))
@@ -190,7 +188,6 @@ def stats_v1_0():
 
 #
 # Unchanged from v0.0
-# This should have timestamp conversion (and the script generator should be updated to reflect that)
 #
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
