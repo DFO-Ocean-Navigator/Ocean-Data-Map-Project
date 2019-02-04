@@ -3,6 +3,7 @@ from pyproj import Proj
 from oceannavigator import DatasetConfig
 import re
 from data import open_dataset
+from plotting.utils import normalize_scale
 
 """
     Calculates and returns the range (min, max values) of a selected variable,
@@ -44,6 +45,4 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             )
             d = np.sqrt(d0 ** 2 + d1 ** 2)
 
-    # Return min and max values of selected variable, while ignoring
-    # nan values
-    return np.nanmin(d), np.nanmax(d)
+        return normalize_scale(d, config.variable[",".join(variables)])
