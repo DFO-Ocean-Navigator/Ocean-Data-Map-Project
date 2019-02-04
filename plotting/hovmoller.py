@@ -48,7 +48,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             return (depth, depth_value, depth_unit)
 
         # Load left/Main Map
-        with open_dataset(dataset_config) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             
             latvar, lonvar = utils.get_latlon_vars(dataset)
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
@@ -83,7 +83,8 @@ class HovmollerPlotter(plLine.LinePlotter):
             variable_units = self.get_variable_units(dataset, self.variables)
             scale_factors = self.get_variable_scale_factors(dataset, self.variables)
 
-            self.variable_unit, self.data = self.kelvin_to_celsius(variable_units[0], value)
+            self.variable_unit = variable_units[0]
+            self.data = value
             self.times = dataset.timestamps[self.starttime : self.endtime + 1]
             self.data = np.multiply(self.data, scale_factors[0])
             self.data = self.data.transpose()
@@ -134,7 +135,8 @@ class HovmollerPlotter(plLine.LinePlotter):
                 variable_units = self.get_variable_units(dataset, self.compare['variables'])
                 scale_factors = self.get_variable_scale_factors(dataset, self.compare['variables'])
 
-                self.compare['variable_unit'], self.compare['data'] = self.kelvin_to_celsius(variable_units[0], value)
+                self.compare['variable_unit'] = variable_units[0]
+                self.compare['data'] = value
                 self.compare['times'] = dataset.timestamps[self.compare['starttime'] : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
