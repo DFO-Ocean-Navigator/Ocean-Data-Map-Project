@@ -178,6 +178,9 @@ export default class MapToolbar extends React.Component {
       case "draw":
         this.props.action("point");
         break;
+      case "draw-multi":
+        this.multiPointSelect()
+        break;
       case "observation":
         this.setState({showObservationSelect: true,});
         break;
@@ -188,6 +191,13 @@ export default class MapToolbar extends React.Component {
         this.props.action("show", "points", key);
         break;
     }
+  }
+
+  multiPointSelect() {
+    this.props.multiPointAction("enable")
+    //this.props.updateState("multiPoint", true)
+    ///this.props.updateState("point", [])
+    //this.props.action("multi-point");
   }
 
   // Point -> Observation button
