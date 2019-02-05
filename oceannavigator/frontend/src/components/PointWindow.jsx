@@ -769,7 +769,7 @@ export default class PointWindow extends React.Component {
             eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
         </Nav>
         <Row>
-          <Col lg={2}>
+          <Col lg={3}>
             <Panel
               key='global_settings'
               id='global_settings'
@@ -785,7 +785,7 @@ export default class PointWindow extends React.Component {
               >Apply Changes</Button>
             </Panel>
           </Col>
-          <Col lg={10}>
+          <Col lg={9}>
             {plot_image}
           </Col>
         </Row>

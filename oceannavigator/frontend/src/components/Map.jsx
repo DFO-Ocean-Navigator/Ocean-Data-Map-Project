@@ -861,12 +861,12 @@ export default class Map extends React.PureComponent {
     }.bind(this));
     this.map.addInteraction(draw);
   }
-
+    multiPoint() {
     //Resets map (in case other plots have been drawn)
     
     //this.resetMap();
     
-    const draw = new ol.interaction.Draw({
+    let draw = new ol.interaction.Draw({
       source: this.vectorSource,
       type: "Point",
     });
