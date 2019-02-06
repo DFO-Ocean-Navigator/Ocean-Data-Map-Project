@@ -315,11 +315,13 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
+    console.warn("QUERY 2: ", query)
     return query;
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
+    console.warn("QUERY STRING: ", query)
     return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
