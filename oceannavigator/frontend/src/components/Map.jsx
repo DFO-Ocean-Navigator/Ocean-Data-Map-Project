@@ -123,11 +123,10 @@ proj3031.setExtent([
 
 export default class Map extends React.PureComponent {
   constructor(props) {
-    super(props);
 
-    this._drawing = false;
-    // Track if mounted to prevent no-op errors with the Ajax callbacks.
-    this._mounted = false;
+    super(props);
+    this.multiPoint = this.multiPoint.bind(this);
+    this.drawing = false;
 
     this.state = {
       location: [0,90],
@@ -548,9 +547,9 @@ export default class Map extends React.PureComponent {
     this.map.addInteraction(dragBox);
 
     const pushSelection = function() {
-      var t = undefined;
-      var content = [];
-      var names = [];
+      let feature_type = undefined;
+      let content = [];
+      let names = [];
       this.selectedFeatures.forEach(function (feature) {
         if (feature.get("type") != null) {
           switch(feature.get("type")) {
@@ -561,7 +560,13 @@ export default class Map extends React.PureComponent {
               var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
               content.push([c[1], c[0], feature.get("observation")]);
               break;
-            case "line":
+            /*
+              case "multi-point":
+              var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
+              content.push([c[1], c[0], feature.get("observation")]);
+              break;
+            */
+              case "line":
               content.push(feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function(o) {
                 return [o[1], o[0]];
               }));
@@ -585,7 +590,7 @@ export default class Map extends React.PureComponent {
               }
               break;
           }
-          t = feature.get("type");
+          feature_type = feature.get("type");
         }
         if (feature.get("name")) {
           names.push(feature.get("name").replace(/<span>.*>/, ""));
@@ -593,8 +598,8 @@ export default class Map extends React.PureComponent {
       }.bind(this));
 
       
-      this.props.updateState(t, content);
-      this.props.updateState("modal", t);
+      this.props.updateState(feature_type, content);
+      this.props.updateState("modal", feature_type);
       this.props.updateState("names", names);
 
     }.bind(this);
@@ -617,6 +622,7 @@ export default class Map extends React.PureComponent {
       this.infoOverlay.setPosition(undefined);
     }.bind(this));
 
+    // Controls CTRL+Drag functionality
     dragBox.on("boxend", function() {
       var extent = dragBox.getGeometry().getExtent();
       this.vectorSource.forEachFeatureIntersectingExtent(
@@ -691,6 +697,9 @@ export default class Map extends React.PureComponent {
     if (typeof(this.props.state.modal) === "string") {
       switch (this.props.state.modal) {
         case "point":
+          this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
+          break;
+        case "multi-point":
           this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
           break;
         case "line":
@@ -833,6 +842,8 @@ export default class Map extends React.PureComponent {
     if (this.removeMapInteractions("Point")) {
       return;
     }
+    //console.warn(this.props.state.multiPoint)
+    this.drawing = true;
 
     this._drawing = true;
 
@@ -842,26 +853,43 @@ export default class Map extends React.PureComponent {
       source: this.vectorSource,
       type: "Point",
     });
+    
     draw.set("type", "Point");
     draw.on("drawend", function(e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+
       this.props.updateState("plotEnabled", true)
+
       // Pass point to PointWindow
-      this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
+      this.props.action("point", lonlat);
       this.map.removeInteraction(draw);
-      this._drawing = false;
+      
+      this.drawing = false;
+
       setTimeout(
         function() { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
     }.bind(this));
+    
     this.map.addInteraction(draw);
   }
-    multiPoint() {
+  
+  multiPoint() {
+    //console.warn("multiPoint()")
+    /*
+    if (this.removeMapInteractions("multiPoint")) {
+      return;
+    }
+    */
+    //console.warn(this.props.state.multiPoint)
+    this.drawing = true;
+
     //Resets map (in case other plots have been drawn)
     
     //this.resetMap();
@@ -1084,6 +1112,7 @@ export default class Map extends React.PureComponent {
     var extent = this.mapView.calculateExtent(this.map.getSize());
     var resolution = this.mapView.getResolution();
 
+    //If the drawn feature is visible on the map, render it
     if (this.vectorSource.getState() == "ready") {
       var dorefresh = this.vectorSource.forEachFeatureIntersectingExtent(
         extent,
@@ -1146,6 +1175,19 @@ export default class Map extends React.PureComponent {
     var feat;
     switch(type) {
       case "point":
+        for (let c of data) {
+          geom = new ol.geom.Point([c[1], c[0]]);
+          geom.transform("EPSG:4326", this.props.state.projection);
+          feat = new ol.Feature({
+            geometry: geom,
+            name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
+            type: "point",
+          });
+          this.vectorSource.addFeature(feat);
+        }
+        break;
+      case "multi-point":
+        console.warn("multi-point add")
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
