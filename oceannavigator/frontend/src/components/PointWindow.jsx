@@ -699,10 +699,10 @@ export default class PointWindow extends React.Component {
         inputs = [time, line1, dataset, profilevariable, line2, xscale, yscale, label, image_size];
         break;
       case TabEnum.CTD:
-        inputs = [line1, time, dataset, label, image_size];
+        inputs = [line1, time, dataset, line2, xscale, yscale, label, image_size];
         break;
       case TabEnum.TS:
-        inputs = [line1, time, dataset, label, image_size];
+        inputs = [line1, time, dataset, line2, xscale, yscale, label, image_size];
         break;
       case TabEnum.SOUND:
         console.warn("SELECTED CASE")

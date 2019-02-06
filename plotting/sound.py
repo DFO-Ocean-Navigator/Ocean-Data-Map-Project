@@ -48,7 +48,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         
         
         if 'xscale' in self.query:
-            ax.set_xlim([int(self.query.get('xscale')[0]),int(self.query.get('xscale')[1])])
+            ax.set_xlim([float(self.query.get('xscale')[0]),float(self.query.get('xscale')[1])])
         else:
             ax.set_xlim([
                 np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
@@ -68,7 +68,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         ax.invert_yaxis()
 
         if ('yscale' in self.query):
-            ax.set_ylim(int(self.query.get('yscale')[0]), int(self.query.get('yscale')[1]))
+            ax.set_ylim(float(self.query.get('yscale')[0]), float(self.query.get('yscale')[1]))
 
         ax.xaxis.set_ticks_position('top')
         ax.xaxis.set_label_position('top')
