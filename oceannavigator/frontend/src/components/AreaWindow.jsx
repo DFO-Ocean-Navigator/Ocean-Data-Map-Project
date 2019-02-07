@@ -37,6 +37,8 @@ export default class AreaWindow extends React.Component {
       currentTab: 1, // Currently selected tab
       plot_query: undefined,
       
+      clabel: undefined, 
+
       scale: props.scale + ",auto",
       scale_1: props.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
@@ -92,6 +94,7 @@ export default class AreaWindow extends React.Component {
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.saveScript = this.saveScript.bind(this);
     this.updatePlot = this.updatePlot.bind(this);
+    this.updateLabel = this.updateLabel.bind(this);
   }
 
   componentDidMount() {
@@ -257,23 +260,31 @@ export default class AreaWindow extends React.Component {
     });
   }
 
+  updateLabel(e) {
+    console.warn("LABEL VALUE: ", e.value)
+    this.setState({
+      clabel: e.value
+    })
+  }
+
   updatePlot() {
     
     console.warn("UPDATING -------")
 
     switch(this.state.currentTab) {
       case 1:
-        let plotQuery = undefined
+        console.warn("IN CASE 1")
+        //this.plotQuery = undefined
         
-        if (this.state.plot_query === undefined) {
-          plotQuery = {
-            dataset: this.state.dataset_0.dataset,
-            quantum: this.state.dataset_0.dataset_quantum,
-            scale: this.state.scale,
-            name: this.props.name,
-          };
-        } else {
-          plotQuery = this.state.plot_query;
+        //if (this.plot_query === undefined) {
+        let plotQuery = {
+          dataset: this.state.dataset_0.dataset,
+          quantum: this.state.dataset_0.dataset_quantum,
+          scale: this.state.scale,
+          name: this.props.name,
+        };
+        if (this.state.clabel != undefined) {
+          plotQuery.clabel = this.state.clabel
         }
 
         plotQuery.type = "map";
@@ -301,23 +312,26 @@ export default class AreaWindow extends React.Component {
           plotQuery.compare_to.colormap_diff = this.state.colormap_diff;
         }
 
+        
         this.setState({
           plot_query: plotQuery 
         })
         break;
       case 2:
-        plot_query.time = this.state.dataset_0.time;
-        plot_query.area = this.props.area;
-        plot_query.depth = this.state.dataset_0.depth;
+        console.warn("IN CASE 2")
+        this.plot_query.time = this.state.dataset_0.time;
+        this.plot_query.area = this.props.area;
+        this.plot_query.depth = this.state.dataset_0.depth;
         if (Array.isArray(this.state.dataset_0.variable)) {
           // Multiple variables were selected
-          plot_query.variable = this.state.dataset_0.variable.join(",");
+          this.plot_query.variable = this.state.dataset_0.variable.join(",");
         } else {
-          plot_query.variable = this.state.dataset_0.variable;
+          this.plot_query.variable = this.state.dataset_0.variable;
         }
         
         break;
     }
+    //this.render()
     
   }
 
@@ -446,6 +460,14 @@ export default class AreaWindow extends React.Component {
       >
         {_("contour_help")}
       </ContourSelector>
+
+      <SelectBox
+        key='clabel'
+        id='clabel'
+        state={this.state.clabel}
+        onChange={this.updateLabel}
+        title={_("Contour Labels")}>
+      </SelectBox>
 
       {/* Image Size Selection */}
       <ImageSize 
@@ -699,6 +721,8 @@ export default class AreaWindow extends React.Component {
                 onClick={this.updatePlot}
               >Apply Changes</Button>
 
+    //this.updatePlot()
+    
     switch(this.state.currentTab) {
       case 1:
         leftInputs = [globalSettings, mapSettings, subsetPanel, applyChanges];
@@ -717,7 +741,7 @@ export default class AreaWindow extends React.Component {
     
     
 
-    let content = <img src={Spinner} />;
+    let content;
     if (this.state.plot_query != undefined) {
       switch(this.state.currentTab) {
         case 1:
@@ -731,6 +755,8 @@ export default class AreaWindow extends React.Component {
           content = <StatsTable query={this.state.plot_query}/>;
           break;
       }
+    } else {
+      content = <img src={Spinner} />;
     }
     
 

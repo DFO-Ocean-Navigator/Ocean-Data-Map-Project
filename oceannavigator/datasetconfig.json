@@ -1,7 +1,7 @@
 {
     "giops_day": {
         "name": "GIOPS Daily",
-        "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/daily/aggregated.ncml",
         "enabled": true,
         "quantum": "day",
         "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -111,7 +111,7 @@
     },
     "riops": {
         "name": "RIOPS",
-        "url": "http://localhost:8080/thredds/dodsC/riops/daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/daily/aggregated.ncml",
         "quantum": "hour",
         "enabled": true,
         "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",

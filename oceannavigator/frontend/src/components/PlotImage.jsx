@@ -254,6 +254,9 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
+        if ('clabel' in q) {
+          query.clabel = q.clabel
+        }
         query.variable = q.variable;
         query.time = q.time;
         query.scale = q.scale;
