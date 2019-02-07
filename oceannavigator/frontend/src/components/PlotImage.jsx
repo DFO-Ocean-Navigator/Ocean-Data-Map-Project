@@ -95,6 +95,7 @@ export default class PlotImage extends React.PureComponent {
   }
 
   loadImage(query) {
+    console.warn("QUERY: ", query)
     const paramString = $.param({
       query: stringify(query),
       format: "json",
@@ -152,11 +153,26 @@ export default class PlotImage extends React.PureComponent {
       quantum: q.quantum,
       names: q.names,
     };
-
-    if (q.plotTitle !== null) {
-      query.plotTitle = q.plotTitle;
+    console.warn(q)
+    if ('title' in q) {
+      query.plotTitle = q['title'];
     }
-    
+    if ('xscale' in q) {
+      console.warn("xscale in q", q)
+      query.xscale = q['xscale']
+    }
+    if ('yscale' in q) {
+      console.warn('yscale in q', q)
+      query.yscale = q['yscale']
+    }
+
+    if ('ylabel' in q) {
+      query.ylabel = q['ylabel']
+    }
+    if ('xlabel' in q) {
+      query.xlabel = q['xlabel']
+    }
+    console.warn("QUERY: ", query)
     switch(q.type) {
       case "profile":
       case "ts":
@@ -299,11 +315,13 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
+    console.warn("QUERY 2: ", query)
     return query;
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
+    console.warn("QUERY STRING: ", query)
     return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
