@@ -7,7 +7,7 @@
 
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
-  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
+  FormControl, Checkbox, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -36,8 +36,6 @@ export default class AreaWindow extends React.Component {
     this.state = {
       currentTab: 1, // Currently selected tab
       plot_query: undefined,
-      
-      clabel: undefined, 
 
       scale: props.scale + ",auto",
       scale_1: props.scale_1 + ",auto",
@@ -70,6 +68,7 @@ export default class AreaWindow extends React.Component {
         colormap: "default",
         levels: "auto",
         legend: true,
+        clabel: false,
         hatch: false,
       },
       size: "10x7", // Plot dimensions
@@ -262,8 +261,11 @@ export default class AreaWindow extends React.Component {
 
   updateLabel(e) {
     console.warn("LABEL VALUE: ", e.value)
+    let new_contour = this.state.contour
+    new_contour.clabel = !new_contour.clabel
+    
     this.setState({
-      clabel: e.value
+      contour: new_contour
     })
   }
 
@@ -283,9 +285,6 @@ export default class AreaWindow extends React.Component {
           scale: this.state.scale,
           name: this.props.name,
         };
-        if (this.state.clabel != undefined) {
-          plotQuery.clabel = this.state.clabel
-        }
 
         plotQuery.type = "map";
         plotQuery.colormap = this.state.leftColormap;
@@ -350,6 +349,19 @@ export default class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
+
+    let contour_label = undefined;
+    if (this.state.contour.variable != '') {
+      contour_label = <Checkbox
+        id='clabel' 
+        onChange={this.updateLabel}
+        checked={this.state.contour.clabel}
+        style={this.props.style}
+      >
+      Contour Labels
+      </Checkbox>
+    }
+    
     const mapSettings = (<Panel
       collapsible
       defaultExpanded
@@ -461,13 +473,7 @@ export default class AreaWindow extends React.Component {
         {_("contour_help")}
       </ContourSelector>
 
-      <SelectBox
-        key='clabel'
-        id='clabel'
-        state={this.state.clabel}
-        onChange={this.updateLabel}
-        title={_("Contour Labels")}>
-      </SelectBox>
+      {contour_label}
 
       {/* Image Size Selection */}
       <ImageSize 

@@ -18,7 +18,7 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         #self.size = '4x8'
 
     def plot(self):
-        print("QUERY: ", self.query)
+        
         # Create base figure
         fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
 

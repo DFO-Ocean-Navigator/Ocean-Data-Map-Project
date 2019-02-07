@@ -215,7 +215,8 @@ export default class PointWindow extends React.Component {
   onSelect(key) {
     console.warn("ON SELECT: ", key)
     this.setState({
-      selected: key
+      selected: key,
+      
     }, () => { this.updatePlot() });
   }
 

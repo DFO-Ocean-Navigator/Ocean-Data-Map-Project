@@ -39,6 +39,13 @@ export default class OceanNavigator extends React.Component {
     ReactGA.ga('send', 'pageview')
 
     this.state = {
+
+      _foundation: true,
+      _environment: true,
+      _intelligence: true,
+      _derived: true,
+      _planning: true,
+
       dataset: "giops_day",
       variable: "votemper",
       variable_scale: [-5,30], // Default variable range for left/Main Map
@@ -83,6 +90,8 @@ export default class OceanNavigator extends React.Component {
         bathymetry: true,           // Show bathymetry contours
       },
     };
+
+
 
     this.mapComponent = null;
     this.mapComponent2 = null;

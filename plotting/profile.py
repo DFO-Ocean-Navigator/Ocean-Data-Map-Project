@@ -97,7 +97,7 @@ class ProfilePlotter(plPoint.PointPlotter):
     def plot(self):
         # Create base figure
         fig = plt.figure(figsize = self.figuresize(), dpi = self.dpi)
-        print("SELF: ", self.query)
+        
         # Setup figure layout
         width = len(self.variables)
         if self.showmap:

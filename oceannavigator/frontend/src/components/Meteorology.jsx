@@ -16,8 +16,6 @@ const i18n = require("../i18n.js");
 export default class Meteorology extends React.Component {
   constructor(props) {
     super(props);
-
-    
   }
 
   render() {    
