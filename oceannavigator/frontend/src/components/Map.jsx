@@ -1175,9 +1175,6 @@ export default class Map extends React.PureComponent {
     var feat;
     switch(type) {
       case "point":
-        this.props.updateState('point', data)
-        this.props.updateState('modal', 'point')
-        this.props.updateState('names', data[0])
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
@@ -1203,30 +1200,18 @@ export default class Map extends React.PureComponent {
         }
         break;
       case "line":
-        this.props.updateState('line', [data])
-        this.props.updateState('modal', 'line')
-        this.props.updateState('names', data)
         geom = new ol.geom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
-        
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
           name: name,
           type: "line",
         });
-        //this.props.action("add", "line", points);
         this.vectorSource.addFeature(feat);
         break;
       case "area":
-        this.props.updateState('area', [{
-          'innerrings': [],
-          'name': '',
-          'polygons': [data]
-        }])
-        this.props.updateState('modal', 'area')
-        this.props.updateState('names', data)
         geom = new ol.geom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
