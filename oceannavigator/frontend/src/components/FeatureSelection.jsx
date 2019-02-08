@@ -19,31 +19,61 @@ export default class SettingsTab extends React.Component {
     };
 
     // Function bindings
-    this.handleTabs = this.handleTabs.bind(this);
     this.updateFeature = this.updateFeature.bind(this);
   }
 
   updateFeature(e) {
-    console.warn("ID: ", e.id)
-    this.props.globalUpdate(e.id, !this.props.state[id])
+    console.warn("e: ", e)
+    console.warn("e.key: ", e.target.id)
+    this.props.globalUpdate(e.target.id, !this.props.state[e.target.id])
   }
  
   render() {
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
     
     return (
-      <div className={className}>
-        
-        <Checkbox
-            id='foundation'
-            state={this.props.state._foundation}
-            onChange={this.updateFeature}
+        <Panel
+              collapsible
+              defaultExpanded
+              header={_("Enabled Features")}
+              bsStyle='primary'
         >
-            Foundation
-        </Checkbox>
-
-      </div>
-        
+          <Checkbox
+              id='_foundation'
+              checked={this.props.state._foundation}
+              onChange={this.updateFeature}
+          >
+              Foundation
+          </Checkbox>
+          <Checkbox
+              id='_environment'
+              checked={this.props.state._environment}
+              onChange={this.updateFeature}
+          >
+              Environment
+          </Checkbox>
+          <Checkbox
+              id='_intelligence'
+              checked={this.props.state._intelligence}
+              onChange={this.updateFeature}
+          >
+              Intelligence
+          </Checkbox>
+          <Checkbox
+              id='_derived'
+              checked={this.props.state._derived}
+              onChange={this.updateFeature}
+          >
+              Derived Products
+          </Checkbox>
+          <Checkbox
+              id='_planning'
+              checked={this.props.state._planning}
+              onChange={this.updateFeature}
+          >
+              Planning Tools
+          </Checkbox>
+        </Panel>
 
     );
   }

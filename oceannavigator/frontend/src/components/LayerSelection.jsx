@@ -90,31 +90,31 @@ export default class LayerSelection extends React.Component {
 
         let enabled_layers = [];
 
-        if (this._foundation === true) {
+        if (this.props.state._foundation === true) {
             console.warn("FOUNDATION")
             enabled_layers.push(<NavItem className={this.state.buttons[0]} eventKey={1}>
                 <div className='vertical'>Foundation</div>
             </NavItem>)
         }
-        if (this._environment === true) {
+        if (this.props.state._environment === true) {
             console.warn("ENVIRONMENT")
             enabled_layers.push(<NavItem className={this.state.buttons[1]} eventKey={2}>
                 <div className='vertical'>Environment</div>
             </NavItem>)
         }
-        if (this._intelligence === true) {
+        if (this.props.state._intelligence === true) {
             console.warn("INTELLIGENCE")
             enabled_layers.push(<NavItem className={this.state.buttons[2]} eventKey={3}>
                 <div className='vertical'>Intelligence</div>
             </NavItem>)
         }
-        if (this._derived === true) {
+        if (this.props.state._derived === true) {
             console.warn("DERIVED")
             enabled_layers.push(<NavItem className={this.state.buttons[3]} eventKey={4}>
                 <div className='vertical'>Derived Products</div>
             </NavItem>)
         }
-        if (this._planning === true) {
+        if (this.props.state._planning === true) {
             console.warn("PLANNING")
             enabled_layers.push(<NavItem className={this.state.buttons[4]} eventKey={5}>
                 <div className='vertical'>Planning Tools</div>
