@@ -86,9 +86,9 @@ def _metpy(func, data, lat, lon, dim):
             *data.shape[-2:]))
 
         result = []
-        for j in range(0, len(u)):
+        for j in range(0, len(data)):
             result.append(
-                func(np.array(u[j]), deltas=deltas)[dim_order.index(dim)].magnitude
+                func(np.array(data[j]), deltas=deltas)[dim_order.index(dim)].magnitude
             )
 
         result = np.array(result)
