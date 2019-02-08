@@ -70,25 +70,12 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
         # Plot TS Diagram
         plt.subplot(gs[:, 1 if self.showmap else 0])
 
-        smin = 0
-        smax = 0
-        if 'xscale' in self.query:
-            smin = float(self.query['xscale'][0])
-            smax = float(self.query['xscale'][1])
-        else:
-            smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
-            smax = np.amax(self.salinity) + (np.amax(self.salinity) * 0.01)
-
-        tmin = 0
-        tmax = 0
-        if 'yscale' in self.query:
-            tmin = float(self.query['yscale'][1])
-            tmax = float(self.query['yscale'][0])
-        else:
-            tmin = np.amin(self.temperature) - (
-                np.abs(np.amax(self.temperature) * 0.1))
-            tmax = np.amax(self.temperature) + (
-                np.abs(np.amax(self.temperature) * 0.1))
+        smin = np.amin(self.salinity) - (np.amin(self.salinity) * 0.01)
+        smax = np.amax(self.salinity) + (np.amax(self.salinity) * 0.01)
+        tmin = np.amin(self.temperature) - (
+            np.abs(np.amax(self.temperature) * 0.1))
+        tmax = np.amax(self.temperature) + (
+            np.abs(np.amax(self.temperature) * 0.1))
 
         xdim = int(round((smax - smin) / 0.1 + 1, 0))
         ydim = int(round((tmax - tmin) + 1, 0))
@@ -109,16 +96,9 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], '-')
 
-        if 'xlabel' in self.query:
-            plt.xlabel(self.query['xlabel'], fontsize=14)
-        else:
-            plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
+        plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
+        plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
         
-        if 'ylabel' in self.query:
-            plt.ylabel(self.query['ylabel'], fontsize=14)
-        else:
-            plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
-
         if len(self.points) == 1:
             labels = []
             for idx, d in enumerate(self.temperature_depths[0]):

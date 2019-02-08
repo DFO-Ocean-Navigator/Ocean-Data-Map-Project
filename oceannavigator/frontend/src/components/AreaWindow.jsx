@@ -21,7 +21,6 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
-import Spinner from '../images/spinner.gif';
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -35,8 +34,6 @@ export default class AreaWindow extends React.Component {
     
     this.state = {
       currentTab: 1, // Currently selected tab
-      plot_query: undefined,
-      
       scale: props.scale + ",auto",
       scale_1: props.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
@@ -91,12 +88,10 @@ export default class AreaWindow extends React.Component {
     this.onTabChange = this.onTabChange.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.saveScript = this.saveScript.bind(this);
-    this.updatePlot = this.updatePlot.bind(this);
   }
 
   componentDidMount() {
     this._mounted = true;
-    this.updatePlot();
   }
 
   componentWillUnmount() {
@@ -255,70 +250,6 @@ export default class AreaWindow extends React.Component {
     this.setState({
       currentTab: index,
     });
-  }
-
-  updatePlot() {
-    
-    console.warn("UPDATING -------")
-
-    switch(this.state.currentTab) {
-      case 1:
-        let plotQuery = undefined
-        
-        if (this.state.plot_query === undefined) {
-          plotQuery = {
-            dataset: this.state.dataset_0.dataset,
-            quantum: this.state.dataset_0.dataset_quantum,
-            scale: this.state.scale,
-            name: this.props.name,
-          };
-        } else {
-          plotQuery = this.state.plot_query;
-        }
-
-        plotQuery.type = "map";
-        plotQuery.colormap = this.state.leftColormap;
-        plotQuery.time = this.state.dataset_0.time;
-        plotQuery.area = this.props.area;
-        plotQuery.depth = this.state.dataset_0.depth;
-        plotQuery.bathymetry = this.state.bathymetry;
-        plotQuery.quiver = this.state.quiver;
-        plotQuery.contour = this.state.contour;
-        plotQuery.showarea = this.state.showarea;
-        plotQuery.variable = this.state.dataset_0.variable; 
-        plotQuery.projection = this.props.projection;
-        plotQuery.size = this.state.size;
-        plotQuery.dpi = this.state.dpi;
-        plotQuery.interp = this.props.options.interpType;
-        plotQuery.radius = this.props.options.interpRadius;
-        plotQuery.neighbours = this.props.options.interpNeighbours;
-        plotQuery.plotTitle = this.state.plotTitle;
-        if (this.props.dataset_compare) {
-          plotQuery.compare_to = this.props.dataset_1;
-          plotQuery.compare_to.scale = this.state.scale_1;
-          plotQuery.compare_to.scale_diff = this.state.scale_diff;
-          plotQuery.compare_to.colormap = this.state.rightColormap;
-          plotQuery.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-
-        this.setState({
-          plot_query: plotQuery 
-        })
-        break;
-      case 2:
-        plot_query.time = this.state.dataset_0.time;
-        plot_query.area = this.props.area;
-        plot_query.depth = this.state.dataset_0.depth;
-        if (Array.isArray(this.state.dataset_0.variable)) {
-          // Multiple variables were selected
-          plot_query.variable = this.state.dataset_0.variable.join(",");
-        } else {
-          plot_query.variable = this.state.dataset_0.variable;
-        }
-        
-        break;
-    }
-    
   }
 
   render() {
@@ -693,46 +624,70 @@ export default class AreaWindow extends React.Component {
     </div>;
 
     let leftInputs = [];
-    let rightInputs = [];    
-    
-    let applyChanges = <Button
-                onClick={this.updatePlot}
-              >Apply Changes</Button>
+    let rightInputs = [];
+    const plot_query = {
+      dataset: this.state.dataset_0.dataset,
+      quantum: this.state.dataset_0.dataset_quantum,
+      scale: this.state.scale,
+      name: this.props.name,
+    };
 
+    let content = null;
     switch(this.state.currentTab) {
       case 1:
-        leftInputs = [globalSettings, mapSettings, subsetPanel, applyChanges];
-        
+        plot_query.type = "map";
+        plot_query.colormap = this.state.leftColormap;
+        plot_query.time = this.state.dataset_0.time;
+        plot_query.area = this.props.area;
+        plot_query.depth = this.state.dataset_0.depth;
+        plot_query.bathymetry = this.state.bathymetry;
+        plot_query.quiver = this.state.quiver;
+        plot_query.contour = this.state.contour;
+        plot_query.showarea = this.state.showarea;
+        plot_query.variable = this.state.dataset_0.variable; 
+        plot_query.projection = this.props.projection;
+        plot_query.size = this.state.size;
+        plot_query.dpi = this.state.dpi;
+        plot_query.interp = this.props.options.interpType;
+        plot_query.radius = this.props.options.interpRadius;
+        plot_query.neighbours = this.props.options.interpNeighbours;
+        plot_query.plotTitle = this.state.plotTitle;
         if (this.props.dataset_compare) {
-          rightInputs = [dataset, compare_dataset]
-        } else {
-          rightInputs = [dataset];
+          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.scale = this.state.scale_1;
+          plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.rightColormap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
+
+        leftInputs = [globalSettings, mapSettings, subsetPanel]; //Left Sidebar
+        rightInputs = [dataset];  //Right Sidebar
+
+        if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
+          rightInputs.push(compare_dataset);
+        }
+        content = <PlotImage
+          query={plot_query} // For image saving link.
+          permlink_subquery={this.state}
+          action={this.props.action}
+        />;
         break;
       case 2:
-        leftInputs = [globalSettings, dataset, applyChanges];
+        plot_query.time = this.state.dataset_0.time;
+        plot_query.area = this.props.area;
+        plot_query.depth = this.state.dataset_0.depth;
+        if (Array.isArray(this.state.dataset_0.variable)) {
+          // Multiple variables were selected
+          plot_query.variable = this.state.dataset_0.variable.join(",");
+        } else {
+          plot_query.variable = this.state.dataset_0.variable;
+        }
+        
+        leftInputs = [globalSettings, dataset];
+
+        content = <StatsTable query={plot_query}/>;
         break;
     }
-    
-    
-    
-
-    let content = <img src={Spinner} />;
-    if (this.state.plot_query != undefined) {
-      switch(this.state.currentTab) {
-        case 1:
-          content = <PlotImage
-            query={this.state.plot_query} // For image saving link.
-            permlink_subquery={this.state}
-            action={this.props.action}
-          />;
-          break;
-        case 2:
-          content = <StatsTable query={this.state.plot_query}/>;
-          break;
-      }
-    }
-    
 
     return (
       <div className='AreaWindow Window'>

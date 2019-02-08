@@ -149,13 +149,13 @@ def scale_v0(dataset: str, variable: str, scale: str):
     return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 
-@bp_v0_0.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:masked>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, zoom: int, x: int, y: int):
+@bp_v0_0.route('/tiles/v0.1/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     
     if (timestamp_outOfBounds(dataset, time)):
         raise ValueError
     
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, masked, zoom, x, y)
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
 
 
 @bp_v0_0.route('/tiles/topo/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
