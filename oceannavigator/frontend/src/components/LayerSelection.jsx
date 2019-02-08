@@ -25,8 +25,7 @@ export default class LayerSelection extends React.Component {
           panels: ['hiddenPanel', 'currentPanel', 'hiddenPanel', 'hiddenPanel', 'hiddenPanel', 'hiddenPanel'],
           buttons: ['hiddenButton', 'currentButton', 'hiddenButton', 'hiddenButton', 'hiddenButton', 'hiddenButton']
         };
-        this._DFO = true;
-
+        
         if (true) {
             this._foundation = true;
             this._environment = true;
@@ -89,34 +88,36 @@ export default class LayerSelection extends React.Component {
     render() {
 
         let enabled_layers = [];
-
-        if (this.props.state._foundation === true) {
+        console.warn("allowedTabs: ", this.props.state.allowedTabs)
+        console.warn('_foundation' in this.props
+        )
+        if (this.props.state._foundation === true && this.props.state.allowedTabs['_foundation'] === true) {
             console.warn("FOUNDATION")
-            enabled_layers.push(<NavItem className={this.state.buttons[0]} eventKey={1}>
+            enabled_layers.push(<NavItem key='_foundation' className={this.state.buttons[0]} eventKey={1}>
                 <div className='vertical'>Foundation</div>
             </NavItem>)
         }
-        if (this.props.state._environment === true) {
+        if (this.props.state._environment === true && this.props.state.allowedTabs['_environment'] === true) {
             console.warn("ENVIRONMENT")
-            enabled_layers.push(<NavItem className={this.state.buttons[1]} eventKey={2}>
+            enabled_layers.push(<NavItem key='_environment' className={this.state.buttons[1]} eventKey={2}>
                 <div className='vertical'>Environment</div>
             </NavItem>)
         }
-        if (this.props.state._intelligence === true) {
+        if (this.props.state._intelligence === true && this.props.state.allowedTabs['_intelligence'] === true) {
             console.warn("INTELLIGENCE")
             enabled_layers.push(<NavItem className={this.state.buttons[2]} eventKey={3}>
                 <div className='vertical'>Intelligence</div>
             </NavItem>)
         }
-        if (this.props.state._derived === true) {
+        if (this.props.state._derived === true && this.props.state.allowedTabs['_derived'] === true) {
             console.warn("DERIVED")
-            enabled_layers.push(<NavItem className={this.state.buttons[3]} eventKey={4}>
+            enabled_layers.push(<NavItem key='_derived' className={this.state.buttons[3]} eventKey={4}>
                 <div className='vertical'>Derived Products</div>
             </NavItem>)
         }
-        if (this.props.state._planning === true) {
+        if (this.props.state._planning === true && this.props.state.allowedTabs['_planning']) {
             console.warn("PLANNING")
-            enabled_layers.push(<NavItem className={this.state.buttons[4]} eventKey={5}>
+            enabled_layers.push(<NavItem key='_planning' className={this.state.buttons[4]} eventKey={5}>
                 <div className='vertical'>Planning Tools</div>
             </NavItem>)
         }

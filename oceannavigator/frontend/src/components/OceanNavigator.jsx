@@ -43,8 +43,16 @@ export default class OceanNavigator extends React.Component {
       _foundation: true,
       _environment: true,
       _intelligence: true,
-      _derived: true,
+      _derived: false,
       _planning: true,
+
+      allowedTabs: {
+        _foundation: true,
+        _environment: true,
+        _intelligence: false,
+        _derived: true,
+        _planning: false,
+      },
 
       dataset: "giops_day",
       variable: "votemper",

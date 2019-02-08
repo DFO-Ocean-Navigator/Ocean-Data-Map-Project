@@ -76,6 +76,10 @@ body {
         float: right;
         width: 86.25%;
 
+        .Range {
+            display: inline-block
+        }
+
         .settings {
             background-color: #006687;
             float: bottom;

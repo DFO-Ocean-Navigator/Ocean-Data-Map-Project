@@ -30,7 +30,32 @@ export default class SettingsTab extends React.Component {
  
   render() {
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
-    
+    let all_tabs = {
+      _foundation: 'Foundation',
+      _environment: 'Environment',
+      _intelligence: 'Intelligence',
+      _derived: 'Derived Products',
+      _planning: 'Planning Tools'
+
+    }
+    let check_boxes = []
+
+    for (let tab in this.props.state.allowedTabs) {
+      console.warn("TAB: ", tab)
+      if (this.props.state.allowedTabs[tab] === true) {
+        check_boxes.push(<Checkbox
+          id={tab}
+          key={tab}
+          checked={this.props.state[tab]}
+          onChange={this.updateFeature}
+        >
+          {all_tabs[tab]}
+        </Checkbox>)
+      }
+      
+    }
+
+
     return (
         <Panel
               collapsible
@@ -38,6 +63,10 @@ export default class SettingsTab extends React.Component {
               header={_("Enabled Features")}
               bsStyle='primary'
         >
+
+        {check_boxes}
+
+        {/*
           <Checkbox
               id='_foundation'
               checked={this.props.state._foundation}
@@ -73,6 +102,8 @@ export default class SettingsTab extends React.Component {
           >
               Planning Tools
           </Checkbox>
+        */}
+          
         </Panel>
 
     );
