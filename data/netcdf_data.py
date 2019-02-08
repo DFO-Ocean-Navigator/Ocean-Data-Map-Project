@@ -430,7 +430,7 @@ class NetCDFData(Data):
         Returns the value of a given variable name from the dataset
     """
     def get_dataset_variable(self, key: str):
-        return self.get_dataset_variable(key)
+        return self._dataset.variables[key]
 
     """
         Returns a list of all data variables and their 
@@ -449,7 +449,7 @@ class NetCDFData(Data):
             for name in variables:
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
-                var = self.get_dataset_variable(name)
+                var = self._dataset.variables[name]
                 if (len(var.dims) == 0):
                     continue
 
