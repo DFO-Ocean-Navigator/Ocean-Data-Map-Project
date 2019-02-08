@@ -91,11 +91,6 @@ class ObservationPlotter(plPoint.PointPlotter):
 
             point_data = self.apply_scale_factors(point_data)
 
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
-
         self.data = point_data
         self.observation_time = observation_time
         self.observation_times = observation_times

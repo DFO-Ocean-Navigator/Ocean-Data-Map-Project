@@ -168,10 +168,6 @@ class DrifterPlotter(Plotter):
             for idx, sf in enumerate(scale_factors):
                 model_data[idx, :] = np.multiply(model_data[idx, :], sf)
 
-            for idx, u in enumerate(variable_units):
-                variable_units[idx], model_data[idx, :] = \
-                    self.kelvin_to_celsius(u, model_data[idx, :])
-
             self.model_data = model_data
             self.model_times = list(map(datetime.datetime.utcfromtimestamp, mt))
             self.variable_names = variable_names

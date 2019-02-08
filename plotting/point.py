@@ -105,23 +105,6 @@ class PointPlotter(pl.Plotter):
             if factor != 1.0:
                 data[:, idx, :] = np.multiply(data[:, idx, :], factor)
 
-    def kelvin_to_celsius(self, units, data):
-        ureg = pint.UnitRegistry()
-        for idx, unit in enumerate(units):
-            try:
-                u = ureg.parse_units(unit.lower())
-            except:
-                u = ureg.dimensionless
-
-            if u == ureg.kelvin:
-                units[idx] = "Celsius"
-                data[:, idx, :] = ureg.Quantity(
-                    data[:, idx, :],
-                    u
-                ).to(ureg.celsius).magnitude
-
-        return (units, data)
-
     def apply_scale_factors(self, data):
         for idx, factor in enumerate(self.scale_factors):
             if factor != 1.0:

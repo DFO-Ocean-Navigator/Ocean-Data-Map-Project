@@ -719,10 +719,6 @@ def get_point_data(dataset, variable, time, depth, location):
             variable_name = dsc.variable[ds.variables[v]].name
             variable_unit = dsc.variable[ds.variables[v]].unit
 
-            if variable_unit.startswith("Kelvin"):
-                variable_unit = "Celsius"
-                d = np.add(d, -273.15)
-
             data.append(d)
             names.append(variable_name)
             units.append(variable_unit)

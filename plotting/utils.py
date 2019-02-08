@@ -61,6 +61,8 @@ def normalize_scale(data, variable_config):
 def mathtext(text):
     if re.search(r"[Cc]elsius", text):
         text = re.sub(r"(degree[_ ])?[Cc]elsius", '\u00b0C', text)
+    if re.search(r"[Kk]elvin", text):
+        text = re.sub(r"(degree[_ ])?[Kk]elvin", '\u00b0K', text)
     if re.search(r"-[0-9]", text):
         text = re.sub(r" ([^- ])-1", r"/\1", text)
         text = re.sub(r" ([^- ])-([2-9][0-9]*)", r"/\1^\2", text)

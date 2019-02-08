@@ -359,27 +359,3 @@ class Plotter(metaclass=ABCMeta):
             for legobj in legend.legendHandles:
                 legobj.set_linewidth(4.0)
 
-    def vector_name(self, name):
-        n = re.sub(
-            r"(?i)( x | y |zonal |meridional |northward |eastward | east | north)",
-            " ",
-            name
-        )
-        return re.sub(r" +", " ", n)
-
-    # Convert Kelvin to Celsius
-    def kelvin_to_celsius(self, unit, data):
-        ureg = pint.UnitRegistry()
-        try:
-            u = ureg.parse_units(unit.lower())
-        except:
-            u = ureg.dimensionless
-
-        if u == ureg.boltzmann_constant:
-            u = ureg.kelvin
-
-        if u == ureg.kelvin:
-            unit = "Celsius"
-            data = ureg.Quantity(data, u).to(ureg.celsius).magnitude
-
-        return (unit, data)

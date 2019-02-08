@@ -17,6 +17,7 @@ import datetime
 import uuid
 import pandas
 import zipfile
+import pint
 
 
 class NetCDFData(Data):
@@ -295,9 +296,25 @@ class NetCDFData(Data):
                 temp_data = np.reshape(temp_data, (origshape[0], origshape[1], GRID_RESOLUTION, GRID_RESOLUTION))
                 
                 temp = ds.createVariable('water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                # Convert from Kelvin to Celcius
-                for i in range(0, len(subset[depth_var][:])):
-                    temp[:,i, :, :] = temp_data[:,i,:,:] - 273.15
+
+                # Convert from Kelvin to Celsius
+                ureg = pint.UnitRegistry()
+                try:
+                    u = ureg.parse_units(subset[temp_var].units.lower())
+                except:
+                    u = ureg.dimensionless
+
+                if u == ureg.boltzmann_constant:
+                    u = ureg.kelvin
+
+                if u == ureg.kelvin:
+                    for i in range(0, len(subset[depth_var][:])):
+                        temp[:,i, :, :] = temp_data[:,i,:,:] - 273.15
+
+                else:
+                    for i in range(0, len(subset[depth_var][:])):
+                        temp[:,i, :, :] = temp_data[:,i,:,:]
+
                 temp.valid_min = -100.0
                 temp.valid_max = 100.0
                 temp.long_name = "Water Temperature"

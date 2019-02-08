@@ -25,8 +25,7 @@ class StickPlotter(plPoint.PointPlotter):
             "Time",
         ]
         columns.extend([
-            "%s (%s)" % (self.vector_name(self.variable_names[0]),
-                         self.variable_units[0]),
+            "%s (%s)" % (self.variable_name, self.variable_units[0]),
             "%s (%s)" % (self.variable_names[0], self.variable_units[0]),
             "%s (%s)" % (self.variable_names[1], self.variable_units[1]),
             "Bearing (degrees clockwise positive from North)"
@@ -142,7 +141,7 @@ class StickPlotter(plPoint.PointPlotter):
                         ])
                     if self.plotTitle is None or self.plotTitle == "":  
                         a.set_title(gettext("%s at (%s)\n%s") % (
-                            self.vector_name(self.variable_names[0]),
+                            self.variable_name,
                             self.names[idx],
                             depth
                         ), fontsize=15)
@@ -171,6 +170,8 @@ class StickPlotter(plPoint.PointPlotter):
             timestamp = dataset.timestamps[start:end + 1]
 
             self.load_misc(dataset, self.variables)
+            self.variable_name = self.get_vector_variable_name(dataset,
+                    self.variables)
 
             point_data = []
             point_depth = []
@@ -202,12 +203,7 @@ class StickPlotter(plPoint.PointPlotter):
 
             for idx, factor in enumerate(self.scale_factors):
                 if factor != 1.0:
-                    point_data[idx] = np.multiply(point_data[idx], factor)
-
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
+                    point_data[:, idx] = np.multiply(point_data[:, idx], factor)
 
         self.data = self.subtract_other(point_data)
         self.data_depth = point_depth

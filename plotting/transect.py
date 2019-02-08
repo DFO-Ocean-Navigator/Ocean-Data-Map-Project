@@ -103,14 +103,11 @@ class TransectPlotter(pl.LinePlotter):
 
                 value = np.multiply(value, scale_factors[0])
 
-            # Get variable units and convert to Celsius if needed
-            variable_units[0], value = self.kelvin_to_celsius(
-                variable_units[0],
-                value
-            )
-
             if len(self.variables) == 2:
-                variable_names[0] = self.vector_name(variable_names[0])
+                variable_names = [self.get_vector_variable_name(dataset,
+                    self.variables)]
+                variable_units = [self.get_vector_variable_unit(dataset,
+                    self.variables)]
 
             # If a colourmap has not been manually specified by the
             # Navigator...
@@ -146,10 +143,6 @@ class TransectPlotter(pl.LinePlotter):
                 surface_name = vc.name
                 surface_factor = vc.scale_factor
                 surface_value = np.multiply(surface_value, surface_factor)
-                surface_unit, surface_value = self.kelvin_to_celsius(
-                    surface_unit,
-                    surface_value
-                )
 
                 self.surface_data = {
                     "config": vc,
@@ -200,11 +193,7 @@ class TransectPlotter(pl.LinePlotter):
                                                  self.compare['time'],
                                                  self.compare['variables'][0])
                     
-                    # Get variable units and convert to Celsius if needed
-                    self.compare['unit'], climate_data = self.kelvin_to_celsius(
-                        dataset.variables[self.compare['variables'][0]].unit,
-                        climate_data
-                    )
+                    self.compare['unit'] = dataset.variables[self.compare['variables'][0]].unit
                     self.__fill_invalid_shift(climate_data)
 
                     if (self.depth.shape != cdep.shape) or \
@@ -226,8 +215,7 @@ class TransectPlotter(pl.LinePlotter):
                 # Velocity variables
                 else:
                     # Get and store the "nicely formatted" string for the variable name
-                    self.compare['name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
-                    
+                    self.compare['name'] = self.get_vector_variable_name(dataset, self.compare['variables'])
                     
                     climate_pts, climate_distance, climate_x, cdep = \
                         dataset.get_path_profile(
@@ -479,7 +467,7 @@ class TransectPlotter(pl.LinePlotter):
             figuresize[1] *= len(self.variables) * 3 # Vertical scaling of figure
             if velocity:
                 figuresize[0] *= 1.25 # Horizontal scaling of figure
-                gs = gridspec.GridSpec(4, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1, 1])
+                gs = gridspec.GridSpec(4, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1])
             else:
                 gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
         else:
@@ -569,7 +557,7 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [Row, Col],
                     self.transect_data['parallel'],
-                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
                     gettext("Parallel"),
                     vmin,
                     vmax,
@@ -582,7 +570,7 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [Row, Col],
                     self.transect_data['perpendicular'],
-                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
                     gettext("Perpendicular"),
                     vmin,
                     vmax,
@@ -620,7 +608,7 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [0, Col],
                     self.transect_data['parallel'],
-                    gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
                     gettext("Parallel"),
                     vmin,
                     vmax,
@@ -631,7 +619,7 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [0, Col],
                     self.transect_data['perpendicular'],
-                    gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
                     gettext("Perpendicular"),
                     vmin,
                     vmax,
@@ -660,7 +648,7 @@ class TransectPlotter(pl.LinePlotter):
                     do_plot(
                         gs, [1, Col],
                         self.compare['parallel'],
-                        gettext("Parallel Velocity") + gettext(" for ") + self.date_formatter(self.compare['date']),
+                        self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.compare['date']),
                         gettext("Parallel"),
                         vmin,
                         vmax,
@@ -671,7 +659,7 @@ class TransectPlotter(pl.LinePlotter):
                     do_plot(
                         gs, [1, Col],
                         self.compare['perpendicular'],
-                        gettext("Perpendicular Velocity") + gettext(" for ") + self.date_formatter(self.compare['date']),
+                        self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.compare['date']),
                         gettext("Perpendicular"),
                         vmin,
                         vmax,

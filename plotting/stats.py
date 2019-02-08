@@ -116,10 +116,6 @@ class Stats:
                 if scale_factor != 1.0:
                     d = np.multiply(d, scale_factor)
 
-                if variable_unit.startswith("Kelvin"):
-                    variable_unit = "Celsius"
-                    d = d - 273.15
-
                 lon[np.where(lon > 180)] -= 360
 
                 if len(var.dimensions) == 3:

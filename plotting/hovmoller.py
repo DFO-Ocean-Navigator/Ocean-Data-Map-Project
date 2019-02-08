@@ -69,8 +69,8 @@ class HovmollerPlotter(plLine.LinePlotter):
 
                 value = np.sqrt(np.ma.sum(v, axis=0))
                 
-                self.variable_name = self.get_variable_names(dataset, self.variables)[0]
-                self.variable_name = self.vector_name(self.variable_name)
+                self.variable_name = self.get_vector_variable_name(dataset,
+                        self.variables)
             else:
                 self.path_points, self.distance, t, value = dataset.get_path(
                     self.points,
@@ -115,8 +115,9 @@ class HovmollerPlotter(plLine.LinePlotter):
                         v.append(value ** 2)
 
                     value = np.sqrt(np.ma.sum(v, axis=0))
-                    self.compare['variable_name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
-                    self.compare['variable_name'] = self.vector_name(self.compare['variable_name'])
+                    self.compare['variable_name'] = \
+                            self.get_vector_variable_name(dataset,
+                                    self.compare['variables'])
                 else:
                     path, distance, t, value = dataset.get_path(
                         self.points,

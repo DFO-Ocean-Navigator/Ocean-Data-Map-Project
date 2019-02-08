@@ -211,9 +211,6 @@ class MapPlotter(pl.Plotter):
                 else:
                     self.cmap = colormap.colormaps.get('speed')
 
-            if len(self.variables) == 2:
-                self.variable_name = self.vector_name(self.variable_name)
-
             if self.depth == 'bottom':
                 depth_value_map = 'Bottom'
             else:
@@ -250,8 +247,6 @@ class MapPlotter(pl.Plotter):
                     )
 
                 d = np.multiply(d, scale_factor)
-                self.variable_unit, d = self.kelvin_to_celsius(
-                    self.variable_unit, d)
 
                 data.append(d)
                 if self.filetype not in ['csv', 'odv', 'txt']:
@@ -305,7 +300,9 @@ class MapPlotter(pl.Plotter):
                     )
                     quiver_data_fullgrid.append(d)
 
-                self.quiver_name = self.vector_name(quiver_name)
+                self.quiver_name = self.get_vector_variable_name(
+                    dataset, self.quiver['variable']
+                )
                 self.quiver_longitude = quiver_lon
                 self.quiver_latitude = quiver_lat
                 self.quiver_unit = quiver_unit
@@ -332,7 +329,6 @@ class MapPlotter(pl.Plotter):
                 contour_unit = vc.unit
                 contour_name = vc.name
                 contour_factor = vc.scale_factor
-                contour_unit, d = self.kelvin_to_celsius(contour_unit, d)
                 d = np.multiply(d, contour_factor)
                 contour_data.append(d)
                 self.contour_unit = contour_unit
@@ -364,10 +360,6 @@ class MapPlotter(pl.Plotter):
                     data = np.sqrt(data[0] ** 2 + data[1] ** 2)
                 else:
                     data = data[0]
-
-                u, data = self.kelvin_to_celsius(
-                    dataset.variables[self.compare['variables'][0]].unit,
-                    data)
 
                 self.data -= data
 

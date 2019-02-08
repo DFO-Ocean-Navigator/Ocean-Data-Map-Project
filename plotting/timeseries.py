@@ -292,8 +292,10 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                     dataset.variables[self.variables[0]]
                 ].name
             else:
-                self.variable_name = self.vector_name(self.variable_names[0])
-                self.variable_unit = self.variable_units[0]
+                self.variable_name = self.get_vector_variable_name(dataset,
+                        self.variables)
+                self.variable_unit = self.get_vector_variable_unit(dataset,
+                        self.variables)
             var = self.variables[0]
             if self.depth != 'all' and self.depth != 'bottom' and \
                 (set(dataset.variables[var].dimensions) &
@@ -350,12 +352,6 @@ class TimeseriesPlotter(plPoint.PointPlotter):
 
             # depths = dataset.depths
             depths = dep
-
-        # TODO: pint
-        if self.variable_unit.startswith("Kelvin"):
-            self.variable_unit = "Celsius"
-            for idx, v in enumerate(self.variables):
-                point_data[:, idx, :] = point_data[:, idx, :] - 273.15
 
         if point_data.shape[1] == 2:
             # Under the current API this indicates that velocity data is being

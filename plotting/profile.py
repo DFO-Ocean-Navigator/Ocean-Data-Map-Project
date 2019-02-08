@@ -32,11 +32,6 @@ class ProfilePlotter(plPoint.PointPlotter):
             point_data, point_depths = self.get_data(d, self.variables, time)
             point_data = self.apply_scale_factors(point_data)
 
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
-
         self.data = self.subtract_other(point_data)
         self.depths = point_depths
         self.timestamp = timestamp

@@ -121,6 +121,21 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         self.pressure = [seawater.pres(self.temperature_depths[idx], ll[0])
                          for idx, ll in enumerate(self.points)]
 
+        ureg = pint.UnitRegistry()
+        try:
+            u = ureg.parse_units(self.variable_units[0].lower())
+        except:
+            u = ureg.dimensionless
+
+        if u == ureg.boltzmann_constant:
+            u = ureg.kelvin
+
+        if u == ureg.kelvin:
+            unit = "Celsius"
+            temperature_c = ureg.Quantity(self.temperature, u).to(ureg.celsius).magnitude
+        else:
+            temperature_c = self.temperature
+
         self.sspeed = seawater.svel(
-            self.salinity, self.temperature, self.pressure
+            self.salinity, temperature_c, self.pressure
         )

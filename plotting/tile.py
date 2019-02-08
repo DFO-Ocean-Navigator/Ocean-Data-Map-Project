@@ -122,9 +122,6 @@ def scale(args):
             variable_unit = config.variable[dataset.variables[variable[0]]].unit
             variable_name = config.variable[dataset.variables[variable[0]]].name
 
-    if variable_unit.startswith("Kelvin"):
-        variable_unit = "Celsius"
-
     cmap = colormap.find_colormap(variable_name)
 
     if len(variable) == 2:
@@ -210,11 +207,6 @@ def plot(projection, x, y, z, args):
     if scale_factor != 1.0:
         for idx, val in enumerate(data):
             data[idx] = np.multiply(val, scale_factor)
-
-    if variable_unit.startswith("Kelvin"):
-        variable_unit = "Celsius"
-        for idx, val in enumerate(data):
-            data[idx] = np.add(val, -273.15)
 
     if len(data) == 1:
         data = data[0]
