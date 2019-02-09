@@ -690,7 +690,8 @@ class TransectPlotter(pl.LinePlotter):
 
                 # Render Right Map
                 vmin, vmax = utils.normalize_scale(
-                        self.transect_data['compare_data'], self.compare_config)
+                        self.transect_data['compare_data'],
+                        self.compare_config.variable[",".join(self.compare['variables'])])
                 if self.showmap:
                     Col = 1
                 else:
