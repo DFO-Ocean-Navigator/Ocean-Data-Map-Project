@@ -21,6 +21,7 @@
             },
             "east_vel": {
                 "hide": "false",
+                
                 "name": "Water East Velocity",
                 "scale": [
                     -3,
