@@ -23,8 +23,6 @@ export default class SettingsTab extends React.Component {
   }
 
   updateFeature(e) {
-    console.warn("e: ", e)
-    console.warn("e.key: ", e.target.id)
     this.props.globalUpdate(e.target.id, !this.props.state[e.target.id])
   }
  
@@ -41,7 +39,6 @@ export default class SettingsTab extends React.Component {
     let check_boxes = []
 
     for (let tab in this.props.state.allowedTabs) {
-      console.warn("TAB: ", tab)
       if (this.props.state.allowedTabs[tab] === true) {
         check_boxes.push(<Checkbox
           id={tab}

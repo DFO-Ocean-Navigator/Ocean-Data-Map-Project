@@ -2,6 +2,8 @@
 import React from "react";
 import ol from "openlayers";
 import PropTypes from "prop-types";
+import { Button } from "react-bootstrap";
+import Icon from "./Icon.jsx";
 
 require("openlayers/css/ol.css");
 
@@ -190,6 +192,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
+        name: 'Ocean - Colour',
         preload: Infinity,
         source: new ol.source.XYZ({
           attributions: [
@@ -210,11 +213,14 @@ export default class Map extends React.PureComponent {
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
         preload: Infinity,
+        name: 'Bathymetry',
       });
 
     // Drawing layer
     this.layer_vector = new ol.layer.Vector(
       {
+        
+        name: 'Drawing',
         source: this.vectorSource,
         style: function(feat, res) {
 
@@ -1005,7 +1011,7 @@ export default class Map extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+    let display = 'colourmap,temperature'
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
@@ -1020,6 +1026,7 @@ export default class Map extends React.PureComponent {
                 `/${this.props.state.depth}` + 
                 `/${this.props.scale}` + 
                 `/0` +
+                `/${display}` +
                 `/{z}/{x}/{y}.png`;
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -1247,9 +1254,20 @@ export default class Map extends React.PureComponent {
   }
 
   render() {
+
+    let layers = []
+
+    this.map.getLayers().forEach(function(layer) {
+      if (layer['I'].name != undefined) {
+        layers.push(<div className='layerContainer'><div className='layer'>{layer['I'].name}</div><Button><Icon icon="bars"/></Button></div>)
+      }
+      })
+    
+    
     return (
       <div className='Map'>
         <div ref={(c) => this.map.setTarget(c)} />
+        
         <div
           className='title ol-popup'
           ref={(c) => this.popupElement = c}
@@ -1266,6 +1284,9 @@ export default class Map extends React.PureComponent {
         </div>      
         
         <div ref={(c) => this.infoPopupContent = c}></div>
+        </div>
+        <div className='layerHierarchy'>
+          {layers}
         </div>
       </div>
     );

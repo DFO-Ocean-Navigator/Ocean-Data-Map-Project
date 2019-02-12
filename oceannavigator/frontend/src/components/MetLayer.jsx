@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import DisplayType from "./DisplayType.jsx";
 import ol from "openlayers";
 import ReactSimpleRange from "react-simple-range";
+import IceComboBox from "./IceComboBox.jsx";
 const i18n = require("../i18n.js");
 
 export default class MetLayer extends React.Component {
@@ -26,17 +27,19 @@ export default class MetLayer extends React.Component {
       layerState: 'Add Ice',
       dataset_quantum: 'day',
       depth: 0,
-      scale_1: "0,60000",
+      scale_1: "0,1",
       scale: "0,1",
       setDefaultScale: false,
-      default_scale: "0,60000",
+      default_scale: "0,1",
       opacity: 50,
-
+      display: 'contours,default',
       datainfo: {},
 
       variables: [],
       datasets: [],
-
+      colourmaps_val: [],
+      colourmap: 'default',
+      current_display: 'contours',
       current_variable: undefined,
       current_dataset: undefined,
     };
@@ -203,6 +206,7 @@ export default class MetLayer extends React.Component {
                 `/0` + 
                 `/${this.state.scale_1}` + 
                 `/1` +
+                `/${this.state.current_display},${this.state.colourmap}` +
                 `/{z}/{x}/{y}.png`;
     
     props.projection = this.props.state.projection;
@@ -370,6 +374,21 @@ export default class MetLayer extends React.Component {
           {_("contour_help")}
         </ContourSelector>
         */}
+
+        <IceComboBox
+          values={this.props.state.display}
+          current={'current_display'}
+          localUpdate={this.localUpdate}
+        ></IceComboBox>
+        
+        <ComboBox
+          id='colourmap'
+          state={this.state.colourmap}
+          def={"colourmap"}
+          onUpdate={this.localUpdate}
+          url='/api/v1.0/colormaps/'
+          title={_("Colour Map")}></ComboBox>
+
         <ReactSimpleRange
           className='iceSlider'
           value={this.state.opacity}
@@ -436,53 +455,6 @@ export default class MetLayer extends React.Component {
     
     return (
         <div>
-            <Panel
-              collapsible
-              defaultExpanded
-              header={_("Data Comparison")}
-              bsStyle='primary'
-            >
-              <DisplayType
-                types={this.props.state.availableTypes}
-              />
-              <Row>
-                <Col xs={9}>
-                  <SelectBox
-                    id='dataset_compare'
-                    state={this.props.state.dataset_compare}
-                    onUpdate={this.props.globalUpdate}
-                    title={_("Compare Datasets")}
-                  />
-                </Col>
-                <Col xs={3}>
-                  <Button 
-                    bsStyle="link"
-                    key='show_help'
-                    id='show_help'
-                    onClick={this.props.showHelp}
-                  >
-                    {_("Help")}
-                  </Button>
-                </Col>
-              </Row>
-              <SelectBox
-                id='syncRanges'
-                onUpdate={this.props.globalUpdate}
-                title={_("Sync Variable Ranges")}
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
-              />
-              <Button
-                bsStyle="default"
-                block
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
-                onClick={this.props.swapViews}
-              >
-                {_("Swap Views")}
-              </Button>
-              
-            </Panel>
-            
-            
             {inputs  /* Renders Side Panel */}
         </div>
     );

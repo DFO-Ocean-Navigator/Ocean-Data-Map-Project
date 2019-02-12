@@ -54,6 +54,7 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
+      display: ['colourmap', 'contours'],
       dataset: "giops_day",
       variable: "votemper",
       variable_scale: [-5,30], // Default variable range for left/Main Map

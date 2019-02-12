@@ -635,7 +635,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, zoom: int, x: int, y: int):
+def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
     """
         Produces the data tiles
     """
@@ -650,19 +650,40 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     # Render a new tile/image, then cache and send it
     #else:
 
+    display = display.split(',')
+    
     if depth != "bottom" and depth != "all":
         depth = int(depth)
-    img = plotting.tile.plot(projection, x, y, zoom, {
-        'interp': interp,
-        'radius': radius*1000,
-        'neighbours': neighbours,
-        'dataset': dataset,
-        'variable': variable,
-        'time': time,
-        'depth': depth,
-        'scale': scale,
-        'masked': masked,
-    })
+
+        if display[0] == 'colourmap':
+            img = plotting.tile.plot(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+               'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'display': display[1]
+            })
+        elif display[0] == 'contours':
+            img = plotting.tile.contour(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'contours': display[1],
+            })
+        else:
+            raise ValueError
+            return
     return _cache_and_send_img(img, f)
 
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):

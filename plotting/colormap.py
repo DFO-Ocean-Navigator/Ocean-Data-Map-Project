@@ -38,6 +38,7 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'transparent': make_colormap([_c('#00000000')]),
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
@@ -166,6 +167,7 @@ gettext('Thermal')
 gettext('NEO SST')
 gettext('Color Brewer Blue-Yellow-Red')
 gettext('Temperature (old)')
+gettext('Transparent')
 
 colormap_names = {
     'anomaly': 'Anomaly',
@@ -185,6 +187,7 @@ colormap_names = {
     'silicate': 'Silicate',
     'speed': 'Speed',
     'temperature': 'Temperature',
+    'transparent': 'Transparent',
     'velocity': 'Velocity',
     'waveheight': 'Wave Height',
     'waveperiod': 'Wave Period',

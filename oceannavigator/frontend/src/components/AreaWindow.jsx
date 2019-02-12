@@ -260,7 +260,6 @@ export default class AreaWindow extends React.Component {
   }
 
   updateLabel(e) {
-    console.warn("LABEL VALUE: ", e.value)
     let new_contour = this.state.contour
     new_contour.clabel = !new_contour.clabel
     
@@ -271,11 +270,9 @@ export default class AreaWindow extends React.Component {
 
   updatePlot() {
     
-    console.warn("UPDATING -------")
-
+    
     switch(this.state.currentTab) {
       case 1:
-        console.warn("IN CASE 1")
         //this.plotQuery = undefined
         
         //if (this.plot_query === undefined) {
@@ -317,7 +314,6 @@ export default class AreaWindow extends React.Component {
         })
         break;
       case 2:
-        console.warn("IN CASE 2")
         this.plot_query.time = this.state.dataset_0.time;
         this.plot_query.area = this.props.area;
         this.plot_query.depth = this.state.dataset_0.depth;

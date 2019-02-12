@@ -217,8 +217,46 @@
     .ol-popup {
     }
 
-    
+    .layerHierarchy {
+        width:200px;
+        height:500px;
+        background-color: white;
+        z-index: 0;
+        position: relative;
+        float: right;
+        margin-top: 20px;
+        margin-right: 20px;
+        opacity: 0.7;
+        
+        .layerContainer {
+            width: 95%;
+            height: 40px;
+            align-self: center;
 
+            .layer {
+                padding: 5px;
+                margin: 5px;
+                margin-right: 0px;
+                border-radius: 10px 0px 0px 10px;
+                align-self: center;
+                background-color: #008cba;
+                display: inline-block;
+
+                width: 140px;
+            }
+            .layer_button {
+                padding:5px;
+                margin: 5px;
+                height:100%;
+                margin-left: 0px;
+                border-radius: 0px 10px 10px 0px;
+                background-color: #008cba;
+                display: inline-block;
+            }
+        }
+        
+    }
+    
     .ol-popup:before {
     }
 
