@@ -41,7 +41,6 @@ export default class IceDatasetSelector extends React.Component {
     _("Variable");
     _("Depth");
     _("Time (UTC)");
-    console.warn(this.props.envtype)
     let variables = "";
     switch (this.props.variables) {
       case "3d":
@@ -50,11 +49,9 @@ export default class IceDatasetSelector extends React.Component {
     }
     switch (this.props.envtype) {
       case "ice":
-        console.warn("ICE")
         variables = "&env_type=ice";
         break;
       case "meteorology":
-        console.warn("MET")
         variables = "&env_type=meteorology"
         break;
       default:

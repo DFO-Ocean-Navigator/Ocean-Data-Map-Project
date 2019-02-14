@@ -126,12 +126,7 @@ export default class Contacts extends React.Component {
           
             this.props.mapComponent.map.addInteraction(draw)
             break;
-
-
             
-           
-
-
     }
   }
 

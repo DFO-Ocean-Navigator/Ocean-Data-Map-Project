@@ -517,12 +517,8 @@ def all_vars_query_impl(args):
     #data = dict()
     #data = sorted(variables.items())
     data = variables
-    print("\nPRINTING OUTPUT")
-    print(data)
-    print(" ")
-    print('\n')
     data = jsonify(data)
-    print(data)
+    
     return data
 
 

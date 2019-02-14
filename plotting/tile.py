@@ -375,8 +375,9 @@ def contour(projection, x, y, z, args):
 
         #timestamp = dataset.timestamps(args.get('time'))
 
-    levels = [-20, -15, -10, -5, 0, 5, 10, 15, 20]
-
+    difference = (scale[1] - scale[0]) / 5
+    levels = [scale[0] + difference, scale[0] + 2*difference, scale[0] + 3*difference, scale[0] + 4* difference, scale[1]]
+    print("LEVELS: ", levels)
     xpx = x * 256
     ypx = y * 256
 
@@ -399,7 +400,7 @@ def contour(projection, x, y, z, args):
     min_indices = contour_data.min()
     contour_data[np.where(contour_data == np.ma.masked)] = -50
 
-    normalized = matplotlib.colors.Normalize(vmin=-5, vmax=30)(levels)
+    normalized = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])(levels)
     
     print("CONTOURS: ", args.get('contours'))
     if args.get('contours') == 'default':
