@@ -7,6 +7,25 @@ body {
 
     .nav-tabs {
         font-size: 0.8em;
+        height:120px;
+
+        >li {
+            clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+            width: 60px;
+            height:120px;
+            margin-right: -8px;
+            >a {
+                height: 100%;
+
+                :hover {
+                    clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+                    //width: 60px;
+                    //height:110px;
+                    
+                }
+            }
+        }
+        
     }
     #app {
         height:100%;
@@ -37,10 +56,10 @@ body {
         float: left;
         width: 13.75%;
         height:100%;
+
         .nav {
             background-color: #008cba;
-            height:100%;
-            
+            height:100%;   
         }
         .hiddenButton {
             height: 20%;
@@ -49,6 +68,7 @@ body {
                 
             }
         }
+        
         
         .currentButton {
             height: 20%;
@@ -70,6 +90,11 @@ body {
             text-align: center;
             color: white;
         }
+    }
+
+    .envTabName {
+        transform: rotate(187deg);
+        writing-mode: vertical-rl;
     }
     .LayerPanels {
         height: calc(100% - 70px);

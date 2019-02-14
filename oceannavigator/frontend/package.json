@@ -20,6 +20,7 @@
     "babel-preset-react": "~6.24.1",
     "babel-preset-react-optimize": "1.0.1",
     "bootstrap": "^3.3.7",
+    "create-react-class": "^15.6.3",
     "dateformat": "^2.0.0",
     "detect-browser": "^1.7.0",
     "detect-mobile-browser": "^5.0.0",

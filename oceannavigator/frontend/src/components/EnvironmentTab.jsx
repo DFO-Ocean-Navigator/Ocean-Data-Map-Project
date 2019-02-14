@@ -10,6 +10,8 @@ import PropTypes from "prop-types";
 import Oceanography from "./Oceanography.jsx";
 import Ice from "./Ice.jsx";
 import Meteorology from "./Meteorology.jsx";
+import Waves from "./Waves.jsx";
+import Biogeochem from "./Biogeochem.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -42,7 +44,7 @@ export default class EnvironmentTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span>{_("Oceanography")}</span>}>
+            <Tab eventKey={1} title={<span className='envTabName'>{_("Oceanography")}</span>}>
                 <Oceanography
                     state={this.props.state}
                     swapViews={this.props.swapViews}
@@ -52,7 +54,7 @@ export default class EnvironmentTab extends React.Component {
                     updateOptions={this.props.updateOptions}
                 />
             </Tab>
-            <Tab eventKey={2} title={<span>{_("Meteorology")}</span>}>
+            <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
                 <Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
@@ -65,7 +67,7 @@ export default class EnvironmentTab extends React.Component {
                   updateOptions={this.props.updateOptions}
                 />
             </Tab>
-            <Tab eventKey={3} title={<span>{_("Ice")}</span>}>
+            <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
                 <Ice
                   state={this.props.state}
                   swapViews={this.props.swapViews}
@@ -78,6 +80,33 @@ export default class EnvironmentTab extends React.Component {
                   updateOptions={this.props.updateOptions}
                 />
             </Tab>
+            {/*
+            <Tab eventKey={4} title={<span className='envTabName'>{_("Waves")}</span>}>
+                <Waves
+                  state={this.props.state}
+                  swapViews={this.props.swapViews}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
+                  globalUpdate={this.props.changeHandler}
+                  showHelp={this.props.showHelp}
+                  options={this.props.state.options}
+                  updateOptions={this.props.updateOptions}
+                />
+            </Tab>
+            <Tab eventKey={5} title={<span className='envTabName'>{_("Bio Geo Chem")}</span>}>
+                <Biogeochem
+                  state={this.props.state}
+                  swapViews={this.props.swapViews}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
+                  globalUpdate={this.props.changeHandler}
+                  showHelp={this.props.showHelp}
+                  options={this.props.state.options}
+                  updateOptions={this.props.updateOptions}
+                />
+            </Tab> */}
         </Tabs>
       </div>
         
