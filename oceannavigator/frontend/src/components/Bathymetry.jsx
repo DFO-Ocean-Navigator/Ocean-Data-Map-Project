@@ -42,7 +42,7 @@ export default class Bathymetry extends React.Component {
 }
 
 //***********************************************************************
-Ice.propTypes = {
+Bathymetry.propTypes = {
   state: PropTypes.object,
   sidebarOpen: PropTypes.bool,
   basemap: PropTypes.string,
