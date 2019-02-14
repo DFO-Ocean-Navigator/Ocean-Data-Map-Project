@@ -4,6 +4,7 @@ import ol from "openlayers";
 import PropTypes from "prop-types";
 import { Button } from "react-bootstrap";
 import Icon from "./Icon.jsx";
+import LayerRearrange from "./LayerRearrange.jsx";
 
 require("openlayers/css/ol.css");
 
@@ -799,7 +800,9 @@ export default class Map extends React.PureComponent {
     } else if (state === 'remove') {
       this.map.removeLayer(layer);
       }
-    
+    this.setState({
+      change: !this.state.change,
+    })
   }
 
   reloadLayer() {
@@ -1255,15 +1258,6 @@ export default class Map extends React.PureComponent {
 
   render() {
 
-    let layers = []
-
-    this.map.getLayers().forEach(function(layer) {
-      if (layer['I'].name != undefined) {
-        layers.push(<div className='layerContainer'><div className='layer'>{layer['I'].name}</div><Button><Icon icon="bars"/></Button></div>)
-      }
-      })
-    
-    
     return (
       <div className='Map'>
         <div ref={(c) => this.map.setTarget(c)} />
@@ -1286,7 +1280,12 @@ export default class Map extends React.PureComponent {
         <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
         <div className='layerHierarchy'>
-          {layers}
+          <LayerRearrange
+            change={this.state.change}
+            map={this.map}
+            state={this.props.state}
+            toggleLayer={this.toggleLayer}
+          ></LayerRearrange>
         </div>
       </div>
     );
