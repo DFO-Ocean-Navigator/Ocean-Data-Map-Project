@@ -7,6 +7,8 @@ import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
+import Ice from "./Ice.jsx";
+import Bathymetry from "./Bathymetry.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -86,12 +88,19 @@ export default class FoundationTab extends React.Component {
             </Panel>
           </Tab>
           <Tab eventKey={2} title={<span>{_("Charts")}</span>}>
-            <Panel
-              collapsible
-              header={_("Charts")}
-              bsStyle='primary'
-            >
-            </Panel>
+
+            <Bathymetry
+              state={this.props.state}
+              swapViews={this.props.swapViews}
+              toggleLayer={this.props.toggleLayer}
+              reloadLayer={this.props.reloadLayer}
+              mapComponent={this.props.mapComponent}
+              globalUpdate={this.props.changeHandler}
+              showHelp={this.props.showHelp}
+              options={this.props.state.options}
+              updateOptions={this.props.updateOptions}
+            />
+
           </Tab>
           <Tab eventKey={3} title={<span>{_("Satellite")}</span>}>
             <Panel
