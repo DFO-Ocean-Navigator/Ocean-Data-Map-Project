@@ -76,7 +76,7 @@ export default class Contacts extends React.Component {
                 
 
               
-              let boats_url = '' // BBOX' //+ geopoint
+              let boats_url = 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&outputFormat=json&typeName=postgis:vi_m_identities_all&srsname=EPSG:3857&CQL_FILTER=BBOX(geopoint, -90, 40, -60, 45)' // BBOX' //+ geopoint
               
               
               let vectorSource = new ol.source.Vector({
