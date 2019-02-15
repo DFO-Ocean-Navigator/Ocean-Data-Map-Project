@@ -301,7 +301,7 @@ class MapPlotter(pl.Plotter):
                     quiver_data_fullgrid.append(d)
 
                 self.quiver_name = self.get_vector_variable_name(
-                    dataset, self.quiver['variable']
+                    dataset, self.quiver['variable'].split(',')
                 )
                 self.quiver_longitude = quiver_lon
                 self.quiver_latitude = quiver_lat
