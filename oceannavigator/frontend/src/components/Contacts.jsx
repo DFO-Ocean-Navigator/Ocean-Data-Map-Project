@@ -18,7 +18,7 @@ export default class Contacts extends React.Component {
 
     this.state = {
       currentTab: 1,
-      trafficTypes: ['All', 'Fishing'],
+      trafficTypes: ['Fishing', 'Cargo'],
       displayTraffic: true
     };
 
@@ -26,12 +26,12 @@ export default class Contacts extends React.Component {
 
     // Function bindings
     this.toggleTraffic = this.toggleTraffic.bind(this);
+    this.getType = this.getType.bind(this);
   }
 
-  //addTrafficLayer() {
-  //  if ()
-  //}
-
+  componentDidMount() {
+    this.getType()
+  }
 
   //Adds or remove traffic 
   toggleTraffic(type, status) {
@@ -73,12 +73,12 @@ export default class Contacts extends React.Component {
               geometry = geometry.clone().transform(this.props.state.projection, "EPSG:4326")
               let draw_radius = geometry.getRadius();
               let draw_center = geometry.getCenter();
-                
+              console.warn("HERE")
 
+              console.warn(draw_center)
+              let boats_url = 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint
               
-              let boats_url = 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&outputFormat=json&typeName=postgis:vi_m_identities_all&srsname=EPSG:3857&CQL_FILTER=BBOX(geopoint, -90, 40, -60, 45)' // BBOX' //+ geopoint
-              
-              
+              console.warn(boats_url)
               let vectorSource = new ol.source.Vector({
                 url: boats_url,
                 format: new ol.format.GeoJSON(),
@@ -130,16 +130,42 @@ export default class Contacts extends React.Component {
     }
   }
 
+  getType() {
+    $.ajax({
+      url: 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identity_types&maxFeatures=50&outputFormat=application%2Fjson'
+      ,
+      dataType: "json",
+      cache: true,
+      
+      //If server returns status code of 200 / it worked - Ajax call successful
+      //
+      // data filled by ajax
+      //
+      success: function (data) {
+        console.warn("IDENTITY TYPES: ", data)
+      }.bind(this),
+    
+      // On fail...
+      error: function (xhr, status, err) {  
+        if (this._mounted) {
+          console.error("FAILED TO LOAD");
+        }
+      }.bind(this)
+    });
+  }
+
   render() {
-
-    this.availableTypes = <ContactButton
-                name={this.state.trafficTypes[0]}
-                displayTraffic={this.state.displayTraffic}
-                toggleTraffic={this.toggleTraffic}
-            />
-    
-    
-
+    let availableTypes = []
+    let self = this;
+    this.state.trafficTypes.forEach(function(type) {
+      console.warn(type);
+      availableTypes.push(<ContactButton
+        key={type + '_key'}
+        name={type}
+        displayTraffic={self.state.displayTraffic}
+        toggleTraffic={self.toggleTraffic}
+    />)
+    })
     
     return (
         <div>
@@ -150,9 +176,9 @@ export default class Contacts extends React.Component {
                   bsStyle='primary'
                 >
 
-                {this.availableTypes}
+                {availableTypes}
 
-                <Button disabled={!this.state.displayTraffic} onClick={this.clear}>
+                <Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
                     Remove Contacts
                 </Button>
             </Panel>

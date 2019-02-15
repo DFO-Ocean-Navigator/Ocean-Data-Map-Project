@@ -99,7 +99,7 @@ export default class LayerSelection extends React.Component {
             </NavItem>)
         }
         if (this.props.state._intelligence === true && this.props.state.allowedTabs['_intelligence'] === true) {
-            enabled_layers.push(<NavItem className={this.state.buttons[2]} eventKey={3}>
+            enabled_layers.push(<NavItem key='_contact' className={this.state.buttons[2]} eventKey={3}>
                 <div className='vertical'>Intelligence</div>
             </NavItem>)
         }
@@ -119,7 +119,7 @@ export default class LayerSelection extends React.Component {
         return (
             <div className='LayerOptions'>
                 <div className='LayerSelection'>
-                    <Nav onSelect={this.tabSelect}>
+                    <Nav key='nav' onSelect={this.tabSelect}>
                         {enabled_layers}  
                     </Nav>
                 </div>
@@ -196,7 +196,7 @@ export default class LayerSelection extends React.Component {
                             />
                         </div>
                         <div className='settings'>
-                            <Button className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
+                            <Button key='settingsButton' className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
                                 <Icon icon='gear'/>
                             </Button>
                         </div>

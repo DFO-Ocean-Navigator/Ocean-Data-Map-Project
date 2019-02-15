@@ -23,18 +23,18 @@ export default class Bathymetry extends React.Component {
   render() {    
     
     return (
-        <div>
-            <IceLayer
-              state={this.props.state}
-              swapViews={this.props.swapViews}
-              toggleLayer={this.props.toggleLayer}
-              reloadLayer={this.props.reloadLayer}
-              mapComponent={this.props.mapComponent}
-              globalUpdate={this.props.globalUpdate}
-              showHelp={this.props.showHelp}
-              options={this.props.state.options}
-              updateOptions={this.props.updateOptions}
-            />
+        <div>{/*<IceLayer
+          state={this.props.state}
+          swapViews={this.props.swapViews}
+          toggleLayer={this.props.toggleLayer}
+          reloadLayer={this.props.reloadLayer}
+          mapComponent={this.props.mapComponent}
+          globalUpdate={this.props.globalUpdate}
+          showHelp={this.props.showHelp}
+          options={this.props.state.options}
+          updateOptions={this.props.updateOptions}
+        />*/}
+            
 
         </div>
     );
@@ -51,6 +51,7 @@ Bathymetry.propTypes = {
   bathymetry: PropTypes.bool,
   dataset_compare: PropTypes.bool,
   dataset_1: PropTypes.object,
+  reloadLayer: PropTypes.func,
   projection: PropTypes.string,
   depth: PropTypes.number,
   time: PropTypes.number,

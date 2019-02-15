@@ -49,9 +49,9 @@ export default class OceanNavigator extends React.Component {
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: false,
-        _derived: true,
-        _planning: false,
+        _intelligence: true,
+        _derived: false,
+        _planning: true,
       },
 
       display: ['colourmap', 'contours'],
