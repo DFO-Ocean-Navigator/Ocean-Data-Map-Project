@@ -522,6 +522,32 @@ def all_vars_query_impl(args):
     return data
 
 
+#def all_time_query_impl(args):
+#    """
+#    API Format: /api/v1.0/all/timestamps/
+#
+#    Retrieves all timestamps for all available datasets
+#    """
+#    times = dict()
+#
+#    for dataset in get_datasets():
+#        with open_dataset(get_dataset_url(dataset)) as ds:
+#            print("TIMESTAMPS: ", ds.timestamps)
+#            for date in ds.timestamps:
+#                print("DATE: ", date)
+#                if date.year not in times:
+#                    times[date.year] = {
+#                        date.month: [date.date]
+#                    }
+#                else:
+#                    if date.month not in times[date.year]:
+#                        times[date.year][date.monhth]
+#
+#                    else:
+#                        if date.date not in times[date.year][date.month]:
+#                            times[date.year][date.month].append(date.date)
+
+
 def time_query_impl(args):
     """
     API Format: /api/timestamps/?dataset=' '
@@ -531,8 +557,9 @@ def time_query_impl(args):
     Finds all data timestamps available for a specific dataset
     """
 
-    if 'dataset' not in args:
+    if 'dataset' not in args and 'all' not in args:
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
+
 
     data = []
     dataset = args['dataset']

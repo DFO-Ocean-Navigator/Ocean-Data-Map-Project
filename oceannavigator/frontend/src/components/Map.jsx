@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { Button } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import LayerRearrange from "./LayerRearrange.jsx";
-import TimeSelect from "./TimeSelect.jsx";
+import TimeBarContainer from "./TimeBarContainer.jsx";
 
 require("openlayers/css/ol.css");
 
@@ -1288,9 +1288,10 @@ export default class Map extends React.PureComponent {
             toggleLayer={this.toggleLayer}
           ></LayerRearrange>
         </div>
-        <TimeSelect>
-          
-        </TimeSelect>
+        <TimeBarContainer
+          globalUpdate={this.props.updateState}
+        >
+        </TimeBarContainer>
       </div>
     );
   }

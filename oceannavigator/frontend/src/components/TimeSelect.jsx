@@ -91,17 +91,15 @@ export default class TimeSelect extends React.Component {
         this.daysInMonth = this.daysInMonth.bind(this);
         //this.getYears = this.getYears.bind(this);
     }
-    /*
-      componentDidMount() {
-        this.setState({
-            years: getYears(),
-        })
-      }
     
-      getYears () {
-        console.warn("TO IMPLEMENT")
-      }
-      */
+    componentDidMount() {
+        this.props.localUpdate('global', this.state.startTimeObj, this.state.endTimeObj)
+    }
+    
+    //getYears () {
+    //    console.warn("TO IMPLEMENT")
+    //}
+      
 
     daysBetween( date1, date2 ) {
         //Get 1 day in milliseconds
@@ -198,6 +196,7 @@ export default class TimeSelect extends React.Component {
             endTimeObj: endTimeObj,
             selected_day: e.target.name,
         })
+        this.props.localUpdate('global', startTimeObj, endTimeObj)
     }
 
     daysInMonth(iMonth, iYear) {
@@ -344,6 +343,5 @@ export default class TimeSelect extends React.Component {
 
 //***********************************************************************
 TimeSelect.propTypes = {
-    setStartTime: PropTypes.func,
-    setEndTime: PropTypes.func,
+    localUpdate: PropTypes.func,
 };
