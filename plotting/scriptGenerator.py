@@ -93,9 +93,7 @@ def generatePython(url):
     script.write("}\n")
     #---------------------------
   
-    #Assemble full request
-    
-})  
+    #Assemble full request 
     if notPlot == False:
         script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
     else:
