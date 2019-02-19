@@ -92,12 +92,9 @@ def generatePython(url):
             script.write('  "' + x + '": ' + str(url.get(x)) + ",\n")
     script.write("}\n")
     #---------------------------
-    dpi = 144;
+  
     #Assemble full request
-    script.write('\n#Assemble full request - converts json object to url\n')
-      url = base_url + urlencode({
-    "query": json.dumps(query), 
-    "dpi": dpi
+    
 })  
     if notPlot == False:
         script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
