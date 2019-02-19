@@ -222,7 +222,10 @@ def plot(projection, x, y, z, args):
             dataset_name,
             dataset.variables[variable[0]]
         )
-        if anom:
+
+        if 'display' in args:
+            cmap = colormap.colormaps[args.get('display')]
+        elif anom:
             cmap = colormap.colormaps['anomaly']
         else:
             cmap = colormap.find_colormap(variable_name)

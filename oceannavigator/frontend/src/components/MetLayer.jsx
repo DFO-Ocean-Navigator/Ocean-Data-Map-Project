@@ -103,8 +103,10 @@ export default class MetLayer extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.datasets != [] && this.state.variables != []) {
+    if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps != undefined) {
       if (this.state.current_dataset != prevState.current_dataset || this.state.current_variable != prevState.current_variable) {
+        this.updateIce();
+      } else if (this.props.state.timestamps != prevProps.state.timestamps && this.props.state.timestamps != undefined) {
         this.updateIce();
       }
     }
@@ -187,22 +189,54 @@ export default class MetLayer extends React.Component {
 
   updateIce() {
 
-    if (this.state.current_dataset == undefined || this.state.current_variable == undefined) {
+    if (this.state.current_dataset == undefined || this.state.current_variable == undefined || this.props.state.timestamps == undefined) {
+      return
+    } else if (this.props.state.timestamps === undefined) {
       return
     }
-    
+
     let layer_ice = this.state.ice_layer;
     let props = layer_ice.getSource().getProperties();
+
+    let time = this.props.state.timestamps['global']
+    this.setState({
+      quantum: 'day'
+    })
+    if (this.state.quantum === 'day') {
+      time.setHours(0)
+      time.setMinutes(0);
+      time.setSeconds(0);
+    } else if (this.state.quantum === 'month') {
+      time.setHours(0)
+      time.setMinutes(0);
+      time.setSeconds(0);
+      time.setDate(0)
+    } else if (this.state.quantum === 'hour') {
+      time.setMinutes(0);
+      time.setSeconds(0);
+    }
+    let month = time.getMonth()
+    if (month.toString().length === 1) {
+      month = '0' + month
+    }
+    let date = time.getDate()
+    if (date.toString().length === 1) {
+        date = '0' + date
+    }
+
+    let timeString = time.getFullYear() + '-' + month + '-' + date + 'T' + time.getHours() + ':' + time.getMinutes() + ':00+00:00'
+    
     
     // Sets new values for tiles
-    props.url = `/tiles/v0.1` + 
+    props.url = `/api/v1.0/tiles` + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
                 `/${this.props.state.projection}` + 
                 `/${this.state.current_dataset}` + 
                 `/${this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id']}` + 
-                `/${this.props.state.time}` + 
+                //`/2018-07-12T00:00:00+00:00` +
+                `/${timeString}` + 
                 `/0` + 
                 `/${this.state.scale_1}` + 
                 `/1` +

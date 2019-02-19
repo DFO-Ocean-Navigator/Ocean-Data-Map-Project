@@ -53,11 +53,34 @@
         }
     }
 
+    .time_container {
+        height: fit-content;
+        width: 60px;
+        bottom: 10px;
+        left: 21%;
+        border-radius: 25px;
+
+        .timeLayerContainer {
+            width: 100%;
+            height: 60px;
+
+            .timeBarToggle {
+                height: 50px;
+                width: 50px;
+                border-radius: 50%;
+                float: left;
+                display: inline-flex;
+                font-size: 22px;
+                font-weight: bold;
+                border: 4px solid #006687;
+                color: #006687;
+            }
+        }
+    }
     .timeBarContainer {
         height: 50px;
-        width: 60%;
-        bottom: 10px;
-        left: 30%;
+        width: 955px;
+        left: calc(30% + 50px);
         padding: 3px;
         border: 4px solid #006687;
         border-radius: 25px;
@@ -94,7 +117,11 @@
         .dayContainer {
             height: 540px; 
         }
-        .timecontainer
+        .timecontainer {
+            height: 100%;
+            width: 668.50px;
+            display: inline-block;
+        }
 
         .selectedContainer {
             display: inline;
