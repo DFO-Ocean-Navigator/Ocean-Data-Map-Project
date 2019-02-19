@@ -398,7 +398,7 @@ export default class Map extends React.PureComponent {
     if (this.props.state.center) {
       center = this.props.state.center.map(parseFloat);
     }
-    let zoom = 4;
+    let zoom = 6;
     if (this.props.state.zoom) {
       zoom = this.props.state.zoom;
     }
