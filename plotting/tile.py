@@ -394,7 +394,7 @@ def contour(projection, x, y, z, args):
            bathymetry = bathymetry[::-1, :]
            if (args.get('masked') == 1):
             pass
-          else:
+        else:
             contour_data[np.where(bathymetry < depthm)] = np.ma.masked
             #contour_data[np.where(bathymetry > 0)] = np.ma.masked
     except:
