@@ -526,12 +526,13 @@ def bathymetry(projection, x, y, z, args):
 
     xpx = x * 256
     ypx = y * 256
-try:
-    with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+   try:
+     with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
         data = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
         data = data[::-1, :]
-except:
+
      pass
+    except: pass 
     LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
 
     normalized = matplotlib.colors.LogNorm(vmin=1, vmax=6000)(LEVELS)
