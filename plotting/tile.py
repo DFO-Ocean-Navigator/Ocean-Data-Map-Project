@@ -386,16 +386,19 @@ def contour(projection, x, y, z, args):
     else:
         depthm = 0
 
-    with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
-        #bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
-        #bathymetry = gaussian_filter(bathymetry, 0.5)
-        bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
-        bathymetry = bathymetry[::-1, :]
-        if (args.get('masked') == 1):
+    try:
+       with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+           #bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
+           #bathymetry = gaussian_filter(bathymetry, 0.5)
+           bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
+           bathymetry = bathymetry[::-1, :]
+           if (args.get('masked') == 1):
             pass
-        else:
+          else:
             contour_data[np.where(bathymetry < depthm)] = np.ma.masked
             #contour_data[np.where(bathymetry > 0)] = np.ma.masked
+    except:
+        pass
 
     min_indices = contour_data.min()
     contour_data[np.where(contour_data == np.ma.masked)] = -50
