@@ -265,16 +265,18 @@ def plot(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
 
-    with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
-        bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
+    try:
+        with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+           bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
 
-    bathymetry = gaussian_filter(bathymetry, 0.5)
+        bathymetry = gaussian_filter(bathymetry, 0.5)
 
-    if (args.get('masked') == 1):
+        if (args.get('masked') == 1):
+               pass
+        else:
+           data[np.where(bathymetry > -depthm)] = np.ma.masked
+    except:
         pass
-    else:
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
-    
     
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
