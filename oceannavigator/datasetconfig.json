@@ -1,12 +1,12 @@
 {
     "giops_month": {
         "attribution": "GIOPS Monthly Averages from CONCEPTS",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": true,
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",
         "name": "GIOPS Monthly",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/giops/monthly/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/monthly/aggregated.ncml",
         "variables": {
             "aice": {
                 "hide": "false",
@@ -261,7 +261,7 @@
     },
     "giops_day": {
         "name": "GIOPS Daily",
-        "url": "http://trinity:8080/thredds/dodsC/giops/daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/daily/aggregated.ncml",
         "enabled": true,
         "quantum": "day",
         "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -283,12 +283,12 @@
         }
     },
     "giops_forecast": {
-        "url": "http://trinity:8080/thredds/dodsC/giops/forecast/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/forecast/aggregated.ncml",
         "name": "GIOPS 10-day Forecast",
         "quantum": "day",
         "enabled": true,
         "cache": 6,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "GIOPS 10-day Forecast from CONCEPTS",
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",
         
@@ -308,12 +308,12 @@
     },
     "riops_daily": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": true,
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "name": "RIOPS Daily Average",
         "quantum": "day",
-        "url": "http://trinity:8080/thredds/dodsC/riops/riops_daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/daily/aggregated.ncml",
         "variables": {
             "east_vel": {
                 "hide": "false",
@@ -495,6 +495,7 @@
                     40
                 ],
                 "scale_factor": 1,
+
                 "unit": "PSU"
             },
             "votemper": {
@@ -533,10 +534,10 @@
     },
     "riops": {
         "name": "RIOPS",
-        "url": "http://trinity:8080/thredds/dodsC/riops/riopsf/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/riopsf/aggregated.ncml",
         "quantum": "hour",
         "enabled": true,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Values from CONCEPTS",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "variables": {
@@ -655,11 +656,11 @@
             }
     },
     "riops_monthly": {
-        "url": "http://trinity:8080/thredds/dodsC/riops/monthly/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/monthly/aggregated.ncml",
         "name": "RIOPS Monthly Average",
         "quantum": "month",
         "enabled": true,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         
@@ -761,11 +762,11 @@
             }
     },
     "riops_forecast": {
-        "url": "http://trinity:8080/thredds/dodsC/riops/forecast/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/riops/forecast/aggregated.ncml",
         "name": "RIOPS Forecast",
         "quantum": "hour",
         "enabled": true,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Forecast from CONCEPTS",
         "cache": 1,
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
@@ -869,12 +870,12 @@
     },
     "glorys3": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys/aggregated.ncml",
         "enabled": true,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>                 <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2013)</li>                 <li>Variables Available:                     <ul>                         <li>Eastward Velocity</li>                         <li>Ice Concentration</li>                         <li>Northward Velocity</li>                         <li>Salinity</li>                         <li>Sea Ice Eastward Velocity</li>                         <li>Sea Ice Northward Velocity</li>                         <li>Sea Ice Thickness</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Surface Height</li>                         <li>Sea Water Velocity</li>                         <li>Temperature</li>                     </ul>                 </li>             </ul>",
         "name": "GLORYS v3",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/glorys/monthly/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/glorys/monthly/aggregated.ncml",
         "variables": {
             "iicethic": {
                 "hide": "false",
@@ -990,12 +991,12 @@
     },
     "glorys4": {
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "enabled": true,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "name": "GLORYS v4",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/glorys/v4/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/glorys/v4/aggregated.ncml",
         "variables": {
             "east_vel": {
                 "hide": "false",
@@ -1150,11 +1151,11 @@
         }
     },
     "glorys4_climatology": {
-        "url": "http://trinity:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "name": "GLORYS v4 Climatology",
         "quantum": "month",
         "enabled": true,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "variables": {
@@ -1204,12 +1205,12 @@
     },
     "glorys_climatology": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys/aggregated.ncml",
         "enabled": true,
         "help": "Global Ocean Reanalysis and Simulation             <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Computed from the monthly averages January 1993&ndash;December 2013</li>             <li>Variables Available:                 <ul>                     <li>Eastward Velocity</li>                     <li>Ice Concentration</li>                     <li>Northward Velocity</li>                     <li>Salinity</li>                     <li>Sea Ice Eastward Velocity</li>                     <li>Sea Ice Northward Velocity</li>                     <li>Sea Ice Thickness</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Surface Height</li>                     <li>Sea Water Velocity</li>                     <li>Temperature</li>                 </ul>             </li>             </ul>",
         "name": "GLORYS Climatology",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/glorys/aggregated.ncml",
         "variables": {
             "iicethic": {
                 "hide": "false",
@@ -1325,12 +1326,12 @@
     },
     "levitus98_phc21": {
         "attribution": "Unknown",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": true,
         "help": "Combination of Levitus98 and PHC 2.1             <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Variables Available:                 <ul>                     <li>Salinity</li>                     <li>Water Temperature</li>                 </ul>             </li>             </ul>",
         "name": "World Ocean Atlas Climatology",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "variables": {
             "vosaline": {
                 "hide": "false",
@@ -1356,12 +1357,12 @@
     },
     "biomer": {
         "attribution": "BIOMER from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/biomer/aggregated.ncml",
         "enabled": true,
         "help": "Global Biogeochemical Reanalysis -&nbsp;         <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/10/FS-BIOMER_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>         <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Available as monthly averages (January 1998&ndash;December 2013)</li>             <li>Variables Available:                 <ul>                     <li>Chlorophyll</li>                     <li>Dissolved Oxygen</li>                     <li>Iron</li>                     <li>Nitrate</li>                     <li>Phosphate</li>                     <li>Phytoplankton expressed as carbon</li>                     <li>Primary Productivity of Carbon</li>                     <li>Silicate</li>                 </ul>             </li>         </ul>",
         "name": "BIOMER",
         "quantum": "month",
-        "url": "http://trinity:8080/thredds/dodsC/biomer/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/biomer/aggregated.ncml",
         "variables": {
             "chl": {
                 "hide": "false",
@@ -1446,11 +1447,11 @@
         }
     },
     "biomer_climatology": {
-        "url": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/biomer/aggregated.ncml",
         "name": "BIOMER Climatology",
         "quantum": "month",
         "enabled": true,
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/biomer/aggregated.ncml",
         "attribution": "BIOMER from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "help": "Global Biogeochemical Reanalysis -&nbsp;         <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/10/FS-BIOMER_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>         <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Available as monthly averages (January 1998&ndash;December 2013)</li>             <li>Variables Available:                 <ul>                     <li>Chlorophyll</li>                     <li>Dissolved Oxygen</li>                     <li>Iron</li>                     <li>Nitrate</li>                     <li>Phosphate</li>                     <li>Phytoplankton expressed as carbon</li>                     <li>Primary Productivity of Carbon</li>                     <li>Silicate</li>                 </ul>             </li>         </ul>",
         "variables": {
@@ -1465,11 +1466,11 @@
         }
     },
     "fvcom_demo": {
-        "url": "http://trinity:8080/thredds/dodsC/misc/sfm5m_sjr_0001_30h.nc",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/misc/sfm5m_sjr_0001_30h.nc",
         "name": "FVCOM Demo",
         "enabled": false,
         "quantum": "hour",
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "School for Marine Science and Technology",
         "help": "Bay of Fundy: Saint John",
         "variables": {
@@ -1493,8 +1494,8 @@
         }
     },
     "gem": {
-        "url": "http://trinity:8080/thredds/dodsC/gemCollection/TP",              
-        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/gemCollection/TP",              
+        "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "name": "GEM Global Atmospheric",                                                     
         "quantum": "hour",
         "enabled": true,
@@ -1508,7 +1509,7 @@
         }
     },
     "gulf": {
-        "url" : "http://trinity:8080/thredds/dodsC/gulf/gulf/aggregated.ncml",
+        "url" : "http://navigator.oceansdata.ca/thredds/dodsC/gulf/gulf/aggregated.ncml",
         "name": "Gulf of St. Lawrence",
         "quantum": "hour",
         "enabled": true,
@@ -1552,7 +1553,7 @@
 
     },
     "gulf_daily": {
-        "url": "http://trinity:8080/thredds/dodsC/gulf/daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/gulf/daily/aggregated.ncml",
         "name": "Gulf of St. Lawrence - Daily",
         "quantum": "daily",
         "enabled": true,
@@ -1581,7 +1582,7 @@
         }
     },
     "gulf_monthly": {
-        "url": "http://trinity:8080/thredds/dodsC/gulf/monthly/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/gulf/monthly/aggregated.ncml",
         "name": "Gulf of St. Lawrence - Monthly",
         "quantum": "monthly",
         "enabled": true,
