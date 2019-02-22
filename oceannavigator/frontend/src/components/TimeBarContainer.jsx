@@ -11,7 +11,7 @@ import DisplayType from "./DisplayType.jsx";
 import ol from "openlayers";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
-import TimeSelect from "./TimeSelect.jsx"
+import TimeSelect from "./TimeSelect.jsx";
 const i18n = require("../i18n.js");
 
 export default class TimeBarContainer extends React.Component {
@@ -21,11 +21,14 @@ export default class TimeBarContainer extends React.Component {
         this.state = {
             datasets: ['global'],
             times: {},
-            showLayer: []
+            endTimes: {},
+            startTimes: {},
+            showLayer: ['global'],
+            end: false,
         }
 
         this.setTime = this.setTime.bind(this);
-        //this.animate = this.animate.bind(this);
+        this.animate = this.animate.bind(this);
         this.localUpdate = this.localUpdate.bind(this);
         this.toggleLayer = this.toggleLayer.bind(this);
     }
@@ -41,57 +44,69 @@ export default class TimeBarContainer extends React.Component {
     //}
     
     setTime(times) {
-        this.props.globalUpdate('timestamps', times)
+        console.warn("SETTING TIME: ", times)
+        let newTimes = jQuery.extend({}, times)
+        this.props.globalUpdate('timestamps', newTimes)
     }
     
-    /*
+    
     // Handles time incrementing and formating
     // calls setTime() as it increments
     animate() {
-
-        // Checks for finest quantum
-        //...
-
-        // Loop through times
-        if (quantum === 'hour') {
-            // find the hourly index to increment by
-            let newTimes = {}
-            for (dataset in datasets) {
-                newTimes.append(times[dataset][0])
-            }
-            console.warn("NEW TIMES: ", newTimes)
-
-            while (date < endDate) {
-                
-                this.setTime(newTimes)
-                //date
-            }
-        } else if (quantum === 'day') {
-
-        } else if (quantum === 'monthly') {
-
+        if (this.state.end || this.state.times['global'].getDate() === this.state.endTimes['global'].getDate()) {
+            this.setState({
+                times: this.state.startTimes,
+            })
+            return
         }
-        //for (date in difference) {
-        //}
-
-        pass
+        let times = this.state.times;
+        for (let dataset in this.state.times) {
+                let time = times[dataset]
+                console.warn(time)
+                time.setDate(time.getDate() + 1)
+                times[dataset] = time
+        }
+        this.setTime(times);
+        
+        setTimeout(this.animate, 10000);
+        console.warn('calling animate again')
+        
+        return
     }
-*/
+
 
     localUpdate(dataset, startTime, endTime) {
-        let times = this.state.times
-        times[dataset] = startTime
-        
+        let startTimes = this.state.startTimes
+        startTimes[dataset] = startTime
+        let endTimes = this.state.endTimes
+        endTimes[dataset] = endTime
         this.setState({
-            times: times
+            times: startTimes,
+            startTimes: startTimes,
+            endTimes: endTimes,
         });
-        
-        console.warn("TIMES: ", times)
-        this.setTime(times);
+        this.setTime(startTimes);
     }
 
     toggleLayer(e) {
-        console.warn(e.key)
+        console.warn(e.target.id)
+
+        for (let idx in this.state.showLayer) {
+            if (this.state.showLayer[idx] === e.target.id) {
+                let newShowLayer = this.state.showLayer
+                newShowLayer.splice(idx, 1)
+                this.setState({
+                    showLayer: newShowLayer
+                })
+                return
+            }
+        }
+        let newShowLayer = this.state.showLayer;
+        newShowLayer.push(e.target.id);
+        this.setState({
+            showLayer: newShowLayer
+        })
+        return
     }
 
     render() {
@@ -99,12 +114,15 @@ export default class TimeBarContainer extends React.Component {
         self = this
         let layers = ['global', 'met']
         let timeBars = []
+        
+        
         layers.forEach(function(layer) {
-            if (layer in self.state.showLayer) {
+            if (self.state.showLayer.includes(layer)) {
                 timeBars.push(
-                    <div className='timeLayerContainer'>
+                    <div key={layer} className='timeLayerContainer'>
                         <Button
-                            key={layer}
+                            id={layer}
+                            key={layer + '_button'}
                             className='timeBarToggle'
                             onClick={self.toggleLayer}
                         >{layer.charAt(0).toUpperCase()}</Button>
@@ -113,25 +131,34 @@ export default class TimeBarContainer extends React.Component {
                             localUpdate={self.localUpdate}
                         ></TimeSelect>
                     </div>
-                )    
+                )
             } else {
                 timeBars.push(
-                    <div className='timeLayerContainer'>
+                    <div key={layer} className='timeLayerContainer'>
                         <Button
-                            key={layer}
+                            id={layer}
+                            key={layer + '_button'}
                             className='timeBarToggle'
                             onClick={self.toggleLayer}
                         >{layer.charAt(0).toUpperCase()}</Button>
                     </div>
                 )
             }
-                
-            
         })
+        timeBars.push(
+            <div key='start_animation' className='timeLayerContainer'>
+                <Button
+                    onClick={this.animate}
+                    className='timeBarToggle'
+                >
+                    <Icon icon='play'></Icon>
+                </Button>
+            </div>
+        )
 
         return (
             <div className='time_container'>
-                {timeBars}
+                {timeBars.reverse()}
             </div>
         );
     }

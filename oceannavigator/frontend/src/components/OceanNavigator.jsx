@@ -210,6 +210,11 @@ export default class OceanNavigator extends React.Component {
   updateState(key, value) {
     var newState = {};
 
+    if (key === 'timestamps') {
+      this.setState({
+        timestamps: value,
+      })
+    }
     // Only updating one value
     if (typeof(key) === "string") {
       if (this.state[key] === value) {

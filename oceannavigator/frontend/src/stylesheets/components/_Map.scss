@@ -52,7 +52,7 @@
             }
         }
     }
-
+    
     .time_container {
         height: fit-content;
         width: 60px;
@@ -74,17 +74,45 @@
                 font-weight: bold;
                 border: 4px solid #006687;
                 color: #006687;
+            }    
+            .timeBarToggle:focus {
+                    outline: none;
             }
+            .timeBarToggle:hover {
+                background-color: #006687;
+                color: #e7e7e7;
+                border-color: #e7e7e7;
+            }
+            
         }
     }
+
+    
+
+    @keyframes slide-open {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        50% {
+            opacity: 1;
+            //transform: translateX(-25px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
     .timeBarContainer {
         height: 50px;
         width: 955px;
-        left: calc(30% + 50px);
+        margin-left: 50px;
         padding: 3px;
         border: 4px solid #006687;
-        border-radius: 25px;
+        border-radius: 25px 25px 25px 25px;
         background-color: rgba(255,255,255,0.5);
+        animation: slide-open 0.5s ease;
 
 
         .startTimeContainer {
@@ -108,18 +136,18 @@
         
 
         .yearContainer {
-            height: 649px;
+            height: 655px;
 
         }
         .monthContainer {
-            height: 590px;
+            height: 596px;
         }
         .dayContainer {
-            height: 540px; 
+            height: 545px; 
         }
         .timecontainer {
             height: 100%;
-            width: 668.50px;
+            width: 658px;
             display: inline-block;
         }
 

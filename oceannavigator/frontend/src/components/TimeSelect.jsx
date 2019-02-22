@@ -93,7 +93,9 @@ export default class TimeSelect extends React.Component {
     }
     
     componentDidMount() {
+        console.warn("INITIAL UPDATE: ", this.state.startTimeObj)
         this.props.localUpdate('global', this.state.startTimeObj, this.state.endTimeObj)
+
     }
     
     //getYears () {

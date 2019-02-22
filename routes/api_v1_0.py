@@ -306,16 +306,10 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
   
-  with open_dataset(get_dataset_url(dataset)) as ds:
-    print("TIME: ", time)
-    start = t.time()  
+  with open_dataset(get_dataset_url(dataset)) as ds: 
+    
     date = ds.convert_to_timestamp(time)
-    end = t.time()
-    print("TIME: ", end - start)
-    start = t.time()
     response = routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, masked, display, zoom, x, y)
-    end = t.time()
-    print("TIME 2: ", end - start)
     
     return response
 

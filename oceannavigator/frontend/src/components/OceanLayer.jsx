@@ -13,7 +13,7 @@ import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 const i18n = require("../i18n.js");
 
-export default class MetLayer extends React.Component {
+export default class OceanLayer extends React.Component {
   constructor(props) {
     super(props);
     this._mounted = false;
@@ -66,7 +66,7 @@ export default class MetLayer extends React.Component {
   getDataInfo() {
    
     $.ajax({
-      url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
+      url: `/api/v1.0/variables/?dataset=all&env_type=oceanography`,
       success: function(response) {
         
         this.setState({
@@ -180,7 +180,7 @@ export default class MetLayer extends React.Component {
         }),
       });
 
-    layer_ice.set('name', this.props.layerType)
+    layer_ice.set('name', 'met')
 
     this.setState({
       ice_layer: layer_ice
@@ -189,7 +189,7 @@ export default class MetLayer extends React.Component {
   }
 
   updateIce() {
-
+    console.warn("UPDATING ICE")
     if (this.state.current_dataset == undefined || this.state.current_variable == undefined || this.props.state.timestamps == undefined) {
       return
     } else if (this.props.state.timestamps === undefined) {
@@ -385,14 +385,14 @@ export default class MetLayer extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _(this.props.layerName)}
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Met Layer")}
         bsStyle='primary'
       >
       
         <IceDatasetSelector
           id='dataset_0'
           dataset='all'
-          envtype={this.props.layerType}
+          envtype='meteorology'
           state={this.state}
           datainfo={this.state.datainfo}
           localUpdate={this.localUpdate}
@@ -503,7 +503,7 @@ export default class MetLayer extends React.Component {
 }
 
 //***********************************************************************
-MetLayer.propTypes = {
+OceanLayer.propTypes = {
   state: PropTypes.object,
   sidebarOpen: PropTypes.bool,
   basemap: PropTypes.string,
