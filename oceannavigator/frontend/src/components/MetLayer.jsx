@@ -66,7 +66,7 @@ export default class MetLayer extends React.Component {
   getDataInfo() {
    
     $.ajax({
-      url: `/api/v1.0/variables/?dataset=all&env_type=meteorology`,
+      url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
       success: function(response) {
         
         this.setState({
@@ -179,7 +179,7 @@ export default class MetLayer extends React.Component {
         }),
       });
 
-    layer_ice.set('name', 'met')
+    layer_ice.set('name', this.props.layerType)
 
     this.setState({
       ice_layer: layer_ice
@@ -378,14 +378,14 @@ export default class MetLayer extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Met Layer")}
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _(this.props.layerName)}
         bsStyle='primary'
       >
       
         <IceDatasetSelector
           id='dataset_0'
           dataset='all'
-          envtype='meteorology'
+          envtype={this.props.layerType}
           state={this.state}
           datainfo={this.state.datainfo}
           localUpdate={this.localUpdate}

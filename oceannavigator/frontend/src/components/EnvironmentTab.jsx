@@ -65,6 +65,9 @@ export default class EnvironmentTab extends React.Component {
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
                   updateOptions={this.props.updateOptions}
+                  layerType='meteorology'
+                  layerName='Met Layer'
+                  depthName='Altitude'
                 />
             </Tab>
             <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
