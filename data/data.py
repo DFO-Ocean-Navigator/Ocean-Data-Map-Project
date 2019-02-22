@@ -122,6 +122,7 @@ class Data(object, metaclass=abc.ABCMeta):
         else:
             a = self.get_point(latitude, longitude, depth, time, variable,
                                return_depth=return_depth)
+                               
             return np.reshape(a, area.shape[1:])
 
     def get_timeseries_point(self, latitude, longitude, depth, starttime,

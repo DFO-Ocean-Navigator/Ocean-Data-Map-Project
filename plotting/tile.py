@@ -22,6 +22,7 @@ from skimage import measure
 import contextlib
 from data import open_dataset
 from flask import current_app
+import cartopy.crs as ccrs
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -166,6 +167,7 @@ def scale(args):
 
 
 def plot(projection, x, y, z, args):
+    
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -201,7 +203,7 @@ def plot(projection, x, y, z, args):
             time += len(dataset.timestamps)
 
         timestamp = dataset.timestamps[time]
-
+        
         for v in variable:
             data.append(dataset.get_area(
                 np.array([lat, lon]),
@@ -221,7 +223,13 @@ def plot(projection, x, y, z, args):
             dataset_name,
             dataset.variables[variable[0]]
         )
-        if anom:
+
+        if 'display' in args:
+            if args.get('display') == 'default':
+                cmap = colormap.find_colormap(variable[0])
+            else:
+                cmap = colormap.colormaps[args.get('display')]
+        elif anom:
             cmap = colormap.colormaps['anomaly']
         else:
             cmap = colormap.find_colormap(variable_name)
@@ -269,18 +277,391 @@ def plot(projection, x, y, z, args):
 
     bathymetry = gaussian_filter(bathymetry, 0.5)
 
-    data[np.where(bathymetry > -depthm)] = np.ma.masked
-
+    if (args.get('masked') == 1):
+        pass
+    else:
+        data[np.where(bathymetry > -depthm)] = np.ma.masked
+    
     
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
     
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
+    
+    x = np.asarray(im.convert('RGBA')).copy()
+    
+    mask = (x[:,:,0] <= 3) & (x[:,:,1] <= 5) & (x[:,:,2] <= 18)
+    #mask = x[:,:,0] < 50
+    
+    x[:, :, 3] = (255 * (1 - mask)).astype(np.uint8)#(255 * (x[:, :, :3] != 255).any(axis=2)).astype(np.uint8)
+    
+
+    im = Image.fromarray(x.astype(np.uint8))
 
     buf = BytesIO()
     im.save(buf, format='PNG', optimize=True)
     return buf
+
+def contour(projection, x, y, z, args):
+    lat, lon = get_latlon_coords(projection, x, y, z)
+
+    if len(lat.shape) == 1:
+        lat, lon = np.meshgrid(lat, lon)
+
+    dataset_name = args.get('dataset')
+    variable = args.get('variable')
+
+    if variable.endswith('_anom'):
+        variable = variable[0:-5]
+        anom = True
+    else:
+        anom = False
+
+    variable = variable.split(',')
+    depth = args.get('depth')
+    scale = args.get('scale')
+    scale = [float(component) for component in scale.split(',')]
+
+    contour_data = []
+
+    with open_dataset(get_dataset_url(dataset_name)) as dataset:
+
+        if args.get('time') is None or (type(args.get('time')) == str and
+                                        len(args.get('time')) == 0):
+            time = -1
+        else:
+            time = int(args.get('time'))
+
+        t_len = len(dataset.timestamps)
+        while time >= t_len:
+            time -= t_len
+
+        while time < 0:
+            time += len(dataset.timestamps)
+
+        timestamp = dataset.timestamps[time]
+
+        contour_data = []
+
+        for v in variable:
+            contour_data.append(dataset.get_area(
+                np.array([lat, lon]),
+                depth,
+                time,
+                v,
+                args.get('interp'),
+                args.get('radius'),
+                args.get('neighbours')
+            ))
+        variables = dataset.variables
+        contour_name = get_variable_name(dataset_name, variables[variables[0]])
+        contour_unit = get_variable_unit(dataset_name, variables[variable[0]])
+        contour_factor = get_variable_scale_factor( dataset_name, variables[variable[0]])
+
+        if contour_unit.startswith("Kelvin"):
+            contour_unit = "Celsius"
+            for idx, val in enumerate(contour_data):
+                contour_data[idx] = np.add(val, -273.15)
+
+        if contour_factor != 1.0:
+            for idx, val in enumerate(contour_data):
+                contour_data[idx] = np.multiply(val, contour_factor)
+
+        if len(contour_data) == 1:
+            contour_data = contour_data[0]
+
+        if len(contour_data) == 2:
+            contour_data = np.sqrt(contour_data[0] ** 2 + contour_data[1] ** 2)
+            
+        contour_data = contour_data.transpose()
+        contour_data = np.flip(contour_data, 0)
+
+        
+
+        #timestamp = dataset.timestamps(args.get('time'))
+
+    difference = (scale[1] - scale[0]) / 5
+    levels = [scale[0] + difference, scale[0] + 2*difference, scale[0] + 3*difference, scale[0] + 4* difference, scale[1]]
+    
+    xpx = x * 256
+    ypx = y * 256
+
+    if depth != 'bottom':
+            depthm = dataset.depths[depth]
+    else:
+        depthm = 0
+
+    with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+        #bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
+        #bathymetry = gaussian_filter(bathymetry, 0.5)
+        bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
+        bathymetry = bathymetry[::-1, :]
+        if (args.get('masked') == 1):
+            pass
+        else:
+            contour_data[np.where(bathymetry < depthm)] = np.ma.masked
+            #contour_data[np.where(bathymetry > 0)] = np.ma.masked
+
+    min_indices = contour_data.min()
+    contour_data[np.where(contour_data == np.ma.masked)] = -50
+
+    normalized = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])(levels)
+    
+    print("CONTOURS: ", args.get('contours'))
+    if args.get('contours') == 'default':
+        print("Variable: ", variable)
+        cmap = colormap.find_colormap(variable[0])
+    else:
+        cmap = colormap.colormaps[args.get('contours')]
+    
+    colors = cmap(normalized)
+    
+    fig = plt.figure()
+    fig.set_size_inches(4, 4)
+    ax = plt.Axes(fig, [0, 0, 1, 1])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    
+    
+    #contour_data[np.where(contour_data <= levels[0])] = 0
+    #print(contour_data[np.where(contour_data <= 0)])
+    for i, l in enumerate(levels):
+        
+        contours = measure.find_contours(contour_data, l)
+        
+        #if l == levels[0]:
+        #    contours = []
+        #    print("CONTOURS: ", contours)
+        
+        for n, contour in enumerate(contours):
+            ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=3)
+    
+     
+    plt.xlim([0, 255])
+    plt.ylim([0, 255])
+    #plt.clabel(colors, inline=1, fontsize=10)
+
+    with contextlib.closing(BytesIO()) as buf:
+        plt.savefig(
+            buf,
+            format='png',
+            dpi=64,
+            transparent=True,
+        )
+        plt.close(fig)
+        buf.seek(0)
+        im = Image.open(buf)
+
+        #x = np.asarray(im.convert('RGBA')).copy()
+        #print("X: ", x)
+        #print("COLORS[0]: ", colors[levels[0]])
+        #x[np.where(x == colors[0])] = np.ma.masked
+        #print("X AGAIN: ", x)
+        #im = Image.fromarray(x.astype(np.uint8))
+        #print(im)
+        buf2 = BytesIO()
+        im.save(buf2, format='PNG', optimize=True)
+        return buf2
+
+    return None
+
+def wind_barbs(projection, x, y, z, args):
+    print('\n\n\nNEIGHBOURS: ', args, '\n\n\n')
+    lat, lon = get_latlon_coords(projection, x, y, z)
+    print("LAT: ", lat)
+    if len(lat.shape) == 1:
+        lat, lon = np.meshgrid(lat, lon)
+
+    dataset_name = args.get('dataset')
+    variable = args.get('variable')
+
+    if variable.endswith('_anom'):
+        variable = variable[0:-5]
+        anom = True
+    else:
+        anom = False
+
+    variable = ['v-component_of_wind_height_above_ground', 'u-component_of_wind_height_above_ground']
+    depth = args.get('depth')
+    scale = args.get('scale')
+    scale = [float(component) for component in scale.split(',')]
+
+    data = []
+
+    with open_dataset(get_dataset_url(dataset_name)) as dataset:
+        print(dataset.variables[variable[0]].dimensions)
+        if args.get('time') is None or (type(args.get('time')) == str and
+                                        len(args.get('time')) == 0):
+            time = -1
+        else:
+            time = int(args.get('time'))
+
+        t_len = len(dataset.timestamps)
+        while time >= t_len:
+            time -= t_len
+
+        while time < 0:
+            time += len(dataset.timestamps)
+
+        timestamp = dataset.timestamps[time]
+
+        data = []
+        all_vars = []
+        print("Variables: ", variable)
+        for v in variable:
+            all_vars.append(v)
+            d = dataset.get_area(
+                np.array([lat, lon]),
+                depth,
+                time,
+                v,
+                args.get('interp'),
+                args.get('radius'),
+                10 #args.get('neighbours')
+            )
+            print("AFTER GET AREA")
+            variables = dataset.variables
+            name = get_variable_name(dataset_name, variables[v])
+            unit = get_variable_unit(dataset_name, variables[v])
+            factor = get_variable_scale_factor( dataset_name, variables[v])
+            d.transpose()
+            np.flip(d,0)
+            data.append(d)
+
+        #if len(data) == 2:
+        #    data = np.sqrt(data[0] ** 2 + data[1] ** 2)
+            
+        #data = data.transpose()
+        #data = np.flip(data, 0)
+
+    print(data)
+    print("DATA TYPE: ", type(data))
+    
+    nparray_data = []
+    for d in data:
+        #print(d.shape)
+        nparray_data.append(np.array(d))
+        #d.reshape(-1, 3)
+        #d.reshape(-1, 3)
+        #nparray_data.append(d.reshape(-1, 5).mean(axis=1))
+        
+        #print(len(nparray_data[0]))
+    #data = nparray_data
+    data = nparray_data
+    print(data)
+    print("NEW DATA TYPE: ", type(data))
+    X, Y = np.meshgrid(data[0], data[1], sparse=True)
+    #U, V = 12* X, 12*Y
+    #print("NEW DATA TYPE: ", type(data))
+
+    #fig, axs = plt.subplots(nrows=2, ncols=2)  
+
+    U = np.multiply(X, 12)
+    V = np.multiply(Y, 12)
+    #manager = plt.get_current_fig_manager()
+    #manager.window.showMaximized()
+    fig, ax = plt.subplots()
+    fig.set_size_inches(50,50)
+    #plt.figure(figsize=(4,4))
+    #ax = plt.plot(1,1,1,projection=ccrs.Mercator())
+    #ax.coastlines('50m')
+    #ax.set_extent([])
+    fig.set_size_inches(4, 4)
+    ax = plt.Axes(fig, [0, 0, 1, 1])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    plt.barbs(X, Y, U, V, length=8, sizes=dict(emptybarb=0.75, spacing=0.01))
+    
+    
+
+    #plt.show()
+
+        #timestamp = dataset.timestamps(args.get('time'))
+
+    #difference = (scale[1] - scale[0]) / 5
+    #levels = [scale[0] + difference, scale[0] + 2*difference, scale[0] + 3*difference, scale[0] + 4* difference, scale[1]]
+    
+    #xpx = x * 256
+    #ypx = y * 256
+
+    #if depth != 'bottom':
+    #        depthm = dataset.depths[depth]
+    #else:
+    #    depthm = 0
+
+    #with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+    #    #bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
+    #    #bathymetry = gaussian_filter(bathymetry, 0.5)
+    #    bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)] * -1
+    #    bathymetry = bathymetry[::-1, :]
+    #    if (args.get('masked') == 1):
+    #        pass
+    #    else:
+    #        data[np.where(bathymetry < depthm)] = np.ma.masked
+    #        #contour_data[np.where(bathymetry > 0)] = np.ma.masked
+
+    #min_indices = data.min()
+    #data[np.where(data == np.ma.masked)] = -50
+
+    #normalized = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])(levels)
+    
+    
+    #if args.get('contours') == 'default':
+    #    cmap = colormap.find_colormap(variable[0])
+    #else:
+    #    cmap = colormap.colormaps[args.get('contours')]
+    
+    #colors = cmap(normalized)
+    
+    #fig = plt.figure()
+    
+    #ax = plt.Axes(fig, [0, 0, 1, 1])
+    #ax.set_axis_off()
+    #fig.add_axes(ax)
+    
+    
+    #contour_data[np.where(contour_data <= levels[0])] = 0
+    #print(contour_data[np.where(contour_data <= 0)])
+    #for i, l in enumerate(levels):
+        
+    #    contours = measure.find_contours(data, l)
+        
+        #if l == levels[0]:
+        #    contours = []
+        #    print("CONTOURS: ", contours)
+        
+    #    for n, contour in enumerate(contours):
+    #        ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=3)
+    
+     
+    #plt.xlim([0, 255])
+    #plt.ylim([0, 255])
+    #plt.clabel(colors, inline=1, fontsize=10)
+
+    with contextlib.closing(BytesIO()) as buf:
+        plt.savefig(
+            buf,
+            format='png',
+            dpi=64,
+            transparent=False,
+        )
+        #plt.close(fig)
+        buf.seek(0)
+        im = Image.open(buf)
+
+        #x = np.asarray(im.convert('RGBA')).copy()
+        #print("X: ", x)
+        #print("COLORS[0]: ", colors[levels[0]])
+        #x[np.where(x == colors[0])] = np.ma.masked
+        #print("X AGAIN: ", x)
+        #im = Image.fromarray(x.astype(np.uint8))
+        #print(im)
+        buf2 = BytesIO()
+        im.save(buf2, format='PNG', optimize=True)
+        return buf2
+
+    return None
 
 
 def topo(projection, x, y, z, shaded_relief):

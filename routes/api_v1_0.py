@@ -64,6 +64,8 @@ def generateScript(url: str, type: str):
 #
 # Unchanged from v0.0
 #
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
 @bp_v1_0.route('/api/v1.0/datasets/')
 def query_datasets_v1_0():
   return routes.routes_impl.query_datasets_impl(request.args)
@@ -71,6 +73,8 @@ def query_datasets_v1_0():
 
 #
 # Unchanged from v0.0
+#
+# Will be capable of processing additional arguments for meteorology, oceanography, and ice
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
@@ -92,7 +96,29 @@ def obs_vars_query_v1():
 def time_query_v1_0():
   return routes.routes_impl.time_query_impl(request.args)
 
+#
+# Gets all available timestamps for all the datasets
+#
+@bp_v1_0.route('/api/v1.0/all/timestamps/')
+def all_time_query_v1_0():
+  return routes.routes_impl.all_time_query_impl(request.args)
 
+
+#
+#
+#
+@bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
+def convert(dataset: str, date: str):
+  
+  try:
+    with open_dataset(get_dataset_url(dataset)) as ds:
+      date = ds.convert_to_timestamp(date)
+      resp = jsonify({
+          'date': date,
+      })
+    return resp
+  except:
+    return Response(status=500)
 #
 # Unchanged from v0.0
 #
@@ -277,13 +303,15 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 #
 # Change to timestamp from v0.0
 #
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
   
-  with open_dataset(get_dataset_url(dataset)) as ds:
+  with open_dataset(get_dataset_url(dataset)) as ds: 
+    
     date = ds.convert_to_timestamp(time)
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
-
+    response = routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, masked, display, zoom, x, y)
+    
+    return response
 
 #
 # Allow toggle of shaded relief

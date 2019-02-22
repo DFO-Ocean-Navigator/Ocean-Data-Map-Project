@@ -52,6 +52,186 @@
             }
         }
     }
+    
+    .time_container {
+        height: fit-content;
+        width: 60px;
+        bottom: 10px;
+        left: 21%;
+        border-radius: 25px;
+
+        .timeLayerContainer {
+            width: 100%;
+            height: 60px;
+
+            .timeBarToggle {
+                height: 50px;
+                width: 50px;
+                border-radius: 50%;
+                float: left;
+                display: inline-flex;
+                font-size: 22px;
+                font-weight: bold;
+                border: 4px solid #006687;
+                color: #006687;
+            }    
+            .timeBarToggle:focus {
+                    outline: none;
+            }
+            .timeBarToggle:hover {
+                background-color: #006687;
+                color: #e7e7e7;
+                border-color: #e7e7e7;
+            }
+            
+        }
+    }
+
+    
+
+    @keyframes slide-open {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        50% {
+            opacity: 1;
+            //transform: translateX(-25px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .timeBarContainer {
+        height: 50px;
+        width: 955px;
+        margin-left: 50px;
+        padding: 3px;
+        border: 4px solid #006687;
+        border-radius: 25px 25px 25px 25px;
+        background-color: rgba(255,255,255,0.5);
+        animation: slide-open 0.5s ease;
+
+
+        .startTimeContainer {
+            width: 15%;
+            height: 100%;
+            display: inline-block;
+            vertical-align: top;
+            float: left;
+            border-radius: 25px 0px 0px 25px;
+        }
+
+        .buttonContainer::-webkit-scrollbar              { width: 2px; background: rgba(255,255,255,0); height: 30px; }
+        .buttonContainer::-webkit-scrollbar-button       { background: transparent }
+        .buttonContainer::-webkit-scrollbar-track        { background: transparent }
+        .buttonContainer::-webkit-scrollbar-track-piece  { background: transparent }
+        .buttonContainer::-webkit-scrollbar-thumb        {
+            background: #008cba;
+        }
+        .buttonContainer::-webkit-scrollbar-corner       { background-color: transparent }
+        .buttonContainer::-webkit-resizer                { background-color: transparent }
+        
+
+        .yearContainer {
+            height: 655px;
+
+        }
+        .monthContainer {
+            height: 596px;
+        }
+        .dayContainer {
+            height: 545px; 
+        }
+        .timecontainer {
+            height: 100%;
+            width: 658px;
+            display: inline-block;
+        }
+
+        .selectedContainer {
+            display: inline;
+            .yearButton {
+                vertical-align: top;
+                border-radius: 50px;
+                width: 60px;
+                height: 33px;
+                padding: 0px;
+                margin-top: 3px;
+                color: white;
+                background-color: #006687
+            }
+            .monthButton {
+                border-radius: 50px;
+                width: 50px;
+                height: 33px;
+                padding: 0px;
+                vertical-align: top;
+                color: white;
+                background-color: #006687;
+                margin-top: 3px;
+            }
+        }
+
+        .buttonContainer {
+            
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            margin-left: -45px;
+            position: relative;
+            display: inline-block;
+            width: 47px;
+            //height: 649px;
+            vertical-align: bottom;
+            transform-origin: top right;
+            //transform-origin: right top;
+        
+            
+            
+            .yearButtons {
+                transform: rotate(90deg);
+                vertical-align: bottom;
+                border-radius: 50px;
+                display: inline-block;
+                width: 60px;
+                height: 33px;
+                padding: 0px;
+                margin-top: 28px;
+            }
+            .monthButtons {
+                transform: rotate(90deg);
+                vertical-align: bottom;
+                border-radius: 50px;
+                display: inline-block;
+                width: 50px;
+                height: 33px;
+                padding: 0px;
+                margin-top: 28px;
+            }
+            .dayButtons {
+                transform: rotate(90deg);
+                vertical-align: bottom;
+                border-radius: 50px;
+                display: inline-block;
+                width: 50px;
+                height: 33px;
+                padding: 0px;
+                margin-top: 28px;
+            }
+        }
+        
+
+        .endTimeContainer {
+            width: 15%;
+            height: 100%;
+            float: right;
+            display: inline-block;
+            border-radius: 0px 25px 25px 0px;
+        }
+    }
 
     // Map scale
     .scale-viewer {
@@ -217,8 +397,76 @@
     .ol-popup {
     }
 
-    
+    .layerHierarchy {
+        width:200px;
+        height:fit-content;
+        background-color: white;
+        z-index: 0;
+        position: relative;
+        float: right;
+        margin-top: 20px;
+        margin-right: 20px;
+        //padding-top: 10px;
+        opacity: 0.7;
+        
+        .showLayers {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .layerContainer {
+            display: inline-block;
+            width: 90%;
+            margin-left: 5%;
+            margin-right: 5%;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            height:40px;
+            background-color: grey;
 
+            .layerTextContainer {
+                width: 70%;
+                float: left;
+                height: 100%;
+                padding-left: 10px;
+                line-height: 41px;
+            }
+
+            .buttonContainer {
+                float: right;
+                height: 100%;
+                width: 30%;
+                display: inline-block;
+            
+
+                .arrowsContainer {
+                    height: 100%;
+                    float: left;
+                    width: 50%;
+
+                    .layerButton {
+                        height: 50%;
+                        width: 100%;
+                        float: left;
+
+                        .layerIcon {
+                            float: right;
+                            height: 100%;
+                            width: 100%;
+                        }
+                    }   
+                }
+
+                .layerCloseButton {
+                    width: 50%;
+                    height: 100%;
+                    float: right;
+                }
+            }
+            
+        }
+        
+    }
+    
     .ol-popup:before {
     }
 

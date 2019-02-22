@@ -152,11 +152,22 @@ export default class PlotImage extends React.PureComponent {
       quantum: q.quantum,
       names: q.names,
     };
-
-    if (q.plotTitle !== null) {
-      query.plotTitle = q.plotTitle;
+    if ('title' in q) {
+      query.plotTitle = q['title'];
     }
-    
+    if ('xscale' in q) {
+      query.xscale = q['xscale']
+    }
+    if ('yscale' in q) {
+      query.yscale = q['yscale']
+    }
+
+    if ('ylabel' in q) {
+      query.ylabel = q['ylabel']
+    }
+    if ('xlabel' in q) {
+      query.xlabel = q['xlabel']
+    }
     switch(q.type) {
       case "profile":
       case "ts":
@@ -299,11 +310,13 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
+    console.warn("QUERY 2: ", query)
     return query;
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
+    console.warn("QUERY STRING: ", query)
     return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 

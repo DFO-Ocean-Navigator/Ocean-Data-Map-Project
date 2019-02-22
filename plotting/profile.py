@@ -97,7 +97,7 @@ class ProfilePlotter(plPoint.PointPlotter):
     def plot(self):
         # Create base figure
         fig = plt.figure(figsize = self.figuresize(), dpi = self.dpi)
-
+        
         # Setup figure layout
         width = len(self.variables)
         if self.showmap:
@@ -121,37 +121,69 @@ class ProfilePlotter(plPoint.PointPlotter):
                                         [x[1] for x in self.points]])) # Longitudes
 
         is_y_label_plotted = False
+        
+        
+
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
+            
 
             plt.plot(
                 self.data[:, idx, :].transpose(),
                 self.depths[:, idx, :].transpose()
             )
-
+            
             current_axis = plt.gca()
             current_axis.xaxis.set_label_position('top')
             current_axis.xaxis.set_ticks_position('top')
             current_axis.invert_yaxis()
             current_axis.grid(True)
-            current_axis.set_xlabel("%s (%s)" %
+
+            
+            
+
+            if 'xlabel' in self.query:
+                current_axis.set_xlabel(self.query['xlabel'], fontsize=14)
+            else:
+                current_axis.set_xlabel("%s (%s)" %
                                (self.variable_names[idx],
                                 utils.mathtext(self.variable_units[idx])), fontsize=14)
 
             # Put y-axis label on left-most graph (but after the point location)
-            if not is_y_label_plotted and (subplot == 0 or subplot == 1):
+            #if 'ylabel' in self.
+            
+            if 'ylabel' in self.query:
+                current_axis.set_ylabel(self.query['ylabel'], fontsize=14)
+
+            elif not is_y_label_plotted and (subplot == 0 or subplot == 1):
                 current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
             
+            
+
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
 
+               
+
             subplot += 1
 
+        
+
         self.plot_legend(fig, self.names)
+        
+        if 'xscale' in self.query:
+            min = float(self.query['xscale'][0])
+            max = float(self.query['xscale'][1])
+            plt.xlim(min, max)
+        
+        if 'yscale' in self.query:
+            min = float(self.query['yscale'][0])
+            max = float(self.query['yscale'][1])
+            plt.ylim(min, max)
 
         if self.plotTitle is None or self.plotTitle == "":  
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "), \

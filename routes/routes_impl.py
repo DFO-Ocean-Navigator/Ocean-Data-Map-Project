@@ -16,7 +16,7 @@ from PIL import Image
 import io
 
 from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets,
+    get_variable_name, get_datasets, get_variable_type,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache, get_dataset_help,
     get_dataset_name, get_dataset_quantum, get_dataset_attribution
@@ -369,88 +369,183 @@ def vars_query_impl(args):
 
     if 'dataset' not in args.keys():
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
-
-    data = []       #Initializes empty data list
-    dataset = args['dataset']   #Dataset Specified in query
-
-    #Queries config files
-    if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
-            
-        with open_dataset(get_dataset_climatology(dataset)) as ds:
-            climatology_variables = list(map(str, ds.variables))
+    
+    if args['dataset'] == 'all':
+        resp = all_vars_query_impl(args)
+        
+        return resp
     
     else:
-        climatology_variables = []
+        datasets = [args['dataset']]   #Dataset Specified in query
+    
+    data = []       #Initializes empty data list
+    
+    for dataset in datasets:
+        #Queries config files
+        if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
 
-    #three_d = '3d_only' in args     #Checks if 3d_only is in args
-    #If three_d is true - Only 3d variables will be returned
+            with open_dataset(get_dataset_climatology(dataset)) as ds:
+                climatology_variables = list(map(str, ds.variables))
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
-        if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
+        else:
+            climatology_variables = []
 
-            # 'v' is a Variable in the Dataset
-            #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-            for v in ds.variables:  #Iterates through all the variables in the dataset
+        #three_d = '3d_only' in args     #Checks if 3d_only is in args
+        #If three_d is true - Only 3d variables will be returned
 
-                #If a time period and at least one other unit type is specified
-                if ('time_counter' in v.dimensions or   
-                    'time' in v.dimensions) \
-                        and ('y' in v.dimensions or
-                             'yc' in v.dimensions or
-                             'node' in v.dimensions or
-                             'nele' in v.dimensions or
-                             'latitude' in v.dimensions or
-                             'lat' in v.dimensions):
-                    if ('3d_only' in args) and not (
-                        set(ds.depth_dimensions) & set(v.dimensions)
-                    ):
-                        continue
-                    else:
-                        if not is_variable_hidden(dataset, v):
-                             
-                            data.append({
-                                'id': v.key,
-                                'value': get_variable_name(dataset, v),
-                                'scale': get_variable_scale(dataset, v)
-                            })
-                            if v.key in climatology_variables:
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
+
+                # 'v' is a Variable in the Dataset
+                #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
+                for v in ds.variables:  #Iterates through all the variables in the dataset
+
+                    #If a time period and at least one other unit type is specified
+                    if ('time_counter' in v.dimensions or   
+                        'time' in v.dimensions) \
+                            and ('y' in v.dimensions or
+                                 'yc' in v.dimensions or
+                                 'node' in v.dimensions or
+                                 'nele' in v.dimensions or
+                                 'latitude' in v.dimensions or
+                                 'lat' in v.dimensions):
+                        if ('3d_only' in args) and not (
+                            set(ds.depth_dimensions) & set(v.dimensions)
+                        ):
+                            continue
+                        else:
+                            if not is_variable_hidden(dataset, v):
                                 data.append({
-                                    'id': v.key + "_anom",
-                                    'value': get_variable_name(dataset, v) + " Anomaly",
-                                    'scale': [-10, 10]
+                                    'id': v.key,
+                                    'value': get_variable_name(dataset, v),
+                                    'scale': get_variable_scale(dataset, v),
                                 })
-     
-        VECTOR_MAP = {
-            'vozocrtx': 'vozocrtx,vomecrty',
-            'itzocrtx': 'itzocrtx,itmecrty',
-            'iicevelu': 'iicevelu,iicevelv',
-            'u_wind': 'u_wind,v_wind',
-            'u': 'u,v',
-            'ua': 'ua,va',
-            'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
-        }
+                                if v.key in climatology_variables:
+                                    data.append({
+                                        'id': v.key + "_anom",
+                                        'value': get_variable_name(dataset, v) + " Anomaly",
+                                        'scale': [-10, 10],
+                                    })
+                            else:
+                                data.append({
+                                    'id': v.key,
+                                    'value': get_variable_name(dataset, v),
+                                    'scale': get_variable_scale(dataset, v),
+                                })
+                                if v.key in climatology_variables:
+                                    data.append({
+                                        'id': v.key + "_anom",
+                                        'value': get_variable_name(dataset, v) + " Anomaly",
+                                        'scale': [-10, 10],
+                                    })
 
-        #If Vectors are needed
-        if 'vectors' in args or 'vectors_only' in args:
+            VECTOR_MAP = {
+                'vozocrtx': 'vozocrtx,vomecrty',
+                'itzocrtx': 'itzocrtx,itmecrty',
+                'iicevelu': 'iicevelu,iicevelv',
+                'u_wind': 'u_wind,v_wind',
+                'u': 'u,v',
+                'ua': 'ua,va',
+                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
+            }
+
+            #If Vectors are needed
+
             
-            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
-            for key, value in list(VECTOR_MAP.items()):
-                if key in ds.variables:
-                    n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
-                    data.append({
-                        'id': value,
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                        'scale': [0, get_variable_scale(
-                            dataset,
-                            ds.variables[key]
-                        )[1]]
-                    })
 
+            if 'vectors' in args or 'vectors_only' in args:
+
+                rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
+                for key, value in list(VECTOR_MAP.items()):
+                    if key in data:
+                        n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
+                        data.append({
+                            'id': value,
+                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
+                            'scale': [0, get_variable_scale(
+                                dataset,
+                                ds.variables[key]
+                            )[1]],
+                        })
+
+    # END OF DATASET LOOP
+        
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     
     #Data is set of scale, id, value objects
+    
     resp = jsonify(data)
     return resp
+
+def all_vars_query_impl(args):
+    print('all_vars_query_impl')
+
+    variables = dict()
+    for dataset in get_datasets():
+
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for v in ds.variables:
+                if not is_variable_hidden(dataset, v):
+                    #print("VARIABLE TYPE: ", get_variable_type(dataset, v)),
+                    var_name = get_variable_name(dataset, v)
+                    if var_name not in variables:
+                        var_type = get_variable_type(dataset, v)
+        
+                        if not ('env_type' in args and var_type not in args['env_type']):
+                            variables[var_name] = {
+                                'id': var_name,
+                                'datasets': [dataset],
+                                'env_type': var_type,
+                                'info': {
+                                    dataset: {
+                                        'id': v.key,
+                                        'scale': get_variable_scale(dataset, v),
+                                    }
+                                }    
+                            }
+                    else:
+                        print("CURRENT DATASET: ", dataset)
+                        variables[var_name]['datasets'].append(dataset)
+
+                        variables[var_name]['info'][dataset] = {
+                           'id': v.key,
+                           'scale': get_variable_scale(dataset, v),
+                        }
+                        print("ELSE")
+    
+    
+    #data = dict()
+    #data = sorted(variables.items())
+    data = variables
+    data = jsonify(data)
+    
+    return data
+
+
+#def all_time_query_impl(args):
+#    """
+#    API Format: /api/v1.0/all/timestamps/
+#
+#    Retrieves all timestamps for all available datasets
+#    """
+#    times = dict()
+#
+#    for dataset in get_datasets():
+#        with open_dataset(get_dataset_url(dataset)) as ds:
+#            print("TIMESTAMPS: ", ds.timestamps)
+#            for date in ds.timestamps:
+#                print("DATE: ", date)
+#                if date.year not in times:
+#                    times[date.year] = {
+#                        date.month: [date.date]
+#                    }
+#                else:
+#                    if date.month not in times[date.year]:
+#                        times[date.year][date.monhth]
+#
+#                    else:
+#                        if date.date not in times[date.year][date.month]:
+#                            times[date.year][date.month].append(date.date)
 
 
 def time_query_impl(args):
@@ -462,8 +557,9 @@ def time_query_impl(args):
     Finds all data timestamps available for a specific dataset
     """
 
-    if 'dataset' not in args:
+    if 'dataset' not in args and 'all' not in args:
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
+
 
     data = []
     dataset = args['dataset']
@@ -562,34 +658,69 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
+def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
     """
         Produces the data tiles
     """
+
     
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
     
     # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    #if _is_cache_valid(dataset, f):
+    #    return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
-    else:
-        if depth != "bottom" and depth != "all":
-            depth = int(depth)
+    #else:
 
-        img = plotting.tile.plot(projection, x, y, zoom, {
-            'interp': interp,
-            'radius': radius*1000,
-            'neighbours': neighbours,
-            'dataset': dataset,
-            'variable': variable,
-            'time': time,
-            'depth': depth,
-            'scale': scale,
-        })
+    display = display.split(',')
+    
+    if depth != "bottom" and depth != "all":
+        depth = int(depth)
 
-        return _cache_and_send_img(img, f)
+        if display[0] == 'colourmap':
+            img = plotting.tile.plot(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+               'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'display': display[1]
+            })
+        elif display[0] == 'contours':
+            img = plotting.tile.contour(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'contours': display[1],
+            })
+        elif display[0] == 'windbarbs':
+            img = plotting.tile.wind_barbs(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'wind_barbs': display[1],   
+            })
+        else:
+            raise ValueError
+            return
+    return _cache_and_send_img(img, f)
 
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """

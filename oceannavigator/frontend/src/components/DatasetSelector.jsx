@@ -1,5 +1,3 @@
-/* eslint react/no-deprecated: 0 */
-
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -194,4 +192,3 @@ DatasetSelector.propTypes = {
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
 };
-
