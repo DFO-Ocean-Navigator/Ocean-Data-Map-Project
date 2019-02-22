@@ -704,6 +704,19 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
                 'masked': masked,
                 'contours': display[1],
             })
+        elif display[0] == 'windbarbs':
+            img = plotting.tile.wind_barbs(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'wind_barbs': display[1],   
+            })
         else:
             raise ValueError
             return
