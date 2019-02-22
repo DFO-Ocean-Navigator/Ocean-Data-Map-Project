@@ -225,7 +225,10 @@ def plot(projection, x, y, z, args):
         )
 
         if 'display' in args:
-            cmap = colormap.colormaps[args.get('display')]
+            if args.get('display') == 'default':
+                cmap = colormap.find_colormap(variable[0])
+            else:
+                cmap = colormap.colormaps[args.get('display')]
         elif anom:
             cmap = colormap.colormaps['anomaly']
         else:
@@ -560,7 +563,7 @@ def wind_barbs(projection, x, y, z, args):
     #manager.window.showMaximized()
     fig, ax = plt.subplots()
     fig.set_size_inches(50,50)
-    plt.figure(figsize=(4,4))
+    #plt.figure(figsize=(4,4))
     #ax = plt.plot(1,1,1,projection=ccrs.Mercator())
     #ax.coastlines('50m')
     #ax.set_extent([])
