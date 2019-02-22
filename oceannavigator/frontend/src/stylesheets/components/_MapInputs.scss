@@ -4,7 +4,6 @@ div.MapInputs {
     
     padding: 0.25em; 
     padding-left: 0.5em; 
-    height: calc(100% - 50px);
  
     padding-right: 0.5em; 
     // Reduce padding of Bootstrap panel
@@ -23,5 +22,5 @@ div.MapInputs {
 
 // Move sidebar onto screen when open
 .MapInputs.open {
-    width: $sidebar-width - 2.75%;
+    width: $sidebar-width;
 }

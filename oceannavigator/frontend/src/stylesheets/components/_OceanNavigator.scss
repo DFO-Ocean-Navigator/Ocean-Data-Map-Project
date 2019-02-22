@@ -27,12 +27,6 @@ body {
         }
         
     }
-    #app {
-        height:100%;
-        >div {
-            height:100%;
-        }
-    }
 }
 .OceanNavigator {
 
@@ -145,8 +139,7 @@ body {
         
     }
     .MapInputs {
-        width: 17.25%;
-        left: 2.75%;
+        width: 0;
         position: absolute;
         top: 0;
         bottom: 0;
@@ -203,4 +196,3 @@ body {
         }
     }
 }
-

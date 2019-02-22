@@ -162,8 +162,8 @@ export default class PlotImage extends React.PureComponent {
       query.yscale = q['yscale']
     }
 
-    if ('ylabel' in q) {
-      query.ylabel = q['ylabel']
+    if (q.plotTitle !== null) {
+      query.plotTitle = q.plotTitle;
     }
     if ('xlabel' in q) {
       query.xlabel = q['xlabel']
@@ -310,13 +310,11 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    console.warn("QUERY 2: ", query)
     return query;
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    console.warn("QUERY STRING: ", query)
     return "/plot/?query=" + encodeURIComponent(stringify(query));
   }
 

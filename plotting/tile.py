@@ -167,7 +167,6 @@ def scale(args):
 
 
 def plot(projection, x, y, z, args):
-    
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -203,7 +202,7 @@ def plot(projection, x, y, z, args):
             time += len(dataset.timestamps)
 
         timestamp = dataset.timestamps[time]
-        
+
         for v in variable:
             data.append(dataset.get_area(
                 np.array([lat, lon]),
@@ -277,27 +276,14 @@ def plot(projection, x, y, z, args):
 
     bathymetry = gaussian_filter(bathymetry, 0.5)
 
-    if (args.get('masked') == 1):
-        pass
-    else:
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
-    
+    data[np.where(bathymetry > -depthm)] = np.ma.masked
+
     
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
     
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
-    
-    x = np.asarray(im.convert('RGBA')).copy()
-    
-    mask = (x[:,:,0] <= 3) & (x[:,:,1] <= 5) & (x[:,:,2] <= 18)
-    #mask = x[:,:,0] < 50
-    
-    x[:, :, 3] = (255 * (1 - mask)).astype(np.uint8)#(255 * (x[:, :, :3] != 255).any(axis=2)).astype(np.uint8)
-    
-
-    im = Image.fromarray(x.astype(np.uint8))
 
     buf = BytesIO()
     im.save(buf, format='PNG', optimize=True)

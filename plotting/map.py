@@ -96,7 +96,6 @@ class MapPlotter(pl.Plotter):
         self.contour = query.get('contour')
 
     def load_data(self):
-        
         distance = VincentyDistance()        
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
@@ -736,11 +735,6 @@ class MapPlotter(pl.Plotter):
                         linewidths=2,
                         levels=levels,
                         cmap=cmap)
-
-                    # Adds labels to the contour lines
-                    if self.contour.get('clabel'):
-                        plt.clabel(contours, inline=1, fontsize=10)
-                
                 else:
                     hatches = [
                         '//', 'xx', '\\\\', '--', '||', '..', 'oo', '**'

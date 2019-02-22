@@ -47,8 +47,9 @@ class Nemo(NetCDFData):
         Computes and returns points bounding lat, lon.
     """
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
-        
+
         y, x, d = find_nearest_grid_point(lat, lon, self._dataset, latvar, lonvar, n)
+
         def fix_limits(data, limit):
             mx = np.amax(data)
             mn = np.amin(data)
@@ -221,7 +222,7 @@ class Nemo(NetCDFData):
     def get_point(self, latitude, longitude, depth, time, variable,
                   return_depth=False):
         latvar, lonvar = self.__latlon_vars(variable)
-        
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
 
@@ -231,6 +232,7 @@ class Nemo(NetCDFData):
 
         # Get xarray.Variable
         var = self._dataset.variables[variable]
+
         if depth == 'bottom':
             
             if hasattr(time, "__len__"):
@@ -289,6 +291,7 @@ class Nemo(NetCDFData):
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
+            
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],

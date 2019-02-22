@@ -21,7 +21,6 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
-import Spinner from '../images/spinner.gif';
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -98,7 +97,6 @@ export default class AreaWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    this.updatePlot();
   }
 
   componentWillUnmount() {
@@ -717,14 +715,13 @@ export default class AreaWindow extends React.Component {
     </div>;
 
     let leftInputs = [];
-    let rightInputs = [];    
-    
-    let applyChanges = <Button
-                onClick={this.updatePlot}
-              >Apply Changes</Button>
-
-    //this.updatePlot()
-    
+    let rightInputs = [];
+    const plot_query = {
+      dataset: this.state.dataset_0.dataset,
+      quantum: this.state.dataset_0.dataset_quantum,
+      scale: this.state.scale,
+      name: this.props.name,
+    };
     switch(this.state.currentTab) {
       case 1:
         leftInputs = [globalSettings, mapSettings, subsetPanel, applyChanges];
@@ -739,8 +736,7 @@ export default class AreaWindow extends React.Component {
         leftInputs = [globalSettings, dataset, applyChanges];
         break;
     }
-    
-    
+    //this.updatePlot()
     
 
     let content;

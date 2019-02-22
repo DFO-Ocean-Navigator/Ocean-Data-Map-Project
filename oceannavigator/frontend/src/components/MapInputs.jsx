@@ -117,61 +117,6 @@ export default class MapInputs extends React.Component {
       );
     }
 
-    if (this.props.private === true) {
-      this.settings_panel = undefined;
-    } else {
-      this.settings_panel = <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Settings")}</span></span>}>
-
-        <Panel    //Settings Panel
-          collapsible
-          defaultExpanded
-          header={_("Map")} 
-          bsStyle='primary' 
-        >
-          <ComboBox   //Projection Drop Down - Hardcoded
-            id='projection'
-            state={this.props.state.projection}
-            onUpdate={this.props.changeHandler}
-            data={[
-              { id: "EPSG:3857", value: _("Global") },
-              { id: "EPSG:32661", value: _("Arctic") },
-              { id: "EPSG:3031", value: _("Antarctic") },
-            ]}
-            title={_("Projection")}
-          />
-          <ComboBox   //Basemap Drop Down - Hardcoded
-            id='basemap'
-            state={this.props.state.basemap}
-            onUpdate={this.props.changeHandler}
-            data={[
-              {
-                id: "topo",
-                value: _("ETOPO1 Topography"),
-                attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
-              },
-              {
-                id: "ocean",
-                value: _("Esri Ocean Basemap"),
-                attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
-              },
-              {
-                id: "world",
-                value: _("Esri World Imagery"),
-                attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
-              },
-            ]}
-            title={_("Basemap")}
-          />
-
-        </Panel>
-
-        <Options
-          options={this.props.options}
-          updateOptions={this.props.updateOptions}
-        />
-
-      </Tab>
-    }
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
 
     return (
@@ -233,9 +178,62 @@ export default class MapInputs extends React.Component {
           </Tab>
 
           {/* Creates Settings Tab */}
-          {this.settings_panel}
+          <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Settings")}</span></span>}>
+
+            <Panel    //Settings Panel
+              collapsible
+              defaultExpanded
+              header={_("Map")} 
+              bsStyle='primary' 
+            >
+              <ComboBox   //Projection Drop Down - Hardcoded
+                id='projection'
+                state={this.props.state.projection}
+                onUpdate={this.props.changeHandler}
+                data={[
+                  { id: "EPSG:3857", value: _("Global") },
+                  { id: "EPSG:32661", value: _("Arctic") },
+                  { id: "EPSG:3031", value: _("Antarctic") },
+                ]}
+                title={_("Projection")}
+              />
+              <ComboBox   //Basemap Drop Down - Hardcoded
+                id='basemap'
+                state={this.props.state.basemap}
+                onUpdate={this.props.changeHandler}
+                data={[
+                  {
+                    id: "topo",
+                    value: _("ETOPO1 Topography"),
+                    attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
+                  },
+                  {
+                    id: "ocean",
+                    value: _("Esri Ocean Basemap"),
+                    attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
+                  },
+                  {
+                    id: "world",
+                    value: _("Esri World Imagery"),
+                    attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
+                  },
+                ]}
+                title={_("Basemap")}
+              />
+              
+            </Panel>
+
+            <Options
+              options={this.props.options}
+              updateOptions={this.props.updateOptions}
+            />
+
+          </Tab>
         </Tabs>
-        
+        <div className='cookieBanner'>
+          This website uses Google Analytics. By continuing, you accept the usage of cookies. 
+          <a target="_blank" rel="noopener noreferrer" href="https://www.wikihow.com/Disable-Cookies">How to Disable Cookies</a>
+        </div>
       </div>
     );
   }
@@ -261,5 +259,4 @@ MapInputs.propTypes = {
   showHelp: PropTypes.func,
   options: PropTypes.object,
   updateOptions: PropTypes.func,
-  private: PropTypes.bool,
 };
