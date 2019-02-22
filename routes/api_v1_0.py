@@ -64,6 +64,8 @@ def generateScript(url: str, type: str):
 #
 # Unchanged from v0.0
 #
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
 @bp_v1_0.route('/api/v1.0/datasets/')
 def query_datasets_v1_0():
   return routes.routes_impl.query_datasets_impl(request.args)
@@ -71,6 +73,8 @@ def query_datasets_v1_0():
 
 #
 # Unchanged from v0.0
+#
+# Will be capable of processing additional arguments for meteorology, oceanography, and ice
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
@@ -91,7 +95,6 @@ def obs_vars_query_v1():
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def time_query_v1_0():
   return routes.routes_impl.time_query_impl(request.args)
-
 
 #
 # Gets all available timestamps for all the datasets

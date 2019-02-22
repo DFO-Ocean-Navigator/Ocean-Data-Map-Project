@@ -62,6 +62,7 @@ colormaps = {
         _c('#ffffff'),
         _c('#57a6bd'),
     ]),
+    'black': make_colormap([_c('#000000')]),
     'mercator_current': make_colormap([
         _c('#e1f3fc'),
         _c('#7ebce5'), 0.17, _c('#7ebce5'),
@@ -143,6 +144,7 @@ colormaps['wind'] = colormaps['velocity']
 # executed before the user's locale is known and would always be in English.
 gettext('Anomaly')
 gettext('Bathymetry')
+gettext('Black')
 gettext('Chlorophyll')
 gettext('Sea Surface Height (Free Surface)')
 gettext('Greyscale')
@@ -193,6 +195,7 @@ colormap_names = {
     'neo_sst': 'NEO SST',
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
     'temperature-old': 'Temperature (old)',
+    'black': 'Black'
 }
 
 

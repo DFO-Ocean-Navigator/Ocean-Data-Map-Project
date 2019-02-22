@@ -1,5 +1,6 @@
 import React from "react";
 import Map from "./Map.jsx";
+import ol from "openlayers";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
 import WarningBar from "./WarningBar.jsx";
@@ -8,6 +9,7 @@ import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
 import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
+import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
@@ -64,6 +66,7 @@ export default class OceanNavigator extends React.Component {
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
+      layers: [],
       vectortype: null,
       vectorid: null,
       busy: false, // Controls if the busyModal is visible
@@ -71,6 +74,7 @@ export default class OceanNavigator extends React.Component {
       showHelp: false,
       showBugs: false,
       showCompareHelp: false,
+      availableTypes: ['colour', 'contour', 'hatching'],
       extent: [],
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
@@ -139,6 +143,7 @@ export default class OceanNavigator extends React.Component {
     this.updateOptions = this.updateOptions.bind(this);
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
+    this.multiPointAction = this.multiPointAction.bind(this);
   }
   
   //Updates the page language upon user request
@@ -198,6 +203,8 @@ export default class OceanNavigator extends React.Component {
 
     this.setState({options});
   }
+
+  
 
   // Updates global app state
   updateState(key, value) {
@@ -304,10 +311,26 @@ export default class OceanNavigator extends React.Component {
   action(name, arg, arg2, arg3) {
     switch(name) {
       case "point":
+
+        this.mapComponent.resetMap();
+
+        ReactGA.event({
+          category: 'PointPlot',
+          action: 'click',
+          label: 'PointPlot'
+        });
+        
+        /*
+        this.mapComponent.resetMap();
+        if (this.mapComponent2) {
+          this.mapComponent2.resetMap();
+        }
+        */
         if (typeof(arg) === "object") {
           // The EnterPoint component correctly orders the coordinate
           // pair, so no need to swap it.
           if (arg2 === "enterPoint") {
+            
             this.setState({
               point: [[arg[0], arg[1]]],
               modal: "point",
@@ -333,15 +356,45 @@ export default class OceanNavigator extends React.Component {
           });
 
           this.showModal();
-        } 
-        else {
+        } else {
+
           // Enable point selection in both maps
           this.mapComponent.point();
           if (this.mapComponent2) {
             this.mapComponent2.point();
           }
-        }
+        } 
         break;
+      
+      case "multi-point":
+
+        
+        //Tracks Google Analytics Event
+        
+        if (arg === undefined) {
+        
+          this.mapComponent.resetMap();
+
+          ReactGA.event({
+            category: 'MultiPointPlot',
+            action: 'click',
+            label: 'MultiPointPlot'
+          })
+          // Enable point selection in both maps
+          
+          this.mapComponent.multiPoint();  
+        
+        } else {
+         
+          this.setState({
+            point: arg,
+            modal: "point",
+            names: [],
+          })
+        }
+      
+        break;
+        
       case "line":
         if (typeof(arg) === "object") {
           this.setState({
@@ -416,6 +469,12 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "plot":
+
+
+        if (this.state.multiPoint === true) {
+          this.mapComponent.disableMulti();
+        }
+
         this.showModal();
         break;
       case "reset":
@@ -445,6 +504,38 @@ export default class OceanNavigator extends React.Component {
         break;
       default:
         console.error("Undefined", name, arg);
+        break;
+    }
+  }
+
+  multiPointAction(key) {
+    switch(key) {
+
+      //Enables multiPoint and Enables Map Interaction
+      case "enable":
+        this.setState({
+          multiPoint: true
+        })
+        this.action("multi-point")
+        break;
+
+      //Removes Map Interaction
+      case "disable":
+        console.warn("disable multi case")
+        this.setState({
+          multiPoint: false
+        })
+        this.mapComponent.disableMulti();
+        this.removeMapInteraction("multiPoint")
+        break;
+
+      //Resets everything back to default
+      case "reset":
+        this.mapComponent.resetMap();
+        this.setState({
+          multiPoint: false,
+          point: undefined
+        })
         break;
     }
   }
@@ -572,6 +663,7 @@ export default class OceanNavigator extends React.Component {
             names={this.state.names}
             depth={this.state.depth}
             projection={this.state.projection}
+            variable={this.state.variable}
             onUpdate={this.updateState}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
@@ -635,6 +727,7 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent = m}
           state={this.state}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
@@ -644,6 +737,7 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent2 = m}
           state={secondState}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
@@ -655,6 +749,7 @@ export default class OceanNavigator extends React.Component {
     else {
       map = <Map
         ref={(m) => this.mapComponent = m}
+        layers={this.state.layers}
         state={this.state}
         action={this.action}
         updateState={this.updateState}
@@ -663,18 +758,32 @@ export default class OceanNavigator extends React.Component {
       />;
     }
 
+    let layerSelect = null; 
+    
+    if (this.mapComponent !== null) {
+      layerSelect = <LayerSelection
+        state={this.state}
+        swapViews={this.swapViews}
+        toggleLayer={this.mapComponent.toggleLayer}
+        reloadLayer={this.mapComponent.reloadLayer}
+        mapComponent={this.mapComponent}
+        updateState={this.updateState}
+        showHelp={this.toggleCompareHelp}
+        options={this.state.options}
+        updateOptions={this.updateOptions}
+      />
+    }
+    
+
     return (
       <div className='OceanNavigator'>
-        <MapInputs
-          state={this.state}
-          swapViews={this.swapViews}
-          changeHandler={this.updateState}
-          showHelp={this.toggleCompareHelp}
-          options={this.state.options}
-          updateOptions={this.updateOptions}
-        />
+        
+        {layerSelect}
         <div className={contentClassName}>
           <MapToolbar
+            point={this.state.point}
+            multiPoint={this.state.multiPoint}
+            multiPointAction={this.multiPointAction}
             action={this.action}
             plotEnabled={this.state.plotEnabled}
             dataset_compare={this.state.dataset_compare}
