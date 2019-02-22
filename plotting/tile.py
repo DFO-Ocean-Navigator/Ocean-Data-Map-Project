@@ -300,7 +300,6 @@ def plot(projection, x, y, z, args):
     return buf
 
 def contour(projection, x, y, z, args):
-    print("ARGS: ", args)
     lat, lon = get_latlon_coords(projection, x, y, z)
 
     if len(lat.shape) == 1:
@@ -380,7 +379,7 @@ def contour(projection, x, y, z, args):
 
     difference = (scale[1] - scale[0]) / 5
     levels = [scale[0] + difference, scale[0] + 2*difference, scale[0] + 3*difference, scale[0] + 4* difference, scale[1]]
-    print("LEVELS: ", levels)
+    
     xpx = x * 256
     ypx = y * 256
 
