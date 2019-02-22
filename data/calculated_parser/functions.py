@@ -4,6 +4,10 @@ import metpy.calc
 from metpy.units import units
 import functools
 import numpy.ma
+import xarray as xr
+from pint import UnitRegistry
+
+_ureg = UnitRegistry()
 
 sin = np.sin
 cos = np.cos
@@ -88,7 +92,7 @@ def _metpy(func, data, lat, lon, dim):
         result = []
         for j in range(0, len(data)):
             result.append(
-                func(np.array(data[j]), deltas=deltas)[dim_order.index(dim)].magnitude
+                func(np.array(data[j]), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
             )
 
         result = np.array(result)
@@ -98,7 +102,7 @@ def _metpy(func, data, lat, lon, dim):
 
         return result
     else:
-        return func(np.array(data), deltas=deltas)[dim_order.index(dim)].magnitude
+        return func(np.array(data), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
 
 def _metpy_uv(func, u, v, lat, lon):
     if hasattr(u, "dims"):
@@ -155,6 +159,52 @@ def _metpy_uv(func, u, v, lat, lon):
         u = np.array(u) * units.meter / units.second
         v = np.array(v) * units.meter / units.second
         return func(u, v, dx, dy, dim_order=dim_order).magnitude
+
+def geostrophic_x(h, lat, lon):
+    if isinstance(lat, xr.Variable):
+        lat = lat.values
+
+    if hasattr(h, "dims"):
+        dims = h.dims
+    else:
+        dims = h.dimensions
+
+    dim_order = "".join([d for d in dims if d in 'yx'])
+
+    def f(heights, **kwargs):
+        c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
+        if dim_order == "yx":
+            dy, dx = kwargs['deltas']
+        else:
+            dx, dy = kwgard['deltas']
+
+        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
+                dim_order=kwargs['dim_order'])
+
+    return _metpy(f, h, lat, lon, dim_order[0])
+
+def geostrophic_y(h, lat, lon):
+    if isinstance(lat, xr.Variable):
+        lat = lat.values
+
+    if hasattr(h, "dims"):
+        dims = h.dims
+    else:
+        dims = h.dimensions
+
+    dim_order = "".join([d for d in dims if d in 'yx'])
+
+    def f(heights, **kwargs):
+        c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
+        if dim_order == "yx":
+            dy, dx = kwargs['deltas']
+        else:
+            dx, dy = kwgard['deltas']
+
+        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
+                dim_order=kwargs['dim_order'])
+
+    return _metpy(f, h, lat, lon, dim_order[1])
 
 def vorticity(u, v, lat, lon):
     return _metpy_uv(metpy.calc.vorticity, u, v, lat, lon)
