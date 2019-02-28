@@ -214,11 +214,6 @@ export default class Map extends React.PureComponent {
     this.geojsonfetch = function(url) {
       fetch(url).then(function(response) {
         return response.json();
-      }).then(function(json) {
-        return geojsonvt(json, {
-          extent: 4096,
-          debug: 1,
-        });
       });
     };
 
@@ -256,10 +251,8 @@ export default class Map extends React.PureComponent {
         tileLoadFunction: function(tile) {
           var format = tile.getFormat();
           var tileCoord = tile.getTileCoord();
-//          let url = 'https://openlayers.org/en/v3.20.1/examples/data/geojson/countries.geojson';
-//          var data = this.geojsonfetch(url).getTile(tileCoord[0], tileCoord[1], -tileCoord[2] - 1);
-          let json = require('/opt/fork/Ocean-Data-Map-Project/oceannavigator/frontend/static/map.geojson')
-          var data = geojsonvt(json,{
+          var url = '/opt/fork/Ocean-Data-Map-Project/oceannavigator/frontend/static/map.geojson';
+          var data = geojsonvt(this.geojsonfetch(url),{
             extent: 4096,
             debug: 1,
           }).getTile(tileCoord[0], tileCoord[1], -tileCoord[2] - 1);
