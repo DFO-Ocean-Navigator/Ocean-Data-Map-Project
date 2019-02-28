@@ -302,3 +302,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
   return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
+
+@bp_v1_0.route('/api/v1.0/vectors/vector_bath.geojson')
+def vector_bathymetry():
+  return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'oceannavigator/frontend/static'), 'vector_bath.geojson')

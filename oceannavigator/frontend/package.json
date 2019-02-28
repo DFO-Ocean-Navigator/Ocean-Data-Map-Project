@@ -26,6 +26,7 @@
     "es6-promise": "~4.1.1",
     "fast-stable-stringify": "1.0.0",
     "font-awesome": "^4.7.0",
+    "geojson-vt": "^3.2.1",
     "i18next": "^8.4.2",
     "i18next-browser-languagedetector": "^2.0.0",
     "jquery": "~3.2.1",
@@ -38,10 +39,10 @@
     "react": "~15.6.1",
     "react-bootstrap": "^0.31.0",
     "react-dom": "~15.6.1",
+    "react-fontawesome": "^1.6.1",
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
-    "react-fontawesome": "^1.6.1",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

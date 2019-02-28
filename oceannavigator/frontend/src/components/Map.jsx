@@ -8,6 +8,7 @@ require("openlayers/css/ol.css");
 const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
+const geojsonvt = require("geojson-vt/geojson-vt.js");
 
 ol.proj.setProj4(proj4);
 
@@ -209,7 +210,75 @@ export default class Map extends React.PureComponent {
         preload: Infinity,
       });
 
-    // Drawing layer
+
+    this.geojsonfetch = function(url) {
+      fetch(url).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        return geojsonvt(json, {
+          extent: 4096,
+          debug: 1,
+        });
+      });
+    };
+
+    //replacer function from openlayers documentation https://openlayers.org/en/latest/examples/geojson-vt.html
+    this.replacer = function(key, value) {
+      if (value.geometry) {
+        var type;
+        var rawType = value.type;
+        var geometry = value.geometry;
+
+        if (rawType === 1) {
+          type = geometry.length === 1 ? "Point" : "MultiPoint";
+        } else if (rawType === 2) {
+          type = geometry.length === 1 ? "LineString" : "MultiLineString";
+        } else if (rawType === 3) {
+          type = geometry.length === 1 ? "Polygon" : "MultiPolygon";
+        }
+
+        return {
+          "type": "Feature",
+          "geometry": {
+            "type": type,
+            "coordinates": geometry.length == 1 ? geometry : [geometry]
+          },
+          "properties": value.tags
+        };
+      } else {
+        return value;
+      }
+    };
+
+    this.layer_vbath = new ol.layer.VectorTile({
+      source: new ol.source.VectorTile({
+        format: new ol.format.GeoJSON(),
+        tileLoadFunction: function(tile) {
+          var format = tile.getFormat();
+          var tileCoord = tile.getTileCoord();
+//          let url = 'https://openlayers.org/en/v3.20.1/examples/data/geojson/countries.geojson';
+//          var data = this.geojsonfetch(url).getTile(tileCoord[0], tileCoord[1], -tileCoord[2] - 1);
+          let json = require('/opt/fork/Ocean-Data-Map-Project/oceannavigator/frontend/static/map.geojson')
+          var data = geojsonvt(json,{
+            extent: 4096,
+            debug: 1,
+          }).getTile(tileCoord[0], tileCoord[1], -tileCoord[2] - 1);
+          var features = format.readFeatures(
+            JSON.stringify({
+              type: "FeatureCollection",
+              features: data ? data.features :[]
+            }, this.replacer));
+          tile.setLoader(function() {
+            tile.setFeatures(features);
+            tile.setProjection(new ol.Projection({
+              code: "TILE_PIXELS",
+              units: "tile-pixels"
+            }));
+          });
+        }
+      })
+    });
+    // Drawing layerSelf Employed – Sysadmin & Full-stack developer
     this.layer_vector = new ol.layer.Vector(
       {
         source: this.vectorSource,
@@ -344,7 +413,7 @@ export default class Map extends React.PureComponent {
       layers: [
         this.layer_basemap,
         this.layer_data,
-        this.layer_bath,
+        this.layer_vbath,
         this.layer_vector,
       ],
       controls: ol.control.defaults({
