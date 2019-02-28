@@ -59,6 +59,12 @@ export default class OceanNavigator extends React.Component {
       variable: "votemper",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
+
+      // New Global Times
+      timeSources: {'global': ['all']},    // Time bar layers to create
+      timestamps: {},                     // Holds the id and time for each timebar
+      // ~~~~~~~~~~~~~~~~
+
       time: -1,
       starttime: -2, // Start time for Left Map
       scale: "-5,30", // Variable scale for left/Main Map
@@ -210,6 +216,11 @@ export default class OceanNavigator extends React.Component {
   updateState(key, value) {
     var newState = {};
 
+    if (key === 'timeSources') {
+      this.setState({
+        timeSources: value
+      })
+    }
     if (key === 'timestamps') {
       this.setState({
         timestamps: value,

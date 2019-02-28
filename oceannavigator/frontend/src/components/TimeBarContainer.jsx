@@ -19,7 +19,6 @@ export default class TimeBarContainer extends React.Component {
         super(props);
 
         this.state = {
-            datasets: ['global'],
             times: {},
             endTimes: {},
             startTimes: {},
@@ -31,6 +30,7 @@ export default class TimeBarContainer extends React.Component {
         this.animate = this.animate.bind(this);
         this.localUpdate = this.localUpdate.bind(this);
         this.toggleLayer = this.toggleLayer.bind(this);
+        this.pause = this.pause.bind(this);
     }
 
     // Sends time back to the OceanNavigator component
@@ -44,16 +44,34 @@ export default class TimeBarContainer extends React.Component {
     //}
     
     setTime(times) {
-        console.warn("SETTING TIME: ", times)
         let newTimes = jQuery.extend({}, times)
         this.props.globalUpdate('timestamps', newTimes)
     }
     
-    
+    pause() {
+        this.setState({
+            animating: false,
+        })
+    }
+
     // Handles time incrementing and formating
     // calls setTime() as it increments
     animate() {
+        
+        if (this.state.pause === true) {
+            this.setState({
+                animating: false
+            })
+            return
+        }
+
+        if (this.state.animating === false) {
+            this.setState({
+                animating: true
+            })
+        }
         if (this.state.end || this.state.times['global'].getDate() === this.state.endTimes['global'].getDate()) {
+            
             this.setState({
                 times: this.state.startTimes,
             })
@@ -61,16 +79,13 @@ export default class TimeBarContainer extends React.Component {
         }
         let times = this.state.times;
         for (let dataset in this.state.times) {
-                let time = times[dataset]
-                console.warn(time)
-                time.setDate(time.getDate() + 1)
+                let time = new Date(times[dataset])
+                time.setHours(time.getHours() + 3)
                 times[dataset] = time
         }
         this.setTime(times);
         
-        setTimeout(this.animate, 10000);
-        console.warn('calling animate again')
-        
+        setTimeout(this.animate, 2000/4);
         return
     }
 
@@ -81,7 +96,7 @@ export default class TimeBarContainer extends React.Component {
         let endTimes = this.state.endTimes
         endTimes[dataset] = endTime
         this.setState({
-            times: startTimes,
+            times: jQuery.extend({}, startTimes),
             startTimes: startTimes,
             endTimes: endTimes,
         });
@@ -89,7 +104,6 @@ export default class TimeBarContainer extends React.Component {
     }
 
     toggleLayer(e) {
-        console.warn(e.target.id)
 
         for (let idx in this.state.showLayer) {
             if (this.state.showLayer[idx] === e.target.id) {
@@ -112,12 +126,12 @@ export default class TimeBarContainer extends React.Component {
     render() {
 
         self = this
-        let layers = ['global', 'met']
+        let layers = this.props.timeSources
+        //layers = {'global': ['all']}
         let timeBars = []
         
-        
-        layers.forEach(function(layer) {
-            if (self.state.showLayer.includes(layer)) {
+        for (let layer in layers) {
+            //if (self.state.showLayer.includes(layer)) {
                 timeBars.push(
                     <div key={layer} className='timeLayerContainer'>
                         <Button
@@ -127,11 +141,16 @@ export default class TimeBarContainer extends React.Component {
                             onClick={self.toggleLayer}
                         >{layer.charAt(0).toUpperCase()}</Button>
                         <TimeSelect
+                            show={self.state.showLayer.includes(layer)}
                             key={layer}
+                            name={layer}
+                            dataset={layers[layer].join()}
+                            currentTime={this.state.times[layer]}
                             localUpdate={self.localUpdate}
                         ></TimeSelect>
                     </div>
                 )
+                /*
             } else {
                 timeBars.push(
                     <div key={layer} className='timeLayerContainer'>
@@ -144,11 +163,19 @@ export default class TimeBarContainer extends React.Component {
                     </div>
                 )
             }
-        })
+            */
+        }
+
         timeBars.push(
             <div key='start_animation' className='timeLayerContainer'>
                 <Button
-                    onClick={this.animate}
+                    onClick={() => {
+                        if (this.state.animating) {
+                            this.pause()
+                        } else {
+                            this.animate()
+                        }
+                    }}
                     className='timeBarToggle'
                 >
                     <Icon icon='play'></Icon>
@@ -167,4 +194,5 @@ export default class TimeBarContainer extends React.Component {
 //***********************************************************************
 TimeBarContainer.propTypes = {
     globalUpdate: PropTypes.func,
+    timeSources: PropTypes.object,
 };

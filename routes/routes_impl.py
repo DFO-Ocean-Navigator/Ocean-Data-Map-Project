@@ -522,31 +522,58 @@ def all_vars_query_impl(args):
     return data
 
 
-#def all_time_query_impl(args):
-#    """
-#    API Format: /api/v1.0/all/timestamps/
-#
-#    Retrieves all timestamps for all available datasets
-#    """
-#    times = dict()
-#
-#    for dataset in get_datasets():
-#        with open_dataset(get_dataset_url(dataset)) as ds:
-#            print("TIMESTAMPS: ", ds.timestamps)
-#            for date in ds.timestamps:
-#                print("DATE: ", date)
-#                if date.year not in times:
-#                    times[date.year] = {
-#                        date.month: [date.date]
-#                    }
-#                else:
-#                    if date.month not in times[date.year]:
-#                        times[date.year][date.monhth]
-#
-#                    else:
-#                        if date.date not in times[date.year][date.month]:
-#                            times[date.year][date.month].append(date.date)
+def all_time_query_impl(args):
+    """
+    API Format: /api/v1.0/all/timestamps/
 
+    Retrieves all timestamps for all available datasets
+    """
+    times = dict()
+
+    for dataset in get_datasets():
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for date in ds.timestamps:
+                #print("DATE: ", date)
+                #print("YEAR: ", date.year)
+                #print("MONTH: ", date.month)
+                #print("DAY: ", date.day)
+                print("DATE: ", date)
+                print("HOUR: ", date.hour)
+                print("MINUTE: ", date.minute)
+                if date.year not in times:
+                    times[date.year] = {
+                        date.month: {
+                            date.day: { 
+                                date.hour: [date.minute]
+                            }
+                        }
+                    }
+                else:
+                    if date.month not in times[date.year]:
+                        times[date.year][date.month] = {
+                            date.day: {
+                                date.hour: [date.minute]
+                            }
+                        }
+                       
+                        #times[date.year][date.month][date.day] = [date.hour]
+
+                    else:
+                        if date.day not in times[date.year][date.month]:
+                            times[date.year][date.month][date.day] = {
+                                date.hour: [date.minute]
+                            }
+                        
+                        else:
+                            if date.hour not in times[date.year][date.month][date.day]:
+                                times[date.year][date.month][date.day][date.hour] = [date.minute]
+                            elif date.minute not in times[date.year][date.month][date.day][date.hour]:
+                                times[date.year][date.month][date.day][date.hour].append(date.minute)
+
+
+    #print(times)
+    js = json.dumps(times)
+    return js
 
 def time_query_impl(args):
     """

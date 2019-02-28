@@ -94,7 +94,10 @@ def obs_vars_query_v1():
 #
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def time_query_v1_0():
-  return routes.routes_impl.time_query_impl(request.args)
+  if request.args['dataset'] == 'all':
+    return routes.routes_impl.all_time_query_impl(request.args)
+  else:
+    return routes.routes_impl.time_query_impl(request.args)
 
 #
 # Gets all available timestamps for all the datasets

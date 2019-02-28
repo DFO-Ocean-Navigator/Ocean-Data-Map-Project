@@ -1,15 +1,7 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
 import MetLayer from "./MetLayer.jsx";
+import Layer from "./Layer.jsx"
 
 const i18n = require("../i18n.js");
 
@@ -22,6 +14,7 @@ export default class Meteorology extends React.Component {
     
     return (
         <div>
+          {/*}
             <MetLayer
               state={this.props.state}
               swapViews={this.props.swapViews}
@@ -32,19 +25,22 @@ export default class Meteorology extends React.Component {
               showHelp={this.props.showHelp}
               options={this.props.state.options}
               updateOptions={this.props.updateOptions}
-            />
-            <MetLayer
-              id='met2'
+              layerType='met'
+              defaultDataset='gem'
+    />*/}
+            <Layer
               state={this.props.state}
-              swapViews={this.props.swapViews}
+
               toggleLayer={this.props.toggleLayer}
-              reloadLayer={this.props.reloadLayer}
+              reloadLayer={this.props.toggleLayer}
               mapComponent={this.props.mapComponent}
               globalUpdate={this.props.globalUpdate}
-              showHelp={this.props.showHelp}
               options={this.props.state.options}
-              updateOptions={this.props.updateOptions}
-            />
+              layerType='met'
+
+              defaultDataset='giops_day'
+              defaultVariable='votemper'
+            ></Layer>
         </div>
     );
   }

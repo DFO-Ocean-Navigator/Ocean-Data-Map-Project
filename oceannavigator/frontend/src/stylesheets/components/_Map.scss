@@ -104,18 +104,24 @@
         }
     }
 
+    .hide {
+        display: none;
+    }
+
     .timeBarContainer {
-        height: 50px;
+        height: 37px;
         width: 955px;
         margin-left: 50px;
         padding: 3px;
-        border: 4px solid #006687;
+        //border: 4px solid #006687;
         border-radius: 25px 25px 25px 25px;
         background-color: rgba(255,255,255,0.5);
         animation: slide-open 0.5s ease;
 
 
         .startTimeContainer {
+            padding: 0px;
+            font-weight: bold;
             width: 15%;
             height: 100%;
             display: inline-block;
@@ -150,7 +156,27 @@
             width: 658px;
             display: inline-block;
         }
+        .rangeContainer {
+            display: inline-block;
+            width: 95%;    
+            position: relative;
+            left: 16.45px;
+            top: 14px;
 
+            >div {
+                > div {
+                    height: 15px;
+                    top: -3px;
+                    width: 5px;
+                    position: relative;
+                    > div {
+                        > div {
+                            border-radius: 0px !important;
+                        }
+                    }
+                }
+            }
+        }
         .selectedContainer {
             display: inline;
             .yearButton {
@@ -225,6 +251,8 @@
         
 
         .endTimeContainer {
+            padding: 0px;
+            font-weight: bold;
             width: 15%;
             height: 100%;
             float: right;

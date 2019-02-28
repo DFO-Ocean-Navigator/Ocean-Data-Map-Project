@@ -13,33 +13,31 @@ import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 const i18n = require("../i18n.js");
 
-export default class MetLayer extends React.Component {
+export default class Layer extends React.Component {
   constructor(props) {
     super(props);
     this._mounted = false;
 
     this.state = {
-      currentTab: 1,
-      ice_layer: undefined,
+      layer: undefined,
+      layerState: 'Add Layer',
+      useGlobalTime: true,
+      timeSource: 'global',
+      // DATA INFO
+      variables: {},
+      datasets: {},
+      depths: {},
+      default_scales: "0,1",
       
-      //State Variables for dataset selector
-      time: -1,
-      layerState: 'Add Ice',
-      dataset_quantum: 'day',
-      depth: 0,
-      scale_1: "0,1",
-      scale: "0,1",
-      setDefaultScale: false,
-      default_scale: "0,1",
-      opacity: 50,
-      display: 'contours,default',
-      datainfo: {},
-
-      variables: [],
-      datasets: [],
+      // DISPLAY INFO
       colourmaps_val: [],
-      colourmap: 'default',
-      current_display: 'contours',
+      opacity: 50,
+      
+      // CURRENT STATE
+      current_depth: 0,
+      current_quantum: 'day',
+      current_colourmap: 'default',
+      current_display: 'contours,default',
       current_variable: undefined,
       current_dataset: undefined,
     };
@@ -59,24 +57,103 @@ export default class MetLayer extends React.Component {
     this.getDatasets = this.getDatasets.bind(this);
     this.updateTransparency = this.updateTransparency.bind(this);
     this.getDataInfo = this.getDataInfo.bind(this);
-
+    this.changeTimeSource = this.changeTimeSource.bind(this);
+    this.setCurrent = this.setCurrent.bind(this);
+    this.dateToISO = this.dateToISO.bind(this);
   }
-
-  
-
 
   componentDidMount() {
     this.getDataInfo()
     this.createIce();
   }
 
+  setCurrent() {
+    console.warn("SETTING CURRENT")
+    let dataset = ''
+    let quantum
+    if (this.props.defaultDataset != undefined) { 
+        for (dataset in this.state.datasets) {
+          if (this.state.datasets[dataset] === this.props.defaultDataset) {
+            quantum = this.state.datasets[dataset]['quantum']
+          }
+        }
+        dataset = this.props.defaultDataset
+    } else {
+        dataset = this.state.datasets[0]['id']
+        quantum = this.state.datasets[0]['quantum']
+    }
+    
+    let variable = ''
+    if (this.props.defaultVariable != undefined) {
+        variable = this.props.defaultVariable
+    } else {
+        variable = this.state.variables[0]['id']
+    }
+
+    this.setState({
+        current_dataset: dataset,
+        current_variable: variable,
+        current_quantum: quantum,
+    })
+  }
+
   getDataInfo() {
+    console.warn("GET DATA INFO")
+
+    
+    $.ajax({
+        url: `/api/v1.0/datasets/`,
+        success: function(response) {
+            console.warn("RESPONSE: ", response)
+            this.setState({
+                datasets: response
+            })
+
+        }.bind(this),
+        error: function() {
+            console.error("Dataset Info Failed to Load")
+        }
+    }).done( () => {
+        console.warn("FINISHED LOADING DATASETS")
+        if (this.props.defaultDataset in this.state.datasets) {
+            console.warn("USING DEFAULT DATASET")
+            $.ajax({
+                url: `/api/v1.0/variables/?dataset=` + this.props.defaultDataset,
+                success: function(response) {
+                    console.warn("RESPONSE: ", response)
+                    this.setState({
+                        variables: response,
+                    })
+                }.bind(this),
+                error: function() {
+                    console.error("Variables Failed to Load")
+                }
+            }).done(this.setCurrent())
+        } else {
+            console.warn("NO DEFAULT DATASET")
+            $.ajax({
+                url: `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'],
+                success: function(response) {
+                    console.warn("RESPONSE: ", response)
+                    this.setState({
+                        variables: response
+                    })
+                }.bind(this),
+                error: function() {
+                    console.error("Variables Failed to Load")
+                }
+            }).done(this.setCurrent())
+        }
+    })
+    console.warn("END OF FUNCTION")
+
     
     // CODE TO RECEIVE ALL DATASETS // THIS IS TO ALLOW VARIABLE FIRST SELECTION
-    
+    /*
     $.ajax({
       url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
       success: function(response) {
+        console.warn("RESPONSE: ", response)
         this.setState({
           'datainfo': response
         })
@@ -100,12 +177,10 @@ export default class MetLayer extends React.Component {
         console.error("Error getting data!");
       }
     });
-    
+    */
     
   }
   
-
-
   componentDidUpdate(prevProps, prevState) {
     
     if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps != undefined) {
@@ -171,7 +246,7 @@ export default class MetLayer extends React.Component {
 
   createIce() {
 
-    let layer_ice = new ol.layer.Tile(
+    let layer = new ol.layer.Tile(
       {
         preload: Infinity,
         opacity: this.state.opacity/100,
@@ -184,60 +259,65 @@ export default class MetLayer extends React.Component {
         }),
       });
 
-    layer_ice.set('name', this.props.layerType)
+    layer.set('name', this.props.layerType)
 
     this.setState({
-      ice_layer: layer_ice
+      layer: layer
     })
 
   }
 
+  /*
+    Converts a JS Date() Object to ISO8604 extended format
+
+    ** This does not ensure that this date exists in the dataset **
+
+    requires: JS Date() Object
+    ensures: Valid ISO8604 extended format string
+  */
+  dateToISO(date, quantum) {
+
+    function formatDay(day) {
+      if (day.length === 1) {
+        return '0' + day
+      } else {
+        return day
+      }
+    }
+
+    function formatMonth(month) {
+      if (month.length === 1) {
+        return '0' + day
+      } else {
+        return month
+      }
+    }
+
+    let iso
+    
+    if (quantum === 'min') {
+      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T' + date.getHours() + date.getMinutes() + ':00+00:00'
+    } else if (quantum === 'hour') { // Only returns ISO to hour precision
+      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T' + date.getHours() + ':00:00+00:00'
+    } else if (quantum === 'day') { // Only returns ISO to day precision
+      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T00:00:00+00:00'
+    } else if (quantum === 'month') { // Only returns ISO to month precision
+      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-01T00:00:00+00:00'
+    } else if (quantum === 'year') {
+      iso = date.getFullYear() + '-01-01T00:00:00+00:00'
+    } else {    // Returns ISO to max available precision
+      iso = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + 'T' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '+00:00'
+    }
+
+    return iso
+  }
+
   updateIce() {
 
-    if (this.state.current_dataset == undefined || this.state.current_variable == undefined || this.props.state.timestamps == undefined) {
-      return
-    } else if (this.props.state.timestamps === undefined) {
-      return
-    }
-
-    let layer_ice = this.state.ice_layer;
-    let props = layer_ice.getSource().getProperties();
-
-    let time = this.props.state.timestamps['global']
-    this.setState({
-      quantum: 'day'
-    })
-    let hours = '00'
-    if (this.state.quantum === 'day') {
-      hours = '00'
-      //time.setMinutes(0);
-      //time.setSeconds(0);
-    } else if (this.state.quantum === 'month') {
-      hours = '00'
-      time.setMinutes(0);
-      time.setSeconds(0);
-      time.setDate(0)
-    } else if (this.state.quantum === 'hour') {
-      time.setMinutes(0);
-      time.setSeconds(0);
-    }
-    let month = time.getMonth()
-    if (month.toString().length === 1) {
-      month = '0' + month
-    }
-    let date = time.getDate()
-    if (date.toString().length === 1) {
-        date = '0' + date
-    }
-    time.setMonth(time.getMonth() + 1)
-    month = time.getMonth()
-    if (month.toString().length === 1) {
-      month = '0' + month
-    }
-    
-    let timeString = time.getFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
-    
-    
+    let layer = this.state.layer;
+    let props = layer.getSource().getProperties(); 
+    console.warn("TIMES: ", this.props.state.timestamps)
+    let timeString = this.dateToISO(this.props.state.timestamps[this.state.timeSource], this.state.current_quantum)
     // Sets new values for tiles
     props.url = `/api/v1.0/tiles` + 
                 `/${this.props.options.interpType}` + 
@@ -245,7 +325,7 @@ export default class MetLayer extends React.Component {
                 `/${this.props.options.interpNeighbours}` +
                 `/${this.props.state.projection}` + 
                 `/${this.state.current_dataset}` + 
-                `/${this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id']}` + 
+                `/${this.state.current_variable}` + 
                 //`/2018-07-12T00:00:00+00:00` +
                 `/${timeString}` + 
                 `/0` + 
@@ -263,7 +343,7 @@ export default class MetLayer extends React.Component {
     const newSource = new ol.source.XYZ(props);
     
     // Gives updated source to layer
-    layer_ice.setSource(newSource)
+    layer.setSource(newSource)
 
     // Reloads layer to apply changes
     this.props.reloadLayer();
@@ -352,7 +432,56 @@ export default class MetLayer extends React.Component {
     this.state.ice_layer.setOpacity(e.value / 100)
   }
 
-  
+  changeTimeSource() {
+    console.warn("CURRENT DATASET: ", this.state.current_dataset)
+    if (this.state.useGlobalTime) { // If currently using global time
+      let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
+      if (this.props.layerType in new_timeSources) {
+        new_timeSources[this.props.layerType].push(this.state.current_dataset)  // Adds the dataset
+      } else {
+        new_timeSources[this.props.layerType] = [this.state.current_dataset]    // Adds the layerType and dataset
+      }
+
+      this.props.globalUpdate('timeSources', new_timeSources)    // Adds to global time source list
+
+      this.setState({
+        useGlobalTime: false,    // Unchecks the using global time selectbox
+        timeSource: this.props.layerType    // Indicates the new source to look for in the global time source list
+      })
+    } else {
+      let new_timeSources = this.props.state.timeSources
+      console.warn("REMOVING TIME SOURCE")
+      console.warn("TIME SOURCE: ", new_timeSources[this.state.timeSource])
+      console.warn(this.state.current_dataset)
+      console.warn(new_timeSources[this.props.timeSource])
+      if (new_timeSources[this.state.timeSource].includes(this.state.current_dataset)) {
+        console.warn("SEARCHING FOR DATASET")
+        for (let idx in new_timeSources[this.state.timeSource]) {
+          if (this.state.current_dataset === new_timeSources[this.props.layerType][idx]) {
+            //if (new_timeSources[this.state.timeSource].length === 1) {
+            //  new_timeSources[this.state.timeSource] = ''
+            //} else {
+              new_timeSources[this.props.layerType].splice(idx, 1)
+            //}
+            console.warn("NEW TIME SOURCES: ", new_timeSources)
+            break;
+          }
+        }
+        console.warn("NEW TIME SOURCES AGAIN: ", new_timeSources[this.state.timeSource])
+        if (new_timeSources[this.state.timeSource].length < 1) {
+          console.warn("REMOVING TIMESOURCE")
+          delete new_timeSources[this.state.timeSource]
+        }
+      }
+
+      this.props.globalUpdate('timeSources', new_timeSources)
+
+      this.setState({
+        useGlobalTime: true,    // Checks the using global time selectbox
+        timeSource: 'global'    // Indicates the new source to look for in the global time source list
+      })
+    }
+  }
 
   render() {
 
@@ -392,17 +521,16 @@ export default class MetLayer extends React.Component {
         header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _(this.props.layerName)}
         bsStyle='primary'
       >
+        <SelectBox
+          id='useGlobalTime'
+          title='Sync to Global Time'
+          state={this.state.useGlobalTime}
+          onUpdate={this.changeTimeSource}
+        ></SelectBox>
       
-        <IceDatasetSelector
-          id='dataset_0'
-          dataset='all'
-          envtype={this.props.layerType}
-          state={this.state}
-          datainfo={this.state.datainfo}
-          localUpdate={this.localUpdate}
-          toggleLayer={this.toggleLayer}
-          depth={true}
-        />
+        <IceComboBox
+          data={this.state.datasets}
+        ></IceComboBox>
         
         {this.range}
 
@@ -507,25 +635,6 @@ export default class MetLayer extends React.Component {
 }
 
 //***********************************************************************
-MetLayer.propTypes = {
-  state: PropTypes.object,
-  sidebarOpen: PropTypes.bool,
-  basemap: PropTypes.string,
-  scale: PropTypes.string,
-  scale_1: PropTypes.string,
-  bathymetry: PropTypes.bool,
-  dataset_compare: PropTypes.bool,
-  dataset_1: PropTypes.object,
-  projection: PropTypes.string,
-  depth: PropTypes.number,
-  time: PropTypes.number,
-  variable_scale: PropTypes.array,
-  extent: PropTypes.array,
-  globalUpdate: PropTypes.func,
-  swapViews: PropTypes.func,
-  showHelp: PropTypes.func,
-  options: PropTypes.object,
-  updateOptions: PropTypes.func,
-  private: PropTypes.bool,
-  defaultDataset: PropTypes.string,
+Layer.propTypes = {
+
 };
