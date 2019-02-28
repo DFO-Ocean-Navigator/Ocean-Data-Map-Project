@@ -1290,6 +1290,7 @@ export default class Map extends React.PureComponent {
         </div>
         <TimeBarContainer
           globalUpdate={this.props.updateState}
+          timeSources={this.props.state.timeSources}
         >
         </TimeBarContainer>
       </div>

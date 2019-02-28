@@ -11,15 +11,94 @@ const i18n = require("../i18n.js");
 
 export default class IceComboBox extends React.Component {
   constructor(props) {
-
     super(props);
+
+    let id_list = []
+    let value_list = []
+    
+    for (let elem in this.props.data) {
+      if (elem['id'] === undefined || elem['value'] === undefined) {
+        console.error("Data empty or malformed")
+      } else if (this.props.envType != undefined) {
+        if (elem['envType'] === this.props.envType) {
+          id_list.push(elem['id'])
+          value_list.push(elem['value'])
+        }
+      } else {
+        id_list.push(elem['id'])
+        value_list.push(elem['value'])
+      }
+    }
+    let idx_list = new Array(value_list.length)
+    console.warn(value_list.length)
+    for (let i = 0; i < value_list.length; i += 1) {
+      idx_list.push(i)
+    }
+    //for (let i = 0; i < value_list.length; i += 1) {
+    
+    //}
+    if (id_list === [] || value_list === []) {
+      console.error("NO DATA TO LOAD")
+      id_list = ['ERROR']
+      value_list = ['ERROR']
+    }
+
+    this.state = {
+      id_list: id_list,
+      idx_list: idx_list,
+      value_list: value_list,
+    }
+
     this._mounted = false;
 
-    this.handleChange = this.handleChange.bind(this)
+    this.handleChange = this.handleChange.bind(this);
+    this.updateValues = this.updateValues.bind(this);
+  }
+
+  updateValues() {
+    let id_list = []
+    let value_list = []
+    for (let elem in this.props.data) {
+      console.warn("ELEM: ", this.props.data[elem])
+      elem = this.props.data[elem]
+      if (elem['id'] === undefined || elem['value'] === undefined) {
+        console.error("Data empty or malformed")
+      } else if (this.props.envType != undefined) {
+        if (elem['envType'] === this.props.envType) {
+          id_list.push(elem['id'])
+          value_list.push(elem['value'])
+        }
+      } else {
+        id_list.push(elem['id'])
+        value_list.push(elem['value'])
+      }
+    }
+    let idx_list = new Array(value_list.length)
+    console.warn(value_list.length)
+    for (let i = 0; i < value_list.length; i += 1) {
+      idx_list.push(i)
+    }
+    if (id_list === [] || value_list === []) {
+      console.error("NO DATA TO LOAD")
+      id_list = ['ERROR']
+      value_list = ['ERROR']
+    }
+    this.setState({
+      id_list: id_list,
+      idx_list: idx_list,
+      value_list: value_list,
+    })
   }
 
   componentDidMount() {
     this._mounted = true;   //Component mounted
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.data != prevProps.data) {
+      console.warn("UPDATING VALUES")
+      this.updateValues();
+    }
   }
 
   componentWillUnmount() {
@@ -27,28 +106,37 @@ export default class IceComboBox extends React.Component {
   }
 
   handleChange(e) {
-      this.props.localUpdate(this.props.current, e.target.value)
+      console.warn("COMBOBOX VALUE: ", e.target.value)
+      console.warn("COMBOBOX ID: ", e.target.value)
+      this.props.localUpdate(this.props.name, e.target.value)
   }
 
   render() {
-    const options = this.props.values.map(function(o) {
     
+    let self = this
+    const options = this.state.idx_list.map(function(o) {
       var opts = {
-        key: o,
-        value: o,
+        key: self.state.id_list[o],
+        value: self.state.id_list[o],
       };
 
 
       //Checks if each value in data has id or value
     
-      return React.createElement("option", opts, o);    //Creates Option that was found
+      return React.createElement("option", opts, self.state.value_list[o]);    //Creates Option that was found
     });
+
+    let title = undefined
+    if (this.props.title != undefined) {
+      title = <h1 className='comboBoxTitle'>{this.props.title}</h1>
+    }
 
     return (
       <div key='ice' className='ComboBox input'>
+        {title}
         <FormControl
             componentClass="select"
-            defaultValue='Failed to Load'
+            defaultValue={this.props.current}
             onChange={this.handleChange}
             multiple={false}
         >
@@ -62,8 +150,7 @@ export default class IceComboBox extends React.Component {
 
 //***********************************************************************
 IceComboBox.PropTypes = {
-    key: PropTypes.string,
-    values: PropTypes.array,
+    data: PropTypes.object,
     current: PropTypes.string,
     localUpdate: PropTypes.string,
 }

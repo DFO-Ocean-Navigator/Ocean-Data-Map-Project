@@ -99,7 +99,7 @@ export default class Timeline extends React.Component {
             let label_offset = {left: offset + 3}
             offset = {left: offset}
             markers.push(
-                <div className='marker_container'>
+                <div className='marker_container' key={i}>
                     <div className='time_marker' style={offset}></div>
                     <div className='marker_value' style={label_offset}>{marker_date.getDate()}</div>
                     <div className='marker_day' style={label_offset}>{this.state.day_fromnum[marker_date.getDay()]}</div>
@@ -116,11 +116,14 @@ export default class Timeline extends React.Component {
         }
         //console.warn("DAYS BETWEEN: ", this.daysBetween(this.props.currentTime, this.props.startTime))
         //let current_offset = 0
+        
         let hours_between = this.hoursBetween(this.props.startTime, this.props.endTime)
         
         offset_val = ((this.props.length) / (hours_between + 1))
-        hours_between = this.hoursBetween(this.props.startTime, this.props.currentTime)
-        let current_offset = (hours_between * offset_val) - (Math.trunc(hours_between / 24) *2)
+        let time = new Date(this.props.startTime)
+        time.setHours(0)
+        hours_between = this.hoursBetween(time, this.props.currentTime)
+        let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
         let current_style = {
             left: current_offset
         }

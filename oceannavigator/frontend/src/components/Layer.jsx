@@ -40,6 +40,7 @@ export default class Layer extends React.Component {
       current_display: 'contours,default',
       current_variable: undefined,
       current_dataset: undefined,
+      current_scale: undefined,
     };
 
     this.range = undefined
@@ -60,6 +61,7 @@ export default class Layer extends React.Component {
     this.changeTimeSource = this.changeTimeSource.bind(this);
     this.setCurrent = this.setCurrent.bind(this);
     this.dateToISO = this.dateToISO.bind(this);
+    this.fetchVariables = this.fetchVariables.bind(this);
   }
 
   componentDidMount() {
@@ -90,9 +92,13 @@ export default class Layer extends React.Component {
         variable = this.state.variables[0]['id']
     }
 
+    let depth = 1
+    console.warn("SETTING DATASET: ", dataset)
     this.setState({
         current_dataset: dataset,
         current_variable: variable,
+        current_scale: this.state.variables[0]['scale'],
+        current_depth: depth,
         current_quantum: quantum,
     })
   }
@@ -102,7 +108,7 @@ export default class Layer extends React.Component {
 
     
     $.ajax({
-        url: `/api/v1.0/datasets/`,
+        url: `/api/v1.0/datasets/?envType=` + this.props.layerType,
         success: function(response) {
             console.warn("RESPONSE: ", response)
             this.setState({
@@ -118,7 +124,7 @@ export default class Layer extends React.Component {
         if (this.props.defaultDataset in this.state.datasets) {
             console.warn("USING DEFAULT DATASET")
             $.ajax({
-                url: `/api/v1.0/variables/?dataset=` + this.props.defaultDataset,
+                url: `/api/v1.0/variables/?dataset=` + this.props.defaultDataset + `&envType=` + this.props.layerType,
                 success: function(response) {
                     console.warn("RESPONSE: ", response)
                     this.setState({
@@ -132,7 +138,7 @@ export default class Layer extends React.Component {
         } else {
             console.warn("NO DEFAULT DATASET")
             $.ajax({
-                url: `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'],
+                url: `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'] + `&envType=` + this.props.layerType,
                 success: function(response) {
                     console.warn("RESPONSE: ", response)
                     this.setState({
@@ -142,8 +148,39 @@ export default class Layer extends React.Component {
                 error: function() {
                     console.error("Variables Failed to Load")
                 }
-            }).done(this.setCurrent())
+            }).done( () => {
+              console.warn("FINISHED LOADING VARIABLES")
+              if (this.props.defaultVariable != undefined) {
+                console.warn("USING DEFAULT VARIABLE")
+                $.ajax({
+                  url: `/api/v1.0/depth/?dataset=` + this.props.defaultDataset + '&variable=' + this.props.defaultVariable,
+                  success: function(response) {
+                    console.warn("RESPONSE: ", response)
+                    this.setState({
+                      depths: response
+                    })
+                  }.bind(this),
+                  error: function() {
+                    console.error("Depth Values Failed to Load")
+                  }
+                })
+              } else if (this.props.defaultDataset != undefined) {
+                $.ajax({
+                  url: `/api/v1.0/depth/?dataset=` + this.props.defaultDataset + '&variable=' + this.state.variables[0]['id'],
+                  success: function(response) {
+                    console.warn("RESPONSE: ", response)
+                    this.setState({
+                      depths: response
+                    })
+                  }.bind(this),
+                  error: function() {
+                    console.error("Depth Values Failed to Load")
+                  }
+                })
+              }
+            })
         }
+        this.setCurrent()
     })
     console.warn("END OF FUNCTION")
 
@@ -218,6 +255,8 @@ export default class Layer extends React.Component {
 
   // Updates Ice app state
   localUpdate(key, value) {
+
+    /*
     if (key == 'current_variable') {
       let datasets = this.state.datainfo[value]['datasets']
       if (!(this.state.current_dataset in datasets)) {
@@ -241,7 +280,54 @@ export default class Layer extends React.Component {
       })
       
     }
+    */
+    console.warn("LOCAL UPDATE")
+    console.warn("KEY: ", value)
+    if (key === 'current_dataset') {
+      this.setState({
+        current_dataset: value,
+      })
+      this.fetchVariables(value)
+    }
+
     this.updateIce();
+  }
+
+  fetchVariables(dataset) {
+    console.warn("DATASET: ", dataset)
+    $.ajax({
+      url: `/api/v1.0/variables/?dataset=` + dataset,
+      success: function(response) {
+        console.warn("RESPONSE: ", response)
+        this.setState({
+          variables: response,
+          current_variable: response[0]['id']
+        })
+      }.bind(this),
+      error: function() {
+        console.error("Failed to Load Variable")
+      }
+    }).done( () => {
+      console.warn("DEFAULT VARIABLE CHANGE: ", this.state.variables[0]['id'])
+      this.fetchDepths(dataset, this.state.variables[0]['id'])
+    })
+  }
+
+  fetchDepths(dataset, variable) {
+    console.warn("FETCHING VARIABLES")
+    $.ajax({
+      url: `/api/v1.0/depth/?dataset=` + dataset + `&variable=` + variable,
+      success: function(response) {
+        console.warn("RESPONSE: ", response)
+        this.setState({
+          current_depth: response[0]['id'],
+          depths: response
+        })
+      }.bind(this),
+      error: function () {
+        console.error("Depth Values Failed to Load")
+      }
+    })
   }
 
   createIce() {
@@ -333,7 +419,7 @@ export default class Layer extends React.Component {
                 `/1` +
                 `/${this.state.current_display},${this.state.colourmap}` +
                 `/{z}/{x}/{y}.png`;
-    
+    console.warn("PROPS URL: ", props.url)
     props.projection = this.props.state.projection;
     props.attributions = [
       new ol.Attribution({
@@ -510,8 +596,27 @@ export default class Layer extends React.Component {
         default_scale={this.state.default_scale}
       ></Range>
     }
-    
 
+    let depth = []
+    if (this.props.layerType === 'ocean') {
+      depth.push(<IceComboBox
+        data={this.state.depths}
+        current={this.state.current_depth}
+        localUpdate={this.localUpdate}
+        key='depth'
+        name='current_depth'
+        title={_("Depth")}
+      ></IceComboBox>)
+    } else if (this.props.layerType === 'met') {
+      depth.push(<IceComboBox
+        data={this.state.depths}
+        current={this.state.current_depth}
+        localUpdate={this.localUpdate}
+        key='depth'
+        name='current_depth'
+        title={_("Altitude")}
+      ></IceComboBox>)
+    } 
     //Creates Main Map Panel
     const inputs = [
       <Panel
@@ -530,8 +635,21 @@ export default class Layer extends React.Component {
       
         <IceComboBox
           data={this.state.datasets}
+          current={this.state.current_dataset}
+          localUpdate={this.localUpdate}
+          key='dataset'
+          name='current_dataset'
+          title={_("Dataset")}
         ></IceComboBox>
-        
+        <IceComboBox
+          data={this.state.variables}
+          current={this.state.current_variable}
+          localUpdate={this.localUpdate}
+          key='variable'
+          name='current_variable'
+          title={_("Variable")}
+        ></IceComboBox>
+        {depth}
         {this.range}
 
         {/* Contour Selector drop down menu */}
@@ -552,6 +670,7 @@ export default class Layer extends React.Component {
           values={this.props.state.display}
           current={'current_display'}
           localUpdate={this.localUpdate}
+          title={_("Colour Map")}
         ></IceComboBox>
         
         <ComboBox

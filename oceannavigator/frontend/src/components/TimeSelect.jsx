@@ -25,7 +25,13 @@ export default class TimeSelect extends React.Component {
         let dateObjStart = new Date();
         let year = dateObjStart.getUTCFullYear();
         let month = dateObjStart.getUTCMonth();
+        if (month.toString().length === 1) {
+            month = '0' + month
+        }
         let date = dateObjStart.getUTCDate();
+        if (date.toString().length === 1) {
+            date = '0' + date
+        }
         let day = dateObjStart.getUTCDay();
         let day_map = {
             0: 'Sun',
@@ -55,15 +61,17 @@ export default class TimeSelect extends React.Component {
         dateObjEnd.setDate(dateObjStart.getDate() + 10)
         let end_year = dateObjEnd.getUTCFullYear()
         let end_month = dateObjEnd.getUTCMonth()
-        if (end_month.length === 1) {
+        console.warn("END MONTH LENGTH: ", end_month.toString().length)
+        if (end_month.toString().length === 1) {
             end_month = '0' + end_month
+            console.warn("END MONTH: ", end_month)
         }
         let end_date = dateObjEnd.getUTCDate()
-        if (end_date.length === 1) {
+        if (end_date.toString().length === 1) {
             end_date = '0' + end_date
         }
         let end_day = dateObjEnd.getUTCDay()
-        let endDay =  end_year + '/' + dateObjEnd.getMonth() + '/' + dateObjEnd.getDate() + ' (' + day_map[dateObjEnd.getDay()] + ') : ' + '00z' 
+        let endDay =  end_year + '/' + end_month + '/' + end_date + ' (' + day_map[dateObjEnd.getDay()] + ') : ' + '00z' 
 
         this.state = {
             times_available: {},
@@ -567,7 +575,7 @@ export default class TimeSelect extends React.Component {
         if (this.state.select === '' && this.props.currentTime != undefined) {
             let length = 658
             buttons.push(
-                <div className='timecontainer'>
+                <div className='timecontainer' key='timeline'>
                     <Timeline
                         startTime={this.state.startTimeObj}
                         endTime={this.state.endTimeObj}
