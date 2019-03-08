@@ -1,5 +1,6 @@
 {
     "giops_day": {
+        "envtype": ["ice","ocean","met"],
         "name": "GIOPS Daily",
         "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
         "enabled": true,
@@ -9,7 +10,7 @@
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",
         "variables": {
             "aice": {
-                "envtype": "met",
+                "envtype": "ice",
                 "name": "Ice Concentration",
                 "scale": [
                     0,
@@ -18,7 +19,7 @@
                 "unit": "fraction"
             },
             "east_vel": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water East Velocity",
                 "scale": [
                     -3,
@@ -27,7 +28,7 @@
                 "unit": "m/s"
             },
             "north_vel": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water North Velocity",
                 "scale": [
                     -3,
@@ -36,7 +37,7 @@
                 "unit": "m/s"
             },
             "sossheig": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Sea Surface Height",
                 "scale": [
                     -3,
@@ -45,7 +46,7 @@
                 "unit": "m"
             },
             "u_wind": {
-                "envtype":"meteorology",
+                "envtype":"met",
                 "name": "Zonal Wind",
                 "scale": [
                     -20,
@@ -54,7 +55,7 @@
                 "unit": "m/s"
             },
             "v_wind": {
-                "envtype":"meteorology",
+                "envtype":"met",
                 "name": "Meridional Wind",
                 "scale": [
                     -20,
@@ -72,7 +73,7 @@
                 "unit": "m"
             },
             "vomecrty": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water Y Velocity",
                 "scale": [
                     -3,
@@ -81,7 +82,7 @@
                 "unit": "m/s"
             },
             "vosaline": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Salinity",
                 "scale": [
                     30,
@@ -90,7 +91,7 @@
                 "unit": "PSU"
             },
             "votemper": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Temperature",
                 "scale": [
                     -5,
@@ -99,7 +100,7 @@
                 "unit": "Kelvin"
             },
             "vozocrtx": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water X Velocity",
                 "scale": [
                     -3,
@@ -110,6 +111,7 @@
         }
     },
     "riops": {
+        "envtype": ["ocean", "ice"],
         "name": "RIOPS",
         "url": "http://localhost:8080/thredds/dodsC/riops/daily/aggregated.ncml",
         "quantum": "hour",
@@ -119,7 +121,7 @@
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "variables": {
             "north_vel": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water North Velocity",
                 "unit": "m/s",
                 "scale": [
@@ -128,7 +130,7 @@
                 ]
             },
             "east_vel": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water East Velocity",
                 "unit": "m/s",
                 "scale": [
@@ -155,7 +157,7 @@
                 "unit": "m/s"
             },
             "vozocrtx": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water X Velocity",
                 "unit": "m/s",
                 "scale": [
@@ -164,7 +166,7 @@
                 ]
             },
             "vomecrty": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Water Y Velocity",
                 "unit": "m/s",
                 "scale": [
@@ -173,7 +175,7 @@
                 ]
             },
             "votemper": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Temperature",
                 "unit": "Kelvin",
                 "scale": [
@@ -182,7 +184,7 @@
                 ]
             },
             "vosaline": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Salinity",
                 "unit": "PSU",
                 "scale": [
@@ -191,7 +193,7 @@
                 ]
             },
             "sossheig": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Sea Surface Height",
                 "unit": "m",
                 "scale": [
@@ -272,7 +274,7 @@
                 ]
             },
             "somixhgt": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Turbocline Depth",
                 "unit": "m",
                 "scale": [
@@ -281,7 +283,7 @@
                 ]
             },
             "sokaraml": {
-                "envtype": "oceanography",
+                "envtype": "ocean",
                 "name": "Ocean Mixed Layer Depth",
                 "unit": "m",
                 "scale": [
@@ -293,6 +295,7 @@
     },
     
     "gem": {
+        "envtype": ["met"],
         "url": "http://navigator.oceansdata.ca/thredds/dodsC/gemCollection/TP",
         "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "name": "GEM Global Atmospheric",
@@ -301,7 +304,7 @@
         "attribution": "GEM Global from Environment and Climate Change Canada",
         "variables": {
             "v-component_of_wind_height_above_ground": {
-                "envtype": "meteorology",
+                "envtype": "met",
                 "name": "Meridional Wind",
                 "unit": "m/s",
                 "scale": [
@@ -310,7 +313,7 @@
                 ]
             },
             "u-component_of_wind_height_above_ground": {
-                "envtype": "meteorology",
+                "envtype": "met",
                 "name": "Zonal Wind",
                 "unit": "m/s",
                 "scale": [
@@ -319,7 +322,7 @@
                 ]
             },
             "temperature_height_above_ground": {
-                "envtype": "meteorology",
+                "envtype": "met",
                 "name": "Temperature",
                 "unit": "Kelvin",
                 "scale": [
@@ -328,7 +331,7 @@
                 ]
             },
             "pressure_surface": {
-                "envtype": "meteorology",
+                "envtype": "met",
                 "name": "Pressure",
                 "unit": "kPa",
                 "scale": [

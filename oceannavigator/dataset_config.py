@@ -69,6 +69,14 @@ def get_dataset_quantum(dataset: str) -> str:
     return __get_dataset_attribute(dataset, "quantum")
 
 """
+    Returns the 'envType' of a dataset
+
+    dataset: ID of dataset
+"""
+def get_dataset_envtype(dataset: str) -> str:
+    return __get_dataset_attribute(dataset, "envtype")
+
+"""
     Returns the attribution for a given dataset.
 
     dataset: ID of dataset...giops_day, biomer, etc.

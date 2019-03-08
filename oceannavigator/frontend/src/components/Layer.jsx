@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
+import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
@@ -17,7 +17,8 @@ export default class Layer extends React.Component {
   constructor(props) {
     super(props);
     this._mounted = false;
-
+    this.getDataInfo()
+    //this.changeTimeSource()
     this.state = {
       layer: undefined,
       layerState: 'Add Layer',
@@ -28,19 +29,19 @@ export default class Layer extends React.Component {
       datasets: {},
       depths: {},
       default_scales: "0,1",
-      
+
       // DISPLAY INFO
       colourmaps_val: [],
       opacity: 50,
-      
+
       // CURRENT STATE
       current_depth: 0,
       current_quantum: 'day',
-      current_colourmap: 'default',
-      current_display: 'contours,default',
+      current_colourmap: ['default'],
+      current_display: 'contours',
       current_variable: undefined,
       current_dataset: undefined,
-      current_scale: undefined,
+      current_scale: '-5,30',
     };
 
     this.range = undefined
@@ -52,6 +53,7 @@ export default class Layer extends React.Component {
     this.localUpdate = this.localUpdate.bind(this);
     this.changeDataset = this.changeDataset.bind(this)
     this.updateIce = this.updateIce.bind(this);
+    this.sendData = this.sendData.bind(this);
 
     //Getting metadata
     this.getVariables = this.getVariables.bind(this);
@@ -65,126 +67,139 @@ export default class Layer extends React.Component {
   }
 
   componentDidMount() {
-    this.getDataInfo()
+    this._mounted = true
     this.createIce();
   }
 
+
   setCurrent() {
-    console.warn("SETTING CURRENT")
     let dataset = ''
     let quantum
-    if (this.props.defaultDataset != undefined) { 
-        for (dataset in this.state.datasets) {
-          if (this.state.datasets[dataset] === this.props.defaultDataset) {
-            quantum = this.state.datasets[dataset]['quantum']
-          }
+    if (this.props.defaultDataset != undefined) {
+      for (dataset in this.state.datasets) {
+        if (this.state.datasets[dataset] === this.props.defaultDataset) {
+          quantum = this.state.datasets[dataset]['quantum']
         }
-        dataset = this.props.defaultDataset
+      }
+      dataset = this.props.defaultDataset
     } else {
-        dataset = this.state.datasets[0]['id']
-        quantum = this.state.datasets[0]['quantum']
-    }
-    
-    let variable = ''
-    if (this.props.defaultVariable != undefined) {
-        variable = this.props.defaultVariable
-    } else {
-        variable = this.state.variables[0]['id']
+      dataset = this.state.datasets[0]['id']
+      quantum = this.state.datasets[0]['quantum']
     }
 
-    let depth = 1
-    console.warn("SETTING DATASET: ", dataset)
+    let variable = ''
+    if (this.props.defaultVariable != undefined) {
+      variable = this.props.defaultVariable
+
+    } else {
+      variable = this.state.variables[0]['id']
+    }
+
+
+    let depth = 0
     this.setState({
-        current_dataset: dataset,
-        current_variable: variable,
-        current_scale: this.state.variables[0]['scale'],
-        current_depth: depth,
-        current_quantum: quantum,
+      current_dataset: dataset,
+      current_variable: variable,
+      current_scale: this.state.variables[0]['scale'],
+      current_depth: depth,
+      current_quantum: quantum,
     })
   }
 
-  getDataInfo() {
-    console.warn("GET DATA INFO")
+  /*
+    Sends the data information back to OceanNavigator.jsx to be used by the modals
 
+  */
+  sendData() {
+    let data = this.props.state.data
+    let time_access = this.props.layerType + this.state.current_dataset + (parseInt(this.props.index) + 1)
     
-    $.ajax({
-        url: `/api/v1.0/datasets/?envType=` + this.props.layerType,
-        success: function(response) {
-            console.warn("RESPONSE: ", response)
-            this.setState({
-                datasets: response
-            })
-
-        }.bind(this),
-        error: function() {
-            console.error("Dataset Info Failed to Load")
-        }
-    }).done( () => {
-        console.warn("FINISHED LOADING DATASETS")
-        if (this.props.defaultDataset in this.state.datasets) {
-            console.warn("USING DEFAULT DATASET")
-            $.ajax({
-                url: `/api/v1.0/variables/?dataset=` + this.props.defaultDataset + `&envType=` + this.props.layerType,
-                success: function(response) {
-                    console.warn("RESPONSE: ", response)
-                    this.setState({
-                        variables: response,
-                    })
-                }.bind(this),
-                error: function() {
-                    console.error("Variables Failed to Load")
-                }
-            }).done(this.setCurrent())
+    if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined) {
+      if (this.props.layerType in data) {
+        if (this.state.current_dataset in data[this.props.layerType]) {
+          data[this.props.layerType][this.state.current_dataset][this.state.current_variable] = {
+            quantum:  this.state.current_quantum,
+            time: this.props.state.timestamps[time_access],
+            scale: this.state.current_scale,
+            display: this.state.current_display,
+            colourmap: this.state.current_colourmap,
+          }
         } else {
-            console.warn("NO DEFAULT DATASET")
-            $.ajax({
-                url: `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'] + `&envType=` + this.props.layerType,
-                success: function(response) {
-                    console.warn("RESPONSE: ", response)
-                    this.setState({
-                        variables: response
-                    })
-                }.bind(this),
-                error: function() {
-                    console.error("Variables Failed to Load")
-                }
-            }).done( () => {
-              console.warn("FINISHED LOADING VARIABLES")
-              if (this.props.defaultVariable != undefined) {
-                console.warn("USING DEFAULT VARIABLE")
-                $.ajax({
-                  url: `/api/v1.0/depth/?dataset=` + this.props.defaultDataset + '&variable=' + this.props.defaultVariable,
-                  success: function(response) {
-                    console.warn("RESPONSE: ", response)
-                    this.setState({
-                      depths: response
-                    })
-                  }.bind(this),
-                  error: function() {
-                    console.error("Depth Values Failed to Load")
-                  }
-                })
-              } else if (this.props.defaultDataset != undefined) {
-                $.ajax({
-                  url: `/api/v1.0/depth/?dataset=` + this.props.defaultDataset + '&variable=' + this.state.variables[0]['id'],
-                  success: function(response) {
-                    console.warn("RESPONSE: ", response)
-                    this.setState({
-                      depths: response
-                    })
-                  }.bind(this),
-                  error: function() {
-                    console.error("Depth Values Failed to Load")
-                  }
-                })
-              }
-            })
+          data[this.props.layerType][this.state.current_dataset] = {
+            [this.state.current_variable]: {
+              quantum: this.state.current_quantum,
+              time: this.props.state.timestamps[time_access],
+              scale: this.state.current_scale,
+              display: this.state.current_display,
+              colourmap: this.state.current_colourmap  
+            }
+          }
         }
-        this.setCurrent()
-    })
-    console.warn("END OF FUNCTION")
+        
+      } else {
+        data[this.props.layerType] = {
+          [this.state.current_dataset]: {
+            [this.state.current_variable]: {
+              quantum: this.state.current_quantum,
+              time: this.props.state.timestamps[time_access],
+              scale: this.state.current_scale,
+              display: this.state.current_display,
+              colourmap: this.state.current_colourmap,
+            
+            }
+            }
+        }
+      }
+    }
+    this.props.globalUpdate('data', data)
+  }
 
-    
+  getDataInfo() {
+
+    // DATASETS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $.ajax({
+      url: `/api/v1.0/datasets/?envType=` + this.props.layerType,
+      success: function (response) {
+        this.setState({
+          datasets: response
+        })
+      }.bind(this),
+      error: function () {
+        console.error("Dataset Info Failed to Load")
+      }
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }).done(() => {
+      this.changeTimeSource(this.state.datasets[0]['id'], undefined)
+      // VARIALBE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      let var_url = `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'] + `&envType=` + this.props.layerType
+      $.ajax({
+        url: var_url,
+        success: function (response) {
+          this.setState({
+            variables: response
+          })
+        }.bind(this),
+        error: function () {
+          console.error("Variables Failed to Load")
+        }
+      }).done(() => {
+        // DEPTH ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        $.ajax({
+          url: `/api/v1.0/depth/?dataset=` + this.state.datasets[0]['id'] + '&variable=' + this.state.variables[0]['id'],
+          success: function (response) {
+            this.setState({
+              depths: response
+            })
+          }.bind(this),
+          error: function () {
+            console.error("Depth Values Failed to Load")
+          }
+        }).done(this.setCurrent())
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      })
+    })
+
+
     // CODE TO RECEIVE ALL DATASETS // THIS IS TO ALLOW VARIABLE FIRST SELECTION
     /*
     $.ajax({
@@ -215,23 +230,24 @@ export default class Layer extends React.Component {
       }
     });
     */
-    
+
   }
-  
+
   componentDidUpdate(prevProps, prevState) {
-    
-    if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps != undefined) {
+    if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
       if (this.props.state.timestamps != prevProps.state.timestamps || this.state.current_dataset != prevState.current_dataset || this.state.current_variable != prevState.current_variable) {
         this.updateIce();
       }//} else if (this.props.state.timestamps != prevProps.state.timestamps && this.props.state.timestamps != undefined) {
       //  this.updateIce();
       //}
     }
-    
+
   }
   handleTabs(key) {
-    this.setState({currentTab: key,});
+    this.setState({ currentTab: key, });
   }
+
+
 
   getVariables() {
     let variables = []
@@ -281,44 +297,62 @@ export default class Layer extends React.Component {
       
     }
     */
-    console.warn("LOCAL UPDATE")
-    console.warn("KEY: ", value)
-    if (key === 'current_dataset') {
+
+    if (key === 'current_depth') {
+      this.setState({
+        current_depth: value
+      })
+    } else if (key === 'current_variable') {
+      this.setState({
+        current_variable: value
+      })
+      this.fetchDepths(this.state.current_dataset, value)
+    } else if (key === 'current_dataset') {
+      this.changeTimeSource(value, this.state.current_dataset)
       this.setState({
         current_dataset: value,
       })
       this.fetchVariables(value)
-    }
 
-    this.updateIce();
+    } else {
+      this.setState({
+        [key]: value,
+      })
+    }
+    this.updateIce()
+
   }
 
   fetchVariables(dataset) {
-    console.warn("DATASET: ", dataset)
     $.ajax({
-      url: `/api/v1.0/variables/?dataset=` + dataset,
-      success: function(response) {
-        console.warn("RESPONSE: ", response)
+      url: `/api/v1.0/variables/?dataset=` + dataset + '&envType=' + this.props.layerType,
+      success: function (response) {
+        if (response.length < 1) {
+          let datasets = this.state.datasets
+          delete datasets[dataset]
+          this.setState({
+            datasets: datasets
+          })
+          this.setCurrent()
+          return
+        }
         this.setState({
           variables: response,
           current_variable: response[0]['id']
         })
       }.bind(this),
-      error: function() {
+      error: function () {
         console.error("Failed to Load Variable")
       }
-    }).done( () => {
-      console.warn("DEFAULT VARIABLE CHANGE: ", this.state.variables[0]['id'])
+    }).done(() => {
       this.fetchDepths(dataset, this.state.variables[0]['id'])
     })
   }
 
   fetchDepths(dataset, variable) {
-    console.warn("FETCHING VARIABLES")
     $.ajax({
       url: `/api/v1.0/depth/?dataset=` + dataset + `&variable=` + variable,
-      success: function(response) {
-        console.warn("RESPONSE: ", response)
+      success: function (response) {
         this.setState({
           current_depth: response[0]['id'],
           depths: response
@@ -332,10 +366,10 @@ export default class Layer extends React.Component {
 
   createIce() {
 
-    let layer = new ol.layer.Tile(
+    let layer_ice = new ol.layer.Tile(
       {
         preload: Infinity,
-        opacity: this.state.opacity/100,
+        opacity: this.state.opacity / 100,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -344,11 +378,10 @@ export default class Layer extends React.Component {
           ],
         }),
       });
-
-    layer.set('name', this.props.layerType)
+    layer_ice.set('name', this.props.layerType)
 
     this.setState({
-      layer: layer
+      ice_layer: layer_ice
     })
 
   }
@@ -362,64 +395,67 @@ export default class Layer extends React.Component {
     ensures: Valid ISO8604 extended format string
   */
   dateToISO(date, quantum) {
-
+    if (date === undefined) {
+      return
+    }
     function formatDay(day) {
-      if (day.length === 1) {
-        return '0' + day
+      if (day.toString().length === 1) {
+        return '0' + day.toString()
       } else {
         return day
       }
     }
 
     function formatMonth(month) {
-      if (month.length === 1) {
-        return '0' + day
+      if (month.toString().length === 1) {
+        return '0' + month.toString()
       } else {
         return month
       }
     }
 
     let iso
-    
+
     if (quantum === 'min') {
-      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T' + date.getHours() + date.getMinutes() + ':00+00:00'
+      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + date.getUTCMinutes() + ':00+00:00'
     } else if (quantum === 'hour') { // Only returns ISO to hour precision
-      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T' + date.getHours() + ':00:00+00:00'
+      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + ':00:00+00:00'
     } else if (quantum === 'day') { // Only returns ISO to day precision
-      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-' + formatDay(date.getDate()) + 'T00:00:00+00:00'
+      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T00:00:00+00:00'
     } else if (quantum === 'month') { // Only returns ISO to month precision
-      iso = date.getFullYear() + '-' + formatMonth(date.getMonth()) + '-01T00:00:00+00:00'
+      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-01T00:00:00+00:00'
     } else if (quantum === 'year') {
-      iso = date.getFullYear() + '-01-01T00:00:00+00:00'
+      iso = date.getUTCFullYear() + '-01-01T00:00:00+00:00'
     } else {    // Returns ISO to max available precision
-      iso = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + 'T' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '+00:00'
+      iso = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate() + 'T' + date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds() + '+00:00'
     }
 
     return iso
   }
 
   updateIce() {
+    this.sendData()
+    let layer_ice = this.state.ice_layer;
+    let props = layer_ice.getSource().getProperties();
+    let time_access = this.props.layerType + this.state.current_dataset + (parseInt(this.props.index) + 1)
+    let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
 
-    let layer = this.state.layer;
-    let props = layer.getSource().getProperties(); 
-    console.warn("TIMES: ", this.props.state.timestamps)
-    let timeString = this.dateToISO(this.props.state.timestamps[this.state.timeSource], this.state.current_quantum)
     // Sets new values for tiles
-    props.url = `/api/v1.0/tiles` + 
-                `/${this.props.options.interpType}` + 
-                `/${this.props.options.interpRadius}` +
-                `/${this.props.options.interpNeighbours}` +
-                `/${this.props.state.projection}` + 
-                `/${this.state.current_dataset}` + 
-                `/${this.state.current_variable}` + 
-                //`/2018-07-12T00:00:00+00:00` +
-                `/${timeString}` + 
-                `/0` + 
-                `/${this.state.scale_1}` + 
-                `/1` +
-                `/${this.state.current_display},${this.state.colourmap}` +
-                `/{z}/{x}/{y}.png`;
-    console.warn("PROPS URL: ", props.url)
+    props.url = `/api/v1.0/tiles` +
+      `/${this.props.options.interpType}` +
+      `/${this.props.options.interpRadius}` +
+      `/${this.props.options.interpNeighbours}` +
+      `/${this.props.state.projection}` +
+      `/${this.state.current_dataset}` +
+      `/${this.state.current_variable}` +
+      //`/2018-07-12T00:00:00+00:00` +
+      `/${timeString}` +
+      `/0` +
+      `/${this.state.current_scale}` +
+      `/0` +    // 0 Masks the land
+      `/${this.state.current_display},${this.state.current_colourmap}` +
+      `/{z}/{x}/{y}.png`;
+
     props.projection = this.props.state.projection;
     props.attributions = [
       new ol.Attribution({
@@ -427,51 +463,17 @@ export default class Layer extends React.Component {
       }),
     ];
     const newSource = new ol.source.XYZ(props);
-    
+
     // Gives updated source to layer
-    layer.setSource(newSource)
+    layer_ice.setSource(newSource)
 
     // Reloads layer to apply changes
     this.props.reloadLayer();
-    
+
   }
 
-  changeDataset(dataset, state) {
-    // Busy modal
-    this.setState({
-      busy: true,
-    });
-
-    // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
-    const time_promise = $.ajax(
-      "/api/timestamp/" +
-      this.state.dataset + "/" +
-      this.state.time + "/" +
-      dataset
-    ).promise();
-    
-    $.when(var_promise, time_promise).done(function(variable, time) {
-      let newvariable = this.state.variable;
-      
-      if ($.inArray(this.state.variable, variable[0].map(function(e) 
-      { return e.id; })) == -1) {
-        newvariable = variable[0][0].id;
-      }
-
-      // If no state parameter has been passed
-      // make a skeleton one
-      if (state === undefined) {
-        state = { };
-      }
-
-      state.dataset = dataset;
-      state.variable = newvariable;
-      state.time = time[0];
-      state.busy = false;
-
-      this.setState(state);
-    }.bind(this));
+  changeDataset(dataset) {
+    this.fetchVariables(dataset)
   }
 
 
@@ -482,6 +484,7 @@ export default class Layer extends React.Component {
 
   */
   toggleLayer() {
+
     if (this.props.state.layers.includes(this.state.ice_layer)) {
 
       let new_layers = this.props.state.layers;
@@ -490,18 +493,19 @@ export default class Layer extends React.Component {
         layerState: 'Add Ice'
       })
 
-      new_layers.splice(new_layers.indexOf(ice_layer), 1 );
-      
+      new_layers.splice(new_layers.indexOf(ice_layer), 1);
+
       this.props.globalUpdate('layers', new_layers)
       this.props.toggleLayer(ice_layer, 'remove')
     } else {
+      this.updateIce()
 
       this.setState({
         layerState: 'Remove Ice'
       })
 
       let new_layers = this.props.state.layers
-      
+
       new_layers.push(
         this.state.ice_layer
       )
@@ -518,14 +522,35 @@ export default class Layer extends React.Component {
     this.state.ice_layer.setOpacity(e.value / 100)
   }
 
-  changeTimeSource() {
-    console.warn("CURRENT DATASET: ", this.state.current_dataset)
-    if (this.state.useGlobalTime) { // If currently using global time
-      let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
+  changeTimeSource(new_dataset, new_quantum, old_dataset) {
+    //if (dataset === undefined) {
+    //  dataset = this.state.current_dataset
+    //}
+
+    let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
+
+    if (old_dataset === undefined) { // If currently using global time
+
       if (this.props.layerType in new_timeSources) {
-        new_timeSources[this.props.layerType].push(this.state.current_dataset)  // Adds the dataset
+
+        if (new_dataset in new_timeSources[this.props.layerType]) {
+          new_timeSources[this.props.layerType][new_dataset].frequency = new_timeSources[this.props.layerType][new_dataset].frequency + 1
+          this.setState({
+            timeBarNum: new_timeSources[this.props.layerType][new_dataset].frequency
+          })
+        } else {
+          new_timeSources[this.props.layerType][new_dataset] = {
+            frequency: 1,
+            quantum: this.state.current_quantum,
+          }
+        }
       } else {
-        new_timeSources[this.props.layerType] = [this.state.current_dataset]    // Adds the layerType and dataset
+        new_timeSources[this.props.layerType] = {
+          [new_dataset]: {
+            frequency: 1,
+            quantum: this.state.current_quantum
+          }
+        }    // Adds the layerType and dataset
       }
 
       this.props.globalUpdate('timeSources', new_timeSources)    // Adds to global time source list
@@ -535,89 +560,127 @@ export default class Layer extends React.Component {
         timeSource: this.props.layerType    // Indicates the new source to look for in the global time source list
       })
     } else {
-      let new_timeSources = this.props.state.timeSources
-      console.warn("REMOVING TIME SOURCE")
-      console.warn("TIME SOURCE: ", new_timeSources[this.state.timeSource])
-      console.warn(this.state.current_dataset)
-      console.warn(new_timeSources[this.props.timeSource])
-      if (new_timeSources[this.state.timeSource].includes(this.state.current_dataset)) {
-        console.warn("SEARCHING FOR DATASET")
-        for (let idx in new_timeSources[this.state.timeSource]) {
-          if (this.state.current_dataset === new_timeSources[this.props.layerType][idx]) {
-            //if (new_timeSources[this.state.timeSource].length === 1) {
-            //  new_timeSources[this.state.timeSource] = ''
-            //} else {
-              new_timeSources[this.props.layerType].splice(idx, 1)
-            //}
-            console.warn("NEW TIME SOURCES: ", new_timeSources)
-            break;
-          }
-        }
-        console.warn("NEW TIME SOURCES AGAIN: ", new_timeSources[this.state.timeSource])
-        if (new_timeSources[this.state.timeSource].length < 1) {
-          console.warn("REMOVING TIMESOURCE")
-          delete new_timeSources[this.state.timeSource]
+
+      // Reduces or Removes instances of datasets
+      if (new_timeSources[this.props.layerType].includes(old_dataset)) {
+        if (new_timeSources[this.props.layerType][old_dataset].frequency === 1) {
+          delete new_timeSources[this.props.layerType][old_dataset]
+        } else {
+          new_timeSources[this.props.layerType][old_dataset].frequency = new_timeSources[this.props.layerType][old_dataset].frequency - 1
         }
       }
 
-      this.props.globalUpdate('timeSources', new_timeSources)
+      // Updates with new dataset
+      if (new_dataset !== undefined) {
+        if (this.props.layerType in new_timeSources) {
+          if (new_timeSources[this.props.layerType].includes(new_dataset)) {
+            new_timeSources[this.props.layerType].frequency = new_timeSources[this.props.layerType].frequency + 1
+          } else {
+            new_timeSources[this.props.layerType][new_dataset] = {
+              frequency: 1,
+              quantum: this.state.current_quantum
+            }
+          }
+        }
+      }
 
-      this.setState({
-        useGlobalTime: true,    // Checks the using global time selectbox
-        timeSource: 'global'    // Indicates the new source to look for in the global time source list
-      })
+      //for (let idx in new_timeSources[this.state.timeSource]) {
+      //if (new_dataset === new_timeSources[this.props.layerType][idx]) {
+
+      //new_timeSources[this.props.layerType].splice(idx, 1)
+      //break;
+      //}
+      //}
     }
+
+    this.props.globalUpdate('timeSources', new_timeSources)
+    this.setState({
+      useGlobalTime: true,    // Checks the using global time selectbox
+      timeSource: 'global'    // Indicates the new source to look for in the global time source list
+    })
+
   }
 
   render() {
 
     _("Variable Range");
     _("Show Bathymetry Contours");
-    if (this._mounted) {
+
+
+    if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
+
+      let time_access = this.props.layerType + this.state.current_dataset + (parseInt(this.props.index) + 1)
+      let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
+
       this.range = <Range
-        key='scale_1'
-        id='scale_1'
-        state={this.state.scale_1}
+        //key='current_scale'
+        id='current_scale'
+        state={this.state.current_scale}
         setDefaultScale={this.state.setDefaultScale}
         def=''
         onUpdate={this.localUpdate}
-        title={_("Variable Range")}
-        autourl={"/api/v0.1/range/" +
-                this.props.options.interpType + "/" +
-                this.props.options.interpRadius + "/" +
-                this.props.options.interpNeighbours + "/" +
-                this.state.current_dataset + "/" +
-                this.props.state.projection + "/" +
-                this.props.state.extent.join(",") + "/" +
-                this.state.depth + "/" +
-                this.props.state.time + "/" +
-                this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id'] + ".json"
+        title={_("Scale")}
+        autourl={"/api/v1.0/range/" +
+          this.state.current_dataset + "/" +
+          this.state.current_variable + "/" +
+          this.props.options.interpType + "/" +
+          this.props.options.interpRadius + "/" +
+          this.props.options.interpNeighbours + "/" +
+          this.props.state.projection + "/" +
+          this.props.state.extent.join(",") + "/" +
+          this.state.current_depth + "/" +
+          timeString + ".json"
         }
-        default_scale={this.state.default_scale}
+        default_scale={this.state.current_scale}
       ></Range>
     }
 
+
     let depth = []
-    if (this.props.layerType === 'ocean') {
-      depth.push(<IceComboBox
-        data={this.state.depths}
-        current={this.state.current_depth}
-        localUpdate={this.localUpdate}
-        key='depth'
-        name='current_depth'
-        title={_("Depth")}
-      ></IceComboBox>)
-    } else if (this.props.layerType === 'met') {
-      depth.push(<IceComboBox
-        data={this.state.depths}
-        current={this.state.current_depth}
-        localUpdate={this.localUpdate}
-        key='depth'
-        name='current_depth'
-        title={_("Altitude")}
-      ></IceComboBox>)
-    } 
+    if (this.state.depths.length > 0) {
+      if (this.props.layerType === 'ocean') {
+        depth.push(<IceComboBox
+          data={this.state.depths}
+          current={this.state.current_depth}
+          localUpdate={this.localUpdate}
+          key='depth'
+          name='current_depth'
+          title={_("Depth")}
+        ></IceComboBox>)
+      } else if (this.props.layerType === 'met') {
+        depth.push(<IceComboBox
+          data={this.state.depths}
+          current={this.state.current_depth}
+          localUpdate={this.localUpdate}
+          key='depth'
+          name='current_depth'
+          title={_("Altitude")}
+        ></IceComboBox>)
+      }
+    }
+
     //Creates Main Map Panel
+    let datasets = []
+    if (this.state.datasets.length > 1) {
+      datasets.push(<IceComboBox
+        data={this.state.datasets}
+        current={this.state.current_dataset}
+        localUpdate={this.localUpdate}
+        key='dataset'
+        name='current_dataset'
+        title={_("Dataset")}
+      ></IceComboBox>)
+    }
+
+    let variables = <IceComboBox
+      data={this.state.variables}
+      current={this.state.current_variable}
+      localUpdate={this.localUpdate}
+      key='variable'
+      name='current_variable'
+      title={_("Variable")}
+    ></IceComboBox>
+
     const inputs = [
       <Panel
         key='left_map_panel'
@@ -626,29 +689,20 @@ export default class Layer extends React.Component {
         header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _(this.props.layerName)}
         bsStyle='primary'
       >
-        <SelectBox
+        <Button
+          className='removeButton'
+          onClick={() => this.props.removeLayer(this.state.current_dataset, this.props.index)}
+        >X</Button>
+        {/*
+          <SelectBox
           id='useGlobalTime'
           title='Sync to Global Time'
           state={this.state.useGlobalTime}
           onUpdate={this.changeTimeSource}
         ></SelectBox>
-      
-        <IceComboBox
-          data={this.state.datasets}
-          current={this.state.current_dataset}
-          localUpdate={this.localUpdate}
-          key='dataset'
-          name='current_dataset'
-          title={_("Dataset")}
-        ></IceComboBox>
-        <IceComboBox
-          data={this.state.variables}
-          current={this.state.current_variable}
-          localUpdate={this.localUpdate}
-          key='variable'
-          name='current_variable'
-          title={_("Variable")}
-        ></IceComboBox>
+        */}
+        {datasets}
+        {variables}
         {depth}
         {this.range}
 
@@ -667,16 +721,18 @@ export default class Layer extends React.Component {
         */}
 
         <IceComboBox
-          values={this.props.state.display}
-          current={'current_display'}
+          data={this.props.state.display}
+          current={this.state.current_display}
           localUpdate={this.localUpdate}
-          title={_("Colour Map")}
+          key='current_display'
+          name='current_display'
+          title={_("Display")}
         ></IceComboBox>
-        
+
         <ComboBox
-          id='colourmap'
-          state={this.state.colourmap}
-          def={"colourmap"}
+          id='current_colourmap'
+          state={this.state.current_colourmap}
+          def={"current_colourmap"}
           onUpdate={this.localUpdate}
           url='/api/v1.0/colormaps/'
           title={_("Colour Map")}></ComboBox>
@@ -689,7 +745,7 @@ export default class Layer extends React.Component {
           step={1}
           label={true}
           onChange={this.updateTransparency}
-          />
+        />
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
           {this.state.layerState}
@@ -707,7 +763,7 @@ export default class Layer extends React.Component {
           header={_("Right Map")}
           bsStyle='primary'
         >
-        {/*
+          {/*
           <IceDatasetSelector 
           id='dataset_1'
           state={this.props.state.dataset_1}
@@ -716,7 +772,7 @@ export default class Layer extends React.Component {
           depth={true}
         />
         */}
-          
+          {/*}
           <Range
             key='scale'
             id='scale'
@@ -726,34 +782,46 @@ export default class Layer extends React.Component {
             onUpdate={this.localUpdate}
             title={_("Variable Range")}
             autourl={"/api/v0.1/range/" +
-                    this.props.options.interpType + "/" +
-                    this.props.options.interpRadius + "/" +
-                    this.props.options.interpNeighbours + "/" +
-                    this.state.current_dataset + "/" +
-                    this.props.state.projection + "/" +
-                    this.props.state.extent.join(",") + "/" +
-                    this.state.depth + "/" +
-                    this.props.state.time + "/" +
-                    this.state.datainfo[this.state.current_variable]['info'] + ".json"
+              this.props.options.interpType + "/" +
+              this.props.options.interpRadius + "/" +
+              this.props.options.interpNeighbours + "/" +
+              this.state.current_dataset + "/" +
+              this.props.state.projection + "/" +
+              this.props.state.extent.join(",") + "/" +
+              this.state.depth + "/" +
+              this.props.state.time + "/" +
+              this.state.datainfo[this.state.current_variable]['info'] + ".json"
             }
             default_scale={this.props.state.dataset_1.variable_scale}
-          ></Range>
+          ></Range>*/}
           <Button className='addIceButton' onClick={this.toggleLayer}>
-              ADD ICE
+            ADD ICE
           </Button>
         </Panel>
       );
     }
-    
+
     return (
-        <div>
-            {inputs  /* Renders Side Panel */}
-        </div>
+      <div>
+        {inputs  /* Renders Side Panel */}
+      </div>
     );
   }
 }
 
 //***********************************************************************
 Layer.propTypes = {
-
+  key: PropTypes.number,
+  value: PropTypes.number,
+  state: PropTypes.object,
+  removeLayer: PropTypes.func,
+  toggleLayer: PropTypes.func,
+  reloadLayer: PropTypes.func,
+  mapComponent: PropTypes.object,
+  globalUpdate: PropTypes.func,
+  options: PropTypes.object,
+  layerType: PropTypes.string,
+  swapViews: PropTypes.bool,
+  showHelp: PropTypes.bool,
+  updateOptions: PropTypes.func,
 };

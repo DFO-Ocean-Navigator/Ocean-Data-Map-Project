@@ -21,18 +21,7 @@ export default class TimeSelect extends React.Component {
     constructor(props) {
         super(props);
         
-       
-        let dateObjStart = new Date();
-        let year = dateObjStart.getUTCFullYear();
-        let month = dateObjStart.getUTCMonth();
-        if (month.toString().length === 1) {
-            month = '0' + month
-        }
-        let date = dateObjStart.getUTCDate();
-        if (date.toString().length === 1) {
-            date = '0' + date
-        }
-        let day = dateObjStart.getUTCDay();
+    
         let day_map = {
             0: 'Sun',
             1: 'Mon',
@@ -56,23 +45,6 @@ export default class TimeSelect extends React.Component {
             11: 'Nov',
             12: 'Dec',
         }
-        let today =  months_map[month] + ' ' + date + ', ' + year + day_map[day]
-        let dateObjEnd = new Date()
-        dateObjEnd.setDate(dateObjStart.getDate() + 10)
-        let end_year = dateObjEnd.getUTCFullYear()
-        let end_month = dateObjEnd.getUTCMonth()
-        console.warn("END MONTH LENGTH: ", end_month.toString().length)
-        if (end_month.toString().length === 1) {
-            end_month = '0' + end_month
-            console.warn("END MONTH: ", end_month)
-        }
-        let end_date = dateObjEnd.getUTCDate()
-        if (end_date.toString().length === 1) {
-            end_date = '0' + end_date
-        }
-        let end_day = dateObjEnd.getUTCDay()
-        let endDay =  end_year + '/' + end_month + '/' + end_date + ' (' + day_map[dateObjEnd.getDay()] + ') : ' + '00z' 
-
         this.state = {
             times_available: {},
             years: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019],
@@ -95,20 +67,20 @@ export default class TimeSelect extends React.Component {
 
             day_fromnum: day_map,
 
-            startTime: today,
-            startTimeObj: dateObjStart,
+            startTime: undefined,
+            startTimeObj: undefined,
 
-            endTime: endDay,
-            endTimeObj: dateObjEnd,
+            endTime: undefined,
+            endTimeObj: undefined,
 
-            currentTimeObj: dateObjStart,
+            currentTimeObj: undefined,
 
             select: '',
             quantum: 'hour',
 
-            current_year: year,
-            current_month: month,
-            current_day: date,
+            current_year: undefined,
+            current_month: undefined,
+            current_day: undefined,
             current_hour: '00',
         }
 
@@ -123,62 +95,11 @@ export default class TimeSelect extends React.Component {
     }
     
     componentDidMount() {
-        this.props.localUpdate(this.props.name, this.state.startTimeObj, this.state.endTimeObj)
+        //this.props.localUpdate(this.props.name, this.state.startTimeObj, this.state.endTimeObj)
         let available_times;
         let self = this;
         if ('dataset' in this.props && this.props.dataset != '' && this.props.dataset!= undefined && this.props.dataset != 'all') {
-            
-            $.ajax({
-                url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset,
-                dataType: "json",
-                success: function(response) {
-                   
-                    let modified = {}
-                    for (let val in response) {
-                        let date = new Date(response[val]['value'])
-                        
-                        let year = date.getUTCFullYear()
-                        let month = date.getUTCMonth() + 1
-                        let day = date.getUTCDate()
-                        let hour = date.getUTCHours()
-                        let minute = date.getUTCMinutes()
-
-                        if (modified[year] === undefined) {
-                            modified[year] = {
-                                [month]: {
-                                    [day]: {
-                                        [hour]: [minute]
-                                    }
-                                }
-                            }
-                            
-                        } else {
-                            if (modified[year][month] === undefined) {
-                                modified[year][month] = {
-                                    [day]: {
-                                        [hour]: [minute]
-                                    }
-                                }
-                            } else {
-                                if (modified[year][month][day] === undefined) {
-                                    modified[year][month][day] = {
-                                        [hour]: [minute]
-                                    }
-                                } else {
-                                    if (modified[year][month][day][hour] === undefined) {
-                                        modified[year][month][day][hour] = [minute]
-                                    } else {
-                                        modified[year][month][day][hour].push(minute)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.setState({
-                        times_available: modified
-                    })
-                }.bind(this)
-            })
+            this.updateTimes()
         } else {
             $.ajax({
                 url: `/api/v1.0/timestamps/?dataset=all`,
@@ -187,18 +108,76 @@ export default class TimeSelect extends React.Component {
                     self.setState({
                         times_available: response
                     })
-                    
+                    //this.setState_start
                 }
             })
         }
     }
-    
-    //getYears () {
-    //    console.warn("TO IMPLEMENT")
-    //}
-      
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.dataset != prevProps.dataset) {
+            this.updateTimes()
+        }
+    }
+
+    updateTimes() {
+        $.ajax({
+            url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset,
+            dataType: "json",
+            success: function(response) {
+               
+                let modified = {}
+                for (let val in response) {
+                    let date = new Date(response[val]['value'])
+                    
+                    let year = date.getUTCFullYear()
+                    let month = date.getUTCMonth() + 1
+                    let day = date.getUTCDate()
+                    let hour = date.getUTCHours()
+                    let minute = date.getUTCMinutes()
+                    if (modified[year] === undefined) {
+                        modified[year] = {
+                            [month]: {
+                                [day]: {
+                                    [hour]: [minute]
+                                }
+                            }
+                        }
+                        
+                    } else {
+                        if (modified[year][month] === undefined) {
+                            modified[year][month] = {
+                                [day]: {
+                                    [hour]: [minute]
+                                }
+                            }
+                        } else {
+                            if (modified[year][month][day] === undefined) {
+                                modified[year][month][day] = {
+                                    [hour]: [minute]
+                                }
+                            } else {
+                                if (modified[year][month][day][hour] === undefined) {
+                                    modified[year][month][day][hour] = [minute]
+                                } else {
+                                    modified[year][month][day][hour].push(minute)
+                                }
+                            }
+                        }
+                    }
+                }
+                this.setState({
+                    response: response,
+                    times_available: modified
+                })
+            }.bind(this)
+        }).done(() => {this.updateDate()})
+    }  
 
     daysBetween( date1, date2 ) {
+        if (date1 === undefined || date2 === undefined) {
+            return -1
+        }
          //Get 1 day in milliseconds
         let one_day=1000*60*60*24;
         
@@ -213,8 +192,48 @@ export default class TimeSelect extends React.Component {
         return Math.round(difference_ms/one_day); 
     }
 
-    updateDate(e) {
-        console.warn(e.target.value)
+    updateDate() {
+        let quantum = this.props.quantum
+        let startTimeObj
+        let endTimeObj
+        if (this.state.startTimeObj === undefined || this.state.endTimeObj === undefined) { // Initializing
+            endTimeObj = new Date(this.state.response[this.state.response.length - 1].value)
+            startTimeObj = new Date(endTimeObj)
+            startTimeObj.setUTCDate(startTimeObj.getUTCDate() - 10)
+            if (! (startTimeObj in this.state.response)) {
+                startTimeObj = new Date(endTimeObj)
+            }
+        } else {    // Changing Datasets
+            if (!(this.state.startTimeObj in this.state.response) || !(this.state.endTimeObj in this.state.response)) {
+                endTimeObj = new Date(this.state.response[-1])
+                startTimeObj = new Date(endTimeObj)
+                startTimeObj.setUTCDate(startTimeObj.getUTCDate() - 10)
+                if (! (startTimeObj in this.state.response)) {
+                    startTimeObj = new Date(endTimeObj)
+                }   
+            }
+        }
+
+        let startTime
+        let endTime
+        if (quantum === 'month') {
+            startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth()
+            endTime = endTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth()
+        } else if (quantum === 'day') {
+            startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth() + '/' + startTimeObj.getUTCDate()
+            endTime = endTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth() + '/' + endTimeObj.getUTCDate()
+        } else if (quantum === 'hour') {
+            startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth() + '/' + startTimeObj.getUTCDate() + ' : ' + startTimeObj.getUTCHours() + 'z'
+            endTime = eneTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth() + '/' + endTimeObj.getUTCDate() + ' : ' + endTimeObj.getUTCHours() + 'z'    
+        }
+
+        this.setState({
+            startTimeObj : startTimeObj,
+            startTime: startTime,
+            endTimeObj: endTimeObj,
+            endTime: endTime
+        })
+        this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
     updateYear(e) {
@@ -247,19 +266,20 @@ export default class TimeSelect extends React.Component {
     }
 
     updateDay(e) {
+        let startTime
+        let startTimeObj
+        let endTime
+        let endTimeObj
         if (this.state.select === 'day') {
             if (Object.keys(this.state.times_available[this.state.selected_year][this.state.month_tonum[this.state.selected_month]][e.target.name]).length === 1) {
                 
                 let timeObj = new Date()
-                timeObj.setFullYear(this.state.selected_year);
-                timeObj.setMonth(this.state.month_tonum[this.state.selected_month]) - 1;
-                timeObj.setDate(e.target.name);
-                timeObj.setHours(0);
-                timeObj.setMinutes(0)
-                let startTime
-                let startTimeObj
-                let endTime
-                let endTimeObj
+                timeObj.setUTCFullYear(this.state.selected_year);
+                timeObj.setUTCMonth(this.state.month_tonum[this.state.selected_month]) - 1;
+                timeObj.setUTCDate(e.target.name);
+                timeObj.setUTCHours(0);
+                timeObj.setUTCMinutes(0)
+                
                     
                 if (this.state.selecting === 'startTime') {
                     let difference = this.daysBetween(timeObj, this.state.endTimeObj);
@@ -267,33 +287,34 @@ export default class TimeSelect extends React.Component {
                     // Define times
                     let year = timeObj.getUTCFullYear()
                     let month = timeObj.getUTCMonth()
-                    if (month.length === 1) {
+                    if (month.toString().length === 1) {
                         month = '0' + month
                     }
                     let date = timeObj.getUTCDate()
-                    if (date.length === 1) {
+                    if (date.toString().length === 1) {
                         date = '0' + date
                     }
                     
 
-                    startTime =  timeObj.getFullYear() + '/' + timeObj.getMonth() + '/' + timeObj.getDate() +  ' (' + this.state.day_fromnum[timeObj.getDay()] + ')'
+                    startTime =  year + '/' + timeObj.getUTCMonth() + '/' + timeObj.getUTCDate()
                     startTimeObj = timeObj;
                     if (difference > 10 || difference < 0) {
                        endTimeObj = new Date(timeObj);
-                        endTimeObj.setDate(endTimeObj.getDate() + 10);
-                        endTime = endTimeObj.getFullYear() + '/' + endTimeObj.getMonth() + '/' + endTimeObj.getDate() + ' (' + this.state.day_fromnum[endTimeObj.getDay()] + ')'
+                        endTimeObj.setUTCDate(endTimeObj.getUTCDate() + 10);
+                        endTime = endTimeObj.getUTCFullYear() + '/' + endTimeObj.getMonth() + '/' + endTimeObj.getUTCDate()
                     } else {
                         endTimeObj = this.state.endTimeObj;
                         endTime = this.state.endTime;
                     }
                 } else {
-                    endTime =  timeObj.getFullYear() + '/' + this.state.num_tomonth[timeObj.getMonth()] + '/' + timeObj.getDate() + ' (' + this.state.day_fromnum[timeObj.getDay()] + ')'    
+                    let end_time = 
+                    endTime =  timeObj.getUTCFullYear() + '/' + timeObj.getUTCMonth() + '/' + timeObj.getUTCDate()
                     endTimeObj= timeObj;
                     let difference = this.daysBetween(timeObj, this.state.startTimeobj)
                     if (difference > 10 || difference < 0) {
                         startTimeObj = new Date(timeObj)
-                        startTimeObj.setDate(timeObj.getDate() - 10);
-                        startTime = startTimeObj.getFullYear() + '/' + this.state.num_tomonth[startTimeObj.getMonth()] + '/' + startTimeObj.getDate() + ' (' + this.state.day_fromnum[startTimeObj.getDay()] + ')'
+                        startTimeObj.setUTCDate(timeObj.getUTCDate() - 10);
+                        startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth() + '/' + startTimeObj.getUTCDate()
                     } else {
                         startTimeObj = this.state.startTimeObj;
                         startTime = this.state.startTime;
@@ -320,51 +341,81 @@ export default class TimeSelect extends React.Component {
                 select: 'day'
             })
         }
+        this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
     updateHour(e) {
 
         let timeObj = new Date()
-        timeObj.setFullYear(this.state.selected_year);
-        timeObj.setMonth(this.state.month_tonum[this.state.selected_month]);
-        timeObj.setDate(this.state.selected_day);
-        timeObj.setHours(e.target.name);
-        timeObj.setMinutes(0)
+        timeObj.setUTCFullYear(this.state.selected_year);
+        timeObj.setUTCMonth(this.state.month_tonum[this.state.selected_month]);
+        timeObj.setUTCDate(this.state.selected_day);
+        timeObj.setUTCHours(e.target.name);
+        timeObj.setUTCMinutes(0)
 
-        let startTime
+        let startTime = ''
         let startTimeObj
         let endTime
         let endTimeObj
 
         if (this.state.selecting === 'startTime') {
             let difference = this.daysBetween(timeObj, this.state.endTimeObj);
-            startTime =  timeObj.getFullYear() + '/' + timeObj.getMonth() + '/' + timeObj.getDate() +  ' (' + this.state.day_fromnum[timeObj.getDay()] + ') ' + timeObj.getHours() + 'z'
+            let month = timeObj.getUTCMonth()
+            if (month.toString().length === 1) {
+                month = '0' + month.toString()
+            }
+            let date = timeObj.getUTCDate()
+            if (date.toString().length === 1) {
+                date = '0' + date.toString()
+            }
+            startTime =  timeObj.getUTCFullYear() + '/' + month + '/' + date + ' : ' + timeObj.getUTCHours() + 'z' + 'test'
             startTimeObj = timeObj;
             if (difference > 10 || difference < 0) {
                 endTimeObj = new Date(timeObj);
-                endTimeObj.setDate(endTimeObj.getDate() + 10);
-                endTime = endTimeObj.getFullYear() + '/' + endTimeObj.getMonth() + '/' + endTimeObj.getDate() + ' (' + this.state.day_fromnum[endTimeObj.getDay()] + ') ' + endTimeObj.getHours() + 'z'
+                endTimeObj.setUTCDate(endTimeObj.getUTCDate() + 10);
+                let end_month = endTimeObj.getMonth()
+                if (end_month.toString().length === 1) {
+                    end_month = '0' + end_month.toString()
+                }
+                let end_date = endTimeObj.getUTCDate()
+                if (end_date.toString().length === 1) {
+                    end_date = '0' + end_date.toString()
+                }
+                endTime = endTimeObj.getUTCFullYear() + '/' + end_month + '/' + end_date + ' : ' + endTimeObj.getUTCHours() + 'z'
             } else {
                 endTimeObj = this.state.endTimeObj;
                 endTime = this.state.endTime;
             }
         } else {
-            endTime = timeObj.getFullYear() + '/' + this.state.num_tomonth[timeObj.getMonth()] + '/' + timeObj.getDate() + ' (' + this.state.day_fromnum[timeObj.getDay()] + ') ' + timeObj.getHours() + 'z'
+            let end_month = timeObj.getUTCMonth()
+            if (end_month.toString().length === 1) {
+                end_month = '0' + end_month.toString()
+            }
+            let end_date = timeObj.getUTCDate()
+            if (end_date.toString().length === 1) {
+                end_date = '0' + end_date.toString()
+            }
+            endTime = timeObj.getUTCFullYear() + '/' + end_month + '/' + end_date + ' : ' + timeObj.getUTCHours() + 'z'
             endTimeObj= timeObj;
-            let difference = this.daysBetween(timeObj, this.state.startTimeObj)
+            let difference = this.daysBetween(this.state.startTimeObj, endTimeObj)
             if (difference > 10 || difference < 0) {
                 startTimeObj = new Date(timeObj)
-                startTimeObj.setDate(timeObj.getDate() - 10);
-                startTime = startTimeObj.getFullYear() + '/' + this.state.num_tomonth[startTimeObj.getMonth()] + '/' + startTimeObj.getDate() + ' (' + this.state.day_fromnum[startTimeObj.getDay()] + ') ' + startTimeObj.getHours() + 'z'
+                startTimeObj.setUTCDate(timeObj.getUTCDate() - 10);
+                let end_month = startTimeObj.getUTCMonth()
+                if (end_month.toString().length === 1) {
+                    end_month = '0' + end_month.toString()
+                }
+                let end_date = startTimeObj.getUTCDate()
+                if (end_date.toString().length === 1) {
+                    end_date = '0' + end_date.toString()
+                }
+                startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth() + '/' + startTimeObj.getUTCDate() + ' : ' + startTimeObj.getUTCHours() + 'z'
             } else {
                 startTimeObj = this.state.startTimeObj;
                 startTime = this.state.startTime;
             }
          }
 
-        
-       
-        
         this.setState({
             select: '',
             startTime: startTime,
@@ -373,11 +424,12 @@ export default class TimeSelect extends React.Component {
             endTimeObj: endTimeObj,
             selected_hour: e.target.name,
         })
-        this.props.localUpdate('global', startTimeObj, endTimeObj)
+
+        this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
     daysInMonth(iMonth, iYear) {
-        return 32 - new Date(iYear, iMonth, 32).getDate();
+        return 32 - new Date(iYear, iMonth, 32).getUTCDate();
     }
 
     render() {
@@ -572,8 +624,7 @@ export default class TimeSelect extends React.Component {
             console.warn("NOT CONFIGURED")
         }
         
-        if (this.state.select === '' && this.props.currentTime != undefined) {
-            let length = 658
+        if (this.state.select === '' && this.props.currentTime != undefined && this.state.endTime != undefined && this.state.startTime != undefined) {
             buttons.push(
                 <div className='timecontainer' key='timeline'>
                     <Timeline
@@ -597,10 +648,19 @@ export default class TimeSelect extends React.Component {
 
         let current_time = ' '
         if (this.props.currentTime != undefined) {
+            let month = this.props.currentTime.getUTCMonth().toString()
+            if (month.length === 1) {
+                month = '0' + month
+            }
+            let date = this.props.currentTime.getUTCDate().toString()
+            if (date.length === 1) {
+                date = '0' + date
+            }
             if (this.state.quantum === 'hour') {
-                current_time = this.props.currentTime.getFullYear() + '/' + this.props.currentTime.getMonth() + '/' + this.props.currentTime.getDate() + ' : ' + this.props.currentTime.getHours() + 'z'
+                
+                current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date + ' : ' + this.props.currentTime.getUTCHours() + 'z'
             } else if (this.state.quantum === 'day') {
-                current_time = this.props.currentTime.getFullYear() + '/' + this.props.currentTime.getMonth() + '/' + this.props.currentTime.getDate()
+                current_time = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
             }
         }
         

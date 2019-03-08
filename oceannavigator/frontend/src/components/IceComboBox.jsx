@@ -30,7 +30,6 @@ export default class IceComboBox extends React.Component {
       }
     }
     let idx_list = new Array(value_list.length)
-    console.warn(value_list.length)
     for (let i = 0; i < value_list.length; i += 1) {
       idx_list.push(i)
     }
@@ -59,7 +58,6 @@ export default class IceComboBox extends React.Component {
     let id_list = []
     let value_list = []
     for (let elem in this.props.data) {
-      console.warn("ELEM: ", this.props.data[elem])
       elem = this.props.data[elem]
       if (elem['id'] === undefined || elem['value'] === undefined) {
         console.error("Data empty or malformed")
@@ -74,7 +72,6 @@ export default class IceComboBox extends React.Component {
       }
     }
     let idx_list = new Array(value_list.length)
-    console.warn(value_list.length)
     for (let i = 0; i < value_list.length; i += 1) {
       idx_list.push(i)
     }
@@ -92,11 +89,11 @@ export default class IceComboBox extends React.Component {
 
   componentDidMount() {
     this._mounted = true;   //Component mounted
+    this.updateValues();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.data != prevProps.data) {
-      console.warn("UPDATING VALUES")
       this.updateValues();
     }
   }
@@ -106,8 +103,6 @@ export default class IceComboBox extends React.Component {
   }
 
   handleChange(e) {
-      console.warn("COMBOBOX VALUE: ", e.target.value)
-      console.warn("COMBOBOX ID: ", e.target.value)
       this.props.localUpdate(this.props.name, e.target.value)
   }
 

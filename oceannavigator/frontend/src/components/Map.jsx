@@ -225,7 +225,7 @@ export default class Map extends React.PureComponent {
         name: 'Drawing',
         source: this.vectorSource,
         style: function(feat, res) {
-
+          console.warn("CREATING VECTOR LAYER")
           switch (feat.get("type")) {
             case "area": {
               return [
@@ -353,13 +353,14 @@ export default class Map extends React.PureComponent {
       
 
     // Construct our map
+    this.layer_bath.setZIndex(10);
     this.map = new ol.Map({
-      layers: [
+      layers: this.props.state.layers.concat([
         this.layer_basemap,
         this.layer_data,
         this.layer_bath,
         this.layer_vector,
-      ].concat(this.props.state.layers),
+      ]),
       controls: ol.control.defaults({
         zoom: true,
         attributionOptions: ({
@@ -659,7 +660,7 @@ export default class Map extends React.PureComponent {
 
         const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
         
-        return new ol.layer.Tile({
+        let layer = new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
@@ -671,6 +672,8 @@ export default class Map extends React.PureComponent {
             ],
           })
         });
+        return layer;
+
       case "ocean":
         return new ol.layer.Tile({
           preload: Infinity,
@@ -1015,6 +1018,7 @@ export default class Map extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
     let display = 'colourmap,temperature'
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
@@ -1038,12 +1042,12 @@ export default class Map extends React.PureComponent {
         html: this.props.state.dataset_attribution,
       }),
     ];
-
+    */
     CURRENT_PROJ = this.props.state.projection;
 
-    const newSource = new ol.source.XYZ(props);
+    //const newSource = new ol.source.XYZ(props);
 
-    datalayer.setSource(newSource);
+    //datalayer.setSource(newSource);
 
     // Update colour scale
     if (this.scaleViewer != null) {
@@ -1280,6 +1284,7 @@ export default class Map extends React.PureComponent {
         
         <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
+        {/*
         <div className='layerHierarchy'>
           <LayerRearrange
             change={this.state.change}
@@ -1288,6 +1293,7 @@ export default class Map extends React.PureComponent {
             toggleLayer={this.toggleLayer}
           ></LayerRearrange>
         </div>
+        */}
         <TimeBarContainer
           globalUpdate={this.props.updateState}
           timeSources={this.props.state.timeSources}

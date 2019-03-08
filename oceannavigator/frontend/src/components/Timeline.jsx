@@ -87,7 +87,8 @@ export default class Timeline extends React.Component {
 
         let markers = []
         let offset = 0
-        
+        console.warn("START TIME: ", this.props.startTime)
+        console.warn("END TIME: ", this.props.endTime)
         // Calculate the number of pixels between each day marker
         let num_days = this.daysBetween(this.props.startTime, this.props.endTime);
         let offset_val = ((this.props.length) / (num_days + 1))
@@ -110,9 +111,9 @@ export default class Timeline extends React.Component {
 
         let currentTime = ''
         if (this.state.quantum === 'hour') {
-            currentTime = this.props.currentTime.getFullYear() + '/' + this.props.currentTime.getMonth() + '/' + this.props.currentTime.getDate() + ' : ' + this.props.currentTime.getHours() + 'z'
+            currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate() + ' : ' + this.props.currentTime.getUTCHours() + 'z'
         } else {
-            currentTime = this.props.currentTime.getFullYear() + '/' + this.props.currentTime.getMonth() + '/' + this.props.currentTime.getDate()
+            currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
         }
         //console.warn("DAYS BETWEEN: ", this.daysBetween(this.props.currentTime, this.props.startTime))
         //let current_offset = 0
@@ -121,7 +122,7 @@ export default class Timeline extends React.Component {
         
         offset_val = ((this.props.length) / (hours_between + 1))
         let time = new Date(this.props.startTime)
-        time.setHours(0)
+        time.setUTCHours(0)
         hours_between = this.hoursBetween(time, this.props.currentTime)
         let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
         let current_style = {

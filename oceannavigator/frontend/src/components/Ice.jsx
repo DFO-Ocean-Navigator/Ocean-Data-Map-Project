@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import DisplayType from "./DisplayType.jsx";
 import ol from "openlayers";
 import IceLayer from "./IceLayer.jsx";
+import Layer from "./Layer.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -24,18 +25,21 @@ export default class Ice extends React.Component {
     
     return (
         <div>
-            <IceLayer
+            {/*<Layer
               state={this.props.state}
-              swapViews={this.props.swapViews}
+
               toggleLayer={this.props.toggleLayer}
-              reloadLayer={this.props.reloadLayer}
+              reloadLayer={this.props.toggleLayer}
               mapComponent={this.props.mapComponent}
               globalUpdate={this.props.globalUpdate}
-              showHelp={this.props.showHelp}
               options={this.props.state.options}
+              layerType='ice'
+              swapViews={this.props.swapViews}
+              showHelp={this.props.showHelp}
               updateOptions={this.props.updateOptions}
-            />
-
+              //defaultDataset='giops_day'
+              //defaultVariable='u-component_of_wind_height_above_ground'
+            ></Layer>*/}
         </div>
     );
   }
