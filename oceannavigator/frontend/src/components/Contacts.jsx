@@ -142,7 +142,7 @@ export default class Contacts extends React.Component {
       // data filled by ajax
       //
       success: function (data) {
-        console.warn("IDENTITY TYPES: ", data)
+        pass
       }.bind(this),
     
       // On fail...
@@ -158,7 +158,6 @@ export default class Contacts extends React.Component {
     let availableTypes = []
     let self = this;
     this.state.trafficTypes.forEach(function(type) {
-      console.warn(type);
       availableTypes.push(<ContactButton
         key={type + '_key'}
         name={type}

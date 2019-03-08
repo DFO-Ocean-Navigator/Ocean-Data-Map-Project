@@ -408,9 +408,7 @@ def contour(projection, x, y, z, args):
 
     normalized = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])(levels)
     
-    print("CONTOURS: ", args.get('contours'))
     if args.get('contours') == 'default':
-        print("Variable: ", variable)
         cmap = colormap.find_colormap(variable[0])
     else:
         cmap = colormap.colormaps[args.get('contours')]
@@ -467,7 +465,6 @@ def contour(projection, x, y, z, args):
     return None
 
 def wind_barbs(projection, x, y, z, args):
-    print('\n\n\nNEIGHBOURS: ', args, '\n\n\n')
     lat, lon = get_latlon_coords(projection, x, y, z)
     print("LAT: ", lat)
     if len(lat.shape) == 1:

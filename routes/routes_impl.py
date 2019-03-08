@@ -19,7 +19,7 @@ from oceannavigator.dataset_config import (
     get_variable_name, get_datasets, get_variable_type,
     get_dataset_url, get_dataset_climatology, get_variable_scale,
     is_variable_hidden, get_dataset_cache, get_dataset_help,
-    get_dataset_name, get_dataset_quantum, get_dataset_attribution
+    get_dataset_name, get_dataset_quantum, get_dataset_attribution,get_dataset_envtype
 )
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
@@ -204,7 +204,24 @@ def query_datasets_impl(args):
     """
 
     data = []
-    if 'id' not in args:
+    if 'envType' in args:
+        for key in get_datasets():
+            types = get_dataset_envtype(key)
+            if args.get('envType') in types:
+                data.append({
+                    'id': key,
+                    'value': get_dataset_name(key),
+                    'quantum': get_dataset_quantum(key),
+                    'help': get_dataset_help(key),
+                    'attribution': get_dataset_attribution(key),
+                })
+    elif 'id' in args:
+        for key in get_datasets():
+            data.append({
+                'id': key,
+                'value': get_dataset_name(key)
+            })
+    else:
         for key in get_datasets():
             data.append({
                 'id': key,
@@ -213,12 +230,7 @@ def query_datasets_impl(args):
                 'help': get_dataset_help(key),
                 'attribution': get_dataset_attribution(key),
             })
-    else:
-        for key in get_datasets():
-            data.append({
-                'id': key,
-                'value': get_dataset_name(key)
-            })
+
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
     resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -415,17 +427,36 @@ def vars_query_impl(args):
                             continue
                         else:
                             if not is_variable_hidden(dataset, v):
-                                data.append({
-                                    'id': v.key,
-                                    'value': get_variable_name(dataset, v),
-                                    'scale': get_variable_scale(dataset, v),
-                                })
-                                if v.key in climatology_variables:
+
+                                if 'envType' in args or 'envtype' in args:
+                                    if 'envType' in args:
+                                        envType = args.get('envType')
+                                    else:
+                                        envType = args.get('envtype')
+                                    if get_variable_type(dataset, v) == envType:
+                                        data.append({
+                                            'id': v.key,
+                                            'value': get_variable_name(dataset, v),
+                                            'scale': get_variable_scale(dataset, v),
+                                        }) 
+                                        if v.key in climatology_variables:
+                                            data.append({
+                                                'id': v.key + "_anom",
+                                                'value': get_variable_name(dataset, v) + " Anomaly",
+                                                'scale': [-10, 10],
+                                            })
+                                else:
                                     data.append({
-                                        'id': v.key + "_anom",
-                                        'value': get_variable_name(dataset, v) + " Anomaly",
-                                        'scale': [-10, 10],
+                                        'id': v.key,
+                                        'value': get_variable_name(dataset, v),
+                                        'scale': get_variable_scale(dataset, v),
                                     })
+                                    if v.key in climatology_variables:
+                                        data.append({
+                                            'id': v.key + "_anom",
+                                            'value': get_variable_name(dataset, v) + " Anomaly",
+                                            'scale': [-10, 10],
+                                        })
                             else:
                                 data.append({
                                     'id': v.key,
@@ -522,31 +553,58 @@ def all_vars_query_impl(args):
     return data
 
 
-#def all_time_query_impl(args):
-#    """
-#    API Format: /api/v1.0/all/timestamps/
-#
-#    Retrieves all timestamps for all available datasets
-#    """
-#    times = dict()
-#
-#    for dataset in get_datasets():
-#        with open_dataset(get_dataset_url(dataset)) as ds:
-#            print("TIMESTAMPS: ", ds.timestamps)
-#            for date in ds.timestamps:
-#                print("DATE: ", date)
-#                if date.year not in times:
-#                    times[date.year] = {
-#                        date.month: [date.date]
-#                    }
-#                else:
-#                    if date.month not in times[date.year]:
-#                        times[date.year][date.monhth]
-#
-#                    else:
-#                        if date.date not in times[date.year][date.month]:
-#                            times[date.year][date.month].append(date.date)
+def all_time_query_impl(args):
+    """
+    API Format: /api/v1.0/all/timestamps/
 
+    Retrieves all timestamps for all available datasets
+    """
+    times = dict()
+
+    for dataset in get_datasets():
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for date in ds.timestamps:
+                #print("DATE: ", date)
+                #print("YEAR: ", date.year)
+                #print("MONTH: ", date.month)
+                #print("DAY: ", date.day)
+                print("DATE: ", date)
+                print("HOUR: ", date.hour)
+                print("MINUTE: ", date.minute)
+                if date.year not in times:
+                    times[date.year] = {
+                        date.month: {
+                            date.day: { 
+                                date.hour: [date.minute]
+                            }
+                        }
+                    }
+                else:
+                    if date.month not in times[date.year]:
+                        times[date.year][date.month] = {
+                            date.day: {
+                                date.hour: [date.minute]
+                            }
+                        }
+                       
+                        #times[date.year][date.month][date.day] = [date.hour]
+
+                    else:
+                        if date.day not in times[date.year][date.month]:
+                            times[date.year][date.month][date.day] = {
+                                date.hour: [date.minute]
+                            }
+                        
+                        else:
+                            if date.hour not in times[date.year][date.month][date.day]:
+                                times[date.year][date.month][date.day][date.hour] = [date.minute]
+                            elif date.minute not in times[date.year][date.month][date.day][date.hour]:
+                                times[date.year][date.month][date.day][date.hour].append(date.minute)
+
+
+    #print(times)
+    js = json.dumps(times)
+    return js
 
 def time_query_impl(args):
     """
@@ -677,8 +735,8 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     
     if depth != "bottom" and depth != "all":
         depth = int(depth)
-
-        if display[0] == 'colourmap':
+        print("DISPLAY: ", display)
+        if display[0] == 'colour':
             img = plotting.tile.plot(projection, x, y, zoom, {
                 'interp': interp,
                 'radius': radius*1000,

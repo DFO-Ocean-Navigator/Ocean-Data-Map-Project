@@ -189,7 +189,6 @@ export default class OceanLayer extends React.Component {
   }
 
   updateIce() {
-    console.warn("UPDATING ICE")
     if (this.state.current_dataset == undefined || this.state.current_variable == undefined || this.props.state.timestamps == undefined) {
       return
     } else if (this.props.state.timestamps === undefined) {
@@ -210,28 +209,28 @@ export default class OceanLayer extends React.Component {
       //time.setSeconds(0);
     } else if (this.state.quantum === 'month') {
       hours = '00'
-      time.setMinutes(0);
-      time.setSeconds(0);
-      time.setDate(0)
+      time.setUTCMinutes(0);
+      time.setUTCSeconds(0);
+      time.setUTCDate(0)
     } else if (this.state.quantum === 'hour') {
-      time.setMinutes(0);
-      time.setSeconds(0);
+      time.setUTCMinutes(0);
+      time.setUTCSeconds(0);
     }
-    let month = time.getMonth()
+    let month = time.getUTCMonth()
     if (month.toString().length === 1) {
       month = '0' + month
     }
-    let date = time.getDate()
+    let date = time.getUTCDate()
     if (date.toString().length === 1) {
         date = '0' + date
     }
-    time.setMonth(time.getMonth() + 1)
-    month = time.getMonth()
+    time.setUTCMonth(time.getUTCMonth() + 1)
+    month = time.getUTCMonth()
     if (month.toString().length === 1) {
       month = '0' + month
     }
     
-    let timeString = time.getFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
+    let timeString = time.getUTCFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
     
     
     // Sets new values for tiles

@@ -4,11 +4,7 @@ import ol from "openlayers";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
 import WarningBar from "./WarningBar.jsx";
-import PointWindow from "./PointWindow.jsx";
-import LineWindow from "./LineWindow.jsx";
-import AreaWindow from "./AreaWindow.jsx";
-import DrifterWindow from "./DrifterWindow.jsx";
-import Class4Window from "./Class4Window.jsx";
+
 import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
@@ -16,6 +12,7 @@ import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
+import ModalContainer from "./ModalContainer.jsx"
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -42,23 +39,40 @@ export default class OceanNavigator extends React.Component {
 
       _foundation: true,
       _environment: true,
-      _intelligence: true,
+      _intelligence: false,
       _derived: false,
-      _planning: true,
+      _planning: false,
 
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: true,
+        _intelligence: false,
         _derived: false,
-        _planning: true,
+        _planning: false,
       },
 
-      display: ['colourmap', 'contours'],
+      data: {},
+      display: [
+        {
+          id: 'colour',
+          value: 'Colour',
+        },
+        {
+          id: 'contours',
+          value: 'Contours',
+        }
+      ],
+      
       dataset: "giops_day",
       variable: "votemper",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
+
+      // New Global Times
+      timeSources: {},    // Time bar layers to create
+      timestamps: {},                     // Holds the id and time for each timebar
+      // ~~~~~~~~~~~~~~~~
+
       time: -1,
       starttime: -2, // Start time for Left Map
       scale: "-5,30", // Variable scale for left/Main Map
@@ -210,6 +224,11 @@ export default class OceanNavigator extends React.Component {
   updateState(key, value) {
     var newState = {};
 
+    if (key === 'timeSources') {
+      this.setState({
+        timeSources: value
+      })
+    }
     if (key === 'timestamps') {
       this.setState({
         timestamps: value,
@@ -249,6 +268,8 @@ export default class OceanNavigator extends React.Component {
 
     }
     else {
+      console.warn("KEY: ", key)
+      console.warn("VALUE: ", value)
       for (let i = 0; i < key.length; ++i) {
         switch(key[i]) {
           case "time":
@@ -270,6 +291,7 @@ export default class OceanNavigator extends React.Component {
     });
   }
 
+  /*
   changeDataset(dataset, state) {
     // Busy modal
     this.setState({
@@ -306,7 +328,7 @@ export default class OceanNavigator extends React.Component {
 
       this.setState(state);
     }.bind(this));
-  }
+  }*/
 
   action(name, arg, arg2, arg3) {
     switch(name) {
@@ -596,116 +618,7 @@ export default class OceanNavigator extends React.Component {
     let modalContent = "";
     let modalTitle = "";
 
-    switch (this.state.modal) {
-      case "point":
-        modalContent = (
-          <PointWindow
-            dataset={this.state.dataset}
-            quantum={this.state.dataset_quantum}
-            point={this.state.point}
-            variable={this.state.variable}
-            depth={this.state.depth}
-            time={this.state.time}
-            starttime={this.state.starttime}
-            scale={this.state.scale}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            action={this.action}
-            showHelp={this.toggleCompareHelp}
-            swapViews={this.swapViews}
-          />
-        );
-        modalTitle = formatLatLon(
-          this.state.point[0][0],
-          this.state.point[0][1]
-        );
-        break;
-      case "line":
-        modalContent = (
-          <LineWindow
-            dataset_0={this.state}
-            quantum={this.state.dataset_quantum}
-            line={this.state.line}
-            variable={this.state.variable}
-            depth={this.state.depth}
-            time={this.state.time}
-            starttime={this.state.starttime}
-            scale={this.state.scale}
-            scale_1={this.state.scale_1}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            action={this.action}
-            showHelp={this.toggleCompareHelp}
-            swapViews={this.swapViews}
-          />
-        );
-
-        modalTitle = "(" + this.state.line[0].map(function(ll) {
-          return formatLatLon(ll[0], ll[1]);
-        }).join("), (") + ")";
-        break;
-      case "area":
-        modalContent = (
-          <AreaWindow
-            dataset_0={this.state}
-            area={this.state.area}
-            scale={this.state.scale}
-            scale_1={this.state.scale_1}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            depth={this.state.depth}
-            projection={this.state.projection}
-            variable={this.state.variable}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            showHelp={this.toggleCompareHelp}
-            action={this.action}
-            swapViews={this.swapViews}
-            options={this.state.options}
-          />
-        );
-
-        modalTitle = "";
-        break;
-      case "drifter":
-        modalContent = (
-          <DrifterWindow
-            dataset={this.state.dataset}
-            quantum={this.state.dataset_quantum}
-            drifter={this.state.drifter}
-            variable={this.state.variable}
-            scale={this.state.scale}
-            names={this.state.names}
-            depth={this.state.depth}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            action={this.action}
-          />
-        );
-
-        modalTitle = "";
-        break;
-      case "class4":
-        modalContent = (
-          <Class4Window
-            class4id={this.state.class4}
-            init={this.state.subquery}
-            action={this.action}
-          />
-        );
-        modalTitle = "";
-        break;
-    }
+    
     if (this.state.names && this.state.names.length > 0) {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
@@ -741,7 +654,7 @@ export default class OceanNavigator extends React.Component {
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
-          scale={this.state.scale_1}
+          scale={this.state.scale}
           options={this.state.options}
         />
       </div>;
@@ -808,7 +721,20 @@ export default class OceanNavigator extends React.Component {
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {modalContent}
+            <ModalContainer
+              modal={this.state.modal}
+              data={this.state.data}
+              names={this.state.names}
+              point={this.state.point}
+              line={this.state.line}
+              showHelp={this.toggleCompareHelp}
+              dataset_compare={this.state.dataset_compare}
+              onUpdate={this.updateState}
+              init={this.state.subquery}  
+              action={this.action}
+              swapViews={this.swapViews}
+              options={this.state.options}
+            ></ModalContainer>
           </Modal.Body>
           <Modal.Footer>
             <Button

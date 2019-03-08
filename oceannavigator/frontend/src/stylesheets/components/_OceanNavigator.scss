@@ -5,28 +5,7 @@ body {
         font-size: 0.75em;
     }
 
-    .nav-tabs {
-        font-size: 0.8em;
-        height:120px;
-
-        >li {
-            clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
-            width: 60px;
-            height:120px;
-            margin-right: -8px;
-            >a {
-                height: 100%;
-
-                :hover {
-                    clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
-                    //width: 60px;
-                    //height:110px;
-                    
-                }
-            }
-        }
-        
-    }
+    
     #app {
         height:100%;
         >div {
@@ -36,7 +15,13 @@ body {
 }
 .OceanNavigator {
 
-
+    .removeButton {
+        background: transparent;
+        border: 0px;
+        float: right;
+        margin-top: -10px;
+        margin-right: -10px;
+    }
 
     .addIceButton {
         clear: right;
@@ -151,6 +136,30 @@ body {
         top: 0;
         bottom: 0;
         transition: left 0.3s ease-in-out;
+
+        .nav-tabs {
+            font-size: 0.8em;
+            height:120px;
+    
+            >li {
+                clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+                width: 60px;
+                height:120px;
+                margin-right: -8px;
+                >a {
+                    height: 100%;
+    
+                    :hover {
+                        clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+                        //width: 60px;
+                        //height:110px;
+                        
+                    }
+                }
+            }
+            
+        }
+
     }
     > .content {
         position: absolute;

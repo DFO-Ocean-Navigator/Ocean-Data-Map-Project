@@ -19,6 +19,7 @@ import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import ReactLoading from 'react-loading';
 import Spinner from '../images/spinner.gif';
+import DataSelection from './DataSelection.jsx';
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -71,6 +72,7 @@ export default class PointWindow extends React.Component {
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.updatePlot = this.updatePlot.bind(this);
     this.updateScale = this.updateScale.bind(this);
+    this.updateData = this.updateData.bind(this);
   }
 
   componentDidMount() {
@@ -159,6 +161,35 @@ export default class PointWindow extends React.Component {
     }
   }
 
+  updateData(selected) {
+    console.warn("UPDATING DATA")
+    selected = selected.split(',')
+    let data = this.props.data
+
+    let layer = selected[0]
+    let dataset = selected[1]
+    let variable = selected[2]
+
+    let display = data[layer][dataset][variable].display
+    let colourmap = data[layer][dataset][variable].colourmap
+    let quantum = data[layer][dataset][variable].quantum
+    let scale = data[layer][dataset][variable].scale
+    let time = data[layer][dataset][variable].time
+
+    this.setState({
+      layer: layer,
+      dataset: dataset,
+      variable: variable,
+
+      display: display,
+      colourmap: colourmap,
+      quantum: quantum,
+      scale: scale,
+      time: time,
+    })
+  
+  }
+
   onLocalUpdate(key, value) {
     if (this._mounted) {
       let newState = {};
@@ -234,9 +265,11 @@ export default class PointWindow extends React.Component {
   updatePlot() {
     console.warn("UPDATING PLOT")
     // Start constructing query for image
+    console.warn("TIME IN POINT WINDOW: ", this.state.time)
+
     let plot_query = {
-      dataset: this.props.dataset,
-      quantum: this.props.quantum,
+      dataset: this.state.dataset,
+      quantum: this.state.quantum,
       point: this.props.point,
       showmap: this.state.showmap,
       names: this.props.names,
@@ -275,17 +308,17 @@ export default class PointWindow extends React.Component {
       plot_query.ylabel = this.state.ylabel
     }
 
-
+    console.warn("TIME IN POINT: ", this.state.time)
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         plot_query.type = "profile";
-        plot_query.time = this.props.time;
+        plot_query.time = this.state.time;
         plot_query.variable = this.state.variable;
         break;
 
       case TabEnum.CTD:
         plot_query.type = "profile";
-        plot_query.time = this.props.time;
+        plot_query.time = this.state.time;
         plot_query.variable = "";
         if (this.state.variables.indexOf("votemper") !== -1) {
           plot_query.variable += "votemper,";
@@ -301,7 +334,7 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.TS:
         plot_query.type = "ts";
-        plot_query.time = this.props.time;
+        plot_query.time = this.state.time;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
         }
@@ -310,7 +343,7 @@ export default class PointWindow extends React.Component {
       case TabEnum.SOUND:
         console.warn("SOUND SPEED PROFILE")
         plot_query.type = "sound";
-        plot_query.time = this.props.time;
+        plot_query.time = this.state.time;
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
@@ -324,9 +357,9 @@ export default class PointWindow extends React.Component {
         break;
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
-        plot_query.variable = this.props.variable;
+        plot_query.variable = this.state.variable;
         plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
+        plot_query.endtime = this.state.time;
         plot_query.depth = this.state.depth;
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
@@ -350,7 +383,7 @@ export default class PointWindow extends React.Component {
         plot_query.type = "stick";
         plot_query.variable = this.state.variable;
         plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
+        plot_query.endtime = this.state.time;
         plot_query.depth = this.state.depth;
         break;
     }
@@ -375,7 +408,10 @@ export default class PointWindow extends React.Component {
     _("Colourmap");
     _("Saved Image Size");
 
-
+    let dataSelection = <DataSelection
+      data={this.props.data}
+      localUpdate={this.updateData}
+    ></DataSelection>
 
     // Rendered across all tabs
     if (this.props.point.length === 1) {
@@ -427,7 +463,7 @@ export default class PointWindow extends React.Component {
     const dataset = <ComboBox
       key='dataset'
       id='dataset'
-      state={this.props.dataset}
+      state={this.state.dataset}
       def=''
       url='/api/datasets/'
       title={_("Dataset")}
@@ -547,7 +583,7 @@ export default class PointWindow extends React.Component {
       state={this.props.time}
       def=''
       quantum={this.props.quantum}
-      url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
+      url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum}
       title={_("Time")}
       onUpdate={this.props.onUpdate}
     /> : null;
@@ -561,19 +597,19 @@ export default class PointWindow extends React.Component {
         id='starttime'
         state={this.state.starttime}
         def=''
-        quantum={this.props.quantum}
-        url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
+        quantum={this.state.quantum}
+        url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum}
         title={_("Start Time")}
         onUpdate={this.onLocalUpdate}
-        max={this.props.time}
+        max={this.state.time}
       />
       <TimePicker
         key='time'
         id='time'
-        state={this.props.time}
+        state={this.state.time}
         def=''
-        quantum={this.props.quantum}
-        url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum} title={_("End Time")}
+        quantum={this.state.quantum}
+        url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum} title={_("End Time")}
         onUpdate={this.props.onUpdate}
         min={this.state.starttime}
       /> </div> : null;
@@ -587,16 +623,16 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
+        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset + "&all=True"}
         title={_("Depth")}></ComboBox>
 
       <ComboBox
         key='variable'
         id='variable'
-        state={this.props.variable}
+        state={this.state.variable}
         def=''
         onUpdate={this.props.onUpdate}
-        url={"/api/variables/?vectors&dataset=" + this.props.dataset}
+        url={"/api/variables/?vectors&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -618,7 +654,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/variables/?vectors_only&dataset=" + this.props.dataset}
+        url={"/api/variables/?vectors_only&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox
@@ -628,7 +664,7 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
+        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset}
         title={_("Depth")}></ComboBox>
     </div> : null;
 
@@ -643,7 +679,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?3d_only&dataset=" + this.props.dataset + "&anom"}
+      url={"/api/variables/?3d_only&dataset=" + this.state.dataset + "&anom"}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];
@@ -742,6 +778,8 @@ export default class PointWindow extends React.Component {
         action={this.props.action}
       />
     }
+
+
     console.warn("BEFORE RETURNING")
     return (
       <div className='PointWindow Window'>
@@ -772,6 +810,10 @@ export default class PointWindow extends React.Component {
         <Row>
           <Col lg={3}>
             <Panel
+            >
+              {dataSelection}
+            </Panel>
+            <Panel
               key='global_settings'
               id='global_settings'
               collapsible
@@ -797,9 +839,10 @@ export default class PointWindow extends React.Component {
 
 //***********************************************************************
 PointWindow.propTypes = {
+  data: PropTypes.object,
   generatePermLink: PropTypes.func,
   point: PropTypes.array,
-  time: PropTypes.number,
+  time: PropTypes.object,
   variable: PropTypes.string,
   dpi: PropTypes.number,
   names: PropTypes.array,

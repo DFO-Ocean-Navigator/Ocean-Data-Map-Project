@@ -111,7 +111,7 @@ export default class PlotImage extends React.PureComponent {
       });
 
       const promise = $.ajax({
-        url: "/plot/",
+        url: "/api/v1.0/plot/",
         cache: true,
         data: paramString,
         dataType: "json",
@@ -168,6 +168,17 @@ export default class PlotImage extends React.PureComponent {
     if ('xlabel' in q) {
       query.xlabel = q['xlabel']
     }
+    let year = q.time.getUTCFullYear()
+    let month = q.time.getUTCMonth()
+    if (month.toString().length === 1) {
+      month = '0' + month
+    }
+    let date = q.time.getUTCDate()
+    if (date.toString().length === 1) {
+      date = '0' + date
+    }
+    let hour = q.time.getUTCHours()
+    let time = year + '-' + month + '-' + date + 'T' + hour + ':00:00+00:00'
     switch(q.type) {
       case "profile":
       case "ts":
@@ -175,7 +186,7 @@ export default class PlotImage extends React.PureComponent {
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
-        query.time = q.time;
+        query.time = time;
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -317,7 +328,7 @@ export default class PlotImage extends React.PureComponent {
   urlFromQuery(q) {
     const query = this.generateQuery(q);
     console.warn("QUERY STRING: ", query)
-    return "/plot/?query=" + encodeURIComponent(stringify(query));
+    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {

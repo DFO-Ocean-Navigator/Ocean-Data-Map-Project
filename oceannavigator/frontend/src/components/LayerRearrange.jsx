@@ -3,6 +3,14 @@ import PropTypes from "prop-types";
 import { Button } from "react-bootstrap";
 import FontAwesome from "react-fontawesome";
 
+
+// IMPORT IMAGES FOR ICONS
+import Ice_Icon from '../images/ice_symbol.png';
+import Met_Icon from '../images/cloud_symbol.png';
+import Ocean_Icon from '../images/ocean_symbol.png'
+import Wave_Icon from '../images/waves_symbol.png'
+import Iceberg_Icon from '../images/iceberg_symbol.png'
+
 export default class LayerRearrange extends React.PureComponent {
 
   constructor(props) {

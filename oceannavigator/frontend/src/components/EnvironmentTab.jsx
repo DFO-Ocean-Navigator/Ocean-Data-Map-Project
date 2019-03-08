@@ -45,16 +45,7 @@ export default class EnvironmentTab extends React.Component {
 
           {/* Creates the Data Selection Tab */}
             <Tab eventKey={1} title={<span className='envTabName'>{_("Oceanography")}</span>}>
-                <Oceanography
-                    state={this.props.state}
-                    swapViews={this.props.swapViews}
-                    changeHandler={this.props.changeHandler}
-                    showHelp={this.props.showHelp}
-                    options={this.props.state.options}
-                    updateOptions={this.props.updateOptions}
-                />
-            </Tab>
-            <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
+                
                 <Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
@@ -65,13 +56,13 @@ export default class EnvironmentTab extends React.Component {
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
                   updateOptions={this.props.updateOptions}
-                  layerType='meteorology'
-                  layerName='Met Layer'
-                  depthName='Altitude'
+                  layerType='ocean'
+                  layerName='Ocean'
+                  depthName='Depth'
                 />
             </Tab>
-            <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
-                <Ice
+            <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
+                {<Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
                   toggleLayer={this.props.toggleLayer}
@@ -81,6 +72,25 @@ export default class EnvironmentTab extends React.Component {
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
                   updateOptions={this.props.updateOptions}
+                  layerType='met'
+                  layerName='Met'
+                  depthName='Altitude'
+                />}
+            </Tab>
+            <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
+              <Meteorology
+                  state={this.props.state}
+                  swapViews={this.props.swapViews}
+                  toggleLayer={this.props.toggleLayer}
+                  reloadLayer={this.props.reloadLayer}
+                  mapComponent={this.props.mapComponent}
+                  globalUpdate={this.props.changeHandler}
+                  showHelp={this.props.showHelp}
+                  options={this.props.state.options}
+                  updateOptions={this.props.updateOptions}
+                  layerType='ice'
+                  layerName='Ice'
+                  depthName='Depth'
                 />
             </Tab>
             {/*

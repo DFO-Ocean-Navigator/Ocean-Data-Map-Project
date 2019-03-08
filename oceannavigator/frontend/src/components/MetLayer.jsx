@@ -63,16 +63,23 @@ export default class MetLayer extends React.Component {
   }
 
   
+
+
+  componentDidMount() {
+    this.getDataInfo()
+    this.createIce();
+  }
+
   getDataInfo() {
-   
+    
+    // CODE TO RECEIVE ALL DATASETS // THIS IS TO ALLOW VARIABLE FIRST SELECTION
+    
     $.ajax({
       url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
       success: function(response) {
-        
         this.setState({
           'datainfo': response
         })
-
         let variables = this.getVariables();
         if (variables == []) {
           throw Error;
@@ -87,20 +94,17 @@ export default class MetLayer extends React.Component {
           'datasets': datasets,
           'current_dataset': datasets[0],
         })
-
         this._mounted = true;
-        
       }.bind(this),
       error: function() {
         console.error("Error getting data!");
       }
     });
+    
+    
   }
+  
 
-  componentDidMount() {
-    this.getDataInfo()
-    this.createIce();
-  }
 
   componentDidUpdate(prevProps, prevState) {
     
@@ -210,28 +214,28 @@ export default class MetLayer extends React.Component {
       //time.setSeconds(0);
     } else if (this.state.quantum === 'month') {
       hours = '00'
-      time.setMinutes(0);
-      time.setSeconds(0);
-      time.setDate(0)
+      time.setUTCMinutes(0);
+      time.setUTCSeconds(0);
+      time.setUTCDate(0)
     } else if (this.state.quantum === 'hour') {
-      time.setMinutes(0);
-      time.setSeconds(0);
+      time.setUTCMinutes(0);
+      time.setUTCSeconds(0);
     }
-    let month = time.getMonth()
+    let month = time.getUTCMonth()
     if (month.toString().length === 1) {
       month = '0' + month
     }
-    let date = time.getDate()
+    let date = time.getUTCDate()
     if (date.toString().length === 1) {
         date = '0' + date
     }
-    time.setMonth(time.getMonth() + 1)
-    month = time.getMonth()
+    time.setUTCMonth(time.getUTCMonth() + 1)
+    month = time.getUTCMonth()
     if (month.toString().length === 1) {
       month = '0' + month
     }
     
-    let timeString = time.getFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
+    let timeString = time.getUTCFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
     
     
     // Sets new values for tiles
@@ -523,4 +527,5 @@ MetLayer.propTypes = {
   options: PropTypes.object,
   updateOptions: PropTypes.func,
   private: PropTypes.bool,
+  defaultDataset: PropTypes.string,
 };
