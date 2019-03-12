@@ -73,10 +73,9 @@ export default class TimeSelect extends React.Component {
             endTime: undefined,
             endTimeObj: undefined,
 
-            currentTimeObj: undefined,
 
             select: '',
-            quantum: 'hour',
+            quantum: '',
 
             current_year: undefined,
             current_month: undefined,
@@ -118,6 +117,7 @@ export default class TimeSelect extends React.Component {
         if (this.props.dataset != prevProps.dataset) {
             this.updateTimes()
         }
+        
     }
 
     updateTimes() {
@@ -198,6 +198,7 @@ export default class TimeSelect extends React.Component {
         let endTimeObj
         if (this.state.startTimeObj === undefined || this.state.endTimeObj === undefined) { // Initializing
             endTimeObj = new Date(this.state.response[this.state.response.length - 1].value)
+            endTimeObj.setUTCMonth(endTimeObj.getUTCMonth() + 1)
             startTimeObj = new Date(endTimeObj)
             startTimeObj.setUTCDate(startTimeObj.getUTCDate() - 10)
             if (! (startTimeObj in this.state.response)) {
@@ -224,7 +225,7 @@ export default class TimeSelect extends React.Component {
             endTime = endTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth() + '/' + endTimeObj.getUTCDate()
         } else if (quantum === 'hour') {
             startTime = startTimeObj.getUTCFullYear() + '/' + startTimeObj.getUTCMonth() + '/' + startTimeObj.getUTCDate() + ' : ' + startTimeObj.getUTCHours() + 'z'
-            endTime = eneTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth() + '/' + endTimeObj.getUTCDate() + ' : ' + endTimeObj.getUTCHours() + 'z'    
+            endTime = endTimeObj.getUTCFullYear() + '/' + endTimeObj.getUTCMonth() + '/' + endTimeObj.getUTCDate() + ' : ' + endTimeObj.getUTCHours() + 'z'    
         }
 
         this.setState({
@@ -656,11 +657,12 @@ export default class TimeSelect extends React.Component {
             if (date.length === 1) {
                 date = '0' + date
             }
-            if (this.state.quantum === 'hour') {
-                
+            if (this.props.quantum === 'hour') {
                 current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date + ' : ' + this.props.currentTime.getUTCHours() + 'z'
-            } else if (this.state.quantum === 'day') {
-                current_time = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
+            } else if (this.props.quantum === 'day') {
+                current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date
+            } else if (this.props.quantum === 'month') {
+                current_time = this.props.currentTime.getUTCFullYear() + '/' + month
             }
         }
         

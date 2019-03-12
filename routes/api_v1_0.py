@@ -133,9 +133,9 @@ def depth_v1():
 #
 # Unchanged from v0.0
 #
-@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
-def scale_v1_0(dataset: str, variable: str, scale: str):
-  return routes.routes_impl.scale_impl(dataset, variable, scale)
+@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>/<string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
+def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label:str):
+  return routes.routes_impl.scale_impl(dataset, variable, scale, colourmap, orientation, transparency, label)
 
 
 #

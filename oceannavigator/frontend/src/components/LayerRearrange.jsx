@@ -17,7 +17,14 @@ export default class LayerRearrange extends React.PureComponent {
     super(props);
 
     this.state = {
-        showLayers: true,
+      showLayers: true,
+      icons: {
+        'ocean': <img src={Ocean_Icon} alt="Ocean" className='timeIcon'></img>,
+        'met': <img src={Met_Icon} alt="Met" className='timeIcon'></img>,
+        'ice': <img src={Ice_Icon} alt="Ice" className='timeIcon'></img>,
+        'wave': <img src={Wave_Icon} alt="Waves" className='timeIcon'></img>,
+        'iceberg': <img src={Iceberg_Icon} alt="IceBerg" className='timeIcon'></img>,
+      }
     }
 
     this.remove = this.remove.bind(this);
@@ -61,32 +68,44 @@ export default class LayerRearrange extends React.PureComponent {
 
     let layers = []
     var self = this;
-    if (this.state.showLayers) {
-        this.props.map.getLayers().forEach(function(layer) {
-          if (layer['I'].name != undefined) {
-            layers.push(
-                <div className="layerContainer" key={layer['I'].name}>
-                    <div className='layerTextContainer'>
-                        {layer['I'].name}
-                    </div>
-                    <div className='buttonContainer'>
-                        <div className='arrowsContainer'>
-                            <Button key={layer['I'].name + '_up'} name={layer['I'].name} onClick={self.moveUp} className='layerButton'>
-                            {/*<FontAwesome name='caret-up' />*/}
-                            </Button>
-                            <Button key={layer['I'].name + '_down'} name={layer['I'].name} onClick={self.moveDown} className='layerButton'>
-                            {/*<FontAwesome name='caret-down'/>*/}
-                            </Button>
-                        </div>
-                        <Button className='layerCloseButton'>
+    
+    //if (this.state.showLayers) {
+    //    this.props.map.getLayers().forEach(function(layer) {
+    //      if (layer['I'].name != undefined) {
+    //        layers.push(
+    //            <div className="layerContainer" key={layer['I'].name}>
+    //                <div className='layerTextContainer'>
+    //                   {layer['I'].name}
+    //                </div>
+    //                <div className='buttonContainer'>
+    //                    <div className='arrowsContainer'>
+    //                        <Button key={layer['I'].name + '_up'} name={layer['I'].name} onClick={self.moveUp} className='layerButton'>
+    //                        {/*<FontAwesome name='caret-up' />*/}
+    //                        </Button>
+    //                        <Button key={layer['I'].name + '_down'} name={layer['I'].name} onClick={self.moveDown} className='layerButton'>
+    //                        {/*<FontAwesome name='caret-down'/>*/}
+    //                        </Button>
+    //                    </div>
+    //                    <Button className='layerCloseButton'>
+    //
+    //                    </Button>
+    //                </div>
+    //            </div>
+    //        )
+    //      }
+    //    })
+    //}
+    let data = this.props.data
 
-                        </Button>
-                    </div>
-                </div>
-            )
-          }
-        })
+    for (let layer in data) {
+      for (let dataset in data[layer]) {
+        for (let variable in data[layer][dataset]) {
+          //layers.push(layer+dataset+variable)
+          layers.push(<img key={dataset + variable} src={'/api/v1.0/scale/' + dataset + '/' + variable + '/' + data[layer][dataset][variable].scale + '/' + data[layer][dataset][variable].colourmap + '/' + 'horizontal/True/False.png'}></img>)
+        }
+      }
     }
+
     return (
         <div>
             <Button

@@ -36,7 +36,8 @@ export default class ModalContainer extends React.Component {
         case "point":
         modalContent = (
           <PointWindow
-            data={this.props.data}
+            data={this.props.data['left']}
+            data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
             //dataset={this.props.data[layer]['dataset']}
             //quantum={this.props.data[layer]['quantum']}
             point={this.props.point}
@@ -64,28 +65,28 @@ export default class ModalContainer extends React.Component {
       case "line":
         modalContent = (
           <LineWindow
-            dataset_0={this.props.data[layer]['dataset']}
-            quantum={this.props.data[layer]['quantum']}
-            line={this.props.data[layer].line}
-            variable={this.props.variable}
-            depth={this.props.data[layer].depth}
-            time={this.props.data[layer].time}
-            starttime={this.props.data[layer].time}
-            scale={this.props.data[layer].scale}
-            scale_1={this.props.data[layer].scale}
-            colormap={this.props.data[layer].colourmap}
+            dataset_0={this.state.dataset}
+            quantum={this.state.quantum}
+            line={this.props.line}
+            variable={this.state.variable}
+            depth={this.state.depth}
+            time={this.state.time}
+            starttime={this.state.time}
+            scale={this.state.scale}
+            scale_1={this.state.scale}
+            colormap={this.props.colourmap}
             names={this.props.names}
             onUpdate={this.props.updateState}
             init={this.props.init}
             dataset_compare={this.props.dataset_compare}
-            dataset_1={this.props.data[layer].dataset}
+            dataset_1={this.state.dataset}
             action={this.props.action}
             showHelp={this.props.toggleCompareHelp}
             swapViews={this.props.swapViews}
           />
         );
 
-        modalTitle = "(" + this.state.line[0].map(function(ll) {
+        modalTitle = "(" + this.props.line[0].map(function(ll) {
           return formatLatLon(ll[0], ll[1]);
         }).join("), (") + ")";
         break;

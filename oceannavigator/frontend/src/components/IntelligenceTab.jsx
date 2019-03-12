@@ -45,7 +45,7 @@ export default class IntelligenceTab extends React.Component {
                   state={this.props.state}
                   swapViews={this.props.swapViews}
                   toggleLayer={this.props.toggleLayer}
-                  reloadLayer={this.props.reloadLayer}
+                  reloadLayer={this.props.mapComponent.reloadLayer}
                   mapComponent={this.props.mapComponent}
                   changeHandler={this.props.changeHandler}
                   showHelp={this.props.showHelp}

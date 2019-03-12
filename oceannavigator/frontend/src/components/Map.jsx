@@ -388,7 +388,7 @@ export default class Map extends React.PureComponent {
       this.props.updateState("zoom", this.mapView.getZoom());
       const extent = this.mapView.calculateExtent(this.map.getSize());
       this.props.updateState("extent", extent);
-      this.map.render();
+      //this.map.render();
       if (this.props.partner) {
         this.props.partner.mapView.setCenter(this.mapView.getCenter());
         this.props.partner.mapView.setZoom(this.mapView.getZoom());
@@ -810,7 +810,7 @@ export default class Map extends React.PureComponent {
   }
 
   reloadLayer() {
-    this.map.render();
+    return//this.map.render();
   }
 
 
@@ -1053,6 +1053,7 @@ export default class Map extends React.PureComponent {
     if (this.scaleViewer != null) {
       this.map.removeControl(this.scaleViewer);
     }
+    
     this.scaleViewer = new app.ScaleViewer({
       image: (
         `/scale/${this.props.state.dataset}` +
@@ -1060,7 +1061,7 @@ export default class Map extends React.PureComponent {
         `/${this.props.scale}.png`
       )
     });
-    this.map.addControl(this.scaleViewer);
+    //this.map.addControl(this.scaleViewer);
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
       this.layer_basemap = this.getBasemap(
@@ -1120,7 +1121,7 @@ export default class Map extends React.PureComponent {
     this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
     this.layer_bath.setVisible(this.props.options.bathymetry);
 
-    this.map.render();
+    //this.map.render();
   }
 
   refreshFeatures(e) {
@@ -1284,19 +1285,20 @@ export default class Map extends React.PureComponent {
         
         <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
-        {/*
+        
         <div className='layerHierarchy'>
           <LayerRearrange
             change={this.state.change}
             map={this.map}
             state={this.props.state}
+            data={this.props.data}
             toggleLayer={this.toggleLayer}
           ></LayerRearrange>
         </div>
-        */}
+        
         <TimeBarContainer
           globalUpdate={this.props.updateState}
-          timeSources={this.props.state.timeSources}
+          timeSources={this.props.timeSources}
         >
         </TimeBarContainer>
       </div>
@@ -1310,6 +1312,7 @@ Map.propTypes = {
   layers: PropTypes.array,
   projection: PropTypes.string,
   updateState: PropTypes.func,
+  mapComponent: PropTypes.func,
   scale: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   action: PropTypes.func,
   partner: PropTypes.object,

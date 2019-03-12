@@ -140,9 +140,8 @@ export default class LayerSelection extends React.Component {
                             <EnvironmentTab
                                 state={this.props.state}
                                 swapViews={this.props.swapViews}
-                                toggleLayer={this.props.toggleLayer}
-                                reloadLayer={this.props.reloadLayer}
                                 mapComponent={this.props.mapComponent}
+                                mapComponent2={this.props.mapComponent2}
                                 changeHandler={this.props.updateState}
                                 showHelp={this.props.toggleCompareHelp}
                                 options={this.props.state.options}
@@ -154,8 +153,6 @@ export default class LayerSelection extends React.Component {
                             <IntelligenceTab
                                 state={this.props.state}
                                 swapViews={this.props.swapViews}
-                                toggleLayer={this.props.toggleLayer}
-                                reloadLayer={this.props.reloadLayer}
                                 mapComponent={this.props.mapComponent}
                                 changeHandler={this.props.updateState}
                                 showHelp={this.props.toggleCompareHelp}

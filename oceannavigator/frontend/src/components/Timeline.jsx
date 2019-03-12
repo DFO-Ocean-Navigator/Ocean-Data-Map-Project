@@ -87,15 +87,13 @@ export default class Timeline extends React.Component {
 
         let markers = []
         let offset = 0
-        console.warn("START TIME: ", this.props.startTime)
-        console.warn("END TIME: ", this.props.endTime)
         // Calculate the number of pixels between each day marker
         let num_days = this.daysBetween(this.props.startTime, this.props.endTime);
         let offset_val = ((this.props.length) / (num_days + 1))
         //let offset_val = 658 * 0.85/10;
         let marker_date = new Date(this.props.startTime)
         //marker_date.setDate(marker_date.getDate() + 1)
-        for (let i = 0; i <= num_days; i += 1) {
+        for (let i = 1; i <= num_days; i += 1) {
             offset = (offset_val * i) - (2 * i)
             let label_offset = {left: offset + 3}
             offset = {left: offset}

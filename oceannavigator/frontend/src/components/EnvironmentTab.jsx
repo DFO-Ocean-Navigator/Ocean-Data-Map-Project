@@ -49,9 +49,8 @@ export default class EnvironmentTab extends React.Component {
                 <Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
-                  toggleLayer={this.props.toggleLayer}
-                  reloadLayer={this.props.reloadLayer}
                   mapComponent={this.props.mapComponent}
+                  mapComponent2={this.props.mapComponent2}
                   globalUpdate={this.props.changeHandler}
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
@@ -65,9 +64,8 @@ export default class EnvironmentTab extends React.Component {
                 {<Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
-                  toggleLayer={this.props.toggleLayer}
-                  reloadLayer={this.props.reloadLayer}
                   mapComponent={this.props.mapComponent}
+                  mapComponent2={this.props.mapComponent2}
                   globalUpdate={this.props.changeHandler}
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
@@ -81,9 +79,8 @@ export default class EnvironmentTab extends React.Component {
               <Meteorology
                   state={this.props.state}
                   swapViews={this.props.swapViews}
-                  toggleLayer={this.props.toggleLayer}
-                  reloadLayer={this.props.reloadLayer}
                   mapComponent={this.props.mapComponent}
+                  mapComponent2={this.props.mapComponent2}
                   globalUpdate={this.props.changeHandler}
                   showHelp={this.props.showHelp}
                   options={this.props.state.options}
