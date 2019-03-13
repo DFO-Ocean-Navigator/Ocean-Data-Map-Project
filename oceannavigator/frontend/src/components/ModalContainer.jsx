@@ -65,21 +65,23 @@ export default class ModalContainer extends React.Component {
       case "line":
         modalContent = (
           <LineWindow
-            dataset_0={this.state.dataset}
-            quantum={this.state.quantum}
+            data={this.props.data['left']}
+            data_compare={'right' in this.props.data ? this.props.data['right']: {}}
+            //dataset_0={this.state.dataset}
+            //quantum={this.state.quantum}
             line={this.props.line}
-            variable={this.state.variable}
-            depth={this.state.depth}
-            time={this.state.time}
-            starttime={this.state.time}
-            scale={this.state.scale}
-            scale_1={this.state.scale}
-            colormap={this.props.colourmap}
+            //variable={this.state.variable}
+            //depth={this.state.depth}
+            //time={this.state.time}
+            //starttime={this.state.time}
+            //scale={this.state.scale}
+            //scale_1={this.state.scale}
+            //colormap={this.props.colourmap}
             names={this.props.names}
             onUpdate={this.props.updateState}
             init={this.props.init}
-            dataset_compare={this.props.dataset_compare}
-            dataset_1={this.state.dataset}
+            //dataset_compare={this.props.dataset_compare}
+            //dataset_1={this.state.dataset}
             action={this.props.action}
             showHelp={this.props.toggleCompareHelp}
             swapViews={this.props.swapViews}

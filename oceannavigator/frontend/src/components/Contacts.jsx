@@ -112,7 +112,7 @@ export default class Contacts extends React.Component {
               });
 
               // ADDS LAYER TO THE MAP
-              this.props.toggleLayer(this.layer_contacts, 'add')
+              this.props.mapComponent.toggleLayer(this.layer_contacts, 'add')
 
               this.props.mapComponent.map.removeInteraction(draw);
               

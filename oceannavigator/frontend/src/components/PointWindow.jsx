@@ -85,8 +85,7 @@ export default class PointWindow extends React.Component {
         selected: TabEnum.OBSERVATION,
       });
     }
-
-    this.populateVariables(this.props.dataset);
+    //this.populateVariables(this.state.dataset);
 
   }
 
@@ -94,6 +93,7 @@ export default class PointWindow extends React.Component {
     this._mounted = false;
   }
 
+  /*
   componentWillReceiveProps(props) {
     if (stringify(this.props) !== stringify(props) && this._mounted) {
       const state = {};
@@ -116,8 +116,12 @@ export default class PointWindow extends React.Component {
       }
     }
   }
-
+*/
   populateVariables(dataset) {
+    console.warn(dataset)
+    if (dataset === undefined) {
+      return
+    }
     $.ajax({
       url: "/api/variables/?dataset=" + dataset + "&anom",
       dataType: "json",
@@ -129,9 +133,9 @@ export default class PointWindow extends React.Component {
             return d.id;
           });
 
-          if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
-            this.props.onUpdate("variable", vars[0]);
-          }
+          //if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
+          //  this.props.onUpdate("variable", vars[0]);
+          //}
 
           this.setState({
             variables: data.map(function (d) {
@@ -141,7 +145,7 @@ export default class PointWindow extends React.Component {
             this.updatePlot()
           });
         }
-        this.updatePlot()
+        //this.updatePlot()
       }.bind(this),
 
       error: function (xhr, status, err) {
@@ -162,22 +166,23 @@ export default class PointWindow extends React.Component {
   }
 
   updateData(selected) {
-    console.warn("UPDATING DATA")
     selected = selected.split(',')
     let data = this.props.data
 
     let layer = selected[0]
-    let dataset = selected[1]
-    let variable = selected[2]
+    let index = selected[1]
+    let dataset = selected[2]
+    let variable = [selected[3]]
 
-    let display = data[layer][dataset][variable].display
-    let colourmap = data[layer][dataset][variable].colourmap
-    let quantum = data[layer][dataset][variable].quantum
-    let scale = data[layer][dataset][variable].scale
-    let time = data[layer][dataset][variable].time
+    let display = data[layer][index][dataset][variable].display
+    let colourmap = data[layer][index][dataset][variable].colourmap
+    let quantum = data[layer][index][dataset][variable].quantum
+    let scale = data[layer][index][dataset][variable].scale
+    let time = data[layer][index][dataset][variable].time
 
     this.setState({
       layer: layer,
+      index: index,
       dataset: dataset,
       variable: variable,
 
@@ -186,8 +191,11 @@ export default class PointWindow extends React.Component {
       quantum: quantum,
       scale: scale,
       time: time,
+    }, () => {
+      this.updatePlot()
+      console.warn("DATASET IN POINT: ", dataset)
+      this.populateVariables(dataset)
     })
-  
   }
 
   onLocalUpdate(key, value) {
@@ -244,7 +252,6 @@ export default class PointWindow extends React.Component {
 
   // Handles when a tab is selected
   onSelect(key) {
-    console.warn("ON SELECT: ", key)
     this.setState({
       selected: key,
       
@@ -254,18 +261,12 @@ export default class PointWindow extends React.Component {
   updateScale(e) {
     let value = e.target.value
     let key = e.target.id
-    console.warn("UPDATING SCALE")
-    console.warn(e.target.value, e.target.id)
     this.setState({
       [key]: value
     })
-    console.warn(e.target.value, e.target.id)
   }
 
   updatePlot() {
-    console.warn("UPDATING PLOT")
-    // Start constructing query for image
-    console.warn("TIME IN POINT WINDOW: ", this.state.time)
 
     let plot_query = {
       dataset: this.state.dataset,
@@ -282,7 +283,7 @@ export default class PointWindow extends React.Component {
     if (this.state.xminScale != '' && this.state.xminScale != undefined) {
       if (this.state.xmaxScale != '' && this.state.xmaxScale != undefined) {
         plot_query.xscale = [this.state.xminScale, this.state.xmaxScale]
-        console.warn("PLOT QUERY: ", plot_query)
+
       }
     }
     
@@ -308,7 +309,6 @@ export default class PointWindow extends React.Component {
       plot_query.ylabel = this.state.ylabel
     }
 
-    console.warn("TIME IN POINT: ", this.state.time)
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         plot_query.type = "profile";
@@ -341,7 +341,6 @@ export default class PointWindow extends React.Component {
         break;
 
       case TabEnum.SOUND:
-        console.warn("SOUND SPEED PROFILE")
         plot_query.type = "sound";
         plot_query.time = this.state.time;
         break;
@@ -387,11 +386,8 @@ export default class PointWindow extends React.Component {
         plot_query.depth = this.state.depth;
         break;
     }
-    console.warn("SETTING STATE TO NEW QUERY")
     this.setState({
       query: plot_query
-    }, () => {
-      console.warn(this.state.query)
     })
   }
 
@@ -580,9 +576,9 @@ export default class PointWindow extends React.Component {
     const time = showTime ? <TimePicker
       key='time'
       id='time'
-      state={this.props.time}
+      state={this.state.time}
       def=''
-      quantum={this.props.quantum}
+      quantum={this.state.quantum}
       url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum}
       title={_("Time")}
       onUpdate={this.props.onUpdate}

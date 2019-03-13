@@ -20,7 +20,7 @@ export default class Meteorology extends React.Component {
       index: 2,
       layers: layers
     }
-      
+
     this.addLayer = this.addLayer.bind(this);
     this.removeLayer = this.removeLayer.bind(this);
     this.removeTimeSource = this.removeTimeSource.bind(this);
@@ -36,7 +36,7 @@ export default class Meteorology extends React.Component {
       layers: layers,
       index, index
     })
-    
+
     this.layers = layers
   }
 
@@ -53,7 +53,6 @@ export default class Meteorology extends React.Component {
   }
 
   removeTimeSource(map, dataset, variable) {
-    console.warn("REMOVING TIMESTAMP")
     // Stored as
     // map: {
     //   layer: {
@@ -66,7 +65,7 @@ export default class Meteorology extends React.Component {
     let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
     if (dataset in new_timeSources[map][this.props.layerType]) {
       if (new_timeSources[map][this.props.layerType][dataset]['variables'].includes(variable)) {
-        console.warn("DELETING PREVIOUS DATASET")
+        
         let idx = new_timeSources[map][this.props.layerType][dataset]['variables'].indexOf(variable)
         new_timeSources[map][this.props.layerType][dataset]['variables'].splice(idx, 1)
       }
@@ -79,95 +78,129 @@ export default class Meteorology extends React.Component {
     }
 
     this.props.globalUpdate('timeSources', jQuery.extend({}, new_timeSources))
-    
-    
+
+
   }
 
-  removeData(map, dataset, variable, idx) {
-    // Stored as
-    // map: {
-    //   layer: {
-    //     dataset: {
-    //       variables: {
-    //         frequency: #,
-    //         data: ...
-    //         data: ...
-    //         data: ...
-    //       }
-    //     }
-    //   }
-    // }
+  cleanObject(data, map, dataset, variable, idx) {
     
-    console.warn("REMOVING DATA")
-    console.warn("  map: ", map)
-    console.warn("  dataset: ", dataset)
-    console.warn("  variable: ", variable)
-    if (map === undefined || dataset === undefined || variable === undefined) {
-      return
-    }
-    let data = this.props.state.data
-    
-    console.warn("FREQUENCY: ", data[map][this.props.layerType][idx][dataset][variable].frequency)
-    if (data[map][this.props.layerType][idx][dataset][variable].frequency === 1) {
-      console.warn("DELETING VARIABLE")
-      let temp = data[map][this.props.layerType][idx][dataset]
-      console.warn("TEMP: ", temp)
-      temp[variable] == undefined
-      delete temp[variable]
-    } else {
-      console.warn("NOT DELETING VARIABLE")
-      data[map][this.props.layerType][idx][dataset][variable].frequency = data[map][this.props.layerType][idx][dataset][variable].frequency - 1
-    }
-    console.warn("DELETED VARIABLE: ", data)
-    console.warn("TESTING: ", jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset]))
-    if (data[map][this.props.layerType][idx][dataset] === {}) {
+    if (jQuery.isEmptyObject(data[map])) {
+      delete data[map]
+    } else if (jQuery.isEmptyObject(data[map][this.props.layertypey])) {
+      delete data[map][this.props.layerType]
+    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx])) {
+      delete data[map][this.props.layerType][idx]
+    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset])) {
       delete data[map][this.props.layerType][idx][dataset]
-      console.warn("DELETED DATASET: ", data)
-      if (data[map][this.props.layerType] === {}) {
+    } else {
+    }
+  }
+
+
+removeData(map, dataset, variable, idx) {
+  // Stored as
+  // map: {
+  //   layer: {
+  //     dataset: {
+  //       variables: {
+  //         frequency: #,
+  //         data: ...
+  //         data: ...
+  //         data: ...
+  //       }
+  //     }
+  //   }
+  // }
+
+  let data = this.props.state.data
+  if (data[map] !== undefined) {
+    if (data[map][this.props.layerType] !== undefined) {
+      if (data[map][this.props.layerType][idx] !== undefined) {
+        if (data[map][this.props.layerType][idx][dataset] !== undefined) {
+          data[map][this.props.layerType][idx][dataset][variable] = undefined
+          delete data[map][this.props.layerType][idx][dataset][variable]
+        }
+      }
+    }
+  }
+  this.cleanObject(data, map, dataset, variable, idx)
+
+  //delete data[map][this.props.layerType][idx]
+  /*
+  console.warn("REMOVING DATA")
+  console.warn("  map: ", map)
+  console.warn("  dataset: ", dataset)
+  console.warn("  variable: ", variable)
+  if (map === undefined || dataset === undefined || variable === undefined || idx === undefined) {
+    return
+  }
+  let data = this.props.state.data
+  
+  console.warn("DATA: ", data)
+  if (variable in data[map][this.props.layerType][idx][dataset]) {
+    console.warn("DELETING VARIABLE")
+    let temp = data[map][this.props.layerType][idx][dataset]
+  //  console.warn("TEMP: ", temp)
+    temp[variable] = undefined
+    delete temp[variable]
+  //} else {
+  //  console.warn("NOT DELETING VARIABLE")
+  //  data[map][this.props.layerType][idx][dataset][variable].frequency = data[map][this.props.layerType][idx][dataset][variable].frequency - 1
+  }
+  console.warn("DELETED VARIABLE: ", data)
+  console.warn("TESTING: ", jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset]))
+  if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset])) {
+    delete data[map][this.props.layerType][idx][dataset]
+    console.warn("DELETED DATASET: ", data)
+    if (jQuery.isEmptyObject(data[map][this.props.layerType][idx])) {
+      delete data[map][this.props.layerType][idx]
+      if (jQuery.isEmptyObject(data[map][this.props.layerType])) {
         let type = this.props.layerType
         delete data[map][type]
         console.warn("DELETED TYPE: ", data)
-
-        if (data[map] === {}) {
+ 
+        if (jQuery.isEmptyObject(data[map])) {
           delete data[map]
           console.warn("DELETING MAP: ", data)
         }
       }
     }
-    console.warn("FINAL DATA: ", data)
-    this.props.globalUpdate('data', jQuery.extend({}, data))
+  }
+  console.warn("FINAL DATA: ", data)
+  */
+  this.props.globalUpdate('data', jQuery.extend({}, data))
+}
+
+render() {
+  let layers = []
+  for (let idx in this.state.layers) {
+    layers.push(<Layer
+      index={idx}
+      key={this.state.layers[idx]}
+      value={this.state.layers[idx]}
+      state={this.props.state}
+      layers={this.props.state.layers}
+      removeLayer={this.removeLayer}
+      removeData={this.removeData}
+      mapComponent={this.props.mapComponent}  // Left map Component
+      mapComponent2={this.props.mapComponent2} // Left map component - for dataset compare
+      globalUpdate={this.props.globalUpdate}
+      options={this.props.state.options}
+      layerType={this.props.layerType}
+      layerName={this.props.layerName}
+      //swapViews={this.props.swapViews}
+      showHelp={this.props.showHelp}
+      updateOptions={this.props.updateOptions}
+    //defaultDataset='giops_day'
+    //defaultVariable='u-component_of_wind_height_above_ground'
+    ></Layer>)
   }
 
-  render() {    
-    let layers = []
-    for (let idx in this.state.layers) {
-      layers.push(<Layer
-        index={idx}
-        key={this.state.layers[idx]}
-        value={this.state.layers[idx]}
-        state={this.props.state}
-        layers={this.props.state.layers}
-        removeLayer={this.removeLayer}
-        removeData={this.removeData}
-        mapComponent={this.props.mapComponent}  // Left map Component
-        mapComponent2={this.props.mapComponent2} // Left map component - for dataset compare
-        globalUpdate={this.props.globalUpdate}
-        options={this.props.state.options}
-        layerType={this.props.layerType}
-        layerName={this.props.layerName}
-        //swapViews={this.props.swapViews}
-        showHelp={this.props.showHelp}
-        updateOptions={this.props.updateOptions}
-        //defaultDataset='giops_day'
-        //defaultVariable='u-component_of_wind_height_above_ground'
-      ></Layer>)
-    }
-      
 
-    return (
-        <div>
-          
-            {/*<Layer
+  return (
+    <div>
+
+      {/*<Layer
               state={this.props.state}
               swapViews={this.props.swapViews}
               toggleLayer={this.props.toggleLayer}
@@ -180,16 +213,16 @@ export default class Meteorology extends React.Component {
               layerType='met'
               defaultDataset='gem'
             />*/}
-            {layers}
-            <Button
-              onClick={this.addLayer}
-            >
-            New Ocean Layer
+      {layers}
+      <Button
+        onClick={this.addLayer}
+      >
+        New Ocean Layer
             </Button>
-            
-        </div>
-    );
-  }
+
+    </div>
+  );
+}
 }
 
 //***********************************************************************

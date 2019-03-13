@@ -78,8 +78,6 @@ export default class TimeBarContainer extends React.Component {
         let min = new Date(this.findMin(this.state.startTimes))
         let max = this.findMax(this.state.endTimes)
 
-        console.warn("MAX:MIN - ", max, ':', min)
-
         this.animateConsecutive(min, max);
     }
 
@@ -126,25 +124,18 @@ export default class TimeBarContainer extends React.Component {
             })
             return;
         }
-        console.warn("START TIME: ", this.state.startTimes)
 
         let in_range = false;
-        console.warn("START TIMES 2: ", this.state.startTimes)
         let times = jQuery.extend({}, this.state.times)
         for (let dataset in times) {
             times[dataset] = new Date(times[dataset])
         }
-        console.warn("TIMES AFTER JQUERY: ", times)
         for (let dataset in times) {
-            console.warn("DATASET: ", dataset)
             if ((min.getTime() > this.state.startTimes[dataset].getTime() || min.getTime() === this.state.startTimes[dataset].getTime()) && min.getTime() < this.state.endTimes[dataset].getTime()) {
-                console.warn("INCREMENTING TIME")
-
                 times[dataset].setUTCHours(times[dataset].getUTCHours() + 3)
                 in_range = true
             }
         }
-        console.warn("START TIMES 3: ", this.state.startTimes)
         this.setState({
             times: times,
         })
@@ -161,7 +152,6 @@ export default class TimeBarContainer extends React.Component {
         } else {
             min.setHours(min.getUTCHours() + 24)
         }
-        console.warn("START TIMES 4: ", this.state.startTimes)
         setTimeout(() => { this.animateConsecutive(new Date(min), max) }, 4000)
 
         return
@@ -184,33 +174,24 @@ export default class TimeBarContainer extends React.Component {
     }
 
     findMax(times) {
-        console.warn("MAX: ", times)
         let largest = undefined;
 
         for (let dataset in times) {
             let time = new Date(times[dataset]);
-            console.warn("TIME: ", time.getTime())
-            if (largest != undefined) {
-                console.warn("LARGEST: ", largest.getTime())
-            }
             if (largest === undefined) {
                 largest = time;
-                console.warn("UNDEFINED : ", largest)
             }
             let time_sec = time.getTime()
             let largest_sec = largest.getTime()
             if (time_sec > largest_sec) {
                 largest = time;
-                console.warn("DEFINED: ", largest)
             }
         }
         return new Date(largest);
     }
 
     findMin(times) {
-        console.warn("MIN: ", times)
         let smallest = undefined;
-        console.warn(smallest);
         for (let dataset in times) {
             let time = new Date(times[dataset])
             if (smallest === undefined) {
@@ -263,7 +244,6 @@ export default class TimeBarContainer extends React.Component {
 
         self = this
         let layers = this.props.timeSources
-        console.warn("TIMESOURCES: ", this.props.timeSources)
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
@@ -272,9 +252,6 @@ export default class TimeBarContainer extends React.Component {
             let new_layer = this.props.timeSources[layer]//new Set(this.props.timeSources[layer])
             for (let idx in new_layer) {
                 for (let i in new_layer[idx]['variables']) {
-                    console.warn("NEW LAYER: ", new_layer)
-                    console.warn("IDX: ", idx)
-                    console.warn("I: ", i)
                     let dataset = idx
                     quantums.push(new_layer[idx].quantum)
                     timeBars.push(

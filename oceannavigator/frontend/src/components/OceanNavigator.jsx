@@ -39,14 +39,14 @@ export default class OceanNavigator extends React.Component {
 
       _foundation: true,
       _environment: true,
-      _intelligence: false,
+      _intelligence: true,
       _derived: false,
       _planning: false,
 
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: false,
+        _intelligence: true,
         _derived: false,
         _planning: false,
       },
@@ -268,8 +268,6 @@ export default class OceanNavigator extends React.Component {
 
     }
     else {
-      console.warn("KEY: ", key)
-      console.warn("VALUE: ", value)
       for (let i = 0; i < key.length; ++i) {
         switch(key[i]) {
           case "time":
