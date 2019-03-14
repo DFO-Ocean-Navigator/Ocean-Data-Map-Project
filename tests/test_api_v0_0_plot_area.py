@@ -27,7 +27,7 @@ from plotting.hovmoller import HovmollerPlotter
 from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
-
+import numpy
 
 def geturl(query):
         request = "/plot/?" + urlencode({"query": json.dumps(query)})
@@ -38,9 +38,10 @@ def geturl(query):
 class SetUpTest:
     
     def basic(self):
-        return {
-            'datasets': 'giops_day',
-            'variables': 'votemper'
+        return { 
+            
+                'datasets': ['giops_day'],
+                'variables': {'giops_day': ['votemper'] }
         }
 
     def thorough(self):
@@ -132,7 +133,7 @@ class TestLinePlot(unittest.TestCase):
                         
                             self.assertEqual(plot.shape, ((500,444)))
                             print(type(plot))
-                            self.assertEqual(type(plot), 'numpy.ma.core.MaskedArray')
+                            self.assertTrue( isinstance(plot, numpy.ma.core.MaskedArray) )
                             #self.assertEqual(type(plot), type(plot)
                         
 
