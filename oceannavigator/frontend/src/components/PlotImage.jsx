@@ -208,7 +208,7 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "transect":
         query.variable = q.variable;
-        query.time = q.time;
+        query.time = time;
         query.scale = q.scale;
         query.path = q.path;
         query.showmap = q.showmap;
@@ -261,7 +261,7 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "map":
         query.variable = q.variable;
-        query.time = q.time;
+        query.time = time;
         query.scale = q.scale;
         query.depth = q.depth;
         query.colormap = q.colormap;
@@ -321,13 +321,11 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    console.warn("QUERY 2: ", query)
     return query;
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    console.warn("QUERY STRING: ", query)
     return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 

@@ -411,28 +411,31 @@ def vars_query_impl(args):
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
                 for v in ds.variables:  #Iterates through all the variables in the dataset
-
+                    print("VARIABLE: ", v)
                     #If a time period and at least one other unit type is specified
+                    print("DIMENSION: ", v.dimensions)
                     if ('time_counter' in v.dimensions or   
-                        'time' in v.dimensions) \
+                        'time' in v.dimensions or 'time1' in v.dimensions or 'time2' in v.dimensions) \
                             and ('y' in v.dimensions or
                                  'yc' in v.dimensions or
                                  'node' in v.dimensions or
                                  'nele' in v.dimensions or
                                  'latitude' in v.dimensions or
                                  'lat' in v.dimensions):
+                        print("TIME COUNTER")
                         if ('3d_only' in args) and not (
                             set(ds.depth_dimensions) & set(v.dimensions)
                         ):
                             continue
                         else:
                             if not is_variable_hidden(dataset, v):
-
+                                print("VARIABLE NOT HIDDEN")
                                 if 'envType' in args or 'envtype' in args:
                                     if 'envType' in args:
                                         envType = args.get('envType')
                                     else:
                                         envType = args.get('envtype')
+                                    print("ENV TYPE: ", envType)
                                     if get_variable_type(dataset, v) == envType:
                                         data.append({
                                             'id': v.key,
@@ -677,7 +680,7 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
-def scale_impl(dataset: str, variable: str, scale: str):
+def scale_impl(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label:str):
     """
     API Format: /scale/<string:dataset>/<string:variable>/<string:scale>.png
 
@@ -692,6 +695,10 @@ def scale_impl(dataset: str, variable: str, scale: str):
         'dataset': dataset,
         'variable': variable,
         'scale': scale,
+        'colourmap': colourmap,
+        'orientation': orientation,
+        'transparency': transparency,
+        'label': label
     })
     
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)

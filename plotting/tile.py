@@ -132,10 +132,13 @@ def scale(args):
     if anom:
         cmap = colormap.colormaps['anomaly']
         variable_name = gettext("%s Anomaly") % variable_name
+    elif args.get('colourmap') != 'default':
+        print("COLOURMAP PROVIDED")
+        cmap = colormap.colormaps[args.get('colourmap')]
     else:
         cmap = colormap.find_colormap(variable_name)
 
-    if len(variable) == 2:
+    if len(variable) == 2:      # Velocity Check
         if not anom:
             cmap = colormap.colormaps.get('speed')
 
@@ -143,22 +146,29 @@ def scale(args):
             r"(?i)( x | y |zonal |meridional |northward |eastward )", " ",
             variable_name)
         variable_name = re.sub(r" +", " ", variable_name)
-
-    fig = plt.figure(figsize=(2, 5), dpi=75)
-    ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
+    if args.get('orientation') == 'vertical':
+        fig = plt.figure(figsize=(2, 5), dpi=75)
+        ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
+    else:
+        fig = plt.figure(figsize=(5,2), dpi=75)
+        ax = fig.add_axes([0.05, 0.05, 0.75, 0.25])
+    
     norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
 
     formatter = ScalarFormatter()
     formatter.set_powerlimits((-3, 4))
-    bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation='vertical',
+    bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation=args.get('orientation'),
                        format=formatter)
-    bar.set_label("%s (%s)" % (variable_name.title(),
-                               utils.mathtext(variable_unit)), fontsize=12)
+    
+    print("LABEL: ", args.get('label'))
+    if args.get('label') == 'True':
+        bar.set_label("%s (%s)" % (variable_name.title(),
+                                   utils.mathtext(variable_unit)), fontsize=12)
     # Increase tick font size
     bar.ax.tick_params(labelsize=12)
 
     buf = BytesIO()
-    plt.savefig(buf, format='png', dpi='figure', transparent=False,
+    plt.savefig(buf, format='png', dpi='figure', transparent=(args.get('transparency') == 'True'),
                 bbox_inches='tight', pad_inches=0.05)
     plt.close(fig)
 

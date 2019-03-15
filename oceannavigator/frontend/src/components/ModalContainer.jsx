@@ -32,11 +32,13 @@ export default class ModalContainer extends React.Component {
     let modalTitle = ''
     let modalContent = ''
 
+    // Selects the type of Shape / Obs
     switch(this.props.modal) {
         case "point":
         modalContent = (
           <PointWindow
-            data={this.props.data}
+            data={this.props.data['left']}  // Non compare data
+            data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
             //dataset={this.props.data[layer]['dataset']}
             //quantum={this.props.data[layer]['quantum']}
             point={this.props.point}
@@ -64,51 +66,55 @@ export default class ModalContainer extends React.Component {
       case "line":
         modalContent = (
           <LineWindow
-            dataset_0={this.props.data[layer]['dataset']}
-            quantum={this.props.data[layer]['quantum']}
-            line={this.props.data[layer].line}
-            variable={this.props.variable}
-            depth={this.props.data[layer].depth}
-            time={this.props.data[layer].time}
-            starttime={this.props.data[layer].time}
-            scale={this.props.data[layer].scale}
-            scale_1={this.props.data[layer].scale}
-            colormap={this.props.data[layer].colourmap}
+            data={this.props.data['left']}   // Non compare data
+            data_compare={'right' in this.props.data ? this.props.data['right']: {}}
+            //dataset_0={this.state.dataset}
+            //quantum={this.state.quantum}
+            line={this.props.line}
+            //variable={this.state.variable}
+            //depth={this.state.depth}
+            //time={this.state.time}
+            //starttime={this.state.time}
+            //scale={this.state.scale}
+            //scale_1={this.state.scale}
+            //colormap={this.props.colourmap}
             names={this.props.names}
             onUpdate={this.props.updateState}
             init={this.props.init}
-            dataset_compare={this.props.dataset_compare}
-            dataset_1={this.props.data[layer].dataset}
+            //dataset_compare={this.props.dataset_compare}
+            //dataset_1={this.state.dataset}
             action={this.props.action}
             showHelp={this.props.toggleCompareHelp}
             swapViews={this.props.swapViews}
           />
         );
 
-        modalTitle = "(" + this.state.line[0].map(function(ll) {
+        modalTitle = "(" + this.props.line[0].map(function(ll) {
           return formatLatLon(ll[0], ll[1]);
         }).join("), (") + ")";
         break;
       case "area":
         modalContent = (
           <AreaWindow
-            dataset_0={this.state}
-            area={this.state.area}
-            scale={this.state.scale}
-            scale_1={this.state.scale_1}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            depth={this.state.depth}
-            projection={this.state.projection}
-            variable={this.state.variable}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            showHelp={this.toggleCompareHelp}
-            action={this.action}
-            swapViews={this.swapViews}
-            options={this.state.options}
+            data={this.props.data['left']}
+            data_compare={'right' in this.props.data ? this.props.data['right']: {}}
+            //dataset_0={this.state}
+            area={this.props.area}
+            //scale={this.state.scale}
+            //scale_1={this.state.scale_1}
+            //colormap={this.state.colormap}
+            names={this.props.names}
+            //depth={this.state.depth}
+            projection={this.props.projection}
+            //variable={this.state.variable}
+            onUpdate={this.props.updateState}
+            init={this.props.subquery}
+            dataset_compare={this.props.dataset_compare}
+            //dataset_1={this.state.dataset_1}
+            showHelp={this.props.toggleCompareHelp}
+            action={this.props.action}
+            swapViews={this.props.swapViews}
+            options={this.props.options}
           />
         );
 
@@ -117,13 +123,14 @@ export default class ModalContainer extends React.Component {
       case "drifter":
         modalContent = (
           <DrifterWindow
-            dataset={this.state.dataset}
-            quantum={this.state.dataset_quantum}
+            data={this.props.data['left']}
+            //dataset={this.state.dataset}
+            //quantum={this.state.dataset_quantum}
             drifter={this.state.drifter}
-            variable={this.state.variable}
-            scale={this.state.scale}
+            //variable={this.state.variable}
+            //scale={this.state.scale}
             names={this.state.names}
-            depth={this.state.depth}
+            //depth={this.state.depth}
             onUpdate={this.updateState}
             init={this.state.subquery}
             action={this.action}

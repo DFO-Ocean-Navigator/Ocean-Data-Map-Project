@@ -62,12 +62,12 @@ export default class TimeBarContainer extends React.Component {
     //  dataset: timestamp,
     //  dataset: timestamp
     //}
-    
+
     setTime(times) {
         let newTimes = jQuery.extend({}, times)
         this.props.globalUpdate('timestamps', newTimes)
     }
-    
+
     pause() {
         this.setState({
             animating: false,
@@ -77,8 +77,6 @@ export default class TimeBarContainer extends React.Component {
     animate() {
         let min = new Date(this.findMin(this.state.startTimes))
         let max = this.findMax(this.state.endTimes)
-        
-        console.warn("MAX:MIN - ", max, ':', min)
 
         this.animateConsecutive(min, max);
     }
@@ -86,7 +84,7 @@ export default class TimeBarContainer extends React.Component {
     // Handles time incrementing and formating
     // calls setTime() as it increments
     animateConcurrent() {
-        
+
         if (this.state.pause === true) {
             this.setState({
                 end: true,
@@ -99,7 +97,7 @@ export default class TimeBarContainer extends React.Component {
             })
         }
         if (this.state.end || this.state.times['global'].getUTCDate() === this.state.endTimes['global'].getUTCDate()) {
-            
+
             this.setState({
                 times: this.state.startTimes,
             })
@@ -107,43 +105,53 @@ export default class TimeBarContainer extends React.Component {
         }
         let times = this.state.times;
         for (let dataset in this.state.times) {
-                let time = new Date(times[dataset])
-                time.setHours(time.getUTCHours() + 3)
-                times[dataset] = time
+            let time = new Date(times[dataset])
+            time.setDate(time.getDate() + 1)
+            //time.setUTCHours(time.getUTCHours() + 24)
+            times[dataset] = time
         }
         this.setTime(times);
-        
-        setTimeout(this.animate, 2000/4);
+
+        setTimeout(this.animate, 1000);
         return
     }
 
-    animateConsecutive(min, max) {
-        
+    animateConsecutive(min, max, quantum) {
+        console.warn("QUANTUM: ", quantum)
+        let increment = 1440    // Default to quantum = day
+        if (quantum === undefined) {
+            quantum = this.findQuantum(this.props.timeSources)
+        } else if (quantum === 'month') {
+            increment = 525600  // Time increment in minutes
+        } else if (quantum === 'day') {
+            increment = 1440    // Time increment in minutes
+        } else if (quantum === 'hour') {
+            increment = 720     // Time increment in minutes
+        } else if (quantum === 'min') {
+            increment = 5       // Time increment in minutes
+        }
+
         if (min.getTime() >= max.getTime()) {
+            console.warn("DONE ANIMATING")
             this.setState({
+                animating: false,
                 times: this.state.startTimes,
             })
             return;
         }
-        console.warn("START TIME: ", this.state.startTimes)
-        
+
         let in_range = false;
-        console.warn("START TIMES 2: ", this.state.startTimes)
         let times = jQuery.extend({}, this.state.times)
         for (let dataset in times) {
             times[dataset] = new Date(times[dataset])
         }
-        console.warn("TIMES AFTER JQUERY: ", times)
         for (let dataset in times) {
-            console.warn("DATASET: ", dataset)
             if ((min.getTime() > this.state.startTimes[dataset].getTime() || min.getTime() === this.state.startTimes[dataset].getTime()) && min.getTime() < this.state.endTimes[dataset].getTime()) {
-                console.warn("INCREMENTING TIME")
-                
-                times[dataset].setUTCDate(times[dataset].getUTCDate() + 1)
+                times[dataset].setUTCMinutes(times[dataset].getUTCMinutes() + increment)
                 in_range = true
             }
         }
-        console.warn("START TIMES 3: ", this.state.startTimes)
+        console.warn("SETTING TIME: ", times)
         this.setState({
             times: times,
         })
@@ -160,56 +168,62 @@ export default class TimeBarContainer extends React.Component {
         } else {
             min.setHours(min.getUTCHours() + 24)
         }
-        console.warn("START TIMES 4: ", this.state.startTimes)
-        setTimeout(() => {this.animateConsecutive(new Date(min),max)}, 4000)
         
+        setTimeout(() => { this.animateConsecutive(new Date(min), max, quantum) }, 4000)
+
         return
-        
+
     }
 
-    hoursBetween( date1, date2 ) {
+    findQuantum(sources) {
+        let quantums = ['month', 'day', 'hour', 'minute']
+        let quantum = ''
+        for (let layer in sources) {
+            for (let dataset in sources[layer]) {
+                if (quantum === undefined) {
+                    quantum === sources[layer][dataset].quantum
+                } else if (quantums.indexOf(sources[layer][dataset].quantum) > quantums.indexOf([quantum])) {
+                    quantum = sources[layer][dataset].quantum;
+                }
+            }
+        }
+        return quantum
+    }
+
+    hoursBetween(date1, date2) {
         //Get 1 hour in milliseconds
-        let one_day=1000*60*60;
-        
+        let one_day = 1000 * 60 * 60;
+
         // Convert both dates to milliseconds
         let date1_ms = date1.getTime();
         let date2_ms = date2.getTime();
-        
+
         // Calculate the difference in milliseconds
         let difference_ms = date2_ms - date1_ms;
 
         // Convert back to days and return
-        return Math.round(difference_ms/one_day); 
+        return Math.round(difference_ms / one_day);
     }
 
     findMax(times) {
-        console.warn("MAX: ", times)
         let largest = undefined;
 
         for (let dataset in times) {
             let time = new Date(times[dataset]);
-            console.warn("TIME: ", time.getTime())
-            if (largest != undefined) {
-                console.warn("LARGEST: ", largest.getTime())
-            }
             if (largest === undefined) {
                 largest = time;
-                console.warn("UNDEFINED : ", largest)
-            } 
+            }
             let time_sec = time.getTime()
             let largest_sec = largest.getTime()
             if (time_sec > largest_sec) {
                 largest = time;
-                console.warn("DEFINED: ", largest)
             }
         }
         return new Date(largest);
     }
 
     findMin(times) {
-        console.warn("MIN: ", times)
         let smallest = undefined;
-        console.warn(smallest);
         for (let dataset in times) {
             let time = new Date(times[dataset])
             if (smallest === undefined) {
@@ -218,16 +232,12 @@ export default class TimeBarContainer extends React.Component {
                 smallest = time;
             }
         }
-        
+
         return new Date(smallest);
     }
 
 
     localUpdate(id, startTime, endTime) {
-        console.warn('LOCAL UPDATE')
-        console.warn("ID: ", id)
-        console.warn("START TIME: ", startTime)
-        console.warn("END TIME: ", endTime)
         let startTimes = this.state.startTimes;
         startTimes[id] = startTime;
         let endTimes = this.state.endTimes;
@@ -242,13 +252,10 @@ export default class TimeBarContainer extends React.Component {
     }
 
     toggleLayer(e) {
-        console.warn("E: ", e.target.id)
-        
+
         for (let idx in this.state.showLayer) {
-            
-            console.warn("SHOWLAYER: ", this.state.showLayer)
+
             if (this.state.showLayer[idx] === e.target.id) {
-                console.warn('REMOVING FROM SHOW LAYER')
                 let newShowLayer = this.state.showLayer
                 newShowLayer.splice(idx, 1)
                 this.setState({
@@ -257,7 +264,6 @@ export default class TimeBarContainer extends React.Component {
                 return
             }
         }
-        console.warn("ADDING TO SHOW LAYER")
         let newShowLayer = this.state.showLayer;
         newShowLayer.push(e.target.id);
         this.setState({
@@ -272,57 +278,53 @@ export default class TimeBarContainer extends React.Component {
         let layers = this.props.timeSources
         //layers = {'global': ['all']}
         let timeBars = []
-        
+        let quantums = []
         for (let layer in layers) {
             //if (self.state.showLayer.includes(layer)) {
-                console.warn(this.props.timeSources)
-                let new_layer = this.props.timeSources[layer]//new Set(this.props.timeSources[layer])
-                console.warn("LAYER SET: ", new_layer)
-                for (let idx in new_layer) {
-                    for (let i = 1; i <= new_layer[idx].frequency; i = i + 1) {
-                        console.warn("DATASET: ", dataset)
-                        let dataset = this.props.timeSources[layer][idx]
-                        console.warn("DATASET: ", dataset)
-                        console.warn("I :" ,i)
-                        console.warn("BUTTON ID: ", layer + idx + i + '_button')
-                        console.warn("BAR ID: ", layer + idx + i)
-                        timeBars.push(
-                            <div key={layer + idx + i} className='timeLayerContainer'>
-                                <Button
-                                    id={layer + idx + i}
-                                    key={layer + idx + i.toString() + '_button'}
-                                    className='timeBarToggle'
-                                    onClick={self.toggleLayer}
-                                >{this.state.icons[layer]}</Button>
-                                <TimeSelect
-                                    show={self.state.showLayer.includes(layer + idx + i)}
-                                    key={layer + idx + i.toString()}
-                                    id={layer + idx + i}
-                                    idx={i}
-                                    name={layer}
-                                    dataset={idx}
-                                    currentTime={this.state.times[layer + idx + i]}
-                                    localUpdate={self.localUpdate}
-                                ></TimeSelect>
-                            </div>
-                        )
-                    }
+            let new_layer = this.props.timeSources[layer]//new Set(this.props.timeSources[layer])
+            for (let idx in new_layer) {
+                for (let i in new_layer[idx]['variables']) {
+                    let dataset = idx
+                    quantums.push(new_layer[idx].quantum)
+                    timeBars.push(
+                        <div key={layer + idx + i} className='timeLayerContainer'>
+                            <Button
+                                id={layer + idx + i}
+                                key={layer + idx + i.toString() + '_button'}
+                                className='timeBarToggle'
+                                onClick={self.toggleLayer}
+                            >{this.state.icons[layer]}</Button>
+                            <TimeSelect
+                                show={self.state.showLayer.includes(layer + idx + i)}
+                                key={layer + idx + i.toString()}
+                                id={layer + idx + i}
+                                idx={i}
+                                name={layer}
+                                dataset={idx}
+                                quantum={this.props.timeSources[layer][idx].quantum}
+                                currentTime={this.state.times[layer + idx + i]}
+                                localUpdate={self.localUpdate}
+                            ></TimeSelect>
+                        </div>
+                    )
                 }
-                
-                /*
-            } else {
-                timeBars.push(
-                    <div key={layer} className='timeLayerContainer'>
-                        <Button
-                            id={layer}
-                            key={layer + '_button'}
-                            className='timeBarToggle'
-                            onClick={self.toggleLayer}
-                        >{layer.charAt(0).toUpperCase()}</Button>
-                    </div>
-                )
             }
-            */
+
+
+            /*
+        } else {
+            timeBars.push(
+                <div key={layer} className='timeLayerContainer'>
+                    <Button
+                        id={layer}
+                        key={layer + '_button'}
+                        className='timeBarToggle'
+                        onClick={self.toggleLayer}
+                    >{layer.charAt(0).toUpperCase()}</Button>
+                </div>
+            )
+        }
+        */
         }
 
         timeBars.push(

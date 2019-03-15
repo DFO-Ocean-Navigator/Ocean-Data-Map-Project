@@ -39,14 +39,14 @@ export default class OceanNavigator extends React.Component {
 
       _foundation: true,
       _environment: true,
-      _intelligence: false,
+      _intelligence: true,
       _derived: false,
       _planning: false,
 
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: false,
+        _intelligence: true,
         _derived: false,
         _planning: false,
       },
@@ -268,8 +268,6 @@ export default class OceanNavigator extends React.Component {
 
     }
     else {
-      console.warn("KEY: ", key)
-      console.warn("VALUE: ", value)
       for (let i = 0; i < key.length; ++i) {
         switch(key[i]) {
           case "time":
@@ -629,7 +627,7 @@ export default class OceanNavigator extends React.Component {
     
     // Pick which map we need
     let map = null;
-    if (this.state.dataset_compare) {
+    if ('right' in this.state.data) {
       
       const secondState = $.extend(true, {}, this.state);
       for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
@@ -639,8 +637,10 @@ export default class OceanNavigator extends React.Component {
       map = <div className='multimap'>
         <Map
           ref={(m) => this.mapComponent = m}
+          data={this.state.data['left']}
+          timeSources={this.state.timeSources['left']}
           state={this.state}
-          layers={this.state.layers}
+          layers={this.state.layers['left']}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
@@ -649,8 +649,10 @@ export default class OceanNavigator extends React.Component {
         />
         <Map
           ref={(m) => this.mapComponent2 = m}
+          data={this.state.data['right']}
+          timeSources={this.state.timeSources['right']}
           state={secondState}
-          layers={this.state.layers}
+          layers={this.state.layers['right']}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
@@ -663,6 +665,8 @@ export default class OceanNavigator extends React.Component {
       map = <Map
         ref={(m) => this.mapComponent = m}
         layers={this.state.layers}
+        data={this.state.data['left']}
+        timeSources={this.state.timeSources['left']}
         state={this.state}
         action={this.action}
         updateState={this.updateState}
@@ -674,17 +678,30 @@ export default class OceanNavigator extends React.Component {
     let layerSelect = null; 
     
     if (this.mapComponent !== null) {
-      layerSelect = <LayerSelection
+      if (this.mapComponent2 === null) {
+        layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
-        toggleLayer={this.mapComponent.toggleLayer}
-        reloadLayer={this.mapComponent.reloadLayer}
         mapComponent={this.mapComponent}
+        mapComponent2={this.mapComponent2}
         updateState={this.updateState}
         showHelp={this.toggleCompareHelp}
         options={this.state.options}
         updateOptions={this.updateOptions}
       />
+      } else {
+        layerSelect = <LayerSelection
+        state={this.state}
+        swapViews={this.swapViews}
+        mapComponent={this.mapComponent}
+        mapComponent2={this.mapComponent2}
+        updateState={this.updateState}
+        showHelp={this.toggleCompareHelp}
+        options={this.state.options}
+        updateOptions={this.updateOptions}
+      />
+      }
+      
     }
     
 
@@ -724,6 +741,7 @@ export default class OceanNavigator extends React.Component {
             <ModalContainer
               modal={this.state.modal}
               data={this.state.data}
+              area={this.state.area}
               names={this.state.names}
               point={this.state.point}
               line={this.state.line}

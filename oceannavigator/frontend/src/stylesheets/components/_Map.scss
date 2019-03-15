@@ -440,7 +440,7 @@
     }
 
     .layerHierarchy {
-        width:200px;
+        width:347px;
         height:fit-content;
         background-color: white;
         z-index: 0;
@@ -451,6 +451,22 @@
         //padding-top: 10px;
         opacity: 0.7;
         
+        .timeIcon {
+            width: 37px;
+            display: inline;
+            top: -23px;
+            left: 5px;
+            position: relative;
+        }
+        .indexNum {
+            width: 0px;
+            position: relative;
+            top: -51px;
+            left: 2px;
+            height: 0px;
+            display: inline-flex;
+        }
+
         .showLayers {
             width: 100%;
             margin-bottom: 10px;
@@ -508,7 +524,91 @@
         }
         
     }
-    
+    .layerHierarchy_compare {
+        width:347px;
+        height:fit-content;
+        background-color: white;
+        z-index: 0;
+        position: relative;
+        float: right;
+        //margin-top: 20px;
+        margin-right: 20px;
+        //padding-top: 10px;
+        opacity: 0.7;
+        
+        .timeIcon {
+            width: 37px;
+            display: inline;
+            top: -23px;
+            left: 5px;
+            position: relative;
+        }
+        .indexNum {
+            width: 0px;
+            position: relative;
+            top: -51px;
+            left: 2px;
+            height: 0px;
+            display: inline-flex;
+        }
+
+        .showLayers {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .layerContainer {
+            display: inline-block;
+            width: 90%;
+            margin-left: 5%;
+            margin-right: 5%;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            height:40px;
+            background-color: grey;
+
+            .layerTextContainer {
+                width: 70%;
+                float: left;
+                height: 100%;
+                padding-left: 10px;
+                line-height: 41px;
+            }
+
+            .buttonContainer {
+                float: right;
+                height: 100%;
+                width: 30%;
+                display: inline-block;
+            
+
+                .arrowsContainer {
+                    height: 100%;
+                    float: left;
+                    width: 50%;
+
+                    .layerButton {
+                        height: 50%;
+                        width: 100%;
+                        float: left;
+
+                        .layerIcon {
+                            float: right;
+                            height: 100%;
+                            width: 100%;
+                        }
+                    }   
+                }
+
+                .layerCloseButton {
+                    width: 50%;
+                    height: 100%;
+                    float: right;
+                }
+            }
+            
+        }
+        
+    }
     .ol-popup:before {
     }
 
