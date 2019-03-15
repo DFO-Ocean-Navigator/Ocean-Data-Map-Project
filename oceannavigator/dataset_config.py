@@ -6,6 +6,7 @@ from flask import current_app
 
 
 class DatasetConfig():
+    """Access class for the dataset configuration"""
     __config = None
 
     def __init__(self, dataset: str):
@@ -139,6 +140,11 @@ class DatasetConfig():
 
     @property
     def variable(self):
+        """
+            Accessor for variables.
+            Returns a private class that implements __getitem__, so that
+            DatasetConfig.variable["variablename"] works.
+        """
         return self._VariableGetter(self)
 
     class _VariableGetter():
@@ -149,9 +155,24 @@ class DatasetConfig():
             return VariableConfig(self._config, key)
 
 class VariableConfig():
+    """
+    Access class for an individual variable's portion of the datasetconfig.
+    """
+
     def __init__(self, datasetconfig, variable):
+        """
+        Parameters:
+        datasetconfig -- the parent DatasetConfig object
+        variable -- either the string key for the variable, or the
+                    xarray/netcdf4 Variable object
+        """
         self._config = datasetconfig
         if isinstance(variable, str):
+            # In the case that the passed variable is a string, we need to make
+            # is so attempts to read the underlying variable attributes do not
+            # crash the rest of the code, so we use this attrdict class that
+            # will return None for any attribute. It extends a dict in case any
+            # future code is added that will need any attributes populated.
             self._key = variable
             class attrdict(dict):
                 #def __init__(self, *args, **kwargs):

@@ -7,6 +7,14 @@ from cachetools import LRUCache
 __dataset_cache = LRUCache(maxsize=10, getsizeof=lambda x: 1)
 
 def open_dataset(dataset):
+    """Opens a dataset.
+
+    Determines the type of model the dataset is from and opens the appropriate
+    data object.
+
+    Params:
+    dataset -- Either a string URL for the dataset, or a DatasetConfig object
+    """
     if hasattr(dataset, "url"):
         url = dataset.url
         calculated = dataset.calculated_variables

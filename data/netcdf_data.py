@@ -125,7 +125,6 @@ class NetCDFData(Data):
                     return key
             return None
 
-        # TODO: this might have to be a regular list of strings
         variable_list = [v.key for v in self.variables]
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
@@ -134,6 +133,10 @@ class NetCDFData(Data):
 
         depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
+        # self.get_dataset_variable should be used below instead of
+        # self._dataset.variables[...] because self._dataset.variables[...]
+        # will go directly to the underlying dataset and will not handle
+        # calculated variables.
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
@@ -468,6 +471,9 @@ class NetCDFData(Data):
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
                 var = self._dataset.variables[name]
                 if (len(var.dims) == 0):
+                    # Skip any variables without dimensions, this makes the
+                    # xarray based datasets behave more like the netcdf4-python
+                    # ones.
                     continue
 
                 # Get variable attributes

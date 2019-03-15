@@ -286,6 +286,13 @@ class Plotter(metaclass=ABCMeta):
             return (buf.getvalue(), self.mime, self.filename)
 
     def get_variable_names(self, dataset, variables):
+        """Returns a list of names for the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         names = []
 
         for idx, v in enumerate(variables):
@@ -294,10 +301,24 @@ class Plotter(metaclass=ABCMeta):
         return names
 
     def get_vector_variable_name(self, dataset, variables):
+        """Returns a name for the vector version of the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         v = ",".join(variables)
         return self.dataset_config.variable[v].name
 
     def get_variable_units(self, dataset, variables):
+        """Returns a list of units for the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         units = []
 
         for idx, v in enumerate(variables):
@@ -306,10 +327,24 @@ class Plotter(metaclass=ABCMeta):
         return units
 
     def get_vector_variable_unit(self, dataset, variables):
+        """Returns a unit for the vector version of the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         v = ",".join(variables)
         return self.dataset_config.variable[v].unit
 
     def get_variable_scale_factors(self, dataset, variables):
+        """Returns a list of scale factors for the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         factors = []
 
         for idx, v in enumerate(variables):
@@ -318,6 +353,13 @@ class Plotter(metaclass=ABCMeta):
         return factors
 
     def get_vector_variable_scale_factor(self, dataset, variables):
+        """Returns a scaling factor for the vector version of the variables.
+
+        Parameters:
+        dataset -- the dataset
+        variables -- a list of strings, each of which is the key for a
+                     variable
+        """
         v = ",".join(variables)
         return self.dataset_config.variable[v].scale_factor
 

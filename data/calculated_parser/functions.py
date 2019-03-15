@@ -9,6 +9,9 @@ from pint import UnitRegistry
 
 _ureg = UnitRegistry()
 
+# All functions in this file (that do not start with an underscore) will be
+# available to the parser.
+
 sin = np.sin
 cos = np.cos
 tan = np.tan
@@ -49,6 +52,15 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 def _metpy(func, data, lat, lon, dim):
+    """Wrapper for MetPy functions
+
+    Parameters:
+    func -- the MetPy function
+    data -- the xarray or netcdf variable (already sliced)
+    lat -- an array of latitudes, the shape must match that of data
+    lon -- an array of longitudes, the shape must match that of data
+    dim -- the dimension to return, a string, x or y
+    """
     if hasattr(data, "dims"):
         dims = data.dims
     else:
@@ -83,7 +95,7 @@ def _metpy(func, data, lat, lon, dim):
 
 
         data = np.transpose(np.array(data), new_axes)
-        
+
         oshape = data.shape
         extra_axes = data.shape[:-2]
         data = np.reshape(data, (functools.reduce(np.multiply, extra_axes),
@@ -105,6 +117,15 @@ def _metpy(func, data, lat, lon, dim):
         return func(np.array(data), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
 
 def _metpy_uv(func, u, v, lat, lon):
+    """Wrapper for MetPy vector functions
+
+    Parameters:
+    func -- the MetPy function
+    u -- the u-component xarray or netcdf variable (already sliced)
+    v -- the v-component xarray or netcdf variable (already sliced)
+    lat -- an array of latitudes, the shape must match that of data
+    lon -- an array of longitudes, the shape must match that of data
+    """
     if hasattr(u, "dims"):
         dims = u.dims
     else:
@@ -134,7 +155,7 @@ def _metpy_uv(func, u, v, lat, lon):
 
         u = np.transpose(np.array(u), new_axes)
         v = np.transpose(np.array(v), new_axes)
-        
+
         oshape = u.shape
         extra_axes = u.shape[:-2]
         u = np.reshape(u, (functools.reduce(np.multiply, extra_axes), *u.shape[-2:]))
@@ -161,6 +182,13 @@ def _metpy_uv(func, u, v, lat, lon):
         return func(u, v, dx, dy, dim_order=dim_order).magnitude
 
 def geostrophic_x(h, lat, lon):
+    """Calculates the X component of geostrophic currents
+
+    Parameters:
+    h -- Sea Surface Height, xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of h
+    lon -- an array of longitudes, the shape must match that of h
+    """
     if isinstance(lat, xr.Variable):
         lat = lat.values
 
@@ -184,6 +212,13 @@ def geostrophic_x(h, lat, lon):
     return _metpy(f, h, lat, lon, dim_order[0])
 
 def geostrophic_y(h, lat, lon):
+    """Calculates the Y component of geostrophic currents
+
+    Parameters:
+    h -- Sea Surface Height, xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of h
+    lon -- an array of longitudes, the shape must match that of h
+    """
     if isinstance(lat, xr.Variable):
         lat = lat.values
 
@@ -207,13 +242,43 @@ def geostrophic_y(h, lat, lon):
     return _metpy(f, h, lat, lon, dim_order[1])
 
 def vorticity(u, v, lat, lon):
+    """Calculates the vorticity
+
+    Parameters:
+    u -- u component of the current, xarray or netcdf variable, already sliced
+    v -- v component of the current, xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of u and v
+    lon -- an array of longitudes, the shape must match that of u and v
+    """
     return _metpy_uv(metpy.calc.vorticity, u, v, lat, lon)
 
 def divergence(u, v, lat, lon):
+    """Calculates the divergence
+
+    Parameters:
+    u -- u component of the current, xarray or netcdf variable, already sliced
+    v -- v component of the current, xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of u and v
+    lon -- an array of longitudes, the shape must match that of u and v
+    """
     return _metpy_uv(metpy.calc.divergence, u, v, lat, lon)
 
 def gradient_x(d, lat, lon):
+    """Calculates the X component of the gradient of a variable
+
+    Parameters:
+    d -- xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of d
+    lon -- an array of longitudes, the shape must match that of d
+    """
     return _metpy(metpy.calc.gradient, d, lat, lon, 'x')
 
 def gradient_y(d, lat, lon):
+    """Calculates the Y component of the gradient of a variable
+
+    Parameters:
+    d -- xarray or netcdf variable, already sliced
+    lat -- an array of latitudes, the shape must match that of d
+    lon -- an array of longitudes, the shape must match that of d
+    """
     return _metpy(metpy.calc.gradient, d, lat, lon, 'y')

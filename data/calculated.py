@@ -7,8 +7,19 @@ import data.calculated_parser.parser
 
 
 class CalculatedData(NetCDFData):
+    """Class for data that _may_ contain some variables that are calculated.
+    Any variables that do not need calculation are passed along to the
+    underlying dataset unchanged.
+    """
 
     def __init__(self, url: str, **kwargs):
+        """
+        Parameters:
+        url -- the URL for the dataet
+
+        Keyword Parameters:
+        calculated -- a dict of the calculated variables.
+        """
         super(CalculatedData, self).__init__(url)
         if 'calculated' in kwargs:
             self._calculated = kwargs['calculated']
@@ -24,6 +35,8 @@ class CalculatedData(NetCDFData):
     """
     def get_dataset_variable(self, key: str):
         if key in self._calculated:
+            # if the variable is a calculated one, return the CalculatedArray,
+            # otherwise pass the request along to the underlying dataset.
             attrs = {}
             if key in super(CalculatedData, self).variables:
                 attrs = super(CalculatedData,
@@ -69,16 +82,37 @@ class CalculatedData(NetCDFData):
         return self._calculated_variable_list
 
 class CalculatedArray():
+    """This class is the equivalent of an xarray or netcdf Variable object, but
+    parses the expression and does any requested calculations before returning
+    data to the calling method.
+    """
     def __init__(self, parent, expression, attrs={}):
+        """
+        Parameters:
+        parent -- the underlying dataset
+        expression -- the equation to parse
+        attrs -- optional, any attributes that the CalculatedArray should have
+        """
         self._parent = parent
         self._expression = expression
         self._parser = data.calculated_parser.parser.Parser()
         self._parser.lexer.lexer.input(expression)
         self._attrs = attrs
+
+        # This is a bit odd, but necessary. We run the expression through the
+        # lexer so that the lexer variables get populated. This way we know the
+        # list of underlying variables that are involved in the calculation
+        # before we attempt to do any calculations. This is used to provide
+        # information about the variable like shape, dimensions, etc.
         for _ in self._parser.lexer.lexer:
             pass
 
     def __getitem__(self, key):
+        """This is where the magic happens.
+        The dimensions of the key are determined by looking at the dimensions
+        of all the underlying variables used in the calculation, this is then
+        passed along to the parser where the calculation is performed.
+        """
         key_dims = ()
         for v in self._parser.lexer.variables:
             if v not in self._parent.variables:

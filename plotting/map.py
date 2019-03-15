@@ -182,7 +182,6 @@ class MapPlotter(pl.Plotter):
                 self.time += len(dataset.timestamps)
             self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
-            # TODO: if len self.variables > 1, get the vector data
             if len(self.variables) > 1:
                 self.variable_unit = self.get_vector_variable_unit(
                     dataset, self.variables

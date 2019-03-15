@@ -6,9 +6,15 @@ import data.calculated_parser.functions as functions
 
 
 class Parser:
+    """The parsing portion of the domain specific language"""
+
     def __init__(self, **kwargs):
         self.lexer = data.calculated_parser.lexer.Lexer()
         self.tokens = self.lexer.tokens
+
+        # Sets the operator precedence for the parser. The unary minus is the
+        # highest, followed by exponentiation, then multiplication/division and
+        # addition/subtraction is last on the list.
         self.precedence = (
             ('left','PLUS','MINUS'),
             ('left','TIMES','DIVIDE'),
@@ -20,6 +26,17 @@ class Parser:
         self.result = np.nan
 
     def parse(self, expression, data, key, dims):
+        """Parse the expression and return the result
+
+        Parameters:
+        expression -- the string expression to parse
+        data -- the xarray or netcdf dataset to pull data from
+        key -- the key passed along from the __getitem__ call, a tuple of
+               integers and/or slices
+        dims -- the dimensions that correspond to the key, a list of strings
+
+        Returns a numpy array of data.
+        """
         self.data = data
         self.result = np.nan
         self.key = key
@@ -31,6 +48,14 @@ class Parser:
         return self.result
 
     def get_key_for_variable(self, variable):
+        """Using self.key and self.dims, determine the key for the particular
+        variable.
+
+        Params:
+        variable -- the xarray or netcdf variable
+
+        Returns a tuple of integers and/or slices
+        """
         key = self.key
         if not isinstance(key, tuple):
             key = (key,)
@@ -47,6 +72,8 @@ class Parser:
 
         return tuple(key)
 
+    # Similar to the Lexer, these p_*, methods cannot have proper python
+    # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
         'statement : expression'
         self.result = t[1]
@@ -69,11 +96,16 @@ class Parser:
                     | expression TIMES expression
                     | expression DIVIDE expression
                     | expression POWER NUMBER'''
-        if t[2] == '+'  : t[0] = t[1] + t[3]
-        elif t[2] == '-': t[0] = t[1] - t[3]
-        elif t[2] == '*': t[0] = t[1] * t[3]
-        elif t[2] == '/': t[0] = t[1] / t[3]
-        elif t[2] == '^': t[0] = t[1] ** t[3]
+        if t[2] == '+':
+            t[0] = t[1] + t[3]
+        elif t[2] == '-':
+            t[0] = t[1] - t[3]
+        elif t[2] == '*':
+            t[0] = t[1] * t[3]
+        elif t[2] == '/':
+            t[0] = t[1] / t[3]
+        elif t[2] == '^':
+            t[0] = t[1] ** t[3]
 
     def p_expression_group(self, t):
         'expression : LPAREN expression RPAREN'
@@ -111,4 +143,3 @@ class Parser:
 
     def p_error(self, t):
         t[0] = None
-
