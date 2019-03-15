@@ -116,10 +116,25 @@ export default class TimeBarContainer extends React.Component {
         return
     }
 
-    animateConsecutive(min, max) {
+    animateConsecutive(min, max, quantum) {
+        console.warn("QUANTUM: ", quantum)
+        let increment = 1440    // Default to quantum = day
+        if (quantum === undefined) {
+            quantum = this.findQuantum(this.props.timeSources)
+        } else if (quantum === 'month') {
+            increment = 525600  // Time increment in minutes
+        } else if (quantum === 'day') {
+            increment = 1440    // Time increment in minutes
+        } else if (quantum === 'hour') {
+            increment = 720     // Time increment in minutes
+        } else if (quantum === 'min') {
+            increment = 5       // Time increment in minutes
+        }
 
         if (min.getTime() >= max.getTime()) {
+            console.warn("DONE ANIMATING")
             this.setState({
+                animating: false,
                 times: this.state.startTimes,
             })
             return;
@@ -132,10 +147,11 @@ export default class TimeBarContainer extends React.Component {
         }
         for (let dataset in times) {
             if ((min.getTime() > this.state.startTimes[dataset].getTime() || min.getTime() === this.state.startTimes[dataset].getTime()) && min.getTime() < this.state.endTimes[dataset].getTime()) {
-                times[dataset].setUTCHours(times[dataset].getUTCHours() + 3)
+                times[dataset].setUTCMinutes(times[dataset].getUTCMinutes() + increment)
                 in_range = true
             }
         }
+        console.warn("SETTING TIME: ", times)
         this.setState({
             times: times,
         })
@@ -152,10 +168,26 @@ export default class TimeBarContainer extends React.Component {
         } else {
             min.setHours(min.getUTCHours() + 24)
         }
-        setTimeout(() => { this.animateConsecutive(new Date(min), max) }, 4000)
+        
+        setTimeout(() => { this.animateConsecutive(new Date(min), max, quantum) }, 4000)
 
         return
 
+    }
+
+    findQuantum(sources) {
+        let quantums = ['month', 'day', 'hour', 'minute']
+        let quantum = ''
+        for (let layer in sources) {
+            for (let dataset in sources[layer]) {
+                if (quantum === undefined) {
+                    quantum === sources[layer][dataset].quantum
+                } else if (quantums.indexOf(sources[layer][dataset].quantum) > quantums.indexOf([quantum])) {
+                    quantum = sources[layer][dataset].quantum;
+                }
+            }
+        }
+        return quantum
     }
 
     hoursBetween(date1, date2) {

@@ -109,12 +109,12 @@ export default class DatasetSelector extends React.Component {
           id='time'
           state={this.props.state.time}
           def={-1}
-          quantum={this.props.state.dataset_quantum}
+          quantum={this.props.state.quantum}
           onUpdate={this.onUpdate}
           url={"/api/timestamps/?dataset=" +
             this.props.state.dataset +
             "&quantum=" +
-            this.props.state.dataset_quantum
+            this.props.state.quantum
           }
           title={_("Time (UTC)")}
         />;

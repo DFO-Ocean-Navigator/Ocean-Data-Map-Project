@@ -741,6 +741,7 @@ export default class OceanNavigator extends React.Component {
             <ModalContainer
               modal={this.state.modal}
               data={this.state.data}
+              area={this.state.area}
               names={this.state.names}
               point={this.state.point}
               line={this.state.line}

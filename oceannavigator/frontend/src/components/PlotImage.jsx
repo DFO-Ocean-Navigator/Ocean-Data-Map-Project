@@ -208,7 +208,7 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "transect":
         query.variable = q.variable;
-        query.time = q.time;
+        query.time = time;
         query.scale = q.scale;
         query.path = q.path;
         query.showmap = q.showmap;
@@ -261,7 +261,7 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "map":
         query.variable = q.variable;
-        query.time = q.time;
+        query.time = time;
         query.scale = q.scale;
         query.depth = q.depth;
         query.colormap = q.colormap;

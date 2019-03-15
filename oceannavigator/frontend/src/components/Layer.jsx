@@ -119,12 +119,12 @@ export default class Layer extends React.Component {
 
   /*
     Sends the data information back to OceanNavigator.jsx to be used by the modals
-
+    
   */
   sendData(update) {
     let data
     if (this.state.current_map in this.props.state.data) {
-      data = jQuery.extend({}, this.props.state.data[this.state.current_map])
+      data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
     } else {
       data = {}
     }
@@ -255,7 +255,7 @@ export default class Layer extends React.Component {
         }.bind(this));
       }.bind(this));
     } else {  // Not initializing, available datasets don't change
-      // Remove old dataset from globabl data Object
+      // Remove old dataset from global data Object
       this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
       // Change current_dataset and current_quantum
       // Located Quantum
@@ -282,20 +282,26 @@ export default class Layer extends React.Component {
           variables: variables,
           current_variable: variable,
         }, () => {
-          this.changeTimeSource(dataset, quantum, variable, old_dataset, old_variable)
+          this.changeTimeSource(dataset, quantum, variable, old_dataset, old_variable)  // Update the timeSource to reflect the changes
         })
+        // Update depths dropdown
         $.when(depths_promise).done(function (depths) {
           this.setState({
             depths: depths,
             current_depth: 0,
-          }, () => { this.sendData(); })
+          }, () => { this.sendData(); })   // Update the data object
         }.bind(this))
       }.bind(this))
-
-
     }
   }
 
+  /*
+    Updates current_variable, current_depths, and depths
+    - Depths can change on variable change (ex: surface only)
+  
+    Requires: Variable (string)
+    Returns: Nothing
+  */
   changeVariable(variable) {
     console.warn("CHANGING VARIABLE")
 
@@ -307,6 +313,7 @@ export default class Layer extends React.Component {
     console.warn("CALLING REMOVE DATA")
     this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
 
+    // Finds depth for new variable (often the same)
     $.when(depths_promise).done(function (depths) {
       this.setState({
         current_variable: variable,
@@ -317,12 +324,18 @@ export default class Layer extends React.Component {
     }.bind(this))
   }
 
+
+  /*
+    Updates current_depth
+    Requires: Depth (int)
+    Returns: Nothing
+  */
   changeDepth(depth) {
     console.warn("CHANGING DEPTH")
     this.setState({
       current_depth: depth
     })
-    this.sendData();
+    this.sendData();  // Sends the change to parent
   }
 
   /*
@@ -419,19 +432,29 @@ export default class Layer extends React.Component {
     }
 
   }
+
+  /*
+
+  */
   handleTabs(key) {
     this.setState({ currentTab: key, });
   }
 
+  /*
+
+  */
   toggleCompare() {
 
-
-    this.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    if (this.props.layers.includes(this.state.layer)) {
+      this.toggleLayer()
+    }
+      
+    this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    
     console.warn("TOGGLE COMPARE")
     let current_map;
 
-    this.toggleLayer()
-
+    
     console.warn("CURRENT MAP: ", this.state.current_map)
     if (this.state.current_map === 'left') {
       current_map = 'right'
@@ -447,6 +470,9 @@ export default class Layer extends React.Component {
     }, this.sendData)
   }
 
+  /*
+
+  */
   getVariables() {
     let variables = []
 
@@ -457,6 +483,9 @@ export default class Layer extends React.Component {
     return variables
   }
 
+  /*
+
+  */
   getDatasets(variable) {
     if (variable == undefined) {
       let datasets = this.state.datainfo[variables[0]]['datasets']
@@ -467,34 +496,14 @@ export default class Layer extends React.Component {
     }
   }
 
-  // Updates Ice app state
-  localUpdate(key, value) {
+  /*
+    This function triggers updates on data changes
 
-    /*
-    if (key == 'current_variable') {
-      let datasets = this.state.datainfo[value]['datasets']
-      if (!(this.state.current_dataset in datasets)) {
-        this.setState({
-          'current_dataset': datasets[0]
-        })
-      }
-      this.setState({
-        'current_variable': value,
-        'datasets': datasets
-      })
-    } else if (key == 'current_dataset') {
-      this.setState({
-        'current_dataset': value,
-      })
-    } else {
-      let newState = this.state
-      newState[key] = value
-      this.setState(newState, () => {
-        console.log("SCALE IN CALLBACK: ", this.state.scale_1);
-      })
-      
-    }
-    */
+    Requires:
+        key: variable to save to in state
+        value: value to save
+  */
+  localUpdate(key, value) {
 
     if (key === 'current_depth') {
       this.changeDepth(value)
@@ -508,10 +517,12 @@ export default class Layer extends React.Component {
       })
       this.updateIce()
     }
-
-
   }
 
+  /*
+    This Function is unused.
+    Replaced by this.props.removeData(map, dataset, variable, index)
+  */
   removeData(map, dataset, variable) {
     if (map === undefined || dataset === undefined || variable === undefined) {
       return
@@ -535,48 +546,10 @@ export default class Layer extends React.Component {
   }
 
   /*
-  fetchVariables(dataset) {
-    $.ajax({
-      url: `/api/v1.0/variables/?dataset=` + dataset + '&envType=' + this.props.layerType,
-      success: function (response) {
-        if (response.length < 1) {
-          let datasets = this.state.datasets
-          delete datasets[dataset]
-          this.setState({
-            datasets: datasets
-          })
-          this.setCurrent()
-          return
-        }
-        this.setState({
-          variables: response,
-          current_variable: response[0]['id']
-        })
-      }.bind(this),
-      error: function () {
-        console.error("Failed to Load Variable")
-      }
-    }).done(() => {
-      this.fetchDepths(dataset, this.state.variables[0]['id'])
-    })
-  }
+    Initializes a new OpenLayers Tile layer
 
-  fetchDepths(dataset, variable) {
-    $.ajax({
-      url: `/api/v1.0/depth/?dataset=` + dataset + `&variable=` + variable,
-      success: function (response) {
-        console.warn("RESPONSE: ", response)
-        this.setState({
-          current_depth: 0,
-          depths: response
-        })
-      }.bind(this),
-      error: function () {
-        console.error("Depth Values Failed to Load")
-      }
-    })
-  }
-*/
+    ** This does not add the layer to the map **
+  */
   createIce() {
 
     let layer_ice = new ol.layer.Tile(
@@ -593,6 +566,7 @@ export default class Layer extends React.Component {
       });
     layer_ice.set('name', this.props.layerType)
 
+    // Saves the new layer
     this.setState({
       ice_layer: layer_ice
     })
@@ -646,6 +620,11 @@ export default class Layer extends React.Component {
     return iso
   }
 
+
+  /*
+    Updates the already initialized layer with the data currently set
+      Updates layer source
+  */
   updateIce() {
     //this.sendData('update')
     let layer_ice = this.state.ice_layer;
@@ -654,7 +633,7 @@ export default class Layer extends React.Component {
     let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
     let masked = 0
     if (this.props.layerType === 'met') {
-      masked = 1
+      masked = 1  // 0 Masks the land, 1 doesn't
     }
     // Sets new values for tiles
     props.url = `/api/v1.0/tiles` +
@@ -664,7 +643,6 @@ export default class Layer extends React.Component {
       `/${this.props.state.projection}` +
       `/${this.state.current_dataset}` +
       `/${this.state.current_variable}` +
-      //`/2018-07-12T00:00:00+00:00` +
       `/${timeString}` +
       `/0` +
       `/${this.state.current_scale}` +
@@ -680,24 +658,20 @@ export default class Layer extends React.Component {
     ];
     const newSource = new ol.source.XYZ(props);
 
-    // Gives updated source to layer
-    layer_ice.setSource(newSource)
+    layer_ice.setSource(newSource)  // Apply the new Changes to the layer
 
-    // Reloads layer to apply changes
+    // Triggers the map to reload with new changes
     if (this.state.current_map === 'left') {
       this.props.mapComponent.reloadLayer();
     } else {
       this.props.mapComponent2.reloadLayer();
     }
-
   }
 
-
   /*
-  toggleLayer()
+    toggleLayer()
 
-  This function toggles the ice layer on and off
-
+    This function toggles the ice layer on and off
   */
   toggleLayer() {
     let layers = this.props.layers
@@ -741,6 +715,9 @@ export default class Layer extends React.Component {
     }
   }
 
+  /*
+    Changes the transparency of the layer as it appears on the map
+  */
   updateTransparency(e) {
     this.setState({
       opacity: e.value
@@ -748,11 +725,14 @@ export default class Layer extends React.Component {
     this.state.ice_layer.setOpacity(e.value / 100)
   }
 
-  changeTimeSource(new_dataset, new_quantum, new_variable, old_dataset, old_variable) {
+  /*
+    Change the global timeSources
+    
+    ** This both adds and removes from the object **
 
-    //if (dataset === undefined) {
-    //  dataset = this.state.current_dataset
-    //}
+    timeSources: Controls the available time bars which provides the layer specific times.
+  */
+  changeTimeSource(new_dataset, new_quantum, new_variable, old_dataset, old_variable) {
 
     let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
     if (new_timeSources[this.state.current_map] === undefined) {
@@ -817,16 +797,9 @@ export default class Layer extends React.Component {
           }
         }
       }
-
-      //for (let idx in new_timeSources[this.state.timeSource]) {
-      //if (new_dataset === new_timeSources[this.props.layerType][idx]) {
-
-      //new_timeSources[this.props.layerType].splice(idx, 1)
-      //break;
-      //}
-      //}
     }
-    this.props.globalUpdate('timeSources', new_timeSources)
+
+    this.props.globalUpdate('timeSources', new_timeSources) // Updates the new timeSources, which triggers a time update
     this.setState({
       useGlobalTime: true,    // Checks the using global time selectbox
       timeSource: 'global'    // Indicates the new source to look for in the global time source list
@@ -925,7 +898,10 @@ export default class Layer extends React.Component {
       >
         <Button
           className='removeButton'
-          onClick={() => this.props.removeLayer(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)}
+          onClick={() => {
+            this.toggleLayer()
+            this.props.removeLayer(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+          }}
         >X</Button>
         <Checkbox
           key='compare'
