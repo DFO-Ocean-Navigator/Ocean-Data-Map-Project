@@ -1,0 +1,561 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> statement
+Rule 1     statement -> expression
+Rule 2     expression -> ID
+Rule 3     expression -> MINUS expression
+Rule 4     expression -> expression PLUS expression
+Rule 5     expression -> expression MINUS expression
+Rule 6     expression -> expression TIMES expression
+Rule 7     expression -> expression DIVIDE expression
+Rule 8     expression -> expression POWER NUMBER
+Rule 9     expression -> LPAREN expression RPAREN
+Rule 10    expression -> NUMBER
+Rule 11    expression -> CONST
+Rule 12    expression -> ID LPAREN arguments RPAREN
+Rule 13    arguments -> argument
+Rule 14    arguments -> arguments COMMA argument
+Rule 15    argument -> expression
+
+Terminals, with rules where they appear
+
+COMMA                : 14
+CONST                : 11
+DIVIDE               : 7
+ID                   : 2 12
+LPAREN               : 9 12
+MINUS                : 3 5
+NUMBER               : 8 10
+PLUS                 : 4
+POWER                : 8
+RPAREN               : 9 12
+TIMES                : 6
+error                : 
+
+Nonterminals, with rules where they appear
+
+argument             : 13 14
+arguments            : 12 14
+expression           : 1 3 4 4 5 5 6 6 7 7 8 9 15
+statement            : 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . statement
+    (1) statement -> . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    statement                      shift and go to state 1
+    expression                     shift and go to state 2
+
+state 1
+
+    (0) S' -> statement .
+
+
+
+state 2
+
+    (1) statement -> expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    $end            reduce using rule 1 (statement -> expression .)
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
+
+
+state 3
+
+    (2) expression -> ID .
+    (12) expression -> ID . LPAREN arguments RPAREN
+
+    PLUS            reduce using rule 2 (expression -> ID .)
+    MINUS           reduce using rule 2 (expression -> ID .)
+    TIMES           reduce using rule 2 (expression -> ID .)
+    DIVIDE          reduce using rule 2 (expression -> ID .)
+    POWER           reduce using rule 2 (expression -> ID .)
+    $end            reduce using rule 2 (expression -> ID .)
+    RPAREN          reduce using rule 2 (expression -> ID .)
+    COMMA           reduce using rule 2 (expression -> ID .)
+    LPAREN          shift and go to state 13
+
+
+state 4
+
+    (3) expression -> MINUS . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 14
+
+state 5
+
+    (10) expression -> NUMBER .
+
+    PLUS            reduce using rule 10 (expression -> NUMBER .)
+    MINUS           reduce using rule 10 (expression -> NUMBER .)
+    TIMES           reduce using rule 10 (expression -> NUMBER .)
+    DIVIDE          reduce using rule 10 (expression -> NUMBER .)
+    POWER           reduce using rule 10 (expression -> NUMBER .)
+    $end            reduce using rule 10 (expression -> NUMBER .)
+    RPAREN          reduce using rule 10 (expression -> NUMBER .)
+    COMMA           reduce using rule 10 (expression -> NUMBER .)
+
+
+state 6
+
+    (9) expression -> LPAREN . expression RPAREN
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 15
+
+state 7
+
+    (11) expression -> CONST .
+
+    PLUS            reduce using rule 11 (expression -> CONST .)
+    MINUS           reduce using rule 11 (expression -> CONST .)
+    TIMES           reduce using rule 11 (expression -> CONST .)
+    DIVIDE          reduce using rule 11 (expression -> CONST .)
+    POWER           reduce using rule 11 (expression -> CONST .)
+    $end            reduce using rule 11 (expression -> CONST .)
+    RPAREN          reduce using rule 11 (expression -> CONST .)
+    COMMA           reduce using rule 11 (expression -> CONST .)
+
+
+state 8
+
+    (4) expression -> expression PLUS . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 16
+
+state 9
+
+    (5) expression -> expression MINUS . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 17
+
+state 10
+
+    (6) expression -> expression TIMES . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 18
+
+state 11
+
+    (7) expression -> expression DIVIDE . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    expression                     shift and go to state 19
+
+state 12
+
+    (8) expression -> expression POWER . NUMBER
+
+    NUMBER          shift and go to state 20
+
+
+state 13
+
+    (12) expression -> ID LPAREN . arguments RPAREN
+    (13) arguments -> . argument
+    (14) arguments -> . arguments COMMA argument
+    (15) argument -> . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    arguments                      shift and go to state 21
+    argument                       shift and go to state 22
+    expression                     shift and go to state 23
+
+state 14
+
+    (3) expression -> MINUS expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    PLUS            reduce using rule 3 (expression -> MINUS expression .)
+    MINUS           reduce using rule 3 (expression -> MINUS expression .)
+    TIMES           reduce using rule 3 (expression -> MINUS expression .)
+    DIVIDE          reduce using rule 3 (expression -> MINUS expression .)
+    POWER           reduce using rule 3 (expression -> MINUS expression .)
+    $end            reduce using rule 3 (expression -> MINUS expression .)
+    RPAREN          reduce using rule 3 (expression -> MINUS expression .)
+    COMMA           reduce using rule 3 (expression -> MINUS expression .)
+
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
+  ! POWER           [ shift and go to state 12 ]
+
+
+state 15
+
+    (9) expression -> LPAREN expression . RPAREN
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    RPAREN          shift and go to state 24
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
+
+
+state 16
+
+    (4) expression -> expression PLUS expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    PLUS            reduce using rule 4 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 4 (expression -> expression PLUS expression .)
+    $end            reduce using rule 4 (expression -> expression PLUS expression .)
+    RPAREN          reduce using rule 4 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 4 (expression -> expression PLUS expression .)
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
+
+  ! TIMES           [ reduce using rule 4 (expression -> expression PLUS expression .) ]
+  ! DIVIDE          [ reduce using rule 4 (expression -> expression PLUS expression .) ]
+  ! POWER           [ reduce using rule 4 (expression -> expression PLUS expression .) ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+
+
+state 17
+
+    (5) expression -> expression MINUS expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    PLUS            reduce using rule 5 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 5 (expression -> expression MINUS expression .)
+    $end            reduce using rule 5 (expression -> expression MINUS expression .)
+    RPAREN          reduce using rule 5 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 5 (expression -> expression MINUS expression .)
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
+
+  ! TIMES           [ reduce using rule 5 (expression -> expression MINUS expression .) ]
+  ! DIVIDE          [ reduce using rule 5 (expression -> expression MINUS expression .) ]
+  ! POWER           [ reduce using rule 5 (expression -> expression MINUS expression .) ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+
+
+state 18
+
+    (6) expression -> expression TIMES expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    PLUS            reduce using rule 6 (expression -> expression TIMES expression .)
+    MINUS           reduce using rule 6 (expression -> expression TIMES expression .)
+    TIMES           reduce using rule 6 (expression -> expression TIMES expression .)
+    DIVIDE          reduce using rule 6 (expression -> expression TIMES expression .)
+    $end            reduce using rule 6 (expression -> expression TIMES expression .)
+    RPAREN          reduce using rule 6 (expression -> expression TIMES expression .)
+    COMMA           reduce using rule 6 (expression -> expression TIMES expression .)
+    POWER           shift and go to state 12
+
+  ! POWER           [ reduce using rule 6 (expression -> expression TIMES expression .) ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
+
+
+state 19
+
+    (7) expression -> expression DIVIDE expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    PLUS            reduce using rule 7 (expression -> expression DIVIDE expression .)
+    MINUS           reduce using rule 7 (expression -> expression DIVIDE expression .)
+    TIMES           reduce using rule 7 (expression -> expression DIVIDE expression .)
+    DIVIDE          reduce using rule 7 (expression -> expression DIVIDE expression .)
+    $end            reduce using rule 7 (expression -> expression DIVIDE expression .)
+    RPAREN          reduce using rule 7 (expression -> expression DIVIDE expression .)
+    COMMA           reduce using rule 7 (expression -> expression DIVIDE expression .)
+    POWER           shift and go to state 12
+
+  ! POWER           [ reduce using rule 7 (expression -> expression DIVIDE expression .) ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
+
+
+state 20
+
+    (8) expression -> expression POWER NUMBER .
+
+    PLUS            reduce using rule 8 (expression -> expression POWER NUMBER .)
+    MINUS           reduce using rule 8 (expression -> expression POWER NUMBER .)
+    TIMES           reduce using rule 8 (expression -> expression POWER NUMBER .)
+    DIVIDE          reduce using rule 8 (expression -> expression POWER NUMBER .)
+    POWER           reduce using rule 8 (expression -> expression POWER NUMBER .)
+    $end            reduce using rule 8 (expression -> expression POWER NUMBER .)
+    RPAREN          reduce using rule 8 (expression -> expression POWER NUMBER .)
+    COMMA           reduce using rule 8 (expression -> expression POWER NUMBER .)
+
+
+state 21
+
+    (12) expression -> ID LPAREN arguments . RPAREN
+    (14) arguments -> arguments . COMMA argument
+
+    RPAREN          shift and go to state 25
+    COMMA           shift and go to state 26
+
+
+state 22
+
+    (13) arguments -> argument .
+
+    RPAREN          reduce using rule 13 (arguments -> argument .)
+    COMMA           reduce using rule 13 (arguments -> argument .)
+
+
+state 23
+
+    (15) argument -> expression .
+    (4) expression -> expression . PLUS expression
+    (5) expression -> expression . MINUS expression
+    (6) expression -> expression . TIMES expression
+    (7) expression -> expression . DIVIDE expression
+    (8) expression -> expression . POWER NUMBER
+
+    RPAREN          reduce using rule 15 (argument -> expression .)
+    COMMA           reduce using rule 15 (argument -> expression .)
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
+
+
+state 24
+
+    (9) expression -> LPAREN expression RPAREN .
+
+    PLUS            reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    TIMES           reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    DIVIDE          reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    POWER           reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    $end            reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 9 (expression -> LPAREN expression RPAREN .)
+
+
+state 25
+
+    (12) expression -> ID LPAREN arguments RPAREN .
+
+    PLUS            reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    MINUS           reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    TIMES           reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    DIVIDE          reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    POWER           reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    $end            reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    RPAREN          reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+    COMMA           reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
+
+
+state 26
+
+    (14) arguments -> arguments COMMA . argument
+    (15) argument -> . expression
+    (2) expression -> . ID
+    (3) expression -> . MINUS expression
+    (4) expression -> . expression PLUS expression
+    (5) expression -> . expression MINUS expression
+    (6) expression -> . expression TIMES expression
+    (7) expression -> . expression DIVIDE expression
+    (8) expression -> . expression POWER NUMBER
+    (9) expression -> . LPAREN expression RPAREN
+    (10) expression -> . NUMBER
+    (11) expression -> . CONST
+    (12) expression -> . ID LPAREN arguments RPAREN
+
+    ID              shift and go to state 3
+    MINUS           shift and go to state 4
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
+
+    argument                       shift and go to state 27
+    expression                     shift and go to state 23
+
+state 27
+
+    (14) arguments -> arguments COMMA argument .
+
+    RPAREN          reduce using rule 14 (arguments -> arguments COMMA argument .)
+    COMMA           reduce using rule 14 (arguments -> arguments COMMA argument .)
+

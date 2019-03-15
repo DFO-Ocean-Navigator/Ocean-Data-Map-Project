@@ -1,15 +1,15 @@
 from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
-from data.netcdf_data import NetCDFData
+from data.calculated import CalculatedData
 from pint import UnitRegistry
 from data.nearest_grid_point import find_nearest_grid_point
 
-class Nemo(NetCDFData):
+class Nemo(CalculatedData):
     __depths = None
 
-    def __init__(self, url: str):
-        super(Nemo, self).__init__(url)
+    def __init__(self, url: str, **kwargs):
+        super(Nemo, self).__init__(url, **kwargs)
 
     
     def __enter__(self):
@@ -29,7 +29,7 @@ class Nemo(NetCDFData):
                 # Depth is usually a "coordinate" variable
                 if v in list(self._dataset.coords.keys()):
                     # Get DataArray for depth
-                    var = self._dataset.variables[v]
+                    var = self.get_dataset_variable(v)
                     break
             if var is not None:
                 ureg = UnitRegistry()
@@ -137,7 +137,7 @@ class Nemo(NetCDFData):
     """
     def __latlon_vars(self, variable):
         # Get DataArray
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         # Get variable attributes
         attrs = list(var.attrs.keys())
@@ -156,15 +156,15 @@ class Nemo(NetCDFData):
             for p in pairs:
                 if p[0] in coordinates:
                     return (
-                        self._dataset.variables[p[0]],
-                        self._dataset.variables[p[1]] # Check this
+                        self.get_dataset_variable(p[0]),
+                        self.get_dataset_variable(p[1]) # Check this
                     )
         else:
             for p in pairs:
                 if p[0] in self._dataset.variables:
                     return (
-                        self._dataset.variables[p[0]],
-                        self._dataset.variables[p[1]]
+                        self.get_dataset_variable(p[0]),
+                        self.get_dataset_variable(p[1])
                     )
 
         raise LookupError("Cannot find latitude & longitude variables")
@@ -178,7 +178,7 @@ class Nemo(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -231,7 +231,7 @@ class Nemo(NetCDFData):
             longitude = np.array([longitude])
 
         # Get xarray.Variable
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         if depth == 'bottom':
             
@@ -291,7 +291,7 @@ class Nemo(NetCDFData):
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
-            
+
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
@@ -320,7 +320,7 @@ class Nemo(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         res = self.__resample(
             latvar[miny:maxy, minx:maxx],

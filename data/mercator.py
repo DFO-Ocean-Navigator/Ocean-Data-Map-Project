@@ -2,7 +2,7 @@ import pyresample
 import numpy as np
 import warnings
 from netCDF4 import Dataset, netcdftime
-from data.netcdf_data import NetCDFData
+from data.calculated import CalculatedData
 from pint import UnitRegistry
 from cachetools import TTLCache
 from data.data import Variable, VariableList
@@ -11,16 +11,16 @@ import math
 import pytz
 import re
 
-class Mercator(NetCDFData):
+class Mercator(CalculatedData):
     __depths = None
 
-    def __init__(self, url):
+    def __init__(self, url, **kwargs):
         self.latvar = None
         self.lonvar = None
         self.__latsort = None
         self.__lonsort = None
 
-        super(Mercator, self).__init__(url)
+        super(Mercator, self).__init__(url, **kwargs)
 
     def __enter__(self):
         super(Mercator, self).__enter__()
@@ -44,7 +44,7 @@ class Mercator(NetCDFData):
                 # Depth is usually a "coordinate" variable
                 if v in list(self._dataset.coords.keys()):
                     # Get DataArray for depth
-                    var = self._dataset.variables[v]
+                    var = self.get_dataset_variable(v)
                     break
 
             if var is not None:
@@ -63,7 +63,7 @@ class Mercator(NetCDFData):
     def __find_var(self, candidates):
         for c in candidates:
             if c in self._dataset.variables:
-                return self._dataset.variables[c]
+                return self.get_dataset_variable(c)
 
         return None
 
@@ -152,7 +152,7 @@ class Mercator(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -206,7 +206,7 @@ class Mercator(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -299,7 +299,7 @@ class Mercator(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
         res = self.__resample(
             self.latvar[miny:maxy],
             self.lonvar[minx:maxx],

@@ -43,18 +43,15 @@ def get_mimetype(filetype: str):
     return (filetype, mime)
 
 
-def normalize_scale(data, name, unit):
+def normalize_scale(data, variable_config):
     vmin = np.amin(data)
     vmax = np.amax(data)
 
-    if re.search("free surface", name, re.IGNORECASE) or \
-        re.search("surface height", name, re.IGNORECASE) or \
-        re.search("velocity", name, re.IGNORECASE) or \
-            re.search("wind", name, re.IGNORECASE):
-        vmin = min(vmin, -vmax)
-        vmax = max(vmax, -vmin)
+    if variable_config.is_zero_centered:
+        vmax = max(abs(vmax), abs(vmin))
+        vmin = -vmax
 
-    if unit == 'fraction':
+    if variable_config.unit == 'fraction':
         vmin = 0
         vmax = 1
 
@@ -62,8 +59,10 @@ def normalize_scale(data, name, unit):
 
 
 def mathtext(text):
-    if text in ['Celsius', 'degree_Celsius']:
-        text = '\u00b0C'
+    if re.search(r"[Cc]elsius", text):
+        text = re.sub(r"(degree[_ ])?[Cc]elsius", '\u00b0C', text)
+    if re.search(r"[Kk]elvin", text):
+        text = re.sub(r"(degree[_ ])?[Kk]elvin", '\u00b0K', text)
     if re.search(r"-[0-9]", text):
         text = re.sub(r" ([^- ])-1", r"/\1", text)
         text = re.sub(r" ([^- ])-([2-9][0-9]*)", r"/\1^\2", text)
