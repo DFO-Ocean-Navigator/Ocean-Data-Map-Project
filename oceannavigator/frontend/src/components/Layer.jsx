@@ -122,13 +122,19 @@ export default class Layer extends React.Component {
     
   */
   sendData(update) {
+    console.warn("SEND DATAs")
     let data
     if (this.state.current_map in this.props.state.data) {
       data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
     } else {
       data = {}
     }
-    let time_access = this.props.layerType + this.state.current_dataset + this.props.index
+    console.warn("LAYER TYPE: ", this.props.layerType)
+    console.warn("CURRENT DATASET: ", this.state.current_dataset)
+    console.warn("CURRENT VARIABLE: ", this.state.current_variable)
+    let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
+    console.warn("TIME ACCESS: ", time_access)
+    console.warn("CURRENT TIMESTAMP: ", this.props.state.timestamps[time_access])
     if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && this.props.state.timestamps[time_access] !== undefined) {
       if (this.props.layerType in data) {
         if (this.props.value in data[this.props.layerType]) {
@@ -215,6 +221,7 @@ export default class Layer extends React.Component {
     let quantum;
     // Load datasets if they arent already
     if (dataset === undefined) {
+      console.warn("IF sendData()")
       const dataset_promise = $.ajax("/api/v1.0/datasets/?envType=" + this.props.layerType).promise();
       $.when(dataset_promise).done(function (datasets) {
         dataset = datasets[0]['id']
@@ -255,6 +262,7 @@ export default class Layer extends React.Component {
         }.bind(this));
       }.bind(this));
     } else {  // Not initializing, available datasets don't change
+      console.warn("ELSE sendData()")
       // Remove old dataset from global data Object
       this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
       // Change current_dataset and current_quantum
@@ -289,7 +297,7 @@ export default class Layer extends React.Component {
           this.setState({
             depths: depths,
             current_depth: 0,
-          }, () => { this.sendData(); })   // Update the data object
+          }, () => { this.sendData('update'); })   // Update the data object
         }.bind(this))
       }.bind(this))
     }
@@ -448,13 +456,13 @@ export default class Layer extends React.Component {
     if (this.props.layers.includes(this.state.layer)) {
       this.toggleLayer()
     }
-      
+
     this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
-    
+
     console.warn("TOGGLE COMPARE")
     let current_map;
 
-    
+
     console.warn("CURRENT MAP: ", this.state.current_map)
     if (this.state.current_map === 'left') {
       current_map = 'right'
@@ -512,10 +520,14 @@ export default class Layer extends React.Component {
     } else if (key === 'current_dataset') {
       this.changeDataset(value)
     } else {
+      console.warn("KEY: ", key)
+      console.warn("VALUE: ", value)
       this.setState({
         [key]: value,
+      }, () => {
+        this.sendData('update');
+        this.updateIce();
       })
-      this.updateIce()
     }
   }
 
@@ -629,7 +641,7 @@ export default class Layer extends React.Component {
     //this.sendData('update')
     let layer_ice = this.state.ice_layer;
     let props = layer_ice.getSource().getProperties();
-    let time_access = this.props.layerType + this.state.current_dataset + this.props.index
+    let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
     let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
     let masked = 0
     if (this.props.layerType === 'met') {
@@ -734,32 +746,49 @@ export default class Layer extends React.Component {
   */
   changeTimeSource(new_dataset, new_quantum, new_variable, old_dataset, old_variable) {
 
+    if (new_dataset === undefined || new_variable === undefined) {
+      this.removeTime(old_dataset, old_variable)
+    } else if (old_dataset === undefined || old_variable === undefined) {
+      this.addTime(new_dataset, new_variable, new_quantum)
+    } else {
+      this.removeTime(old_dataset, old_variable)
+      this.addTime(new_dataset, new_variable, new_quantum)
+    }
+    /*
     let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
     if (new_timeSources[this.state.current_map] === undefined) {
       new_timeSources[this.state.current_map] = {}
     }
     if (old_dataset === undefined) { // If currently using global time
 
+      /*
+
       if (this.props.layerType in new_timeSources[this.state.current_map]) {
-        if (new_dataset in new_timeSources[this.state.current_map][this.props.layerType]) {
-          new_timeSources[this.state.current_map][this.props.layerType][new_dataset]['variables'].push(new_variable)
-          //this.setState({
-          //  timeBarNum: new_timeSources[this.state.current_map][this.props.layerType][new_dataset].frequency
-          //})
+        if (this.props.value in new_timeSource[this.state.current_map][this.props.layerType]) {
+          if (new_dataset in new_timeSources[this.state.current_map][this.props.layerType][this.props.value]) {
+            new_timeSources[this.state.current_map][this.props.layerType][this.props.value][new_dataset]['variables'].push(new_variable)
+            //this.setState({
+            //  timeBarNum: new_timeSources[this.state.current_map][this.props.layerType][new_dataset].frequency
+            //})
+          } else {
+            new_timeSources[this.state.current_map][this.props.layerType][this.props.value][new_dataset] = {
+              variables: [new_variable],
+              quantum: new_quantum,
+            }
+          }
         } else {
-          new_timeSources[this.state.current_map][this.props.layerType][new_dataset] = {
-            variables: [new_variable],
-            quantum: new_quantum,
-          }
+          new_timeSources[this.state.current_map][this.props.layerType] = {
+            [new_dataset]: {
+              variables: [new_variable],
+              quantum: new_quantum
+            }
+          }    // Adds the layerType and dataset
         }
-      } else {
-        new_timeSources[this.state.current_map][this.props.layerType] = {
-          [new_dataset]: {
-            variables: [new_variable],
-            quantum: new_quantum
-          }
-        }    // Adds the layerType and dataset
+        else {
+
+        }
       }
+
 
 
       //this.props.globalUpdate('timeSources', new_timeSources)    // Adds to global time source list
@@ -804,7 +833,97 @@ export default class Layer extends React.Component {
       useGlobalTime: true,    // Checks the using global time selectbox
       timeSource: 'global'    // Indicates the new source to look for in the global time source list
     })
+    */
+  }
 
+  /*
+    Removes a timeSource from the global timeSources list
+
+    Requires dataset, variable
+  */
+  removeTime(dataset, variable) {
+
+    // Object complete empty (don't bother removing)
+    let data = ''
+    if (this.props.state.timeSource === undefined) {
+      return
+    } else if (this.props.state.timeSources[index] === undefined) {
+      data = this.props.state.timeSources
+      delete data[index]
+    } else if (this.props.state.timeSources[index][dataset] === undefined) {
+      data = this.props.state.timeSources
+      delete data[index][dataset]
+    } else if (this.props.state.timeSources[index][dataset][variable] === undefined) {
+      data = this.props.state.timeSources
+      delete data[index][dataset][variable]
+      return
+    } else {
+      return  // Exists the fucntion before it tries to set the new value
+    }
+
+    this.globalUpdate('timeSources', jQuery.extend({}, data))
+  }
+
+  addTime(dataset, variable, quantum) {
+
+
+    let data = jQuery.extend({}, this.props.state.timeSources)
+
+    if (data === undefined) {
+      data[this.state.current_map] = {
+        [this.props.layerType]: {
+          [this.props.value]: {
+            [dataset]: {
+              [variable]: {
+                quantum: quantum
+              }
+            }
+          }
+        }
+      }
+    } else if (data[this.state.current_map] === undefined) {
+      data[this.state.current_map] = {
+        [this.props.layerType]: {
+          [this.props.value]: {
+            [dataset]: {
+              [variable]: {
+                quantum: quantum
+              }
+            }
+          }
+        }
+      }
+    } else if (data[this.state.current_map][this.props.layerType] === undefined) {
+      data[this.state.current_map][this.props.layerType] = {
+        [this.props.value]: {
+          [dataset]: {
+            [variable]: {
+              quantum: quantum
+            }
+          }
+        }
+      }
+    } else if (data[this.state.current_map][this.props.layerType][this.props.value] === undefined) {
+      data[this.state.current_map][this.props.layerType][this.props.value] = {
+        [dataset]: {
+          [variable]: {
+            quantum: quantum
+          }
+        }
+      }
+    } else if (data[this.state.current_map][this.props.layerType][this.props.value][dataset] === undefined) {
+      data[this.state.current_map][this.props.layerType][this.props.value][dataset] = {
+        [variable]: {
+          quantum: quantum
+        }
+      }
+    } else if (data[this.state.current_map][this.props.layerType][this.props.value][dataset][variable] === undefined) {
+      data[this.state.current_map][this.props.layerType][this.props.value][dataset][variable] = {
+        quantum: quantum
+      }
+    }
+
+    this.props.globalUpdate('timeSources', jQuery.extend({}, data))
   }
 
   render() {
@@ -815,7 +934,7 @@ export default class Layer extends React.Component {
 
     if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
 
-      let time_access = this.props.layerType + this.state.current_dataset + this.props.index
+      let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
 
       let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
 
@@ -1019,7 +1138,7 @@ export default class Layer extends React.Component {
           </Button>
         </Panel>
       );
-}*/
+  }*/
 
     return (
       <div>

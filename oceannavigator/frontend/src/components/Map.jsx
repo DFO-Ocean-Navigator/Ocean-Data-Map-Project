@@ -185,11 +185,13 @@ export default class Map extends React.PureComponent {
     });
 
     // Basemap layer
+    console.warn("GETTING BASEMAP")
     this.layer_basemap = this.getBasemap(
       this.props.state.basemap,
       this.props.state.projection,
       this.props.state.basemap_attribution
     );
+    console.warn("DONE  GETTING BASEMAP")
 
     // Data layer
     this.layer_data = new ol.layer.Tile(
@@ -353,7 +355,7 @@ export default class Map extends React.PureComponent {
 
 
     // Construct our map
-    this.layer_bath.setZIndex(10);
+    //this.layer_bath.setZIndex(10);
     this.map = new ol.Map({
       layers: this.props.state.layers.concat([
         this.layer_basemap,
@@ -655,11 +657,16 @@ export default class Map extends React.PureComponent {
   }
 
   getBasemap(source, projection, attribution) {
+    console.warn("getBasemap()")
+    console.warn("SOURCE: ", source)
+    console.warn("PROJECTION: ", projection)
+    console.warn("ATTRIBUTION: ", attribution)
     switch (source) {
       case "topo":
-
+        console.warn("TOPO")
         const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
-
+        console.warn("AFTER SHADED RELIEF")
+        
         let layer = new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
@@ -672,9 +679,11 @@ export default class Map extends React.PureComponent {
             ],
           })
         });
+        console.warn("RETURNING LAYER")
         return layer;
 
       case "ocean":
+        console.warn("OCEAN")
         return new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
@@ -688,6 +697,7 @@ export default class Map extends React.PureComponent {
           })
         });
       case "world":
+        console.warn("WORLD")
         return new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
@@ -701,6 +711,7 @@ export default class Map extends React.PureComponent {
           })
         });
     }
+    console.warn("DONE getBasemap()")
   }
 
   componentWillMount() {
@@ -815,6 +826,7 @@ export default class Map extends React.PureComponent {
 
 
   resetMap() {
+    console.warn("RESET MAP")
     this.removeMapInteractions("all");
     this.props.updateState("vectortype", null);
     this.props.updateState("vectorid", null);
@@ -822,9 +834,11 @@ export default class Map extends React.PureComponent {
     this.vectorSource.clear();
     this.overlay.setPosition(undefined);
     this.infoOverlay.setPosition(undefined);
+    console.warn("DONE RESETTING MAP")
   }
 
   removeMapInteractions(type) {
+    console.warn("REMOVE MAP INTERACTIONS")
     const interactions = this.map.getInteractions();
     const stat = {
       coll: interactions,
@@ -838,10 +852,12 @@ export default class Map extends React.PureComponent {
         }
       }
     }, stat);
+    console.warn("DONE REMOVE MAP INTERACTION")
     return stat.ret;
   }
 
   controlDoubleClickZoom(active) {
+    console.warn("CONTROL DOUBLE CLICK ZOOM")
     const interactions = this.map.getInteractions();
     for (let i = 0; i < interactions.getLength(); i++) {
       const interaction = interactions.item(i);
@@ -849,6 +865,7 @@ export default class Map extends React.PureComponent {
         interaction.setActive(active);
       }
     }
+    console.warn("DONE CONTROL DOUBLE CLICK ZOOM")
   }
 
   point() {
@@ -1063,13 +1080,15 @@ export default class Map extends React.PureComponent {
     });
     //this.map.addControl(this.scaleViewer);
     if (prevProps.state.projection != this.props.state.projection) {
+      console.warn("PROJECTION: ", this.props.state.projection)
       this.resetMap();
+      console.warn("GETTING BASEMAP")
       this.layer_basemap = this.getBasemap(
         this.props.state.basemap,
         this.props.state.projection,
         this.props.state.basemap_attribution
       );
-      this.map.getLayers().setAt(0, this.layer_basemap);
+      //this.map.getLayers().setAt(0, this.layer_basemap);
       this.mapView = new ol.View({
         projection: this.props.state.projection,
         center: ol.proj.transform(
@@ -1103,28 +1122,31 @@ export default class Map extends React.PureComponent {
       prevProps.state.basemap_attribution != this.props.state.basemap_attribution ||
       prevProps.options.topoShadedRelief != this.props.options.topoShadedRelief
     ) {
+      console.warn("GETTING BASEMAP")
       this.layer_basemap = this.getBasemap(
         this.props.state.basemap,
         this.props.state.projection,
         this.props.state.basemap_attribution
       );
+      console.warn("DONE GETTING BASEMAP")
       this.map.getLayers().setAt(0, this.layer_basemap);
     }
-
+    console.warn("HERE 1")
     for (let prop of ["projection", "dataset", "variable", "depth", "time"]) {
       if (prevProps.state[prop] != this.props.state[prop]) {
         this.infoOverlay.setPosition(undefined);
         break;
       }
     }
-
+    console.warn("HERE 2")
     this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
     this.layer_bath.setVisible(this.props.options.bathymetry);
-
-    //this.map.render();
+    console.warn("HERE 3")
+    this.map.render();
   }
 
   refreshFeatures(e) {
+    console.warn("REFRESH FEATURES")
     var extent = this.mapView.calculateExtent(this.map.getSize());
     var resolution = this.mapView.getResolution();
 
@@ -1142,6 +1164,7 @@ export default class Map extends React.PureComponent {
         this.loader(extent, resolution, projection);
       }
     }
+    console.warn("DONE REFRESHING FEATURES")
   }
 
   /*
@@ -1288,10 +1311,22 @@ export default class Map extends React.PureComponent {
       </div>
     }
 
-
+    let timeBar = ''
+    console.warn("MAP INDEX: ", this.props.mapIdx)
+    
+    if (this.props.mapIdx === 'left') {
+      timeBar = <TimeBarContainer
+          globalUpdate={this.props.updateState}
+          timeSources={this.props.timeSources}
+          allSources={this.props.allSources}
+        ></TimeBarContainer>
+    }
+    
     return (
       <div className='Map'>
-        <div ref={(c) => this.map.setTarget(c)} />
+        <div ref={(c) => {
+          console.warn("CCCCC: ", c)
+         this.map.setTarget(c)}} />
 
         <div
           className='title ol-popup'
@@ -1312,11 +1347,8 @@ export default class Map extends React.PureComponent {
         </div>
 
         {layerRearrange}
+        {timeBar}
 
-        <TimeBarContainer
-          globalUpdate={this.props.updateState}
-          timeSources={this.props.timeSources}
-        ></TimeBarContainer>
       </div>
     );
   }

@@ -394,7 +394,7 @@ export default class LineWindow extends React.Component {
         state={this.state.surfacevariable}
         onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
-        url={"/api/variables/?dataset=" + this.state.dataset}
+        url={"/api/variables/?dataset=" + this.state.data.dataset}
       >{_("surfacevariable_help")}</ComboBox>
 
       <NumberBox
@@ -437,9 +437,9 @@ export default class LineWindow extends React.Component {
       bsStyle='primary'
     >
       <DatasetSelector
-        key='dataset'
-        id='dataset'
-        state={this.state}
+        key='data'
+        id='data'
+        state={this.state.data}
         onUpdate={this.onLocalUpdate}
         depth={this.state.selected == 2}
         variables={this.state.selected == 2 ? "all" : "3d"}
@@ -453,7 +453,7 @@ export default class LineWindow extends React.Component {
         auto
         key='scale'
         id='scale'
-        state={this.state.scale}
+        state={this.state.data.scale}
         def={""}
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
@@ -462,7 +462,7 @@ export default class LineWindow extends React.Component {
       <ComboBox
         key='colormap'
         id='colormap'
-        state={this.state.colormap}
+        state={this.state.data.colourmap}
         def='default'
         onUpdate={this.onLocalUpdate}
         url='/api/colormaps/'
@@ -494,7 +494,7 @@ export default class LineWindow extends React.Component {
           auto
           key='scale_1'
           id='scale_1'
-          state={this.state.scale_1}
+          state={this.state.data_compare.scale}
           def={""}
           onUpdate={this.onLocalUpdate}
           title={_("Variable Range")}
@@ -502,7 +502,7 @@ export default class LineWindow extends React.Component {
         <ComboBox
           key='colormap_right'
           id='colormap_right'
-          state={this.state.colormap_right}
+          state={this.state.data_compare.colourmap}
           def='default'
           onUpdate={this.onLocalUpdate}
           url='/api/colormaps/'
@@ -519,12 +519,12 @@ export default class LineWindow extends React.Component {
       rightInputs.push(compare_dataset);
     }
     const plot_query = {
-      dataset: this.state.dataset,
-      quantum: this.state.quantum,
-      variable: this.state.variable,
+      dataset: this.state.data.dataset,
+      quantum: this.state.data.quantum,
+      variable: this.state.data.variable,
       path: this.props.line[0],
-      scale: this.state.scale,
-      colormap: this.state.colormap,
+      scale: this.state.data.scale,
+      colormap: this.state.data.colourmap,
       showmap: this.state.showmap,
       name: this.props.names[0],
       size: this.state.size,
@@ -535,30 +535,30 @@ export default class LineWindow extends React.Component {
     switch(this.state.selected) {
       case 1:
         plot_query.type = "transect";
-        plot_query.time = this.state.time;
+        plot_query.time = this.state.data.time;
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
-          plot_query.compare_to.scale = this.state.scale_1;
+          plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
+          plot_query.compare_to.colormap = this.state.data_compare.colourmap;
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
         leftInputs.push(transectSettings);
         break;
       case 2:
         plot_query.type = "hovmoller";
-        plot_query.endtime = this.state.time;
-        plot_query.starttime = this.state.time;//this.props.starttime;
-        plot_query.depth = this.state.depth;
+        plot_query.endtime = this.state.data.time;
+        plot_query.starttime = this.state.data.time;//this.props.starttime;
+        plot_query.depth = this.state.data.depth;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-          plot_query.compare_to.scale = this.state.scale_1;
+          plot_query.compare_to = this.props.data_compare.dataset;
+          plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
+          plot_query.compare_to.colormap = this.state.data_compare.colourmap;
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
         break;
@@ -568,7 +568,7 @@ export default class LineWindow extends React.Component {
     if (this.state.time !== undefined) {
       plotImage = <PlotImage
       query={plot_query}
-      permlink_subquery={this.state}
+      permlink_subquery={this.state.data}
       action={this.props.action}
     />
     }
