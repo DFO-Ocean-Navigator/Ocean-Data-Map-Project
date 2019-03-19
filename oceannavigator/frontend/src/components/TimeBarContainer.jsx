@@ -117,7 +117,6 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
-        console.warn("QUANTUM: ", quantum)
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
@@ -132,7 +131,6 @@ export default class TimeBarContainer extends React.Component {
         }
 
         if (min.getTime() >= max.getTime()) {
-            console.warn("DONE ANIMATING")
             this.setState({
                 animating: false,
                 times: this.state.startTimes,
@@ -151,7 +149,6 @@ export default class TimeBarContainer extends React.Component {
                 in_range = true
             }
         }
-        console.warn("SETTING TIME: ", times)
         this.setState({
             times: times,
         })
@@ -273,28 +270,20 @@ export default class TimeBarContainer extends React.Component {
     }
 
     render() {
-        console.warn("RENDERING")
         self = this
         let sources = this.props.allSources
-        console.warn("ALL SOURCES: ", sources)
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
         for (let map in sources) {
-            console.warn("MAP: ", map)
             for (let layer in sources[map]) {
-                console.warn("LAYER: ", layer)
                 //if (self.state.showLayer.includes(layer)) {
                 let new_layer = sources[map][layer]//new Set(this.props.timeSources[layer])
                 for (let idx in new_layer) {
-                    console.warn("INDEX: ", idx)
                     for (let dataset in new_layer[idx]) {
                         for (let variable in new_layer[idx][dataset]) {
-                            console.warn("IN TIMEBARCONTAINER")
-                            console.warn("MAP, LAYER, INDEX, DATASET, VARIABLE: ", map, layer, idx, dataset, variable)
-
+                            
                             quantums.push(new_layer[idx][dataset][variable].quantum)
-                            console.warn("PUSHEd QUANTUMS")
                             timeBars.push(
                                 <div key={map + layer + idx + dataset + variable} className='timeLayerContainer'>
                                     <Button

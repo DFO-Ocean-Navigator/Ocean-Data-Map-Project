@@ -22,7 +22,7 @@ from skimage import measure
 import contextlib
 from data import open_dataset
 from flask import current_app
-import cartopy.crs as ccrs
+#import cartopy.crs as ccrs
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)

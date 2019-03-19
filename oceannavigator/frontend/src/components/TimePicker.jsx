@@ -413,7 +413,7 @@ export default class TimePicker extends React.Component {
       value = 0;
     }
 
-    const date = new Date(this.state.map[value]);
+    const date = this.props.state//new Date(this.state.map[value]);
     let input = input = <input
       readOnly
       ref='picker'
@@ -497,7 +497,7 @@ TimePicker.propTypes = {
   title: PropTypes.string,
   url: PropTypes.string,
   quantum: PropTypes.string,
-  state: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  state: PropTypes.Object,
   onUpdate: PropTypes.func,
   id: PropTypes.string,
   min: PropTypes.number,

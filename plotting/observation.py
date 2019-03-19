@@ -1,5 +1,5 @@
-from netCDF4 import Dataset
-import cftime
+from netCDF4 import Dataset, netcdftime
+#import cftime
 import matplotlib.pyplot as plt
 import numpy as np
 import plotting.utils
@@ -27,7 +27,7 @@ class ObservationPlotter(plPoint.PointPlotter):
             self.observation_variable_names = []
             self.observation_variable_units = []
             with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
-                t = cftime.utime(ds['time'].units)
+                t = netcdftime.utime(ds['time'].units)
                 for idx, o in enumerate(self.observation):
                     observation = {}
                     ts = t.num2date(ds['time'][o]).replace(tzinfo=pytz.UTC)
