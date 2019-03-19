@@ -65,6 +65,7 @@ export default class Layer extends React.Component {
     //this.getDataInfo = this.getDataInfo.bind(this);
     //this.addData = this.addData.bind(this);
     this.removeData = this.removeData.bind(this);
+    this.removeOpenLayer = this.removeOpenLayer.bind(this);
     this.changeDataset = this.changeDataset.bind(this)
     this.changeVariable = this.changeVariable.bind(this);
     this.changeDepth = this.changeDepth.bind(this);
@@ -727,6 +728,22 @@ export default class Layer extends React.Component {
     }
   }
 
+  removeOpenLayer() {
+    if (this.props.layers.includes(this.state.ice_layer)) {
+      if (this.state.current_map === 'left') {
+        this.props.mapComponent.toggleLayer(this.state.ice_layer, 'remove')
+      } else {
+        this.props.mapComponent2.toggleLayer(this.state.ice_layer, 'remove')
+      }
+      let new_layers = this.props.layers
+      new_layers.splice(new_layers.indexOf(this.state.ice_layer), 1);
+      this.setState({
+        layers: new_layers,
+        layerState: 'Add Layer'
+      })
+    }
+  }
+
   /*
     Changes the transparency of the layer as it appears on the map
   */
@@ -1018,7 +1035,7 @@ export default class Layer extends React.Component {
         <Button
           className='removeButton'
           onClick={() => {
-            this.toggleLayer()
+            this.removeOpenLayer()
             this.props.removeLayer(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
           }}
         >X</Button>
