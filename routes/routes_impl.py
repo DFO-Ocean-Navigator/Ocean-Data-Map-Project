@@ -410,6 +410,7 @@ def vars_query_impl(args):
 
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
+                print("DS.VARIABLES: ", ds.variables)
                 for v in ds.variables:  #Iterates through all the variables in the dataset
                     print("VARIABLE: ", v)
                     #If a time period and at least one other unit type is specified
@@ -436,6 +437,7 @@ def vars_query_impl(args):
                                     else:
                                         envType = args.get('envtype')
                                     print("ENV TYPE: ", envType)
+                                    print("VARIABLE ENVTYPE: ", get_variable_type(dataset, v))
                                     if get_variable_type(dataset, v) == envType:
                                         data.append({
                                             'id': v.key,

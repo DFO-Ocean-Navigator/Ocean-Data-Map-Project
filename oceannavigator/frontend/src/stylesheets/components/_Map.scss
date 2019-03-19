@@ -15,7 +15,7 @@
     }
 }
 .Map {
-    position: relative;
+    //position: relative;
     cursor: crosshair;
     border-left: 5px solid #008cba;
     border-right: 5px solid #008cba;
@@ -444,12 +444,12 @@
         height:fit-content;
         background-color: white;
         z-index: 0;
-        position: relative;
+        position: absolute;
         float: right;
-        margin-top: 20px;
-        margin-right: 20px;
+        right: 1%;
+        top: 6%;
         //padding-top: 10px;
-        opacity: 0.7;
+        opacity: 1;
         
         .timeIcon {
             width: 37px;
@@ -530,12 +530,12 @@
         height:fit-content;
         background-color: white;
         z-index: 0;
-        //position: relative;
         float: right;
-        //margin-top: 20px;
-        margin-right: 20px;
+        position: absolute;
+        right: 1%;
+        top: 1%;
         //padding-top: 10px;
-        opacity: 0.7;
+        opacity: 1;
         
         .timeIcon {
             width: 37px;

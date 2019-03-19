@@ -1,8 +1,8 @@
 import pyresample
 import numpy as np
 import warnings
-from netCDF4 import Dataset
-import cftime
+from netCDF4 import Dataset, netcdftime
+#import cftime
 from data.netcdf_data import NetCDFData
 from pint import UnitRegistry
 from cachetools import TTLCache

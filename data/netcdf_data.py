@@ -1,5 +1,5 @@
 import netCDF4
-import cftime
+#import cftime
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
@@ -484,7 +484,7 @@ class NetCDFData(Data):
             var = self.__get_time_variable()
 
             # Convert timestamps to UTC
-            t = cftime.utime(var.attrs['units']) # Get time units from variable
+            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values
