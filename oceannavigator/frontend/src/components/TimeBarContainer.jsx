@@ -117,7 +117,6 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
-        console.warn("QUANTUM: ", quantum)
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
@@ -132,7 +131,6 @@ export default class TimeBarContainer extends React.Component {
         }
 
         if (min.getTime() >= max.getTime()) {
-            console.warn("DONE ANIMATING")
             this.setState({
                 animating: false,
                 times: this.state.startTimes,
@@ -151,7 +149,6 @@ export default class TimeBarContainer extends React.Component {
                 in_range = true
             }
         }
-        console.warn("SETTING TIME: ", times)
         this.setState({
             times: times,
         })
@@ -168,7 +165,7 @@ export default class TimeBarContainer extends React.Component {
         } else {
             min.setHours(min.getUTCHours() + 24)
         }
-        
+
         setTimeout(() => { this.animateConsecutive(new Date(min), max, quantum) }, 4000)
 
         return
@@ -273,59 +270,62 @@ export default class TimeBarContainer extends React.Component {
     }
 
     render() {
-
         self = this
-        let layers = this.props.timeSources
+        let sources = this.props.allSources
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
-        for (let layer in layers) {
-            //if (self.state.showLayer.includes(layer)) {
-            let new_layer = this.props.timeSources[layer]//new Set(this.props.timeSources[layer])
-            for (let idx in new_layer) {
-                for (let i in new_layer[idx]['variables']) {
-                    let dataset = idx
-                    quantums.push(new_layer[idx].quantum)
-                    timeBars.push(
-                        <div key={layer + idx + i} className='timeLayerContainer'>
-                            <Button
-                                id={layer + idx + i}
-                                key={layer + idx + i.toString() + '_button'}
-                                className='timeBarToggle'
-                                onClick={self.toggleLayer}
-                            >{this.state.icons[layer]}</Button>
-                            <TimeSelect
-                                show={self.state.showLayer.includes(layer + idx + i)}
-                                key={layer + idx + i.toString()}
-                                id={layer + idx + i}
-                                idx={i}
-                                name={layer}
-                                dataset={idx}
-                                quantum={this.props.timeSources[layer][idx].quantum}
-                                currentTime={this.state.times[layer + idx + i]}
-                                localUpdate={self.localUpdate}
-                            ></TimeSelect>
-                        </div>
-                    )
+        for (let map in sources) {
+            for (let layer in sources[map]) {
+                //if (self.state.showLayer.includes(layer)) {
+                let new_layer = sources[map][layer]//new Set(this.props.timeSources[layer])
+                for (let idx in new_layer) {
+                    for (let dataset in new_layer[idx]) {
+                        for (let variable in new_layer[idx][dataset]) {
+
+                            quantums.push(new_layer[idx][dataset][variable].quantum)
+                            timeBars.push(
+                                <div key={map + layer + idx + dataset + variable} className='timeLayerContainer'>
+                                    <Button
+                                        id={map + layer + idx + dataset + variable}
+                                        key={map + layer + idx + dataset + variable + '_button'}
+                                        className='timeBarToggle'
+                                        onClick={self.toggleLayer}
+                                    >{this.state.icons[layer]}</Button>
+                                    <TimeSelect
+                                        show={self.state.showLayer.includes(map + layer + idx + dataset + variable)}
+                                        key={map + layer + idx + dataset + variable}
+                                        id={map + layer + idx + dataset + variable}
+                                        idx={idx}
+                                        name={layer}
+                                        dataset={dataset}
+                                        quantum={new_layer[idx][dataset][variable].quantum}
+                                        currentTime={this.state.times[map + layer + idx + dataset + variable]}
+                                        localUpdate={self.localUpdate}
+                                    ></TimeSelect>
+                                </div>)
+                        }
+                    }
                 }
+
             }
-
-
-            /*
-        } else {
-            timeBars.push(
-                <div key={layer} className='timeLayerContainer'>
-                    <Button
-                        id={layer}
-                        key={layer + '_button'}
-                        className='timeBarToggle'
-                        onClick={self.toggleLayer}
-                    >{layer.charAt(0).toUpperCase()}</Button>
-                </div>
-            )
         }
-        */
-        }
+
+        /*
+    } else {
+        timeBars.push(
+            <div key={layer} className='timeLayerContainer'>
+                <Button
+                    id={layer}
+                    key={layer + '_button'}
+                    className='timeBarToggle'
+                    onClick={self.toggleLayer}
+                >{layer.charAt(0).toUpperCase()}</Button>
+            </div>
+        )
+    }
+    */
+
 
         timeBars.push(
             <div key='start_animation' className='timeLayerContainer'>
@@ -344,8 +344,16 @@ export default class TimeBarContainer extends React.Component {
             </div>
         )
 
+        let time_class
+        if (this.props.compare) {
+            time_class = 'time_container_compare'
+        } else {
+            time_class = 'time_container'
+        }
+
+
         return (
-            <div className='time_container'>
+            <div className={time_class}>
                 {timeBars.reverse()}
             </div>
         );

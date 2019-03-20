@@ -82,20 +82,6 @@ export default class Meteorology extends React.Component {
 
   }
 
-  cleanObject(data, map, dataset, variable, idx) {
-    
-    if (jQuery.isEmptyObject(data[map])) {
-      delete data[map]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layertypey])) {
-      delete data[map][this.props.layerType]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx])) {
-      delete data[map][this.props.layerType][idx]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset])) {
-      delete data[map][this.props.layerType][idx][dataset]
-    } else {
-    }
-  }
-
 
 removeData(map, dataset, variable, idx) {
   // Stored as
@@ -112,6 +98,29 @@ removeData(map, dataset, variable, idx) {
   //   }
   // }
 
+  console.warn("MAP, DATASET, VARIABLE, IDX: ", map, dataset, variable, idx)
+  if (map === undefined || dataset === undefined || variable === undefined || idx === undefined) {
+    return
+  }
+
+  console.warn("DATA: ", this.props.state.data)
+  console.warn("DATA[left]: ", this.props.state.data[map])
+  let data = this.props.state.data[map][this.props.layerType][idx]
+  console.warn("REDUCED DATA: ", data)
+
+  if (jQuery.isEmptyObject(data[dataset])) {
+    return
+  } else {
+    data[dataset] = undefined
+    delete data[dataset]
+  } 
+  console.warn("PARTIAL MODIFIED DATA: ", data)
+  let full_data = this.props.state.data
+  full_data[map][this.props.layerType][idx] = data
+  console.warn("MODIFIED DATA: ", full_data)
+  this.props.globalUpdate('data', jQuery.extend({}, full_data))
+
+  /*
   let data = this.props.state.data
   if (data[map] !== undefined) {
     if (data[map][this.props.layerType] !== undefined) {
@@ -123,8 +132,8 @@ removeData(map, dataset, variable, idx) {
       }
     }
   }
-  this.cleanObject(data, map, dataset, variable, idx)
-
+  data = this.cleanObject(data, map, dataset, variable, idx)
+  */
   //delete data[map][this.props.layerType][idx]
   /*
   console.warn("REMOVING DATA")
@@ -168,7 +177,6 @@ removeData(map, dataset, variable, idx) {
   }
   console.warn("FINAL DATA: ", data)
   */
-  this.props.globalUpdate('data', jQuery.extend({}, data))
 }
 
 render() {

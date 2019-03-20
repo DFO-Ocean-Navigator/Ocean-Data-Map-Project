@@ -40,7 +40,7 @@ export default class IntelligenceTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span>{_("Contacts")}</span>}>
+            <Tab eventKey={1} title={<span className='envTabName'>{_("Contact")}</span>}>
                 <Contacts
                   state={this.props.state}
                   swapViews={this.props.swapViews}
@@ -53,7 +53,7 @@ export default class IntelligenceTab extends React.Component {
                   updateOptions={this.props.updateOptions}
                 />
             </Tab>
-            <Tab eventKey={2} title={<span>{_("Events")}</span>}>
+            <Tab eventKey={2} title={<span className='envTabName'>{_("Events")}</span>}>
                 <Panel
                   collapsible
                   header={_("Events")}
@@ -61,7 +61,7 @@ export default class IntelligenceTab extends React.Component {
                 > 
                 </Panel>
             </Tab>
-            <Tab eventKey={3} title={<span>{_("Other")}</span>}>
+            <Tab eventKey={3} title={<span className='envTabName'>{_("Other")}</span>}>
                 <Panel
                   collapsible
                   header={_("Other")}

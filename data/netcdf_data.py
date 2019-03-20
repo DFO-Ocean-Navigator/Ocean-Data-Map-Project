@@ -393,7 +393,11 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
-       
+
+            elif self.interp == 'none':
+                print("INTERP RADIUS: ", self.radius)
+                return pyresample.kd_tree.resample_nearest(input_def, data,
+                    output_def, radius_of_influence=float(150), nprocs=4)
     """
         Finds and returns the xArray.IndexVariable containing
         the time dimension in self._dataset

@@ -22,7 +22,7 @@ from skimage import measure
 import contextlib
 from data import open_dataset
 from flask import current_app
-import cartopy.crs as ccrs
+#import cartopy.crs as ccrs
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -476,6 +476,7 @@ def contour(projection, x, y, z, args):
 
 def wind_barbs(projection, x, y, z, args):
     lat, lon = get_latlon_coords(projection, x, y, z)
+    print('LAT, LON: ', lat, lon)
     print("LAT: ", lat)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -558,14 +559,14 @@ def wind_barbs(projection, x, y, z, args):
     data = nparray_data
     print(data)
     print("NEW DATA TYPE: ", type(data))
-    X, Y = np.meshgrid(data[0], data[1], sparse=True)
+    X, Y = np.meshgrid(data[0], data[1], sparse=True)   #Changing sparse to False will likely result in your pc crashing
     #U, V = 12* X, 12*Y
     #print("NEW DATA TYPE: ", type(data))
 
     #fig, axs = plt.subplots(nrows=2, ncols=2)  
 
-    U = np.multiply(X, 12)
-    V = np.multiply(Y, 12)
+    U = np.multiply(X,1.94384)
+    V = np.multiply(Y,1.94384)
     #manager = plt.get_current_fig_manager()
     #manager.window.showMaximized()
     fig, ax = plt.subplots()
@@ -576,9 +577,8 @@ def wind_barbs(projection, x, y, z, args):
     #ax.set_extent([])
     fig.set_size_inches(4, 4)
     ax = plt.Axes(fig, [0, 0, 1, 1])
-    ax.set_axis_off()
-    fig.add_axes(ax)
-    plt.barbs(X, Y, U, V, length=8, sizes=dict(emptybarb=0.75, spacing=0.01))
+    plt.axis('off')
+    plt.barbs(X, Y, U, V, length=10, pivot='middle', sizes=dict(spacing=1.5))
     
     
 
@@ -651,7 +651,7 @@ def wind_barbs(projection, x, y, z, args):
             buf,
             format='png',
             dpi=64,
-            transparent=False,
+            transparent=True,
         )
         #plt.close(fig)
         buf.seek(0)

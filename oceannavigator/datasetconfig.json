@@ -335,7 +335,7 @@
                 "name": "Pressure",
                 "unit": "kPa",
                 "scale": [
-                    90,
+                    85,
                     105
                 ],
                 "scale_factor": 1e-3

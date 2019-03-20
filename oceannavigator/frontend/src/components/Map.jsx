@@ -225,7 +225,6 @@ export default class Map extends React.PureComponent {
         name: 'Drawing',
         source: this.vectorSource,
         style: function (feat, res) {
-          console.warn("CREATING VECTOR LAYER")
           switch (feat.get("type")) {
             case "area": {
               return [
@@ -353,7 +352,7 @@ export default class Map extends React.PureComponent {
 
 
     // Construct our map
-    this.layer_bath.setZIndex(10);
+    //this.layer_bath.setZIndex(10);
     this.map = new ol.Map({
       layers: this.props.state.layers.concat([
         this.layer_basemap,
@@ -657,9 +656,8 @@ export default class Map extends React.PureComponent {
   getBasemap(source, projection, attribution) {
     switch (source) {
       case "topo":
-
         const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
-
+        
         let layer = new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.XYZ({
@@ -1069,7 +1067,7 @@ export default class Map extends React.PureComponent {
         this.props.state.projection,
         this.props.state.basemap_attribution
       );
-      this.map.getLayers().setAt(0, this.layer_basemap);
+      //this.map.getLayers().setAt(0, this.layer_basemap);
       this.mapView = new ol.View({
         projection: this.props.state.projection,
         center: ol.proj.transform(
@@ -1096,7 +1094,6 @@ export default class Map extends React.PureComponent {
       //this.mapView.on("change:resolution", this.constrainPan.bind(this));
       //this.mapView.on("change:center", this.constrainPan.bind(this));
       this.map.setView(this.mapView);
-      console.warn("this.map: ", this.map)
     }
 
     if (prevProps.state.basemap != this.props.state.basemap ||
@@ -1110,18 +1107,15 @@ export default class Map extends React.PureComponent {
       );
       this.map.getLayers().setAt(0, this.layer_basemap);
     }
-
     for (let prop of ["projection", "dataset", "variable", "depth", "time"]) {
       if (prevProps.state[prop] != this.props.state[prop]) {
         this.infoOverlay.setPosition(undefined);
         break;
       }
     }
-
     this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
     this.layer_bath.setVisible(this.props.options.bathymetry);
-
-    //this.map.render();
+    this.map.render();
   }
 
   refreshFeatures(e) {
@@ -1288,10 +1282,32 @@ export default class Map extends React.PureComponent {
       </div>
     }
 
-
+    let timeBar = ''
+    console.warn("MAP INDEX: ", this.props.mapIdx)
+    
+    if (this.props.mapIdx === 'left') {
+      if ('partner' in this.props) {
+        timeBar = <TimeBarContainer
+        compare={true}
+        globalUpdate={this.props.updateState}
+        timeSources={this.props.timeSources}
+        allSources={this.props.allSources}
+      ></TimeBarContainer>
+      } else {
+        timeBar = <TimeBarContainer
+        compare={false}
+        globalUpdate={this.props.updateState}
+        timeSources={this.props.timeSources}
+        allSources={this.props.allSources}
+      ></TimeBarContainer>  
+      }
+      
+    }
+    
     return (
       <div className='Map'>
-        <div ref={(c) => this.map.setTarget(c)} />
+        <div ref={(c) => {
+         this.map.setTarget(c)}} />
 
         <div
           className='title ol-popup'
@@ -1312,11 +1328,8 @@ export default class Map extends React.PureComponent {
         </div>
 
         {layerRearrange}
+        {timeBar}
 
-        <TimeBarContainer
-          globalUpdate={this.props.updateState}
-          timeSources={this.props.timeSources}
-        ></TimeBarContainer>
       </div>
     );
   }

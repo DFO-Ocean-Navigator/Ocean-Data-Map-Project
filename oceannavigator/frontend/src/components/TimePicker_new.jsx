@@ -47,17 +47,15 @@ export default class TimePicker extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    this.populate(this.props);
+    return
   }
 
   componentWillUnmount() {
-    this._mounted = false;
+    return
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url || nextProps.min !== this.props.min || nextProps.max !== this.props.max) {
-      this.populate(nextProps);
-    }
+  componentDidUpdate(prevProps, prevState) {
+    return
   }
 
   populate(props) {

@@ -41,7 +41,7 @@ export default class FoundationTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-          <Tab eventKey={1} title={<span>{_("Maps")}</span>}>
+          <Tab eventKey={1} title={<span className='envTabName'>{_("Maps")}</span>}>
             <Panel
               collapsible
               defaultExpanded
@@ -87,7 +87,7 @@ export default class FoundationTab extends React.Component {
 
             </Panel>
           </Tab>
-          <Tab eventKey={2} title={<span>{_("Charts")}</span>}>
+          <Tab eventKey={2} title={<span className='envTabName'>{_("Charts")}</span>}>
 
             <Bathymetry
               state={this.props.state}
@@ -102,7 +102,7 @@ export default class FoundationTab extends React.Component {
             />
 
           </Tab>
-          <Tab eventKey={3} title={<span>{_("Satellite")}</span>}>
+          <Tab eventKey={3} title={<span className='envTabName'>{_("Satellite")}</span>}>
             <Panel
               collapsible
               header={_("Satellite")}
@@ -110,7 +110,7 @@ export default class FoundationTab extends React.Component {
             >
             </Panel>
           </Tab>
-          <Tab eventKey={4} title={<span>{_("Aerial")}</span>}>
+          <Tab eventKey={4} title={<span className='envTabName'>{_("Aerial")}</span>}>
             <Panel
               collapsible
               header={_("Aerial")}

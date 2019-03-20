@@ -60,6 +60,10 @@ export default class OceanNavigator extends React.Component {
         {
           id: 'contours',
           value: 'Contours',
+        },
+        {
+          id: 'windbarbs',
+          value: 'Wind Barbs',
         }
       ],
       
@@ -637,6 +641,7 @@ export default class OceanNavigator extends React.Component {
       map = <div className='multimap'>
         <Map
           ref={(m) => this.mapComponent = m}
+          mapIdx='left'
           data={this.state.data['left']}
           timeSources={this.state.timeSources['left']}
           state={this.state}
@@ -649,6 +654,7 @@ export default class OceanNavigator extends React.Component {
         />
         <Map
           ref={(m) => this.mapComponent2 = m}
+          mapIdx='right'
           data={this.state.data['right']}
           timeSources={this.state.timeSources['right']}
           state={secondState}
@@ -664,9 +670,11 @@ export default class OceanNavigator extends React.Component {
     else {
       map = <Map
         ref={(m) => this.mapComponent = m}
+        mapIdx='left'
         layers={this.state.layers}
         data={this.state.data['left']}
         timeSources={this.state.timeSources['left']}
+        allSources={this.state.timeSources}
         state={this.state}
         action={this.action}
         updateState={this.updateState}
@@ -722,9 +730,10 @@ export default class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
           />
-          <WarningBar
+          {/*<WarningBar
             showWarningInfo={this.showBugsModal}
-          />
+          />*/}
+          
           {map}
         </div>
 
