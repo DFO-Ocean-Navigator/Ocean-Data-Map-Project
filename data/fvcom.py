@@ -2,7 +2,7 @@ from pykdtree.kdtree import KDTree
 import pyresample
 import numpy as np
 import warnings
-from data.netcdf_data import NetCDFData
+from data.calculated import CalculatedData
 from netCDF4 import Dataset, chartostring
 from data.data import Variable, VariableList
 import pytz
@@ -19,14 +19,14 @@ EARTH_RADIUS = 6378137.0
     so xArray can't handle it/
 
 """
-class Fvcom(NetCDFData):
+class Fvcom(CalculatedData):
     __depths = None
 
-    def __init__(self, url: str):
+    def __init__(self, url: str, **kwargs):
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         
-        super(Fvcom, self).__init__(url)
+        super(Fvcom, self).__init__(url, **kwargs)
     
     def __enter__(self):
         self._dataset = Dataset(self.url, 'r')
@@ -62,7 +62,7 @@ class Fvcom(NetCDFData):
         if self.__timestamp_cache.get("timestamps") is None:
             for v in ['Times']:
                 if v in self._dataset.variables:
-                    var = self._dataset.variables[v]
+                    var = self.get_dataset_variable(v)
                     break
 
             tz = pytz.timezone(var.time_zone)
@@ -89,7 +89,7 @@ class Fvcom(NetCDFData):
         if self._variable_list == None:
             l = []
             for name in self._dataset.variables:
-                var = self._dataset.variables[name]
+                var = self.get_dataset_variable(name)
                 
                 if 'coordinates' not in var.ncattrs():
                     continue
@@ -124,7 +124,7 @@ class Fvcom(NetCDFData):
     def __find_var(self, candidates):
         for c in candidates:
             if c in self._dataset.variables:
-                return self._dataset.variables[c]
+                return self.get_dataset_variable(c)
 
         return None
 
@@ -132,11 +132,11 @@ class Fvcom(NetCDFData):
         index = int(element)
 
         if element:
-            latvar = self._dataset.variables['latc']
-            lonvar = self._dataset.variables['lonc']
+            latvar = self.get_dataset_variable('latc')
+            lonvar = self.get_dataset_variable('lonc')
         else:
-            latvar = self._dataset.variables['lat']
-            lonvar = self._dataset.variables['lon']
+            latvar = self.get_dataset_variable('lat')
+            lonvar = self.get_dataset_variable('lon')
 
         if self._kdt[index] is None:
             latvals = latvar[:] * RAD_FACTOR
@@ -187,21 +187,21 @@ class Fvcom(NetCDFData):
             return mn, mx
 
         if element:
-            latvar = self._dataset.variables['latc']
+            latvar = self.get_dataset_variable('latc')
         else:
-            latvar = self._dataset.variables['lat']
+            latvar = self.get_dataset_variable('lat')
         mini, maxi = fix_limits(index, latvar.shape)
 
         return mini[0], maxi[0], np.clip(np.amax(d), 5000, 50000)
 
     def __latlon_vars(self, data_var):
-        var = self._dataset.variables[data_var]
+        var = self.get_dataset_variable(data_var)
         if 'latc' in var.coordinates:
-            latvar = self._dataset.variables['latc']
-            lonvar = self._dataset.variables['lonc']
+            latvar = self.get_dataset_variable('latc')
+            lonvar = self.get_dataset_variable('lonc')
         else:
-            latvar = self._dataset.variables['lat']
-            lonvar = self._dataset.variables['lon']
+            latvar = self.get_dataset_variable('lat')
+            lonvar = self.get_dataset_variable('lon')
 
         return latvar, lonvar
 
@@ -278,7 +278,7 @@ class Fvcom(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
         latvar, lonvar = self.__latlon_vars(variable)
 
         if depth == 'bottom':
@@ -297,12 +297,12 @@ class Fvcom(NetCDFData):
 
     def get_point(self, latitude, longitude, depth, time, variable,
                   return_depth=False):
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
         latvar, lonvar = self.__latlon_vars(variable)
 
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude,
-            'nele' in self._dataset.variables[variable].dimensions,
+            'nele' in self.get_dataset_variable(variable).dimensions,
             10
         )
 
@@ -347,11 +347,11 @@ class Fvcom(NetCDFData):
             return res
 
     def __get_depths(self, variable, time, min_i, max_i):
-        var = self._dataset.variables[variable]
+        var = self.get_dataset_variable(variable)
 
         if 'nele' in var.dimensions:
             # First, find indicies to cover the nodes
-            nv = self._dataset.variables['nv'][:, min_i:max_i]
+            nv = self.get_dataset_variable('nv')[:, min_i:max_i]
             min_n, max_n = np.amin(nv), np.amax(nv)
 
             if 'siglay' in var.dimensions:
@@ -363,27 +363,27 @@ class Fvcom(NetCDFData):
 
             radius = 50000
 
-            lat_in = self._dataset.variables['lat'][min_n:max_n]
-            lon_in = self._dataset.variables['lon'][min_n:max_n]
-            lat_out = self._dataset.variables['latc'][min_i:max_i]
-            lon_out = self._dataset.variables['lonc'][min_i:max_i]
+            lat_in = self.get_dataset_variable('lat')[min_n:max_n]
+            lon_in = self.get_dataset_variable('lon')[min_n:max_n]
+            lat_out = self.get_dataset_variable('latc')[min_i:max_i]
+            lon_out = self.get_dataset_variable('lonc')[min_i:max_i]
 
             sigma = self.__resample(
                 lat_in, lon_in,
                 lat_out, lon_out,
-                self._dataset.variables[sigma_var][:, min_n:max_n],
+                self.get_dataset_variable(sigma_var)[:, min_n:max_n],
                 radius
             ).transpose()
             bath = self.__resample(
                 lat_in, lon_in,
                 lat_out, lon_out,
-                self._dataset.variables['h'][min_n:max_n],
+                self.get_dataset_variable('h')[min_n:max_n],
                 radius
             )
             surf = self.__resample(
                 lat_in, lon_in,
                 lat_out, lon_out,
-                self._dataset.variables['zeta'][time, min_n:max_n],
+                self.get_dataset_variable('zeta')[time, min_n:max_n],
                 radius
             ).transpose()
 
@@ -395,14 +395,14 @@ class Fvcom(NetCDFData):
             return z
         else:
             if 'siglay' in var.dimensions:
-                sigma = self._dataset.variables['siglay'][:, min_i:max_i]
+                sigma = self.get_dataset_variable('siglay')[:, min_i:max_i]
             elif 'siglev' in var.dimensions:
-                sigma = self._dataset.variables['siglev'][:, min_i:max_i]
+                sigma = self.get_dataset_variable('siglev')[:, min_i:max_i]
             else:
                 return np.array([0] * (max_i - min_i))
 
-            bath = self._dataset.variables['h'][min_i:max_i]
-            surf = self._dataset.variables['zeta'][time, min_i:max_i]
+            bath = self.get_dataset_variable('h')[min_i:max_i]
+            surf = self.get_dataset_variable('zeta')[time, min_i:max_i]
 
             if hasattr(time, "__len__"):
                 sigma = np.tile(sigma, (len(time), 1, 1))
@@ -416,7 +416,7 @@ class Fvcom(NetCDFData):
 
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude,
-            'nele' in self._dataset.variables[variable].dimensions,
+            'nele' in self.get_dataset_variable(variable).dimensions,
             10
         )
 
@@ -424,7 +424,7 @@ class Fvcom(NetCDFData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        data = self._dataset.variables[variable][time, :, min_i:max_i]
+        data = self.get_dataset_variable(variable)[time, :, min_i:max_i]
         res = self.__resample(
             latvar[min_i:max_i],
             lonvar[min_i:max_i],

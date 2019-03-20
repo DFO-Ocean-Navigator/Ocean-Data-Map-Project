@@ -85,7 +85,6 @@ export default class PointWindow extends React.Component {
         selected: TabEnum.OBSERVATION,
       });
     }
-    //this.populateVariables(this.state.dataset);
 
   }
 
@@ -123,7 +122,7 @@ export default class PointWindow extends React.Component {
       return
     }
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
+      url: "/api/variables/?dataset=" + dataset,
       dataType: "json",
       cache: true,
 
@@ -253,142 +252,6 @@ export default class PointWindow extends React.Component {
   // Handles when a tab is selected
   onSelect(key) {
     this.setState({
-      selected: key,
-      
-    }, () => { this.updatePlot() });
-  }
-
-  updateScale(e) {
-    let value = e.target.value
-    let key = e.target.id
-    this.setState({
-      [key]: value
-    })
-  }
-
-  updatePlot() {
-
-    let plot_query = {
-      dataset: this.state.dataset,
-      quantum: this.state.quantum,
-      point: this.props.point,
-      showmap: this.state.showmap,
-      names: this.props.names,
-      size: this.state.size,
-      dpi: this.state.dpi,
-      plotTitle: this.state.plotTitles[this.state.selected - 1],
-    };
-
-    // Manual X-Scale
-    if (this.state.xminScale != '' && this.state.xminScale != undefined) {
-      if (this.state.xmaxScale != '' && this.state.xmaxScale != undefined) {
-        plot_query.xscale = [this.state.xminScale, this.state.xmaxScale]
-
-      }
-    }
-    
-    // Manual Y-Scale
-    if (this.state.yminScale != '' && this.state.yminScale != undefined) {
-      if (this.state.ymaxScale != '' && this.state.ymaxScale != undefined) {
-        plot_query.yscale = [this.state.ymaxScale, this.state.yminScale]
-      }
-    }
-    
-    // Manual Plot Title
-    if (this.state.title != undefined && this.state.title != '') {
-      plot_query.title = this.state.title
-    }
-
-    // Manual X Label
-    if (this.state.xlabel != '' && this.state.xlabel != undefined) {
-      plot_query.xlabel = this.state.xlabel
-    }
-
-    // Manual Y Label
-    if (this.state.ylabel != '' && this.state.ylabel != undefined) {
-      plot_query.ylabel = this.state.ylabel
-    }
-
-    switch (this.state.selected) {
-      case TabEnum.PROFILE:
-        plot_query.type = "profile";
-        plot_query.time = this.state.time;
-        plot_query.variable = this.state.variable;
-        break;
-
-      case TabEnum.CTD:
-        plot_query.type = "profile";
-        plot_query.time = this.state.time;
-        plot_query.variable = "";
-        if (this.state.variables.indexOf("votemper") !== -1) {
-          plot_query.variable += "votemper,";
-        } else if (this.state.variables.indexOf("temp") !== -1) {
-          plot_query.variable += "temp,";
-        }
-        if (this.state.variables.indexOf("vosaline") !== -1) {
-          plot_query.variable += "vosaline";
-        } else if (this.state.variables.indexOf("salinity") !== -1) {
-          plot_query.variable += "salinity";
-        }
-        break;
-
-      case TabEnum.TS:
-        plot_query.type = "ts";
-        plot_query.time = this.state.time;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-        }
-        break;
-
-      case TabEnum.SOUND:
-        plot_query.type = "sound";
-        plot_query.time = this.state.time;
-        break;
-      case TabEnum.OBSERVATION:
-        plot_query.type = "observation";
-        plot_query.observation = this.props.point.map(function (o) {
-          return o[2];
-        });
-
-        plot_query.observation_variable = this.state.observation_variable;
-        plot_query.variable = this.state.variable;
-
-        break;
-      case TabEnum.MOORING:
-        plot_query.type = "timeseries";
-        plot_query.variable = this.state.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.state.time;
-        plot_query.depth = this.state.depth;
-        plot_query.colormap = this.state.colormap;
-        plot_query.scale = this.state.scale;
-
-        if (this.state.depth == "all") {
-          // Add Colormap selector
-          inputs.push(
-            <ComboBox
-              key='colormap'
-              id='colormap'
-              state={this.state.colormap}
-              def='default'
-              onUpdate={this.onLocalUpdate}
-              url='/api/colormaps/'
-              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-            </ComboBox>);
-        }
-
-        break;
-      case TabEnum.STICK:
-        plot_query.type = "stick";
-        plot_query.variable = this.state.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.state.time;
-        plot_query.depth = this.state.depth;
-        break;
-    }
-    this.setState({
-      query: plot_query
-    })
   }
 
   render() {

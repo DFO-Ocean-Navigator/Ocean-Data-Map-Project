@@ -15,12 +15,7 @@ from io import BytesIO
 from PIL import Image
 import io
 
-from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets, get_variable_type,
-    get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden, get_dataset_cache, get_dataset_help,
-    get_dataset_name, get_dataset_quantum, get_dataset_attribution,get_dataset_envtype
-)
+from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
 
@@ -204,31 +199,39 @@ def query_datasets_impl(args):
     """
 
     data = []
-    if 'envType' in args:
-        for key in get_datasets():
-            types = get_dataset_envtype(key)
-            if args.get('envType') in types:
-                data.append({
-                    'id': key,
-                    'value': get_dataset_name(key),
-                    'quantum': get_dataset_quantum(key),
-                    'help': get_dataset_help(key),
-                    'attribution': get_dataset_attribution(key),
-                })
-    elif 'id' in args:
-        for key in get_datasets():
-            data.append({
-                'id': key,
-                'value': get_dataset_name(key)
-            })
+    if 'id' not in args:
+
+    	if 'envType' in args:
+       	    for key in DatasetConfig.get_datasets():
+            	config = DatasetConfig(key)
+        	types = get_dataset_envtype(key)
+        	if args.get('envType') in types:
+        	    data.append({
+        	        'id': key,
+     	                'value': get_dataset_name(key),
+                        'quantum': get_dataset_quantum(key),
+                        'help': get_dataset_help(key),
+                        'attribution': get_dataset_attribution(key),
+                    })
+	else:
+            for key in DatasetConfig.get_datasets():
+                config = DatasetConfig(key)
+            	    data.append({
+            	        'id': key,
+            	        'value': get_dataset_name(key),
+            	        'quantum': get_dataset_quantum(key),
+            	        'help': get_dataset_help(key),
+            	        'attribution': get_dataset_attribution(key),
+            	    })
     else:
         for key in get_datasets():
             data.append({
                 'id': key,
-                'value': get_dataset_name(key),
-                'quantum': get_dataset_quantum(key),
-                'help': get_dataset_help(key),
-                'attribution': get_dataset_attribution(key),
+            })
+    else:
+            data.append({
+                'id': key,
+                'value': config.name
             })
 
     data = sorted(data, key=lambda k: k['value'])
@@ -315,13 +318,13 @@ def depth_impl(args):
 
     var = args.get('variable')
     variables = var.split(',')
-    variables = [re.sub('_anom$', '', v) for v in variables]
 
     data = []
    
     dataset = args['dataset']
+    config = DatasetConfig(dataset)
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         for variable in variables:
             if variable and \
                 variable in ds.variables and \
@@ -381,7 +384,7 @@ def vars_query_impl(args):
 
     if 'dataset' not in args.keys():
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
-    
+
     if args['dataset'] == 'all':
         resp = all_vars_query_impl(args)
         
@@ -393,117 +396,58 @@ def vars_query_impl(args):
     data = []       #Initializes empty data list
     
     for dataset in datasets:
-        #Queries config files
-        if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
 
-            with open_dataset(get_dataset_climatology(dataset)) as ds:
-                climatology_variables = list(map(str, ds.variables))
-
-        else:
-            climatology_variables = []
-
-        #three_d = '3d_only' in args     #Checks if 3d_only is in args
-        #If three_d is true - Only 3d variables will be returned
-
-        with open_dataset(get_dataset_url(dataset)) as ds:
+        config = DatasetConfig(dataset)
+        with open_dataset(config) as ds:
             if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
-
+    
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-                print("DS.VARIABLES: ", ds.variables)
                 for v in ds.variables:  #Iterates through all the variables in the dataset
-                    print("VARIABLE: ", v)
+    
                     #If a time period and at least one other unit type is specified
-                    print("DIMENSION: ", v.dimensions)
                     if ('time_counter' in v.dimensions or   
-                        'time' in v.dimensions or 'time1' in v.dimensions or 'time2' in v.dimensions) \
+                        'time' in v.dimensions) \
                             and ('y' in v.dimensions or
                                  'yc' in v.dimensions or
                                  'node' in v.dimensions or
                                  'nele' in v.dimensions or
                                  'latitude' in v.dimensions or
                                  'lat' in v.dimensions):
-                        print("TIME COUNTER")
                         if ('3d_only' in args) and not (
                             set(ds.depth_dimensions) & set(v.dimensions)
                         ):
                             continue
                         else:
-                            if not is_variable_hidden(dataset, v):
-                                print("VARIABLE NOT HIDDEN")
+                            if not config.variable[v].is_hidden:
+                                 print("VARIABLE NOT HIDDEN")
                                 if 'envType' in args or 'envtype' in args:
                                     if 'envType' in args:
                                         envType = args.get('envType')
                                     else:
                                         envType = args.get('envtype')
-                                    print("ENV TYPE: ", envType)
-                                    print("VARIABLE ENVTYPE: ", get_variable_type(dataset, v))
-                                    if get_variable_type(dataset, v) == envType:
+                                    
+                                    if config.variable[v].type == envType:
                                         data.append({
                                             'id': v.key,
-                                            'value': get_variable_name(dataset, v),
-                                            'scale': get_variable_scale(dataset, v),
+                                            'value': config.variable[v].name,
+                                            'scale': config.variable[v].scale,
                                         }) 
-                                        if v.key in climatology_variables:
-                                            data.append({
-                                                'id': v.key + "_anom",
-                                                'value': get_variable_name(dataset, v) + " Anomaly",
-                                                'scale': [-10, 10],
-                                            })
+                                     
                                 else:
                                     data.append({
                                         'id': v.key,
-                                        'value': get_variable_name(dataset, v),
-                                        'scale': get_variable_scale(dataset, v),
+                                        'value': config.variable[v].name,
+                                        'scale': config.variable[v].scale,
                                     })
-                                    if v.key in climatology_variables:
-                                        data.append({
-                                            'id': v.key + "_anom",
-                                            'value': get_variable_name(dataset, v) + " Anomaly",
-                                            'scale': [-10, 10],
-                                        })
+                                       
                             else:
                                 data.append({
                                     'id': v.key,
-                                    'value': get_variable_name(dataset, v),
-                                    'scale': get_variable_scale(dataset, v),
+                                    'value': config.variable[v].name,
+                                    'scale': config.variable[v].scale,
                                 })
-                                if v.key in climatology_variables:
-                                    data.append({
-                                        'id': v.key + "_anom",
-                                        'value': get_variable_name(dataset, v) + " Anomaly",
-                                        'scale': [-10, 10],
-                                    })
-
-            VECTOR_MAP = {
-                'vozocrtx': 'vozocrtx,vomecrty',
-                'itzocrtx': 'itzocrtx,itmecrty',
-                'iicevelu': 'iicevelu,iicevelv',
-                'u_wind': 'u_wind,v_wind',
-                'u': 'u,v',
-                'ua': 'ua,va',
-                'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
-            }
-
-            #If Vectors are needed
-
-            
-
-            if 'vectors' in args or 'vectors_only' in args:
-
-                rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
-                for key, value in list(VECTOR_MAP.items()):
-                    if key in data:
-                        n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
-                        data.append({
-                            'id': value,
-                            'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                            'scale': [0, get_variable_scale(
-                                dataset,
-                                ds.variables[key]
-                            )[1]],
-                        })
-
+     
     # END OF DATASET LOOP
         
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
@@ -626,9 +570,10 @@ def time_query_impl(args):
 
     data = []
     dataset = args['dataset']
+    config = DatasetConfig(dataset)
     quantum = args.get('quantum')
     
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         for idx, date in enumerate(ds.timestamps):
             if quantum == 'month':
                 date = datetime.datetime(
@@ -667,10 +612,12 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     **Used when changing datasets.**
     """
 
-    with open_dataset(get_dataset_url(old_dataset)) as ds:
+    old_config = DatasetConfig(old_dataset)
+    new_config = DatasetConfig(new_dataset)
+    with open_dataset(old_config) as ds:
         timestamp = ds.timestamps[date]
 
-    with open_dataset(get_dataset_url(new_dataset)) as ds:
+    with open_dataset(new_config) as ds:
         timestamps = ds.timestamps
 
     diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
@@ -878,7 +825,8 @@ def subset_query_impl(args):
 
     working_dir = None
     subset_filename = None
-    with open_dataset(get_dataset_url(args.get('dataset_name'))) as dataset:
+    config = DatasetConfig(args.get('dataset_name'))
+    with open_dataset(config) as dataset:
         working_dir, subset_filename = dataset.subset(args)
             
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
@@ -1049,8 +997,9 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
         Returns True if dataset cache is valid
     """
 
+    config = DatasetConfig(dataset)
     if os.path.isfile(f):
-        cache_time = get_dataset_cache(dataset)
+        cache_time = config.cache
         if cache_time is not None:
             modtime = datetime.datetime.fromtimestamp(
                 os.path.getmtime(f)

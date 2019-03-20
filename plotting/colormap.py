@@ -38,6 +38,10 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'curl': cmocean.cm.curl,
+    'vorticity': cmocean.cm.curl,
+    'divergence': cmocean.cm.curl,
+    'gradient': cmocean.cm.curl,
     'transparent': make_colormap([_c('#00000000')]),
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
@@ -133,7 +137,6 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
     'temperature': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
-
 }
 colormaps['wind'] = colormaps['velocity']
 
@@ -167,6 +170,7 @@ gettext('Thermal')
 gettext('NEO SST')
 gettext('Color Brewer Blue-Yellow-Red')
 gettext('Temperature (old)')
+gettext('Vorticity')
 gettext('Transparent')
 
 colormap_names = {
@@ -195,6 +199,7 @@ colormap_names = {
     'neo_sst': 'NEO SST',
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
     'temperature-old': 'Temperature (old)',
+    'vorticity': 'Vorticity',
     'black': 'Black'
 }
 
