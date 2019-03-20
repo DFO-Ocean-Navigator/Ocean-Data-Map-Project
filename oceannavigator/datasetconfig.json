@@ -2,7 +2,7 @@
     "giops_day": {
         "envtype": ["ice","ocean","met"],
         "name": "GIOPS Daily",
-        "url": "http://localhost:8080/thredds/dodsC/giops_day/aggregated.ncml",
+        "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
         "enabled": true,
         "quantum": "day",
         "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -113,7 +113,7 @@
     "riops": {
         "envtype": ["ocean", "ice"],
         "name": "RIOPS",
-        "url": "http://localhost:8080/thredds/dodsC/riops/aggregated.ncml",
+        "url": "http://localhost:8080/thredds/dodsC/riops/daily/aggregated.ncml",
         "quantum": "hour",
         "enabled": true,
         "climatology": "http://navigator.oceansdata.ca/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -335,7 +335,7 @@
                 "name": "Pressure",
                 "unit": "kPa",
                 "scale": [
-                    90,
+                    85,
                     105
                 ],
                 "scale_factor": 1e-3

@@ -282,7 +282,7 @@ export default class TimeBarContainer extends React.Component {
                 for (let idx in new_layer) {
                     for (let dataset in new_layer[idx]) {
                         for (let variable in new_layer[idx][dataset]) {
-                            
+
                             quantums.push(new_layer[idx][dataset][variable].quantum)
                             timeBars.push(
                                 <div key={map + layer + idx + dataset + variable} className='timeLayerContainer'>
@@ -311,21 +311,21 @@ export default class TimeBarContainer extends React.Component {
             }
         }
 
-            /*
-        } else {
-            timeBars.push(
-                <div key={layer} className='timeLayerContainer'>
-                    <Button
-                        id={layer}
-                        key={layer + '_button'}
-                        className='timeBarToggle'
-                        onClick={self.toggleLayer}
-                    >{layer.charAt(0).toUpperCase()}</Button>
-                </div>
-            )
-        }
-        */
-        
+        /*
+    } else {
+        timeBars.push(
+            <div key={layer} className='timeLayerContainer'>
+                <Button
+                    id={layer}
+                    key={layer + '_button'}
+                    className='timeBarToggle'
+                    onClick={self.toggleLayer}
+                >{layer.charAt(0).toUpperCase()}</Button>
+            </div>
+        )
+    }
+    */
+
 
         timeBars.push(
             <div key='start_animation' className='timeLayerContainer'>
@@ -344,8 +344,16 @@ export default class TimeBarContainer extends React.Component {
             </div>
         )
 
+        let time_class
+        if (this.props.compare) {
+            time_class = 'time_container_compare'
+        } else {
+            time_class = 'time_container'
+        }
+
+
         return (
-            <div className='time_container'>
+            <div className={time_class}>
                 {timeBars.reverse()}
             </div>
         );

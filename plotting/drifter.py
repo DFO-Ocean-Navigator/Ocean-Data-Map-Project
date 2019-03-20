@@ -1,4 +1,5 @@
-from netCDF4 import Dataset, chartostring, netcdftime
+from netCDF4 import Dataset, chartostring
+import cftime
 #import cftime
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -56,7 +57,7 @@ class DrifterPlotter(Plotter):
             self.imei = str(chartostring(ds['imei'][0]))
             self.wmo = str(chartostring(ds['wmo'][0]))
 
-            t = netcdftime.utime(ds['data_date'].units)
+            t = cftime.utime(ds['data_date'].units)
 
             d = []
             for v in self.buoyvariables:

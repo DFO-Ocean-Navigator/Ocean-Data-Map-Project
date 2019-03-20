@@ -60,6 +60,10 @@ export default class OceanNavigator extends React.Component {
         {
           id: 'contours',
           value: 'Contours',
+        },
+        {
+          id: 'windbarbs',
+          value: 'Wind Barbs',
         }
       ],
       

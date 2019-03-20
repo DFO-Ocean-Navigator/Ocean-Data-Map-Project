@@ -25,7 +25,6 @@ export default class Meteorology extends React.Component {
     this.removeLayer = this.removeLayer.bind(this);
     this.removeTimeSource = this.removeTimeSource.bind(this);
     this.removeData = this.removeData.bind(this);
-    this.cleanObject = this.cleanObject.bind(this);
   }
 
   addLayer() {
@@ -81,22 +80,6 @@ export default class Meteorology extends React.Component {
     this.props.globalUpdate('timeSources', jQuery.extend({}, new_timeSources))
 
 
-  }
-
-  cleanObject(data, map, dataset, variable, idx) {
-    console.warn("DATA, MAP, DATASET, VARIABLE, IDX: ", data, map, dataset, variable, idx)
-    if (jQuery.isEmptyObject(data[map])) {
-      delete data[map]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layertype])) {
-      delete data[map][this.props.layerType]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx])) {
-      delete data[map][this.props.layerType][idx]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset])) {
-      delete data[map][this.props.layerType][idx][dataset]
-    } else if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset][variable])){
-      delete data[map][this.props.layerType][idx][dataset][variable]
-    }
-    return data
   }
 
 

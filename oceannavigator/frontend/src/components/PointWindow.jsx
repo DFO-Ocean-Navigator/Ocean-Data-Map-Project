@@ -570,7 +570,7 @@ export default class PointWindow extends React.Component {
     let line2 = <hr key='2' className='line' />
     let line3 = <hr key='3' className='line' />
 
-    let timeObj = this.state.time
+    let timeObj = new Date(this.state.time)
     timeObj.setUTCMonth(timeObj.getUTCMonth() - 1)
     // Show a single time selector on all tabs except Stick and Virtual Mooring.
     const showTime = this.state.selected !== TabEnum.STICK ||

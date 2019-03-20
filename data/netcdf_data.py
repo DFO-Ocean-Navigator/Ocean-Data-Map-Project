@@ -1,5 +1,5 @@
 import netCDF4
-#import cftime
+import cftime
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
@@ -393,7 +393,11 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
-       
+
+            elif self.interp == 'none':
+                print("INTERP RADIUS: ", self.radius)
+                return pyresample.kd_tree.resample_nearest(input_def, data,
+                    output_def, radius_of_influence=float(150), nprocs=4)
     """
         Finds and returns the xArray.IndexVariable containing
         the time dimension in self._dataset
@@ -484,7 +488,7 @@ class NetCDFData(Data):
             var = self.__get_time_variable()
 
             # Convert timestamps to UTC
-            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
+            t = cftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values

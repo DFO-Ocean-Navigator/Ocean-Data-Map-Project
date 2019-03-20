@@ -1286,11 +1286,22 @@ export default class Map extends React.PureComponent {
     console.warn("MAP INDEX: ", this.props.mapIdx)
     
     if (this.props.mapIdx === 'left') {
-      timeBar = <TimeBarContainer
-          globalUpdate={this.props.updateState}
-          timeSources={this.props.timeSources}
-          allSources={this.props.allSources}
-        ></TimeBarContainer>
+      if ('partner' in this.props) {
+        timeBar = <TimeBarContainer
+        compare={true}
+        globalUpdate={this.props.updateState}
+        timeSources={this.props.timeSources}
+        allSources={this.props.allSources}
+      ></TimeBarContainer>
+      } else {
+        timeBar = <TimeBarContainer
+        compare={false}
+        globalUpdate={this.props.updateState}
+        timeSources={this.props.timeSources}
+        allSources={this.props.allSources}
+      ></TimeBarContainer>  
+      }
+      
     }
     
     return (
