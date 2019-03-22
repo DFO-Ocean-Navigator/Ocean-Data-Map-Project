@@ -130,7 +130,7 @@ export default class Layer extends React.Component {
       data = {}
     }
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
-    
+
     if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && this.props.state.timestamps[time_access] !== undefined) {
       if (this.props.layerType in data) {
         if (this.props.value in data[this.props.layerType]) {
@@ -232,7 +232,6 @@ export default class Layer extends React.Component {
         // Update Variables
         $.when(variable_promise).done(function (variables) {
           let variable
-          console.warn("VARIABLES: ", variables)
           if (variables !== undefined) {
             variable = variables[0]['id']
           }
@@ -449,8 +448,17 @@ export default class Layer extends React.Component {
 }*/
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.state.show && this.props.mapComponent2 !== null) {
+      this.toggleLayer()
+      this.setState({
+        show: false,
+      })
+    }
+
     if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
-      if (this.props.state.timestamps != prevProps.state.timestamps || this.state.current_dataset != prevState.current_dataset || this.state.current_variable != prevState.current_variable) {
+      if (this.props.state.timestamps !== prevProps.state.timestamps || this.state.current_dataset !== prevState.current_dataset || this.state.current_variable !== prevState.current_variable || this.props.state.projection !== prevProps.state.projection) {
+        console.warn("UPDATING COMPONENT")
+        console.warn("PROJECTION: ", this.props.state.projection)
         this.updateIce();
         this.sendData();
       }//} else if (this.props.state.timestamps != prevProps.state.timestamps && this.props.state.timestamps != undefined) {
@@ -471,13 +479,15 @@ export default class Layer extends React.Component {
 
   */
   toggleCompare() {
-
-    if (this.props.layers.includes(this.state.layer)) {
+    let show = false
+    if (this.props.layers.includes(this.state.ice_layer)) {
       this.toggleLayer()
+      show = true
     }
     
     let old_map = this.state.current_map
-    this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    this.props.removeData(old_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+
     let current_map;
 
 
@@ -486,16 +496,22 @@ export default class Layer extends React.Component {
     } else {
       current_map = 'left'
     }
-
     this.setState({
       compare: !this.state.compare,
-      current_map: current_map
+      current_map: current_map,
+      
     }, () => {
       this.changeTimeSource({
         new_dataset: this.state.current_dataset, 
         new_quantum: this.state.current_quantum,
         new_variable: this.state.current_variable,
-        new_map: this.state.current_map
+        new_map: this.state.current_map,
+        old_dataset: this.state.current_dataset,
+        old_variable: this.state.current_variable,
+        old_map: old_map
+      })
+      this.setState({
+        show: show
       })
       this.sendData()
     })
@@ -585,6 +601,7 @@ export default class Layer extends React.Component {
 
     let layer_ice = new ol.layer.Tile(
       {
+        name: 'data',
         preload: Infinity,
         opacity: this.state.opacity / 100,
         source: new ol.source.XYZ({
@@ -668,7 +685,7 @@ export default class Layer extends React.Component {
     }
     // Sets new values for tiles
     props.url = `/api/v1.0/tiles` +
-      `/none` +    //`${this.props.options.interpType}` +
+      `/${this.props.options.interpType}` +
       `/${this.props.options.interpRadius}` +
       `/${this.props.options.interpNeighbours}` +
       `/${this.props.state.projection}` +
@@ -708,7 +725,6 @@ export default class Layer extends React.Component {
     let layers = this.props.layers
 
     if (layers.includes(this.state.ice_layer)) {
-
       let new_layers = layers;
       let ice_layer = this.state.ice_layer;
       this.setState({

@@ -252,8 +252,19 @@ export default class PointWindow extends React.Component {
   // Handles when a tab is selected
   onSelect(key) {
     this.setState({
+      selected: key,
+      
+    }, () => { this.updatePlot() });
   }
 
+  updateScale(e) {
+    let value = e.target.value
+    let key = e.target.id
+    this.setState({
+      [key]: value
+    })
+  }
+  
   render() {
 
     _("Dataset");
@@ -386,8 +397,7 @@ export default class PointWindow extends React.Component {
     )
 
 
-    const label = 
-      <div className='label_container' key='label'>
+    const label = <div className='label_container' key='label'>
         <div className='label_container'>
           <div className='label_header'>
             Plot Title:
@@ -556,8 +566,7 @@ export default class PointWindow extends React.Component {
           multiple
           onUpdate={this.onLocalUpdate}
         />;
-      }
-      else {
+      } else {
         observation_data = this.props.point[0][2].datatypes.map(
           function (o, i) {
             return { id: i, value: o.replace(/ \[.*\]/, "") };
@@ -591,7 +600,7 @@ export default class PointWindow extends React.Component {
       starttime: this.state.starttime,
     };
     let inputs = [];
-    console.warn("SELECTED: ", this.state.selected)
+    console.warn("SELECTED: ", this.state.selected);
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         inputs = [time, line1, dataset, profilevariable, line2, xscale, yscale, label, image_size];
@@ -641,7 +650,6 @@ export default class PointWindow extends React.Component {
     }
 
 
-    console.warn("BEFORE RETURNING")
     return (
       <div className='PointWindow Window'>
         <Nav

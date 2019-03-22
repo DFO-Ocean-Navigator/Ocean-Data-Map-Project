@@ -30,7 +30,7 @@ export default class Contacts extends React.Component {
   }
 
   componentDidMount() {
-    this.getType()
+    //this.getType()
   }
 
   //Adds or remove traffic 

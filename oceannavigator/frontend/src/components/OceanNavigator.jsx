@@ -643,7 +643,7 @@ export default class OceanNavigator extends React.Component {
           ref={(m) => this.mapComponent = m}
           mapIdx='left'
           data={this.state.data['left']}
-          timeSources={this.state.timeSources['left']}
+          timeSources={this.state.timeSources}
           state={this.state}
           layers={this.state.layers['left']}
           action={this.action}
@@ -656,7 +656,7 @@ export default class OceanNavigator extends React.Component {
           ref={(m) => this.mapComponent2 = m}
           mapIdx='right'
           data={this.state.data['right']}
-          timeSources={this.state.timeSources['right']}
+          timeSources={this.state.timeSources}
           state={secondState}
           layers={this.state.layers['right']}
           action={this.action}
@@ -673,7 +673,7 @@ export default class OceanNavigator extends React.Component {
         mapIdx='left'
         layers={this.state.layers}
         data={this.state.data['left']}
-        timeSources={this.state.timeSources['left']}
+        timeSources={this.state.timeSources}
         allSources={this.state.timeSources}
         state={this.state}
         action={this.action}

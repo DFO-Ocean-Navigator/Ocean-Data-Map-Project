@@ -271,11 +271,12 @@ export default class TimeBarContainer extends React.Component {
 
     render() {
         self = this
-        let sources = this.props.allSources
+        let sources = this.props.timeSources
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
         for (let map in sources) {
+            console.warn("MAP IN SOURCES: ", map)
             for (let layer in sources[map]) {
                 //if (self.state.showLayer.includes(layer)) {
                 let new_layer = sources[map][layer]//new Set(this.props.timeSources[layer])

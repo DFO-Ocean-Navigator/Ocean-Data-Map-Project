@@ -201,34 +201,31 @@ def query_datasets_impl(args):
     data = []
     if 'id' not in args:
 
-    	if 'envType' in args:
-       	    for key in DatasetConfig.get_datasets():
-            	config = DatasetConfig(key)
-        	types = get_dataset_envtype(key)
-        	if args.get('envType') in types:
-        	    data.append({
-        	        'id': key,
-     	                'value': get_dataset_name(key),
-                        'quantum': get_dataset_quantum(key),
-                        'help': get_dataset_help(key),
-                        'attribution': get_dataset_attribution(key),
-                    })
-	else:
+        if 'envType' in args:
             for key in DatasetConfig.get_datasets():
                 config = DatasetConfig(key)
-            	    data.append({
-            	        'id': key,
-            	        'value': get_dataset_name(key),
-            	        'quantum': get_dataset_quantum(key),
-            	        'help': get_dataset_help(key),
-            	        'attribution': get_dataset_attribution(key),
-            	    })
+                types = config.envtype
+                
+                if args.get('envType') in types:
+                    data.append({
+                        'id': key,
+                        'value': config.name,
+                        'quantum': config.quantum,
+                        'help': config.help,
+                        'attribution': config.attribution,
+                    })
+        else:
+            for key in DatasetConfig.get_datasets():
+                config = DatasetConfig(key)
+                data.append({
+                    'id': key,
+                    'value': config.name,
+                    'quantum': config.quantum,
+                    'help': config.help,
+                    'attribution': config.attribution,
+                })
     else:
-        for key in get_datasets():
-            data.append({
-                'id': key,
-            })
-    else:
+        for key in DatasetConfig.get_datasets():
             data.append({
                 'id': key,
                 'value': config.name
@@ -400,11 +397,11 @@ def vars_query_impl(args):
         config = DatasetConfig(dataset)
         with open_dataset(config) as ds:
             if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
-    
+
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
                 for v in ds.variables:  #Iterates through all the variables in the dataset
-    
+
                     #If a time period and at least one other unit type is specified
                     if ('time_counter' in v.dimensions or   
                         'time' in v.dimensions) \
@@ -420,27 +417,27 @@ def vars_query_impl(args):
                             continue
                         else:
                             if not config.variable[v].is_hidden:
-                                 print("VARIABLE NOT HIDDEN")
+                                print("VARIABLE NOT HIDDEN")
                                 if 'envType' in args or 'envtype' in args:
                                     if 'envType' in args:
                                         envType = args.get('envType')
                                     else:
                                         envType = args.get('envtype')
-                                    
-                                    if config.variable[v].type == envType:
+
+                                    if config.variable[v].envtype == envType:
                                         data.append({
                                             'id': v.key,
                                             'value': config.variable[v].name,
                                             'scale': config.variable[v].scale,
                                         }) 
-                                     
+
                                 else:
                                     data.append({
                                         'id': v.key,
                                         'value': config.variable[v].name,
                                         'scale': config.variable[v].scale,
                                     })
-                                       
+
                             else:
                                 data.append({
                                     'id': v.key,
