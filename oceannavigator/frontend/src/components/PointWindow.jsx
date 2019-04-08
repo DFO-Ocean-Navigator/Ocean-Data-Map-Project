@@ -8,6 +8,7 @@
 
 import React from "react";
 import { Button, Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
+import moment from "moment-timezone";
 import PlotImage from "./PlotImage.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
@@ -20,6 +21,7 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import ReactLoading from 'react-loading';
 import Spinner from '../images/spinner.gif';
 import DataSelection from './DataSelection.jsx';
+
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -47,7 +49,7 @@ export default class PointWindow extends React.Component {
       depth: props.depth,
       showmap: true,
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
+      //starttime: Math.max(props.time - 24, 0),
       variables: [],
       variable: [props.variable],
       observation_variable: [7],
@@ -60,6 +62,10 @@ export default class PointWindow extends React.Component {
       yminScale: undefined,
       ymaxScale: undefined,
       title: undefined,
+
+      focusedInput: {
+        focused: false,
+      }
     };
 
     if (props.init !== null) {
@@ -73,11 +79,12 @@ export default class PointWindow extends React.Component {
     this.updatePlot = this.updatePlot.bind(this);
     this.updateScale = this.updateScale.bind(this);
     this.updateData = this.updateData.bind(this);
+    this.onTimeUpdate = this.onTimeUpdate.bind(this);
   }
 
   componentDidMount() {
     this._mounted = true;
-
+    console.warn("TIME IN MOUNT: ", this.state.time)
     // If an observation point has been picked, default to the
     // Observation tab.
     if (this.props.point[0][2] !== undefined) {
@@ -86,6 +93,10 @@ export default class PointWindow extends React.Component {
       });
     }
 
+  }
+
+  componentWillUpdate(prevProps, prevState) {
+    console.warn("TIME IN UPDATE: ", this.state.time)
   }
 
   componentWillUnmount() {
@@ -117,7 +128,6 @@ export default class PointWindow extends React.Component {
   }
 */
   populateVariables(dataset) {
-    console.warn(dataset)
     if (dataset === undefined) {
       return
     }
@@ -164,6 +174,21 @@ export default class PointWindow extends React.Component {
     }
   }
 
+  onTimeUpdate(key, value) {
+    
+    if (typeof(key) === typeof('string')) {
+      this.setState({
+        [key]: value
+      })
+    } else {
+      //let date = moment.tz(key, 'GMT')
+      //date.setUTCMonth(date.getUTCMonth() +1)
+      this.setState({
+            time: key
+      })
+    }
+  }
+
   updateData(selected) {
     selected = selected.split(',')
     let data = this.props.data
@@ -171,14 +196,29 @@ export default class PointWindow extends React.Component {
     let layer = selected[0]
     let index = selected[1]
     let dataset = selected[2]
-    let variable = [selected[3]]
+    let variable = ''
 
+    if (selected.length > 4) {
+      for (let v = 3; v < selected.length; v=v+1) {
+        if (variable === '') {
+          variable = selected[v]
+        } else {
+          variable = variable + ',' + selected[v]  
+        }
+      }
+    } else {
+      variable = [selected[3]]
+    }
     let display = data[layer][index][dataset][variable].display
     let colourmap = data[layer][index][dataset][variable].colourmap
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
     let time = data[layer][index][dataset][variable].time
-
+    console.warn("TIME FROM DATA: ", time)
+    //time = moment(time)//.tz('GMT')
+    console.warn("TIME in UPDATE DATE: ", time)
+    //time = moment.tz(time, 'GMT')
+    //time.setUTCMonth(time.getUTCMonth() - 1)
     this.setState({
       layer: layer,
       index: index,
@@ -187,12 +227,11 @@ export default class PointWindow extends React.Component {
 
       display: display,
       colourmap: colourmap,
-      quantum: quantum,
+      dataset_quantum: quantum,
       scale: scale,
       time: time,
     }, () => {
       this.updatePlot()
-      console.warn("DATASET IN POINT: ", dataset)
       this.populateVariables(dataset)
     })
   }
@@ -200,7 +239,8 @@ export default class PointWindow extends React.Component {
   onLocalUpdate(key, value) {
     if (this._mounted) {
       let newState = {};
-
+      
+      
       if (typeof (key) === "string") {
         newState[key] = value;
       }
@@ -223,6 +263,7 @@ export default class PointWindow extends React.Component {
           parentValues.push(newState.depth[0]);
         }
       }
+
 
       if (newState.hasOwnProperty("point")) {
         parentKeys.push("point");
@@ -247,6 +288,7 @@ export default class PointWindow extends React.Component {
         this.props.onUpdate(parentKeys, parentValues);
       }
     }
+    //this.render()
   }
 
   // Handles when a tab is selected
@@ -262,6 +304,133 @@ export default class PointWindow extends React.Component {
     let key = e.target.id
     this.setState({
       [key]: value
+    })
+  }
+
+  updatePlot() {
+
+    let plot_query = {
+      dataset: this.state.dataset,
+      quantum: this.state.dataset_quantum,
+      point: this.props.point,
+      showmap: this.state.showmap,
+      names: this.props.names,
+      size: this.state.size,
+      dpi: this.state.dpi,
+      plotTitle: this.state.plotTitles[this.state.selected - 1],
+    };
+
+    // Manual X-Scale
+    if (this.state.xminScale != '' && this.state.xminScale != undefined) {
+      if (this.state.xmaxScale != '' && this.state.xmaxScale != undefined) {
+        plot_query.xscale = [this.state.xminScale, this.state.xmaxScale]
+
+      }
+    }
+    
+    // Manual Y-Scale
+    if (this.state.yminScale != '' && this.state.yminScale != undefined) {
+      if (this.state.ymaxScale != '' && this.state.ymaxScale != undefined) {
+        plot_query.yscale = [this.state.ymaxScale, this.state.yminScale]
+      }
+    }
+    
+    // Manual Plot Title
+    if (this.state.title != undefined && this.state.title != '') {
+      plot_query.title = this.state.title
+    }
+
+    // Manual X Label
+    if (this.state.xlabel != '' && this.state.xlabel != undefined) {
+      plot_query.xlabel = this.state.xlabel
+    }
+
+    // Manual Y Label
+    if (this.state.ylabel != '' && this.state.ylabel != undefined) {
+      plot_query.ylabel = this.state.ylabel
+    }
+
+    switch (this.state.selected) {
+      case TabEnum.PROFILE:
+        plot_query.type = "profile";
+        plot_query.time = this.state.time;
+        plot_query.variable = this.state.variable;
+        break;
+
+      case TabEnum.CTD:
+        plot_query.type = "profile";
+        plot_query.time = this.state.time;
+        plot_query.variable = "";
+        if (this.state.variables.indexOf("votemper") !== -1) {
+          plot_query.variable += "votemper,";
+        } else if (this.state.variables.indexOf("temp") !== -1) {
+          plot_query.variable += "temp,";
+        }
+        if (this.state.variables.indexOf("vosaline") !== -1) {
+          plot_query.variable += "vosaline";
+        } else if (this.state.variables.indexOf("salinity") !== -1) {
+          plot_query.variable += "salinity";
+        }
+        break;
+
+      case TabEnum.TS:
+        plot_query.type = "ts";
+        plot_query.time = this.state.time;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+        }
+        break;
+
+      case TabEnum.SOUND:
+        plot_query.type = "sound";
+        plot_query.time = this.state.time;
+        break;
+      case TabEnum.OBSERVATION:
+        plot_query.type = "observation";
+        plot_query.observation = this.props.point.map(function (o) {
+          return o[2];
+        });
+
+        plot_query.observation_variable = this.state.observation_variable;
+        plot_query.variable = this.state.variable;
+
+        break;
+      case TabEnum.MOORING:
+        plot_query.type = "timeseries";
+        plot_query.variable = this.state.variable;
+        plot_query.starttime = this.state.starttime;
+        plot_query.endtime = this.state.time;
+        plot_query.depth = this.state.depth;
+        plot_query.colormap = this.state.colormap;
+        plot_query.scale = this.state.scale;
+
+        if (this.state.depth == "all") {
+          // Add Colormap selector
+          inputs.push(
+            <ComboBox
+              key='colormap'
+              id='colormap'
+              state={this.state.colormap}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/colormaps/'
+              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>);
+        }
+
+        break;
+      case TabEnum.STICK:
+        
+        console.warn(this.state.starttime)
+        plot_query.type = "stick";
+        plot_query.variable = this.state.variable;
+        plot_query.starttime = this.state.starttime;
+        plot_query.endtime = this.state.time;
+        plot_query.depth = this.state.depth;
+        break;
+    }
+    this.setState({
+      query: plot_query
     })
   }
   
@@ -335,9 +504,9 @@ export default class PointWindow extends React.Component {
       id='dataset'
       state={this.state.dataset}
       def=''
-      url='/api/datasets/'
+      url='/api/v1.0/datasets/'
       title={_("Dataset")}
-      onUpdate={this.props.onUpdate}
+      onUpdate={this.onLocalUpdate}
     />
 
     const image_size = <ImageSize
@@ -443,51 +612,47 @@ export default class PointWindow extends React.Component {
     let line2 = <hr key='2' className='line' />
     let line3 = <hr key='3' className='line' />
 
-    let timeObj = new Date(this.state.time)
-    timeObj.setUTCMonth(timeObj.getUTCMonth() - 1)
-    // Show a single time selector on all tabs except Stick and Virtual Mooring.
+    let timeObj = this.state.time
+    let starttimeObj = this.state.starttime
+    
     const showTime = this.state.selected !== TabEnum.STICK ||
       this.state.selected !== TabEnum.MOORING;
-    const time = showTime ? <TimePicker
-      key='time'
-      id='time'
-      state={timeObj}
-      def=''
-      quantum={this.state.quantum}
-      url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum}
-      title={_("Time")}
-      onUpdate={this.props.onUpdate}
-    /> : null;
-
-    // Show a start and end time selector for only Stick and Virtual Mooring tabs.
+    
     const showTimeRange = this.state.selected === TabEnum.STICK ||
       this.state.selected === TabEnum.MOORING;
-    const timeRange = showTimeRange ? <div>
-      <TimePicker
-        key='starttime'
-        id='starttime'
-        state={this.state.starttime}
-        def=''
-        quantum={this.state.quantum}
-        url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum}
-        title={_("Start Time")}
-        onUpdate={this.onLocalUpdate}
-        max={this.state.time}
-      />
-      <TimePicker
-        key='time'
-        id='time'
-        state={this.state.time}
-        def=''
-        quantum={this.state.quantum}
-        url={"/api/timestamps/?dataset=" + this.state.dataset + "&quantum=" + this.state.quantum} title={_("End Time")}
-        onUpdate={this.props.onUpdate}
-        min={this.state.starttime}
-      /> </div> : null;
-
+    console.warn("TIME IN POINT: ", timeObj)
+    var time = null
+    var timeRange = null
+    if (this.state.dataset !== undefined) {
+      if (showTimeRange) {
+        timeRange = <TimePicker
+          range={true}
+          key={this.state.time.toISOString()}
+          dataset={this.state.dataset}
+          quantum={this.state.dataset_quantum}
+          startDate={starttimeObj}
+          date={timeObj}
+          onTimeUpdate={this.onTimeUpdate}
+        />
+      }
+      if (showTime) {
+        time = <TimePicker
+        range={false}
+        key={this.state.time.toISOString()}  
+        dataset={this.state.dataset}
+        quantum={this.state.dataset_quantum}
+        startDate={starttimeObj}
+        date={timeObj}
+        onTimeUpdate={this.onTimeUpdate}
+      ></TimePicker> 
+      }
+    }
+    
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    const depthVariableScale = showDepthVariableScale ? <div>
+    var depthVariableScale 
+    if (this.state.dataset !== undefined && showDepthVariableScale) {
+      depthVariableScale = <div>
       <ComboBox
         key='depth'
         id='depth'
@@ -503,7 +668,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.props.onUpdate}
-        url={"/api/variables/?vectors&dataset=" + this.state.dataset}
+        url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -514,11 +679,14 @@ export default class PointWindow extends React.Component {
         def={""}
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")} />
-    </div> : null;
+    </div>
+    }
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
-    const multiDepthVector = showMultiDepthAndVector ? <div>
+    var multiDepthVector
+    if (this.state.dataset !== undefined && showMultiDepthAndVector) {
+      multiDepthVector = <div>
       <ComboBox
         key='variable'
         id='variable'
@@ -537,7 +705,7 @@ export default class PointWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset}
         title={_("Depth")}></ComboBox>
-    </div> : null;
+    </div>}
 
 
     // Create Variable dropdown for Profile and Observation
@@ -600,7 +768,6 @@ export default class PointWindow extends React.Component {
       starttime: this.state.starttime,
     };
     let inputs = [];
-    console.warn("SELECTED: ", this.state.selected);
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         inputs = [time, line1, dataset, profilevariable, line2, xscale, yscale, label, image_size];
@@ -612,9 +779,7 @@ export default class PointWindow extends React.Component {
         inputs = [line1, time, dataset, line2, xscale, yscale, label, image_size];
         break;
       case TabEnum.SOUND:
-        console.warn("SELECTED CASE")
         inputs = [line1, time, line2, dataset, line3, xscale, yscale, label, image_size];
-        console.warn("BEFORE BREAK")
         break;
       case TabEnum.OBSERVATION:
         inputs = [line1, dataset, observation_variable, profilevariable, label, image_size];
@@ -640,7 +805,7 @@ export default class PointWindow extends React.Component {
         break;
     }
 
-    let plot_image = <img src={Spinner} />
+    let plot_image = null;//<img src={Spinner} />
     if (this.state.query != undefined) {
       plot_image = <PlotImage
         query={this.state.query} // For image saving link.
@@ -648,7 +813,6 @@ export default class PointWindow extends React.Component {
         action={this.props.action}
       />
     }
-
 
     return (
       <div className='PointWindow Window'>
@@ -678,7 +842,13 @@ export default class PointWindow extends React.Component {
         </Nav>
         <Row>
           <Col lg={3}>
-            <Panel
+          <Panel
+              key='data_selection'
+              id='data_selection'
+              collapsible
+              defaultExpanded
+              header={_("Layer")}
+              bsStyle='primary'
             >
               {dataSelection}
             </Panel>
@@ -687,7 +857,7 @@ export default class PointWindow extends React.Component {
               id='global_settings'
               collapsible
               defaultExpanded
-              header={_("Global Settings")}
+              header={_("Plot Customization")}
               bsStyle='primary'
             >
               {location}

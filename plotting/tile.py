@@ -122,8 +122,16 @@ def scale(args):
         else:
             variable_unit = config.variable[dataset.variables[variable[0]]].unit
             variable_name = config.variable[dataset.variables[variable[0]]].name
-
-    cmap = colormap.find_colormap(variable_name)
+        
+        if 'colourmap' in args:
+            if args.get('colourmap') == 'default':
+                cmap = colormap.find_colormap(variable[0])
+            else:
+                cmap = colormap.colormaps[args.get('colourmap')]
+        else:
+            cmap = colormap.find_colormap(variable_name)
+    
+        #cmap = colormap.find_colormap(variable_name)
 
     if len(variable) == 2:
         cmap = colormap.colormaps.get('speed')
@@ -289,8 +297,9 @@ def contour(projection, x, y, z, args):
     scale = [float(component) for component in scale.split(',')]
 
     contour_data = []
-
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
+    
+    config = DatasetConfig(dataset_name)
+    with open_dataset(config) as dataset:
 
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
@@ -319,11 +328,11 @@ def contour(projection, x, y, z, args):
                 args.get('radius'),
                 args.get('neighbours')
             ))
-        variables = dataset.variables
-        contour_name = get_variable_name(dataset_name, variables[variables[0]])
-        contour_unit = get_variable_unit(dataset_name, variables[variable[0]])
-        contour_factor = get_variable_scale_factor( dataset_name, variables[variable[0]])
-
+        variables = config.variable[dataset.variables[variable[0]]]
+        contour_name = variables.name
+        contour_unit = variables.unit
+        contour_factor = variables.scale_factor
+        
         if contour_unit.startswith("Kelvin"):
             contour_unit = "Celsius"
             for idx, val in enumerate(contour_data):
@@ -451,8 +460,8 @@ def wind_barbs(projection, x, y, z, args):
     scale = [float(component) for component in scale.split(',')]
 
     data = []
-
-    with open_dataset(get_dataset_url(dataset_name)) as dataset:
+    config = DatasetConfig(dataset_name)
+    with open_dataset(config) as dataset:
         print(dataset.variables[variable[0]].dimensions)
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
@@ -484,10 +493,10 @@ def wind_barbs(projection, x, y, z, args):
                 10 #args.get('neighbours')
             )
             print("AFTER GET AREA")
-            variables = dataset.variables
-            name = get_variable_name(dataset_name, variables[v])
-            unit = get_variable_unit(dataset_name, variables[v])
-            factor = get_variable_scale_factor( dataset_name, variables[v])
+            variables = config.variable[dataset.variables[variable[0]]]
+            name = variables.name
+            unit = variables.unit
+            factor = variables.scale_factor
             d.transpose()
             np.flip(d,0)
             data.append(d)

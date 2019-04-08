@@ -4,7 +4,7 @@ import ol from "openlayers";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
 import WarningBar from "./WarningBar.jsx";
-
+import moment from "moment-timezone";
 import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
@@ -36,7 +36,7 @@ export default class OceanNavigator extends React.Component {
     ReactGA.ga('send', 'pageview')
 
     this.state = {
-
+      _firstLayer: true,
       _foundation: true,
       _environment: true,
       _intelligence: true,
@@ -63,7 +63,7 @@ export default class OceanNavigator extends React.Component {
         },
         {
           id: 'windbarbs',
-          value: 'Wind Barbs',
+          value: 'Wind Barbs (BETA)',
         }
       ],
       
@@ -582,10 +582,11 @@ export default class OceanNavigator extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
     if (this.state.showModal && !prevState.showModal) {
       window.history.replaceState(prevState, null, null);
       window.history.pushState(null, null, null);
-    }
+    }*/
   }
 
   generatePermLink(subquery, permalinkSettings) {
@@ -754,10 +755,12 @@ export default class OceanNavigator extends React.Component {
               names={this.state.names}
               point={this.state.point}
               line={this.state.line}
+              drifter={this.state.drifter}
               showHelp={this.toggleCompareHelp}
               dataset_compare={this.state.dataset_compare}
               onUpdate={this.updateState}
               init={this.state.subquery}  
+              class4={this.state.class4}
               action={this.action}
               swapViews={this.swapViews}
               options={this.state.options}

@@ -117,6 +117,23 @@ def convert(dataset: str, date: str):
     return resp
   except:
     return Response(status=500)
+
+@bp_v1_0.route('/api/v1.0/timeindex/convert/<string:dataset>/<string:index>/')
+def num2date(dataset: str, index: str):
+  #try:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
+    print(ds)
+    print("INDEX: ", index)
+    date = ds.convert_to_date(index)
+    print("DATE: ", date)
+    resp = jsonify({
+      'date': date
+    })
+    return resp
+  #except:
+    #return Response(status=500)
+
 #
 # Unchanged from v0.0
 #
@@ -214,13 +231,15 @@ def plot_v1_0():
     args = request.form
   query = json.loads(args.get('query'))
 
-  config = DatasetConfig(query.get('dataset'))
-  with open_dataset(config) as dataset:
-    if 'time' in query:
-      query['time'] = dataset.convert_to_timestamp(query.get('time'))  
-    else:
-      query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
-      query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
+  if (query['type'] != 'drifter'):
+    config = DatasetConfig(query.get('dataset'))
+    with open_dataset(config) as dataset:
+      if 'time' in query:
+        query['time'] = dataset.convert_to_timestamp(query.get('time'))  
+      else:
+        query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
+        query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
+  
       
     resp = routes.routes_impl.plot_impl(args,query)
 

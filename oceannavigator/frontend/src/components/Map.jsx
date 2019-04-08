@@ -6,6 +6,7 @@ import { Button } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import LayerRearrange from "./LayerRearrange.jsx";
 import TimeBarContainer from "./TimeBarContainer.jsx";
+import moment from "moment-timezone";
 
 require("openlayers/css/ol.css");
 
@@ -86,6 +87,7 @@ app.ResetPanButton = function (opt_options) {
 ol.inherits(app.ResetPanButton, ol.control.Control);
 
 // Variable scale legend
+/*
 app.ScaleViewer = function(opt_options) {
   const options = opt_options || {};
 
@@ -104,7 +106,7 @@ app.ScaleViewer = function(opt_options) {
   });
 };
 ol.inherits(app.ScaleViewer, ol.control.Control);
-
+*/
 proj4.defs("EPSG:32661", "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
 var proj32661 = ol.proj.get("EPSG:32661");
 proj32661.setWorldExtent([-180.0, 60.0, 180.0, 90.0]);
@@ -211,6 +213,7 @@ export default class Map extends React.PureComponent {
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
+        zIndex: 10,
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
         preload: Infinity,
@@ -466,27 +469,45 @@ export default class Map extends React.PureComponent {
       });
       this.infoOverlay.setPosition(coord); // Set balloon position
 
-      this.infoRequest = $.ajax({
-        url: (
-          `/api/data/${this.props.state.dataset}` +
-          `/${this.props.state.variable}` +
-          `/${this.props.state.time}` +
-          `/${this.props.state.depth}` +
-          `/${location[1]},${location[0]}.json`
-        ),
-        success: function(response) {
-          let text = "<p>" + 
-                        "Location: " + response.location[0].toFixed(4) + ", " + response.location[1].toFixed(4);
-          for (let i = 0; i < response.name.length; ++i) {
-            if (response.value[i] != "nan") {
-              text += "<br />" + 
-                            response.name[i] + ": " + response.value[i] + " " + response.units[i];
+      let components = []
+      console.warn("DATA IN MAP: ", this.props.data)
+      let text = "<p>" + "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4) + "</p>";
+      components.push(text);
+      let data = this.props.data
+      for (let type in data) {
+        for (let index in data[type]) {
+          for (let dataset in data[type][index]) {
+            for (let variable in data[type][index][dataset]) {
+              this.infoRequest = $.ajax({
+                url: (
+                  `/api/v1.0/data/${dataset}` +
+                  `/${variable}` +
+                  `/${data[type][index][dataset][variable]['time'].toISOString()}` +
+                  `/${data[type][index][dataset][variable].depth}` +
+                  `/${location[1]},${location[0]}.json`
+                ),
+                success: function(response) {
+                  
+                  for (let i = 0; i < response.name.length; ++i) {
+                    if (response.value[i] != "nan") {
+                      text = "<p><br />" + 
+                                    response.name[i] + ": " + response.value[i] + " " + response.units[i];
+                    }
+                  }
+                  components.push(text)
+                }.bind(this),
+              }).done(
+                () => {
+                  components.push("</p>");
+                  this.infoPopupContent.innerHTML = components;  
+                }
+              );        
             }
           }
-          text += "</p>";
-          this.infoPopupContent.innerHTML = text;
-        }.bind(this),
-      });
+        }
+      }
+      
+
     }.bind(this));
 
     var select = new ol.interaction.Select({
@@ -997,7 +1018,8 @@ export default class Map extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
+    
+    /* LEGACY CODE
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
@@ -1026,7 +1048,7 @@ export default class Map extends React.PureComponent {
     //datalayer.setSource(newSource);
 
     // Update colour scale
-    if (this.scaleViewer != null) {
+    /*if (this.scaleViewer != null) {
       this.map.removeControl(this.scaleViewer);
     }
     this.scaleViewer = new app.ScaleViewer({
@@ -1036,7 +1058,7 @@ export default class Map extends React.PureComponent {
         `/${this.props.scale}.png`
       )
     });
-    this.map.addControl(this.scaleViewer);
+    this.map.addControl(this.scaleViewer);*/
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
       console.warn("MAP LAYERS: ", this.map.getLayers().getArray())
@@ -1299,7 +1321,6 @@ export default class Map extends React.PureComponent {
     }
 
     let timeBar = ''
-    console.warn("MAP INDEX: ", this.props.mapIdx)
     
     if (this.props.mapIdx === 'left') {
       if ('partner' in this.props) {

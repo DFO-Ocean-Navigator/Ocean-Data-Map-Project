@@ -397,14 +397,16 @@ def vars_query_impl(args):
         config = DatasetConfig(dataset)
         with open_dataset(config) as ds:
             if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
-
+                v = []
+                v.append(ds.variables)
+                #//variables.append(config.vector_variables)
+                #print("Variables: ", variables)
                 # 'v' is a Variable in the Dataset
                 #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
                 for v in ds.variables:  #Iterates through all the variables in the dataset
-
                     #If a time period and at least one other unit type is specified
                     if ('time_counter' in v.dimensions or   
-                        'time' in v.dimensions) \
+                        'time' in v.dimensions or 'time1' in v.dimensions or 'time2' in v.dimensions) \
                             and ('y' in v.dimensions or
                                  'yc' in v.dimensions or
                                  'node' in v.dimensions or
@@ -417,7 +419,6 @@ def vars_query_impl(args):
                             continue
                         else:
                             if not config.variable[v].is_hidden:
-                                print("VARIABLE NOT HIDDEN")
                                 if 'envType' in args or 'envtype' in args:
                                     if 'envType' in args:
                                         envType = args.get('envType')
@@ -444,7 +445,29 @@ def vars_query_impl(args):
                                     'value': config.variable[v].name,
                                     'scale': config.variable[v].scale,
                                 })
-     
+        
+        if 'envType' in args or 'envtype' in args:
+            if 'envType' in args:
+                envType = args.get('envType')
+            else:
+                envType = args.get('envtype')
+            
+            for variable in config.vector_variables:
+                if (config.variable[variable].envtype == envType):
+                    data.append({
+                        'id': variable,
+                        'value': config.variable[variable].name,
+                        'scale': config.variable[variable].scale,
+                    })
+        else:
+            for variable in config.vector_variables:
+            
+                data.append({
+                    'id': variable,
+                    'value': config.variable[variable].name,
+                    'scale': config.variable[variable].scale,
+                })
+
     # END OF DATASET LOOP
         
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
@@ -458,15 +481,15 @@ def all_vars_query_impl(args):
     print('all_vars_query_impl')
 
     variables = dict()
-    for dataset in get_datasets():
-
-        with open_dataset(get_dataset_url(dataset)) as ds:
+    for dataset in DatasetConfig.get_datasets():
+        config = DatasetConfig(dataset)
+        with open_dataset(config) as ds:
             for v in ds.variables:
-                if not is_variable_hidden(dataset, v):
+                if not config.variable[v].is_hidden:
                     #print("VARIABLE TYPE: ", get_variable_type(dataset, v)),
-                    var_name = get_variable_name(dataset, v)
+                    var_name = config.variable[v].name
                     if var_name not in variables:
-                        var_type = get_variable_type(dataset, v)
+                        var_type = config.variable[v].envtype
         
                         if not ('env_type' in args and var_type not in args['env_type']):
                             variables[var_name] = {
@@ -476,7 +499,7 @@ def all_vars_query_impl(args):
                                 'info': {
                                     dataset: {
                                         'id': v.key,
-                                        'scale': get_variable_scale(dataset, v),
+                                        'scale': config.variable[v].scale,
                                     }
                                 }    
                             }
@@ -486,7 +509,7 @@ def all_vars_query_impl(args):
 
                         variables[var_name]['info'][dataset] = {
                            'id': v.key,
-                           'scale': get_variable_scale(dataset, v),
+                           'scale': config.variable[v].scale,
                         }
                         print("ELSE")
     

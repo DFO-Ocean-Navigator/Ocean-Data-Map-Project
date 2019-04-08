@@ -1152,6 +1152,13 @@
                 "scale": [
                     0,
                     30
+                ],
+                "zero_centered": "true",
+                "dims": [
+                    "time1",
+                    "height_above_ground1",
+                    "lat",
+                    "lon"
                 ]
             },
             "temperature_height_above_ground": {
@@ -1162,6 +1169,7 @@
                     -5,
                     30
                 ],
+                "zero_centered": "false",
                 "equation": "temperature_height_above_ground - 273.15",
                 "dims": [
                     "time",
@@ -1178,7 +1186,8 @@
                     90,
                     105
                 ],
-                "scale_factor": 1e-3
+                "scale_factor": 1e-3,
+                "zero_centered": "false"
             }
         }
     }

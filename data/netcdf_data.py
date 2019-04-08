@@ -53,8 +53,9 @@ class NetCDFData(Data):
         time_var = self.__get_time_variable()
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
+        print("TIME RANGE: ", time_range)
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
-
+        print("TIME RANGE(2): ", time_range)
         if len(time_range) == 1:    #Single Date
             return int(str(time_range[0][0]))
         else:                          #Multiple Dates
@@ -64,8 +65,33 @@ class NetCDFData(Data):
                 new_date = {x : int(str(time_range[i][0]))}
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
+            print("FORMATED DATE: ", date_formatted)
             return date_formatted
         
+
+    """
+        Converts a time index to its corresponding date
+
+        requires: time index
+
+    """
+    def convert_to_date(self, index):
+        
+        times = []
+        indexes = index.split(',')
+        
+        for idx, date in enumerate(self.timestamps):
+                        # Only compare year, month, day.
+                        # Some daily/hourly average datasets have an 
+                        # hour and minute offset that messes up 
+                        # the index search.
+                  
+                        if str(idx) in indexes:
+                            times.append(date.date())
+        
+        return times
+
+
     """
         Subsets a netcdf file with all depths
     """
@@ -470,7 +496,6 @@ class NetCDFData(Data):
             l = []
             # Get "data variables" from dataset
             variables = list(self._dataset.data_vars.keys())
-
             for name in variables:
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray

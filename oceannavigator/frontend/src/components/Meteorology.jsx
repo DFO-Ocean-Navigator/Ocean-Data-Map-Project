@@ -203,8 +203,8 @@ render() {
   for (let idx in this.state.layers) {
     layers.push(<Layer
       index={idx}
-      key={this.state.layers[idx]}
-      value={this.state.layers[idx]}
+      key={idx}
+      value={idx}
       state={this.props.state}
       layers={this.props.state.layers}
       removeLayer={this.removeLayer}

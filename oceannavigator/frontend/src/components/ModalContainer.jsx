@@ -31,13 +31,14 @@ export default class ModalContainer extends React.Component {
     let layer = Object.keys(this.props.data)[0]
     let modalTitle = ''
     let modalContent = ''
-
+    let data =  this.props.data['left']
+    
     // Selects the type of Shape / Obs
     switch(this.props.modal) {
         case "point":
         modalContent = (
           <PointWindow
-            data={this.props.data['left']}  // Non compare data
+            data={data}  // Non compare data
             data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
             //dataset={this.props.data[layer]['dataset']}
             //quantum={this.props.data[layer]['quantum']}
@@ -66,7 +67,7 @@ export default class ModalContainer extends React.Component {
       case "line":
         modalContent = (
           <LineWindow
-            data={this.props.data['left']}   // Non compare data
+            data={data}   // Non compare data
             data_compare={'right' in this.props.data ? this.props.data['right']: {}}
             //dataset_0={this.state.dataset}
             //quantum={this.state.quantum}
@@ -96,7 +97,7 @@ export default class ModalContainer extends React.Component {
       case "area":
         modalContent = (
           <AreaWindow
-            data={this.props.data['left']}
+            data={data}
             data_compare={'right' in this.props.data ? this.props.data['right']: {}}
             //dataset_0={this.state}
             area={this.props.area}
@@ -123,16 +124,16 @@ export default class ModalContainer extends React.Component {
       case "drifter":
         modalContent = (
           <DrifterWindow
-            data={this.props.data['left']}
+            data={data}
             //dataset={this.state.dataset}
             //quantum={this.state.dataset_quantum}
-            drifter={this.state.drifter}
+            drifter={this.props.drifter}
             //variable={this.state.variable}
             //scale={this.state.scale}
-            names={this.state.names}
+            names={this.props.names}
             //depth={this.state.depth}
             onUpdate={this.updateState}
-            init={this.state.subquery}
+            init={this.props.subquery}
             action={this.action}
           />
         );
@@ -142,8 +143,8 @@ export default class ModalContainer extends React.Component {
       case "class4":
         modalContent = (
           <Class4Window
-            class4id={this.state.class4}
-            init={this.state.subquery}
+            class4id={this.props.class4}
+            init={this.props.subquery}
             action={this.action}
           />
         );

@@ -200,16 +200,51 @@
         
 
         .yearContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 30px;
+            left: -28px;
+            bottom: -1px;
+            transform-origin: top right;
             height: 655px;
 
         }
         .monthContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 30px;
+            left: 30px;
+            bottom: 32px;
+            transform-origin: top right;
             height: 596px;
+            
         }
         .dayContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 31px;
+            left: 82px;
+            bottom: 33px;
+            transform-origin: top right;
             height: 545px; 
         }
         .timecontainer {
+            
             height: 100%;
             width: 658px;
             display: inline-block;
@@ -236,14 +271,15 @@
             }
         }
         .selectedContainer {
-            display: inline;
+            display: block;
+            width: fit-content;
             .yearButton {
                 vertical-align: top;
                 border-radius: 50px;
                 width: 60px;
                 height: 33px;
                 padding: 0px;
-                margin-top: 3px;
+                //margin-top: 3px;
                 color: white;
                 background-color: #006687
             }
@@ -255,57 +291,49 @@
                 vertical-align: top;
                 color: white;
                 background-color: #006687;
-                margin-top: 3px;
+                //margin-top: 3px;
             }
         }
 
-        .buttonContainer {
-            
-            overflow: auto;
-            overflow-x: hidden;
-            transform: rotate(-90deg);
-            margin-left: -45px;
+        .yearButtons {
+            transform: rotate(90deg);
+            vertical-align: bottom;
+            border-radius: 50px;
             position: relative;
             display: inline-block;
-            width: 47px;
-            //height: 649px;
-            vertical-align: bottom;
-            transform-origin: top right;
-            //transform-origin: right top;
-        
-            
-            
-            .yearButtons {
-                transform: rotate(90deg);
-                vertical-align: bottom;
-                border-radius: 50px;
-                display: inline-block;
-                width: 60px;
-                height: 33px;
-                padding: 0px;
-                margin-top: 28px;
-            }
-            .monthButtons {
-                transform: rotate(90deg);
-                vertical-align: bottom;
-                border-radius: 50px;
-                display: inline-block;
-                width: 50px;
-                height: 33px;
-                padding: 0px;
-                margin-top: 28px;
-            }
-            .dayButtons {
-                transform: rotate(90deg);
-                vertical-align: bottom;
-                border-radius: 50px;
-                display: inline-block;
-                width: 50px;
-                height: 33px;
-                padding: 0px;
-                margin-top: 28px;
-            }
+            width: 60px;
+            height: 31px;
+            left: -15px;
+            top: 15px;
+            padding: 0px;
         }
+        .monthButtons {
+            transform: rotate(90deg);
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 30px;
+            left: -10px;
+            //top: 15px;
+            padding: 0px;
+            margin-top: 25px;
+            top: -10px;
+        }
+        .dayButtons {
+            transform: rotate(90deg);
+            vertical-align: bottom;
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 31px;
+            padding: 0px;
+            margin-top: 28px;
+            top: -18px;
+            left: -10px;
+        }
+        
         
 
         .endTimeContainer {

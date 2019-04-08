@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import moment from 'moment-timezone';
 
 export default class Timeline extends React.Component {
 
@@ -57,8 +58,8 @@ export default class Timeline extends React.Component {
         let one_day=1000*60*60;
         
         // Convert both dates to milliseconds
-        let date1_ms = date1.getTime();
-        let date2_ms = date2.getTime();
+        let date1_ms = date1.valueOf();
+        let date2_ms = date2.valueOf();
         
         // Calculate the difference in milliseconds
         let difference_ms = date2_ms - date1_ms;
@@ -72,8 +73,8 @@ export default class Timeline extends React.Component {
         let one_day=1000*60*60*24;
         
         // Convert both dates to milliseconds
-        let date1_ms = date1.getTime();
-        let date2_ms = date2.getTime();
+        let date1_ms = date1.valueOf();
+        let date2_ms = date2.valueOf();
         
         // Calculate the difference in milliseconds
         let difference_ms = date2_ms - date1_ms;
@@ -84,34 +85,40 @@ export default class Timeline extends React.Component {
 
 
     render() {
-
+        console.warn("TIMELINE RENDER")
         let markers = []
         let offset = 0
         // Calculate the number of pixels between each day marker
         let num_days = this.daysBetween(this.props.startTime, this.props.endTime);
+        console.warn("NUMBER OF DAYS: ", num_days)
         let offset_val = ((this.props.length) / (num_days + 1))
         //let offset_val = 658 * 0.85/10;
-        let marker_date = new Date(this.props.startTime)
-        //marker_date.setDate(marker_date.getDate() + 1)
+        let marker_date = this.props.startTime
+        //marker_date.setDate(marker_date.getUTCDate() + 1)
         for (let i = 1; i <= num_days; i += 1) {
+            console.warn("MARKER DATE: ", marker_date.format('YYYY/MM/DD'))
             offset = (offset_val * i) - (2 * i)
             let label_offset = {left: offset + 3}
             offset = {left: offset}
+            console.warn("MARKER DAY: ", marker_date.get('days'))
             markers.push(
                 <div className='marker_container' key={i}>
                     <div className='time_marker' style={offset}></div>
-                    <div className='marker_value' style={label_offset}>{marker_date.getDate()}</div>
-                    <div className='marker_day' style={label_offset}>{this.state.day_fromnum[marker_date.getDay()]}</div>
+                    <div className='marker_value' style={label_offset}>{marker_date.format('DD')}</div>
+                    <div className='marker_day' style={label_offset}>{marker_date.format('ddd')}</div>
                 </div>
             )
-            marker_date.setDate(marker_date.getDate() + 1)
+            marker_date.add(1, 'days')
+            //marker_date.setUTCDate(marker_date.getUTCDate() + 1)
         }
 
         let currentTime = ''
         if (this.state.quantum === 'hour') {
-            currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate() + ' : ' + this.props.currentTime.getUTCHours() + 'z'
+            currentTime = this.props.currentTime.format('YYYY/MM/DD[ : ]HH[z]')
+            //currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate() + ' : ' + this.props.currentTime.getUTCHours() + 'z'
         } else {
-            currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
+            currentTime = this.props.currentTime.format('YYYY/MM/DD')
+            //currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
         }
         //console.warn("DAYS BETWEEN: ", this.daysBetween(this.props.currentTime, this.props.startTime))
         //let current_offset = 0
@@ -119,8 +126,11 @@ export default class Timeline extends React.Component {
         let hours_between = this.hoursBetween(this.props.startTime, this.props.endTime)
         
         offset_val = ((this.props.length) / (hours_between + 1))
-        let time = new Date(this.props.startTime)
-        time.setUTCHours(0)
+        let time = moment.tz(this.props.startTime, 'GMT')
+        //time.setUTCHours(0)
+        time.set({
+            hour: 0
+        })
         hours_between = this.hoursBetween(time, this.props.currentTime)
         let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
         let current_style = {
