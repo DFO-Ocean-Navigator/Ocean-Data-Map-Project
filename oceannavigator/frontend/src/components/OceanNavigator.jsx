@@ -204,9 +204,7 @@ export default class OceanNavigator extends React.Component {
 
           if (this.state.syncRanges) {
             newState.scale = value;
-            newState.scale_1 = value;          <WarningBar
-            showWarningInfo={this.showBugsModal}
-          />
+            newState.scale_1 = value;
           }
           break;
         case "dataset_0":
