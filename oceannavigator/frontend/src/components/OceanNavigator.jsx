@@ -2,6 +2,7 @@ import React from "react";
 import Map from "./Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
+import WarningBar from "./WarningBar.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -203,7 +204,9 @@ export default class OceanNavigator extends React.Component {
 
           if (this.state.syncRanges) {
             newState.scale = value;
-            newState.scale_1 = value;
+            newState.scale_1 = value;          <WarningBar
+            showWarningInfo={this.showBugsModal}
+          />
           }
           break;
         case "dataset_0":
@@ -659,6 +662,11 @@ export default class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
           />
+          {/*
+          <WarningBar
+            showWarningInfo={this.showBugsModal}
+          />
+          */}
           {map}
         </div>
 
