@@ -20,7 +20,7 @@ export default class Contacts extends React.Component {
 
     this.state = {
       currentTab: 1,
-      trafficTypes: ['Fishing', 'Cargo'],
+      trafficTypes: ['Marine Traffic'],
       displayTraffic: true
     };
 
@@ -201,10 +201,12 @@ export default class Contacts extends React.Component {
                 >
 
                 {availableTypes}
-
-                <Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
+{/*
+<Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
                     Remove Contacts
                 </Button>
+*/}
+                
             </Panel>
         </div>
     );

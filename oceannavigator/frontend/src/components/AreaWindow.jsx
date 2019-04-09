@@ -142,7 +142,7 @@ export default class AreaWindow extends React.Component {
     let colourmap = data[layer][index][dataset][variable].colourmap
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
-    let time = moment.tz(data[layer][index][dataset][variable].time, 'GMT')
+    let time = data[layer][index][dataset][variable].time
     
     this.setState({
       data: {

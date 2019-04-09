@@ -75,7 +75,7 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animate() {
-        let min = new Date(this.findMin(this.state.startTimes))
+        let min = this.findMin(this.state.startTimes)
         let max = this.findMax(this.state.endTimes)
 
         this.animateConsecutive(min, max);
@@ -117,6 +117,11 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
+        console.warn("ANIMATE CONSECUTIVE")
+        console.warn("MIN: ", min)
+        console.warn("MAX: ", max)
+        console.warn("QUANTUM: ", quantum)
+        
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
@@ -129,8 +134,10 @@ export default class TimeBarContainer extends React.Component {
         } else if (quantum === 'min') {
             increment = 5       // Time increment in minutes
         }
+        console.warn("INCREMENT: ", increment)
 
         if (min.valueOf() >= max.valueOf()) {
+            console.warn("END OF ANIMATION")
             this.setState({
                 animating: false,
                 times: this.state.startTimes,
@@ -139,9 +146,11 @@ export default class TimeBarContainer extends React.Component {
         }
 
         let in_range = false;
+        // Deep copy times object
         let times = jQuery.extend({}, this.state.times)
+        
         for (let dataset in times) {
-            times[dataset] = moment.tz(times[dataset], 'GMT')
+            times[dataset] = moment(times[dataset])
         }
         for (let dataset in times) {
             if ((min.valueOf() > this.state.startTimes[dataset].valueOf() || min.valueOf() === this.state.startTimes[dataset].valueOf()) && min.valueOf() < this.state.endTimes[dataset].valueOf()) {
@@ -158,7 +167,7 @@ export default class TimeBarContainer extends React.Component {
             let new_times = {}
             for (let dataset in times) {
                 if (this.state.endTimes[dataset].valueOf() > min.valueOf()) {
-                    new_times[dataset] = moment.tz(times[dataset], 'GMT')
+                    new_times[dataset] = moment(times[dataset])
                 }
                 min = this.findMin(new_times);
             }

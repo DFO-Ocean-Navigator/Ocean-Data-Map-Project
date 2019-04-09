@@ -582,11 +582,11 @@ export default class OceanNavigator extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
+    
     if (this.state.showModal && !prevState.showModal) {
       window.history.replaceState(prevState, null, null);
       window.history.pushState(null, null, null);
-    }*/
+    }
   }
 
   generatePermLink(subquery, permalinkSettings) {

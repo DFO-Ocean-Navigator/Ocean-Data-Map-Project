@@ -30,7 +30,11 @@ export default class Timeline extends React.Component {
         this.hoursBetween = this.hoursBetween.bind(this);
     }
 
+    /*
+
+    */
     componentDidMount() {
+
         if (this.props.time_inc != undefined) {
             let inc = this.props.time_inc.split('-')
             this.setState({
@@ -42,8 +46,13 @@ export default class Timeline extends React.Component {
         
     }
 
+    /*
+
+    */
     componentDidUpdate(prevProps, prevState) {
+        console.warn("TIME INCREMENT: ", this.props.time_inc)
         if (prevProps.time_inc != this.props.time_inc) {
+            console.warn("TIME INCREMENT UPDATED")
             let inc = this.props.time_inc.split('-')
             this.setState({
                 inc: inc,
@@ -53,6 +62,9 @@ export default class Timeline extends React.Component {
         }
     }
 
+    /*
+
+    */
     hoursBetween( date1, date2 ) {
         //Get 1 hour in milliseconds
         let one_day=1000*60*60;
@@ -68,6 +80,9 @@ export default class Timeline extends React.Component {
         return Math.round(difference_ms/one_day); 
     }
 
+    /*
+
+    */
     daysBetween( date1, date2 ) {
         //Get 1 day in milliseconds
         let one_day=1000*60*60*24;
@@ -83,24 +98,22 @@ export default class Timeline extends React.Component {
         return Math.round(difference_ms/one_day); 
     }
 
-
     render() {
-        console.warn("TIMELINE RENDER")
         let markers = []
         let offset = 0
         // Calculate the number of pixels between each day marker
         let num_days = this.daysBetween(this.props.startTime, this.props.endTime);
-        console.warn("NUMBER OF DAYS: ", num_days)
         let offset_val = ((this.props.length) / (num_days + 1))
+        console.warn("OFFSET VALUE: ", offset_val)
         //let offset_val = 658 * 0.85/10;
         let marker_date = this.props.startTime
         //marker_date.setDate(marker_date.getUTCDate() + 1)
         for (let i = 1; i <= num_days; i += 1) {
-            console.warn("MARKER DATE: ", marker_date.format('YYYY/MM/DD'))
             offset = (offset_val * i) - (2 * i)
+            console.warn("OFFSET: ", offset)
             let label_offset = {left: offset + 3}
             offset = {left: offset}
-            console.warn("MARKER DAY: ", marker_date.get('days'))
+          
             markers.push(
                 <div className='marker_container' key={i}>
                     <div className='time_marker' style={offset}></div>
@@ -108,45 +121,44 @@ export default class Timeline extends React.Component {
                     <div className='marker_day' style={label_offset}>{marker_date.format('ddd')}</div>
                 </div>
             )
+        
             marker_date.add(1, 'days')
-            //marker_date.setUTCDate(marker_date.getUTCDate() + 1)
         }
 
         let currentTime = ''
         if (this.state.quantum === 'hour') {
             currentTime = this.props.currentTime.format('YYYY/MM/DD[ : ]HH[z]')
-            //currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate() + ' : ' + this.props.currentTime.getUTCHours() + 'z'
         } else {
             currentTime = this.props.currentTime.format('YYYY/MM/DD')
-            //currentTime = this.props.currentTime.getUTCFullYear() + '/' + this.props.currentTime.getUTCMonth() + '/' + this.props.currentTime.getUTCDate()
         }
-        //console.warn("DAYS BETWEEN: ", this.daysBetween(this.props.currentTime, this.props.startTime))
-        //let current_offset = 0
         
         let hours_between = this.hoursBetween(this.props.startTime, this.props.endTime)
         
         offset_val = ((this.props.length) / (hours_between + 1))
         let time = moment.tz(this.props.startTime, 'GMT')
-        //time.setUTCHours(0)
+        
         time.set({
             hour: 0
         })
-        hours_between = this.hoursBetween(time, this.props.currentTime)
+        console.warn("CURRENT TIME: ", this.props.currentTime)
+        console.warn("END TIME: ", time)
+        
+        hours_between = this.hoursBetween(this.props.currentTime, time)
+        console.warn("HOURS BETWEEN: ", hours_between)
         let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
-        let current_style = {
-            left: current_offset
-        }
+        console.warn("CURRENT OFFSET: ", current_offset)
+        let current_style = { left: current_offset }
 
         let timeline_container = {width: this.props.length}
 
         return(
-        <div className='timeline_container' style={timeline_container}>
-            <div className='time_current' style={current_style}>
+            <div className='timeline_container' style={timeline_container}>
+                <div className='time_current' style={current_style}>
+                </div>
+                <div className='time_bar'>
+                    {markers}
+                </div>
             </div>
-            <div className='time_bar'>
-                {markers}
-            </div>
-        </div>
         )
     }
 
