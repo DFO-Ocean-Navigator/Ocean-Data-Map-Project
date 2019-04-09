@@ -47,15 +47,17 @@ export default class TimePicker extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    return
+    this.populate(this.props);
   }
 
   componentWillUnmount() {
-    return
+    this._mounted = false;
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    return
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.url !== this.props.url || nextProps.min !== this.props.min || nextProps.max !== this.props.max) {
+      this.populate(nextProps);
+    }
   }
 
   populate(props) {
@@ -223,7 +225,7 @@ export default class TimePicker extends React.Component {
       })
     
       let date = new Date()
-      date.setHours(0,0,0,0)
+      date.setUTCHours(0,0,0,0)
       let today = date.getUTCFullYear() + '-' + date.getUTCMonth() + 1 + '-' + date.getUTCDate() + 'T' + '00:00:00+00:00'
       
       //Requesting time to timestamp conversion

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotting.plotter as pl
 from netCDF4 import Dataset
-from oceannavigator.dataset_config import get_dataset_url
+from oceannavigator import DatasetConfig
 import pint
 
 
@@ -65,8 +65,9 @@ class PointPlotter(pl.Plotter):
 
     def subtract_other(self, data):
         if self.compare:
+            compare_config = DatasetConfig(self.compare['dataset'])
             with Dataset(
-                get_dataset_url(self.compare['dataset']), 'r'
+                compare_config.url, 'r'
             ) as dataset:
                 cli = self.get_data(
                     dataset, self.compare['variables'], self.compare['time']
@@ -103,23 +104,6 @@ class PointPlotter(pl.Plotter):
         for idx, factor in enumerate(self.scale_factors):
             if factor != 1.0:
                 data[:, idx, :] = np.multiply(data[:, idx, :], factor)
-
-    def kelvin_to_celsius(self, units, data):
-        ureg = pint.UnitRegistry()
-        for idx, unit in enumerate(units):
-            try:
-                u = ureg.parse_units(unit.lower())
-            except:
-                u = ureg.dimensionless
-
-            if u == ureg.kelvin:
-                units[idx] = "Celsius"
-                data[:, idx, :] = ureg.Quantity(
-                    data[:, idx, :],
-                    u
-                ).to(ureg.celsius).magnitude
-
-        return (units, data)
 
     def apply_scale_factors(self, data):
         for idx, factor in enumerate(self.scale_factors):

@@ -108,7 +108,7 @@ export default class IceComboBox extends React.Component {
 
   render() {
     
-    let self = this
+    let self = this;
     const options = this.state.idx_list.map(function(o) {
       var opts = {
         key: self.state.id_list[o],
@@ -121,13 +121,20 @@ export default class IceComboBox extends React.Component {
       return React.createElement("option", opts, self.state.value_list[o]);    //Creates Option that was found
     });
 
-    let title = undefined
-    if (this.props.title != undefined) {
-      title = <h1 className='comboBoxTitle'>{this.props.title}</h1>
+    let title = undefined;
+    if (this.props.title !== undefined) {
+      title = <h1 className='comboBoxTitle'>{this.props.title}</h1>;
+    }
+
+    let div_class;
+    if (this.props.className === undefined) {
+      div_class = 'ComboBox input'
+    } else {
+      div_class = 'ComboBox input ' + this.props.className
     }
 
     return (
-      <div key='ice' className='ComboBox input'>
+      <div key='ice' className={div_class}>
         {title}
         <FormControl
             componentClass="select"

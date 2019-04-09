@@ -13,7 +13,7 @@ import base64
 import pytz
 import hashlib
 from data import open_dataset
-from oceannavigator.dataset_config import get_dataset_url
+from oceannavigator import DatasetConfig
 
 
 def time_query_conversion(dataset, index):
@@ -26,8 +26,8 @@ def time_query_conversion(dataset, index):
     """
 
     
-    with open_dataset(get_dataset_url(dataset)) as ds:
-
+    config = DatasetConfig(dataset)
+    with open_dataset(config) as ds:
         try:
             date = ds.timestamps[index]
             return date.replace(tzinfo=pytz.UTC).isoformat()

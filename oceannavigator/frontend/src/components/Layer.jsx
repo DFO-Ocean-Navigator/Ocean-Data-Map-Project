@@ -9,6 +9,7 @@ import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import DisplayType from "./DisplayType.jsx";
 import ol from "openlayers";
+import moment from "moment-timezone";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
@@ -32,13 +33,13 @@ export default class Layer extends React.Component {
 
       // DISPLAY INFO
       colourmaps_val: [],
-      opacity: 50,
+      opacity: 100,
 
       // CURRENT STATE
       current_depth: 0,
       current_quantum: '',
       current_colourmap: ['default'],
-      current_display: 'contours',
+      current_display: 'colour',
       current_variable: undefined,
       current_dataset: undefined,
       current_scale: '-5,30',
@@ -123,6 +124,7 @@ export default class Layer extends React.Component {
     
   */
   sendData(update) {
+
     let data
     if (this.state.current_map in this.props.state.data) {
       data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
@@ -130,27 +132,16 @@ export default class Layer extends React.Component {
       data = {}
     }
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
-    
+
     if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && this.props.state.timestamps[time_access] !== undefined) {
       if (this.props.layerType in data) {
         if (this.props.value in data[this.props.layerType]) {
-          if (this.state.current_dataset in data[this.props.layerType][this.props.value]) {
-            if (this.state.current_variable in data[this.props.layerType][this.props.value][this.state.current_dataset] && update === undefined) {
-              let frequency = data[this.props.layerType][this.props.value][this.state.current_dataset][this.state.current_variable].frequency
-              data[this.props.layerType][this.props.value][this.state.current_dataset][this.state.current_variable].frequency = frequency + 1
-            } else {
-              data[this.props.layerType][this.props.value][this.state.current_dataset][this.state.current_variable] = {
-                frequency: 1,
-                quantum: this.state.current_quantum,
-                time: this.props.state.timestamps[time_access],
-                scale: this.state.current_scale,
-                display: this.state.current_display,
-                colourmap: this.state.current_colourmap,
-                depth: this.state.current_depth,
-              }
-            }
-          } else {
-            data[this.props.layerType][this.props.value][this.state.current_dataset] = {
+          if (data[this.props.layerType] !== undefined || data[this.props.layerType] !== {}) {
+            data[this.props.layerType][this.props.value] = undefined
+            delete[this.props.layerType][this.props.value] 
+          }
+          data[this.props.layerType][this.props.value] = {
+            [this.state.current_dataset]: {
               [this.state.current_variable]: {
                 frequency: 1,
                 quantum: this.state.current_quantum,
@@ -158,11 +149,10 @@ export default class Layer extends React.Component {
                 scale: this.state.current_scale,
                 display: this.state.current_display,
                 colourmap: this.state.current_colourmap,
-                depth: this.state.current_depth,
+                depth: this.state.current_depth
               }
             }
           }
-
         } else {
           data[this.props.layerType][this.props.value] = {
             [this.state.current_dataset]: {
@@ -219,8 +209,11 @@ export default class Layer extends React.Component {
     if (dataset === undefined) {
       const dataset_promise = $.ajax("/api/v1.0/datasets/?envType=" + this.props.layerType).promise();
       $.when(dataset_promise).done(function (datasets) {
+        
+        
         dataset = datasets[0]['id']
         quantum = datasets[0]['quantum']
+        
         this.setState({
           datasets: datasets,
           current_dataset: dataset,
@@ -231,20 +224,30 @@ export default class Layer extends React.Component {
 
         // Update Variables
         $.when(variable_promise).done(function (variables) {
-          let variable
-          console.warn("VARIABLES: ", variables)
-          if (variables !== undefined) {
-            variable = variables[0]['id']
+          var new_variable
+          if (this.props.state._firstLayer && variables !== undefined) {
+            for (let variable in variables) {
+              console.warn("VARIABLE: ", variable)
+              console.warn("VAR: ", variables[variable]['id'])
+              if (variables[variable]['id'] === 'votemper') {
+                console.warn("FOUND");
+                new_variable = 'votemper';
+                break;
+              }
+            }
+          } else if (variables !== undefined) {
+            console.warn("UPDATING VARIABLE AGAIN")
+            new_variable = variables[0]['id']
           }
-          
+          console.warn("VARIABLE: ", new_variable)
           this.setState({
             variables: variables,
-            current_variable: variable,
+            current_variable: new_variable,
           }, () => {
             this.changeTimeSource({
               new_dataset: dataset, 
               new_quantum: quantum, 
-              new_variable: variable, 
+              new_variable: new_variable, 
               old_dataset: old_dataset, 
               old_variable: old_variable, 
               new_map: this.state.current_map, 
@@ -253,12 +256,14 @@ export default class Layer extends React.Component {
           })
 
           $.ajax({
-            url: "/api/v1.0/depth/?dataset=" + dataset + "&variable=" + variable,
+            url: "/api/v1.0/depth/?dataset=" + dataset + "&variable=" + new_variable,
             success: function (depths) {
               this.setState({
                 depths: depths,
                 current_depth: 0,
-              }, () => { this.sendData(); })
+              }, () => {
+                this.sendData(); 
+              })
             }.bind(this),
             error: function () {
               console.warn("FAILED TO LOAD DEPTHS")
@@ -289,6 +294,7 @@ export default class Layer extends React.Component {
 
       // Update Variables
       $.when(variable_promise).done(function (variables) {
+        console.warn("UPDATING VARIABLE")
         let variable = variables[0]['id']
         const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + dataset + "&variable=" + variable).promise();
 
@@ -311,7 +317,9 @@ export default class Layer extends React.Component {
           this.setState({
             depths: depths,
             current_depth: 0,
-          }, () => { this.sendData('update'); })   // Update the data object
+          }, () => { 
+            this.sendData('update'); 
+          })   // Update the data object
         }.bind(this))
       }.bind(this))
     }
@@ -449,10 +457,22 @@ export default class Layer extends React.Component {
 }*/
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.state.show && this.props.mapComponent2 !== null) {
+      this.toggleLayer()
+      this.setState({
+        show: false,
+      })
+    }
+
     if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
-      if (this.props.state.timestamps != prevProps.state.timestamps || this.state.current_dataset != prevState.current_dataset || this.state.current_variable != prevState.current_variable) {
+      if (this.props.state.timestamps !== prevProps.state.timestamps || this.state.current_dataset !== prevState.current_dataset || this.state.current_variable !== prevState.current_variable || this.props.state.projection !== prevProps.state.projection) {
         this.updateIce();
         this.sendData();
+        if (this.props.state._firstLayer && this.state.current_dataset !== undefined && this.state.current_variable !== undefined) {
+          this.toggleLayer()
+
+          this.props.globalUpdate('_firstLayer', false)
+        }
       }//} else if (this.props.state.timestamps != prevProps.state.timestamps && this.props.state.timestamps != undefined) {
       //  this.updateIce();
       //}
@@ -471,13 +491,15 @@ export default class Layer extends React.Component {
 
   */
   toggleCompare() {
-
-    if (this.props.layers.includes(this.state.layer)) {
+    let show = false
+    if (this.props.layers.includes(this.state.ice_layer)) {
       this.toggleLayer()
+      show = true
     }
     
     let old_map = this.state.current_map
-    this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    this.props.removeData(old_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+
     let current_map;
 
 
@@ -486,16 +508,22 @@ export default class Layer extends React.Component {
     } else {
       current_map = 'left'
     }
-
     this.setState({
       compare: !this.state.compare,
-      current_map: current_map
+      current_map: current_map,
+      
     }, () => {
       this.changeTimeSource({
         new_dataset: this.state.current_dataset, 
         new_quantum: this.state.current_quantum,
         new_variable: this.state.current_variable,
-        new_map: this.state.current_map
+        new_map: this.state.current_map,
+        old_dataset: this.state.current_dataset,
+        old_variable: this.state.current_variable,
+        old_map: old_map
+      })
+      this.setState({
+        show: show
       })
       this.sendData()
     })
@@ -585,6 +613,7 @@ export default class Layer extends React.Component {
 
     let layer_ice = new ol.layer.Tile(
       {
+        name: 'data',
         preload: Infinity,
         opacity: this.state.opacity / 100,
         source: new ol.source.XYZ({
@@ -625,6 +654,7 @@ export default class Layer extends React.Component {
     }
 
     function formatMonth(month) {
+      month = month - 1
       if (month.toString().length === 1) {
         return '0' + month.toString()
       } else {
@@ -635,17 +665,23 @@ export default class Layer extends React.Component {
     let iso
 
     if (quantum === 'min') {
-      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + date.getUTCMinutes() + ':00+00:00'
+      iso = date.format('YYYY-MM-DD[T]HH[:]MM[:00+00:00]')
+      //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + date.getUTCMinutes() + ':00+00:00'
     } else if (quantum === 'hour') { // Only returns ISO to hour precision
-      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + ':00:00+00:00'
+      iso = date.format('YYYY-MM-DD[T]HH[:00:00+00:00]')
+      //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T' + date.getUTCHours() + ':00:00+00:00'
     } else if (quantum === 'day') { // Only returns ISO to day precision
-      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T00:00:00+00:00'
+      iso = date.format('YYYY-MM-DD[T00:00:00+00:00]')
+      //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T00:00:00+00:00'
     } else if (quantum === 'month') { // Only returns ISO to month precision
-      iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-01T00:00:00+00:00'
+      iso = date.format('YYYY-MM[-01T00:00:00+00:00]')
+      //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-01T00:00:00+00:00'
     } else if (quantum === 'year') {
-      iso = date.getUTCFullYear() + '-01-01T00:00:00+00:00'
+      iso = date.format('YYYY[-01-01T00:00:00+00:00]')
+      //iso = date.getUTCFullYear() + '-01-01T00:00:00+00:00'
     } else {    // Returns ISO to max available precision
-      iso = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate() + 'T' + date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds() + '+00:00'
+      is = date.format('YYYY-MM-DD[T]HH[:]MM[:]SS[:00:00]')
+      //iso = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate() + 'T' + date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds() + '+00:00'
     }
 
     return iso
@@ -668,7 +704,7 @@ export default class Layer extends React.Component {
     }
     // Sets new values for tiles
     props.url = `/api/v1.0/tiles` +
-      `/none` +    //`${this.props.options.interpType}` +
+      `/${this.props.options.interpType}` +
       `/${this.props.options.interpRadius}` +
       `/${this.props.options.interpNeighbours}` +
       `/${this.props.state.projection}` +
@@ -708,7 +744,6 @@ export default class Layer extends React.Component {
     let layers = this.props.layers
 
     if (layers.includes(this.state.ice_layer)) {
-
       let new_layers = layers;
       let ice_layer = this.state.ice_layer;
       this.setState({
@@ -1200,7 +1235,7 @@ export default class Layer extends React.Component {
 //***********************************************************************
 Layer.propTypes = {
   key: PropTypes.number,
-  value: PropTypes.number,
+  
   state: PropTypes.object,
   removeLayer: PropTypes.func,
   toggleLayer: PropTypes.func,

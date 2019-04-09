@@ -8,7 +8,7 @@ import re
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.line as plLine
-from oceannavigator.dataset_config import (get_dataset_url, get_dataset_name)
+from oceannavigator import DatasetConfig
 from flask_babel import gettext
 from data import open_dataset
 from utils.errors import ClientError, ServerError
@@ -48,7 +48,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             return (depth, depth_value, depth_unit)
 
         # Load left/Main Map
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             
             latvar, lonvar = utils.get_latlon_vars(dataset)
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
@@ -69,8 +69,8 @@ class HovmollerPlotter(plLine.LinePlotter):
 
                 value = np.sqrt(np.ma.sum(v, axis=0))
                 
-                self.variable_name = self.get_variable_names(dataset, self.variables)[0]
-                self.variable_name = self.vector_name(self.variable_name)
+                self.variable_name = self.get_vector_variable_name(dataset,
+                        self.variables)
             else:
                 self.path_points, self.distance, t, value = dataset.get_path(
                     self.points,
@@ -83,7 +83,8 @@ class HovmollerPlotter(plLine.LinePlotter):
             variable_units = self.get_variable_units(dataset, self.variables)
             scale_factors = self.get_variable_scale_factors(dataset, self.variables)
 
-            self.variable_unit, self.data = self.kelvin_to_celsius(variable_units[0], value)
+            self.variable_unit = variable_units[0]
+            self.data = value
             self.times = dataset.timestamps[self.starttime : self.endtime + 1]
             self.data = np.multiply(self.data, scale_factors[0])
             self.data = self.data.transpose()
@@ -94,8 +95,8 @@ class HovmollerPlotter(plLine.LinePlotter):
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
-            with open_dataset(get_dataset_url(self.compare['dataset'])) as dataset:
-
+            compare_config = DatasetConfig(self.compare['dataset'])
+            with open_dataset(compare_config) as dataset:
                 latvar, lonvar = utils.get_latlon_vars(dataset)
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(self.compare['depth'], len(dataset.depths) - 1, dataset)
 
@@ -114,8 +115,9 @@ class HovmollerPlotter(plLine.LinePlotter):
                         v.append(value ** 2)
 
                     value = np.sqrt(np.ma.sum(v, axis=0))
-                    self.compare['variable_name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
-                    self.compare['variable_name'] = self.vector_name(self.compare['variable_name'])
+                    self.compare['variable_name'] = \
+                            self.get_vector_variable_name(dataset,
+                                    self.compare['variables'])
                 else:
                     path, distance, t, value = dataset.get_path(
                         self.points,
@@ -134,7 +136,8 @@ class HovmollerPlotter(plLine.LinePlotter):
                 variable_units = self.get_variable_units(dataset, self.compare['variables'])
                 scale_factors = self.get_variable_scale_factors(dataset, self.compare['variables'])
 
-                self.compare['variable_unit'], self.compare['data'] = self.kelvin_to_celsius(variable_units[0], value)
+                self.compare['variable_unit'] = variable_units[0]
+                self.compare['data'] = value
                 self.compare['times'] = dataset.timestamps[self.compare['starttime'] : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
@@ -185,15 +188,8 @@ class HovmollerPlotter(plLine.LinePlotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin = np.amin(self.data)
-            vmax = np.amax(self.data)
-            if np.any([re.search(x, self.variable_name, re.IGNORECASE) for x in [
-                    "velocity",
-                    "surface height",
-                    "wind"
-                ]]):
-                vmin = min(vmin, -vmax)
-                vmax = max(vmax, -vmin)
+            vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[self.variables[0]])
             
             if len(self.variables) > 1:
                 vmin = 0

@@ -4,6 +4,7 @@ from flask import Flask, request, send_file
 from flask_compress import Compress
 from flask_babel import Babel
 from sys import argv
+from .dataset_config import DatasetConfig
 
 babel = Babel()
 

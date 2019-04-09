@@ -98,26 +98,45 @@ removeData(map, dataset, variable, idx) {
   //   }
   // }
 
-  console.warn("MAP, DATASET, VARIABLE, IDX: ", map, dataset, variable, idx)
   if (map === undefined || dataset === undefined || variable === undefined || idx === undefined) {
     return
   }
 
-  console.warn("DATA: ", this.props.state.data)
-  console.warn("DATA[left]: ", this.props.state.data[map])
   let data = this.props.state.data[map][this.props.layerType][idx]
-  console.warn("REDUCED DATA: ", data)
-
+  let full_data
   if (jQuery.isEmptyObject(data[dataset])) {
     return
   } else {
     data[dataset] = undefined
     delete data[dataset]
+    
+    if (jQuery.isEmptyObject(data)) {
+      data = this.props.state.data[map][this.props.layerType]
+      data[idx] = undefined
+      delete data[idx]
+
+      if (jQuery.isEmptyObject(data)) {
+        data = this.props.state.data[map]
+        data[this.props.layerType] = undefined
+        delete data[this.props.layerType]
+
+        if (jQuery.isEmptyObject(data)) {
+          data = this.props.state.data
+          data[map] = undefined
+          delete data[map]
+        } else {
+          full_data = this.props.state.data
+          full_data[map] = data
+        }
+      } else {
+        full_data = this.props.state.data
+        full_data[map][this.props.layerType] = data
+      }
+    } else {
+      full_data = this.props.state.data
+      full_data[map][this.props.layerType][idx] = data
+    }
   } 
-  console.warn("PARTIAL MODIFIED DATA: ", data)
-  let full_data = this.props.state.data
-  full_data[map][this.props.layerType][idx] = data
-  console.warn("MODIFIED DATA: ", full_data)
   this.props.globalUpdate('data', jQuery.extend({}, full_data))
 
   /*
@@ -184,8 +203,8 @@ render() {
   for (let idx in this.state.layers) {
     layers.push(<Layer
       index={idx}
-      key={this.state.layers[idx]}
-      value={this.state.layers[idx]}
+      key={idx}
+      value={idx}
       state={this.props.state}
       layers={this.props.state.layers}
       removeLayer={this.removeLayer}

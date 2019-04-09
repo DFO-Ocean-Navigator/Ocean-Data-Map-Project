@@ -9,7 +9,7 @@ import PlanningToolsTab from './PlanningToolsTab.jsx';
 import SettingsTab from './SettingsTab.jsx';
 import EnvironmentTab from './EnvironmentTab.jsx';
 
-
+const i18n = require("../i18n.js");
 
 export default class LayerSelection extends React.Component {
     
@@ -90,27 +90,27 @@ export default class LayerSelection extends React.Component {
         let enabled_layers = [];
         if (this.props.state._foundation === true && this.props.state.allowedTabs['_foundation'] === true) {
             enabled_layers.push(<NavItem key='_foundation' className={this.state.buttons[0]} eventKey={1}>
-                <div className='vertical'>Foundation</div>
+                <div className='vertical'>{_('Foundation')}</div>
             </NavItem>)
         }
         if (this.props.state._environment === true && this.props.state.allowedTabs['_environment'] === true) {
             enabled_layers.push(<NavItem key='_environment' className={this.state.buttons[1]} eventKey={2}>
-                <div className='vertical'>Environment</div>
+                <div className='vertical'>{_("Environment")}</div>
             </NavItem>)
         }
         if (this.props.state._intelligence === true && this.props.state.allowedTabs['_intelligence'] === true) {
             enabled_layers.push(<NavItem key='_contact' className={this.state.buttons[2]} eventKey={3}>
-                <div className='vertical'>Intelligence</div>
+                <div className='vertical'>{_("Intelligence")}</div>
             </NavItem>)
         }
         if (this.props.state._derived === true && this.props.state.allowedTabs['_derived'] === true) {
             enabled_layers.push(<NavItem key='_derived' className={this.state.buttons[3]} eventKey={4}>
-                <div className='vertical'>Derived Products</div>
+                <div className='vertical'>{_("Derived Products")}</div>
             </NavItem>)
         }
         if (this.props.state._planning === true && this.props.state.allowedTabs['_planning']) {
             enabled_layers.push(<NavItem key='_planning' className={this.state.buttons[4]} eventKey={5}>
-                <div className='vertical'>Planning Tools</div>
+                <div className='vertical'>{_("Planning Tools")}</div>
             </NavItem>)
         }
 

@@ -9,8 +9,6 @@ from textwrap import wrap
 import plotting.colormap as colormap
 import plotting.utils as utils
 import plotting.point as plPoint
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url
 import datetime
 from data import open_dataset
 
@@ -152,21 +150,8 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                 vmin = self.scale[0]
                 vmax = self.scale[1]
             else:
-                vmin = self.data.min()
-                vmax = self.data.max()
-
-                if self.variable_unit == "fraction":
-                    vmin = 0
-                    vmax = 1
-                elif np.any([re.search(x, self.variable_name,
-                                                    re.IGNORECASE) for x in [
-                    "free surface",
-                    "surface height",
-                    "velocity",
-                    "wind"
-                ]]):
-                    vmin = min(vmin, -vmax)
-                    vmax = max(vmax, -vmin)
+                vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[self.variables[0]])
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
@@ -295,22 +280,22 @@ class TimeseriesPlotter(plPoint.PointPlotter):
         self.depth = depth
 
     def load_data(self):
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             self.load_misc(dataset, self.variables)
             self.fix_startend_times(dataset, self.starttime, self.endtime)
 
             if len(self.variables) == 1:
-                self.variable_unit = get_variable_unit(
-                    self.dataset_name,
+                self.variable_unit = self.dataset_config.variable[
                     dataset.variables[self.variables[0]]
-                )
-                self.variable_name = get_variable_name(
-                    self.dataset_name,
+                ].unit
+                self.variable_name = self.dataset_config.variable[
                     dataset.variables[self.variables[0]]
-                )
+                ].name
             else:
-                self.variable_name = self.vector_name(self.variable_names[0])
-                self.variable_unit = self.variable_units[0]
+                self.variable_name = self.get_vector_variable_name(dataset,
+                        self.variables)
+                self.variable_unit = self.get_vector_variable_unit(dataset,
+                        self.variables)
             var = self.variables[0]
             if self.depth != 'all' and self.depth != 'bottom' and \
                 (set(dataset.variables[var].dimensions) &
@@ -367,12 +352,6 @@ class TimeseriesPlotter(plPoint.PointPlotter):
 
             # depths = dataset.depths
             depths = dep
-
-        # TODO: pint
-        if self.variable_unit.startswith("Kelvin"):
-            self.variable_unit = "Celsius"
-            for idx, v in enumerate(self.variables):
-                point_data[:, idx, :] = point_data[:, idx, :] - 273.15
 
         if point_data.shape[1] == 2:
             # Under the current API this indicates that velocity data is being

@@ -26,24 +26,53 @@ class TestLinePlot(unittest.TestCase):
         self.app = create_app().test_client()
 
 
-    def test_all_timestamps(self):
-        now = datetime.datetime.now()
+    #def test_all_timestamps(self):
+    #    now = datetime.datetime.now()
 
-        response = self.app.get('/api/v1.0/all/timestamps')
+    #    response = self.app.get('/api/v1.0/all/timestamps')
         
-        for year in response:
-            if type(year) is not int:
-                raise AssertionError('Malformed Year')
-            elif (year > now.year):
-                raise AssertionError('Year out of bounds')
-            else:
-                for month in year:
-                    if month < 0 or month > 11:
-                        raise AssertionError('Month out of bounds')
-                    else:
-                        for day in month:
-                            if type(day) is not int or day < 0 or day > 31:
-                                AssertionError('Invalid Day')
+    #    for year in response:
+    #        if type(year) is not int:
+    #            raise AssertionError('Malformed Year')
+    #        elif (year > now.year):
+    #            raise AssertionError('Year out of bounds')
+    #        else:
+    #            for month in year:
+    #                if month < 0 or month > 11:
+    #                    raise AssertionError('Month out of bounds')
+    #                else:
+    #                    for day in month:
+    #                        if type(day) is not int or day < 0 or day > 31:
+    #                            AssertionError('Invalid Day')
 
 
 
+    def test_num2date(self):
+        index = 1
+
+        response = self.app.get('/api/v1.0/timeindex/convert/giops_day/1/')
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.data)
+        print("RESPONSE: ", response)
+        print('RESPONSE[DATE]: ', response['date'])
+        if type(response) == dict:
+            response = response['date']
+            if len(response) > 1:
+                raise AssertionError('Invalid number of dates converted')
+            elif len(response) < 1:
+                raise AssertionError('No Date Returned')
+        else:
+            raise AssertionError('Invalid Format')
+
+    def test_multiple_num2date(self):
+        index = '1,4,5'
+
+        response = self.app.get('/api/v1.0/timeindex/convert/giops_day/1,4,5/')
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.data)
+        if type(response) == dict: 
+            response = response['date']
+            if len(response) != 3:
+                raise AssertionError("Invalid Number of Dates Converted")
+        else:
+            raise AssertionError('Invalid Format')

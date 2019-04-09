@@ -12,7 +12,7 @@ import data
 import requests
 import routes
 from urllib.parse import urlencode
-from oceannavigator.dataset_config import __get_dataset_config, get_datasets, get_variables
+#from oceannavigator.dataset_config import __get_dataset_config, get_datasets, get_variables
 import warnings
 import sys
 from flask import current_app

@@ -12,7 +12,7 @@ import ol from "openlayers";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import TimeSelect from "./TimeSelect.jsx";
-
+import moment from "moment-timezone";
 // IMPORT ICONS
 import Ice_Icon from '../images/ice_symbol.png';
 import Met_Icon from '../images/cloud_symbol.png';
@@ -75,7 +75,7 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animate() {
-        let min = new Date(this.findMin(this.state.startTimes))
+        let min = this.findMin(this.state.startTimes)
         let max = this.findMax(this.state.endTimes)
 
         this.animateConsecutive(min, max);
@@ -106,7 +106,7 @@ export default class TimeBarContainer extends React.Component {
         let times = this.state.times;
         for (let dataset in this.state.times) {
             let time = new Date(times[dataset])
-            time.setDate(time.getDate() + 1)
+            time.setUTCDate(time.getUTCDate() + 1)
             //time.setUTCHours(time.getUTCHours() + 24)
             times[dataset] = time
         }
@@ -117,6 +117,11 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
+        console.warn("ANIMATE CONSECUTIVE")
+        console.warn("MIN: ", min)
+        console.warn("MAX: ", max)
+        console.warn("QUANTUM: ", quantum)
+        
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
@@ -129,8 +134,10 @@ export default class TimeBarContainer extends React.Component {
         } else if (quantum === 'min') {
             increment = 5       // Time increment in minutes
         }
+        console.warn("INCREMENT: ", increment)
 
-        if (min.getTime() >= max.getTime()) {
+        if (min.valueOf() >= max.valueOf()) {
+            console.warn("END OF ANIMATION")
             this.setState({
                 animating: false,
                 times: this.state.startTimes,
@@ -139,13 +146,15 @@ export default class TimeBarContainer extends React.Component {
         }
 
         let in_range = false;
+        // Deep copy times object
         let times = jQuery.extend({}, this.state.times)
+        
         for (let dataset in times) {
-            times[dataset] = new Date(times[dataset])
+            times[dataset] = moment(times[dataset])
         }
         for (let dataset in times) {
-            if ((min.getTime() > this.state.startTimes[dataset].getTime() || min.getTime() === this.state.startTimes[dataset].getTime()) && min.getTime() < this.state.endTimes[dataset].getTime()) {
-                times[dataset].setUTCMinutes(times[dataset].getUTCMinutes() + increment)
+            if ((min.valueOf() > this.state.startTimes[dataset].valueOf() || min.valueOf() === this.state.startTimes[dataset].valueOf()) && min.valueOf() < this.state.endTimes[dataset].valueOf()) {
+                times[dataset].add('minute', increment)
                 in_range = true
             }
         }
@@ -157,16 +166,17 @@ export default class TimeBarContainer extends React.Component {
         if (in_range === false) {
             let new_times = {}
             for (let dataset in times) {
-                if (this.state.endTimes[dataset].getTime() > min.getTime()) {
-                    new_times[dataset] = new Date(times[dataset])
+                if (this.state.endTimes[dataset].valueOf() > min.valueOf()) {
+                    new_times[dataset] = moment(times[dataset])
                 }
                 min = this.findMin(new_times);
             }
         } else {
-            min.setHours(min.getUTCHours() + 24)
+            min.add('hour', 25)
+            //min.setUTCHours(min.getUTCHours() + 24)
         }
 
-        setTimeout(() => { this.animateConsecutive(new Date(min), max, quantum) }, 4000)
+        setTimeout(() => { this.animateConsecutive(moment.tz(min, 'GMT'), max, quantum) }, 4000)
 
         return
 
@@ -192,8 +202,8 @@ export default class TimeBarContainer extends React.Component {
         let one_day = 1000 * 60 * 60;
 
         // Convert both dates to milliseconds
-        let date1_ms = date1.getTime();
-        let date2_ms = date2.getTime();
+        let date1_ms = date1.valueOf();
+        let date2_ms = date2.valueOf();
 
         // Calculate the difference in milliseconds
         let difference_ms = date2_ms - date1_ms;
@@ -206,40 +216,45 @@ export default class TimeBarContainer extends React.Component {
         let largest = undefined;
 
         for (let dataset in times) {
-            let time = new Date(times[dataset]);
+            let time = moment.tz(times[dataset], "GMT");
             if (largest === undefined) {
                 largest = time;
             }
-            let time_sec = time.getTime()
-            let largest_sec = largest.getTime()
+            let time_sec = time.valueOf()
+            let largest_sec = largest.valueOf()
             if (time_sec > largest_sec) {
                 largest = time;
             }
         }
-        return new Date(largest);
+        return moment.tz(largest, 'GMT');
     }
 
     findMin(times) {
         let smallest = undefined;
         for (let dataset in times) {
-            let time = new Date(times[dataset])
+            let time = moment.tz(times[dataset], 'GMT')
             if (smallest === undefined) {
                 smallest = time;
-            } else if (time.getTime() < smallest.getTime()) {
+            } else if (time.valueOf() < smallest.valueOf()) {
                 smallest = time;
             }
         }
 
-        return new Date(smallest);
+        return moment(smallest, 'GMT');
     }
 
 
     localUpdate(id, startTime, endTime) {
+        
+        // This is updating to local time, therefore must get local time from object
+        //startTime = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate(), startTime.getHours(), startTime.getMinutes())
+        //endTime = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate(), endTime.getHours(), endTime.getMinutes())
+        
         let startTimes = this.state.startTimes;
         startTimes[id] = startTime;
         let endTimes = this.state.endTimes;
         endTimes[id] = endTime;
-
+        
         this.setState({
             times: jQuery.extend({}, startTimes),
             startTimes: startTimes,
@@ -271,7 +286,7 @@ export default class TimeBarContainer extends React.Component {
 
     render() {
         self = this
-        let sources = this.props.allSources
+        let sources = this.props.timeSources
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []

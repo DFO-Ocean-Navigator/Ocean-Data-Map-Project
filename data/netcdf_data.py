@@ -4,6 +4,7 @@ from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
+import data.calculated
 import xarray as xr
 import os
 from cachetools import TTLCache
@@ -17,6 +18,7 @@ import datetime
 import uuid
 import pandas
 import zipfile
+import pint
 
 
 class NetCDFData(Data):
@@ -51,8 +53,9 @@ class NetCDFData(Data):
         time_var = self.__get_time_variable()
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
+        print("TIME RANGE: ", time_range)
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
-
+        print("TIME RANGE(2): ", time_range)
         if len(time_range) == 1:    #Single Date
             return int(str(time_range[0][0]))
         else:                          #Multiple Dates
@@ -62,8 +65,33 @@ class NetCDFData(Data):
                 new_date = {x : int(str(time_range[i][0]))}
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
+            print("FORMATED DATE: ", date_formatted)
             return date_formatted
         
+
+    """
+        Converts a time index to its corresponding date
+
+        requires: time index
+
+    """
+    def convert_to_date(self, index):
+        
+        times = []
+        indexes = index.split(',')
+        
+        for idx, date in enumerate(self.timestamps):
+                        # Only compare year, month, day.
+                        # Some daily/hourly average datasets have an 
+                        # hour and minute offset that messes up 
+                        # the index search.
+                  
+                        if str(idx) in indexes:
+                            times.append(date.date())
+        
+        return times
+
+
     """
         Subsets a netcdf file with all depths
     """
@@ -124,21 +152,26 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = list(self._dataset.variables.keys())
+        variable_list = [v.key for v in self.variables]
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
         lat_var = find_variable("lat", variable_list)
         lon_var = find_variable("lon", variable_list)
 
-        depth_var = find_variable("depth", variable_list)
+        depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
+        # self.get_dataset_variable should be used below instead of
+        # self._dataset.variables[...] because self._dataset.variables[...]
+        # will go directly to the underlying dataset and will not handle
+        # calculated variables.
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self._dataset, self._dataset.variables[lat_var], self._dataset.variables[lon_var]
+                bottom_left[0], bottom_left[1], self._dataset,
+                self.get_dataset_variable(lat_var), self.get_dataset_variable(lon_var)
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self._dataset, self._dataset.variables[lat_var], self._dataset.variables[lon_var]
+                top_right[0], top_right[1], self._dataset, self.get_dataset_variable(lat_var), self.get_dataset_variable(lon_var)
             )
 
             # Compute min/max for each slice in case the values are flipped
@@ -150,18 +183,18 @@ class NetCDFData(Data):
             p0 = geopy.Point(bottom_left)
             p1 = geopy.Point(top_right)
         else:
-            y_slice = slice(self._dataset.variables[lat_var].size)
-            x_slice = slice(self._dataset.variables[lon_var].size)
+            y_slice = slice(self.get_dataset_variable(lat_var).size)
+            x_slice = slice(self.get_dataset_variable(lon_var).size)
 
             p0 = geopy.Point([-85.0, -180.0])
             p1 = geopy.Point([85.0, 180.0])
 
         # Get timestamp
-        time_var = find_variable("time", variable_list)
-        timestamp = str(format_date(pandas.to_datetime(np.float64(self._dataset[time_var][time_range[0]].values)), "yyyyMMdd"))
+        time_var = find_variable("time", list(self._dataset.variables.keys()))
+        timestamp = str(format_date(pandas.to_datetime(np.float64(self.get_dataset_variable(time_var)[time_range[0]].values)), "yyyyMMdd"))
         endtimestamp = ""
         if apply_time_range:
-            endtimestamp = "-" + str(format_date(pandas.to_datetime(np.float64(self._dataset[time_var][time_range[1]].values)), "yyyyMMdd"))
+            endtimestamp = "-" + str(format_date(pandas.to_datetime(np.float64(self.get_dataset_variable(time_var)[time_range[1]].values)), "yyyyMMdd"))
         
         dataset_name = query.get('dataset_name')
         # Figure out coordinate dimension names
@@ -179,9 +212,11 @@ class NetCDFData(Data):
 
         # Select requested time (time range if applicable)
         if apply_time_range:
-            subset = subset.isel(**{time_var: slice(int(time_range[0]), int(time_range[1]) + 1)}) # slice doesn't include the last element
+            time_slice = slice(int(time_range[0]), int(time_range[1]) + 1) # slice doesn't include the last element
         else:
-            subset = subset.isel(**{time_var: slice(int(time_range[0]), int(time_range[0]) + 1)})
+            time_slice = slice(int(time_range[0]), int(time_range[0]) + 1)
+
+        subset = subset.isel(**{time_var: time_slice})
 
         # Filter out unwanted variables
         output_vars = query.get('variables').split(',')
@@ -189,6 +224,17 @@ class NetCDFData(Data):
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
+
+        for variable in output_vars:
+            # if variable is a computed variable, overwrite it
+            if isinstance(self.get_dataset_variable(variable),
+                    data.calculated.CalculatedArray):
+                subset = subset.assign(**{variable:
+                    self.get_dataset_variable(variable).isel(**{
+                        time_var: time_slice,
+                        lat_coord: y_slice,
+                        lon_coord: x_slice
+                    })})
 
         output_format = query.get('output_format')
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
@@ -280,9 +326,25 @@ class NetCDFData(Data):
                 temp_data = np.reshape(temp_data, (origshape[0], origshape[1], GRID_RESOLUTION, GRID_RESOLUTION))
                 
                 temp = ds.createVariable('water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                # Convert from Kelvin to Celcius
-                for i in range(0, len(subset[depth_var][:])):
-                    temp[:,i, :, :] = temp_data[:,i,:,:] - 273.15
+
+                # Convert from Kelvin to Celsius
+                ureg = pint.UnitRegistry()
+                try:
+                    u = ureg.parse_units(subset[temp_var].units.lower())
+                except:
+                    u = ureg.dimensionless
+
+                if u == ureg.boltzmann_constant:
+                    u = ureg.kelvin
+
+                if u == ureg.kelvin:
+                    for i in range(0, len(subset[depth_var][:])):
+                        temp[:,i, :, :] = temp_data[:,i,:,:] - 273.15
+
+                else:
+                    for i in range(0, len(subset[depth_var][:])):
+                        temp[:,i, :, :] = temp_data[:,i,:,:]
+
                 temp.valid_min = -100.0
                 temp.valid_max = 100.0
                 temp.long_name = "Water Temperature"
@@ -406,7 +468,7 @@ class NetCDFData(Data):
         for v in self.time_variables:
             if v in self._dataset.variables.keys():
                 # Get the xarray.DataArray for time variable
-                return self._dataset.variables[v]
+                return self.get_dataset_variable(v)
 
     """
         Returns the possible names of the depth dimension in the dataset
@@ -434,11 +496,15 @@ class NetCDFData(Data):
             l = []
             # Get "data variables" from dataset
             variables = list(self._dataset.data_vars.keys())
-
             for name in variables:
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
                 var = self._dataset.variables[name]
+                if (len(var.dims) == 0):
+                    # Skip any variables without dimensions, this makes the
+                    # xarray based datasets behave more like the netcdf4-python
+                    # ones.
+                    continue
 
                 # Get variable attributes
                 attrs = list(var.attrs.keys())

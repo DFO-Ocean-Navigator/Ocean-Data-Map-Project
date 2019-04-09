@@ -10,6 +10,7 @@ import {
   Nav, NavItem, Panel, Row, Col, Button,
   FormControl, Checkbox, FormGroup, ControlLabel, DropdownButton, MenuItem
 } from "react-bootstrap";
+import moment from "moment-timezone";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -122,16 +123,27 @@ export default class AreaWindow extends React.Component {
     let layer = selected[0]
     let index = selected[1]
     let dataset = selected[2]
-    let variable = [selected[3]]
+    //let variable = [selected[3]]
+    let variable = ''
 
+    if (selected.length > 4) {
+      for (let v = 3; v < selected.length; v = v + 1) {
+        if (variable === '') {
+          variable = selected[v]
+        } else {
+          variable = variable + ',' + selected[v]
+        }
+      }
+    } else {
+      variable = [selected[3]]
+    }
 
     let display = data[layer][index][dataset][variable].display
     let colourmap = data[layer][index][dataset][variable].colourmap
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
     let time = data[layer][index][dataset][variable].time
-
-    console.warn("TIME IN UPDATE DATA: ", time)
+    
     this.setState({
       data: {
         layer: layer,
@@ -141,9 +153,10 @@ export default class AreaWindow extends React.Component {
 
         display: display,
         colourmap: colourmap,
-        quantum: quantum,
+        dataset_quantum: quantum,
         scale: scale,
         time: time,
+        starttime: null,
       }
     }, () => {
       this.updatePlot()
@@ -234,6 +247,9 @@ export default class AreaWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
+    console.warn("ON LOCAL UPDATE")
+    console.warn("KEY: ", key)
+    console.warn("VALUE: ", value)
     /*
     if (this._mounted) {
 
@@ -379,7 +395,7 @@ export default class AreaWindow extends React.Component {
         //if (this.plot_query === undefined) {
         let plotQuery = {
           dataset: this.state.data.dataset,
-          quantum: this.state.data.quantum,
+          quantum: this.state.data.dataset_quantum,
           scale: this.state.data.scale,
           name: this.props.name,
         };
@@ -424,6 +440,10 @@ export default class AreaWindow extends React.Component {
         } else {
           this.plot_query.variable = this.state.data.variable;
         }
+
+        this.setState({
+          plot_query: plotQuery
+        })
 
         break;
     }
@@ -597,127 +617,141 @@ export default class AreaWindow extends React.Component {
       ></CustomPlotLabels>
 
     </Panel>);
-
-    const subsetPanel = (<Panel
-      key='subset'
-      collapsible
-      defaultExpanded
-      header={_("Subset")}
-      bsStyle='primary'
-    >
-      <form>
-        <ComboBox
-          id='variable'
-          key='variable'
-          multiple={true}
-          state={this.state.output_variables}
-          def={"defaults.dataset"}
-          onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
-          url={"/api/variables/?vectors&dataset=" + this.state.data.dataset
-          }
-          title={_("Variables")}
-        />
-
-        <SelectBox
-          id='time_range'
-          key='time_range'
-          state={this.state.output_timerange}
-          onUpdate={(key, value) => { this.setState({ output_timerange: value, }); }}
-          title={_("Select Time Range")}
-        />
-
-        <TimePicker
-          id='starttime'
-          key='starttime'
-          state={this.state.output_starttime}
-          def=''
-          quantum={this.state.data.quantum}
-          url={"/api/timestamps/?dataset=" +
-            this.state.data.dataset +
-            "&quantum=" +
-            this.state.data.quantum}
-          title={this.state.output_timerange ? _("Start Time") : _("Time")}
-          onUpdate={(key, value) => { this.setState({ output_starttime: value, }); }}
-          max={this.state.data.time + 1}
-          updateDate={this.updateDate}
-        />
-
-        <div style={{ display: this.state.output_timerange ? "block" : "none", }}>
-          <TimePicker
-            id='time'
-            key='time'
-            state={this.state.output_endtime}
-            def=''
-            quantum={this.state.data.quantum}
-            url={"/api/timestamps/?dataset=" +
-              this.state.data.dataset +
-              "&quantum=" +
-              this.state.data.quantum}
-            title={_("End Time")}
-            onUpdate={(key, value) => { this.setState({ output_endtime: value, }); }}
-            min={this.state.data.time}
+    var subsetPanel = null;
+    if (this._mounted) {
+      subsetPanel = (<Panel
+        key='subset'
+        collapsible
+        defaultExpanded
+        header={_("Subset")}
+        bsStyle='primary'
+      >
+        <form>
+          <ComboBox
+            id='variable'
+            key='variable'
+            multiple={true}
+            state={this.state.output_variables}
+            def={"defaults.dataset"}
+            onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
+            url={"/api/variables/?vectors&dataset=" + this.state.data.dataset
+            }
+            title={_("Variables")}
           />
-        </div>
 
-        <FormGroup controlId="output_format">
-          <ControlLabel>{_("Output Format")}</ControlLabel>
-          <FormControl componentClass="select" onChange={e => { this.setState({ output_format: e.target.value, }); }}>
-            <option value="NETCDF4">{_("NetCDF-4")}</option>
-            <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
-            <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
-            <option value="NETCDF3_NC" disabled={
-              this.state.data.dataset !== 'giops_dat' &&
-              this.state.data.dataset !== 'riops' // Disable if not a giops or riops dataset
-            }>
-              {_("NetCDF-3 NC")}
-            </option>
-            <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
-          </FormControl>
-        </FormGroup>
+          <SelectBox
+            id='time_range'
+            key='time_range'
+            state={this.state.output_timerange}
+            onUpdate={(key, value) => { this.setState({ output_timerange: value, }); }}
+            title={_("Select Time Range")}
+          />
+          {/*
+          <TimePicker
+            id='output_starttime'
+            key='starttime'
+            state={this.state.output_starttime}
+            //def=''
+            quantum={this.state.data.quantum}
+            date={this.state.data.time}
+            onTimeUpdate={}
+            //url={"/api/timestamps/?dataset=" +
+            //  this.state.data.dataset +
+            //  "&quantum=" +
+            //  this.state.data.quantum}
+            //title={this.state.output_timerange ? _("Start Time") : _("Time")}
+            
+            //onUpdate={(key, value) => { this.setState({ output_starttime: value, }); }}
+            //max={this.state.data.time + 1}
+            //updateDate={this.updateDate}
+          />
+          */}
+          {/* 
+          <div style={{ display: this.state.output_timerange ? "block" : "none", }}>
+            <TimePicker
+              id='output_endtime'
+              startid='output_starttime'
+              range={true}
+              key='time'
+              dataset={this.state.data.dataset}
+              quantum={this.state.data.quantum}
+              startDate={this.state.output_starttime}
+              date={this.state.output_endtime}
+              //state={this.state.output_endtime}
+              //def=''
+              //url={"/api/timestamps/?dataset=" +
+              //  this.state.data.dataset +
+              //  "&quantum=" +
+              //  this.state.data.quantum}
+              //title={_("End Time")}
+              //onUpdate={(key, value) => { this.setState({ output_endtime: value, }); }}
+              //min={this.state.data.time}
+            />
+          </div>
+          */}
 
-        {/*
-        <SelectBox
-          id='convertToUserGrid'
-          key='convertToUserGrid'
-          state={this.state.convertToUserGrid}
-          onUpdate={this.onLocalUpdate}
-          title={_("Convert to User Grid")}
-        />
-*/}
-        <SelectBox
-          id='zip'
-          key='zip'
-          state={this.state.zip}
-          onUpdate={this.onLocalUpdate}
-          title={_("Compress as *.zip")}
-        />
 
-        <Button
-          bsStyle="default"
-          key='save'
-          id='save'
-          onClick={this.subsetArea}
-          disabled={this.state.output_variables == ""}
-        ><Icon icon="save" /> {_("Save")}</Button>
+          <FormGroup controlId="output_format">
+            <ControlLabel>{_("Output Format")}</ControlLabel>
+            <FormControl componentClass="select" onChange={e => { this.setState({ output_format: e.target.value, }); }}>
+              <option value="NETCDF4">{_("NetCDF-4")}</option>
+              <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
+              <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+              <option value="NETCDF3_NC" disabled={
+                this.state.data.dataset !== 'giops_dat' &&
+                this.state.data.dataset !== 'riops' // Disable if not a giops or riops dataset
+              }>
+                {_("NetCDF-3 NC")}
+              </option>
+              <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
+            </FormControl>
+          </FormGroup>
 
-        <DropdownButton
-          id="script"
-          title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
-          bsStyle={"default"}
-          disabled={this.state.output_variables == ""}
-          onSelect={this.saveScript}
-          dropup
-        >
-          <MenuItem
-            eventKey="python"
-          ><Icon icon="code" /> {_("Python 3")}</MenuItem>
-          <MenuItem
-            eventKey="r"
-          ><Icon icon="code" /> {_("R")}</MenuItem>
-        </DropdownButton>
-      </form>
-    </Panel>
-    );
+          {/*
+          <SelectBox
+            id='convertToUserGrid'
+            key='convertToUserGrid'
+            state={this.state.convertToUserGrid}
+            onUpdate={this.onLocalUpdate}
+            title={_("Convert to User Grid")}
+          />
+  */}
+          <SelectBox
+            id='zip'
+            key='zip'
+            state={this.state.zip}
+            onUpdate={this.onLocalUpdate}
+            title={_("Compress as *.zip")}
+          />
+
+          <Button
+            bsStyle="default"
+            key='save'
+            id='save'
+            onClick={this.subsetArea}
+            disabled={this.state.output_variables == ""}
+          ><Icon icon="save" /> {_("Save")}</Button>
+
+          <DropdownButton
+            id="script"
+            title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
+            bsStyle={"default"}
+            disabled={this.state.output_variables == ""}
+            onSelect={this.saveScript}
+            dropup
+          >
+            <MenuItem
+              eventKey="python"
+            ><Icon icon="code" /> {_("Python 3")}</MenuItem>
+            <MenuItem
+              eventKey="r"
+            ><Icon icon="code" /> {_("R")}</MenuItem>
+          </DropdownButton>
+        </form>
+      </Panel>
+      );
+
+    }
 
     const globalSettings = (<Panel
       collapsible
@@ -736,51 +770,58 @@ export default class AreaWindow extends React.Component {
     </Panel>
     );
 
-    const dataset = ''
-    if (this.state.data === undefined) {
-      const dataset = (<Panel
-        key='left_map'
-        id='left_map'
-        collapsible
-        defaultExpanded
-        header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-        bsStyle='primary'
-      >
-        <DatasetSelector
-          key='data'
-          id='data'
-          multiple={this.state.currentTab === 2}
-          state={this.state.data_compare}
-          onUpdate={this.onLocalUpdate}
-          depth={true}
-        />
+    console.warn("CREATING DATASET PANEL: ", this.state.data)
 
-        <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
-          <Range
-            auto
-            key='scale'
-            id='scale'
-            state={this.state.data.scale}
-            def={""}
-            onUpdate={this.onLocalUpdate}
-            title={_("Variable Range")}
-          />
-
-          <ComboBox
-            key='leftColormap'
-            id='leftColormap'
-            state={this.state.leftColormap}
-            def='default'
-            onUpdate={this.onLocalUpdate}
-            url='/api/colormaps/'
-            title={_("Colourmap")}
-          >
-            {_("colourmap_help")}
-            <img src="/colormaps.png" />
-          </ComboBox>
-        </div>
-      </Panel>);
+    var dataset = (<Panel
+      key='left_map'
+      id='left_map'
+      collapsible
+      defaultExpanded
+      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      bsStyle='primary'
+    >
+    {
+      
+      <DatasetSelector
+        key='data'
+        id='data'
+        multiple={this.state.currentTab === 2}
+        state={this.state.data}
+        onUpdate={this.onLocalUpdate}
+        depth={true}
+      />
     }
+      
+
+      <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
+        {/*
+        <Range
+          auto
+          key='scale'
+          id='scale'
+          state={this.state.data.scale}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")}
+        />
+        */}
+        
+
+        <ComboBox
+          key='leftColormap'
+          id='leftColormap'
+          state={this.state.leftColormap}
+          def='default'
+          onUpdate={this.onLocalUpdate}
+          url='/api/colormaps/'
+          title={_("Colourmap")}
+        >
+          {_("colourmap_help")}
+          <img src="/colormaps.png" />
+        </ComboBox>
+      </div>
+    </Panel>);
+
 
     const compare_dataset = <div key='compare_dataset'>
       <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
@@ -796,7 +837,7 @@ export default class AreaWindow extends React.Component {
             key='data_compare'
             id='data_compare'
             state={this.state.data_compare}
-            onUpdate={this.props.onLocalUpdate}
+            onUpdate={this.onLocalUpdate}
           />
 
           <Range
@@ -829,7 +870,13 @@ export default class AreaWindow extends React.Component {
     let leftInputs = [];
     let rightInputs = [];
 
-    let applyChanges = <Button
+    let applyChanges1 = <Button
+      key='1'
+      onClick={this.updatePlot}
+    >Apply Changes</Button>
+
+    let applyChanges2 = <Button
+      key='2'
       onClick={this.updatePlot}
     >Apply Changes</Button>
 
@@ -837,7 +884,7 @@ export default class AreaWindow extends React.Component {
 
     switch (this.state.currentTab) {
       case 1:
-        leftInputs = [globalSettings, mapSettings, subsetPanel, applyChanges];
+        leftInputs = [/*globalSettings*/mapSettings, subsetPanel, applyChanges1];
 
         if (this.props.dataset_compare) {
           rightInputs = [dataset, compare_dataset]
@@ -846,7 +893,7 @@ export default class AreaWindow extends React.Component {
         }
         break;
       case 2:
-        leftInputs = [globalSettings, dataset, applyChanges];
+        leftInputs = [/*globalSettings*/dataset, applyChanges2];
         break;
     }
 
@@ -886,14 +933,23 @@ export default class AreaWindow extends React.Component {
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
         </Nav>
         <Row>
-          <Col lg={2}>
-            {dataSelection}
+          <Col lg={3}>
+            <Panel
+              key='data_selection'
+              id='data_selection'
+              collapsible
+              defaultExpanded
+              header={_("Layer")}
+              bsStyle='primary'
+            >
+              {dataSelection}
+            </Panel>
             {leftInputs}
           </Col>
-          <Col lg={8}>
+          <Col lg={6}>
             {content}
           </Col>
-          <Col lg={2}>
+          <Col lg={3}>
             {rightInputs}
           </Col>
         </Row>

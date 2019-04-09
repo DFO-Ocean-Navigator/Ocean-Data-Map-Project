@@ -34,7 +34,7 @@ export default class EnvironmentTab extends React.Component {
   render() {
       
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
-
+    
     return (
       <div className={className}>
         <Tabs //Creates Tabs Container

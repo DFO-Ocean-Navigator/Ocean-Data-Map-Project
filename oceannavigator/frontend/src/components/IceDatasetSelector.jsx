@@ -12,10 +12,10 @@ const i18n = require("../i18n.js");
 // Default properties for a dataset-state
 const DATA_ELEMS = [
   "dataset",
-  "dataset_attribution",
-  "dataset_quantum",
+  "attribution",
+  "dataset",
   "variable",
-  "variable_scale", // Default range values for variable
+  "scale", // Default range values for variable
   "depth",
   "time",
   "starttime",

@@ -10,6 +10,8 @@ import PropTypes from "prop-types";
 import ContactButton from "./ContactButton.jsx";
 import ol from "openlayers";
 
+
+
 const i18n = require("../i18n.js");
 
 export default class Contacts extends React.Component {
@@ -18,7 +20,7 @@ export default class Contacts extends React.Component {
 
     this.state = {
       currentTab: 1,
-      trafficTypes: ['Fishing', 'Cargo'],
+      trafficTypes: ['Marine Traffic'],
       displayTraffic: true
     };
 
@@ -30,7 +32,7 @@ export default class Contacts extends React.Component {
   }
 
   componentDidMount() {
-    this.getType()
+    //this.getType()
   }
 
   //Adds or remove traffic 
@@ -38,16 +40,16 @@ export default class Contacts extends React.Component {
 
     //Status is true if it is currently being displayed on the map
     switch(status) {
-        //Add to Contacts layer
+        //Remove from Contacts layer
         case true:
           
-            this.props.toggleLayer(this.layer_contacts, 'remove')
+            this.props.mapComponent.toggleLayer(this.layer_contacts, 'remove')
             this.setState({
               displayTraffic: true
             })
             break;
         
-        //Remove from Contacts layer
+        //Add to Contacts layer
         case false:
             this.setState({
               displayTraffic: false
@@ -64,38 +66,61 @@ export default class Contacts extends React.Component {
               stopClick: true
             })
             this.props.mapComponent._drawing = true;
-
+            
             draw.on("drawend", function(e) {
               // Disable zooming when drawing
               this.props.mapComponent.controlDoubleClickZoom(false);
-              
-              let geometry = e.feature.getGeometry();
-              geometry = geometry.clone().transform(this.props.state.projection, "EPSG:4326")
+              let geometry = e.feature.clone().getGeometry();
+              geometry.transform(this.props.state.projection, "EPSG:4326")
               let draw_radius = geometry.getRadius();
               let draw_center = geometry.getCenter();
               console.warn("HERE")
 
-              console.warn(draw_center)
-              let boats_url = 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint
+              var vectorLoader = function() {
+                var url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/ows?service=WFS&version=1.0.0&srs=EPSG:3857&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url);
+                var onError = function() {
+                  vectorSource.removeLoadedExtent(extent);
+                }
+                xhr.onerror = onError;
+                xhr.setRequestHeader("Authorization", btoa("oceannavigator:oceannavigator"));
+                xhr.onload = function() {
+                  if (xhr.status == 200) {
+                    vectorSource.addFeatures(
+                        vectorSource.getFormat().readFeatures(xhr.responseText));
+                  } else {
+                    onError();
+                  }
+                }
+                xhr.send();
+              }.bind(this);
               
-              console.warn(boats_url)
-              let vectorSource = new ol.source.Vector({
-                url: boats_url,
+              let new_vectorSource = new ol.source.Vector({
+                url: 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&srs=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)', // BBOX' //+ geopoint
+                //loader: vectorLoader,
                 format: new ol.format.GeoJSON(),
               })
               
+              
 
               //Places a circle on the map
-              let feature = new ol.Feature(geometry)
-              vectorSource.addFeature(feature)
-
+              //new_vectorSource.addFeature(e.feature)
+              //console.warn(new_vectorSource)
+              
               this.layer_contacts = new ol.layer.Vector({
-                source: vectorSource,
+                projection: this.props.state.projection,
+                source: new_vectorSource,
                 style: function(feat, res) {
                   const red = 255;
                   //const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
                   
                   return new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                      color: "#000000",
+                      width: 1,
+                    }),
+                    
                     image: new ol.style.Circle({
                       radius: 4,
                       fill: new ol.style.Fill({
@@ -105,7 +130,7 @@ export default class Contacts extends React.Component {
                         color: "#000000",
                         width: 1
                       }),
-                    }),
+                    })
                   });
                 }
 
@@ -176,10 +201,12 @@ export default class Contacts extends React.Component {
                 >
 
                 {availableTypes}
-
-                <Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
+{/*
+<Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
                     Remove Contacts
                 </Button>
+*/}
+                
             </Panel>
         </div>
     );
