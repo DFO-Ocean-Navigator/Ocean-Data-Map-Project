@@ -577,10 +577,14 @@ export default class OceanNavigator extends React.Component {
         showModal: false,
       });
     } else {
-      window.history.back();
+      this.setState({
+        showModal: false,
+      })
+      //window.history.back();
     }
   }
 
+  /*
   componentDidUpdate(prevProps, prevState) {
     
     if (this.state.showModal && !prevState.showModal) {
@@ -588,6 +592,7 @@ export default class OceanNavigator extends React.Component {
       window.history.pushState(null, null, null);
     }
   }
+  */
 
   generatePermLink(subquery, permalinkSettings) {
     let query = {};

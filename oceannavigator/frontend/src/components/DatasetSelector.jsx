@@ -32,20 +32,11 @@ export default class DatasetSelector extends React.Component {
   }
 
   variableUpdate(key, value) {
-    console.warn("VARIABLE UPDATE: ", key, value)
     this.props.onUpdate("setDefaultScale", true);
     this.onUpdate(key, value);
   }
 
   onUpdate(key, value) {
-    console.warn("ON UPDATE: ", key, value)
-    /*const newState = DATA_ELEMS.reduce((a,b) => {
-      console.warn("A: ", a)
-      console.warn("B: ", b)
-      console.warn("CREATING NEW STATE")
-      a[b] = this.props.state[b];
-      return a;
-    }, {});*/
     const newState = this.props.state
 
     if (typeof(key) === "string") {
@@ -61,23 +52,20 @@ export default class DatasetSelector extends React.Component {
   }
 
   onTimeUpdate(key, value) {
-    console.warn("ON TIME UPDATE")
     let new_state = this.props.state
     if (typeof(key) === typeof('string')) {
       new_state[key] = value
     } else {
-      new_state.time = new Date(key)
+      new_state.time = moment(key.valueOf())//new Date(key)
     }
-    console.warn("ON TIME UPDATE: ", key, value)
-    this.props.onUpdate('data', new_state)
+    this.props.onUpdate(this.props.id, new_state)
   }
-
+  
   render() {
     _("Dataset");
     _("Variable");
     _("Depth");
     _("Time (UTC)");
-    console.warn("DATA: ", this.props.state)
     let variables = "";
     switch (this.props.state.variables) {
       case "3d":
@@ -95,6 +83,7 @@ export default class DatasetSelector extends React.Component {
       case "range":
         time = (<div>
           <TimePicker
+            range={true}
             startid='starttime'
             key='starttime'
             dataset={this.props.state.dataset}
@@ -190,7 +179,7 @@ export default class DatasetSelector extends React.Component {
             state={this.props.state.variable}
             def={"defaults.dataset"}
             onUpdate={this.variableUpdate}
-            url={"/api/variables/?vectors&dataset=" + this.props.state.dataset + variables
+            url={"/api/variables/?3d_only&dataset=" + this.props.state.dataset + variables
             }
             title={_("Variable")}
           ><h1>{_("Variable")}</h1>

@@ -53,7 +53,7 @@ export default class Meteorology extends React.Component {
   }
 
   removeTimeSource(map, dataset, variable) {
-    // Stored as
+    // Data Stored as
     // map: {
     //   layer: {
     //     dataset: {
@@ -84,7 +84,7 @@ export default class Meteorology extends React.Component {
 
 
 removeData(map, dataset, variable, idx) {
-  // Stored as
+  // Data Stored as
   // map: {
   //   layer: {
   //     dataset: {
@@ -138,64 +138,6 @@ removeData(map, dataset, variable, idx) {
     }
   } 
   this.props.globalUpdate('data', jQuery.extend({}, full_data))
-
-  /*
-  let data = this.props.state.data
-  if (data[map] !== undefined) {
-    if (data[map][this.props.layerType] !== undefined) {
-      if (data[map][this.props.layerType][idx] !== undefined) {
-        if (data[map][this.props.layerType][idx][dataset] !== undefined) {
-          data[map][this.props.layerType][idx][dataset][variable] = undefined
-          delete data[map][this.props.layerType][idx][dataset][variable]
-        }
-      }
-    }
-  }
-  data = this.cleanObject(data, map, dataset, variable, idx)
-  */
-  //delete data[map][this.props.layerType][idx]
-  /*
-  console.warn("REMOVING DATA")
-  console.warn("  map: ", map)
-  console.warn("  dataset: ", dataset)
-  console.warn("  variable: ", variable)
-  if (map === undefined || dataset === undefined || variable === undefined || idx === undefined) {
-    return
-  }
-  let data = this.props.state.data
-  
-  console.warn("DATA: ", data)
-  if (variable in data[map][this.props.layerType][idx][dataset]) {
-    console.warn("DELETING VARIABLE")
-    let temp = data[map][this.props.layerType][idx][dataset]
-  //  console.warn("TEMP: ", temp)
-    temp[variable] = undefined
-    delete temp[variable]
-  //} else {
-  //  console.warn("NOT DELETING VARIABLE")
-  //  data[map][this.props.layerType][idx][dataset][variable].frequency = data[map][this.props.layerType][idx][dataset][variable].frequency - 1
-  }
-  console.warn("DELETED VARIABLE: ", data)
-  console.warn("TESTING: ", jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset]))
-  if (jQuery.isEmptyObject(data[map][this.props.layerType][idx][dataset])) {
-    delete data[map][this.props.layerType][idx][dataset]
-    console.warn("DELETED DATASET: ", data)
-    if (jQuery.isEmptyObject(data[map][this.props.layerType][idx])) {
-      delete data[map][this.props.layerType][idx]
-      if (jQuery.isEmptyObject(data[map][this.props.layerType])) {
-        let type = this.props.layerType
-        delete data[map][type]
-        console.warn("DELETED TYPE: ", data)
- 
-        if (jQuery.isEmptyObject(data[map])) {
-          delete data[map]
-          console.warn("DELETING MAP: ", data)
-        }
-      }
-    }
-  }
-  console.warn("FINAL DATA: ", data)
-  */
 }
 
 render() {

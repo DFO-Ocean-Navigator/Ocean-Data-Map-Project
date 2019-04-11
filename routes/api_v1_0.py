@@ -215,8 +215,8 @@ def stats_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
-    query = json.loads(request.args.get('query'))
-    return routes.routes_impl.subset_query_impl(query)
+    #query = json.loads(request.args.get('query'))
+    return routes.routes_impl.subset_query_impl(request.args)
 
 
 #
@@ -239,7 +239,9 @@ def plot_v1_0():
       else:
         query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
         query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
-  
+      if 'compare_to' in query:
+        if 'time' in query['compare_to']:
+          query['compare_to']['time'] = dataset.convert_to_timestamp(query['compare_to']['time'])
       
     resp = routes.routes_impl.plot_impl(args,query)
 

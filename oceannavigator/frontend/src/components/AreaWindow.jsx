@@ -59,6 +59,7 @@ export default class AreaWindow extends React.Component {
       // Should dataset/variable changes in this window
       // propagate to the entire site?
       syncLocalToGlobalState: false,
+      dataset_compare: false,
       showarea: true,
       surfacevariable: "none",
       linearthresh: 200,
@@ -104,6 +105,7 @@ export default class AreaWindow extends React.Component {
     this.updateData = this.updateData.bind(this);
     this.updateCompareData = this.updateCompareData.bind(this);
     this.populateVariables = this.populateVariables.bind(this);
+    this.onTimeUpdate = this.onTimeUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -115,8 +117,29 @@ export default class AreaWindow extends React.Component {
     this._mounted = false;
   }
 
-  updateData(selected) {
-    selected = selected.split(',')
+  /*
+
+  */
+  onTimeUpdate(key, value) {
+    
+    if (typeof(key) === typeof('string')) {
+      this.setState({
+        [key]: value
+      })
+    } else {
+      //let date = moment.tz(key, 'GMT')
+      //date.setUTCMonth(date.getUTCMonth() +1)
+      this.setState({
+            time: key
+      })
+    }
+  }
+
+  /*
+    If selected_right is null, empty, or undefined, will only load left map data
+  */
+  updateData(selected_left, selected_right) {
+    let selected = selected_left.split(',')
     let data = this.props.data
 
     // Initialize non compare data
@@ -143,7 +166,55 @@ export default class AreaWindow extends React.Component {
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
     let time = data[layer][index][dataset][variable].time
-    
+    let output_starttime = moment(time.valueOf())
+    let output_endtime = moment(time.valueOf())
+    let depth = data[layer][index][dataset][variable].depth
+
+    if (jQuery.isEmptyObject(this.props.data_compare)) {
+      let data_compare = {
+        layer: layer,
+        index: index,
+        dataset: dataset,
+        variable: variable,
+        display: display,
+        colourmap: colourmap,
+        dataset_quantum: quantum,
+        scale: scale + ',auto',
+        depth: depth,
+        time: moment(time.valueOf()),    
+      }
+      this.setState({
+        data_compare: data_compare,
+        output_starttime: output_starttime,
+        output_endtime: output_endtime,
+      })
+    } else {
+      let compare_display = data[layer][index][dataset][variable].display
+      let compare_colourmap = data[layer][index][dataset][variable].colourmap
+      let compare_quantum = data[layer][index][dataset][variable].quantum
+      let compare_scale = data[layer][index][dataset][variable].scale
+      let compare_time = data[layer][index][dataset][variable].time
+      let depth = data[layer][index][dataset][variable].depth
+      let data_compare = {
+        layer: layer,
+        index: index,
+        dataset: dataset,
+        depth: depth,
+        variable: variable,
+        display: compare_display,
+        colourmap: compare_colourmap,
+        quantum: compare_quantum,
+        scale: compare_scale + ',auto',
+        time: moment(compare_time.valueOf()),
+      }
+
+      this.setState({
+        data_compare: data_compare,
+        output_starttime: output_starttime,
+        output_endtime: output_endtime
+      })
+    }
+
     this.setState({
       data: {
         layer: layer,
@@ -154,7 +225,7 @@ export default class AreaWindow extends React.Component {
         display: display,
         colourmap: colourmap,
         dataset_quantum: quantum,
-        scale: scale,
+        scale: scale + ',auto',
         time: time,
         starttime: null,
       }
@@ -166,9 +237,7 @@ export default class AreaWindow extends React.Component {
   }
 
   updateCompareData(selected) {
-    console.warn("UPDATING COMPARE DATA")
-    console.warn("SELECTED: ", selected)
-
+    return
   }
 
   populateVariables(dataset) {
@@ -247,9 +316,6 @@ export default class AreaWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
-    console.warn("ON LOCAL UPDATE")
-    console.warn("KEY: ", key)
-    console.warn("VALUE: ", value)
     /*
     if (this._mounted) {
 
@@ -313,9 +379,30 @@ export default class AreaWindow extends React.Component {
         }
       }
   }*/
-    this.setState({
-      [key]: value,
-    })
+    if (this._mounted) {
+      
+      let newState = this.state;
+      if (key === 'data') {
+        newState[key] = value;
+      } else if (key === 'data_compare') {
+        newState[key] = value;
+      } else if (key === 'compare_scale') {
+        newState['data_compare']['scale'] = value
+      } else if (typeof (key) === "string") {
+        newState[key] = value;
+      }
+      else {
+        for (let i = 0; i < key.length; ++i) {
+          newState[key[i]] = value[i];
+        }
+      }
+
+      this.setState(newState);
+
+      /*this.setState({
+        [key]: value
+      })*/
+    }
   }
 
   // Find max extents of drawn area
@@ -345,7 +432,7 @@ export default class AreaWindow extends React.Component {
       "&variables=" + this.state.output_variables.join() +
       "&min_range=" + [AABB[0], AABB[2]].join() +
       "&max_range=" + [AABB[1], AABB[3]].join() +
-      "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+      "&time=" + [this.state.output_starttime.toISOString(), this.state.output_endtime.toISOString()].join() +
       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
       "&should_zip=" + (this.state.zip ? 1 : 0);
   }
@@ -383,8 +470,6 @@ export default class AreaWindow extends React.Component {
   }
 
   updatePlot() {
-    console.warn("UPDATE PLOT")
-    console.warn("DATA: ", this.state.data)
     if (jQuery.isEmptyObject(this.state.data)) {
       return
     }
@@ -417,15 +502,11 @@ export default class AreaWindow extends React.Component {
         plotQuery.radius = this.props.options.interpRadius;
         plotQuery.neighbours = this.props.options.interpNeighbours;
         plotQuery.plotTitle = this.state.plotTitle;
-        if (this.props.dataset_compare) {
-          plotQuery.compare_to = this.state.data_compare.dataset;
-          plotQuery.compare_to.scale = this.state.data_compare.scale;
+        if (this.state.dataset_compare) {
+          plotQuery.compare_to = this.state.data_compare
           plotQuery.compare_to.scale_diff = this.state.scale_diff;
-          plotQuery.compare_to.colormap = this.state.rightColormap;
           plotQuery.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-
-
+          }
         this.setState({
           plot_query: plotQuery
         })
@@ -482,6 +563,10 @@ export default class AreaWindow extends React.Component {
         Contour Labels
       </Checkbox>
     }
+    let applyChanges2 = <Button
+      key='2'
+      onClick={this.updatePlot}
+    >Apply Changes</Button>
 
     const mapSettings = (<Panel
       collapsible
@@ -495,7 +580,7 @@ export default class AreaWindow extends React.Component {
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
-            state={this.props.dataset_compare}
+            state={this.state.dataset_compare}
             onUpdate={this.onLocalUpdate}
             title={_("Compare Datasets")}
           />
@@ -524,8 +609,8 @@ export default class AreaWindow extends React.Component {
 
       <div
         style={{
-          display: this.props.dataset_compare &&
-            this.state.data.variable == this.props.data_compare.variable ? "block" : "none"
+          display: this.state.dataset_compare &&
+            this.state.data.variable == this.state.data_compare.variable ? "block" : "none"
         }}
       >
         <Range
@@ -615,8 +700,14 @@ export default class AreaWindow extends React.Component {
         updatePlotTitle={this.updatePlotTitle}
         plotTitle={this.state.plotTitle}
       ></CustomPlotLabels>
-
+      {applyChanges2}
     </Panel>);
+
+
+    let time = "";
+    let timeObj = this.state.data.time//new Date(this.props.state.time);
+    let starttimeObj = this.state.data.starttime//new Date(this.props.state.starttime);
+    
     var subsetPanel = null;
     if (this._mounted) {
       subsetPanel = (<Panel
@@ -646,6 +737,17 @@ export default class AreaWindow extends React.Component {
             onUpdate={(key, value) => { this.setState({ output_timerange: value, }); }}
             title={_("Select Time Range")}
           />
+          
+          <TimePicker
+            range={this.state.output_timerange}
+            startid='starttime'
+            key='starttime'
+            dataset={this.state.data.dataset}
+            quantum={this.state.data.dataset_quantum}
+            startDate={starttimeObj}
+            date={timeObj}
+            onTimeUpdate={this.onTimeUpdate}
+          ></TimePicker>
           {/*
           <TimePicker
             id='output_starttime'
@@ -698,7 +800,7 @@ export default class AreaWindow extends React.Component {
               <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
               <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
               <option value="NETCDF3_NC" disabled={
-                this.state.data.dataset !== 'giops_dat' &&
+                this.state.data.dataset !== 'giops_day' &&
                 this.state.data.dataset !== 'riops' // Disable if not a giops or riops dataset
               }>
                 {_("NetCDF-3 NC")}
@@ -770,61 +872,62 @@ export default class AreaWindow extends React.Component {
     </Panel>
     );
 
-    console.warn("CREATING DATASET PANEL: ", this.state.data)
+    let applyChanges1 = <Button
+      key='1'
+      onClick={this.updatePlot}
+    >Apply Changes</Button>
+    var dataset = null
+    if (this.state.data.scale !== undefined) {
+      dataset = (<Panel
+        key='left_map'
+        id='left_map'
+        collapsible
+        defaultExpanded
+        header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        bsStyle='primary'
+      >
+        {<DatasetSelector
+            key='data'
+            id='data'
+            multiple={this.state.currentTab === 2}
+            state={this.state.data}
+            onUpdate={this.onLocalUpdate}
+            depth={true}
+        />}
+        <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
+          <Range
+            auto
+            key='scale'
+            id='scale'
+            state={this.state.data.scale}
+            def={""}
+            onUpdate={this.onLocalUpdate}
+            title={_("Variable Range")}
+          />
+          <ComboBox
+            key='leftColormap'
+            id='leftColormap'
+            state={this.state.leftColormap}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/colormaps/'
+            title={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/colormaps.png" />
+          </ComboBox>
+        </div>
+        {applyChanges1}
+      </Panel>);
 
-    var dataset = (<Panel
-      key='left_map'
-      id='left_map'
-      collapsible
-      defaultExpanded
-      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-      bsStyle='primary'
-    >
-    {
-      
-      <DatasetSelector
-        key='data'
-        id='data'
-        multiple={this.state.currentTab === 2}
-        state={this.state.data}
-        onUpdate={this.onLocalUpdate}
-        depth={true}
-      />
     }
-      
 
-      <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
-        {/*
-        <Range
-          auto
-          key='scale'
-          id='scale'
-          state={this.state.data.scale}
-          def={""}
-          onUpdate={this.onLocalUpdate}
-          title={_("Variable Range")}
-        />
-        */}
-        
-
-        <ComboBox
-          key='leftColormap'
-          id='leftColormap'
-          state={this.state.leftColormap}
-          def='default'
-          onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
-          title={_("Colourmap")}
-        >
-          {_("colourmap_help")}
-          <img src="/colormaps.png" />
-        </ComboBox>
-      </div>
-    </Panel>);
-
-
+    let applyChanges_compare = <Button
+      key='compare'
+      onClick={this.updatePlot}
+    >Apply Changes</Button>
     const compare_dataset = <div key='compare_dataset'>
-      <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
+      <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>
         <Panel
           key='right_map'
           id='right_map'
@@ -842,8 +945,8 @@ export default class AreaWindow extends React.Component {
 
           <Range
             auto
-            key='scale_1'
-            id='scale_1'
+            key='compare_scale'
+            id='compare_scale'
             state={this.state.data_compare.scale}
             def={""}
             onUpdate={this.onLocalUpdate}
@@ -862,7 +965,7 @@ export default class AreaWindow extends React.Component {
             {_("colourmap_help")}
             <img src="/colormaps.png" />
           </ComboBox>
-
+          {applyChanges_compare}
         </Panel>
       </div>
     </div>;
@@ -870,30 +973,24 @@ export default class AreaWindow extends React.Component {
     let leftInputs = [];
     let rightInputs = [];
 
-    let applyChanges1 = <Button
-      key='1'
-      onClick={this.updatePlot}
-    >Apply Changes</Button>
 
-    let applyChanges2 = <Button
-      key='2'
-      onClick={this.updatePlot}
-    >Apply Changes</Button>
+
+
 
     //this.updatePlot()
 
     switch (this.state.currentTab) {
       case 1:
-        leftInputs = [/*globalSettings*/mapSettings, subsetPanel, applyChanges1];
+        leftInputs = [/*globalSettings*/mapSettings, subsetPanel];
 
-        if (this.props.dataset_compare) {
+        if (this.state.dataset_compare) {
           rightInputs = [dataset, compare_dataset]
         } else {
           rightInputs = [dataset];
         }
         break;
       case 2:
-        leftInputs = [/*globalSettings*/dataset, applyChanges2];
+        leftInputs = [/*globalSettings*/dataset, applyChanges1];
         break;
     }
 

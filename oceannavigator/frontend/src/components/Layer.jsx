@@ -227,19 +227,14 @@ export default class Layer extends React.Component {
           var new_variable
           if (this.props.state._firstLayer && variables !== undefined) {
             for (let variable in variables) {
-              console.warn("VARIABLE: ", variable)
-              console.warn("VAR: ", variables[variable]['id'])
               if (variables[variable]['id'] === 'votemper') {
-                console.warn("FOUND");
                 new_variable = 'votemper';
                 break;
               }
             }
           } else if (variables !== undefined) {
-            console.warn("UPDATING VARIABLE AGAIN")
             new_variable = variables[0]['id']
           }
-          console.warn("VARIABLE: ", new_variable)
           this.setState({
             variables: variables,
             current_variable: new_variable,
@@ -294,7 +289,6 @@ export default class Layer extends React.Component {
 
       // Update Variables
       $.when(variable_promise).done(function (variables) {
-        console.warn("UPDATING VARIABLE")
         let variable = variables[0]['id']
         const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + dataset + "&variable=" + variable).promise();
 
@@ -697,7 +691,11 @@ export default class Layer extends React.Component {
     let layer_ice = this.state.ice_layer;
     let props = layer_ice.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
-    let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
+    //let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
+    if (this.props.state.timestamps[time_access] === undefined) {
+      return
+    }
+    let timeString = this.props.state.timestamps[time_access].toISOString()
     let masked = 0
     if (this.props.layerType === 'met') {
       masked = 1  // 0 Masks the land, 1 doesn't

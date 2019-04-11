@@ -620,7 +620,7 @@ export default class PointWindow extends React.Component {
     
     const showTimeRange = this.state.selected === TabEnum.STICK ||
       this.state.selected === TabEnum.MOORING;
-    console.warn("TIME IN POINT: ", timeObj)
+    console.warn("TIME IN POINT: ", timeObj, starttimeObj)
     var time = null
     var timeRange = null
     if (this.state.dataset !== undefined) {

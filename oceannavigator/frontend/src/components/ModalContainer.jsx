@@ -55,7 +55,7 @@ export default class ModalContainer extends React.Component {
             dataset_compare={this.props.dataset_compare}
             //dataset_1={this.props.dataset_1}
             action={this.props.action}
-            showHelp={this.props.toggleCompareHelp}
+            showHelp={this.props.showHelp}
             swapViews={this.props.swapViews}
           />
         );
@@ -85,7 +85,7 @@ export default class ModalContainer extends React.Component {
             //dataset_compare={this.props.dataset_compare}
             //dataset_1={this.state.dataset}
             action={this.props.action}
-            showHelp={this.props.toggleCompareHelp}
+            showHelp={this.props.showHelp}
             swapViews={this.props.swapViews}
           />
         );
@@ -109,10 +109,10 @@ export default class ModalContainer extends React.Component {
             projection={this.props.projection}
             //variable={this.state.variable}
             onUpdate={this.props.updateState}
-            init={this.props.subquery}
+            init={this.props.init}
             dataset_compare={this.props.dataset_compare}
             //dataset_1={this.state.dataset_1}
-            showHelp={this.props.toggleCompareHelp}
+            showHelp={this.props.showHelp}
             action={this.props.action}
             swapViews={this.props.swapViews}
             options={this.props.options}
@@ -132,9 +132,9 @@ export default class ModalContainer extends React.Component {
             //scale={this.state.scale}
             names={this.props.names}
             //depth={this.state.depth}
-            onUpdate={this.updateState}
-            init={this.props.subquery}
-            action={this.action}
+            onUpdate={this.props.updateState}
+            init={this.props.init}
+            action={this.props.action}
           />
         );
 
@@ -144,8 +144,8 @@ export default class ModalContainer extends React.Component {
         modalContent = (
           <Class4Window
             class4id={this.props.class4}
-            init={this.props.subquery}
-            action={this.action}
+            init={this.props.init}
+            action={this.props.action}
           />
         );
         modalTitle = "";

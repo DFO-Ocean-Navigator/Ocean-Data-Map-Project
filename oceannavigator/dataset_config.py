@@ -119,7 +119,6 @@ class DatasetConfig():
                     is_hidden in ['false', 'False']) and \
                     not is_vector:
                 variables.append(key)
-        print("VARIABLES: ", variables)
         return variables
 
     @property
@@ -134,7 +133,6 @@ class DatasetConfig():
                     is_hidden in ['false', 'False']) and \
                     is_vector:
                 variables[key] = data
-        print("VECTOR VARIABLES: ", variables)
         return variables
 
     @property
@@ -146,7 +144,6 @@ class DatasetConfig():
         for key,data in self._get_attribute("variables").items():
             if "equation" in data.keys():
                 variables[key] = data
-        print("CALC VARIABLES: ", variables)
         return variables
 
     @property
