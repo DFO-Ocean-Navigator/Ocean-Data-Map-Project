@@ -215,6 +215,7 @@ export default class TimePicker extends React.Component {
     if (this.props.quantum === 'day' || this.props.quantum === 'month') {
       //date = new Date(date);
       //date.setHours(0);
+      date.tz('GMT')
       date.set({
         hour: 0,
       })

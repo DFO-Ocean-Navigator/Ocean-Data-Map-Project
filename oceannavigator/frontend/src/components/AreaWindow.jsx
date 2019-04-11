@@ -166,10 +166,14 @@ export default class AreaWindow extends React.Component {
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
     let time = data[layer][index][dataset][variable].time
+    let compare_time = moment(time.valueOf())
+    compare_time.tz('GMT')
+    time = moment(time.valueOf())
+    time.tz('GMT')
     let output_starttime = moment(time.valueOf())
     let output_endtime = moment(time.valueOf())
     let depth = data[layer][index][dataset][variable].depth
-
+    
     if (jQuery.isEmptyObject(this.props.data_compare)) {
       let data_compare = {
         layer: layer,
@@ -181,7 +185,7 @@ export default class AreaWindow extends React.Component {
         dataset_quantum: quantum,
         scale: scale + ',auto',
         depth: depth,
-        time: moment(time.valueOf()),    
+        time: compare_time
       }
       this.setState({
         data_compare: data_compare,
@@ -193,7 +197,8 @@ export default class AreaWindow extends React.Component {
       let compare_colourmap = data[layer][index][dataset][variable].colourmap
       let compare_quantum = data[layer][index][dataset][variable].quantum
       let compare_scale = data[layer][index][dataset][variable].scale
-      let compare_time = data[layer][index][dataset][variable].time
+      compare_time = data[layer][index][dataset][variable].time
+      console.warn("COMPARE TIME IN AREA WINDOW: ", compare_time)
       let depth = data[layer][index][dataset][variable].depth
       let data_compare = {
         layer: layer,
