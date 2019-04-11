@@ -8,7 +8,11 @@ import dateFormat from "dateformat";
 import {Button} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-
+import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
+import 'react-dates/initialize'
+import 'react-dates/lib/css/_datepicker.css';
+import moment from "moment-timezone";
+import IceComboBox from "./IceComboBox.jsx";
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
@@ -29,375 +33,344 @@ export default class TimePicker extends React.Component {
     this._mounted = false;
     
     this.state = {
-      data: [],
-      map: {},
-      revmap: {},
       times: [],
+      
+      focusedInput: {
+        focused: false
+      }
     };
 
     // Function bindings
-    this.timeChange = this.timeChange.bind(this);
-    this.pickerChange = this.pickerChange.bind(this);
-    this.nextTime = this.nextTime.bind(this);
-    this.prevTime = this.prevTime.bind(this);
+    this.isInValidDay = this.isInValidDay.bind(this);
+    this.rangeUpdate = this.rangeUpdate.bind(this);
+    this.singleUpdate = this.singleUpdate.bind(this);
+    this.singleHourUpdate = this.singleHourUpdate.bind(this);
+    this.parseDate = this.parseDate.bind(this);
+    this.focusChange = this.focusChange.bind(this);
+    this.findHours = this.findHours.bind(this);
+    this.fetchDates = this.fetchDates.bind(this);
+  }
+
+  parseDate(value) {
+    let test_value = moment.tz(value, "GMT")
+    return test_value
   }
 
   componentDidMount() {
-    this._mounted = true;
-    this.populate(this.props);
+    this.fetchDates(false)
+    return
   }
 
-  componentWillUnmount() {
-    this._mounted = false;
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.dataset !== this.props.dataset) {
+      console.warn("FETCHING NEW DATES")
+      if (prevProps.dataset === undefined) {
+        this.fetchDates(false)    
+      } else {
+        this.fetchDates(true)
+      }
+      }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.props.url || nextProps.min !== this.props.min || nextProps.max !== this.props.max) {
-      this.populate(nextProps);
-    }
-  }
-
-  populate(props) {
-    if ("url" in props && "" != props.url) {
-      $.ajax({
-        url: props.url,
-        dataType: "json",
-        cache: false,
+  
+  fetchDates(update) {
+    $.ajax({
+      url: '/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum,
+      format: 'json',
+      cache: true,
+      success: function (response) {
+        let dates = [];
+        let dates_dict = {};
         
-        success: function(data) {
-            var map = {};
-            var revmap = {};
-            var min = 0;
-            var max = data.length - 1;
-            if (props.hasOwnProperty("min")) {
-              min = parseInt(props.min) + 1;
-              if (min < 0) {
-                min += data.length;
-              }
-            }
-            if (props.hasOwnProperty("max")) {
-              max = parseInt(props.max) - 1;
+        let date_value;
+        for (let date in response) {
 
-              //If a negative index is provided, starts counting backwards
-              if (max < 0) {
-                max += data.length;
-              }
-            }
-            for (let d in data) {
-              var d1 = new Date(data[d].value);
-              var d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
-              var d3 = d2;
-              if (this.props.quantum != "hour") {
-                d3 = new Date(Date.UTC(
-                  d1.getUTCFullYear(),
-                  d1.getUTCMonth(),
-                  d1.getUTCDate(),
-                  0, 0, 0, 0
-                ));
-              }
-              map[data[d].id] = d2;
-              revmap[d3.toUTCString()] = data[d].id;
-            }
-
-            this.setState({
-              data: data,
-              map: map,
-              revmap: revmap,
-              min: min,
-              max: max,
-            }, function() {
-              switch (props.quantum) {
-                case "month":
-                  $(this.refs.picker).MonthPicker({
-                    Button: false,
-                    MonthFormat: "MM yy",
-                    OnAfterMenuClose: this.pickerChange,
-                    MinMonth: new Date(
-                      map[min].getTime() +
-                      map[min].getTimezoneOffset() * 60 * 1000
-                    ),
-                    MaxMonth: new Date(
-                      map[max].getTime() +
-                      map[max].getTimezoneOffset() * 60 * 1000
-                    ),
-                    i18n: {
-                      year: _("Year"),
-                      prevYear: _("Previous Year"),
-                      nextYear: _("Next Year"),
-                      next12Years: _("Jump Forward 12 Years"),
-                      prev12Years: _("Jump Back 12 Years"),
-                      nextLabel: _("Next"),
-                      prevLabel: _("Prev"),
-                      buttonText: _("Open Month Chooser"),
-                      jumpYears: _("Jump Years"),
-                      backTo: _("Back to"),
-                      months: [
-                        _("Jan."), _("Feb."), _("Mar."), _("Apr."), _("May"),
-                        _("June"), _("July"), _("Aug."), _("Sep."), _("Oct."),
-                        _("Nov."), _("Dec.")
-                      ]
-                    }
-                  });
-                  break;
-                case "day":
-                  $(this.refs.picker).datepicker({
-                    Button: false,
-                    dateFormat: "dd MM yy",
-                    onClose: this.pickerChange,
-                    minDate: new Date(map[min]),
-                    maxDate: new Date(map[max]),
-                  });
-
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "minDate",
-                    new Date(map[min])
-                  );
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "maxDate",
-                    new Date(map[max])
-                  );
-                  break;
-                case "hour":
-                  $(this.refs.picker).datepicker({
-                    Button: false,
-                    dateFormat: "dd MM yy",
-                    onClose: this.pickerChange,
-                    minDate: new Date(map[min]),
-                    maxDate: new Date(map[max]),
-                  });
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "minDate",
-                    new Date(map[min])
-                  );
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "maxDate",
-                    new Date(map[max])
-                  );
-                  break;
-              }
-              this.pickerChange();
-
-            }.bind(this));
-        }.bind(this),
-
-        error: function(xhr, status, err) {
-          console.warn(props.url, status, err.toString());
-        }.bind(this)
-      });
-
-      var value = parseInt(props.state);
-  
-      if (value < 0) {
-        value += this.state.data.length;
-      }
-  
-      if (value < 0) {
-        value = 0;
-      }
-  
-      //const date = new Date(this.state.map[value]);
-    }
-  }
-
-  pickerChange() {
-    var min = 0;
-    var max = -1;
-    if (this.props.hasOwnProperty("min")) {
-      min = parseInt(this.props.min) + 1;
-    }
-    if (this.props.hasOwnProperty("max")) {
-      max = parseInt(this.props.max) - 1;
-    }
-    if (min < 0) {
-      min += this.state.data.length;
-    }
-    if (max < 0) {
-      max += this.state.data.length;
-    }
-
-    var d;
-    if (this.props.quantum === "hour") {
-      var times = [];
-      d = $(this.refs.picker).datepicker("getDate");
-      const isodatestr = dateFormat(d, "yyyy-mm-dd");
-      for (let i = 0; i < this.state.data.length; ++i) {
-        if (this.state.data[i].value.indexOf(isodatestr) === 0) {
-          if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
-            times.unshift({
-              id: this.state.data[i].id,
-              value: dateFormat(this.state.map[i], "HH:MM")
-            });
+          //Create moment object from ISO8601 extended string
+          let m = moment.tz(response[date]['value'], 'GMT');
+          
+          //Create a truncated string
+          let utc_m = m.format('YYYY-MM-DD');
+          
+          //Push data to new state
+          dates.push(utc_m);
+          if (utc_m in dates_dict) {
+            dates_dict[utc_m].push(m);
+          } else {
+            dates_dict[utc_m] = [m];
           }
+          
         }
-      }
-      this.setState({
-        times: times,
-      });
+        
+        this.setState({
+          dates_dict: dates_dict,
+          dates: dates
+        },  () => {
+          
+          let time// = this.props.date;
+          
+          if (update) {
+            let keys = Object.keys(dates_dict)
+            console.warn("KEYS: ", keys)
+            let value = dates_dict[keys[keys.length - 1]]
+            value = value[value.length - 1]
+            console.warn("VALUE: ", value)
+            time = value
+            this.props.onTimeUpdate('time', time)
+          } else {
+            time = this.props.date;
+          }
+          
+          let endhour = time.format('HH[Z]');
+          
+          if (this.props.startDate === null || true) {
+            let startTime = time.valueOf();
+            startTime = moment(startTime)
+            console.warn("START TIME: ", startTime)
+            // Get Hour of Time (This is used for replacement on date change)
+            //let starthour = startTime.format('HH[Z]');
+            // Set the startDate 24 days before the endDate
+            startTime = startTime.subtract(24, "days");
+            
+            console.warn("START TIME AFTER SHIFT: ", startTime)
+            
+            if (this.state.dates.includes(startTime.format('YYYY-MM-DD'))) {
+              console.warn("INITIAL TIME INCLUDED")
+              this.props.onTimeUpdate('starttime', startTime);
+              let starthour = startTime.format('HH[Z]')
+              this.setState({
+                starthour: starthour,
+                endhour: endhour,
+              });
+            } else {
+              console.warn(this.state.dates)
+              for (let i = 24; i >= 0; i = i-1) {
+                startTime.add(1, 'days');
+                console.warn("DATE: ", startTime.get('date'))
+                console.warn("I: ", i)
+                if (this.state.dates.includes(startTime.format('YYYY-MM-DD'))) {
+                  console.warn("MODIFIED TIME INCLUDED")
+                  this.props.onTimeUpdate('starttime', startTime);
+                  let starthour = startTime.format('HH[Z]')
+                  // Store hours for later use
+                  this.setState({
+                    starthour: starthour,
+                    endhour: endhour,
+                  });
+                  break;
+                }
+              }
+            }
+          } else { 
+            let startTime = this.props.startDate
+            let startHour = startTime.format('HH[Z]')
+            this.setState({
+              startTime: this.props.startDate,
+              starthour: startHour,
+              endhour: endhour 
+            })
+          }
+          
+          
+        })
+        this._mounted = true;
+        
+      }.bind(this)
+    })
+  }
 
-      if (times.length > 0) {
-        if (this.state.value === undefined) {
-          this.props.onUpdate(this.props.id, times[0].id);
-        } else if (
-          this.state.data[this.props.state].value.indexOf(isodatestr) !== 0
-        ) {
-          this.props.onUpdate(this.props.id, times[0].id);
-        }
+  rangeUpdate(dates) {
+    let startDate = dates.startDate; //new Date(dates.startDate);
+    let endDate = dates.endDate;//new Date(dates.endDate);
+    
+    let prevStart = this.props.startDate;//new Date(this.props.startDate);
+    let prevEnd = this.props.date//new Date(this.props.date);
+    
+    startDate.set({
+      hour: prevStart.get('hour')
+    })
+    endDate.set({
+      hour: prevEnd.get('hour')
+    })
+    //startDate.setUTCHours(prevStart.getUTCHours());
+    //endDate.setUTCHours(prevEnd.getUTCHours());
+    
+    if (this.props.includes('startid')) {
+      this.props.onTimeUpdate(this.props.startid, startDate);
+    } else {
+      this.props.onTimeUpdate('starttime', startDate);
+    }
 
-      }
-    } else if (this.refs.picker != null) {
-      if (
-        this.props.quantum == "month" &&
-        $.data(this.refs.picker, "KidSysco-MonthPicker")
-      ) {
-        d = $(this.refs.picker).MonthPicker("GetSelectedDate");
-      } else {
-        d = $(this.refs.picker).datepicker("getDate");
-      }
-      if (d != null) {
-        const utcDate = new Date(Date.UTC(
-                    d.getFullYear(),
-                    d.getMonth(),
-                    (this.props.quantum == "month") ? 15 : d.getDate(),
-                    d.getHours(),
-                    d.getMinutes(),
-                    d.getSeconds(),
-                    d.getMilliseconds()
-                ));
-        this.props.onUpdate(
-          this.props.id,
-          this.state.revmap[utcDate.toUTCString()]
-        );
-      } else {
-        if (this.props.state < 0) {
-          this.props.onUpdate(
-            this.props.id,
-            this.state.data.length + this.props.state
-          );
-        }
-      }
+    if (this.props.includes('id')) {
+      this.props.onTimeUpdate(this.props.id, endDate);
+    } else {
+      this.props.onTimeUpdate('time', endDate);
     }
   }
 
-  timeChange(e) {
-    const value = e.target.value;
-    this.setState({
-      value: value
-    });
-    this.props.onUpdate(this.props.id, value);
+  updateRangeHour(startHour, endHour) {
+    return
   }
 
-  nextTime() {
-    const value = parseInt(this.props.state) + 1;
+  singleUpdate(date) {
+    if (this.props.quantum === 'day' || this.props.quantum === 'month') {
+      //date = new Date(date);
+      //date.setHours(0);
+      date.set({
+        hour: 0,
+      })
+      this.props.onTimeUpdate(date);
+    } else {
+      this.props.onTimeUpdate(date);
+    }
     
-    this.props.onUpdate(this.props.id, value);
-    
-    this.setState({
-      value: value
-    }, function() {
-      this.updatePicker(value - 1, value);
-    }.bind(this));
   }
 
-  prevTime() {
-    const value = parseInt(this.props.state) - 1;
+  singleHourUpdate(key, value) {
     
-    this.setState({
-      value: value
-    }, function() {
-      this.updatePicker(value + 1, value);
-    }.bind(this));
-    
-    this.props.onUpdate(this.props.id, value);
-  }
+    let int_value = parseInt(value.substring(0, value.length - 1))
+    let date;
 
-  updatePicker(oldstate, newstate) {
-    if (this.state.data[oldstate].value.substring(0, 10) !=
-      this.state.data[newstate].value.substring(0, 10)) {
-      this.pickerChange();
+    switch(key) {
+      // End Date / Single Date
+      case 'endHour':
+        
+        this.setState({
+          endHour: value,
+        })
+
+        date = moment(this.props.date.valueOf());
+        date.set({
+          hour: int_value,
+        })
+        this.props.onTimeUpdate(moment(date.valueOf()));
+        break;
+      // Start Date
+      case 'startHour':
+        
+        this.setState({
+          startHour: value,
+        })
+
+        date = moment(this.props.startDate.valueOf())
+        date.set({
+          hour: int_value,
+        })  
+        this.props.onTimeUpdate(moment(date.valueOf()));
+        break;
+      }
+    }
+
+
+  /*
+    Returns false if the day exists in the dataset
+  */
+  isInValidDay(day) {
+    let utc_day = day.format('YYYY-MM-DD');
+    if (utc_day in this.state.dates_dict) {
+      return false;
+    } else {
+      return true;
     }
   }
+
+  focusChange(focusedInput) {
+    this.setState({focusedInput});
+  }
+
+  findHours(date) {
+    if (this.state.dates_dict === undefined) {
+      return
+    }
+    let formatted = date.format('YYYY-MM-DD')
   
-  isFirstTime() {
-    return parseInt(this.props.state) === this.state.min;
+    // Confirm the date exists in the dataset
+    if (formatted in this.state.dates_dict) {
+      let available_hours = [];
+      
+      let dates = this.state.dates_dict[formatted];
+      
+      // Loop through all the timestamps on the requested day
+      for (let val in dates) {
+        let hour = dates[val].format('HH[Z]')
+        
+        let temp_dict = {
+          id: hour,
+          value: hour,
+        }
+        available_hours.push(temp_dict)
+      }
+      return available_hours;
+    } else { 
+      return []
+    }
   }
 
-  isLastTime() {
-    return parseInt(this.props.state) === this.state.max;
-  }
+  
 
   render() {
-    $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
-
-    let value = parseInt(this.props.state);
-
-    if (value < 0) {
-      value += this.state.data.length;
+    
+    var picker = null;
+    
+    if (this.props.range && this.props.startDate !== null) {
+      picker = [<DateRangePicker
+        key='rangePicker'
+        startDateId='starttime'
+        startDate={this.props.startDate}
+        endDateId='date'
+        endDate={this.props.date}
+        onDatesChange={this.rangeUpdate}
+        focusedInput={this.state.focusedInput}
+        onFocusChange={focusedInput => this.focusChange(focusedInput)
+        }
+        isOutsideRange={day => this.isInValidDay(day)}
+      ></DateRangePicker>]
+      if (this.props.quantum === 'hour' && this._mounted) {
+        let hours_available = this.findHours(this.props.date)
+        picker.push(<IceComboBox
+          data={hours_available}
+          current={this.state.endHour}
+          localUpdate={this.onUpdate}
+          key='endHour'
+          className='current_hour_single range0'
+          name='endHour'
+        ></IceComboBox>)
+  
+        picker.push(<IceComboBox
+          data={hours_available}
+          current={this.state.startHour}
+          localUpdate={this.onUpdate}
+          key='startHour'
+          className='current_hour_single range1'
+          name='startHour'
+        ></IceComboBox>)  
+      }
+      
+    } else {
+      picker = [<SingleDatePicker
+        key='singlePicker'
+        date={this.props.date}
+        onDateChange={date => this.singleUpdate(date)}
+        focused={this.state.focusedInput['focused']}
+        onFocusChange={focusedInput => this.setState({ focusedInput })}
+        isOutsideRange={day => this.isInValidDay(day)}
+        
+      ></SingleDatePicker>]
+      if (this.props.quantum === 'hour' && this._mounted) {
+        let hours_available = this.findHours(this.props.date)
+        picker.push(<IceComboBox
+          data={hours_available}
+          current={this.state.current_hour}
+          localUpdate={this.singleHourUpdate}
+          key='endHour'
+          className='current_hour_single'
+          name='endHour'
+        ></IceComboBox>)
+      }
     }
-
-    if (value < 0) {
-      value = 0;
-    }
-
-    const date = new Date(this.state.map[value]);
-    let input = null;
-    switch(this.props.quantum) {
-      case "month":
-        input = <input
-          readOnly
-          ref='picker'
-          type="text"
-          value={$.datepicker.formatDate("MM yy", date)}
-        />;
-        break;
-      case "day":
-      case "hour":
-        input = <input
-          readOnly
-          ref='picker'
-          type="text"
-          value={$.datepicker.formatDate("dd MM yy", date)}
-        />;
-        break;
-    }
-
-    let timeinput = null;
-    const options = this.state.times.map(function (t) {
-      return (
-        <option key={t.id} value={t.id}>
-          {t.value}
-        </option>
-      );
-    });
-    if (this.props.quantum == "hour") {
-      timeinput = <select
-        value={this.state.value}
-        onChange={this.timeChange}>
-        {options}
-      </select>;
-    }
-
+    
     return (
-      <div key={this.props.url} className='TimePicker input'>
-        <h1>{this.props.title}</h1>
-
-        <div>
-          <Button
-            onClick={this.prevTime}
-            disabled={this.isFirstTime()}
-          ><Icon icon='caret-left' alt="<" /></Button>
-          <div>
-            {input}
-            {timeinput}
-          </div>
-          <Button
-            onClick={this.nextTime}
-            disabled={this.isLastTime()}
-          ><Icon icon='caret-right' alt=">" /></Button>
-        </div>
+      <div>
+        {picker}
       </div>
     );
   }
@@ -405,12 +378,8 @@ export default class TimePicker extends React.Component {
 
 //***********************************************************************
 TimePicker.propTypes = {
-  title: PropTypes.string,
-  url: PropTypes.string,
+  range: PropTypes.bool,
+  dataset: PropTypes.string,
   quantum: PropTypes.string,
-  state: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  onUpdate: PropTypes.func,
-  id: PropTypes.string,
-  min: PropTypes.number,
-  max: PropTypes.number,
+  onTimeUpdate: PropTypes.func,
 };

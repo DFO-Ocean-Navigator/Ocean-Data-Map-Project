@@ -1,7 +1,8 @@
 import pyresample
 import numpy as np
 import warnings
-from netCDF4 import Dataset, netcdftime
+from netCDF4 import Dataset
+import cftime
 from data.calculated import CalculatedData
 from pint import UnitRegistry
 from cachetools import TTLCache
@@ -268,6 +269,8 @@ class Mercator(CalculatedData):
 
         else:
             if len(var.shape) == 4:
+                print("TIME: ", time)
+                print("VAR: ", var)
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]

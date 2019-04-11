@@ -59,6 +59,8 @@ def generateScript(url: str, type: str):
 #
 # Unchanged from v0.0
 #
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
 @bp_v1_0.route('/api/v1.0/datasets/')
 def query_datasets_v1_0():
   return routes.routes_impl.query_datasets_impl(request.args)
@@ -66,6 +68,8 @@ def query_datasets_v1_0():
 
 #
 # Unchanged from v0.0
+#
+# Will be capable of processing additional arguments for meteorology, oceanography, and ice
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
@@ -85,8 +89,50 @@ def obs_vars_query_v1():
 #
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def time_query_v1_0():
-  return routes.routes_impl.time_query_impl(request.args)
+  if request.args['dataset'] == 'all':
+    return routes.routes_impl.all_time_query_impl(request.args)
+  else:
+    return routes.routes_impl.time_query_impl(request.args)
 
+#
+# Gets all available timestamps for all the datasets
+#
+@bp_v1_0.route('/api/v1.0/all/timestamps/')
+def all_time_query_v1_0():
+  return routes.routes_impl.all_time_query_impl(request.args)
+
+
+#
+#
+#
+@bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
+def convert(dataset: str, date: str):
+  
+  try:
+    with open_dataset(get_dataset_url(dataset)) as ds:
+      date = ds.convert_to_timestamp(date)
+      resp = jsonify({
+          'date': date,
+      })
+    return resp
+  except:
+    return Response(status=500)
+
+@bp_v1_0.route('/api/v1.0/timeindex/convert/<string:dataset>/<string:index>/')
+def num2date(dataset: str, index: str):
+  #try:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
+    print(ds)
+    print("INDEX: ", index)
+    date = ds.convert_to_date(index)
+    print("DATE: ", date)
+    resp = jsonify({
+      'date': date
+    })
+    return resp
+  #except:
+    #return Response(status=500)
 
 #
 # Unchanged from v0.0
@@ -99,9 +145,9 @@ def depth_v1():
 #
 # Unchanged from v0.0
 #
-@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
-def scale_v1_0(dataset: str, variable: str, scale: str):
-  return routes.routes_impl.scale_impl(dataset, variable, scale)
+@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>/<string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
+def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label:str):
+  return routes.routes_impl.scale_impl(dataset, variable, scale, colourmap, orientation, transparency, label)
 
 
 #
@@ -169,8 +215,8 @@ def stats_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
-    query = json.loads(request.args.get('query'))
-    return routes.routes_impl.subset_query_impl(query)
+    #query = json.loads(request.args.get('query'))
+    return routes.routes_impl.subset_query_impl(request.args)
 
 
 #
@@ -185,13 +231,17 @@ def plot_v1_0():
     args = request.form
   query = json.loads(args.get('query'))
 
-  config = DatasetConfig(query.get('dataset'))
-  with open_dataset(config) as dataset:
-    if 'time' in query:
-      query['time'] = dataset.convert_to_timestamp(query.get('time'))  
-    else:
-      query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
-      query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
+  if (query['type'] != 'drifter'):
+    config = DatasetConfig(query.get('dataset'))
+    with open_dataset(config) as dataset:
+      if 'time' in query:
+        query['time'] = dataset.convert_to_timestamp(query.get('time'))  
+      else:
+        query['starttime'] = dataset.convert_to_timestamp(query.get('starttime'))
+        query['endtime'] = dataset.convert_to_timestamp(query.get('endtime'))
+      if 'compare_to' in query:
+        if 'time' in query['compare_to']:
+          query['compare_to']['time'] = dataset.convert_to_timestamp(query['compare_to']['time'])
       
     resp = routes.routes_impl.plot_impl(args,query)
 
@@ -274,14 +324,15 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 #
 # Change to timestamp from v0.0
 #
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
   
   config = DatasetConfig(dataset)
   with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
-
+    response = routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, masked, display, zoom, x, y)
+    
+    return response
 
 #
 # Allow toggle of shaded relief

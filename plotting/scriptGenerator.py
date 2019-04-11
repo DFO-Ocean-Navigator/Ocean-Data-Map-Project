@@ -93,9 +93,13 @@ def generatePython(url):
     script.write("}\n")
     #---------------------------
     #Assemble full request
-    script.write('\n#Assemble full request - converts json object to url\n')
     if notPlot == False:
-        script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)})" + "\n")
+        script.write('\ndpi = 144\n')
+
+    script.write('\n#Assemble full request - converts json object to url\n')
+    
+    if notPlot == False:
+        script.write("url = base_url + urlencode(" + '{\n   "query": ' + "json.dumps(query),\n" + '   "dpi": dpi\n' + "})\n")
     else:
         script.write("url = base_url + urlencode(" + '{"query": ' + "json.dumps(query)}) + '" + url_tail + "'\n")
     
@@ -198,7 +202,7 @@ def generateR(url):
     #Request and Save Image
     script.write("#Request and Save Image\n")
     if notPlot == False:
-        script.write('full_url <- paste0(base_url, "?query=", URLencode(query, reserved=TRUE))\n')
+        script.write('full_url <- paste0(base_url, "?query=", URLencode(query, reserved=TRUE), "&dpi=144")\n')
     else:
         script.write('full_url <- paste0(base_url, "?query=", URLencode(query, reserved=TRUE), url_tail)\n')
     

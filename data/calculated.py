@@ -46,6 +46,7 @@ class CalculatedData(NetCDFData):
             return CalculatedArray(self._dataset,
                     self._calculated[key]['equation'], attrs)
         else:
+            print('KEY: ', key)
             return self._dataset.variables[key]
 
     """
@@ -57,7 +58,6 @@ class CalculatedData(NetCDFData):
         if self._calculated_variable_list is None:
             variable_list = super(CalculatedData, self).variables
             temp_list = list(variable_list)
-
             for name, data in self._calculated.items():
                 if name not in variable_list:
                     # New Variable

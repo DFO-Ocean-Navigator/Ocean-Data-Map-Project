@@ -1,4 +1,5 @@
 import netCDF4
+import cftime
 from flask_babel import format_date
 import dateutil.parser
 from data.data import Data, Variable, VariableList
@@ -52,8 +53,9 @@ class NetCDFData(Data):
         time_var = self.__get_time_variable()
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
+        print("TIME RANGE: ", time_range)
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
-
+        print("TIME RANGE(2): ", time_range)
         if len(time_range) == 1:    #Single Date
             return int(str(time_range[0][0]))
         else:                          #Multiple Dates
@@ -63,8 +65,33 @@ class NetCDFData(Data):
                 new_date = {x : int(str(time_range[i][0]))}
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
+            print("FORMATED DATE: ", date_formatted)
             return date_formatted
         
+
+    """
+        Converts a time index to its corresponding date
+
+        requires: time index
+
+    """
+    def convert_to_date(self, index):
+        
+        times = []
+        indexes = index.split(',')
+        
+        for idx, date in enumerate(self.timestamps):
+                        # Only compare year, month, day.
+                        # Some daily/hourly average datasets have an 
+                        # hour and minute offset that messes up 
+                        # the index search.
+                  
+                        if str(idx) in indexes:
+                            times.append(date.date())
+        
+        return times
+
+
     """
         Subsets a netcdf file with all depths
     """
@@ -126,7 +153,7 @@ class NetCDFData(Data):
             return None
 
         variable_list = [v.key for v in self.variables]
-
+        print('variable list: ', variable_list)
         # Get lat/lon variable names from dataset (since they all differ >.>)
         lat_var = find_variable("lat", variable_list)
         lon_var = find_variable("lon", variable_list)
@@ -428,7 +455,11 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
-       
+
+            elif self.interp == 'none':
+                print("INTERP RADIUS: ", self.radius)
+                return pyresample.kd_tree.resample_nearest(input_def, data,
+                    output_def, radius_of_influence=float(150), nprocs=4)
     """
         Finds and returns the xArray.IndexVariable containing
         the time dimension in self._dataset
@@ -465,7 +496,6 @@ class NetCDFData(Data):
             l = []
             # Get "data variables" from dataset
             variables = list(self._dataset.data_vars.keys())
-
             for name in variables:
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
@@ -524,7 +554,7 @@ class NetCDFData(Data):
             var = self.__get_time_variable()
 
             # Convert timestamps to UTC
-            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
+            t = cftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values

@@ -2,19 +2,23 @@ import React from "react";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
+import { Button, Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
 import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
+import DataSelection from "./DataSelection.jsx";
+import moment from "moment-timezone";
+import TimePicker from "./TimePicker.jsx";
 
 const i18n = require("../i18n.js");
 
 export default class DrifterWindow extends React.Component {
   constructor(props) {
     super(props);
-
+    console.warn("PROPS IN DRIFTER WINDOW: ", props)
     this.state = {
       showmap: true,
-      variable: props.variable.indexOf(",") == -1 ? [props.variable] : props.variable.split(","),
+      variable: '', //props.data.variable.indexOf(",") == -1 ? [props.data.variable] : props.data.variable.split(","),
       latlon: false,
       buoyvariable: ["sst"],
       starttime: null,
@@ -30,6 +34,8 @@ export default class DrifterWindow extends React.Component {
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
+    this.updateData = this.updateData.bind(this);
+    this.populateVariables = this.populateVariables.bind(this);
   }
 
   componentDidMount() {
@@ -39,16 +45,106 @@ export default class DrifterWindow extends React.Component {
       cache: true,
       success: function(data) {
         this.setState({
-          mindate: new Date(data.min),
-          maxdate: new Date(data.max),
-          starttime: new Date(data.min),
-          endtime: new Date(data.max),
-        });
+          mindate: moment.tz(data.min, 'GMT'),
+          maxdate: moment.tz(data.max, 'GMT'),
+          starttime: moment.tz(data.min, 'GMT'),
+          endtime: moment.tz(data.max, 'GMT'),
+        }, this.updatePlot);
+        
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(xhr.url, status, err.toString());
       }.bind(this)
     });
+  }
+
+  populateVariables(dataset) {
+    console.warn(dataset)
+    if (dataset === undefined) {
+      return
+    }
+    $.ajax({
+      url: "/api/variables/?dataset=" + dataset,
+      dataType: "json",
+      cache: true,
+
+      success: function (data) {
+        if (this._mounted) {
+          const vars = data.map(function (d) {
+            return d.id;
+          });
+
+          //if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
+          //  this.props.onUpdate("variable", vars[0]);
+          //}
+
+          this.setState({
+            variables: data.map(function (d) {
+              return d.id;
+            }),
+          }, () => {
+            this.updatePlot()
+          });
+        }
+        //this.updatePlot()
+      }.bind(this),
+
+      error: function (xhr, status, err) {
+        if (this._mounted) {
+          console.error(this.props.url, status, err.toString());
+        }
+      }.bind(this)
+    });
+  }
+
+  updateData(selected) {
+    selected = selected.split(',')
+    console.warn("SELECTED: ", selected)
+    let data = this.props.data
+
+    let layer = selected[0]
+    let index = selected[1]
+    let dataset = selected[2]
+    let variable = ''
+
+    if (selected.length > 4) {
+      for (let v = 3; v < selected.length; v=v+1) {
+        if (variable === '') {
+          variable = selected[v]
+        } else {
+          variable = variable + ',' + selected[v]  
+        }
+      }
+    } else {
+      variable = [selected[3]]
+    }
+    console.warn("VARIABLE: ", variable)
+    console.warn("DISPLAY: ", data[layer][index][dataset])
+    let display = data[layer][index][dataset][variable].display
+    let colourmap = data[layer][index][dataset][variable].colourmap
+    let quantum = data[layer][index][dataset][variable].quantum
+    let scale = data[layer][index][dataset][variable].scale
+    //let time = data[layer][index][dataset][variable].time
+    //console.warn("TIME: ", time)
+    //time = moment.tz(time, 'GMT')
+    //console.warn("MOMENT: ", time)
+    //time.setUTCMonth(time.getUTCMonth() - 1)
+    this.setState({
+      layer: layer,
+      index: index,
+      dataset: dataset,
+      variable: variable,
+
+      display: display,
+      colourmap: colourmap,
+      quantum: quantum,
+      scale: scale,
+      //time: time,
+    }, () => {
+      this.updatePlot()
+      console.warn("DATASET IN POINT: ", dataset)
+      this.populateVariables(dataset)
+    })
   }
 
   onLocalUpdate(key, value) {
@@ -80,6 +176,35 @@ export default class DrifterWindow extends React.Component {
     }
   }
 
+  updatePlot() {
+    console.warn("UPDATE PLOT")
+    console.warn("START TIME: ",this.state.starttime)
+    console.warn("END TIME: ", this.state.endtime)
+    var plot_query = {
+      dataset: this.state.dataset,
+      quantum: this.state.quantum,
+      scale: this.state.scale,
+      name: this.props.name,
+      type: "drifter",
+      drifter: this.props.drifter,
+      showmap: this.state.showmap,
+      variable: this.state.variable,
+      latlon: this.state.latlon,
+      buoyvariable: this.state.buoyvariable,
+      size: this.state.size,
+      dpi: this.state.dpi,
+      depth: this.state.depth,
+    };
+    if (this.state.starttime) {
+      plot_query.starttime = this.state.starttime;
+      plot_query.endtime = this.state.endtime;
+    }
+
+    this.setState({
+      plot_query: plot_query
+    })
+  }
+
   render() {
     _("Dataset");
     _("Buoy Variable");
@@ -92,9 +217,9 @@ export default class DrifterWindow extends React.Component {
     var dataset = <ComboBox
       key='dataset'
       id='dataset'
-      state={this.props.dataset}
+      state={this.state.dataset}
       def=''
-      url='/api/datasets/'
+      url='/api/v1.0/datasets/'
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
@@ -132,6 +257,21 @@ export default class DrifterWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</SelectBox>;
+
+    var timeRange = null
+    if (dataset !== undefined) {
+      timeRange = <TimePicker
+        range={true}
+        key={'timeRange'}  //toISOString()}
+        dataset={this.state.dataset}
+        quantum={this.state.quantum}
+        startDate={this.state.starttime}
+        date={this.state.endtime}
+        onTimeUpdate={this.onTimeUpdate}
+      />
+    }
+   
+    /*
     var starttime = <ContinousTimePicker
       key='starttime'
       id='starttime'
@@ -149,7 +289,7 @@ export default class DrifterWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       min={this.state.starttime}
       max={this.state.maxdate}
-    />;
+    />;*/
     var size = <ImageSize
       key='size'
       id='size'
@@ -166,52 +306,51 @@ export default class DrifterWindow extends React.Component {
       url={"/api/depth/?variable=" +
         this.state.variable +
         "&dataset=" +
-        this.props.dataset
+        this.state.dataset
       }
       title={_("Depth")}
     ></ComboBox>;
 
     var inputs = [];
-    var plot_query = {
-      dataset: this.props.dataset,
-      quantum: this.props.quantum,
-      scale: this.state.scale,
-      name: this.props.name,
-      type: "drifter",
-      drifter: this.props.drifter,
-      showmap: this.state.showmap,
-      variable: this.state.variable,
-      latlon: this.state.latlon,
-      buoyvariable: this.state.buoyvariable,
-      size: this.state.size,
-      dpi: this.state.dpi,
-      depth: this.state.depth,
-    };
-    if (this.state.starttime) {
-      if (plot_query.starttime instanceof Date) {
-        plot_query.starttime = this.state.starttime.toISOString();
-        plot_query.endtime = this.state.endtime.toISOString();
-      } else {
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.state.endtime;
-      }
-    }
+    
     inputs = [
-      dataset, showmap, latlon, starttime, endtime, buoyvariable, variable,
+      dataset, showmap, latlon, timeRange, /*starttime, endtime,*/ buoyvariable, variable,
       depth, size
     ];
+
+    
+    let dataSelection = <DataSelection
+      data={this.props.data}
+      localUpdate={this.updateData}
+    ></DataSelection>
+
+    var plotImage = null
+    if (this.state.plot_query !== undefined) {
+      plotImage = <PlotImage
+        query={this.state.plot_query} // For image saving link.
+        permlink_subquery={this.state}
+        action={this.props.action}
+      />
+    }
 
     return (
       <div className='DrifterWindow Window'>
         <div className='content'>
           <div className='inputs'>
+            <Panel
+              key='data_selection'
+              id='data_selection'
+              collapsible
+              defaultExpanded
+              header={_("Layer")}
+              bsStyle='primary'
+            >
+              {dataSelection}
+            </Panel>
             {inputs}
           </div>
-          <PlotImage
-            query={plot_query} // For image saving link.
-            permlink_subquery={this.state}
-            action={this.props.action}
-          />
+          {plotImage}
+          
           <br className='clear' />
         </div>
       </div>
