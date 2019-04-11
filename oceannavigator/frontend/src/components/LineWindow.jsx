@@ -255,10 +255,13 @@ export default class LineWindow extends React.Component {
   */
   onLocalUpdate(key, value) {
     if (this._mounted) {
+      console.warn("KEY: ", key)
+      console.warn("VALUE: ", value)
       
-      /*
       var newState = {};
-      if (typeof(key) === "string") {
+      if (key === 'data') {
+        newState[key] = value;
+      } else if (typeof(key) === "string") {
         newState[key] = value;
       } 
       else {
@@ -268,10 +271,10 @@ export default class LineWindow extends React.Component {
       }
       
       this.setState(newState);
-      */
-      this.setState({
+      
+      /*this.setState({
         [key]: value
-      })
+      })*/
     }
   }
 
@@ -306,24 +309,23 @@ export default class LineWindow extends React.Component {
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+        if (this.state.dataset_compare) {
+          plot_query.compare_to = {}
+          plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.data_compare.colourmap;
           plot_query.compare_to.colormap_diff = this.state.colormap_diff;
         }
-
-
-
         break;
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.state.data.time;
         plot_query.starttime = this.state.data.time;//this.props.starttime;
         plot_query.depth = this.state.data.depth;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.data_compare.dataset;
+        if (this.state.dataset_compare) {
+          plot_query.compare_to = {}
+          plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.data_compare.colourmap;
@@ -402,7 +404,7 @@ export default class LineWindow extends React.Component {
         id='swap_views'
         bsStyle="default"
         block
-        style={{display: this.props.dataset_compare ? "block" : "none"}}
+        style={{display: this.state.dataset_compare ? "block" : "none"}}
         onClick={this.props.swapViews}
       >
         {_("Swap Views")}
@@ -410,8 +412,8 @@ export default class LineWindow extends React.Component {
       
       {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
       <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+        style={{display: this.state.dataset_compare &&
+                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}
       >
        {/*
 <Range
@@ -492,8 +494,8 @@ export default class LineWindow extends React.Component {
       />
 
       <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
+        style={{display: this.state.dataset_compare &&
+                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}>
         <ComboBox
           key='colormap_diff'
           id='colormap_diff'
@@ -514,13 +516,14 @@ export default class LineWindow extends React.Component {
       onClick={this.updatePlot}
       >Apply Changes
     </Button>
-    var dataset
+    var dataset = null
+    if (this.state.data.scale !== undefined) {
       dataset = <Panel 
       key='left_map'
       id='left_map'
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
       <DatasetSelector
@@ -533,9 +536,9 @@ export default class LineWindow extends React.Component {
         time={this.state.selected == 2 ? "range" : "single"}
         line={true}
         updateSelectedPlots={this.updateSelectedPlots}
-        compare={this.props.dataset_compare}
+        compare={this.state.dataset_compare}
       />
-      {/*
+      
       <Range
         auto
         key='scale'
@@ -544,7 +547,7 @@ export default class LineWindow extends React.Component {
         def={""}
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
-      />*/}
+      />
 
       <ComboBox
         key='colormap'
@@ -557,9 +560,12 @@ export default class LineWindow extends React.Component {
       </ComboBox>
       {applyChanges3}
     </Panel>;
-    if (jQuery.isEmptyObject(this.state.data_compare === false)) {
+    }
+    
+
+    if (jQuery.isEmptyObject(this.state.data_compare) === false) {
       var compare_dataset = <div key='compare_dataset'>
-      <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>  
+      <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>  
         <Panel 
           key='right_map'
           id='right_map'
@@ -569,9 +575,9 @@ export default class LineWindow extends React.Component {
           bsStyle='primary'
         >
           <DatasetSelector
-            key='dataset_1'
-            id='dataset_1'
-            state={this.props.dataset_1}
+            key='data_compare'
+            id='data_compare'
+            state={this.state.data_compare}
             onUpdate={this.onLocalUpdate}
             depth={this.state.selected == 2}
             variables={this.state.selected == 2 ? "all" : "3d"}
@@ -606,7 +612,7 @@ export default class LineWindow extends React.Component {
     // Input panels
     const leftInputs = [global];
     const rightInputs = [dataset];
-    if (this.props.dataset_compare) {
+    if (this.state.dataset_compare) {
       rightInputs.push(compare_dataset);
     }
     if (this.state.selected) {

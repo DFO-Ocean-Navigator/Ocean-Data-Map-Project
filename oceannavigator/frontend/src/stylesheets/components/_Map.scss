@@ -53,6 +53,11 @@
         }
     }
     
+    .ol-scale-line {
+        left: 62.5%;
+        bottom: 3.5px;
+    }
+
     .time_container {
         height: fit-content;
         width: 60px;
@@ -304,7 +309,8 @@
             width: 60px;
             height: 31px;
             left: -15px;
-            top: 15px;
+            top: -17px;
+            margin-top: 33px;
             padding: 0px;
         }
         .monthButtons {

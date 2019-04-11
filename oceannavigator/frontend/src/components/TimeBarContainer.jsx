@@ -83,6 +83,7 @@ export default class TimeBarContainer extends React.Component {
 
     // Handles time incrementing and formating
     // calls setTime() as it increments
+    // THIS NEEDS TO BE CONVERTED FROM DATE TO MOMENT
     animateConcurrent() {
 
         if (this.state.pause === true) {
@@ -117,10 +118,6 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
-        console.warn("ANIMATE CONSECUTIVE")
-        console.warn("MIN: ", min)
-        console.warn("MAX: ", max)
-        console.warn("QUANTUM: ", quantum)
         
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
@@ -134,10 +131,8 @@ export default class TimeBarContainer extends React.Component {
         } else if (quantum === 'min') {
             increment = 5       // Time increment in minutes
         }
-        console.warn("INCREMENT: ", increment)
-
+        
         if (min.valueOf() >= max.valueOf()) {
-            console.warn("END OF ANIMATION")
             this.setState({
                 animating: false,
                 times: this.state.startTimes,
@@ -327,21 +322,21 @@ export default class TimeBarContainer extends React.Component {
         }
 
         /*
-    } else {
-        timeBars.push(
-            <div key={layer} className='timeLayerContainer'>
-                <Button
-                    id={layer}
-                    key={layer + '_button'}
-                    className='timeBarToggle'
-                    onClick={self.toggleLayer}
-                >{layer.charAt(0).toUpperCase()}</Button>
-            </div>
-        )
-    }
-    */
+        } else {
+            timeBars.push(
+                <div key={layer} className='timeLayerContainer'>
+                    <Button
+                        id={layer}
+                        key={layer + '_button'}
+                        className='timeBarToggle'
+                        onClick={self.toggleLayer}
+                    >{layer.charAt(0).toUpperCase()}</Button>
+                </div>
+            )
+        }
+        */
 
-
+        /*
         timeBars.push(
             <div key='start_animation' className='timeLayerContainer'>
                 <Button
@@ -358,7 +353,7 @@ export default class TimeBarContainer extends React.Component {
                 </Button>
             </div>
         )
-
+        */
         let time_class
         if (this.props.compare) {
             time_class = 'time_container_compare'

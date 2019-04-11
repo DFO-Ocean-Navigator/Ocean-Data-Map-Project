@@ -110,9 +110,14 @@ export default class PlotImage extends React.PureComponent {
         paramString: paramString,
         errorMessage: null,
       });
-
+      let url
+      if (this.props.query.type === 'class4') {
+        url = '/plot/'
+      } else {
+        url = '/api/v1.0/plot/'
+      }
       const promise = $.ajax({
-        url: "/api/v1.0/plot/",
+        url: url,
         cache: true,
         data: paramString,
         dataType: "json",
@@ -288,7 +293,7 @@ export default class PlotImage extends React.PureComponent {
         query.time = time;
         query.scale = q.scale;
         query.depth = q.depth;
-        query.colormap = q.colormap;
+        query.colormap = q.colourmap;
         query.area = q.area;
         query.projection = q.projection;
         query.bathymetry = q.bathymetry;
@@ -310,7 +315,7 @@ export default class PlotImage extends React.PureComponent {
             depth: q.compare_to.depth,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
-            colormap: q.compare_to.colormap,
+            colormap: q.compare_to.colourmap,
             colormap_diff: q.compare_to.colormap_diff,
           };
         }
@@ -355,10 +360,14 @@ export default class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    if (q.type === 'drifter') {
-      return "/api/plot/?query=" + encodeURIComponent(stringify(query))
+    console.warn("Q TYPE: ", q.type)
+    if (q.type === 'drifter' || q.type === 'class4') {
+      console.warn("SETTING OLD API")
+      return "/plot/?query=" + encodeURIComponent(stringify(query))
+    } else {
+      console.warn("SETTING NEW API")
+      return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
     }
-    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {

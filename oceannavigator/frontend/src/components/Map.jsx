@@ -222,6 +222,7 @@ export default class Map extends React.PureComponent {
     // Drawing layer
     this.layer_vector = new ol.layer.Vector(
       {
+        zIndex: 15,
         source: this.vectorSource,
         style: function(feat, res) {
 
@@ -348,7 +349,8 @@ export default class Map extends React.PureComponent {
 
         }.bind(this),
       });
-
+    
+    var scaleLineControl = new ol.control.ScaleLine()
     // Construct our map
     this.map = new ol.Map({
       layers: [
@@ -358,13 +360,14 @@ export default class Map extends React.PureComponent {
         this.layer_vector,
       ],
       controls: ol.control.defaults({
+        
         zoom: true,
         attributionOptions: ({
           collapsible: false,
           collapsed: false,
         })
       }).extend([
-        new app.ResetPanButton(), 
+        new app.ResetPanButton(),
         new ol.control.FullScreen(),
         new ol.control.MousePosition({
           projection: "EPSG:4326",
@@ -377,6 +380,7 @@ export default class Map extends React.PureComponent {
         }),
       ])
     });
+    this.map.addControl(scaleLineControl)
     this.map.on("moveend", this.refreshFeatures.bind(this));
     this.map.on("moveend", function() {
       const c = ol.proj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
@@ -1048,6 +1052,7 @@ export default class Map extends React.PureComponent {
     //datalayer.setSource(newSource);
 
     // Update colour scale
+
     /*if (this.scaleViewer != null) {
       this.map.removeControl(this.scaleViewer);
     }
@@ -1296,7 +1301,7 @@ export default class Map extends React.PureComponent {
 
 
   render() {
-
+    
     let layerRearrange = ''
     if ('partner' in this.props) {
       layerRearrange = <div className='layerHierarchy_compare'>
@@ -1349,7 +1354,7 @@ export default class Map extends React.PureComponent {
         <div
           className='title ol-popup'
           ref={(c) => this.popupElement = c}
-        >Empty</div>
+        >EMPTY</div>
         <div
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
