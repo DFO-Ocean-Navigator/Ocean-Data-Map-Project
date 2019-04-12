@@ -121,7 +121,8 @@ export default class AreaWindow extends React.Component {
 
   */
   onTimeUpdate(key, value) {
-    
+    console.warn("TIME UPDATE: ", key)
+    console.warn("VALUE: ", value)
     if (typeof(key) === typeof('string')) {
       this.setState({
         [key]: value
@@ -491,7 +492,7 @@ export default class AreaWindow extends React.Component {
         };
 
         plotQuery.type = "map";
-        plotQuery.colormap = this.state.leftColormap;
+        plotQuery.colormap = this.state.data.colourmap; //this.state.leftColormap;
         plotQuery.time = this.state.data.time;
         plotQuery.area = this.props.area;
         plotQuery.depth = this.state.data.depth;
@@ -507,13 +508,20 @@ export default class AreaWindow extends React.Component {
         plotQuery.radius = this.props.options.interpRadius;
         plotQuery.neighbours = this.props.options.interpNeighbours;
         plotQuery.plotTitle = this.state.plotTitle;
+        plotQuery.random = Math.random()
         if (this.state.dataset_compare) {
-          plotQuery.compare_to = this.state.data_compare
-          plotQuery.compare_to.scale_diff = this.state.scale_diff;
-          plotQuery.compare_to.colormap_diff = this.state.colormap_diff;
-          }
+          let compare = jQuery.extend({}, plotQuery.compare_to)
+          console.warn("UPDATING COMPARE DATA: ", this.state.data_compare)
+          compare = this.state.data_compare
+          let time = moment(this.state.data_compare.time.valueOf())
+          time.tz('GMT')
+          compare.time = time;
+          compare.scale_diff = this.state.scale_diff;
+          compare.colormap_diff = this.state.colormap_diff;
+          plotQuery.compare_to = compare
+        }
         this.setState({
-          plot_query: plotQuery
+          plot_query: jQuery.extend({}, plotQuery)
         })
         break;
       case 2:
@@ -528,7 +536,7 @@ export default class AreaWindow extends React.Component {
         }
 
         this.setState({
-          plot_query: plotQuery
+          plot_query: jQuery.extend({}, plotQuery)
         })
 
         break;

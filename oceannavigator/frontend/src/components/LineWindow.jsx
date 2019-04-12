@@ -43,6 +43,7 @@ export default class LineWindow extends React.Component {
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
+      scale_diff: '0,0',
       size: "10x7",
       dpi: 144,
       depth_limit: false,
@@ -138,7 +139,62 @@ export default class LineWindow extends React.Component {
     let colourmap = data[layer][index][dataset][variable].colourmap
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
-    let time = moment(data[layer][index][dataset][variable].time)
+    let time = data[layer][index][dataset][variable].time
+    let compare_time = moment(time.valueOf())
+    compare_time.tz('GMT')
+    time = moment(time.valueOf())
+    time.tz('GMT')
+    let output_starttime = moment(time.valueOf())
+    let output_endtime = moment(time.valueOf())
+    
+    if (jQuery.isEmptyObject(this.props.data_compare)) {
+        let data_compare = {
+          layer: layer,
+          index: index,
+          dataset: dataset,
+          variable: variable,
+    
+          display: display,
+          colourmap: colourmap,
+          dataset_quantum: quantum,
+          scale: scale + ',auto',
+          time: time,  
+        }
+        
+        this.setState({
+          data_compare: data_compare,
+          output_starttime: output_starttime,
+          output_endtime: output_endtime,
+        })
+    } else {
+
+      let compare_display = data[layer][index][dataset][variable].display
+      let compare_colourmap = data[layer][index][dataset][variable].colourmap
+      let compare_quantum = data[layer][index][dataset][variable].quantum
+      let compare_scale = data[layer][index][dataset][variable].scale
+      compare_time = data[layer][index][dataset][variable].time
+      
+      let depth = data[layer][index][dataset][variable].depth
+      
+      let data_compare = {
+        layer: layer,
+        index: index,
+        dataset: dataset,
+        depth: depth,
+        variable: variable,
+        display: compare_display,
+        colourmap: compare_colourmap,
+        quantum: compare_quantum,
+        scale: compare_scale + ',auto',
+        time: moment(compare_time.valueOf()),
+      }
+      
+      this.setState({
+        data_compare: data_compare,
+        output_starttime: output_starttime,
+        output_endtime: output_endtime,
+      })
+    }
     
     this.setState({
       data: {
@@ -150,7 +206,7 @@ export default class LineWindow extends React.Component {
         display: display,
         colourmap: colourmap,
         dataset_quantum: quantum,
-        scale: scale,
+        scale: scale + ',auto',
         time: time,
       }
     }, () => {
@@ -299,6 +355,7 @@ export default class LineWindow extends React.Component {
       size: this.state.size,
       dpi: this.state.dpi,
       plotTitle: this.state.plotTitles[this.state.selected - 1],
+      random: Math.random()
     };
 
     switch(this.state.selected) {
@@ -310,7 +367,7 @@ export default class LineWindow extends React.Component {
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.state.dataset_compare) {
-          plot_query.compare_to = {}
+          plot_query.compare_to = this.state.data_compare
           plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -324,7 +381,7 @@ export default class LineWindow extends React.Component {
         plot_query.starttime = this.state.data.time;//this.props.starttime;
         plot_query.depth = this.state.data.depth;
         if (this.state.dataset_compare) {
-          plot_query.compare_to = {}
+          plot_query.compare_to = this.state.data_compare
           plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -415,8 +472,7 @@ export default class LineWindow extends React.Component {
         style={{display: this.state.dataset_compare &&
                          this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}
       >
-       {/*
-<Range
+        <Range
           auto
           key='scale_diff'
           id='scale_diff'
@@ -424,8 +480,7 @@ export default class LineWindow extends React.Component {
           def={""}
           onUpdate={this.onLocalUpdate}
           title={_("Diff. Variable Range")}
-        />
-       */} 
+        /> 
       </div>
 
       <SelectBox
@@ -550,8 +605,8 @@ export default class LineWindow extends React.Component {
       />
 
       <ComboBox
-        key='colormap'
-        id='colormap'
+        key='colourmap'
+        id='colourmap'
         state={this.state.data.colourmap}
         def='default'
         onUpdate={this.onLocalUpdate}
@@ -563,7 +618,7 @@ export default class LineWindow extends React.Component {
     }
     
 
-    if (jQuery.isEmptyObject(this.state.data_compare) === false) {
+    if (jQuery.isEmptyObject(this.state.data_compare) === false && this.state.data_compare.scale !== undefined) {
       var compare_dataset = <div key='compare_dataset'>
       <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>  
         <Panel 
@@ -583,7 +638,7 @@ export default class LineWindow extends React.Component {
             variables={this.state.selected == 2 ? "all" : "3d"}
             time={this.state.selected == 2 ? "range" : "single"}
           />
-          {/*<Range
+          <Range
             auto
             key='scale_1'
             id='scale_1'
@@ -591,7 +646,7 @@ export default class LineWindow extends React.Component {
             def={""}
             onUpdate={this.onLocalUpdate}
             title={_("Variable Range")}
-          />*/}
+          />
           <ComboBox
             key='colormap_right'
             id='colormap_right'

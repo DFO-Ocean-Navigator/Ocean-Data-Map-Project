@@ -228,7 +228,7 @@ export default class PointWindow extends React.Component {
       display: display,
       colourmap: colourmap,
       dataset_quantum: quantum,
-      scale: scale,
+      scale: scale + ',auto',
       time: time,
     }, () => {
       this.updatePlot()
@@ -667,7 +667,7 @@ export default class PointWindow extends React.Component {
         id='variable'
         state={this.state.variable}
         def=''
-        onUpdate={this.props.onUpdate}
+        onUpdate={this.onLocalUpdate}
         url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 

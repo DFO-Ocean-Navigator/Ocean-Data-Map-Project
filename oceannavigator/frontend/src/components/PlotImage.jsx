@@ -78,12 +78,17 @@ export default class PlotImage extends React.PureComponent {
     this.loadImage(this.generateQuery(this.props.query));
   }
 
+  /*componentDidUpdate(prevProps, prevState) {
+    console.warn("COMPONENT DID UPDATE")
+    if (stringify(this.props.query) !== stringify(prevProps.query)) {
+      this.loadImage(this.generateQuery(this.props.query))
+    }
+  }*/
   componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
+    if (stringify(this.props.query) !== stringify(props.query) || stringify(this.props.query.compare_to) !== stringify(this.props.query.compare_to)) {
       this.loadImage(this.generateQuery(props.query));
     }
   }
-
   componentWillUnmount() {
     this._mounted = false;
   }
@@ -288,7 +293,9 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
+        console.warn("AREA PLOT QUERY")
         time = this.formatTime(q.time)
+        console.warn("TIME: ", time)
         query.variable = q.variable;
         query.time = time;
         query.scale = q.scale;
@@ -305,12 +312,13 @@ export default class PlotImage extends React.PureComponent {
         query.neighbours = q.neighbours;
               
         if (q.compare_to) {
-          time = this.formatTime(q.compare_to.time)  
+          let compareTime = q.compare_to.time.toISOString();
+          console.warn("COMPARE TIME: ", compareTime)
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
-            time: time,
+            time: compareTime,
             variable: q.compare_to.variable,
             depth: q.compare_to.depth,
             scale: q.compare_to.scale,
@@ -355,7 +363,8 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = endtime;
         break;
     }
-    return query;
+    console.warn("UPDATING QUERY: ", query)
+    return jQuery.extend({}, query);
   }
 
   urlFromQuery(q) {

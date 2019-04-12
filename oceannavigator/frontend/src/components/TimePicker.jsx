@@ -125,6 +125,7 @@ export default class TimePicker extends React.Component {
           if (this.props.startDate === null || true) {
             let startTime = time.valueOf();
             startTime = moment(startTime)
+            startTime.tz('GMT')
             console.warn("START TIME: ", startTime)
             // Get Hour of Time (This is used for replacement on date change)
             //let starthour = startTime.format('HH[Z]');
@@ -179,35 +180,55 @@ export default class TimePicker extends React.Component {
   }
 
   rangeUpdate(dates) {
+    console.warn("DATES: ", dates)
+
     let startDate = dates.startDate; //new Date(dates.startDate);
     let endDate = dates.endDate;//new Date(dates.endDate);
     
-    let prevStart = this.props.startDate;//new Date(this.props.startDate);
-    let prevEnd = this.props.date//new Date(this.props.date);
+    console.warn("START DATE: ", startDate.format("YYYY/MM/DD[T]HH"))
+    console.warn("END DATE: ", endDate.format("YYYY/MM/DD[T]HH"))
+    // Prev Time Used to Retrieve Hour
+    let prevStart = this.props.startDate;
+    let prevEnd = this.props.date;
     
+    console.warn("PREV START DATE: ", prevStart)
+    console.warn("PREV END DATE: ", prevEnd)
+    
+    // Set to UTC
+    startDate.tz('GMT');
+    endDate.tz('GMT');
+
+    // Apply Correct Hour
     startDate.set({
       hour: prevStart.get('hour')
-    })
+    });
     endDate.set({
       hour: prevEnd.get('hour')
-    })
-    //startDate.setUTCHours(prevStart.getUTCHours());
-    //endDate.setUTCHours(prevEnd.getUTCHours());
+    });
+
+    console.warn("START DATE: ", startDate.format("YYYY/MM/DD[T]HH"))
+    console.warn("END DATE: ", endDate.format("YYYY/MM/DD[T]HH"))
     
-    if (this.props.includes('startid')) {
+    // Save Date Changes
+    if ('startid' in this.props) {
       this.props.onTimeUpdate(this.props.startid, startDate);
     } else {
       this.props.onTimeUpdate('starttime', startDate);
     }
 
-    if (this.props.includes('id')) {
+    if ('id' in this.props) {
       this.props.onTimeUpdate(this.props.id, endDate);
     } else {
       this.props.onTimeUpdate('time', endDate);
     }
   }
 
-  updateRangeHour(startHour, endHour) {
+  updateRangeHour(key, value) {
+    if (key === '') { // Start Hour Change
+
+    } else {          // End Hour Change
+
+    }
     return
   }
 

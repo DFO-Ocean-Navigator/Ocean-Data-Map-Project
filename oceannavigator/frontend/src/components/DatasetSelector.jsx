@@ -52,13 +52,21 @@ export default class DatasetSelector extends React.Component {
   }
 
   onTimeUpdate(key, value) {
+    console.warn("onTimeUpdate(key, value): ", key, value)
     let new_state = this.props.state
     if (typeof(key) === typeof('string')) {
+      value = moment(value.valueOf())
+      value.tz('GMT')
+
       new_state[key] = value
     } else {
-      new_state.time = moment(key.valueOf())//new Date(key)
+      value = moment(key.valueOf())
+      value.tz('GMT')
+
+      new_state.time = value//new Date(key)
     }
-    this.props.onUpdate(this.props.id, new_state)
+    console.warn("ID, NEW_STATE: ", this.props.id, new_state)
+    this.props.onUpdate(jQuery.extend({}, new_state))
   }
   
   render() {
@@ -77,8 +85,18 @@ export default class DatasetSelector extends React.Component {
 
     // Determine which timepicker we need
     let time = "";
-    let timeObj = this.props.state.time//new Date(this.props.state.time);
-    let starttimeObj = this.props.state.starttime//new Date(this.props.state.starttime);
+    let timeObj = this.props.state.time
+    if (timeObj !== null) {
+      timeObj = moment(timeObj.valueOf()) //new Date(this.props.state.time);
+      timeObj.tz('GMT')
+    }
+    
+    let starttimeObj = this.props.state.starttime //new Date(this.props.state.starttime);
+    if (starttimeObj !== undefined && starttimeObj !== null) {
+      starttimeObj = moment(starttimeObj.valueOf())
+      starttimeObj.tz('GMT')
+    }
+
     switch (this.props.state.time) {
       case "range":
         time = (<div>
