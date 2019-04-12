@@ -378,7 +378,7 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.state.data.time;
-        plot_query.starttime = this.state.data.time;//this.props.starttime;
+        plot_query.starttime = this.state.data.starttime;//this.props.starttime;
         plot_query.depth = this.state.data.depth;
         if (this.state.dataset_compare) {
           plot_query.compare_to = this.state.data_compare
@@ -400,8 +400,8 @@ export default class LineWindow extends React.Component {
   */
   onSelect(key) {
     this.setState({
-      selected: key
-    });
+      selected: key,
+    }, this.updatePlot);
   }
 
   render() {
@@ -565,7 +565,6 @@ export default class LineWindow extends React.Component {
     </Panel>;
     }
     
-    console.warn("STATE IN RENDER: ", this.state)
     let applyChanges3 = <Button
       key='3'
       onClick={this.updatePlot}
@@ -640,16 +639,16 @@ export default class LineWindow extends React.Component {
           />
           <Range
             auto
-            key='scale_1'
-            id='scale_1'
+            key='compare_scale'
+            id='compare_scale'
             state={this.state.data_compare.scale}
             def={""}
             onUpdate={this.onLocalUpdate}
             title={_("Variable Range")}
           />
           <ComboBox
-            key='colormap_right'
-            id='colormap_right'
+            key='compare_colourmap'
+            id='compare_colourmap'
             state={this.state.data_compare.colourmap}
             def='default'
             onUpdate={this.onLocalUpdate}

@@ -121,8 +121,6 @@ export default class AreaWindow extends React.Component {
 
   */
   onTimeUpdate(key, value) {
-    console.warn("TIME UPDATE: ", key)
-    console.warn("VALUE: ", value)
     if (typeof(key) === typeof('string')) {
       this.setState({
         [key]: value
@@ -199,7 +197,6 @@ export default class AreaWindow extends React.Component {
       let compare_quantum = data[layer][index][dataset][variable].quantum
       let compare_scale = data[layer][index][dataset][variable].scale
       compare_time = data[layer][index][dataset][variable].time
-      console.warn("COMPARE TIME IN AREA WINDOW: ", compare_time)
       let depth = data[layer][index][dataset][variable].depth
       let data_compare = {
         layer: layer,
@@ -511,7 +508,6 @@ export default class AreaWindow extends React.Component {
         plotQuery.random = Math.random()
         if (this.state.dataset_compare) {
           let compare = jQuery.extend({}, plotQuery.compare_to)
-          console.warn("UPDATING COMPARE DATA: ", this.state.data_compare)
           compare = this.state.data_compare
           let time = moment(this.state.data_compare.time.valueOf())
           time.tz('GMT')

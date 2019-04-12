@@ -46,7 +46,6 @@ class CalculatedData(NetCDFData):
             return CalculatedArray(self._dataset,
                     self._calculated[key]['equation'], attrs)
         else:
-            print('KEY: ', key)
             return self._dataset.variables[key]
 
     """

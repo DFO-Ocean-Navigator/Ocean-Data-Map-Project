@@ -53,9 +53,7 @@ class NetCDFData(Data):
         time_var = self.__get_time_variable()
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
-        print("TIME RANGE: ", time_range)
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
-        print("TIME RANGE(2): ", time_range)
         if len(time_range) == 1:    #Single Date
             return int(str(time_range[0][0]))
         else:                          #Multiple Dates
@@ -65,7 +63,6 @@ class NetCDFData(Data):
                 new_date = {x : int(str(time_range[i][0]))}
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
-            print("FORMATED DATE: ", date_formatted)
             return date_formatted
         
 
@@ -153,7 +150,6 @@ class NetCDFData(Data):
             return None
 
         variable_list = [v.key for v in self.variables]
-        print('variable list: ', variable_list)
         # Get lat/lon variable names from dataset (since they all differ >.>)
         lat_var = find_variable("lat", variable_list)
         lon_var = find_variable("lon", variable_list)

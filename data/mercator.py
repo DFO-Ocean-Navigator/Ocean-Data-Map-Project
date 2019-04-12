@@ -269,8 +269,6 @@ class Mercator(CalculatedData):
 
         else:
             if len(var.shape) == 4:
-                print("TIME: ", time)
-                print("VAR: ", var)
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]

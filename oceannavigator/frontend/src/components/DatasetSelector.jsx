@@ -97,7 +97,8 @@ export default class DatasetSelector extends React.Component {
       starttimeObj.tz('GMT')
     }
 
-    switch (this.props.state.time) {
+    console.warn("this.props.time: ", this.props.time)
+    switch (this.props.time) {
       case "range":
         time = (<div>
           <TimePicker

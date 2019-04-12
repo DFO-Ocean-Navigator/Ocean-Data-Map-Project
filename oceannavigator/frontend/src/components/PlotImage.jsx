@@ -46,7 +46,6 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
       });
-      console.warn("This Feature is not yet available for Class4's");
     } else {
       if (language == "pythonPlot") {
 
@@ -293,9 +292,7 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
-        console.warn("AREA PLOT QUERY")
         time = this.formatTime(q.time)
-        console.warn("TIME: ", time)
         query.variable = q.variable;
         query.time = time;
         query.scale = q.scale;
@@ -313,7 +310,6 @@ export default class PlotImage extends React.PureComponent {
               
         if (q.compare_to) {
           let compareTime = q.compare_to.time.toISOString();
-          console.warn("COMPARE TIME: ", compareTime)
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
@@ -363,18 +359,14 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = endtime;
         break;
     }
-    console.warn("UPDATING QUERY: ", query)
     return jQuery.extend({}, query);
   }
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    console.warn("Q TYPE: ", q.type)
     if (q.type === 'drifter' || q.type === 'class4') {
-      console.warn("SETTING OLD API")
       return "/plot/?query=" + encodeURIComponent(stringify(query))
     } else {
-      console.warn("SETTING NEW API")
       return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
     }
   }

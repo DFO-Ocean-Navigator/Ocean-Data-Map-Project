@@ -105,8 +105,9 @@ export default class Contacts extends React.Component {
               
 
               //Places a circle on the map
-              //new_vectorSource.addFeature(e.feature)
-              //console.warn(new_vectorSource)
+              new_vectorSource.addFeature(e.feature)
+              console.warn(e.feature)
+              console.warn(new_vectorSource)
               
               this.layer_contacts = new ol.layer.Vector({
                 projection: this.props.state.projection,

@@ -41,7 +41,8 @@
     .current_hour_single {
         display: inline-block;
         height: 48px;
-        
+        position: relative;
+
         .form-control {
             padding: 11px 11px 9px;
             font-size: 19px;
@@ -50,11 +51,12 @@
     }
 
     .range0 {
-        
+        top: -67px;
     }
 
     .range1 {
-
+        top: -47px;
+        left: 130px;
     }
 }
 
