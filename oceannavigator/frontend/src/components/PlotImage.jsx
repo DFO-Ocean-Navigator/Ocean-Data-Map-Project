@@ -85,6 +85,9 @@ export default class PlotImage extends React.PureComponent {
   }*/
   componentWillReceiveProps(props) {
     if (stringify(this.props.query) !== stringify(props.query) || stringify(this.props.query.compare_to) !== stringify(this.props.query.compare_to)) {
+      this.setState({
+        loading: true
+      })
       this.loadImage(this.generateQuery(props.query));
     }
   }
@@ -110,12 +113,12 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         loading: true, 
         fail: false, 
-        url: LOADING_IMAGE,
+        //url: LOADING_IMAGE,
         paramString: paramString,
         errorMessage: null,
       });
       let url
-      if (this.props.query.type === 'class4') {
+      if (this.props.query.type === 'class4' || this.props.query.type === 'drifter') {
         url = '/plot/'
       } else {
         url = '/api/v1.0/plot/'
@@ -142,14 +145,25 @@ export default class PlotImage extends React.PureComponent {
       promise.fail(function(xhr) {
         if (this._mounted) {
           // Get our custom error message
-          const message = JSON.parse(xhr.responseText).message;
+
+          console.warn('xhr: ', xhr)
+          try {
+            const message = JSON.parse(xhr.responseText).message;
+            this.setState({
+              url: FAIL_IMAGE,
+              loading: false,
+              fail: true,
+              errorMessage: message,
+            });
+          }
+          catch(err) {
+            this.setState({
+              url: FAIL_IMAGE,
+              loading: false,
+              fail: true
+              });
+          }
           
-          this.setState({
-            url: FAIL_IMAGE,
-            loading: false,
-            fail: true,
-            errorMessage: message,
-          });
         }
       }.bind(this));
     }
@@ -407,14 +421,30 @@ export default class PlotImage extends React.PureComponent {
     if (this.state.errorMessage !== null) {
       errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
     }
+    
+    var image
+    if (this.state.loading) {
+      image = <div className="spinner">
+        <div className="sk-folding-cube">
+          <div className="sk-cube1 sk-cube"></div>
+          <div className="sk-cube2 sk-cube"></div>
+          <div className="sk-cube4 sk-cube"></div>
+          <div className="sk-cube3 sk-cube"></div>
+        </div>
+      </div>//<Icon icon="spinner" name='loading'/>
+    } else {
+      image = <div className="RenderedImage">
+          <img src={this.state.url} />
+        </div>
+    }
 
     return (
       <div className='PlotImage'>
 
         {/* Rendered graph */}
-        <div className="RenderedImage">
-          <img src={this.state.url} />
-        </div>
+        {image}
+          
+        
 
         {errorAlert}
 

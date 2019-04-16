@@ -123,10 +123,7 @@ def num2date(dataset: str, index: str):
   #try:
   config = DatasetConfig(dataset)
   with open_dataset(config) as ds:
-    print(ds)
-    print("INDEX: ", index)
     date = ds.convert_to_date(index)
-    print("DATE: ", date)
     resp = jsonify({
       'date': date
     })

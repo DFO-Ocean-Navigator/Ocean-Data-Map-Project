@@ -19,11 +19,11 @@ export default class LayerRearrange extends React.PureComponent {
     this.state = {
       showLayers: true,
       icons: {
-        'ocean': 'O',//<img src={ocean} alt="Ocean" className='timeIcon'></img>,
-        'met': 'M',//<img src={met} alt="Met" className='timeIcon'></img>,
-        'ice': 'I',//<img src={ice} alt="Ice" className='timeIcon'></img>,
-        'wave': 'W',//<img src={wave} alt="Waves" className='timeIcon'></img>,
-        'iceberg': 'I',//<img src={iceberg} alt="IceBerg" className='timeIcon'></img>,
+        'ocean': <img src={ocean} alt="Ocean" className='timeIcon'></img>,
+        'met': <img src={met} alt="Met" className='timeIcon'></img>,
+        'ice': <img src={ice} alt="Ice" className='timeIcon'></img>,
+        'wave': <img src={wave} alt="Waves" className='timeIcon'></img>,
+        'iceberg': <img src={iceberg} alt="IceBerg" className='timeIcon'></img>,
       }
     }
 

@@ -478,15 +478,13 @@ def vars_query_impl(args):
     return resp
 
 def all_vars_query_impl(args):
-    print('all_vars_query_impl')
-
+    
     variables = dict()
     for dataset in DatasetConfig.get_datasets():
         config = DatasetConfig(dataset)
         with open_dataset(config) as ds:
             for v in ds.variables:
                 if not config.variable[v].is_hidden:
-                    #print("VARIABLE TYPE: ", get_variable_type(dataset, v)),
                     var_name = config.variable[v].name
                     if var_name not in variables:
                         var_type = config.variable[v].envtype
@@ -504,15 +502,13 @@ def all_vars_query_impl(args):
                                 }    
                             }
                     else:
-                        print("CURRENT DATASET: ", dataset)
                         variables[var_name]['datasets'].append(dataset)
 
                         variables[var_name]['info'][dataset] = {
                            'id': v.key,
                            'scale': config.variable[v].scale,
                         }
-                        print("ELSE")
-    
+                        
     
     #data = dict()
     #data = sorted(variables.items())
@@ -533,13 +529,6 @@ def all_time_query_impl(args):
     for dataset in get_datasets():
         with open_dataset(get_dataset_url(dataset)) as ds:
             for date in ds.timestamps:
-                #print("DATE: ", date)
-                #print("YEAR: ", date.year)
-                #print("MONTH: ", date.month)
-                #print("DAY: ", date.day)
-                print("DATE: ", date)
-                print("HOUR: ", date.hour)
-                print("MINUTE: ", date.minute)
                 if date.year not in times:
                     times[date.year] = {
                         date.month: {
@@ -711,7 +700,6 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     
     if depth != "bottom" and depth != "all":
         depth = int(depth)
-        print("DISPLAY: ", display)
         if display[0] == 'colour':
             img = plotting.tile.plot(projection, x, y, zoom, {
                 'interp': interp,

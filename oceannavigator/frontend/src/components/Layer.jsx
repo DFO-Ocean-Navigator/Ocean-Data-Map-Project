@@ -13,7 +13,11 @@ import moment from "moment-timezone";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
-
+import ice from '../images/ice_symbol.png';
+import met from '../images/cloud_symbol.png';
+import ocean from '../images/ocean_symbol.png'
+import wave from '../images/waves_symbol.png'
+import iceberg from '../images/iceberg_symbol.png'
 const i18n = require("../i18n.js");
 
 export default class Layer extends React.Component {
@@ -30,7 +34,13 @@ export default class Layer extends React.Component {
       datasets: {},
       depths: {},
       default_scales: "0,1",
-
+      icons: {
+        'ocean': <img src={ocean} alt="Ocean" className='timeIcon'></img>,
+        'met': <img src={met} alt="Met" className='timeIcon'></img>,
+        'ice': <img src={ice} alt="Ice" className='timeIcon'></img>,
+        'wave': <img src={wave} alt="Waves" className='timeIcon'></img>,
+        'iceberg': <img src={iceberg} alt="IceBerg" className='timeIcon'></img>,
+      },
       // DISPLAY INFO
       colourmaps_val: [],
       opacity: 100,
@@ -205,15 +215,30 @@ export default class Layer extends React.Component {
 
 
     let quantum;
+    let new_quantum
+    let new_dataset
+
     // Load datasets if they arent already
     if (dataset === undefined) {
       const dataset_promise = $.ajax("/api/v1.0/datasets/?envType=" + this.props.layerType).promise();
       $.when(dataset_promise).done(function (datasets) {
         
+        if (this.props.state._firstLayer && datasets !== undefined) {
+          for (let dataset in datasets) {
+            if (datasets[dataset]['id'] === 'giops_day') {
+              new_quantum = datasets[dataset]['quantum']
+              new_dataset = 'giops_day'
+              break;
+            }
+          }
+        } else if (datasets !== undefined) {
+          new_dataset = datasets[0]['id']
+          new_quantum = datasets[0]['quantum']  
+        }
         
-        dataset = datasets[0]['id']
-        quantum = datasets[0]['quantum']
-        
+        dataset = new_dataset
+        quantum = new_quantum
+
         this.setState({
           datasets: datasets,
           current_dataset: dataset,
@@ -668,7 +693,8 @@ export default class Layer extends React.Component {
       iso = date.format('YYYY-MM-DD[T00:00:00+00:00]')
       //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-' + formatDay(date.getUTCDate()) + 'T00:00:00+00:00'
     } else if (quantum === 'month') { // Only returns ISO to month precision
-      iso = date.format('YYYY-MM[-01T00:00:00+00:00]')
+      iso = date.toISOString()
+      //iso = date.format('YYYY-MM[-01T00:00:00+00:00]')
       //iso = date.getUTCFullYear() + '-' + formatMonth(date.getUTCMonth()) + '-01T00:00:00+00:00'
     } else if (quantum === 'year') {
       iso = date.format('YYYY[-01-01T00:00:00+00:00]')
@@ -1016,7 +1042,7 @@ export default class Layer extends React.Component {
       let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
 
       this.range = <Range
-        //key='current_scale'
+        key='current_scale'
         id='current_scale'
         state={this.state.current_scale}
         setDefaultScale={this.state.setDefaultScale}
@@ -1089,7 +1115,7 @@ export default class Layer extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _(this.props.layerName)}
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.layerName)}</div> }
         bsStyle='primary'
       >
         <Button

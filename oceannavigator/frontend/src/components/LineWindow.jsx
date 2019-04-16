@@ -73,29 +73,6 @@ export default class LineWindow extends React.Component {
     this._mounted = false;
   }
 
-  componentWillReceiveProps(props) {
-    /*
-    if (stringify(this.props) !== stringify(props) && this._mounted) {
-
-      if (props.depth !== this.props.depth) {
-        this.setState({
-          depth: props.depth,
-        });
-      }
-      if (props.scale !== this.props.scale) {
-        if (this.state.scale.indexOf("auto") !== -1) {
-          this.setState({
-            scale: props.scale + ",auto"
-          });
-        } else {
-          this.setState({
-            scale: props.scale,
-          });
-        }
-      }
-    }
-    */
-  }
 
   /*
     Updates Plot with User Specified Title
@@ -112,8 +89,6 @@ export default class LineWindow extends React.Component {
     
   */
   updateData(selected) {
-    console.warn("UPDATING DATA")
-    console.warn("SELECTED: ", selected)
     selected = selected.split(',')
     let data = this.props.data
 
@@ -211,27 +186,15 @@ export default class LineWindow extends React.Component {
       }
     }, () => {
       this.updatePlot()
-      console.warn("DATASET IN POINT: ", dataset)
-      //this.populateVariables(dataset)
-    })
+   })
     
   }
 
-  /*
-    Updates the data for the comparison.
-    If comparison does not exist on map, use non compare data.
-  */
-  updateCompareData(selected) {
-    console.warn("UPDATING COMPARE DATA")
-    console.warn("SELECTED: ", selected)
-    
-  }
 
   /*
     Populates all the variables available in the dataset
   */
   populateVariables(dataset) {
-    console.warn(dataset)
     if (dataset === undefined) {
       return
     }
@@ -273,9 +236,6 @@ export default class LineWindow extends React.Component {
     I have no idea what this does
   */
   updateSelectedPlots (plots_selected, compare) {
-    console.warn("UPDATE SELECTED PLOTS")
-    console.warn("PLOTS SELECTED: ", plots_selected)
-    console.warn("COMPARE: ", compare)
     let temp = [1, 0, 0];
     
     if(plots_selected[0]) {
@@ -311,18 +271,28 @@ export default class LineWindow extends React.Component {
   */
   onLocalUpdate(key, value) {
     if (this._mounted) {
-      console.warn("KEY: ", key)
-      console.warn("VALUE: ", value)
       
       var newState = {};
+
       if (key === 'data') {
         newState[key] = value;
       } else if (typeof(key) === "string") {
-        newState[key] = value;
-      } 
-      else {
-        for (let i = 0; i < key.length; ++i) {
-          newState[key[i]] = value[i];
+        if (key === 'scale') {
+          let data = jQuery.extend({}, this.state.data)
+          data['scale'] = value
+          newState.data = data
+        } else {
+          newState[key] = value;
+        }
+      } else {
+        if (key[0] === 'colourmap') {
+          let data = jQuery.extend({}, this.state.data)
+          data['colourmap'] = value.join()
+          newState.data = data
+        } else {
+          for (let i = 0; i < key.length; ++i) {
+            newState[key[i]] = value[i];
+          }
         }
       }
       

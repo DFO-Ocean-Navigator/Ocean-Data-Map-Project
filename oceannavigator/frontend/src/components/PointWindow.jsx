@@ -84,7 +84,6 @@ export default class PointWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    console.warn("TIME IN MOUNT: ", this.state.time)
     // If an observation point has been picked, default to the
     // Observation tab.
     if (this.props.point[0][2] !== undefined) {
@@ -96,7 +95,7 @@ export default class PointWindow extends React.Component {
   }
 
   componentWillUpdate(prevProps, prevState) {
-    console.warn("TIME IN UPDATE: ", this.state.time)
+    return
   }
 
   componentWillUnmount() {
@@ -214,11 +213,7 @@ export default class PointWindow extends React.Component {
     let quantum = data[layer][index][dataset][variable].quantum
     let scale = data[layer][index][dataset][variable].scale
     let time = data[layer][index][dataset][variable].time
-    console.warn("TIME FROM DATA: ", time)
-    //time = moment(time)//.tz('GMT')
-    console.warn("TIME in UPDATE DATE: ", time)
-    //time = moment.tz(time, 'GMT')
-    //time.setUTCMonth(time.getUTCMonth() - 1)
+    
     this.setState({
       layer: layer,
       index: index,
@@ -447,6 +442,7 @@ export default class PointWindow extends React.Component {
     _("Colourmap");
     _("Saved Image Size");
 
+
     let dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
@@ -620,7 +616,6 @@ export default class PointWindow extends React.Component {
     
     const showTimeRange = this.state.selected === TabEnum.STICK ||
       this.state.selected === TabEnum.MOORING;
-    console.warn("TIME IN POINT: ", timeObj, starttimeObj)
     var time = null
     var timeRange = null
     if (this.state.dataset !== undefined) {
@@ -668,7 +663,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset}
+        url={"/api/v1.0/variables/?dataset=" + this.state.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -693,7 +688,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/variables/?vectors_only&dataset=" + this.state.dataset}
+        url={"/api/variables/?3d_only&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox

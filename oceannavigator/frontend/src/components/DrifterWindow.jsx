@@ -44,11 +44,13 @@ export default class DrifterWindow extends React.Component {
       dataType: "json",
       cache: true,
       success: function(data) {
+        let data_min = moment(data.min).tz('GMT')
+        let data_max = moment(data.max).tz('GMT')
         this.setState({
-          mindate: moment.tz(data.min, 'GMT'),
-          maxdate: moment.tz(data.max, 'GMT'),
-          starttime: moment.tz(data.min, 'GMT'),
-          endtime: moment.tz(data.max, 'GMT'),
+          mindate: data_min,
+          maxdate: data_max,
+          starttime: data_min,
+          endtime: data_max,
         }, this.updatePlot);
         
       }.bind(this),
@@ -174,6 +176,7 @@ export default class DrifterWindow extends React.Component {
     if (parentKeys.length > 0) {
       this.props.onUpdate(parentKeys, parentValues);
     }
+    this.updatePlot()
   }
 
   updatePlot() {

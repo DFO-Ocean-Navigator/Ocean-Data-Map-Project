@@ -18,7 +18,6 @@ export default class IceComboBox extends React.Component {
     
     for (let elem in this.props.data) {
       if (elem['id'] === undefined || elem['value'] === undefined) {
-        console.error("Data empty or malformed")
       } else if (this.props.envType != undefined) {
         if (elem['envType'] === this.props.envType) {
           id_list.push(elem['id'])
@@ -37,7 +36,6 @@ export default class IceComboBox extends React.Component {
     
     //}
     if (id_list === [] || value_list === []) {
-      console.error("NO DATA TO LOAD")
       id_list = ['ERROR']
       value_list = ['ERROR']
     }
@@ -138,7 +136,7 @@ export default class IceComboBox extends React.Component {
         {title}
         <FormControl
             componentClass="select"
-            defaultValue={this.props.current}
+            value={this.props.current}
             onChange={this.handleChange}
             multiple={false}
         >

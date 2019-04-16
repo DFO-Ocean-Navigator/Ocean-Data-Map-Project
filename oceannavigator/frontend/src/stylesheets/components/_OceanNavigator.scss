@@ -91,7 +91,12 @@ body {
         .Range {
             display: inline-block
         }
-
+        .timeIcon {
+            float: right;
+            position: relative;
+            top: -6px;
+            height: 30px;
+        }
         .settings {
             background-color: #006687;
             float: bottom;

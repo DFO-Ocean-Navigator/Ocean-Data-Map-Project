@@ -53,8 +53,6 @@ class TestLinePlot(unittest.TestCase):
         response = self.app.get('/api/v1.0/timeindex/convert/giops_day/1/')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.data)
-        print("RESPONSE: ", response)
-        print('RESPONSE[DATE]: ', response['date'])
         if type(response) == dict:
             response = response['date']
             if len(response) > 1:

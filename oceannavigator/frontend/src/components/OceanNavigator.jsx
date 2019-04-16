@@ -226,6 +226,9 @@ export default class OceanNavigator extends React.Component {
 
   // Updates global app state
   updateState(key, value) {
+    if (key === undefined) {
+      return
+    }
     var newState = {};
 
     if (key === 'timeSources') {

@@ -474,7 +474,6 @@ export default class Map extends React.PureComponent {
       this.infoOverlay.setPosition(coord); // Set balloon position
 
       let components = []
-      console.warn("DATA IN MAP: ", this.props.data)
       let text = "<p>" + "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4) + "</p>";
       components.push(text);
       let data = this.props.data

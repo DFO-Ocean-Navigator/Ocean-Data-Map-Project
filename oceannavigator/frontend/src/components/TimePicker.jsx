@@ -35,9 +35,7 @@ export default class TimePicker extends React.Component {
     this.state = {
       times: [],
       
-      focusedInput: {
-        focused: false
-      }
+    focusedInput: null
     };
 
     // Function bindings
@@ -63,7 +61,6 @@ export default class TimePicker extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.dataset !== this.props.dataset) {
-      console.warn("FETCHING NEW DATES")
       if (prevProps.dataset === undefined) {
         this.fetchDates(false)    
       } else {
@@ -110,10 +107,8 @@ export default class TimePicker extends React.Component {
           
           if (update) {
             let keys = Object.keys(dates_dict)
-            console.warn("KEYS: ", keys)
             let value = dates_dict[keys[keys.length - 1]]
             value = value[value.length - 1]
-            console.warn("VALUE: ", value)
             time = value
             this.props.onTimeUpdate('time', time)
           } else {
@@ -122,20 +117,17 @@ export default class TimePicker extends React.Component {
           
           let endhour = time.format('HH[Z]');
           
-          if (this.props.startDate === null || true) {
+          if (this.props.startDate === null || this.props.startDate === undefined) {
             let startTime = time.valueOf();
             startTime = moment(startTime)
             startTime.tz('GMT')
-            console.warn("START TIME: ", startTime)
             // Get Hour of Time (This is used for replacement on date change)
             //let starthour = startTime.format('HH[Z]');
             // Set the startDate 24 days before the endDate
             startTime = startTime.subtract(24, "days");
             
-            console.warn("START TIME AFTER SHIFT: ", startTime)
             
             if (this.state.dates.includes(startTime.format('YYYY-MM-DD'))) {
-              console.warn("INITIAL TIME INCLUDED")
               this.props.onTimeUpdate('starttime', startTime);
               let starthour = startTime.format('HH[Z]')
               this.setState({
@@ -143,13 +135,9 @@ export default class TimePicker extends React.Component {
                 endhour: endhour,
               });
             } else {
-              console.warn(this.state.dates)
               for (let i = 24; i >= 0; i = i-1) {
                 startTime.add(1, 'days');
-                console.warn("DATE: ", startTime.get('date'))
-                console.warn("I: ", i)
                 if (this.state.dates.includes(startTime.format('YYYY-MM-DD'))) {
-                  console.warn("MODIFIED TIME INCLUDED")
                   this.props.onTimeUpdate('starttime', startTime);
                   let starthour = startTime.format('HH[Z]')
                   // Store hours for later use
@@ -180,35 +168,22 @@ export default class TimePicker extends React.Component {
   }
 
   rangeUpdate(dates) {
-    console.warn("DATES: ", dates)
-
+  
     let startDate = dates.startDate; //new Date(dates.startDate);
     let endDate = dates.endDate;//new Date(dates.endDate);
     
-    console.warn("START DATE: ", startDate.format("YYYY/MM/DD[T]HH"))
-    console.warn("END DATE: ", endDate.format("YYYY/MM/DD[T]HH"))
     // Prev Time Used to Retrieve Hour
     let prevStart = this.props.startDate;
     let prevEnd = this.props.date;
-    
-    console.warn("PREV START DATE: ", prevStart)
-    console.warn("PREV END DATE: ", prevEnd)
-    
+  
+    /* START DATE */
     // Set to UTC
     startDate.tz('GMT');
-    endDate.tz('GMT');
-
     // Apply Correct Hour
     startDate.set({
       hour: prevStart.get('hour')
     });
-    endDate.set({
-      hour: prevEnd.get('hour')
-    });
-
-    console.warn("START DATE: ", startDate.format("YYYY/MM/DD[T]HH"))
-    console.warn("END DATE: ", endDate.format("YYYY/MM/DD[T]HH"))
-    
+      
     // Save Date Changes
     if ('startid' in this.props) {
       this.props.onTimeUpdate(this.props.startid, startDate);
@@ -216,20 +191,18 @@ export default class TimePicker extends React.Component {
       this.props.onTimeUpdate('starttime', startDate);
     }
 
-    if ('id' in this.props) {
-      this.props.onTimeUpdate(this.props.id, endDate);
-    } else {
-      this.props.onTimeUpdate('time', endDate);
-    }
-  }
-
-  updateRangeHour(key, value) {
-    if (key === '') { // Start Hour Change
-
-    } else {          // End Hour Change
-
-    }
-    return
+    /* END DATE */
+    if (endDate !== null) {
+      endDate.tz('GMT');
+      endDate.set({
+        hour: prevEnd.get('hour')
+      });
+      if ('id' in this.props) {
+        this.props.onTimeUpdate(this.props.id, endDate);
+      } else {
+        this.props.onTimeUpdate('time', endDate);
+      }
+    }  
   }
 
   singleUpdate(date) {
@@ -261,12 +234,15 @@ export default class TimePicker extends React.Component {
         })
 
         date = moment(this.props.date.valueOf());
+        date.tz('GMT')
         date.set({
           hour: int_value,
         })
+        
         this.props.onTimeUpdate(moment(date.valueOf()));
         break;
-      // Start Date
+
+        // Start Date
       case 'startHour':
         
         this.setState({
@@ -274,9 +250,11 @@ export default class TimePicker extends React.Component {
         })
 
         date = moment(this.props.startDate.valueOf())
+        date.tz('GMT')
         date.set({
           hour: int_value,
-        })  
+        })
+        date.tz('GMT')
         this.props.onTimeUpdate(moment(date.valueOf()));
         break;
       }
@@ -327,8 +305,6 @@ export default class TimePicker extends React.Component {
     }
   }
 
-  
-
   render() {
     
     var picker = null;
@@ -346,36 +322,35 @@ export default class TimePicker extends React.Component {
         }
         isOutsideRange={day => this.isInValidDay(day)}
       ></DateRangePicker>]
-      if (this.props.quantum === 'hour' && this._mounted) {
+      if (this.props.quantum === 'hour') {
         let hours_available = this.findHours(this.props.date)
-        picker.push(<IceComboBox
+        picker.push(<div className='hour_container'>
+          <IceComboBox
           data={hours_available}
           current={this.state.endHour}
-          localUpdate={this.onUpdate}
+          localUpdate={this.singleHourUpdate}
           key='endHour'
           className='current_hour_single range0'
           name='endHour'
-        ></IceComboBox>)
-  
-        picker.push(<IceComboBox
+        ></IceComboBox>
+        <IceComboBox
           data={hours_available}
           current={this.state.startHour}
-          localUpdate={this.onUpdate}
+          localUpdate={this.singleHourUpdate}
           key='startHour'
           className='current_hour_single range1'
           name='startHour'
-        ></IceComboBox>)  
+        ></IceComboBox>
+        </div>  )
       }
-      
     } else {
       picker = [<SingleDatePicker
         key='singlePicker'
         date={this.props.date}
         onDateChange={date => this.singleUpdate(date)}
-        focused={this.state.focusedInput['focused']}
-        onFocusChange={focusedInput => this.setState({ focusedInput })}
+        focused={this.state.focusedInput}
+        onFocusChange={focusedInput => this.setState({ focusedInput: focusedInput.focused })}
         isOutsideRange={day => this.isInValidDay(day)}
-        
       ></SingleDatePicker>]
       if (this.props.quantum === 'hour' && this._mounted) {
         let hours_available = this.findHours(this.props.date)
@@ -392,6 +367,7 @@ export default class TimePicker extends React.Component {
     
     return (
       <div>
+        <h1 style={{fontWeight: 'bold'}}>Time (UTC)</h1>
         {picker}
       </div>
     );

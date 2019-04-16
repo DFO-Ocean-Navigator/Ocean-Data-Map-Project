@@ -52,7 +52,6 @@ export default class DatasetSelector extends React.Component {
   }
 
   onTimeUpdate(key, value) {
-    console.warn("onTimeUpdate(key, value): ", key, value)
     let new_state = this.props.state
     if (typeof(key) === typeof('string')) {
       value = moment(value.valueOf())
@@ -63,9 +62,8 @@ export default class DatasetSelector extends React.Component {
       value = moment(key.valueOf())
       value.tz('GMT')
 
-      new_state.time = value//new Date(key)
+      new_state.time = value
     }
-    console.warn("ID, NEW_STATE: ", this.props.id, new_state)
     this.props.onUpdate(jQuery.extend({}, new_state))
   }
   
@@ -97,7 +95,6 @@ export default class DatasetSelector extends React.Component {
       starttimeObj.tz('GMT')
     }
 
-    console.warn("this.props.time: ", this.props.time)
     switch (this.props.time) {
       case "range":
         time = (<div>
@@ -110,34 +107,7 @@ export default class DatasetSelector extends React.Component {
             startDate={starttimeObj}
             date={timeObj}
             onTimeUpdate={this.onTimeUpdate}
-            //state={this.props.state.starttime}
-            //def=''
-            //url={"/api/timestamps/?dataset=" +
-            //    this.props.state.dataset +
-            //    "&quantum=" +
-            //    this.props.state.quantum}
-            //title={_("Start Time")}
-            //onUpdate={this.onUpdate}
-            //max={this.props.state.time}
-            //updateDate={this.updateDate}
           />
-          {/*
-          <TimePicker
-            key='time'
-            id='time'
-            state={this.props.state.time}
-            def=''
-            quantum={this.props.state.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
-                this.props.state.dataset +
-                "&quantum=" +
-                this.props.state.dataset_quantum}
-            title={_("End Time")}
-            onUpdate={this.onUpdate}
-            min={this.props.state.starttime}
-          />
-          */}
-          
         </div>);
         break;
       case "single":
@@ -150,35 +120,10 @@ export default class DatasetSelector extends React.Component {
           startDate={starttimeObj}
           date={timeObj}
           onTimeUpdate={this.onTimeUpdate}
-          //id='time'
-          //state={this.props.state.time}
-          //def={-1}
-          
-          //onUpdate={this.onUpdate}
-          //url={"/api/timestamps/?dataset=" +
-          //  this.props.state.dataset +
-          //  "&quantum=" +
-          //  this.props.state.quantum
-          //}
-          //title={_("Time (UTC)")}
-
-          />;
-            
-        
-          
+        />;      
     }
 
     let velocity_selector = null;
-    /*if(this.props.line && !this.props.compare && (this.props.state.variable === "vozocrtx,vomecrty" || this.props.state.variable === "east_vel,north_vel")) {
-      velocity_selector = [
-        <VelocitySelector
-          key='velocityType'
-          id='velocityType'
-          updateSelectedPlots={this.props.updateSelectedPlots}
-        />
-      ];
-      pass  
-    }*/
     
     return (
       <div className='DatasetSelector'>
