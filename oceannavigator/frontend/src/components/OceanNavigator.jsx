@@ -39,14 +39,14 @@ export default class OceanNavigator extends React.Component {
       _firstLayer: true,
       _foundation: true,
       _environment: true,
-      _intelligence: true,
+      _intelligence: false,
       _derived: false,
       _planning: false,
 
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: true,
+        _intelligence: false,
         _derived: false,
         _planning: false,
       },

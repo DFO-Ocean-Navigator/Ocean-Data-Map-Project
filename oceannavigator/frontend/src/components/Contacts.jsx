@@ -84,7 +84,9 @@ export default class Contacts extends React.Component {
                   vectorSource.removeLoadedExtent(extent);
                 }
                 xhr.onerror = onError;
-                xhr.setRequestHeader("Authorization", btoa("oceannavigator:oceannavigator"));
+                let username = '';
+                let password = '';
+                xhr.setRequestHeader("Authorization", btoa(username + ':' + password));
                 xhr.onload = function() {
                   if (xhr.status == 200) {
                     vectorSource.addFeatures(
