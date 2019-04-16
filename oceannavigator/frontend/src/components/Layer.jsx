@@ -1099,6 +1099,14 @@ export default class Layer extends React.Component {
         name='current_dataset'
         title={_("Dataset")}
       ></IceComboBox>)
+      //datasets.push(<Button 
+      //  bsStyle="link"
+      //  key='show_help'
+      //  id='show_help'
+      //  onClick={this.props.showHelp}
+      //>
+      //  {_("Help")}
+      //</Button>)
     }
 
     let variables = <IceComboBox

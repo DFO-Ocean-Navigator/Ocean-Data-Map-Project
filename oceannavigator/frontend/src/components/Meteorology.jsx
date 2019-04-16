@@ -62,24 +62,25 @@ export default class Meteorology extends React.Component {
     //     }
     //   }
     // }
+    
     let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
-    if (dataset in new_timeSources[map][this.props.layerType]) {
-      if (new_timeSources[map][this.props.layerType][dataset]['variables'].includes(variable)) {
-        
-        let idx = new_timeSources[map][this.props.layerType][dataset]['variables'].indexOf(variable)
-        new_timeSources[map][this.props.layerType][dataset]['variables'].splice(idx, 1)
+
+    if (new_timeSources !== undefined && new_timeSources[map] !== undefined && new_timeSources[map][this.props.layerType] !== undefined) {
+      if (dataset in new_timeSources[map][this.props.layerType]) {
+        if (new_timeSources[map][this.props.layerType][dataset]['variables'].includes(variable)) {
+          
+          let idx = new_timeSources[map][this.props.layerType][dataset]['variables'].indexOf(variable)
+          new_timeSources[map][this.props.layerType][dataset]['variables'].splice(idx, 1)
+        }
+        if (new_timeSources[map][this.props.layerType][dataset]['variables'].length === 0) {
+          delete new_timeSources[map][this.props.layerType][dataset]
+        }
+        if (new_timeSources[map][this.props.layerType] === {}) [
+          delete new_timeSources[map][this.props.layerType]
+        ]
       }
-      if (new_timeSources[map][this.props.layerType][dataset]['variables'].length === 0) {
-        delete new_timeSources[map][this.props.layerType][dataset]
-      }
-      if (new_timeSources[map][this.props.layerType] === {}) [
-        delete new_timeSources[map][this.props.layerType]
-      ]
+      this.props.globalUpdate('timeSources', jQuery.extend({}, new_timeSources))
     }
-
-    this.props.globalUpdate('timeSources', jQuery.extend({}, new_timeSources))
-
-
   }
 
 

@@ -1065,26 +1065,18 @@ export default class Map extends React.PureComponent {
     this.map.addControl(this.scaleViewer);*/
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
-      console.warn("MAP LAYERS: ", this.map.getLayers().getArray())
       let layers = this.map.getLayers().getArray()
       for (let layer in layers) {
-        console.warn("LAYER: ", layer)
-        console.warn("LAYERS[LAYER]: ", layers[layer])
-        console.warn("LAYERS[LAYER].get('name'): ", layers[layer].get('name'))
         let lyr = layers[layer]
-        console.warn("LYR: ", lyr)
         let name = layers[layer].get('name')
         if (name !== undefined) {
           let props = lyr.getProperties()
-          console.warn("PROPS: ", props)
           props.projection = this.props.state.projection
-          console.warn("PROPS.PROJECTION: ", props.projection)
           ///let source = props.getSource();
           //console.warn("SOURCE: ", source)
           const newSource = new ol.source.XYZ(props);
           
           lyr.setSource(newSource)
-          console.warn("LYR: ", lyr)
         }
       }
 
