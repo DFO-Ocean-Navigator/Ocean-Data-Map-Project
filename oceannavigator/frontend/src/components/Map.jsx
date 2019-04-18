@@ -432,7 +432,7 @@ export default class Map extends React.PureComponent {
         this.popupElement.innerHTML = feature.get("name");
         $(this.map.getTarget()).css("cursor", "pointer");
       } else if (feature && feature.get("identity_name")) {
-        //console.warn(feature)
+        console.warn(feature)
         let type = ''
         if (feature.get("identity_type")) {
           type = feature.get("identity_type")
@@ -1022,47 +1022,8 @@ export default class Map extends React.PureComponent {
 
   componentDidUpdate(prevProps, prevState) {
     
-    /* LEGACY CODE
-    const datalayer = this.map.getLayers().getArray()[1];
-    const old = datalayer.getSource();
-    const props = old.getProperties();
-    props.url = `/tiles/v0.1` + 
-                `/${this.props.options.interpType}` + 
-                `/${this.props.options.interpRadius}` +
-                `/${this.props.options.interpNeighbours}` +
-                `/${this.props.state.projection}` + 
-                `/${this.props.state.dataset}` + 
-                `/${this.props.state.variable}` + 
-                `/${this.props.state.time}` + 
-                `/${this.props.state.depth}` + 
-                `/${this.props.scale}` + 
-                `/{z}/{x}/{y}.png`;
-    props.projection = this.props.state.projection;
-    props.attributions = [
-      new ol.Attribution({
-        html: this.props.state.dataset_attribution,
-      }),
-    ];
-    */
     CURRENT_PROJ = this.props.state.projection;
 
-    //const newSource = new ol.source.XYZ(props);
-
-    //datalayer.setSource(newSource);
-
-    // Update colour scale
-
-    /*if (this.scaleViewer != null) {
-      this.map.removeControl(this.scaleViewer);
-    }
-    this.scaleViewer = new app.ScaleViewer({
-      image: (
-        `/scale/${this.props.state.dataset}` +
-        `/${this.props.state.variable}` +
-        `/${this.props.scale}.png`
-      )
-    });
-    this.map.addControl(this.scaleViewer);*/
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
       let layers = this.map.getLayers().getArray()
@@ -1072,8 +1033,6 @@ export default class Map extends React.PureComponent {
         if (name !== undefined) {
           let props = lyr.getProperties()
           props.projection = this.props.state.projection
-          ///let source = props.getSource();
-          //console.warn("SOURCE: ", source)
           const newSource = new ol.source.XYZ(props);
           
           lyr.setSource(newSource)

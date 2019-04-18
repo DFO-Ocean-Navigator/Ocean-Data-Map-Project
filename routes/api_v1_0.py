@@ -9,7 +9,7 @@ import hashlib
 from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
-
+import urllib3
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -55,6 +55,28 @@ def generateScript(url: str, type: str):
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
   
   return resp
+
+
+#
+# Unchanged from v0.0
+#
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
+@bp_v1_0.route('/api/v1.0/contacts/')
+def query_contacts_v1_0():
+  print("ARGS: ", request.args)
+  url = request.args.get('query')
+  print("CONTACTS URL: ", url)
+
+  http = urllib3.PoolManager()
+  fields = {'username':'oceannavigator','password':'oceannavigator'}
+  response = http.request('GET', url, fields)
+  response = response.data
+  print("RESPONSE: ", response)
+  #response = urllib3.urlopen(url)
+  return 'stuff'
+
+
 
 #
 # Unchanged from v0.0

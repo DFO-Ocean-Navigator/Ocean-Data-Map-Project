@@ -804,6 +804,9 @@ export default class Layer extends React.Component {
     }
   }
 
+  /*
+
+  */
   removeOpenLayer() {
     if (this.props.layers.includes(this.state.ice_layer)) {
       if (this.state.current_map === 'left') {
@@ -847,86 +850,6 @@ export default class Layer extends React.Component {
       this.removeTime(args.old_map, args.old_dataset, args.old_variable)
       this.addTime(args.new_map, args.new_dataset, args.new_variable, args.new_quantum)
     }
-    /*
-    let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
-    if (new_timeSources[this.state.current_map] === undefined) {
-      new_timeSources[this.state.current_map] = {}
-    }
-    if (old_dataset === undefined) { // If currently using global time
-
-      /*
-
-      if (this.props.layerType in new_timeSources[this.state.current_map]) {
-        if (this.props.value in new_timeSource[this.state.current_map][this.props.layerType]) {
-          if (new_dataset in new_timeSources[this.state.current_map][this.props.layerType][this.props.value]) {
-            new_timeSources[this.state.current_map][this.props.layerType][this.props.value][new_dataset]['variables'].push(new_variable)
-            //this.setState({
-            //  timeBarNum: new_timeSources[this.state.current_map][this.props.layerType][new_dataset].frequency
-            //})
-          } else {
-            new_timeSources[this.state.current_map][this.props.layerType][this.props.value][new_dataset] = {
-              variables: [new_variable],
-              quantum: new_quantum,
-            }
-          }
-        } else {
-          new_timeSources[this.state.current_map][this.props.layerType] = {
-            [new_dataset]: {
-              variables: [new_variable],
-              quantum: new_quantum
-            }
-          }    // Adds the layerType and dataset
-        }
-        else {
-
-        }
-      }
-
-
-
-      //this.props.globalUpdate('timeSources', new_timeSources)    // Adds to global time source list
-
-      this.setState({
-        useGlobalTime: false,    // Unchecks the using global time selectbox
-        timeSource: this.props.layerType    // Indicates the new source to look for in the global time source list
-      })
-    } else {
-      // Reduces or Removes instances of datasets
-      if (old_dataset in new_timeSources[this.state.current_map][this.props.layerType]) {
-        if (new_timeSources[this.state.current_map][this.props.layerType][old_dataset]['variables'].length === 1) {
-
-          delete new_timeSources[this.state.current_map][this.props.layerType][old_dataset]
-          if (new_timeSources[this.state.current_map][this.props.layerType] === {}) {
-            delete new_timeSources[this.state.current_map][this.props.layerType]
-          }
-        } else {
-          let idx = new_timeSources[this.state.current_map][this.props.layerType][old_dataset]['variables'].indexOf(old_variable)
-          new_timeSources[this.state.current_map][this.props.layerType][old_dataset]['variables'].splice(idx, 1)
-        }
-      }
-
-      // Updates with new dataset
-      if (new_dataset !== undefined) {
-        if (this.props.layerType in new_timeSources[this.state.current_map]) {
-          if (new_dataset in new_timeSources[this.state.current_map][this.props.layerType]) {
-
-            new_timeSources[this.state.current_map][this.props.layerType][new_dataset]['variables'].push(new_variable)
-          } else {
-            new_timeSources[this.state.current_map][this.props.layerType][new_dataset] = {
-              variables: [new_variable],
-              quantum: new_quantum
-            }
-          }
-        }
-      }
-    }
-
-    this.props.globalUpdate('timeSources', new_timeSources) // Updates the new timeSources, which triggers a time update
-    this.setState({
-      useGlobalTime: true,    // Checks the using global time selectbox
-      timeSource: 'global'    // Indicates the new source to look for in the global time source list
-    })
-    */
   }
 
   /*
