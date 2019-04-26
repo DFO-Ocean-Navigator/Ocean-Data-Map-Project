@@ -9,7 +9,7 @@ import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import ContactButton from "./ContactButton.jsx";
 import ol from "openlayers";
-
+import ShipOptions from "./ShipOptions.jsx";
 
 
 const i18n = require("../i18n.js");
@@ -29,10 +29,25 @@ export default class Contacts extends React.Component {
     // Function bindings
     this.toggleTraffic = this.toggleTraffic.bind(this);
     this.getType = this.getType.bind(this);
+    this.singleClick = this.singleClick.bind(this);
   }
 
   componentDidMount() {
     //this.getType()
+  }
+  
+  singleClick(feature, pixel) {
+    console.warn("SINGLE CLICK (CONTACT)")
+
+    const contactInfo = <ShipOptions
+            key='selectedContact'
+            contact={feature}
+            pixel={pixel}
+            projection={this.props.state.projection}
+          ></ShipOptions>
+    console.warn("SHIP OPTIONS: ", contactInfo)
+    return contactInfo
+
   }
 
   //Adds or remove traffic 
@@ -68,54 +83,34 @@ export default class Contacts extends React.Component {
           type: 'Circle',
           stopClick: true
         })
-        this.props.mapComponent._drawing = true;
+        this.props.mapComponent.toggleDrawing(true)
 
         draw.on("drawend", function (e) {
           // Disable zooming when drawing
           this.props.mapComponent.controlDoubleClickZoom(false);
           let geometry = e.feature.clone().getGeometry();
-          geometry.transform(this.props.state.projection, "EPSG:4326")
+          let transformed_geo = e.feature.clone().getGeometry();
+          transformed_geo.transform(this.props.state.projection, "EPSG:4326")
           let draw_radius = geometry.getRadius();
+          console.warn("DRAW RADIUS: ", draw_radius)
           let draw_center = geometry.getCenter();
+          let transformed_center = transformed_geo.getCenter()
+          let edgeCoordinate = [draw_center[0] + draw_radius, draw_center[1]];
+          let wgs84Sphere = new ol.Sphere(6378137)
+          let groundRadius = wgs84Sphere.haversineDistance(
+            ol.proj.transform(draw_center, 'EPSG:3857', 'EPSG:4326'),
+            ol.proj.transform(edgeCoordinate, 'EPSG:3857', 'EPSG:4326')
+          )
+          console.warn("GROUND RADIUS: ", groundRadius)
           console.warn("HERE")
+          
 
-          var vectorLoader = function () {
-
+         
             //https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson
             //var url= 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson'
             // var url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] + '),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint
             
             //FISH URL
-            //let url = 
-            
-            let username = '';
-            let password = '';
-
-            function logResults(json) {
-              console.log(json);
-            }
-
-            const localUrl = "/api/v1.0/contacts/?query=" + encodeURIComponent(url)
-            console.warn("LOCAL URL: ", localUrl)
-            $.ajax({
-              url: url,
-              type: 'GET',
-              dataType:'json',
-              //xhrFields: {
-              //  withCredentials: true,
-              //},
-              /*beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-              },*/
-              success: function(response) {
-                console.warn("RESPONSE: ", response)
-              },
-              error: function(response) {
-                console.warn("ERROR ~~~~~~~~~~~~~~~~")
-                console.warn("RESPONSE: ", response)
-              }
-            });
-
             
             /*
             const localUrl = "/api/v1.0/vessels/" + encodeURIComponent(url)
@@ -130,9 +125,7 @@ export default class Contacts extends React.Component {
             //   vectorSource.removeLoadedExtent(extent);
             // }
             // xhr.onerror = onError;
-            // let username = 'oceannavigator';
-            // let password = 'oceannavigator';
-
+            
             // debugger;
             // xhr.setRequestHeader("Authorization", btoa(username + ':' + password));
             // xhr.onload = function() {
@@ -144,21 +137,51 @@ export default class Contacts extends React.Component {
             //   }
             // }
             // xhr.send();
-          }.bind(this);
-
-          let new_vectorSource = new ol.source.Vector({
-            url: 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&srs=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)', // BBOX' //+ geopoint
-            //loader: vectorLoader,
+         
+          let new_vectorSource
+          let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=' + this.props.state.projection + '&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=500&CQL_FILTER=DWITHIN(geopoint,Point(' + transformed_center[1] + '%20' + transformed_center[0] + '),' + groundRadius + ',meters)'
+          //let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&count=100&srsname=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[1] + ' ' + draw_center[0] +'),' + draw_radius + ',kilometers)'; // BBOX' //+ geopoint  
+          url = encodeURIComponent(url)
+          console.warn("ENCODED URL: ", url)
+          const localUrl = "/api/v1.0/contacts/?query=" + url
+          console.warn("LOCAL URL: ", localUrl)
+          /*$.ajax({
+            url: localUrl,
+            type: 'GET',
+            dataType:'json',
+            //xhrFields: {
+            //  withCredentials: true,
+            //},
+            /*beforeSend: function (xhr) {
+              xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+            },
+            success: function(response) {
+              console.warn("RESPONSE: ", response.features)
+              this.features = response    
+            },
+            error: function(response) {
+              console.warn("ERROR ~~~~~~~~~~~~~~~~")
+              console.warn("RESPONSE: ", response)
+            }
+          }).done(*/
+          new_vectorSource = new ol.source.Vector({
+            url: localUrl,   //'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&srs=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)', // BBOX' //+ geopoint
             format: new ol.format.GeoJSON(),
-            crossOrigin: 'anonymous'
+            //crossOrigin: 'anonymous'
+            //features: (new ol.format.GeoJSON()).readFeatures(this.features)
           })
+          
 
+          
 
+          
+
+          
 
           //Places a circle on the map
           new_vectorSource.addFeature(e.feature)
           console.warn(e.feature)
-          console.warn(new_vectorSource)
+          console.warn("SOURCE: ", new_vectorSource)
 
           this.layer_contacts = new ol.layer.Vector({
             projection: this.props.state.projection,
@@ -174,19 +197,20 @@ export default class Contacts extends React.Component {
                 }),
 
                 image: new ol.style.Circle({
-                  radius: 8,
+                  radius: 6,
                   fill: new ol.style.Fill({
                     color: [red, red, 0, 1],
                   }),
                   stroke: new ol.style.Stroke({
                     color: "#000000",
-                    width: 8
+                    width: 2
                   }),
                 })
               });
             }
 
           });
+          this.layer_contacts.set('singleClick', this.singleClick)
 
           // ADDS LAYER TO THE MAP
           this.props.mapComponent.toggleLayer(this.layer_contacts, 'add')
@@ -214,7 +238,7 @@ export default class Contacts extends React.Component {
       dataType: "json",
       cache: true,
 
-      //If server returns status code of 200 / it worked - Ajax call successful
+      //If server returns status code of 200 it worked - Ajax call successful
       //
       // data filled by ajax
       //

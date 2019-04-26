@@ -136,7 +136,8 @@ export default class Map extends React.PureComponent {
 
     this.state = {
       location: [0, 90],
-
+      contactInfo: false,
+      contact: null
     };
 
 
@@ -461,9 +462,45 @@ export default class Map extends React.PureComponent {
         return;
       }
 
-      const coord = e.coordinate; // Click location
+      this.toRender = []
+      let self = this
+      const feature = this.map.forEachFeatureAtPixel(
+        this.map.getEventPixel(e.originalEvent),
+        function(feature, layer) {
 
-      this.infoPopupContent.innerHTML = _("Loading...");
+          //let geometry = feature.getGeometry()
+          //let coordinate = geometry.getCoordinates()
+          //let pixel = self.map.getPixelFromCoordinate(coordinate)
+          console.warn("e.originalEvent: ", e.originalEvent)
+          console.warn("IDENTITY NAME: ", feature.get('identity_name'))
+          if (feature.get('identity_name') !== undefined) {
+            let click_function = layer.get('singleClick')
+            console.warn("CLICK FUNCTION: ", click_function)
+            let html = click_function(feature, e.originalEvent)
+            console.warn("HTML: ", html)
+            //this.infoPopupContent.innerHTML.concat(html)
+            //console.warn(this.infoPopupContent.innerHTML)
+            self.toRender.push(html);  
+          }
+        }
+      );
+      console.warn("FEATURE: ", feature)
+      //for (let f in feature) {   
+        //this.infoPopupContent.innerHTML = f
+      //}
+      //this.infoPopupContent.innerHTML = feature + 'test'
+      const coord = e.coordinate; // Click location
+      //if (feature) {
+        //console.warn("FEATURE INFO: ", feature)
+      //}
+      //if (feature && feature.get("identity_name") !== undefined) {
+        
+        //this.infoPopupContent.innerHTML = this.contactInfo
+        this.infoOverlay.setPosition(coord)
+        this.contactInfo = true
+      //} 
+
+      //this.infoPopupContent.innerHTML = _("Loading...");
       if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
@@ -471,8 +508,11 @@ export default class Map extends React.PureComponent {
       this.setState({
         location: [location[0], location[1]]
       });
+      if (this.contactInfo) {
+        return;
+      }
       this.infoOverlay.setPosition(coord); // Set balloon position
-
+      
       let components = []
       let text = "<p>" + "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4) + "</p>";
       components.push(text);
@@ -509,8 +549,6 @@ export default class Map extends React.PureComponent {
           }
         }
       }
-      
-
     }.bind(this));
 
     var select = new ol.interaction.Select({
@@ -658,6 +696,7 @@ export default class Map extends React.PureComponent {
 
     this.toggleLayer = this.toggleLayer.bind(this);
     this.reloadLayer = this.reloadLayer.bind(this);
+    this.toggleDrawing = this.toggleDrawing.bind(this);
   }
 
   getBasemap(source, projection, attribution) {
@@ -1019,6 +1058,10 @@ export default class Map extends React.PureComponent {
     }.bind(this));
     this.map.addInteraction(draw);
   }
+  
+  toggleDrawing(value) {
+    this._drawing = value
+  }
 
   componentDidUpdate(prevProps, prevState) {
     
@@ -1293,18 +1336,20 @@ export default class Map extends React.PureComponent {
         allSources={this.props.allSources}
       ></TimeBarContainer>  
       }
-      
     }
+
+    //this.infoPopupConten = this.toRender
     
     return (
       <div className='Map'>
         <div ref={(c) => {
          this.map.setTarget(c)}} />
-
         <div
           className='title ol-popup'
           ref={(c) => this.popupElement = c}
-        >EMPTY</div>
+        >
+          
+        </div>
         <div
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
@@ -1315,13 +1360,13 @@ export default class Map extends React.PureComponent {
           <div className={'balloonLaunch'}>
             <a href="#" style={{ right: "5px", top: "20px" }} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
           </div>
-
-          <div ref={(c) => this.infoPopupContent = c}></div>
+          
+          <div ref={(c) => this.infoPopupContent = c}>{this.toRender}</div>
         </div>
+        
 
         {layerRearrange}
         {timeBar}
-
       </div>
     );
   }

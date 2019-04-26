@@ -265,6 +265,32 @@ class NetCDFData(Data):
             XI_mg, YI_mg = np.meshgrid(XI, YI)
 
             # Define input/output grid definitions
+            print("LON VALS: ", lon_vals)
+            print("LAT VALS: ", lat_vals)
+            print("LON VALS TYPE: ", type(lon_vals))
+            print("LAT VALS TYPE: ", type(lat_vals))
+            print("LON VALS SHAPE: ", lon_vals.shape)
+            print("LAT VALS SHAPE: ", lat_vals.shape)
+            print("LON VALS LENGTH: ", len(lon_vals))
+            print("LAT VALS LENGTH: ", len(lat_vals))
+            lon_len = len(lon_vals)
+            lat_len = len(lat_vals)
+            if len(lat_vals.shape) == 1:
+                lat_vals, lon_vals = np.meshgrid(lat_vals, lon_vals)
+            print("LON VALS: ", lon_vals)
+            print("LAT VALS: ", lat_vals)
+            print("LON VALS SHAPE: ", lon_vals.shape)
+            print("LAT VALS SHAPE: ", lat_vals.shape)
+            #if lon_len > lat_len:
+            #    lon_vals = lon_vals[:lat_len]
+            #    print("MODIFIED LON: ", lon_vals)
+            #    print("MODIFIED LON SHAPE: ", lon_vals.shape)
+            #else:
+            #    lat_vals = lat_vals[:lon_vals]
+            #    print("MODIFIED LON: ", lat_vals)
+            #    print("MODIFIED LON SHAPE: ", lat_vals.shape)
+
+
             input_def = pyresample.geometry.SwathDefinition(lons=lon_vals, lats=lat_vals)
             output_def = pyresample.geometry.SwathDefinition(lons=XI_mg, lats=YI_mg)
 

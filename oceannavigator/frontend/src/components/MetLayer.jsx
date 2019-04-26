@@ -277,9 +277,9 @@ export default class MetLayer extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+    const var_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
     const time_promise = $.ajax(
-      "/api/timestamp/" +
+      "/api/v1.0/timestamp/" +
       this.state.dataset + "/" +
       this.state.time + "/" +
       dataset

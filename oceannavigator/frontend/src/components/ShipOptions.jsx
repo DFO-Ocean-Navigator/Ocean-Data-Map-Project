@@ -1,0 +1,133 @@
+import React from "react";
+import ComboBox from "./ComboBox.jsx";
+import Range from "./Range.jsx";
+import SelectBox from "./SelectBox.jsx";
+import DatasetSelector from "./DatasetSelector.jsx";
+import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
+import Icon from "./Icon.jsx";
+import Options from "./Options.jsx";
+import PropTypes from "prop-types";
+import ContactButton from "./ContactButton.jsx";
+import ol from "openlayers";
+
+
+
+const i18n = require("../i18n.js");
+
+export default class ShipOptions extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+
+    }
+    
+    this.display = 'select'
+
+    this.trackShip = this.trackShip.bind(this);
+    this.quickInfo = this.quickInfo.bind(this);
+  }
+
+  componentDidMount() {
+    //this.getType()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.contact !== this.props.contact) {
+      this.display = 'select'
+    }
+  }
+
+  trackShip() {
+    console.warn("TRACK SHIP")
+    //let lon = this.props.contact.getCoordinates();
+    //console.warn("LAT, LON: ", lat, lon);
+    //let coord = [lon, lat];
+    //console.warn("COORD 1: ", coord);
+    //coord = ol.proj.transform(coord, 'EPSG:4326', this.props.projection);
+    //console.warn("COORD 2: ", coord);
+    //coord = ol.proj.fromLonLat(coord);
+    //console.warn("COORD 3: ", coord);
+    //this.props.partner.mapView.setZoom(this.mapView.getZoom());
+  }
+
+  quickInfo() {
+    console.warn("QUICK INFO")
+    if (this.display === 'info') {
+      this.display = 'select'
+    } else {
+      this.display = 'info'
+    }
+  }
+
+  launchPlot() {
+    console.warn("LAUNCH PLOT")
+    this.display = 'launch'
+  }
+
+
+
+  render() {
+    
+    
+
+    let style = {
+      width: '100%',
+      height: 'fit-content',
+      transition: 'inherit',
+    }
+
+    let button_style = {
+      width: '100%',
+      height: '20px',
+    }
+
+    let elems = ['entity_type', 'mmsi', 'flag', 'report_date_time', ];
+    let elem_names = ['Vessel Type: ', 'MMSI: ', 'Country of Origin: ', 'Last Reported: ', ];
+    let contact_info = [];
+    for (let elem in elems) {
+      console.warn("ELEM: ", elem);
+      console.warn("ELEM ID: ", elems[elem]);
+      console.warn("ELEM NAME: ", elem_names[elem]);
+      let new_div = <div>{elem_names[elem]}{this.props.contact.get(elems[elem])}</div>;
+      contact_info.push(new_div);
+    }
+    console.warn("CONTACT INFO: ", contact_info);
+
+    let display = [];
+    let buttons = []
+    switch(this.display) {
+      case 'info':
+        //display.push(<div className='topLeft' onClick={this.quickInfo}><Icon icon='info'  onClick={this.quickInfo}/></div>)
+        display.push(contact_info);
+        break;
+      }
+
+    buttons.push(
+      <div className='button_container' style={button_style} >
+        <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
+        <div className='topRight' onClick={this.trackShip}><Icon icon='line-chart'/></div>
+        <div className='btmLeft' onClick={this.quickInfo}><Icon icon='thumb-tack'/></div>
+      </div>)
+    console.warn("DISPLAY: ", display)
+
+    return (
+      <div className='shipOptions_container'>
+        <div className='contactName'>
+          {this.props.contact.get("identity_name")}
+        </div>
+        <div className='contactLine'></div>
+        <div style={style}>
+          {display}
+          {buttons}
+        </div>
+      </div>
+      
+    );
+  }
+}
+
+//***********************************************************************
+ShipOptions.propTypes = {
+  //location: PropTypes.string
+};

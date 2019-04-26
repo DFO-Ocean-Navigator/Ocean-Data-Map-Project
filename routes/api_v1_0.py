@@ -10,6 +10,7 @@ from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
 import urllib3
+import urllib
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -62,19 +63,38 @@ def generateScript(url: str, type: str):
 #
 # will be capable of processing additional arguments for meteorology, oceanography, and ice
 #
+@bp_v1_0.route('/api/v1.0/contacts/test/')
+def query_contacts_test_v1_0():
+  url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=EPSG:3857&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=5000&CQL_FILTER=DWITHIN(geopoint,Point(50%20-49),200,kilometers)'
+  print("REQUEST: ", url)
+  http = urllib3.PoolManager()
+  headers = urllib3.util.make_headers(basic_auth='')
+  response = http.request('GET', url, headers=headers)
+  response = response.data
+  print("RESPONSE: ", response)
+  #response = urllib3.urlopen(url)
+  return response
+
+#
+# Unchanged from v0.0
+#
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
 @bp_v1_0.route('/api/v1.0/contacts/')
 def query_contacts_v1_0():
   print("ARGS: ", request.args)
   url = request.args.get('query')
+  url = url.replace(' ', '%20')
+  print("\n\n")
   print("CONTACTS URL: ", url)
-
+  print("\n\n")
   http = urllib3.PoolManager()
-  fields = {'username':'oceannavigator','password':'oceannavigator'}
-  response = http.request('GET', url, fields)
+  headers = urllib3.util.make_headers(basic_auth='')
+  response = http.request('GET', url, headers=headers)
   response = response.data
   print("RESPONSE: ", response)
   #response = urllib3.urlopen(url)
-  return 'stuff'
+  return response
 
 
 
@@ -85,6 +105,9 @@ def query_contacts_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/datasets/')
 def query_datasets_v1_0():
+  for arg in request.args:
+    if request.args.get(arg) == 'undefined':
+      return Response(status=422)
   return routes.routes_impl.query_datasets_impl(request.args)
 
 
@@ -95,6 +118,9 @@ def query_datasets_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
+  for arg in request.args:
+    if request.args.get(arg) == 'undefined':
+      return Response(status=422)
   return routes.routes_impl.vars_query_impl(request.args)
 
 
@@ -158,6 +184,9 @@ def num2date(dataset: str, index: str):
 #
 @bp_v1_0.route('/api/v1.0/depth/')
 def depth_v1():
+  for arg in request.args:
+    if request.args.get(arg) == 'undefined':
+      return Response(status=422)
   return routes.routes_impl.depth_impl(request.args)
 
 
@@ -166,6 +195,9 @@ def depth_v1():
 #
 @bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>/<string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
 def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label:str):
+  if dataset == 'undefined' or variable == 'undefined' or scale == 'undefined' or colourmap == 'undefined' or orientation == 'undefined' or transparency == 'undefined' or label == 'undefined':
+    return Response(status=422)
+
   return routes.routes_impl.scale_impl(dataset, variable, scale, colourmap, orientation, transparency, label)
 
 
@@ -174,6 +206,9 @@ def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientat
 #
 @bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
 def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
+  if dataset == 'undefined' or variable == 'undefined' or interp == 'undefined' or radius == 'undefined' or neighbours == 'undefined' or projection == 'undefined' or extend == 'undefined' or depth == 'undefined' or time == 'undefined':
+    return Response(status=422)
+
   config = DatasetConfig(dataset)
   with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)
@@ -185,6 +220,9 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
 # 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
 def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+  if dataset == 'undefined' or variable == 'undefined' or time == 'undefined' or depth == 'undefined' or location == 'undefined':
+    return Response(status=422)
+
   config = DatasetConfig(dataset)
   with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)

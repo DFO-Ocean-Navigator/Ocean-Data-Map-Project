@@ -310,7 +310,7 @@ export default class Layer extends React.Component {
         current_quantum: quantum,
       })
       // Fetch new Variables
-      variable_promise = $.ajax("/api/variables/?dataset=" + dataset + "&envType=" + this.props.layerType).promise();
+      variable_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset + "&envType=" + this.props.layerType).promise();
 
       // Update Variables
       $.when(variable_promise).done(function (variables) {
@@ -496,6 +496,10 @@ export default class Layer extends React.Component {
       //  this.updateIce();
       //}
     }
+
+  }
+
+  singleClick(feature) {
 
   }
 
