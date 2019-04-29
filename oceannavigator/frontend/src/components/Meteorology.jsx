@@ -167,6 +167,7 @@ render() {
   }
 
 
+  
   return (
     <div>
 
@@ -187,7 +188,7 @@ render() {
       <Button
         onClick={this.addLayer}
       >
-        New Ocean Layer
+        New {this.props.layerType} Layer
             </Button>
 
     </div>
