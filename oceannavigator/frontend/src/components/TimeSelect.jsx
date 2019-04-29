@@ -543,19 +543,42 @@ export default class TimeSelect extends React.Component {
             
             // If quantum === 'day'
             if (Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name]).length === 1) {
+                let year = this.state.selected_year
+                let month = this.state.month_tonum[this.state.selected_month]
+                let day = e.target.name
                 
-                var startTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + e.target.name)
-                var endTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + e.target.name)
+                // Fetch correct hour, min, sec from available times
+                let hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name])[0]
+                let min = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour])[0]
+                let sec = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour][min])[0]
+                
+                var startTimeObj = new moment() 
+                var endTimeObj = new moment()
                 startTimeObj.tz('GMT')
                 endTimeObj.tz('GMT')
-                //console.warn("HOUR: ", this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name])[0]
+                
                 startTimeObj.set({
-                    hour: Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name])[0]
+                    year: year,
+                    month: month,
+                    day: day,
+                    hour: hour,
+                    minute: min,
+                    second: sec,
+                    milliseconds: 0,
                 })
-                console.warn("start time Obj: ", startTimeObj)
+                
+                endTimeObj.set({
+                    year: year,
+                    month: month,
+                    day: day,
+                    hour: hour,
+                    minute: min,
+                    second: sec,
+                    milliseconds: 0,
+                })
+                
                 if (this.state.selecting === 'startTime') {
                     let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
-                    console.warn("DIFFERENCE: ", difference)
                     if (difference > 10 || difference < 0) {
                         this.startChange(startTimeObj, endTimeObj)
                     } else {    
@@ -572,14 +595,11 @@ export default class TimeSelect extends React.Component {
                     return
                     
                 } else {
-                    console.warn("START TIME STATE: ", this.state.startTimeObj)
                     let difference = this.daysBetween(endTimeObj.valueOf(), this.state.startTimeObj)
-                    console.warn("DIFFERENCE END TIME: ", difference)
                     if (difference > 10 || difference < -10) {
                         
                         this.endChange(moment(startTimeObj), moment(endTimeObj))
                     } else {
-                        console.warn("DAY: ", endTimeObj.get('days'))
                         this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(endTimeObj))
                         this.setState({
                             endTimeObj: endTimeObj
