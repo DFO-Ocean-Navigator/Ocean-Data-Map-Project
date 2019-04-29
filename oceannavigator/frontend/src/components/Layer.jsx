@@ -88,6 +88,37 @@ export default class Layer extends React.Component {
     this.toggleCompare = this.toggleCompare.bind(this);
   }
 
+  singleClick(feature, pixel) {
+    
+    console.warn("SINGLE CLICK")
+    console.warn("FEATURE, PIXEL: ", feature, pixel)
+    
+    this.infoRequest = $.ajax({
+      url: (
+        `/api/v1.0/data/${dataset}` +
+        `/${variable}` +
+        `/${data[type][index][dataset][variable]['time'].toISOString()}` +
+        `/${data[type][index][dataset][variable].depth}` +
+        `/${location[1]},${location[0]}.json`
+      ),
+      success: function(response) {
+        console.warn("RESPONSE: ", response)
+        for (let i = 0; i < response.name.length; ++i) {
+          if (response.value[i] !== "nan") {
+            text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
+            toRender.push(text)
+            console.warn("toRender: ", toRender) 
+            this.setState({
+              toRender: toRender
+            }, console.warn("STATE SET"))
+          }
+        }
+        
+      }.bind(this),
+    })
+    return
+  }
+
   componentDidMount() {
     this._mounted = true
     this.createIce();

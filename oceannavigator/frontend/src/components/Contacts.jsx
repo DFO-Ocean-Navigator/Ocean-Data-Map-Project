@@ -37,6 +37,10 @@ export default class Contacts extends React.Component {
   }
   
   singleClick(feature, pixel) {
+    if (feature.get('identity_name') === undefined) {
+      return
+    }
+    console.warn("FEATURE: ", feature)
     console.warn("SINGLE CLICK (CONTACT)")
 
     const contactInfo = <ShipOptions

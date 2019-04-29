@@ -458,49 +458,39 @@ export default class Map extends React.PureComponent {
 
     // Info popup balloon
     this.map.on("singleclick", function (e) {
+      let toRender = this.state.toRender
+      this.setState({
+        toRender: <p>Loading...</p>
+      })
       if (this._drawing) { // Prevent conflict with drawing
         return;
       }
-
-      this.toRender = []
-      let self = this
+      this.contactInfo = false
+      toRender = []
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
         function(feature, layer) {
 
-          //let geometry = feature.getGeometry()
-          //let coordinate = geometry.getCoordinates()
-          //let pixel = self.map.getPixelFromCoordinate(coordinate)
-          console.warn("e.originalEvent: ", e.originalEvent)
-          console.warn("IDENTITY NAME: ", feature.get('identity_name'))
-          if (feature.get('identity_name') !== undefined) {
-            let click_function = layer.get('singleClick')
-            console.warn("CLICK FUNCTION: ", click_function)
-            let html = click_function(feature, e.originalEvent)
-            console.warn("HTML: ", html)
-            //this.infoPopupContent.innerHTML.concat(html)
-            //console.warn(this.infoPopupContent.innerHTML)
-            self.toRender.push(html);  
+          //if (feature.get('identity_name') !== undefined) {
+          let click_function = layer.get('singleClick')
+          let html = click_function(feature, e.originalEvent)
+          if (html !== undefined) {
+            toRender.push(html);  
           }
         }
       );
-      console.warn("FEATURE: ", feature)
-      //for (let f in feature) {   
-        //this.infoPopupContent.innerHTML = f
-      //}
-      //this.infoPopupContent.innerHTML = feature + 'test'
-      const coord = e.coordinate; // Click location
-      //if (feature) {
-        //console.warn("FEATURE INFO: ", feature)
-      //}
-      //if (feature && feature.get("identity_name") !== undefined) {
-        
-        //this.infoPopupContent.innerHTML = this.contactInfo
+      const coord = e.coordinate; 
+
+      if (toRender.length !== 0) {
+        this.setState({
+          toRender: toRender
+        })
         this.infoOverlay.setPosition(coord)
         this.contactInfo = true
-      //} 
+      }
 
-      //this.infoPopupContent.innerHTML = _("Loading...");
+        //} 
+      
       if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
@@ -511,12 +501,23 @@ export default class Map extends React.PureComponent {
       if (this.contactInfo) {
         return;
       }
-      this.infoOverlay.setPosition(coord); // Set balloon position
+      //self.toRender.push(<div>"Loading..."</div>)
+      //this.infoPopupContent.innerHTML = _("Loading...");
+      console.warn("AFTER SHIP TRAFFIC")
       
-      let components = []
-      let text = "<p>" + "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4) + "</p>";
-      components.push(text);
+      this.infoOverlay.setPosition(coord); // Set balloon position
+      console.warn("LOADING")
+      let component = []
+      let text = "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4);
+      let text_div = <p>{text}</p>
+      //component.push(text_div);
+      toRender.push(text_div)
+      //this.setState({
+      //  toRender: toRender
+      //})
       let data = this.props.data
+      let components = []
+      console.warn("DATA: ", this.props.data)
       for (let type in data) {
         for (let index in data[type]) {
           for (let dataset in data[type][index]) {
@@ -530,25 +531,32 @@ export default class Map extends React.PureComponent {
                   `/${location[1]},${location[0]}.json`
                 ),
                 success: function(response) {
-                  
+                  console.warn("RESPONSE: ", response)
                   for (let i = 0; i < response.name.length; ++i) {
-                    if (response.value[i] != "nan") {
-                      text = "<p><br />" + 
-                                    response.name[i] + ": " + response.value[i] + " " + response.units[i];
+                    if (response.value[i] !== "nan") {
+                      text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
+                      toRender.push(text)
+                      console.warn("toRender: ", toRender) 
+                      this.setState({
+                        toRender: toRender
+                      }, console.warn("STATE SET"))
                     }
                   }
-                  components.push(text)
+                  
                 }.bind(this),
               }).done(
                 () => {
-                  components.push("</p>");
-                  this.infoPopupContent.innerHTML = components;  
+                  //components.push("</p>");
+                  //toRender.push(components)
+                  
                 }
               );        
             }
           }
         }
       }
+      console.warn("RENDER: ", this.toRender)
+      console.warn("RENDER: ", this.toRender)
     }.bind(this));
 
     var select = new ol.interaction.Select({
@@ -1361,7 +1369,7 @@ export default class Map extends React.PureComponent {
             <a href="#" style={{ right: "5px", top: "20px" }} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
           </div>
           
-          <div ref={(c) => this.infoPopupContent = c}>{this.toRender}</div>
+          <div ref={(c) => this.infoPopupContent = c}>{this.state.toRender}</div>
         </div>
         
 

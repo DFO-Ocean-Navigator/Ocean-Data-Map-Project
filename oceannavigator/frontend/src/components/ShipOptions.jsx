@@ -19,13 +19,14 @@ export default class ShipOptions extends React.Component {
     super(props);
 
     this.state = {
-
+      display: 'select'
     }
     
     this.display = 'select'
 
     this.trackShip = this.trackShip.bind(this);
     this.quickInfo = this.quickInfo.bind(this);
+    this.convertToClick = this.convertToClick.bind(this);
   }
 
   componentDidMount() {
@@ -34,7 +35,9 @@ export default class ShipOptions extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.contact !== this.props.contact) {
-      this.display = 'select'
+      this.setState({
+        display: 'select'
+      })
     }
   }
 
@@ -53,11 +56,16 @@ export default class ShipOptions extends React.Component {
 
   quickInfo() {
     console.warn("QUICK INFO")
-    if (this.display === 'info') {
-      this.display = 'select'
+    let display
+    if (this.state.display === 'info') {
+      display = 'select'
     } else {
-      this.display = 'info'
+      display = 'info'
     }
+
+    this.setState({
+      display: display
+    })
   }
 
   launchPlot() {
@@ -65,6 +73,11 @@ export default class ShipOptions extends React.Component {
     this.display = 'launch'
   }
 
+  convertToClick (e) {
+    const evt = new MouseEvent('click', { bubbles: true })
+    evt.stopPropagation = () => {}
+    e.target.dispatchEvent(evt)
+  }
 
 
   render() {
@@ -96,20 +109,22 @@ export default class ShipOptions extends React.Component {
 
     let display = [];
     let buttons = []
-    switch(this.display) {
+    switch(this.state.display) {
       case 'info':
-        //display.push(<div className='topLeft' onClick={this.quickInfo}><Icon icon='info'  onClick={this.quickInfo}/></div>)
         display.push(contact_info);
         break;
       }
-
-    buttons.push(
-      <div className='button_container' style={button_style} >
-        <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
-        <div className='topRight' onClick={this.trackShip}><Icon icon='line-chart'/></div>
-        <div className='btmLeft' onClick={this.quickInfo}><Icon icon='thumb-tack'/></div>
-      </div>)
     console.warn("DISPLAY: ", display)
+    let info = <div onMouseUp={this.convertToClick}>
+        <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
+      </div>
+    let plot = <div onMouseUp={this.convertToClick}>
+        <div className='topRight' onClick={this.trackShip}><Icon icon='line-chart'/></div>  
+      </div>
+    let center = <div onMouseUp={this.convertToClick}>
+        <div className='btmLeft' onClick={this.quickInfo}><Icon icon='thumb-tack'/></div>
+      </div>
+    buttons = [info, plot, center]
 
     return (
       <div className='shipOptions_container'>
@@ -119,7 +134,9 @@ export default class ShipOptions extends React.Component {
         <div className='contactLine'></div>
         <div style={style}>
           {display}
-          {buttons}
+          <div className='button_container' style={button_style} >
+            {buttons}
+          </div>
         </div>
       </div>
       
