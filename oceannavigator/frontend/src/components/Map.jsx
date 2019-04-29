@@ -432,7 +432,6 @@ export default class Map extends React.PureComponent {
         this.popupElement.innerHTML = feature.get("name");
         $(this.map.getTarget()).css("cursor", "pointer");
       } else if (feature && feature.get("identity_name")) {
-        console.warn(feature)
         let type = ''
         if (feature.get("identity_type")) {
           type = feature.get("identity_type")
@@ -1178,7 +1177,6 @@ export default class Map extends React.PureComponent {
         }
         break;
       case "multi-point":
-        console.warn("multi-point add")
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);

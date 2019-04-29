@@ -236,17 +236,12 @@ export default class TimeSelect extends React.Component {
         if (date1 === undefined || date2 === undefined) {
             return -1
         }
-        console.warn("date1 type: ", typeof(date1))
-        console.warn("date2 type: ", typeof(date2))
         if (typeof(date1) === 'number') {
             date1 = moment(date1)
         }
         if (typeof(date2) === 'number') {
             date2 = moment(date2)
         }
-        
-        console.warn("DATE 1: ", date1)
-        console.warn("DATE 2: ", date2)
         
         let month1 = date1.get('month')
         let month2 = date2.get('month')
@@ -353,12 +348,10 @@ export default class TimeSelect extends React.Component {
     }
 
     startChange(startDate, endDate) {
-        console.warn("START CHANGE: ", startDate, endDate)
         
         endDate.add(10, 'days')
 
         if (endDate.format('YYYY/MM/DD[T]HH') in this.state.formatted_dates) {
-          console.warn("Formatted Dates: ", this.state.formatted_dates[endDate.format('YYYY/MM/DD[T]HH')])
         } else {
             for (let i = 0; i < 10; i = i + 1) {
                 endDate.subtract(1, 'days')
@@ -371,14 +364,9 @@ export default class TimeSelect extends React.Component {
         var new_moment = new moment('2018/12/2')
         var new_moment2 = new_moment.clone()
         new_moment.add(10, 'days')
-        console.warn("NEW MOMENT: ", new_moment)
-        console.warn("NEW MOMENT 2: ", new_moment2)
-
+        
         var startString = startDate.format('YYYY/MM/DD')
         var endString = endDate.format('YYYY/MM/DD')
-        console.warn("START STIRNG: ", startString)
-        console.warn("START DATE: ", startDate)
-        console.warn("END DATE: ", endDate)
         
         let new_state = this.state;
         new_state.startTimeObj = undefined;
@@ -388,7 +376,6 @@ export default class TimeSelect extends React.Component {
         new_state.startTime = startString;
         new_state.endTimeObj = endDate.valueOf()
         new_state.endTime = endString;
-        console.warn("NEW STATE: ", new_state)
         this.setState(new_state)
                     
 
@@ -396,12 +383,10 @@ export default class TimeSelect extends React.Component {
     }
 
     endChange(startDate, endDate) {
-        console.warn("END CHANGE", startDate, endDate)
-
+        
         startDate = moment(startDate).clone().subtract(10, 'days')
 
         if (startDate.format('YYYY/MM/DD[T]HH') in this.state.formatted_dates) {
-            console.warn("Formatted Dates: ", this.state.formatted_dates[endDate.format('YYYY/MM/DD[T]HH')])
         } else {
             for (let i = 0; i < 10; i = i + 1) {
                 startDate.add(1, 'days')
@@ -427,7 +412,6 @@ export default class TimeSelect extends React.Component {
     }
 
     updateYear(e) {
-        console.warn("UPDATE YEAR ~~~~~~~~~~~~~~")
         if (this.state.select === 'year') {
             this.setState({
                 select: 'month',
@@ -443,15 +427,10 @@ export default class TimeSelect extends React.Component {
 
     updateMonth(e) {
         if (this.state.select === 'month') {
-            console.warn("TIMES: ", this.state.times_available[this.state.selected_year][e.target.name])
-            console.warn("KEYS: ", Object.keys(this.state.times_available[this.state.selected_year][e.target.name]).length)
             if (Object.keys(this.state.times_available[this.state.selected_year][e.target.name]).length === 1) {
-                console.warn("TIMES AVAILABLE: ", this.state.times_available)
                 
                 let start_month = this.state.month_tonum[e.target.name]
                 let end_month = start_month + 1
-                console.warn("START MONTH: ", start_month)
-                console.warn("END MONTH: ", end_month)
                 
                 let start_day = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]])[0]
                 let start_hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]][start_day])[0]
@@ -467,8 +446,6 @@ export default class TimeSelect extends React.Component {
                 //let second = this.state.times_available[this.state.selected_year][e.target.name][day][hour][min]
                 let formatted_start = this.state.selected_year + '-' + start_month + '-' + start_day
                 let formatted_end = this.state.selected_year + '-' + end_month + '-' + start_day
-                console.warn("FORMATTED START: ", formatted_start)
-                console.warn("FORMATTED END: ", formatted_end)
                 
                 var startTimeObj = new moment(formatted_start)
                 startTimeObj.tz('GMT')
@@ -485,12 +462,9 @@ export default class TimeSelect extends React.Component {
                     minute: end_min,
                     second: end_second
                 })
-                console.warn("START TIME OBJECT: ", startTimeObj)
-                console.warn("END TIME OBJECT: ", endTimeObj)
-
+        
                 if (this.state.selecting === 'startTime') {
                     let difference = this.monthsBetween(startTimeObj.valueOf(), this.state.endTimeObj);
-                    console.warn("DIFFERENCE: ", difference)
                     if (difference > 10 || difference < 0) {
                         this.startChange(startTimeObj, endTimeObj)
                     } else {    
@@ -505,11 +479,9 @@ export default class TimeSelect extends React.Component {
                     
                 } else {
                     let difference = this.daysBetween(timeObj.valueOf(), this.state.startTimeObj)
-                    console.warn("DIFFERENCE END TIME: ", difference)
                     if (difference > 10 && difference < 0) {
                         this.endChange(moment(timeObj), moment(timeObj))
                     } else {
-                        console.warn("DAY: ", timeObj.get('days'))
                         this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(timeObj))
                     }
 
@@ -534,12 +506,9 @@ export default class TimeSelect extends React.Component {
     }
 
     updateDay(e) {
-        console.warn("UPDATE DAY ~~~~~~~~~~~~~~~~~~")
         let startTime
         let endTime
-        console.warn("SELECTING: ", this.state.selecting)
         if (this.state.select === 'day') {
-            console.warn("NAME: ", e.target.name)
             
             // If quantum === 'day'
             if (Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name]).length === 1) {
@@ -630,7 +599,6 @@ export default class TimeSelect extends React.Component {
     
 
     updateHour(e) {
-        console.warn("UPDATE HOUR")
         let startTime
         let endTime
 
@@ -645,8 +613,6 @@ export default class TimeSelect extends React.Component {
         endTimeObj.set({
             hour: e.target.value,
         })
-        console.warn("START TIME OBJ: ", startTimeObj)
-        console.warn("END TIME OBJ: ", endTimeObj)
         if (this.state.selecting === 'startTime') {
             let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     

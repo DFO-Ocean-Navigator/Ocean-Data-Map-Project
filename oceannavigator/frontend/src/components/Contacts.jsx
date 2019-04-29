@@ -77,7 +77,6 @@ export default class Contacts extends React.Component {
           geometry.transform(this.props.state.projection, "EPSG:4326")
           let draw_radius = geometry.getRadius();
           let draw_center = geometry.getCenter();
-          console.warn("HERE")
 
           var vectorLoader = function () {
 
@@ -96,7 +95,6 @@ export default class Contacts extends React.Component {
             }
 
             const localUrl = "/api/v1.0/contacts/?query=" + encodeURIComponent(url)
-            console.warn("LOCAL URL: ", localUrl)
             $.ajax({
               url: url,
               type: 'GET',
@@ -108,7 +106,6 @@ export default class Contacts extends React.Component {
                 xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
               },*/
               success: function(response) {
-                console.warn("RESPONSE: ", response)
               },
               error: function(response) {
                 console.warn("ERROR ~~~~~~~~~~~~~~~~")
@@ -157,9 +154,7 @@ export default class Contacts extends React.Component {
 
           //Places a circle on the map
           new_vectorSource.addFeature(e.feature)
-          console.warn(e.feature)
-          console.warn(new_vectorSource)
-
+          
           this.layer_contacts = new ol.layer.Vector({
             projection: this.props.state.projection,
             source: new_vectorSource,

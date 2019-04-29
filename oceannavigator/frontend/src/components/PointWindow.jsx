@@ -416,7 +416,6 @@ export default class PointWindow extends React.Component {
         break;
       case TabEnum.STICK:
         
-        console.warn(this.state.starttime)
         plot_query.type = "stick";
         plot_query.variable = this.state.variable;
         plot_query.starttime = this.state.starttime;
