@@ -771,7 +771,7 @@ export default class Layer extends React.Component {
       let new_layers = layers;
       let ice_layer = this.state.ice_layer;
       this.setState({
-        layerState: 'Add Ice'
+        layerState: 'Add Layer'
       })
 
       new_layers.splice(new_layers.indexOf(ice_layer), 1);
@@ -786,7 +786,7 @@ export default class Layer extends React.Component {
       this.updateIce()
 
       this.setState({
-        layerState: 'Remove Ice'
+        layerState: 'Remove Layer'
       })
 
       let new_layers = this.props.layers
