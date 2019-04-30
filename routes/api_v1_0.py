@@ -66,12 +66,10 @@ def generateScript(url: str, type: str):
 @bp_v1_0.route('/api/v1.0/contacts/test/')
 def query_contacts_test_v1_0():
   url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=EPSG:3857&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=5000&CQL_FILTER=DWITHIN(geopoint,Point(50%20-49),200,kilometers)'
-  print("REQUEST: ", url)
   http = urllib3.PoolManager()
   headers = urllib3.util.make_headers(basic_auth='')
   response = http.request('GET', url, headers=headers)
   response = response.data
-  print("RESPONSE: ", response)
   #response = urllib3.urlopen(url)
   return response
 
@@ -82,17 +80,12 @@ def query_contacts_test_v1_0():
 #
 @bp_v1_0.route('/api/v1.0/contacts/')
 def query_contacts_v1_0():
-  print("ARGS: ", request.args)
   url = request.args.get('query')
   url = url.replace(' ', '%20')
-  print("\n\n")
-  print("CONTACTS URL: ", url)
-  print("\n\n")
   http = urllib3.PoolManager()
   headers = urllib3.util.make_headers(basic_auth='')
   response = http.request('GET', url, headers=headers)
   response = response.data
-  print("RESPONSE: ", response)
   #response = urllib3.urlopen(url)
   return response
 

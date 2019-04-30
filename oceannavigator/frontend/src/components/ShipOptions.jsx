@@ -42,7 +42,6 @@ export default class ShipOptions extends React.Component {
   }
 
   trackShip() {
-    console.warn("TRACK SHIP")
     //let lon = this.props.contact.getCoordinates();
     //console.warn("LAT, LON: ", lat, lon);
     //let coord = [lon, lat];
@@ -55,7 +54,6 @@ export default class ShipOptions extends React.Component {
   }
 
   quickInfo() {
-    console.warn("QUICK INFO")
     let display
     if (this.state.display === 'info') {
       display = 'select'
@@ -69,7 +67,6 @@ export default class ShipOptions extends React.Component {
   }
 
   launchPlot() {
-    console.warn("LAUNCH PLOT")
     this.display = 'launch'
   }
 
@@ -99,14 +96,10 @@ export default class ShipOptions extends React.Component {
     let elem_names = ['Vessel Type: ', 'MMSI: ', 'Country of Origin: ', 'Last Reported: ', ];
     let contact_info = [];
     for (let elem in elems) {
-      console.warn("ELEM: ", elem);
-      console.warn("ELEM ID: ", elems[elem]);
-      console.warn("ELEM NAME: ", elem_names[elem]);
       let new_div = <div>{elem_names[elem]}{this.props.contact.get(elems[elem])}</div>;
       contact_info.push(new_div);
     }
-    console.warn("CONTACT INFO: ", contact_info);
-
+    
     let display = [];
     let buttons = []
     switch(this.state.display) {
@@ -114,7 +107,6 @@ export default class ShipOptions extends React.Component {
         display.push(contact_info);
         break;
       }
-    console.warn("DISPLAY: ", display)
     let info = <div onMouseUp={this.convertToClick}>
         <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
       </div>

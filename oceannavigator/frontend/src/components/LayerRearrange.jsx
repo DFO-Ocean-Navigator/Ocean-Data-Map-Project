@@ -34,28 +34,22 @@ export default class LayerRearrange extends React.PureComponent {
   }
 
   //componentDidUpdate() {
-  //console.warn("updating")
   //}
 
   remove(e) {
-    console.warn("REMOVING")
   }
 
   moveUp(e) {
     let self = this;
 
-    console.warn("MOVING UP: ", e.target.name)
     this.props.map.getLayers().forEach(function (layer) {
       if (layer['I'].name == e.target.name) {
-        console.warn("MATCHING NAME")
-        console.warn(layer)
         self.props.map.raiseLayer(layer, 1)
       }
     })
   }
 
   moveDown(e) {
-    console.warn("MOVING DOWN: ", e.target.name)
   }
 
   showLayers() {

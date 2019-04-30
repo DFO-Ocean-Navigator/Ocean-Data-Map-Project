@@ -90,8 +90,6 @@ export default class Layer extends React.Component {
 
   singleClick(feature, pixel) {
     
-    console.warn("SINGLE CLICK")
-    console.warn("FEATURE, PIXEL: ", feature, pixel)
     
     this.infoRequest = $.ajax({
       url: (
@@ -102,15 +100,13 @@ export default class Layer extends React.Component {
         `/${location[1]},${location[0]}.json`
       ),
       success: function(response) {
-        console.warn("RESPONSE: ", response)
         for (let i = 0; i < response.name.length; ++i) {
           if (response.value[i] !== "nan") {
             text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
             toRender.push(text)
-            console.warn("toRender: ", toRender) 
             this.setState({
               toRender: toRender
-            }, console.warn("STATE SET"))
+            })
           }
         }
         

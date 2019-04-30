@@ -433,7 +433,6 @@ export default class Map extends React.PureComponent {
         this.popupElement.innerHTML = feature.get("name");
         $(this.map.getTarget()).css("cursor", "pointer");
       } else if (feature && feature.get("identity_name")) {
-        console.warn(feature)
         let type = ''
         if (feature.get("identity_type")) {
           type = feature.get("identity_type")
@@ -503,10 +502,8 @@ export default class Map extends React.PureComponent {
       }
       //self.toRender.push(<div>"Loading..."</div>)
       //this.infoPopupContent.innerHTML = _("Loading...");
-      console.warn("AFTER SHIP TRAFFIC")
       
       this.infoOverlay.setPosition(coord); // Set balloon position
-      console.warn("LOADING")
       let component = []
       let text = "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4);
       let text_div = <p>{text}</p>
@@ -517,7 +514,6 @@ export default class Map extends React.PureComponent {
       //})
       let data = this.props.data
       let components = []
-      console.warn("DATA: ", this.props.data)
       for (let type in data) {
         for (let index in data[type]) {
           for (let dataset in data[type][index]) {
@@ -531,15 +527,13 @@ export default class Map extends React.PureComponent {
                   `/${location[1]},${location[0]}.json`
                 ),
                 success: function(response) {
-                  console.warn("RESPONSE: ", response)
                   for (let i = 0; i < response.name.length; ++i) {
                     if (response.value[i] !== "nan") {
                       text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
                       toRender.push(text)
-                      console.warn("toRender: ", toRender) 
                       this.setState({
                         toRender: toRender
-                      }, console.warn("STATE SET"))
+                      })
                     }
                   }
                   
@@ -555,8 +549,6 @@ export default class Map extends React.PureComponent {
           }
         }
       }
-      console.warn("RENDER: ", this.toRender)
-      console.warn("RENDER: ", this.toRender)
     }.bind(this));
 
     var select = new ol.interaction.Select({

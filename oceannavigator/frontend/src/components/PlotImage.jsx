@@ -78,7 +78,6 @@ export default class PlotImage extends React.PureComponent {
   }
 
   /*componentDidUpdate(prevProps, prevState) {
-    console.warn("COMPONENT DID UPDATE")
     if (stringify(this.props.query) !== stringify(prevProps.query)) {
       this.loadImage(this.generateQuery(this.props.query))
     }

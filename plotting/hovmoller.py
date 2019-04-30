@@ -289,13 +289,7 @@ class HovmollerPlotter(plLine.LinePlotter):
             plt.subplot(subplot[map_subplot[0], map_subplot[1]])
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
-
-        print("CMAP: ", cmap)
-        print("VMIN: ", vmin)
-        print("VMAX: ", vmax)
-        print("TIMES: ", times)
-        print("DATA: ", data)
-
+            
         try:
             c = plt.pcolormesh(self.distance, times, data,
                                 cmap=cmap,

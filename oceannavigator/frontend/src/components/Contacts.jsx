@@ -40,16 +40,13 @@ export default class Contacts extends React.Component {
     if (feature.get('identity_name') === undefined) {
       return
     }
-    console.warn("FEATURE: ", feature)
-    console.warn("SINGLE CLICK (CONTACT)")
-
+    
     const contactInfo = <ShipOptions
             key='selectedContact'
             contact={feature}
             pixel={pixel}
             projection={this.props.state.projection}
           ></ShipOptions>
-    console.warn("SHIP OPTIONS: ", contactInfo)
     return contactInfo
 
   }
@@ -96,7 +93,6 @@ export default class Contacts extends React.Component {
           let transformed_geo = e.feature.clone().getGeometry();
           transformed_geo.transform(this.props.state.projection, "EPSG:4326")
           let draw_radius = geometry.getRadius();
-          console.warn("DRAW RADIUS: ", draw_radius)
           let draw_center = geometry.getCenter();
           let transformed_center = transformed_geo.getCenter()
           let edgeCoordinate = [draw_center[0] + draw_radius, draw_center[1]];
@@ -105,8 +101,6 @@ export default class Contacts extends React.Component {
             ol.proj.transform(draw_center, 'EPSG:3857', 'EPSG:4326'),
             ol.proj.transform(edgeCoordinate, 'EPSG:3857', 'EPSG:4326')
           )
-          console.warn("GROUND RADIUS: ", groundRadius)
-          console.warn("HERE")
           
 
          
@@ -146,9 +140,7 @@ export default class Contacts extends React.Component {
           let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=' + this.props.state.projection + '&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=500&CQL_FILTER=DWITHIN(geopoint,Point(' + transformed_center[1] + '%20' + transformed_center[0] + '),' + groundRadius + ',meters)'
           //let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&count=100&srsname=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[1] + ' ' + draw_center[0] +'),' + draw_radius + ',kilometers)'; // BBOX' //+ geopoint  
           url = encodeURIComponent(url)
-          console.warn("ENCODED URL: ", url)
           const localUrl = "/api/v1.0/contacts/?query=" + url
-          console.warn("LOCAL URL: ", localUrl)
           /*$.ajax({
             url: localUrl,
             type: 'GET',
@@ -184,9 +176,7 @@ export default class Contacts extends React.Component {
 
           //Places a circle on the map
           new_vectorSource.addFeature(e.feature)
-          console.warn(e.feature)
-          console.warn("SOURCE: ", new_vectorSource)
-
+          
           this.layer_contacts = new ol.layer.Vector({
             projection: this.props.state.projection,
             source: new_vectorSource,

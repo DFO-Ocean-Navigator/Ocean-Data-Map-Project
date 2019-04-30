@@ -150,7 +150,6 @@ def scale(args):
     bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation=args.get('orientation'),
                        format=formatter)
     
-    print("LABEL: ", args.get('label'))
     if args.get('label') == 'True':
         bar.set_label("%s (%s)" % (variable_name.title(),
                                    utils.mathtext(variable_unit)), fontsize=12)

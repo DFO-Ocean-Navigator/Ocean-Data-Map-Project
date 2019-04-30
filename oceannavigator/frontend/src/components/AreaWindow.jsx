@@ -121,17 +121,13 @@ export default class AreaWindow extends React.Component {
 
   */
   onTimeUpdate(key, value) {
-    console.warn("KEY: ", key)
-    console.warn("VALUE: ", value)
     if (typeof(key) === typeof('string')) {
-      console.warn("KEY IS STRING")
       value = moment(value.valueOf())
       value.tz('GMT')
       this.setState({
         [key]: value
       })
     } else {
-      console.warn("KEY NOT STRING")
       //let date = moment.tz(key, 'GMT')
       //date.setUTCMonth(date.getUTCMonth() +1)
       value = moment(key.valueOf())
