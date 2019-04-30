@@ -122,6 +122,9 @@ export default class LayerSelection extends React.Component {
                     <Nav key='nav' onSelect={this.tabSelect}>
                         {enabled_layers}  
                     </Nav>
+                    <div className='vertical versionNumber'>
+                        v 4.0.0
+                    </div>
                 </div>
 
                 <div className='LayerPanels'>
@@ -197,10 +200,8 @@ export default class LayerSelection extends React.Component {
                         <Button key='settingsButton' style={{width: '25%'}} className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
                             <Icon icon='gear'/>
                         </Button>
+                    </div>
                 </div>
-
-                </div>
-                
             </div>
         );
     }
