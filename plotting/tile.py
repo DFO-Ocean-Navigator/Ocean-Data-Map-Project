@@ -150,7 +150,6 @@ def scale(args):
     bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation=args.get('orientation'),
                        format=formatter)
     
-    print("LABEL: ", args.get('label'))
     if args.get('label') == 'True':
         bar.set_label("%s (%s)" % (variable_name.title(),
                                    utils.mathtext(variable_unit)), fontsize=12)
@@ -447,14 +446,12 @@ def wind_barbs(projection, x, y, z, args):
 
     dataset_name = args.get('dataset')
     variable = args.get('variable')
-
-    if variable.endswith('_anom'):
-        variable = variable[0:-5]
-        anom = True
-    else:
-        anom = False
-
-    variable = ['v-component_of_wind_height_above_ground', 'u-component_of_wind_height_above_ground']
+    print("VARIABLE: ", variable)
+    variable = variable.split(',')
+    print("NEW VARIABLE: ", variable)
+    if variable != ['u-component_of_wind_height_above_ground', 'v-component_of_wind_height_above_ground']:
+        raise ValueError
+        return
     depth = args.get('depth')
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
@@ -462,7 +459,7 @@ def wind_barbs(projection, x, y, z, args):
     data = []
     config = DatasetConfig(dataset_name)
     with open_dataset(config) as dataset:
-        print(dataset.variables[variable[0]].dimensions)
+        #print(dataset.variables[variable[0]].dimensions)
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
             time = -1
@@ -475,13 +472,15 @@ def wind_barbs(projection, x, y, z, args):
 
         while time < 0:
             time += len(dataset.timestamps)
-
+        print("TIME: ", time)
         timestamp = dataset.timestamps[time]
+        print("TIMESTAMP: ", timestamp)
 
         data = []
         all_vars = []
         print("Variables: ", variable)
         for v in variable:
+            print("CURRENT VARIABLE: ", v)
             all_vars.append(v)
             d = dataset.get_area(
                 np.array([lat, lon]),
@@ -490,7 +489,7 @@ def wind_barbs(projection, x, y, z, args):
                 v,
                 args.get('interp'),
                 args.get('radius'),
-                10 #args.get('neighbours')
+                args.get('neighbours')
             )
             print("AFTER GET AREA")
             variables = config.variable[dataset.variables[variable[0]]]
@@ -539,7 +538,7 @@ def wind_barbs(projection, x, y, z, args):
     #ax = plt.plot(1,1,1,projection=ccrs.Mercator())
     #ax.coastlines('50m')
     #ax.set_extent([])
-    fig.set_size_inches(4, 4)
+    #fig.set_size_inches(4, 4)
     ax = plt.Axes(fig, [0, 0, 1, 1])
     plt.axis('off')
     plt.barbs(X, Y, U, V, length=10, pivot='middle', sizes=dict(spacing=1.5))

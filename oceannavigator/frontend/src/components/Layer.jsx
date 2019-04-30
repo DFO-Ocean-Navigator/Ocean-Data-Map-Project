@@ -88,6 +88,33 @@ export default class Layer extends React.Component {
     this.toggleCompare = this.toggleCompare.bind(this);
   }
 
+  singleClick(feature, pixel) {
+    
+    
+    this.infoRequest = $.ajax({
+      url: (
+        `/api/v1.0/data/${dataset}` +
+        `/${variable}` +
+        `/${data[type][index][dataset][variable]['time'].toISOString()}` +
+        `/${data[type][index][dataset][variable].depth}` +
+        `/${location[1]},${location[0]}.json`
+      ),
+      success: function(response) {
+        for (let i = 0; i < response.name.length; ++i) {
+          if (response.value[i] !== "nan") {
+            text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
+            toRender.push(text)
+            this.setState({
+              toRender: toRender
+            })
+          }
+        }
+        
+      }.bind(this),
+    })
+    return
+  }
+
   componentDidMount() {
     this._mounted = true
     this.createIce();
@@ -310,7 +337,7 @@ export default class Layer extends React.Component {
         current_quantum: quantum,
       })
       // Fetch new Variables
-      variable_promise = $.ajax("/api/variables/?dataset=" + dataset + "&envType=" + this.props.layerType).promise();
+      variable_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset + "&envType=" + this.props.layerType).promise();
 
       // Update Variables
       $.when(variable_promise).done(function (variables) {
@@ -496,6 +523,10 @@ export default class Layer extends React.Component {
       //  this.updateIce();
       //}
     }
+
+  }
+
+  singleClick(feature) {
 
   }
 

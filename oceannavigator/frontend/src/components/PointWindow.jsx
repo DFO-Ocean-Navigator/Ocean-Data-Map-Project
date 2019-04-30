@@ -131,7 +131,7 @@ export default class PointWindow extends React.Component {
       return
     }
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset,
+      url: "/api/v1.0/variables/?dataset=" + dataset,
       dataType: "json",
       cache: true,
 
@@ -687,7 +687,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/variables/?3d_only&dataset=" + this.state.dataset}
+        url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox
@@ -712,7 +712,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?3d_only&dataset=" + this.state.dataset + "&anom"}
+      url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset + "&anom"}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];

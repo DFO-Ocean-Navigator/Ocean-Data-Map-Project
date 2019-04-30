@@ -24,7 +24,7 @@ export default class MetLayer extends React.Component {
       
       //State Variables for dataset selector
       time: -1,
-      layerState: 'Add Ice',
+      layerState: 'Add Layer',
       dataset_quantum: 'day',
       depth: 0,
       scale_1: "0,1",
@@ -277,9 +277,9 @@ export default class MetLayer extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+    const var_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
     const time_promise = $.ajax(
-      "/api/timestamp/" +
+      "/api/v1.0/timestamp/" +
       this.state.dataset + "/" +
       this.state.time + "/" +
       dataset
@@ -321,7 +321,7 @@ export default class MetLayer extends React.Component {
       let new_layers = this.props.state.layers;
       let ice_layer = this.state.ice_layer;
       this.setState({
-        layerState: 'Add Ice'
+        layerState: 'Add Layer'
       })
 
       new_layers.splice(new_layers.indexOf(ice_layer), 1 );
@@ -331,7 +331,7 @@ export default class MetLayer extends React.Component {
     } else {
 
       this.setState({
-        layerState: 'Remove Ice'
+        layerState: 'Remove Layer'
       })
 
       let new_layers = this.props.state.layers
@@ -492,7 +492,7 @@ export default class MetLayer extends React.Component {
             default_scale={this.props.state.dataset_1.variable_scale}
           ></Range>
           <Button className='addIceButton' onClick={this.toggleLayer}>
-              ADD ICE
+              {this.state.layerState}
           </Button>
         </Panel>
       );

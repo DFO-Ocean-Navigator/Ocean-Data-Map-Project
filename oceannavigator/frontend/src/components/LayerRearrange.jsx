@@ -34,7 +34,6 @@ export default class LayerRearrange extends React.PureComponent {
   }
 
   //componentDidUpdate() {
-  //console.warn("updating")
   //}
 
   remove(e) {

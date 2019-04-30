@@ -24,4 +24,5 @@ div.MapInputs {
 // Move sidebar onto screen when open
 .MapInputs.open {
     width: $sidebar-width - 2.75%;
+    height: calc(100% - 70px);
 }

@@ -122,17 +122,38 @@ export default class AreaWindow extends React.Component {
   */
   onTimeUpdate(key, value) {
     if (typeof(key) === typeof('string')) {
+      value = moment(value.valueOf())
+      value.tz('GMT')
       this.setState({
         [key]: value
       })
     } else {
       //let date = moment.tz(key, 'GMT')
       //date.setUTCMonth(date.getUTCMonth() +1)
+      value = moment(key.valueOf())
+      value.tz('GMT')
       this.setState({
             time: key
       })
     }
   }
+
+  /*
+  onTimeUpdate(key, value) {
+    let new_state = this.props.state
+    if (typeof(key) === typeof('string')) {
+      value = moment(value.valueOf())
+      value.tz('GMT')
+
+      new_state[key] = value
+    } else {
+      value = moment(key.valueOf())
+      value.tz('GMT')
+
+      new_state.time = value
+    }
+    this.props.onUpdate(jQuery.extend({}, new_state))
+  }*/
 
   /*
     If selected_right is null, empty, or undefined, will only load left map data
@@ -248,7 +269,7 @@ export default class AreaWindow extends React.Component {
       return
     }
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
+      url: "/api/v1.0/variables/?dataset=" + dataset + "&anom",
       dataType: "json",
       cache: true,
 
@@ -714,8 +735,8 @@ export default class AreaWindow extends React.Component {
 
 
     let time = "";
-    let timeObj = this.state.data.time//new Date(this.props.state.time);
-    let starttimeObj = this.state.data.starttime//new Date(this.props.state.starttime);
+    let timeObj = this.state.output_endtime//new Date(this.props.state.time);
+    let starttimeObj = this.state.output_starttime//new Date(this.props.state.starttime);
     
     var subsetPanel = null;
     if (this._mounted) {
@@ -734,7 +755,7 @@ export default class AreaWindow extends React.Component {
             state={this.state.output_variables}
             def={"defaults.dataset"}
             onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
-            url={"/api/variables/?vectors&dataset=" + this.state.data.dataset
+            url={"/api/v1.0/variables/?vectors&dataset=" + this.state.data.dataset
             }
             title={_("Variables")}
           />
@@ -749,8 +770,9 @@ export default class AreaWindow extends React.Component {
           
           <TimePicker
             range={this.state.output_timerange}
-            startid='starttime'
-            key='starttime'
+            startid='output_starttime'
+            key='output_starttime'
+            id='output_endtime'
             dataset={this.state.data.dataset}
             quantum={this.state.data.dataset_quantum}
             startDate={starttimeObj}
@@ -809,8 +831,8 @@ export default class AreaWindow extends React.Component {
               <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
               <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
               <option value="NETCDF3_NC" disabled={
-                this.state.data.dataset !== 'giops_day' &&
-                this.state.data.dataset !== 'riops' // Disable if not a giops or riops dataset
+                this.state.data.dataset.indexOf("giops") === -1 &&
+                this.state.data.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
               }>
                 {_("NetCDF-3 NC")}
               </option>
