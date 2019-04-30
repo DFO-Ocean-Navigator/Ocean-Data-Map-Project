@@ -31,11 +31,14 @@ export default class Contacts extends React.Component {
     this.getType = this.getType.bind(this);
     this.singleClick = this.singleClick.bind(this);
   }
-
-  componentDidMount() {
-    //this.getType()
-  }
   
+  /*
+    Function called on single click of the map
+    
+    Requires: Contact (feature), pixel (screen location)
+    Ensures: Returns Component/HTML
+  
+  */
   singleClick(feature, pixel) {
     if (feature.get('identity_name') === undefined) {
       return
@@ -58,8 +61,8 @@ export default class Contacts extends React.Component {
     switch (status) {
       //Remove from Contacts layer
       case true:
-
-        this.props.mapComponent.toggleLayer(this.layer_contacts, 'remove')
+        
+      this.props.mapComponent.toggleLayer(this.layer_contacts, 'remove')
         this.setState({
           displayTraffic: true
         })
@@ -86,7 +89,10 @@ export default class Contacts extends React.Component {
         })
         this.props.mapComponent.toggleDrawing(true)
 
+
+        // Handles selecting the contacting area, and loading the contacts
         draw.on("drawend", function (e) {
+
           // Disable zooming when drawing
           this.props.mapComponent.controlDoubleClickZoom(false);
           let geometry = e.feature.clone().getGeometry();
@@ -103,81 +109,27 @@ export default class Contacts extends React.Component {
             ol.proj.transform(edgeCoordinate, 'EPSG:3857', 'EPSG:4326')
           )
 
-          var vectorLoader = function () {
-
-            //https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson
-            //var url= 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson'
-            // var url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] + '),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint
-            
-            //FISH URL
-            
-            /*
-            const localUrl = "/api/v1.0/vessels/" + encodeURIComponent(url)
-
-
-            fetch(url).then(function (data) {
-              console.log(data)
-            });*/
-            // var xhr = new XMLHttpRequest();
-            // xhr.open('GET', url);
-            // var onError = function() {
-            //   vectorSource.removeLoadedExtent(extent);
-            // }
-            // xhr.onerror = onError;
-            
-            // debugger;
-            // xhr.setRequestHeader("Authorization", btoa(username + ':' + password));
-            // xhr.onload = function() {
-            //   if (xhr.status == 200) {
-            //     vectorSource.addFeatures(
-            //         vectorSource.getFormat().readFeatures(xhr.responseText));
-            //   } else {
-            //     onError();
-            //   }
-            // }
-            // xhr.send();
-         
+          
           let new_vectorSource
+
+          // Create URL for contacts
           let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=' + this.props.state.projection + '&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=500&CQL_FILTER=DWITHIN(geopoint,Point(' + transformed_center[1] + '%20' + transformed_center[0] + '),' + groundRadius + ',meters)'
-          //let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&count=100&srsname=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[1] + ' ' + draw_center[0] +'),' + draw_radius + ',kilometers)'; // BBOX' //+ geopoint  
           url = encodeURIComponent(url)
+
+          // Proxy URL
           const localUrl = "/api/v1.0/contacts/?query=" + url
-          /*$.ajax({
-            url: localUrl,
-            type: 'GET',
-            dataType:'json',
-            //xhrFields: {
-            //  withCredentials: true,
-            //},
-            /*beforeSend: function (xhr) {
-              xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-            },
-            success: function(response) {
-              console.warn("RESPONSE: ", response.features)
-              this.features = response    
-            },
-            error: function(response) {
-              console.warn("ERROR ~~~~~~~~~~~~~~~~")
-              console.warn("RESPONSE: ", response)
-            }
-          }).done(*/
+          
+          // Add proxy to Layer
           new_vectorSource = new ol.source.Vector({
-            url: localUrl,   //'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&srs=' + this.props.state.projection + '&request=GetFeature&typeName=postgis:vi_m_identities_all&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] +'),' + draw_radius + ',kilometers)', // BBOX' //+ geopoint
+            url: localUrl,   
             format: new ol.format.GeoJSON(),
-            //crossOrigin: 'anonymous'
-            //features: (new ol.format.GeoJSON()).readFeatures(this.features)
+            
           })
-          
-
-          
-
-          
-
-          
 
           //Places a circle on the map
           new_vectorSource.addFeature(e.feature)
           
+          // Create Contacts Layer
           this.layer_contacts = new ol.layer.Vector({
             projection: this.props.state.projection,
             source: new_vectorSource,
@@ -205,13 +157,15 @@ export default class Contacts extends React.Component {
             }
 
           });
+          
+          // Add function to handle single click on map
           this.layer_contacts.set('singleClick', this.singleClick)
 
-          // ADDS LAYER TO THE MAP
+          // Add Layer to map
           this.props.mapComponent.toggleLayer(this.layer_contacts, 'add')
-
           this.props.mapComponent.map.removeInteraction(draw);
 
+          // This should be changed to use the drawing function
           this.props.mapComponent._drawing = false;
 
           setTimeout(
@@ -226,6 +180,12 @@ export default class Contacts extends React.Component {
     }
   }
 
+
+  /*
+    NOT WORKING - Invalid URL
+
+    Should fetch the possible types of Marine Traffic Available From Source
+  */
   getType() {
     $.ajax({
       url: 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identity_types&maxFeatures=50&outputFormat=application%2Fjson'
@@ -233,15 +193,9 @@ export default class Contacts extends React.Component {
       dataType: "json",
       cache: true,
 
-      //If server returns status code of 200 it worked - Ajax call successful
-      //
-      // data filled by ajax
-      //
       success: function (data) {
         pass
       }.bind(this),
-
-      // On fail...
       error: function (xhr, status, err) {
         if (this._mounted) {
           console.error("FAILED TO LOAD");
@@ -270,14 +224,7 @@ export default class Contacts extends React.Component {
           header={_("Contacts")}
           bsStyle='primary'
         >
-
           {availableTypes}
-          {/*
-<Button key='remove' disabled={!this.state.displayTraffic} onClick={this.clear}>
-                    Remove Contacts
-                </Button>
-*/}
-
         </Panel>
       </div>
     );
