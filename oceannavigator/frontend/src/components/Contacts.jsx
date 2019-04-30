@@ -94,6 +94,7 @@ export default class Contacts extends React.Component {
           transformed_geo.transform(this.props.state.projection, "EPSG:4326")
           let draw_radius = geometry.getRadius();
           let draw_center = geometry.getCenter();
+          
           let transformed_center = transformed_geo.getCenter()
           let edgeCoordinate = [draw_center[0] + draw_radius, draw_center[1]];
           let wgs84Sphere = new ol.Sphere(6378137)
@@ -101,9 +102,9 @@ export default class Contacts extends React.Component {
             ol.proj.transform(draw_center, 'EPSG:3857', 'EPSG:4326'),
             ol.proj.transform(edgeCoordinate, 'EPSG:3857', 'EPSG:4326')
           )
-          
 
-         
+          var vectorLoader = function () {
+
             //https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson
             //var url= 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&count=5&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson'
             // var url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/postgis/wfs?service=wfs&version=2.0&srsname=EPSG:3857&request=GetFeature&typeName=postgis:v2_m_identities&outputFormat=application%2Fjson&CQL_FILTER=DWITHIN(geopoint,Point(' + draw_center[0] + ' ' + draw_center[1] + '),' + draw_radius + ',kilometers)' // BBOX' //+ geopoint

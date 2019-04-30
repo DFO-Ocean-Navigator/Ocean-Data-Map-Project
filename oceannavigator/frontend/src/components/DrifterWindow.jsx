@@ -15,7 +15,6 @@ const i18n = require("../i18n.js");
 export default class DrifterWindow extends React.Component {
   constructor(props) {
     super(props);
-    console.warn("PROPS IN DRIFTER WINDOW: ", props)
     this.state = {
       showmap: true,
       variable: '', //props.data.variable.indexOf(",") == -1 ? [props.data.variable] : props.data.variable.split(","),
@@ -61,7 +60,6 @@ export default class DrifterWindow extends React.Component {
   }
 
   populateVariables(dataset) {
-    console.warn(dataset)
     if (dataset === undefined) {
       return
     }
@@ -101,7 +99,6 @@ export default class DrifterWindow extends React.Component {
 
   updateData(selected) {
     selected = selected.split(',')
-    console.warn("SELECTED: ", selected)
     let data = this.props.data
 
     let layer = selected[0]
@@ -120,8 +117,6 @@ export default class DrifterWindow extends React.Component {
     } else {
       variable = [selected[3]]
     }
-    console.warn("VARIABLE: ", variable)
-    console.warn("DISPLAY: ", data[layer][index][dataset])
     let display = data[layer][index][dataset][variable].display
     let colourmap = data[layer][index][dataset][variable].colourmap
     let quantum = data[layer][index][dataset][variable].quantum
@@ -144,7 +139,6 @@ export default class DrifterWindow extends React.Component {
       //time: time,
     }, () => {
       this.updatePlot()
-      console.warn("DATASET IN POINT: ", dataset)
       this.populateVariables(dataset)
     })
   }
@@ -180,9 +174,6 @@ export default class DrifterWindow extends React.Component {
   }
 
   updatePlot() {
-    console.warn("UPDATE PLOT")
-    console.warn("START TIME: ",this.state.starttime)
-    console.warn("END TIME: ", this.state.endtime)
     var plot_query = {
       dataset: this.state.dataset,
       quantum: this.state.quantum,

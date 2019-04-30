@@ -546,7 +546,6 @@ export default class OceanNavigator extends React.Component {
 
       //Removes Map Interaction
       case "disable":
-        console.warn("disable multi case")
         this.setState({
           multiPoint: false
         })
