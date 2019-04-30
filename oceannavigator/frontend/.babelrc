@@ -4,5 +4,5 @@
     "production": {
       "presets" : ["react-optimize"]
     }
-  }
+  },
 }

@@ -4,7 +4,9 @@ import time
 from flask import current_app
 from pykml import parser
 from shapely.geometry.polygon import LinearRing
-from netCDF4 import Dataset, chartostring, netcdftime
+from netCDF4 import Dataset, chartostring
+import cftime
+#import cftime
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
@@ -475,7 +477,7 @@ def drifters_time(drifter_id):
     for d in drifters:
         with Dataset(current_app.config["DRIFTER_URL"] % d, 'r') as ds:
             var = ds['data_date']
-            ut = netcdftime.utime(var.units)
+            ut = cftime.utime(var.units)
             mins.append(ut.num2date(var[:].min()))
             maxes.append(ut.num2date(var[:].max()))
 
@@ -663,7 +665,7 @@ def list_class4_forecasts(class4_id):
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
-                         netcdftime.utime(var.units).num2date(var[:])]
+                        cftime.utime(var.units).num2date(var[:])]
 
     res = [{
         'id': 'best',

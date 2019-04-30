@@ -9,7 +9,8 @@ from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
 from cachetools import LRUCache
 import pytz
-from netCDF4 import netcdftime
+#import cftime
+import cftime
 from bisect import bisect_left
 import plotting.utils
 
@@ -227,7 +228,7 @@ class Grid(object):
         ts = [
             t.replace(tzinfo=pytz.UTC)
             for t in
-            netcdftime.utime(self.time_var.units).num2date(self.time_var[:])
+            cftime.utime(self.time_var.units).num2date(self.time_var[:])
         ]
 
         mintime, x = _take_surrounding(ts, times[0])
