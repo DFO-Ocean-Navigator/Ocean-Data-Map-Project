@@ -8,6 +8,7 @@ import DerivedProductsTab from './DerivedProductsTab.jsx';
 import PlanningToolsTab from './PlanningToolsTab.jsx';
 import SettingsTab from './SettingsTab.jsx';
 import EnvironmentTab from './EnvironmentTab.jsx';
+import Media from 'react-media'
 
 const i18n = require("../i18n.js");
 
@@ -41,6 +42,7 @@ export default class LayerSelection extends React.Component {
         }
 
         this.tabSelect = this.tabSelect.bind(this)
+        this.toggleScreen = this.toggleScreen.bind(this);
     }
     
     componentDidMount() {
@@ -53,6 +55,19 @@ export default class LayerSelection extends React.Component {
     
     tabSelect(selectedKey) {
        
+        /*if (this.state.panels[selectedKey] === 'currentPanel' && this.state.buttons[selectedKey] === 'currentButton') {
+            let newPanels = this.state.panels;
+            let newButtons = this.state.buttons;
+            newPanels[selectedKey] = 'hiddenPanel';
+            newButtons[selectedKey] = 'hiddenButton';
+
+            this.setState({
+                panels: newPanels,
+                buttons: newButtons,
+            })
+            return;
+        }*/
+
         if (selectedKey === 0) {
             for (i=0; i < 6; i++) {
 
@@ -82,6 +97,45 @@ export default class LayerSelection extends React.Component {
                 panels: newPanels,
                 buttons: newButtons,
             })
+        }
+    }
+
+    /*
+        Changes Styling depending on screen size
+        - Provides support for mobile devices
+    */
+    toggleScreen(size, e) {
+        if (e === false) {
+            return;
+        }
+
+        this.setState({
+            screen: size
+        });
+
+        console.warn("SIZE, e: ", size, e);
+        switch (size) {
+            case "small":
+            this.setState({
+                toolbarStyle: {
+                    width: '100%',    
+                },
+            });
+                break;
+            case "medium":
+                this.setState({
+                    toolbarStyle: {
+                        width: '20%',    
+                    },
+                });
+                break;
+            case "large":
+                this.setState({
+                    toolbarStyle: {
+                        width: '20%',    
+                    },
+                });
+                break;
         }
     }
     
@@ -114,10 +168,22 @@ export default class LayerSelection extends React.Component {
             </NavItem>)
         }
 
-        
 
         return (
-            <div className='LayerOptions'>
+           
+            <div className='LayerOptions' style={this.state.toolbarStyle}>
+                <Media
+                    query="(max-width: 599px)"
+                    onChange={(e) => this.toggleScreen('small', e)}
+                ></Media>
+                <Media
+                    query="(max-width: 1199px)"
+                    onChange={(e) => this.toggleScreen('medium', e)}
+                ></Media>
+                <Media
+                    query="(min-width: 1200px)"
+                    onChange={(e) => this.toggleScreen('large', e)}
+                ></Media>
                 <div className='LayerSelection'>
                     <Nav key='nav' onSelect={this.tabSelect}>
                         {enabled_layers}  

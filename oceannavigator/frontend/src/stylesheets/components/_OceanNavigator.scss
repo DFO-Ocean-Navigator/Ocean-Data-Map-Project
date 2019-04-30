@@ -13,6 +13,10 @@ body {
         }
     }
 }
+
+
+
+
 .OceanNavigator {
 
     .removeButton {
@@ -135,9 +139,9 @@ body {
         
     }
     .MapInputs {
-        width: 17.25%;
+        //width: 17.25%;
         left: 2.75%;
-        position: absolute;
+        //position: absolute;
         top: 0;
         bottom: 0;
         transition: left 0.3s ease-in-out;
@@ -196,6 +200,10 @@ body {
     left: $sidebar-width;
 }
 
+.content.small {
+    left: 100%;
+}
+
 .permalink-modal {
     textarea {
         font-size: 1em;
@@ -217,4 +225,5 @@ body {
         }
     }
 }
+
 
