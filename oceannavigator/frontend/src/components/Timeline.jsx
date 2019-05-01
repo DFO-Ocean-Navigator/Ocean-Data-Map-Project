@@ -141,7 +141,7 @@ export default class Timeline extends React.Component {
         
         hours_between = this.hoursBetween(this.props.currentTime, time)
         let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
-        let current_style = { left: -current_offset + 5 }
+        let current_style = { left: -current_offset + 7 }
 
         let timeline_container = {width: this.props.length}
 

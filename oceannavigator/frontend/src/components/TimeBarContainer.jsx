@@ -257,12 +257,12 @@ export default class TimeBarContainer extends React.Component {
         return moment(smallest, 'GMT');
     }
 
-
+    /*
+        Update Function for Start and End Time
+        Requires: Start and End Time (Moment objects in GMT)
+        Ensures: Global Times Will be updated to reflect changes
+    */
     localUpdate(id, startTime, endTime) {
-        
-        // This is updating to local time, therefore must get local time from object
-        //startTime = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate(), startTime.getHours(), startTime.getMinutes())
-        //endTime = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate(), endTime.getHours(), endTime.getMinutes())
         
         let startTimes = this.state.startTimes;
         startTimes[id] = startTime;
