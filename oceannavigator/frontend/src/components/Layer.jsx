@@ -223,9 +223,9 @@ export default class Layer extends React.Component {
         }
       }
     }
-    let new_data = jQuery.extend({}, this.props.state.data)
-    new_data[this.state.current_map] = data
-    this.props.globalUpdate('data', new_data)
+    let new_data = jQuery.extend({}, this.props.state.data);
+    new_data[this.state.current_map] = data;
+    this.props.globalUpdate('data', new_data);
   }
 
   /*
@@ -242,21 +242,24 @@ export default class Layer extends React.Component {
 
 
     let quantum;
-    let new_quantum
-    let new_dataset
+    let new_quantum;
+    let new_dataset;
 
     // Load datasets if they arent already
     if (dataset === undefined) {
       const dataset_promise = $.ajax("/api/v1.0/datasets/?envType=" + this.props.layerType).promise();
       $.when(dataset_promise).done(function (datasets) {
-        
         if (this.props.state._firstLayer && datasets !== undefined) {
           for (let dataset in datasets) {
             if (datasets[dataset]['id'] === 'giops_day') {
-              new_quantum = datasets[dataset]['quantum']
-              new_dataset = 'giops_day'
+              new_quantum = datasets[dataset]['quantum'];
+              new_dataset = 'giops_day';
               break;
             }
+          }
+          if (new_dataset === undefined) {
+            new_dataset = datasets[0]['id']
+            new_quantum = datasets[0]['quantum']
           }
         } else if (datasets !== undefined) {
           new_dataset = datasets[0]['id']
@@ -285,7 +288,7 @@ export default class Layer extends React.Component {
               }
             }
           } else if (variables !== undefined) {
-            new_variable = variables[0]['id']
+            new_variable = variables[0]['id'];
           }
           this.setState({
             variables: variables,
@@ -299,7 +302,7 @@ export default class Layer extends React.Component {
               old_variable: old_variable, 
               new_map: this.state.current_map, 
               old_map: this.state.current_map
-            })
+            });
           })
 
           $.ajax({
@@ -325,17 +328,17 @@ export default class Layer extends React.Component {
       this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
       // Change current_dataset and current_quantum
       // Located Quantum
-      let quantum
+      let quantum;
       for (let d in this.state.datasets) {
         if (this.state.datasets[d]['id'] === dataset) {
-          quantum = this.state.datasets[d]['quantum']
+          quantum = this.state.datasets[d]['quantum'];
           break;
         }
       }
       this.setState({
         current_dataset: dataset,
         current_quantum: quantum,
-      })
+      });
       // Fetch new Variables
       variable_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset + "&envType=" + this.props.layerType).promise();
 
