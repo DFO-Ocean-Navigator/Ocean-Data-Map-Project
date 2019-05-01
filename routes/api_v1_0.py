@@ -311,6 +311,8 @@ def vector_bathymetry():
 
 @bp_v1_0.route('/api/v1.0/vectors/land_shapes/<int:zoom>/<int:x>/<int:y>.pbf')
 def land_shapes(zoom: int, x: int, y: int):
+  if zoom < 7:
+    return send_file("/opt/tiles/blank.mbt")
   directory = "/opt/tiles/lands/{}/{}/{}".format(zoom, x, y)
   if os.path.isfile(directory):
     return send_file(directory)
@@ -322,6 +324,8 @@ def land_shapes(zoom: int, x: int, y: int):
 
 @bp_v1_0.route('/api/v1.0/vectors/bath_shapes/<int:zoom>/<int:x>/<int:y>.mbt')
 def bath_shapes(zoom: str, x: str, y: str):
+  if zoom < 7:
+    return send_file("/opt/tiles/blank.mbt")
   directory = "/opt/tiles/bath/{}/{}/{}".format(zoom, x, y)
   if os.path.isfile(directory):
     return send_file(directory)
