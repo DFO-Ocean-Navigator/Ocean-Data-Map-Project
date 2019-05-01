@@ -199,7 +199,7 @@ def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientat
 #
 @bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
 def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
-  if dataset == 'undefined' or variable == 'undefined' or interp == 'undefined' or radius == 'undefined' or neighbours == 'undefined' or projection == 'undefined' or extend == 'undefined' or depth == 'undefined' or time == 'undefined':
+  if dataset == 'undefined' or variable == 'undefined' or interp == 'undefined' or radius == 'undefined' or neighbours == 'undefined' or projection == 'undefined' or extent == 'undefined' or depth == 'undefined' or time == 'undefined':
     return Response(status=422)
 
   config = DatasetConfig(dataset)
