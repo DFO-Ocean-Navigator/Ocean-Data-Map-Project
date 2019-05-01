@@ -40,6 +40,8 @@ from plotting.scriptGenerator import generatePython, generateR
 from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
+import gzip
+import shutil
 
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
@@ -306,3 +308,25 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 @bp_v1_0.route('/api/v1.0/vectors/vector_bath.geojson')
 def vector_bathymetry():
   return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'oceannavigator/frontend/static'), 'vector_bath.geojson')
+
+@bp_v1_0.route('/api/v1.0/vectors/land_shapes/<int:zoom>/<int:x>/<int:y>.mbt')
+def land_shapes(zoom: str, x: str, y: str):
+#  if (int(zoom) < 8):
+#    return null
+  tile_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'tiles', 'lands', zoom, x, y)
+  if not os.path.isfile(tile_dir):
+    open_zipped = gzip.open(tile_dir + "pbf", 'rb')
+    open_full = open(tile_dir, 'wb')
+    shutil.copyfileobj(open_zipped, open_full)
+  return send_from_directory(tile_dir)
+
+@bp_v1_0.route('/api/v1.0/vectors/bath_shapes/<int:zoom>/<int:x>/<int:y>.mbt')
+def bath_shapes(zoom: str, x: str, y: str):
+#  if (int(zoom) < 8):
+#    return null
+  tile_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'tiles', 'bath', zoom, x, y)
+  if not os.path.isfile(tile_dir):
+    open_zipped = gzip.open(tile_dir + "pbf", 'rb')
+    open_full = open(tile_dir, 'wb')
+    shutil.copyfileobj(open_zipped, open_full)
+  return send_from_directory(tile_dir)
