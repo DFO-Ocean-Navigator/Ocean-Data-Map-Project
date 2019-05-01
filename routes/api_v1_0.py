@@ -309,24 +309,24 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 def vector_bathymetry():
   return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'oceannavigator/frontend/static'), 'vector_bath.geojson')
 
-@bp_v1_0.route('/api/v1.0/vectors/land_shapes/<int:zoom>/<int:x>/<int:y>.mbt')
-def land_shapes(zoom: str, x: str, y: str):
-#  if (int(zoom) < 8):
-#    return null
-  tile_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'tiles', 'lands', zoom, x, y)
-  if not os.path.isfile(tile_dir):
-    open_zipped = gzip.open(tile_dir + "pbf", 'rb')
-    open_full = open(tile_dir, 'wb')
-    shutil.copyfileobj(open_zipped, open_full)
-  return send_from_directory(tile_dir)
+@bp_v1_0.route('/api/v1.0/vectors/land_shapes/<int:zoom>/<int:x>/<int:y>.pbf')
+def land_shapes(zoom: int, x: int, y: int):
+  directory = "/opt/tiles/lands/{}/{}/{}".format(zoom, x, y)
+  if os.path.isfile(directory):
+    return send_file(directory)
+  else:
+    with gzip.open(directory + ".pbf", 'rb') as gzipped:
+      with open(directory, 'wb') as tileout:
+        shutil.copyfileobj(gzipped, tileout)
+    return send_file(directory)
 
 @bp_v1_0.route('/api/v1.0/vectors/bath_shapes/<int:zoom>/<int:x>/<int:y>.mbt')
 def bath_shapes(zoom: str, x: str, y: str):
-#  if (int(zoom) < 8):
-#    return null
-  tile_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'tiles', 'bath', zoom, x, y)
-  if not os.path.isfile(tile_dir):
-    open_zipped = gzip.open(tile_dir + "pbf", 'rb')
-    open_full = open(tile_dir, 'wb')
-    shutil.copyfileobj(open_zipped, open_full)
-  return send_from_directory(tile_dir)
+  directory = "/opt/tiles/bath/{}/{}/{}".format(zoom, x, y)
+  if os.path.isfile(directory):
+    return send_file(directory)
+  else:
+    with gzip.open(directory + ".pbf", 'rb') as gzipped:
+      with open(directory, 'wb') as tileout:
+        shutil.copyfileobj(gzipped, tileout)
+    return send_file(directory)
