@@ -287,6 +287,9 @@ export default class Layer extends React.Component {
                 break;
               }
             }
+            if (new_variable === undefined) {
+              new_variable = variables[0]['id']
+            }
           } else if (variables !== undefined) {
             new_variable = variables[0]['id'];
           }
@@ -345,6 +348,7 @@ export default class Layer extends React.Component {
       // Update Variables
       $.when(variable_promise).done(function (variables) {
         let variable = variables[0]['id']
+        console.warn("VARIABLE: ", variable)
         const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + dataset + "&variable=" + variable).promise();
 
         this.setState({
