@@ -217,61 +217,51 @@ export default class Map extends React.PureComponent {
       });
     };
 
-    //replacer function from openlayers documentation https://openlayers.org/en/latest/examples/geojson-vt.html
-    this.replacer = function(key, value) {
-      if (value.geometry) {
-        var type;
-        var rawType = value.type;
-        var geometry = value.geometry;
+    this.layer_landshapes = new ol.layer.VectorTile(
+      {
+        opacity: 1,
+        style: new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 1)'
+          }),
+				  fill: new ol.style.Fill({
+					  color: 'white' //#ADD8E6'
+            })
+          }),
+        source: new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tilePixelRatio: 8,
+//          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
+//          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
+          url: `/api/v1.0/vectors/land_shapes/{z}/{x}/{y}.pbf`,
+        }),
+        preload: Infinity,
+      });
 
-        if (rawType === 1) {
-          type = geometry.length === 1 ? "Point" : "MultiPoint";
-        } else if (rawType === 2) {
-          type = geometry.length === 1 ? "LineString" : "MultiLineString";
-        } else if (rawType === 3) {
-          type = geometry.length === 1 ? "Polygon" : "MultiPolygon";
-        }
+      this.layer_bathshapes = new ol.layer.VectorTile(
+        {
+          opacity: 1,
+          style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgba(0, 0, 0, 1)'
+            }),
+            fill: new ol.style.Fill({
+              color: 'white' //#ADD8E6'
+              })
+            }),
+          source: new ol.source.VectorTile({
+            format: new ol.format.MVT(),
+            tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+            tilePixelRatio: 8,
+  //          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
+  //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
+            url: `/api/v1.0/vectors/bath_shapes/{z}/{x}/{y}.pbf`,
+          }),
+          preload: Infinity,
+        });
 
-        return {
-          "type": "Feature",
-          "geometry": {
-            "type": type,
-            "coordinates": geometry.length == 1 ? geometry : [geometry]
-          },
-          "properties": value.tags
-        };
-      } else {
-        return value;
-      }
-    };
-
-    this.layer_vbath = new ol.layer.VectorTile({
-      source: new ol.source.VectorTile({
-        format: new ol.format.GeoJSON(),
-        tileLoadFunction: function(tile) {
-          var format = tile.getFormat();
-          var tileCoord = tile.getTileCoord();
-          var url = '/opt/fork/Ocean-Data-Map-Project/oceannavigator/frontend/static/map.geojson';
-          var data = geojsonvt(this.geojsonfetch(url),{
-            extent: 4096,
-            debug: 1,
-          }).getTile(tileCoord[0], tileCoord[1], -tileCoord[2] - 1);
-          var features = format.readFeatures(
-            JSON.stringify({
-              type: "FeatureCollection",
-              features: data ? data.features :[]
-            }, this.replacer));
-          tile.setLoader(function() {
-            tile.setFeatures(features);
-            tile.setProjection(new ol.Projection({
-              code: "TILE_PIXELS",
-              units: "tile-pixels"
-            }));
-          });
-        }
-      })
-    });
-    // Drawing layerSelf Employed – Sysadmin & Full-stack developer
+    // Drawing layer
     this.layer_vector = new ol.layer.Vector(
       {
         source: this.vectorSource,
@@ -406,7 +396,9 @@ export default class Map extends React.PureComponent {
       layers: [
         this.layer_basemap,
         this.layer_data,
-        this.layer_vbath,
+        this.layer_landshapes,
+        this.layer_bath,
+        this.layer_bathshapes,
         this.layer_vector,
       ],
       controls: ol.control.defaults({
