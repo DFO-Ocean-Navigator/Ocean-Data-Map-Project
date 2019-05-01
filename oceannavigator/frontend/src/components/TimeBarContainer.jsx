@@ -51,6 +51,7 @@ export default class TimeBarContainer extends React.Component {
         this.animateConsecutive = this.animateConsecutive.bind(this);
         this.findMax = this.findMax.bind(this);
         this.findMin = this.findMin.bind(this);
+        this.findQuantum = this.findQuantum.bind(this);
     }
 
     // Sends time back to the OceanNavigator component
@@ -75,10 +76,12 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animate() {
-        let min = this.findMin(this.state.startTimes)
-        let max = this.findMax(this.state.endTimes)
-
-        this.animateConsecutive(min, max);
+        let min = this.findMin(this.state.startTimes);
+        let max = this.findMax(this.state.endTimes);
+        console.warn("TIMESOURCES: ", this.props.timeSources)
+        let quantum = this.findQuantum(this.props.timeSources);
+        console.warn("QUANTUM INITIALIZE: ", quantum)
+        this.animateConsecutive(min, max, quantum);
     }
 
     // Handles time incrementing and formating
@@ -122,7 +125,10 @@ export default class TimeBarContainer extends React.Component {
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
-        } else if (quantum === 'month') {
+        } 
+        console.warn("QUANTUM: ", quantum)
+        
+        if (quantum === 'month') {
             increment = 525600  // Time increment in minutes
         } else if (quantum === 'day') {
             increment = 1440    // Time increment in minutes
@@ -178,17 +184,30 @@ export default class TimeBarContainer extends React.Component {
     }
 
     findQuantum(sources) {
+        console.warn("FIND QUANTUM: ", sources)
         let quantums = ['month', 'day', 'hour', 'minute']
-        let quantum = ''
-        for (let layer in sources) {
-            for (let dataset in sources[layer]) {
-                if (quantum === undefined) {
-                    quantum === sources[layer][dataset].quantum
-                } else if (quantums.indexOf(sources[layer][dataset].quantum) > quantums.indexOf([quantum])) {
-                    quantum = sources[layer][dataset].quantum;
+        let quantum
+        for (let map in sources) {
+            for (let layer in sources[map]) {
+                for (let index in sources[map][layer]) {
+                    console.warn("LAYER: ", layer)
+                    for (let dataset in sources[map][layer][index]) {
+                        for (let variable in sources[map][layer][index][dataset]) {
+                            console.warn("DATASET: ", dataset)
+                            console.warn("QUANTUM: ", quantum)
+                            if (quantum === undefined) {
+                                console.warn(sources[map][layer][index][dataset][variable])
+                                quantum = sources[map][layer][index][dataset][variable].quantum
+                            } else if (quantums.indexOf(sources[map][layer][index][dataset][variable].quantum) > quantums.indexOf([quantum])) {
+                                quantum = sources[map][layer][index][dataset][variable].quantum;
+                            }
+                        }
+                    }
                 }
+                
             }
         }
+        
         return quantum
     }
 
@@ -336,7 +355,7 @@ export default class TimeBarContainer extends React.Component {
         }
         */
 
-        /*
+        
         timeBars.push(
             <div key='start_animation' className='timeLayerContainer'>
                 <Button
@@ -353,7 +372,7 @@ export default class TimeBarContainer extends React.Component {
                 </Button>
             </div>
         )
-        */
+        
         let time_class
         if (this.props.compare) {
             time_class = 'time_container_compare'
