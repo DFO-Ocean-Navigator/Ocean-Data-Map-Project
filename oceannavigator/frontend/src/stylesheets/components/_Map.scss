@@ -58,6 +58,109 @@
         bottom: 3.5px;
     }
 
+    .shipOptions_container {
+        //margin-left: -102px;
+        background-color: whitesmoke;
+        opacity: 0.9;
+        border-radius: 25px;
+        //margin-top: -97px;
+        
+        min-width: 200px;
+        height: fit-content;
+
+        .contactName {
+            font-size: 18px;
+            position: relative;
+            left: 15px;
+            height: 25px;
+        }
+
+        .contactLine {
+            width: 80%;
+            height: 2px;
+            position: relative;
+            margin-left: 10px;
+
+        }
+        
+        .contactArrow {
+            width: 0;
+            position: relative;
+            height: 0;
+            top: 30px;
+            left: calc(50% - 7.5px);
+            border-style: solid;
+            border-width: 15px 12.5px 0 12.5px;
+            border-color: #ebebeb transparent transparent transparent;
+        }
+
+        .topLeft {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+           
+            
+            .Icon {
+                left: 50%;
+                font-size: 25px;
+                position: relative;
+            }
+        }
+        .topLeft:hover {
+            //background-color: #f0f0f5;
+            //border-right: 2px solid #d9d9d9;
+            //border-bottom: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+
+        .topRight {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+            
+            .Icon {
+                font-size: 25px;
+                position: relative;
+                margin-left: 25%;
+            }
+        }
+        .topRight:hover {
+            //background-color: #f0f0f5;
+            //border-left: 2px solid #d9d9d9;
+            //border-bottom: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+
+        .btmLeft {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+            
+            
+            .Icon {
+                font-size: 25px;
+                position: relative;
+                margin-left: 25%;
+            }
+        }
+        .btmLeft:hover {
+            //background-color: #f0f0f5;
+            //border-right: 2px solid #d9d9d9;
+            //border-top: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+        
+    }
+
     .time_container {
         height: fit-content;
         width: 60px;

@@ -199,7 +199,7 @@ export default class LineWindow extends React.Component {
       return
     }
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
+      url: "/api/v1.0/variables/?dataset=" + dataset + "&anom",
       dataType: "json",
       cache: true,
 
@@ -500,7 +500,7 @@ export default class LineWindow extends React.Component {
         state={this.state.surfacevariable}
         onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
-        url={"/api/variables/?dataset=" + this.state.data.dataset}
+        url={"/api/v1.0/variables/?dataset=" + this.state.data.dataset}
       >{_("surfacevariable_help")}</ComboBox>
 
       <NumberBox
