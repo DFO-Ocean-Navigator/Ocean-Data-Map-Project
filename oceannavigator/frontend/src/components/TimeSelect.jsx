@@ -75,7 +75,6 @@ export default class TimeSelect extends React.Component {
             endTime: undefined,
             endTimeObj: undefined,
 
-
             select: '',
             quantum: '',
 
@@ -299,15 +298,19 @@ export default class TimeSelect extends React.Component {
                 startTime = startTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM');
                 endTime = endTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM');
             }
-
+        console.warn(startTimeObj.format('YYYY'))
         this.setState({
             startTimeObj: startTimeObj,
             startTime: startTime,
             endTimeObj: endTimeObj,
-            endTime: endTime
+            endTime: endTime,
+            selected_year: startTimeObj.format('YYYY'),
+            selected_month: startTimeObj.format('MMM'),
+            selected_day: startTimeObj.format('D'),
+            selected_hour: startTimeObj.format('H'),
         })
 
-
+        this._mounted = true
         this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
@@ -725,92 +728,76 @@ export default class TimeSelect extends React.Component {
         let self = this
 
         let buttons = []
-        if (this.state.select == 'year') {
+
+        let yearButtons = []
+        if (this.state.select == 'year' || true) {
             for (let year in this.state.times_available) {
-                buttons.push(
+                yearButtons.push(
                     <Button
                         onClick={self.updateYear}
                         className='yearButtons'
-                        key={year}
+                        key={year + 'year'}
                         name={year}
                     >{year}</Button>
                 )
             }
-            /*
-            this.state.years.forEach(function (year) {
-                buttons.push(
-                    <Button onClick={self.updateYear}
-                        className='yearButtons'
-                        key={year}
-                        name={year}
-                    >
-                        {year}
-                    </Button>
-                )
-            })
-            */
-            buttons =
+            
+            yearButtons =
                 <div className='yearContainer buttonContainer'>
-                    {buttons}
+                    {yearButtons}
                 </div>
         }
 
-
-        if (this.state.select == 'month') {
+        let monthButtons = []
+        if (this.state.select == 'month' || true) {
 
             let previous = [
                 <Button
                     onClick={self.updateYear}
                     className='yearButton'
-                    key={this.state.selected_year}
+                    key={this.state.selected_year + 'year'}
                     name={this.state.selected_year}
                 >
                     {this.state.selected_year}
                 </Button>
             ]
-            buttons = []
+            
             for (let idx in this.state.times_available[this.state.selected_year]) {
                 
-                buttons.push(
+                monthButtons.push(
                     <Button
                         onClick={self.updateMonth}
                         className='monthButtons'
-                        key={idx}
+                        key={idx + 'month'}
                         name={idx}
                     >{idx}</Button>
                 )
             }
-            /*
-            this.state.months.forEach(function (month) {
-                buttons.push(
-                    <Button onClick={self.updateMonth}
-                        className='monthButtons'
-                        key={month}
-                        name={month}
-                    >
-                        {month}
-                    </Button>
-                )
-            })
-            */
-
-            buttons =
+            
+            // Working towards 2 different style time pickers
+            if (false) {
+                monthButtons = <div className='monthContainer buttonContainer'>
+                    {monthButtons}
+                </div>
+            } else {
+                monthButtons =
                 <div className='timecontainer'>
                     <div className='selectedContainer'>
                         {previous}
                     </div>
                     <div className='monthContainer buttonContainer'>
-                        {buttons}
+                        {monthButtons}
                     </div>
                 </div>
+            }
         }
 
-
-        if (this.state.select === 'day') {
+        let dayButtons = []
+        if (this.state.selected_day !== undefined && (this.state.select === 'day' || true)) {
             let previous = [
                 <Button onClick={self.updateYear}
                     className='yearButton'
-                    key={this.state.selected_year}
+                    key={this.state.selected_year + 'year'}
                     name={this.state.selected_year}
                 >
                     {this.state.selected_year}
@@ -819,40 +806,43 @@ export default class TimeSelect extends React.Component {
             previous.push(
                 <Button onClick={self.updateMonth}
                     className='monthButton'
-                    key={this.state.selected_month}
+                    key={this.state.selected_month + 'month'}
                     name={this.state.selected_month}
                 >
                     {this.state.selected_month}
                 </Button>
             )
-            buttons = []
-            //let num_days = this.daysInMonth(this.state.month_tonum[this.state.selected_month], this.state.selected_year)
-            //let date = new Date(this.state.selected_year, this.state.month_tonum[this.state.selected_month])
             let days = this.state.times_available[this.state.selected_year][this.state.selected_month]
-            //days.sort()
             for (let idx in days) {
                 let day = idx
-                buttons.push(
+                dayButtons.push(
                     <Button
                         onClick={self.updateDay}
                         className='dayButtons'
-                        key={day}
+                        key={day + 'day'}
                         name={day}
                     >
                         {day}
                     </Button>
                 )
             }
-            buttons =
+            
+            // Working towards 2 different style time pickers
+            if (false) {
+                dayButtons = <div className='dayContainer buttonContainer'>
+                    {dayButtons}
+                </div>
+            } else {
+                dayButtons =
                 <div className='timecontainer'>
                     <div className='selectedContainer'>
                         {previous}
                     </div>
                     <div className='dayContainer buttonContainer'>
-                        {buttons}
+                        {dayButtons}
                     </div>
                 </div>
-
+            }
         }
 
         if (this.state.select === 'hour') {
@@ -937,27 +927,43 @@ export default class TimeSelect extends React.Component {
 
         let current_time = ' '
         if (this.props.currentTime != undefined) {
-            //let month = this.props.currentTime.getUTCMonth().toString()
-            //if (month.length === 1) {
-            //    month = '0' + month
-            //}
-            //let date = this.props.currentTime.getUTCDate().toString()
-            //if (date.length === 1) {
-            //    date = '0' + date
-            //}
+            
             if (this.props.quantum === 'hour') {
                 current_time = this.props.currentTime.format('YYYY/MM/DD[ : ]HH[z]')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date + ' : ' + this.props.currentTime.getUTCHours() + 'z'
             } else if (this.props.quantum === 'day') {
                 current_time = this.props.currentTime.format('YYYY/MM/DD')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date
             } else if (this.props.quantum === 'month') {
                 current_time = this.props.currentTime.format('YYYY/MM')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month
             }
         }
 
-
+        /*
+            Chooses which part of the date is currently being selected
+        */
+        switch (this.state.select) {
+            
+            // Currently nothing uses the 'all'
+            // It will be used for the 2nd timepicker style
+            case 'all':
+                buttons = [yearButtons, monthButtons, dayButtons]
+                buttons = <div className='timecontainer'>
+                    {buttons}
+                </div>
+                break;
+            case 'year':
+                buttons = [yearButtons]
+                break;
+            case 'month':
+                buttons = [monthButtons];
+                break;
+            case 'day':
+                buttons = [dayButtons];
+                break;
+            case 'hour':
+            
+                break;
+        }
+        
         return (
             <div className={bounding_class}>
                 <Button
