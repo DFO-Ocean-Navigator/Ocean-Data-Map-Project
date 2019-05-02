@@ -194,84 +194,86 @@ export default class LayerSelection extends React.Component {
                     <Nav key='nav' onSelect={this.tabSelect}>
                         {enabled_layers}  
                     </Nav>
+                    <div className='vertical versionNumber'>
+                        v 4.0.0
+                    </div>
                 </div>
 
-                    <div className='LayerPanels'>
-                        <div className={this.state.panels[0]} id='panel1'>
-                            <FoundationTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
+                <div className='LayerPanels'>
+                    <div className={this.state.panels[0]} id='panel1'>
+                        <FoundationTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>
+                    <div className={this.state.panels[1]} id='panel2'>
+                        <EnvironmentTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            mapComponent={this.props.mapComponent}
+                            mapComponent2={this.props.mapComponent2}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>
+                    <div className={this.state.panels[2]} id='panel3'>
+                        <IntelligenceTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            mapComponent={this.props.mapComponent}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>
+                    <div className={this.state.panels[3]} id='panel4'>
+                        <DerivedProductsTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>
+                    <div className={this.state.panels[4]} id='panel5'>
+                        <PlanningToolsTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>
+                    <div className={this.state.panels[5]} id='panel6'>
+                        <SettingsTab
+                            state={this.props.state}
+                            swapViews={this.props.swapViews}
+                            changeHandler={this.props.updateState}
+                            showHelp={this.props.toggleCompareHelp}
+                            options={this.props.state.options}
+                            updateOptions={this.props.updateOptions}
+                        />
+                    </div>                        
+                    <div className='settings'>
+                        <div className='analyticsDisclaimer' style={{width: '75%', float: 'left'}}>
+                            This website uses Google Analytics. By continuing, you accept the usage of cookies.
+                            <br />
+                            <a href='https://www.wikihow.com/Disable-Cookies'>How to disable Cookies</a>
                         </div>
-
-                        <div className={this.state.panels[1]} id='panel2'>
-                            <EnvironmentTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                mapComponent={this.props.mapComponent}
-                                mapComponent2={this.props.mapComponent2}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
-                        </div>
-
-                        <div className={this.state.panels[2]} id='panel3'>
-                            <IntelligenceTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                mapComponent={this.props.mapComponent}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
-                        </div>
-
-                        <div className={this.state.panels[3]} id='panel4'>
-                            <DerivedProductsTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
-                        </div>
-
-                        <div className={this.state.panels[4]} id='panel5'>
-                            <PlanningToolsTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
-                        </div>
-                        <div className={this.state.panels[5]} id='panel6'>
-                            <SettingsTab
-                                state={this.props.state}
-                                swapViews={this.props.swapViews}
-                                changeHandler={this.props.updateState}
-                                showHelp={this.props.toggleCompareHelp}
-                                options={this.props.state.options}
-                                updateOptions={this.props.updateOptions}
-                            />
-                        </div>
-                        <div className='settings'>
-                            <Button key='settingsButton' className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
-                                <Icon icon='gear'/>
-                            </Button>
-                        </div>
-
+                        <Button key='settingsButton' style={{width: '25%'}} className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
+                            <Icon icon='gear'/>
+                        </Button>
+                    </div>
                 </div>
-                
             </div>
         );
     }
