@@ -74,9 +74,7 @@ export default class LayerSelection extends React.Component {
         }
 
         if (selectedKey === 0) {
-            for (i=0; i < 6; i++) {
-
-            }
+            this.props.toggleSidebar()
         } else {
             let i;
             let newPanels = []
@@ -148,6 +146,17 @@ export default class LayerSelection extends React.Component {
     render() {
 
         let enabled_layers = [];
+        
+        enabled_layers.push(<NavItem
+            key='_toggleSidebar'
+            className={'sidebar_toggle'}
+            eventKey={0}
+        >
+            <div className='toggleSidebar'>
+                <Icon className='toggleSidebar' icon="bars" />
+            </div>
+        </NavItem>)
+        
         if (this.props.state._foundation === true && this.props.state.allowedTabs['_foundation'] === true) {
             enabled_layers.push(<NavItem key='_foundation' className={this.state.buttons[0]} eventKey={1}>
                 <div className='vertical'>{_('Foundation')}</div>
@@ -200,6 +209,7 @@ export default class LayerSelection extends React.Component {
                 </div>
 
                 <div className='LayerPanels'>
+                    
                     <div className={this.state.panels[0]} id='panel1'>
                         <FoundationTab
                             state={this.props.state}
