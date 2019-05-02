@@ -107,7 +107,7 @@ def query_datasets_v1_0():
 #
 # Unchanged from v0.0
 #
-# Will be capable of processing additional arguments for meteorology, oceanography, and ice
+# Capable of processing additional arguments for meteorology, oceanography, and ice
 #
 @bp_v1_0.route('/api/v1.0/variables/')
 def vars_query_v1_0():
