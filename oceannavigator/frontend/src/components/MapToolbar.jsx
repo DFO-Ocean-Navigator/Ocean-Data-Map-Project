@@ -754,14 +754,14 @@ export default class MapToolbar extends React.Component {
 
     return (
       <Navbar inverse>
-        <Navbar.Header>
+        {/*<Navbar.Header>
           <Navbar.Brand>
             <a href="#" onClick={this.props.toggleSidebar} >
               <Icon icon="bars" /> {_("Toggle Sidebar")}
             </a>
           </Navbar.Brand>
           <Navbar.Toggle />
-        </Navbar.Header>
+        </Navbar.Header>*/}
           
         <Navbar.Collapse>
           
