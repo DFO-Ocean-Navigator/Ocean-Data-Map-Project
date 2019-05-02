@@ -34,7 +34,6 @@ export default class Timeline extends React.Component {
 
     */
     componentDidMount() {
-
         if (this.props.time_inc != undefined) {
             let inc = this.props.time_inc.split('-')
             this.setState({
@@ -103,7 +102,9 @@ export default class Timeline extends React.Component {
         let num_days = this.daysBetween(this.props.startTime, this.props.endTime);
         let offset_val = ((this.props.length) / (num_days + 1))
         //let offset_val = 658 * 0.85/10;
-        let marker_date = this.props.startTime
+        let marker_date = moment(this.props.startTime.valueOf())
+        marker_date.tz('GMT')
+
         //marker_date.setDate(marker_date.getUTCDate() + 1)
         for (let i = 1; i <= num_days; i += 1) {
             offset = (offset_val * i) - (2 * i)
@@ -131,15 +132,16 @@ export default class Timeline extends React.Component {
         let hours_between = this.hoursBetween(this.props.startTime, this.props.endTime)
         
         offset_val = ((this.props.length) / (hours_between + 1))
-        let time = moment.tz(this.props.startTime, 'GMT')
-        
+        let time = moment(this.props.startTime)
         time.set({
             hour: 0
         })
+        time.tz('GMT')
+
         
         hours_between = this.hoursBetween(this.props.currentTime, time)
         let current_offset = (hours_between * offset_val) - (hours_between * 0.25)
-        let current_style = { left: current_offset }
+        let current_style = { left: -current_offset + 7 }
 
         let timeline_container = {width: this.props.length}
 

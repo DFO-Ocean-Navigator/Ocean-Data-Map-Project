@@ -188,7 +188,9 @@ render() {
       <Button
         onClick={this.addLayer}
       >
+
         New {this.props.layerType} Layer
+
             </Button>
 
     </div>

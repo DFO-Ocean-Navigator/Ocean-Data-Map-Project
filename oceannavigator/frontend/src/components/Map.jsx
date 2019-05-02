@@ -1221,7 +1221,6 @@ export default class Map extends React.PureComponent {
         }
         break;
       case "multi-point":
-        console.warn("multi-point add")
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
