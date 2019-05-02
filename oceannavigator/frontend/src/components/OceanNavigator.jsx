@@ -12,7 +12,8 @@ import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
-import ModalContainer from "./ModalContainer.jsx"
+import ModalContainer from "./ModalContainer.jsx";
+import Media from "react-media";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -162,6 +163,7 @@ export default class OceanNavigator extends React.Component {
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
     this.multiPointAction = this.multiPointAction.bind(this);
+    this.toggleScreen = this.toggleScreen.bind(this);
   }
   
   //Updates the page language upon user request
@@ -564,6 +566,28 @@ export default class OceanNavigator extends React.Component {
     }
   }
 
+  toggleScreen(size, e) {
+    if (e === false) {
+      return
+    }
+    this.setState({
+      screen: size
+    })
+
+    console.warn("E: ", e)
+    switch (size) {
+      case "small":
+        this.setState({
+          sidebarOpen: false
+        })
+        break;
+      case "medium":
+        break;
+      case "large":
+        break;
+      
+    }
+  }
   showModal() {
     this.setState({
       showModal: true
@@ -632,8 +656,18 @@ export default class OceanNavigator extends React.Component {
     }
 
     _("Loading");
-
-    const contentClassName = this.state.sidebarOpen ? "content open" : "content";
+    
+    let contentClassName
+    if (this.state.sidebarOpen) {
+      if (this.state.screen === 'small') {
+        contentClassName = "content small"
+      } else {
+        contentClassName = "content open"
+      }
+    } else {
+      contentClassName = "content"
+    }
+    //const contentClassName = this.state.sidebarOpen ? "content open" : "content";
     
     // Pick which map we need
     let map = null;
@@ -692,7 +726,7 @@ export default class OceanNavigator extends React.Component {
     let layerSelect = null; 
     
     if (this.mapComponent !== null) {
-      if (this.mapComponent2 === null) {
+      //if (this.mapComponent2 === null) {
         layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
@@ -701,9 +735,11 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         showHelp={this.toggleCompareHelp}
         options={this.state.options}
+        toggleSidebar={this.toggleSidebar}
+        sidebarOpen={this.state.sidebarOpen}
         updateOptions={this.updateOptions}
       />
-      } else {
+      /*} else {
         layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
@@ -712,16 +748,28 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         showHelp={this.toggleCompareHelp}
         options={this.state.options}
+
         updateOptions={this.updateOptions}
       />
-      }
+      *///}
       
     }
     
 
     return (
       <div className='OceanNavigator'>
-        
+        <Media
+          query="(max-width: 599px)"
+          onChange={(e) => this.toggleScreen('small', e)}
+        ></Media>
+        <Media
+          query="(max-width: 1199px)"
+          onChange={(e) => this.toggleScreen('medium', e)}
+        ></Media>
+        <Media
+          query="(min-width: 1200px)"
+          onChange={(e) => this.toggleScreen('large', e)}
+        ></Media>
         {layerSelect}
         <div className={contentClassName}>
           <MapToolbar

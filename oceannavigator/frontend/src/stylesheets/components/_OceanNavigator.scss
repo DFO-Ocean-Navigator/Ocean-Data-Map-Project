@@ -13,6 +13,10 @@ body {
         }
     }
 }
+
+
+
+
 .OceanNavigator {
 
     .removeButton {
@@ -41,7 +45,7 @@ body {
     }
     .LayerSelection {
         float: left;
-        width: 13.75%;
+        width: 50px;
         height:100%;
 
         
@@ -94,7 +98,7 @@ body {
     .LayerPanels {
         height: calc(100% - 70px);
         float: right;
-        width: 86.25%;
+        width: calc(100% - 50px);
 
         .Range {
             display: inline-block
@@ -143,9 +147,9 @@ body {
         
     }
     .MapInputs {
-        width: 17.25%;
+        //width: 17.25%;
         left: 2.75%;
-        position: absolute;
+        //position: absolute;
         top: 0;
         bottom: 0;
         transition: left 0.3s ease-in-out;
@@ -178,11 +182,11 @@ body {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 0; // Map view takes up full screen width when sidebar closed
+        left: 50px; // Map view takes up full screen width when sidebar closed
         right: 0;
         display: flex;
         flex-flow: column;
-        transition: left 0.3s ease-in-out;
+        transition: left 0.45s ease-in-out;
 
         .MapToolbar {
             flex: 0 1 auto;
@@ -202,6 +206,10 @@ body {
 // Moves content to the right to fit sidebar
 .content.open {
     left: $sidebar-width;
+}
+
+.content.small {
+    left: 100%;
 }
 
 .permalink-modal {
@@ -225,4 +233,5 @@ body {
         }
     }
 }
+
 

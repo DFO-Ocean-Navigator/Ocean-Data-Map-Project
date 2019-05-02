@@ -8,6 +8,8 @@ import DerivedProductsTab from './DerivedProductsTab.jsx';
 import PlanningToolsTab from './PlanningToolsTab.jsx';
 import SettingsTab from './SettingsTab.jsx';
 import EnvironmentTab from './EnvironmentTab.jsx';
+import Media from 'react-media';
+import sizeMe from 'react-sizeme';
 
 const i18n = require("../i18n.js");
 
@@ -41,6 +43,7 @@ export default class LayerSelection extends React.Component {
         }
 
         this.tabSelect = this.tabSelect.bind(this)
+        this.toggleScreen = this.toggleScreen.bind(this);
     }
     
     componentDidMount() {
@@ -52,7 +55,24 @@ export default class LayerSelection extends React.Component {
     }
     
     tabSelect(selectedKey) {
-       
+        console.warn("SELECTED KEY: ", selectedKey)
+        console.warn("SELECTED TAB: ", this.state.panels[selectedKey])
+
+        if (this.state.panels[selectedKey - 1] === 'currentPanel' && this.state.buttons[selectedKey - 1] === 'currentButton') {
+            //Must also change Map Container Left
+            this.props.toggleSidebar();
+            //let newPanels = this.state.panels;
+            //let newButtons = this.state.buttons;
+            //newPanels[selectedKey - 1] = 'hiddenPanel';
+            //newButtons[selectedKey - 1] = 'hiddenButton';
+
+            //this.setState({
+            //    panels: newPanels,
+            //    buttons: newButtons,
+           // })
+            //return;
+        }
+
         if (selectedKey === 0) {
             for (i=0; i < 6; i++) {
 
@@ -77,11 +97,51 @@ export default class LayerSelection extends React.Component {
             } else {
                 newButtons[selectedKey - 1] = 'currentButton'
             }
-            
+            if (!this.props.sidebarOpen) {
+                this.props.toggleSidebar();
+            }
             this.setState({
                 panels: newPanels,
                 buttons: newButtons,
             })
+        }
+    }
+
+    /*
+        Changes Styling depending on screen size
+        - Provides support for mobile devices
+    */
+    toggleScreen(size, e) {
+        if (e === false) {
+            return;
+        }
+
+        this.setState({
+            screen: size
+        });
+
+        switch (size) {
+            case "small":
+            this.setState({
+                toolbarStyle: {
+                    width: '100%',    
+                },
+            });
+                break;
+            case "medium":
+                this.setState({
+                    toolbarStyle: {
+                        width: '20%',    
+                    },
+                });
+                break;
+            case "large":
+                this.setState({
+                    toolbarStyle: {
+                        width: '20%',    
+                    },
+                });
+                break;
         }
     }
     
@@ -114,10 +174,22 @@ export default class LayerSelection extends React.Component {
             </NavItem>)
         }
 
-        
 
         return (
-            <div className='LayerOptions'>
+           
+            <div className='LayerOptions' style={this.state.toolbarStyle}>
+                <Media
+                    query="(max-width: 599px)"
+                    onChange={(e) => this.toggleScreen('small', e)}
+                ></Media>
+                <Media
+                    query="(max-width: 1199px)"
+                    onChange={(e) => this.toggleScreen('medium', e)}
+                ></Media>
+                <Media
+                    query="(min-width: 1200px)"
+                    onChange={(e) => this.toggleScreen('large', e)}
+                ></Media>
                 <div className='LayerSelection'>
                     <Nav key='nav' onSelect={this.tabSelect}>
                         {enabled_layers}  
