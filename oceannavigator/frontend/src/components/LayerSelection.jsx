@@ -8,7 +8,8 @@ import DerivedProductsTab from './DerivedProductsTab.jsx';
 import PlanningToolsTab from './PlanningToolsTab.jsx';
 import SettingsTab from './SettingsTab.jsx';
 import EnvironmentTab from './EnvironmentTab.jsx';
-import Media from 'react-media'
+import Media from 'react-media';
+import sizeMe from 'react-sizeme';
 
 const i18n = require("../i18n.js");
 
@@ -54,19 +55,23 @@ export default class LayerSelection extends React.Component {
     }
     
     tabSelect(selectedKey) {
-       
-        /*if (this.state.panels[selectedKey] === 'currentPanel' && this.state.buttons[selectedKey] === 'currentButton') {
-            let newPanels = this.state.panels;
-            let newButtons = this.state.buttons;
-            newPanels[selectedKey] = 'hiddenPanel';
-            newButtons[selectedKey] = 'hiddenButton';
+        console.warn("SELECTED KEY: ", selectedKey)
+        console.warn("SELECTED TAB: ", this.state.panels[selectedKey])
 
-            this.setState({
-                panels: newPanels,
-                buttons: newButtons,
-            })
-            return;
-        }*/
+        if (this.state.panels[selectedKey - 1] === 'currentPanel' && this.state.buttons[selectedKey - 1] === 'currentButton') {
+            //Must also change Map Container Left
+            this.props.toggleSidebar();
+            //let newPanels = this.state.panels;
+            //let newButtons = this.state.buttons;
+            //newPanels[selectedKey - 1] = 'hiddenPanel';
+            //newButtons[selectedKey - 1] = 'hiddenButton';
+
+            //this.setState({
+            //    panels: newPanels,
+            //    buttons: newButtons,
+           // })
+            //return;
+        }
 
         if (selectedKey === 0) {
             for (i=0; i < 6; i++) {
@@ -92,7 +97,9 @@ export default class LayerSelection extends React.Component {
             } else {
                 newButtons[selectedKey - 1] = 'currentButton'
             }
-            
+            if (!this.props.sidebarOpen) {
+                this.props.toggleSidebar();
+            }
             this.setState({
                 panels: newPanels,
                 buttons: newButtons,
@@ -113,7 +120,6 @@ export default class LayerSelection extends React.Component {
             screen: size
         });
 
-        console.warn("SIZE, e: ", size, e);
         switch (size) {
             case "small":
             this.setState({

@@ -726,7 +726,7 @@ export default class OceanNavigator extends React.Component {
     let layerSelect = null; 
     
     if (this.mapComponent !== null) {
-      if (this.mapComponent2 === null) {
+      //if (this.mapComponent2 === null) {
         layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
@@ -735,9 +735,11 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         showHelp={this.toggleCompareHelp}
         options={this.state.options}
+        toggleSidebar={this.toggleSidebar}
+        sidebarOpen={this.state.sidebarOpen}
         updateOptions={this.updateOptions}
       />
-      } else {
+      /*} else {
         layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
@@ -746,9 +748,10 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         showHelp={this.toggleCompareHelp}
         options={this.state.options}
+
         updateOptions={this.updateOptions}
       />
-      }
+      *///}
       
     }
     

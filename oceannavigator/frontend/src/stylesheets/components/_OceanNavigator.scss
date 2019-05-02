@@ -45,7 +45,7 @@ body {
     }
     .LayerSelection {
         float: left;
-        width: 13.75%;
+        width: 50px;
         height:100%;
 
         .nav {
@@ -90,7 +90,7 @@ body {
     .LayerPanels {
         height: calc(100% - 70px);
         float: right;
-        width: 86.25%;
+        width: calc(100% - 50px);
 
         .Range {
             display: inline-block
@@ -174,7 +174,7 @@ body {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 0; // Map view takes up full screen width when sidebar closed
+        left: 50px; // Map view takes up full screen width when sidebar closed
         right: 0;
         display: flex;
         flex-flow: column;
