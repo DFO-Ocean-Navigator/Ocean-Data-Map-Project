@@ -151,9 +151,7 @@ export default class IceLayer extends React.Component {
     } else {
       let newState = this.state
       newState[key] = value
-      this.setState(newState, () => {
-        console.log("SCALE IN CALLBACK: ", this.state.scale_1);
-      })
+      this.setState(newState)
       
     }
     this.updateIce();

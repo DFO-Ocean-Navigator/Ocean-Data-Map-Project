@@ -78,9 +78,7 @@ export default class TimeBarContainer extends React.Component {
     animate() {
         let min = this.findMin(this.state.startTimes);
         let max = this.findMax(this.state.endTimes);
-        console.warn("TIMESOURCES: ", this.props.timeSources)
         let quantum = this.findQuantum(this.props.timeSources);
-        console.warn("QUANTUM INITIALIZE: ", quantum)
         this.animateConsecutive(min, max, quantum);
     }
 
@@ -126,7 +124,6 @@ export default class TimeBarContainer extends React.Component {
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
         } 
-        console.warn("QUANTUM: ", quantum)
         
         if (quantum === 'month') {
             increment = 525600  // Time increment in minutes
@@ -184,19 +181,14 @@ export default class TimeBarContainer extends React.Component {
     }
 
     findQuantum(sources) {
-        console.warn("FIND QUANTUM: ", sources)
         let quantums = ['month', 'day', 'hour', 'minute']
         let quantum
         for (let map in sources) {
             for (let layer in sources[map]) {
                 for (let index in sources[map][layer]) {
-                    console.warn("LAYER: ", layer)
                     for (let dataset in sources[map][layer][index]) {
                         for (let variable in sources[map][layer][index][dataset]) {
-                            console.warn("DATASET: ", dataset)
-                            console.warn("QUANTUM: ", quantum)
                             if (quantum === undefined) {
-                                console.warn(sources[map][layer][index][dataset][variable])
                                 quantum = sources[map][layer][index][dataset][variable].quantum
                             } else if (quantums.indexOf(sources[map][layer][index][dataset][variable].quantum) > quantums.indexOf([quantum])) {
                                 quantum = sources[map][layer][index][dataset][variable].quantum;

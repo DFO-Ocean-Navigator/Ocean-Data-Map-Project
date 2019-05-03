@@ -348,7 +348,6 @@ export default class Layer extends React.Component {
       // Update Variables
       $.when(variable_promise).done(function (variables) {
         let variable = variables[0]['id']
-        console.warn("VARIABLE: ", variable)
         const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + dataset + "&variable=" + variable).promise();
 
         this.setState({
@@ -764,9 +763,15 @@ export default class Layer extends React.Component {
     if (this.props.layerType === 'met') {
       masked = 1  // 0 Masks the land, 1 doesn't
     }
+
+    let interpType = this.props.options.interpType
+    if (this.state.current_display === 'windbarbs') {
+      interpType = 'none'
+    }
+    
     // Sets new values for tiles
     props.url = `/api/v1.0/tiles` +
-      `/${this.props.options.interpType}` +
+      `/${interpType}` +
       `/${this.props.options.interpRadius}` +
       `/${this.props.options.interpNeighbours}` +
       `/${this.props.state.projection}` +
