@@ -75,7 +75,6 @@ export default class TimeSelect extends React.Component {
             endTime: undefined,
             endTimeObj: undefined,
 
-
             select: '',
             quantum: '',
 
@@ -299,19 +298,23 @@ export default class TimeSelect extends React.Component {
                 startTime = startTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM');
                 endTime = endTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM');
             }
-
+        console.warn(startTimeObj.format('YYYY'))
         this.setState({
             startTimeObj: startTimeObj,
             startTime: startTime,
             endTimeObj: endTimeObj,
-            endTime: endTime
+            endTime: endTime,
+            selected_year: startTimeObj.format('YYYY'),
+            selected_month: startTimeObj.format('MMM'),
+            selected_day: startTimeObj.format('D'),
+            selected_hour: startTimeObj.format('H'),
         })
 
-
+        this._mounted = true
         this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
-    startChange(startDate, endDate) {
+    startChange(startDate, endDate, quantum) {
         
         endDate.add(10, 'days');
 
@@ -330,6 +333,11 @@ export default class TimeSelect extends React.Component {
         var startString = startDate.format('YYYY/MM/DD');
         var endString = endDate.format('YYYY/MM/DD');
 
+        if (quantum === 'month') {
+            startString = startDate.format('YYYY/MM')
+            endString = endDate.format("YYYY/MM")
+        }
+
         let new_state = this.state;
         new_state.startTimeObj = undefined;
         new_state.endTimeObj = undefined;
@@ -344,13 +352,14 @@ export default class TimeSelect extends React.Component {
         this.props.localUpdate(this.props.id, moment(startDate), moment(endDate))
     }
 
-    endChange(startDate, endDate) {
+    endChange(startDate, endDate, quantum) {
 
         //startDate = moment(startDate).clone().subtract(10, 'days')
         startDate = moment(startDate.valueOf());
         startDate.tz('GMT');
         startDate.subtract(10, 'days');
         
+
         if (startDate.format('YYYY/MM/DD[T]HH') in this.state.formatted_dates) {
         } else {
             for (let i = 0; i < 10; i = i + 1) {
@@ -363,8 +372,13 @@ export default class TimeSelect extends React.Component {
             
         }
 
+
         let startString = startDate.format('YYYY/MM/DD')
         let endString = endDate.format('YYYY/MM/DD')
+        if (quantum === 'month') {
+            startString = startDate.format("YYYY/MM")
+            endString = endDate.format("YYYY/MM")
+        }
 
         let new_state = this.state;
         new_state.startTimeObj = undefined;
@@ -398,7 +412,8 @@ export default class TimeSelect extends React.Component {
             if (Object.keys(this.state.times_available[this.state.selected_year][e.target.name]).length === 1) {
                 
                 let start_month = this.state.month_tonum[e.target.name]
-                let end_month = start_month + 1
+                let end_month = start_month
+
                 
                 let start_day = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]])[0]
                 let start_hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]][start_day])[0]
@@ -412,20 +427,31 @@ export default class TimeSelect extends React.Component {
                 
                 
                 //let second = this.state.times_available[this.state.selected_year][e.target.name][day][hour][min]
-                let formatted_start = this.state.selected_year + '-' + start_month + '-' + start_day
-                let formatted_end = this.state.selected_year + '-' + end_month + '-' + start_day
+                //let formatted_start = this.state.selected_year + '-' + start_month + '-' + start_day
+                //let formatted_end = this.state.selected_year + '-' + end_month + '-' + end_day
                 
-                var startTimeObj = new moment(formatted_start)
+                //var startTimeObj = new moment(formatted_start)
+
+                let startTimeObj = new moment()
+                let endTimeObj = new moment()
+
                 startTimeObj.tz('GMT')
+                endTimeObj.tz('GMT')
+                start_month = start_month - 1
+                end_month = end_month - 1
                 startTimeObj.set({
+                    year: this.state.selected_year,
+                    month: start_month,
+                    date: start_day,
                     hour: start_hour,
                     minute: start_min,
                     second: start_second
                 })
                 
-                var endTimeObj = new moment(formatted_end)
-                endTimeObj.tz('GMT')
                 endTimeObj.set({
+                    year: this.state.selected_year,
+                    month: end_month,
+                    date: end_day,
                     hour: end_hour,
                     minute: end_min,
                     second: end_second
@@ -434,6 +460,7 @@ export default class TimeSelect extends React.Component {
                 if (this.state.selecting === 'startTime') {
                     let difference = this.monthsBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     if (difference > 10 || difference < 0) {
+                        console.warn("START CHANGE")
                         this.startChange(startTimeObj, endTimeObj)
                     } else {    
                         this.props.localUpdate(this.props.id, moment(startTimeObj), moment(this.state.endTimeObj))
@@ -446,11 +473,17 @@ export default class TimeSelect extends React.Component {
                     return
                     
                 } else {
-                    let difference = this.daysBetween(timeObj.valueOf(), this.state.startTimeObj)
-                    if (difference > 10 && difference < 0) {
-                        this.endChange(moment(timeObj), moment(timeObj))
+                    let difference = this.monthsBetween(endTimeObj.valueOf(), this.state.startTimeObj)
+                    console.warn("DIFFERENCE: ", difference)
+                    if (difference > 10 || difference < 0) {
+                        console.warn("END CHANGE")
+                        this.endChange(startTimeObj, endTimeObj, 'month')
                     } else {
-                        this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(timeObj))
+                        this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(endTimeObj))
+                        let endString = endTimeObj.format("YYYY/MM")
+                        this.setState({
+                            endTime: endString
+                        })
                     }
 
                     this.setState({
@@ -578,17 +611,64 @@ export default class TimeSelect extends React.Component {
         let startTime
         let endTime
 
-        var startTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
-        var endTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        let year = this.state.selected_year
+        let month = this.state.month_tonum[this.state.selected_month]
+        month = month - 1
+        let day = this.state.selected_day
+       
+        console.warn("YEAR: ", year)
+        console.warn("MONTH: ", month)
+        console.warn("DAY: ", day)
+
+        // Fetch correct hour, min, sec from available times
+        let hour = e.target.name
+        let min = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][this.state.selected_day][hour])[0]
+        let sec = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][this.state.selected_day][hour][min])[0]
+        
+        console.warn("HOUR: ", hour);
+        console.warn("MINUTE: ", min);
+        console.warn("SECOND: ", sec);
+
+        var startTimeObj = new moment() 
+        var endTimeObj = new moment()
         startTimeObj.tz('GMT')
         endTimeObj.tz('GMT')
 
+        startTimeObj.set({
+            year: year,
+            month: month,
+            date: day,
+            hour: hour,
+            minute: min,
+            second: sec,
+            milliseconds: 0,
+        })
+        console.warn("START TIME: ", startTimeObj.format('YYYY-MM-DD'))
+        endTimeObj.set({
+            year: year,
+            month: month,
+            date: day,
+            hour: hour,
+            minute: min,
+            second: sec,
+            milliseconds: 0,
+        })
+        
+        /*
+        var startTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        var endTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        
         startTimeObj.set({
             hour: e.target.value,
         })
         endTimeObj.set({
             hour: e.target.value,
         })
+
+        startTimeObj.tz('GMT')
+        endTimeObj.tz('GMT')
+        */
+        
         if (this.state.selecting === 'startTime') {
             let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     
@@ -605,7 +685,7 @@ export default class TimeSelect extends React.Component {
             return
 
         } else {
-            let difference = this.daysBetween(endTimeObj.valueOf(), this.state.startTimeObj)
+            let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj)
                     
             if (difference > 10 || difference < 0) {
                 this.endChange(moment(startTimeObj.valueOf()), moment(endTimeObj.valueOf()))
@@ -630,92 +710,76 @@ export default class TimeSelect extends React.Component {
         let self = this
 
         let buttons = []
-        if (this.state.select == 'year') {
+
+        let yearButtons = []
+        if (this.state.select == 'year' || true) {
             for (let year in this.state.times_available) {
-                buttons.push(
+                yearButtons.push(
                     <Button
                         onClick={self.updateYear}
                         className='yearButtons'
-                        key={year}
+                        key={year + 'year'}
                         name={year}
                     >{year}</Button>
                 )
             }
-            /*
-            this.state.years.forEach(function (year) {
-                buttons.push(
-                    <Button onClick={self.updateYear}
-                        className='yearButtons'
-                        key={year}
-                        name={year}
-                    >
-                        {year}
-                    </Button>
-                )
-            })
-            */
-            buttons =
+            
+            yearButtons =
                 <div className='yearContainer buttonContainer'>
-                    {buttons}
+                    {yearButtons}
                 </div>
         }
 
-
-        if (this.state.select == 'month') {
+        let monthButtons = []
+        if (this.state.select == 'month' || true) {
 
             let previous = [
                 <Button
                     onClick={self.updateYear}
                     className='yearButton'
-                    key={this.state.selected_year}
+                    key={this.state.selected_year + 'year'}
                     name={this.state.selected_year}
                 >
                     {this.state.selected_year}
                 </Button>
             ]
-            buttons = []
+            
             for (let idx in this.state.times_available[this.state.selected_year]) {
                 
-                buttons.push(
+                monthButtons.push(
                     <Button
                         onClick={self.updateMonth}
                         className='monthButtons'
-                        key={idx}
+                        key={idx + 'month'}
                         name={idx}
                     >{idx}</Button>
                 )
             }
-            /*
-            this.state.months.forEach(function (month) {
-                buttons.push(
-                    <Button onClick={self.updateMonth}
-                        className='monthButtons'
-                        key={month}
-                        name={month}
-                    >
-                        {month}
-                    </Button>
-                )
-            })
-            */
-
-            buttons =
+            
+            // Working towards 2 different style time pickers
+            if (false) {
+                monthButtons = <div className='monthContainer buttonContainer'>
+                    {monthButtons}
+                </div>
+            } else {
+                monthButtons =
                 <div className='timecontainer'>
                     <div className='selectedContainer'>
                         {previous}
                     </div>
                     <div className='monthContainer buttonContainer'>
-                        {buttons}
+                        {monthButtons}
                     </div>
                 </div>
+            }
         }
 
-
-        if (this.state.select === 'day') {
+        let dayButtons = []
+        if (this.state.selected_day !== undefined && (this.state.select === 'day' || true)) {
             let previous = [
                 <Button onClick={self.updateYear}
                     className='yearButton'
-                    key={this.state.selected_year}
+                    key={this.state.selected_year + 'year'}
                     name={this.state.selected_year}
                 >
                     {this.state.selected_year}
@@ -724,40 +788,43 @@ export default class TimeSelect extends React.Component {
             previous.push(
                 <Button onClick={self.updateMonth}
                     className='monthButton'
-                    key={this.state.selected_month}
+                    key={this.state.selected_month + 'month'}
                     name={this.state.selected_month}
                 >
                     {this.state.selected_month}
                 </Button>
             )
-            buttons = []
-            //let num_days = this.daysInMonth(this.state.month_tonum[this.state.selected_month], this.state.selected_year)
-            //let date = new Date(this.state.selected_year, this.state.month_tonum[this.state.selected_month])
             let days = this.state.times_available[this.state.selected_year][this.state.selected_month]
-            //days.sort()
             for (let idx in days) {
                 let day = idx
-                buttons.push(
+                dayButtons.push(
                     <Button
                         onClick={self.updateDay}
                         className='dayButtons'
-                        key={day}
+                        key={day + 'day'}
                         name={day}
                     >
                         {day}
                     </Button>
                 )
             }
-            buttons =
+            
+            // Working towards 2 different style time pickers
+            if (false) {
+                dayButtons = <div className='dayContainer buttonContainer'>
+                    {dayButtons}
+                </div>
+            } else {
+                dayButtons =
                 <div className='timecontainer'>
                     <div className='selectedContainer'>
                         {previous}
                     </div>
                     <div className='dayContainer buttonContainer'>
-                        {buttons}
+                        {dayButtons}
                     </div>
                 </div>
-
+            }
         }
 
         if (this.state.select === 'hour') {
@@ -842,27 +909,43 @@ export default class TimeSelect extends React.Component {
 
         let current_time = ' '
         if (this.props.currentTime != undefined) {
-            //let month = this.props.currentTime.getUTCMonth().toString()
-            //if (month.length === 1) {
-            //    month = '0' + month
-            //}
-            //let date = this.props.currentTime.getUTCDate().toString()
-            //if (date.length === 1) {
-            //    date = '0' + date
-            //}
+            
             if (this.props.quantum === 'hour') {
                 current_time = this.props.currentTime.format('YYYY/MM/DD[ : ]HH[z]')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date + ' : ' + this.props.currentTime.getUTCHours() + 'z'
             } else if (this.props.quantum === 'day') {
                 current_time = this.props.currentTime.format('YYYY/MM/DD')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month + '/' + date
             } else if (this.props.quantum === 'month') {
                 current_time = this.props.currentTime.format('YYYY/MM')
-                //current_time = this.props.currentTime.getUTCFullYear() + '/' + month
             }
         }
 
-
+        /*
+            Chooses which part of the date is currently being selected
+        */
+        switch (this.state.select) {
+            
+            // Currently nothing uses the 'all'
+            // It will be used for the 2nd timepicker style
+            case 'all':
+                buttons = [yearButtons, monthButtons, dayButtons]
+                buttons = <div className='timecontainer'>
+                    {buttons}
+                </div>
+                break;
+            case 'year':
+                buttons = [yearButtons]
+                break;
+            case 'month':
+                buttons = [monthButtons];
+                break;
+            case 'day':
+                buttons = [dayButtons];
+                break;
+            case 'hour':
+            
+                break;
+        }
+        
         return (
             <div className={bounding_class}>
                 <Button
