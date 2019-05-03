@@ -55,27 +55,13 @@ export default class LayerSelection extends React.Component {
     }
     
     tabSelect(selectedKey) {
-        console.warn("SELECTED KEY: ", selectedKey)
-        console.warn("SELECTED TAB: ", this.state.panels[selectedKey])
-
-        if (this.state.panels[selectedKey - 1] === 'currentPanel' && this.state.buttons[selectedKey - 1] === 'currentButton') {
-            //Must also change Map Container Left
+        
+        if (selectedKey === 0 || (this.state.panels[selectedKey - 1] === 'currentPanel' && this.state.buttons[selectedKey - 1] === 'currentButton')) {
             this.props.toggleSidebar();
-            //let newPanels = this.state.panels;
-            //let newButtons = this.state.buttons;
-            //newPanels[selectedKey - 1] = 'hiddenPanel';
-            //newButtons[selectedKey - 1] = 'hiddenButton';
-
-            //this.setState({
-            //    panels: newPanels,
-            //    buttons: newButtons,
-           // })
-            //return;
         }
-
-        if (selectedKey === 0) {
+        /*if (selectedKey === 0) {
             this.props.toggleSidebar()
-        } else {
+        }*/ else {
             let i;
             let newPanels = []
             let newButtons = []

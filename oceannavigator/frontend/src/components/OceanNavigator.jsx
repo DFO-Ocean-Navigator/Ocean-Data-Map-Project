@@ -62,10 +62,10 @@ export default class OceanNavigator extends React.Component {
           id: 'contours',
           value: 'Contours',
         },
-        {
+        /*{
           id: 'windbarbs',
           value: 'Wind Barbs (BETA)',
-        }
+        }*/
       ],
       
       dataset: "giops_day",
@@ -574,7 +574,6 @@ export default class OceanNavigator extends React.Component {
       screen: size
     })
 
-    console.warn("E: ", e)
     switch (size) {
       case "small":
         this.setState({
