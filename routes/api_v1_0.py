@@ -42,6 +42,7 @@ from data.netcdf_data import NetCDFData
 import routes.routes_impl
 import gzip
 import shutil
+import sqlite3
 
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
@@ -315,6 +316,21 @@ def land_shapes(zoom: int, x: int, y: int):
   if os.path.isfile(directory):
     return send_file(directory)
   else:
+    y = (2**zoom-1) - y
+#    with gzip.open(directory + ".pbf", 'rb') as gzipped:
+#      with open(directory, 'wb') as tileout:
+#        shutil.copyfileobj(gzipped, tileout)
+    connection = sqlite3.connect("/opt/tiles/lands.mbtiles")
+    selector = connection.cursor()
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+    if os.path.isdir("/opt/tiles/lands/{}/{}".format(zoom, x)):
+      pass
+    else:
+      os.makedirs("/opt/tiles/lands/{}/{}".format(zoom, x))
+    with open(directory + ".pbf", 'wb') as f:
+      f.write(tile[0])
     with gzip.open(directory + ".pbf", 'rb') as gzipped:
       with open(directory, 'wb') as tileout:
         shutil.copyfileobj(gzipped, tileout)
@@ -327,7 +343,21 @@ def bath_shapes(zoom: int, x: int, y: int):
   directory = "/opt/tiles/bath/{}/{}/{}".format(zoom, x, y)
   if os.path.isfile(directory):
     return send_file(directory)
-  else:
+    y = (2**zoom-1) - y
+#    with gzip.open(directory + ".pbf", 'rb') as gzipped:
+#      with open(directory, 'wb') as tileout:
+#        shutil.copyfileobj(gzipped, tileout)
+    connection = sqlite3.connect("/opt/tiles/bath.mbtiles")
+    selector = connection.cursor()
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+    if os.path.isdir("/opt/tiles/lands/{}/{}".format(zoom, x)):
+      pass
+    else:
+      os.makedirs("/opt/tiles/lands/{}/{}".format(zoom, x))
+    with open(directory + ".pbf", 'wb') as f:
+      f.write(tile[0])
     with gzip.open(directory + ".pbf", 'rb') as gzipped:
       with open(directory, 'wb') as tileout:
         shutil.copyfileobj(gzipped, tileout)

@@ -188,7 +188,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
-        preload: Infinity,
+        preload: 0,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -207,7 +207,7 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: Infinity,
+        preload: 0,
       });
 
 
@@ -668,7 +668,7 @@ export default class Map extends React.PureComponent {
         console.warn(shadedRelief);
 
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 0,
           source: new ol.source.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -681,7 +681,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 0,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -694,7 +694,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 0,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
