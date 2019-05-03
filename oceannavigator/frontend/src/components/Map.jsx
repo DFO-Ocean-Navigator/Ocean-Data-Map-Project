@@ -236,7 +236,6 @@ export default class Map extends React.PureComponent {
 //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
           url: `/api/v1.0/vectors/land_shapes/{z}/{x}/{y}.pbf`,
         }),
-        preload: Infinity,
       });
 
       this.layer_bathshapes = new ol.layer.VectorTile(
@@ -258,7 +257,6 @@ export default class Map extends React.PureComponent {
   //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
             url: `/api/v1.0/vectors/bath_shapes/{z}/{x}/{y}.pbf`,
           }),
-          preload: Infinity,
         });
 
     // Drawing layer
