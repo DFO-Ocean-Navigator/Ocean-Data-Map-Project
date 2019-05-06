@@ -234,7 +234,7 @@ export default class Map extends React.PureComponent {
           tilePixelRatio: 8,
 //          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
 //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
-          url: `/api/v1.0/vectors/land_shapes/{z}/{x}/{y}.pbf`,
+          url: `/api/v1.0/vectors/lands/{z}/{x}/{y}.pbf`,
         }),
       });
 
@@ -255,7 +255,7 @@ export default class Map extends React.PureComponent {
             tilePixelRatio: 8,
   //          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
   //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
-            url: `/api/v1.0/vectors/bath_shapes/{z}/{x}/{y}.pbf`,
+            url: `/api/v1.0/vectors/bath/{z}/{x}/{y}.pbf`,
           }),
         });
 

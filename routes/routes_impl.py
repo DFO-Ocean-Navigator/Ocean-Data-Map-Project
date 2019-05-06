@@ -45,6 +45,9 @@ import os
 import netCDF4
 import base64
 import pytz
+import gzip
+import shutil
+import sqlite3
 from data import open_dataset
 
 MAX_CACHE = 315360000
@@ -595,6 +598,8 @@ def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
     """
+    if zoom > 7:
+        return send_file("/opt/tiles/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
@@ -611,6 +616,8 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
     """
        Generates bathymetry tiles
     """
+    if zoom > 7:
+        return send_file("/opt/tiles/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
@@ -620,6 +627,30 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
     else:
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
+
+def shapes_impl(tiletype: str, zoom: int, x: int, y: int):
+  if zoom < 7:
+    return send_file("/opt/tiles/blank.mbt")
+  directory = "/opt/tiles/{}/{}/{}/{}".format(tiletype, zoom, x, y)
+  if os.path.isfile(directory):
+    return send_file(directory)
+  else:
+    y = (2**zoom-1) - y
+    connection = sqlite3.connect("/opt/tiles/{}.mbtiles".format(tiletype))
+    selector = connection.cursor()
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+    if os.path.isdir("/opt/tiles/{}/{}/{}".format(tiletype, zoom, x)):
+      pass
+    else:
+      os.makedirs("/opt/tiles/{}/{}/{}".format(tiletype, zoom, x))
+    with open(directory + ".pbf", 'wb') as f:
+      f.write(tile[0])
+    with gzip.open(directory + ".pbf", 'rb') as gzipped:
+      with open(directory, 'wb') as tileout:
+        shutil.copyfileobj(gzipped, tileout)
+    return send_file(directory)
 
 
 def drifter_query_impl(q: str, drifter_id: str):

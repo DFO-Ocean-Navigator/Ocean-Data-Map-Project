@@ -40,9 +40,6 @@ from plotting.scriptGenerator import generatePython, generateR
 from data import open_dataset
 from data.netcdf_data import NetCDFData
 import routes.routes_impl
-import gzip
-import shutil
-import sqlite3
 
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
@@ -294,8 +291,6 @@ def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, datase
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
   hull_shade = shaded_relief == 'true'
-  if zoom > 7:
-    return send_file("/opt/tiles/black.png")
   return routes.routes_impl.topo_impl(projection, zoom, x, y, hull_shade)
 
 
@@ -304,61 +299,8 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 #
 @bp_v1_0.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
-  if zoom > 7:
-    return send_file("/opt/tiles/blank.png")
   return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
-@bp_v1_0.route('/api/v1.0/vectors/land_shapes/<int:zoom>/<int:x>/<int:y>.pbf')
-def land_shapes(zoom: int, x: int, y: int):
-  if zoom < 7:
-    return send_file("/opt/tiles/blank.mbt")
-  directory = "/opt/tiles/lands/{}/{}/{}".format(zoom, x, y)
-  if os.path.isfile(directory):
-    return send_file(directory)
-  else:
-    y = (2**zoom-1) - y
-#    with gzip.open(directory + ".pbf", 'rb') as gzipped:
-#      with open(directory, 'wb') as tileout:
-#        shutil.copyfileobj(gzipped, tileout)
-    connection = sqlite3.connect("/opt/tiles/lands.mbtiles")
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
-    selector.execute(sqlite)
-    tile = selector.fetchone()
-    if os.path.isdir("/opt/tiles/lands/{}/{}".format(zoom, x)):
-      pass
-    else:
-      os.makedirs("/opt/tiles/lands/{}/{}".format(zoom, x))
-    with open(directory + ".pbf", 'wb') as f:
-      f.write(tile[0])
-    with gzip.open(directory + ".pbf", 'rb') as gzipped:
-      with open(directory, 'wb') as tileout:
-        shutil.copyfileobj(gzipped, tileout)
-    return send_file(directory)
-
-@bp_v1_0.route('/api/v1.0/vectors/bath_shapes/<int:zoom>/<int:x>/<int:y>.pbf')
-def bath_shapes(zoom: int, x: int, y: int):
-  if zoom < 7:
-    return send_file("/opt/tiles/blank.mbt")
-  directory = "/opt/tiles/bath/{}/{}/{}".format(zoom, x, y)
-  if os.path.isfile(directory):
-    return send_file(directory)
-    y = (2**zoom-1) - y
-#    with gzip.open(directory + ".pbf", 'rb') as gzipped:
-#      with open(directory, 'wb') as tileout:
-#        shutil.copyfileobj(gzipped, tileout)
-    connection = sqlite3.connect("/opt/tiles/bath.mbtiles")
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
-    selector.execute(sqlite)
-    tile = selector.fetchone()
-    if os.path.isdir("/opt/tiles/lands/{}/{}".format(zoom, x)):
-      pass
-    else:
-      os.makedirs("/opt/tiles/lands/{}/{}".format(zoom, x))
-    with open(directory + ".pbf", 'wb') as f:
-      f.write(tile[0])
-    with gzip.open(directory + ".pbf", 'rb') as gzipped:
-      with open(directory, 'wb') as tileout:
-        shutil.copyfileobj(gzipped, tileout)
-    return send_file(directory)
+@bp_v1_0.route('/api/v1.0/vectors/<string:tiletype>/<int:zoom>/<int:x>/<int:y>.pbf')
+def shapes(tiletype: str, zoom: int, x: int, y: int):
+  return routes.routes_impl.shapes_impl(tiletype, zoom, x, y)
