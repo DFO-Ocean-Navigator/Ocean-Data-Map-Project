@@ -232,15 +232,14 @@ export default class Map extends React.PureComponent {
           format: new ol.format.MVT(),
           tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
           tilePixelRatio: 8,
-//          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
-//          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
-          url: `/api/v1.0/vectors/lands/{z}/{x}/{y}.pbf`,
+          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}`,
         }),
       });
 
       this.layer_bathshapes = new ol.layer.VectorTile(
         {
-          opacity: 1,
+          opacity: this.props.options.mapBathymetryOpacity,
+          visible: this.props.options.bathymetry,
           style: new ol.style.Style({
             stroke: new ol.style.Stroke({
               color: 'rgba(0, 0, 0, 1)'
@@ -253,9 +252,7 @@ export default class Map extends React.PureComponent {
             format: new ol.format.MVT(),
             tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
             tilePixelRatio: 8,
-  //          url: 'https://{a-d}.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/' +
-  //          '{z}/{x}/{y}.vector.pbf?access_token=' + 'pk.eyJ1IjoiaXRzcmVpZ24iLCJhIjoiY2prM3U1ZjB4MTZ1OTNrbndhMW94MGZjZyJ9.mj1tR5DyVmd-tK5JwdPnug'
-            url: `/api/v1.0/vectors/bath/{z}/{x}/{y}.pbf`,
+            url: `/api/v1.0/mbt/bath/{z}/{x}/{y}`,
           }),
         });
 

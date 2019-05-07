@@ -628,23 +628,28 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
 
-def shapes_impl(tiletype: str, zoom: int, x: int, y: int):
+def mbt_impl(tiletype: str, zoom: int, x: int, y: int):
+  cache_dir = current_app.config['CACHE_DIR']
+  shape_file_dir = current_app.config['SHAPE_FILE_DIR']
   if zoom < 7:
-    return send_file("/opt/tiles/blank.mbt")
-  directory = "/opt/tiles/{}/{}/{}/{}".format(tiletype, zoom, x, y)
+    return send_file(shape_file_dir + "/blank.mbt")
+  directory = str(os.path.join(cache_dir, request.path[1:]))
   if os.path.isfile(directory):
     return send_file(directory)
   else:
     y = (2**zoom-1) - y
-    connection = sqlite3.connect("/opt/tiles/{}.mbtiles".format(tiletype))
+    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
     selector = connection.cursor()
     sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
     selector.execute(sqlite)
     tile = selector.fetchone()
-    if os.path.isdir("/opt/tiles/{}/{}/{}".format(tiletype, zoom, x)):
+    if tile == None:
+        return send_file(shape_file_dir + "/blank.mbt")
+    basedir = "/".join(directory.split("/", 9)[:9])
+    if os.path.isdir(basedir):
       pass
     else:
-      os.makedirs("/opt/tiles/{}/{}/{}".format(tiletype, zoom, x))
+      os.makedirs(basedir)
     with open(directory + ".pbf", 'wb') as f:
       f.write(tile[0])
     with gzip.open(directory + ".pbf", 'rb') as gzipped:
