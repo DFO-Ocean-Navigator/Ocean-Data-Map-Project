@@ -34,7 +34,7 @@ export default class QuiverSelector extends React.Component {
     _("Colour");
     return (
       <div className='QuiverSelector input'>
-        <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate.bind(this)} url={"/api/v1.0/variables/?vectors_only&dataset=" + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
+        <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate.bind(this)} url={`/api/v1.0/variables/?vectors_only&dataset=${  this.props.dataset}`} title={this.props.title}>{this.props.children}</ComboBox>
         <div className='sub' style={{"display": (this.props.state.variable == "none" || this.props.state.variable == "") ? "none" : "block"}}>
           <ComboBox key='magnitude' id='magnitude' state={this.props.state.magnitude} onUpdate={this.onUpdate.bind(this)} def='length' title={_("Show Magnitude")} data={[{"id": "none", "value": _("No")}, {"id": "length", "value": _("Length")}, {"id": "color", "value": _("Colour")}]} />
           <div style={{"display": (this.props.state.magnitude == "color") ? "block" : "none"}}>

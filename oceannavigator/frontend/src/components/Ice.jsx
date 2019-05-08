@@ -24,8 +24,8 @@ export default class Ice extends React.Component {
   render() {    
     
     return (
-        <div>
-            {/*<Layer
+      <div>
+        {/*<Layer
               state={this.props.state}
 
               toggleLayer={this.props.toggleLayer}
@@ -40,7 +40,7 @@ export default class Ice extends React.Component {
               //defaultDataset='giops_day'
               //defaultVariable='u-component_of_wind_height_above_ground'
             ></Layer>*/}
-        </div>
+      </div>
     );
   }
 }

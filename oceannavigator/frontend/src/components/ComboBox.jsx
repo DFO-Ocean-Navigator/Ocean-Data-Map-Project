@@ -69,10 +69,10 @@ export default class ComboBox extends React.Component {
 
         // Construct keys and their associative value to be sent to 
         // OceanNavigator state
-        for (let key in dataset) {
+        for (const key in dataset) {
           
           // State key name ("variable_scale", "dataset_help", etc)
-          keys.push(this.props.id + "_" + key);
+          keys.push(`${this.props.id  }_${  key}`);
 
           // State key value ("-5,30", "Sample dataset help...")
           values.push(dataset[key]);
@@ -104,7 +104,7 @@ export default class ComboBox extends React.Component {
         success: function (data) {
           if (this._mounted) {  //Combobox is mounted
 
-            const ids = data.map(function (d) { return d.id;});  //stores data id
+            const ids = data.map((d) => { return d.id;});  //stores data id
   
             if (
               (this.props.state == "" && typeof(this.props.state) == "string") ||
@@ -115,10 +115,10 @@ export default class ComboBox extends React.Component {
               }
             }
             this.setState({
-              data: data,
+              data,
             });
 
-            const a = data.map(function (x) {
+            const a = data.map((x) => {
               return x.id;
             });
 
@@ -146,7 +146,7 @@ export default class ComboBox extends React.Component {
             ) {
               if (props.multiple) {
                 if (value == "all") {
-                  value = data.map(function (d) {
+                  value = data.map((d) => {
                     return d.id;
                   });
                 } else if (!Array.isArray(value)) {
@@ -180,9 +180,9 @@ export default class ComboBox extends React.Component {
               props.onUpdate(props.id, value);
               if (a.indexOf(value) != -1) {
                 const d = data[a.indexOf(value)];
-                for (var key in d) {
+                for (const key in d) {
                   if (d.hasOwnProperty(key) && key != "id" && key != "value") {
-                    this.props.onUpdate(this.props.id + "_" + key, d[key]);
+                    this.props.onUpdate(`${this.props.id  }_${  key}`, d[key]);
                   }
                 }
               }
@@ -207,9 +207,9 @@ export default class ComboBox extends React.Component {
         for (let i = 0; i < props.data.length; i++) {
           const d = props.data[i];
           if (d.id == value) {
-            for (var key in d) {
+            for (const key in d) {
               if (d.hasOwnProperty(key) && key != "id" && key != "value") {
-                props.onUpdate(props.id + "_" + key, d[key]);
+                props.onUpdate(`${props.id  }_${  key}`, d[key]);
               }
             }
           }
@@ -234,29 +234,29 @@ export default class ComboBox extends React.Component {
 
   render() {
     //Creates one drop down function for each option sent back
-    const options = this.state.data.map(function(o) {
-      var opts = {
+    const options = this.state.data.map((o) => {
+      const opts = {
         key: o.id,
         value: o.id,
       };
 
 
       //Checks if each value in data has id or value
-      for (let key in o) {
+      for (const key in o) {
         if (key == "id" || key == "value") {
           continue;
         }
         if (o.hasOwnProperty(key)) {
-          opts["data-" + key] = o[key];
+          opts[`data-${  key}`] = o[key];
         }
       }
       return React.createElement("option", opts, o.value);    //Creates Option that was found
     });
 
     if (this.state.data.length > 1) {
-      var value = this.props.state;
+      let value = this.props.state;
       if (this.props.multiple && value == "all") {
-        value = this.state.data.map(function(d) {
+        value = this.state.data.map((d) => {
           return d.id;
         });
       }
@@ -271,9 +271,9 @@ export default class ComboBox extends React.Component {
         (this.props.children != null && this.props.children.length > 0) ||
         this.state.data.slice(-1)[0].hasOwnProperty("help");
 
-      var helpOptions = [];
+      let helpOptions = [];
       if (this.state.data.slice(-1)[0].hasOwnProperty("help")) {
-        helpOptions = this.state.data.map(function(d) {
+        helpOptions = this.state.data.map((d) => {
           return (
             <p key={d.id}><em>{d.value}</em>:
               <span dangerouslySetInnerHTML={{ __html: d.help}} />
@@ -325,9 +325,9 @@ export default class ComboBox extends React.Component {
           </FormControl>
         </div>
       );
-    } else {
-      return null;
-    }
+    } 
+    return null;
+    
   }
 }
 
@@ -337,9 +337,9 @@ ComboBox.propTypes = {
   title: PropTypes.string,
   data: PropTypes.array,
   state: PropTypes.oneOfType([PropTypes.string, 
-                              PropTypes.number, 
-                              PropTypes.array
-                            ]),
+    PropTypes.number, 
+    PropTypes.array
+  ]),
   onUpdate: PropTypes.func,
   id: PropTypes.string,
   url: PropTypes.string,

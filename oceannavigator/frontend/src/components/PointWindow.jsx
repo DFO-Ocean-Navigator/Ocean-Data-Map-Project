@@ -18,9 +18,9 @@ import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import ReactLoading from 'react-loading';
-import Spinner from '../images/spinner.gif';
-import DataSelection from './DataSelection.jsx';
+import ReactLoading from "react-loading";
+import Spinner from "../images/spinner.gif";
+import DataSelection from "./DataSelection.jsx";
 
 
 const i18n = require("../i18n.js");
@@ -45,7 +45,7 @@ export default class PointWindow extends React.Component {
 
     this.state = {
       selected: TabEnum.PROFILE,
-      scale: props.scale + ",auto",
+      scale: `${props.scale  },auto`,
       depth: props.depth,
       showmap: true,
       colormap: "default",
@@ -95,7 +95,7 @@ export default class PointWindow extends React.Component {
   }
 
   componentWillUpdate(prevProps, prevState) {
-    return
+    
   }
 
   componentWillUnmount() {
@@ -128,16 +128,16 @@ export default class PointWindow extends React.Component {
 */
   populateVariables(dataset) {
     if (dataset === undefined) {
-      return
+      return;
     }
     $.ajax({
-      url: "/api/v1.0/variables/?dataset=" + dataset,
+      url: `/api/v1.0/variables/?dataset=${  dataset}`,
       dataType: "json",
       cache: true,
 
       success: function (data) {
         if (this._mounted) {
-          const vars = data.map(function (d) {
+          const vars = data.map((d) => {
             return d.id;
           });
 
@@ -146,11 +146,11 @@ export default class PointWindow extends React.Component {
           //}
 
           this.setState({
-            variables: data.map(function (d) {
+            variables: data.map((d) => {
               return d.id;
             }),
           }, () => {
-            this.updatePlot()
+            this.updatePlot();
           });
         }
         //this.updatePlot()
@@ -175,65 +175,65 @@ export default class PointWindow extends React.Component {
 
   onTimeUpdate(key, value) {
     
-    if (typeof(key) === typeof('string')) {
+    if (typeof(key) === typeof("string")) {
       this.setState({
         [key]: value
-      })
+      });
     } else {
       //let date = moment.tz(key, 'GMT')
       //date.setUTCMonth(date.getUTCMonth() +1)
       this.setState({
-            time: key
-      })
+        time: key
+      });
     }
   }
 
   updateData(selected) {
-    selected = selected.split(',')
-    let data = this.props.data
+    selected = selected.split(",");
+    const data = this.props.data;
 
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
+    const layer = selected[0];
+    const index = selected[1];
+    const dataset = selected[2];
+    let variable = "";
 
     if (selected.length > 4) {
       for (let v = 3; v < selected.length; v=v+1) {
-        if (variable === '') {
-          variable = selected[v]
+        if (variable === "") {
+          variable = selected[v];
         } else {
-          variable = variable + ',' + selected[v]  
+          variable = `${variable  },${  selected[v]}`;  
         }
       }
     } else {
-      variable = [selected[3]]
+      variable = [selected[3]];
     }
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
+    const display = data[layer][index][dataset][variable].display;
+    const colourmap = data[layer][index][dataset][variable].colourmap;
+    const quantum = data[layer][index][dataset][variable].quantum;
+    const scale = data[layer][index][dataset][variable].scale;
+    const time = data[layer][index][dataset][variable].time;
     
     this.setState({
-      layer: layer,
-      index: index,
-      dataset: dataset,
-      variable: variable,
+      layer,
+      index,
+      dataset,
+      variable,
 
-      display: display,
-      colourmap: colourmap,
+      display,
+      colourmap,
       dataset_quantum: quantum,
-      scale: scale + ',auto',
-      time: time,
+      scale: `${scale  },auto`,
+      time,
     }, () => {
-      this.updatePlot()
-      this.populateVariables(dataset)
-    })
+      this.updatePlot();
+      this.populateVariables(dataset);
+    });
   }
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
-      let newState = {};
+      const newState = {};
       
       
       if (typeof (key) === "string") {
@@ -246,8 +246,8 @@ export default class PointWindow extends React.Component {
       }
       this.setState(newState);
 
-      let parentKeys = [];
-      let parentValues = [];
+      const parentKeys = [];
+      const parentValues = [];
 
       if (newState.hasOwnProperty("depth") && newState.depth != "all") {
         if (!Array.isArray(newState.depth)) {
@@ -291,20 +291,20 @@ export default class PointWindow extends React.Component {
     this.setState({
       selected: key,
       
-    }, () => { this.updatePlot() });
+    }, () => { this.updatePlot(); });
   }
 
   updateScale(e) {
-    let value = e.target.value
-    let key = e.target.id
+    const value = e.target.value;
+    const key = e.target.id;
     this.setState({
       [key]: value
-    })
+    });
   }
 
   updatePlot() {
 
-    let plot_query = {
+    const plot_query = {
       dataset: this.state.dataset,
       quantum: this.state.dataset_quantum,
       point: this.props.point,
@@ -316,33 +316,33 @@ export default class PointWindow extends React.Component {
     };
 
     // Manual X-Scale
-    if (this.state.xminScale != '' && this.state.xminScale != undefined) {
-      if (this.state.xmaxScale != '' && this.state.xmaxScale != undefined) {
-        plot_query.xscale = [this.state.xminScale, this.state.xmaxScale]
+    if (this.state.xminScale != "" && this.state.xminScale != undefined) {
+      if (this.state.xmaxScale != "" && this.state.xmaxScale != undefined) {
+        plot_query.xscale = [this.state.xminScale, this.state.xmaxScale];
 
       }
     }
     
     // Manual Y-Scale
-    if (this.state.yminScale != '' && this.state.yminScale != undefined) {
-      if (this.state.ymaxScale != '' && this.state.ymaxScale != undefined) {
-        plot_query.yscale = [this.state.ymaxScale, this.state.yminScale]
+    if (this.state.yminScale != "" && this.state.yminScale != undefined) {
+      if (this.state.ymaxScale != "" && this.state.ymaxScale != undefined) {
+        plot_query.yscale = [this.state.ymaxScale, this.state.yminScale];
       }
     }
     
     // Manual Plot Title
-    if (this.state.title != undefined && this.state.title != '') {
-      plot_query.title = this.state.title
+    if (this.state.title != undefined && this.state.title != "") {
+      plot_query.title = this.state.title;
     }
 
     // Manual X Label
-    if (this.state.xlabel != '' && this.state.xlabel != undefined) {
-      plot_query.xlabel = this.state.xlabel
+    if (this.state.xlabel != "" && this.state.xlabel != undefined) {
+      plot_query.xlabel = this.state.xlabel;
     }
 
     // Manual Y Label
-    if (this.state.ylabel != '' && this.state.ylabel != undefined) {
-      plot_query.ylabel = this.state.ylabel
+    if (this.state.ylabel != "" && this.state.ylabel != undefined) {
+      plot_query.ylabel = this.state.ylabel;
     }
 
     switch (this.state.selected) {
@@ -382,7 +382,7 @@ export default class PointWindow extends React.Component {
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
-        plot_query.observation = this.props.point.map(function (o) {
+        plot_query.observation = this.props.point.map((o) => {
           return o[2];
         });
 
@@ -425,7 +425,7 @@ export default class PointWindow extends React.Component {
     }
     this.setState({
       query: plot_query
-    })
+    });
   }
   
   render() {
@@ -442,10 +442,10 @@ export default class PointWindow extends React.Component {
     _("Saved Image Size");
 
 
-    let dataSelection = <DataSelection
+    const dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
-    ></DataSelection>
+    ></DataSelection>;
 
     // Rendered across all tabs
     if (this.props.point.length === 1) {
@@ -464,7 +464,7 @@ export default class PointWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Show Location")}>{_("showmap_help")}
         </SelectBox>
-      </div>
+      </div>;
     } else {
       <SelectBox
         key='showmap'
@@ -472,7 +472,7 @@ export default class PointWindow extends React.Component {
         state={this.state.showmap}
         onUpdate={this.onLocalUpdate}
         title={_("Show Location")}>{_("showmap_help")}
-      </SelectBox>
+      </SelectBox>;
     }
     const location =
       <div>
@@ -492,7 +492,7 @@ export default class PointWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Show Location")}>{_("showmap_help")}
         </SelectBox>
-      </div>
+      </div>;
 
     const dataset = <ComboBox
       key='dataset'
@@ -502,7 +502,7 @@ export default class PointWindow extends React.Component {
       url='/api/v1.0/datasets/'
       title={_("Dataset")}
       onUpdate={this.onLocalUpdate}
-    />
+    />;
 
     const image_size = <ImageSize
       key='size'
@@ -510,14 +510,14 @@ export default class PointWindow extends React.Component {
       state={this.state.size}
       onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")}
-    />
+    />;
 
 
     const xscale = (
       <div className='scale_container' key='xscale'>
         <div className='scale_header'>
           X-Axis Scale:
-          </div>
+        </div>
         <div className='input_container'>
           <input
             onChange={this.updateScale}
@@ -526,7 +526,7 @@ export default class PointWindow extends React.Component {
             value={this.state.xminScale}
             placeholder='min'
           ></input>,
-            <input
+          <input
             onChange={this.updateScale}
             className='scale'
             id='xmaxScale'
@@ -535,7 +535,7 @@ export default class PointWindow extends React.Component {
           ></input>
         </div>
       </div>
-    )
+    );
     const yscale = (
       <div className='scale_container' key='yscale'>
         <div className='scale_header'>
@@ -549,7 +549,7 @@ export default class PointWindow extends React.Component {
             value={this.state.yminScale}
             placeholder='min'
           ></input>,
-            <input
+          <input
             onChange={this.updateScale}
             className='scale'
             id='ymaxScale'
@@ -558,65 +558,65 @@ export default class PointWindow extends React.Component {
           ></input>
         </div>
       </div>
-    )
+    );
 
 
     const label = <div className='label_container' key='label'>
-        <div className='label_container'>
-          <div className='label_header'>
+      <div className='label_container'>
+        <div className='label_header'>
             Plot Title:
-          </div>
-          <input
-            onChange={this.updateScale}
-            className='label'
-            id='title'
-            value={this.state.title}
-            placeholder='Plot Title'
-          ></input>
         </div>
-        <div className='label_container'>
-          <div className='label_header'>
-            X-Axis Label:
-          </div>
-          <input
-            onChange={this.updateScale}
-            className='label'
-            id='xlabel'
-            value={this.state.xlabel}
-            placeholder='X-Axis Label'
-          ></input>
-        </div>
-        
-        <div className='label_container'>
-          <div className='label_header'>
-            Y-Axis Label:
-          </div>
-          <input
-            onChange={this.updateScale}
-            className='label'
-            id='ylabel'
-            value={this.state.ylabel}
-            placeholder='Y-Axis Label'
-          ></input>
-        </div>
+        <input
+          onChange={this.updateScale}
+          className='label'
+          id='title'
+          value={this.state.title}
+          placeholder='Plot Title'
+        ></input>
       </div>
+      <div className='label_container'>
+        <div className='label_header'>
+            X-Axis Label:
+        </div>
+        <input
+          onChange={this.updateScale}
+          className='label'
+          id='xlabel'
+          value={this.state.xlabel}
+          placeholder='X-Axis Label'
+        ></input>
+      </div>
+        
+      <div className='label_container'>
+        <div className='label_header'>
+            Y-Axis Label:
+        </div>
+        <input
+          onChange={this.updateScale}
+          className='label'
+          id='ylabel'
+          value={this.state.ylabel}
+          placeholder='Y-Axis Label'
+        ></input>
+      </div>
+    </div>;
     
 
     
-    let line1 = <hr key='1' className='line' />
-    let line2 = <hr key='2' className='line' />
-    let line3 = <hr key='3' className='line' />
+    const line1 = <hr key='1' className='line' />;
+    const line2 = <hr key='2' className='line' />;
+    const line3 = <hr key='3' className='line' />;
 
-    let timeObj = this.state.time
-    let starttimeObj = this.state.starttime
+    const timeObj = this.state.time;
+    const starttimeObj = this.state.starttime;
     
     const showTime = this.state.selected !== TabEnum.STICK ||
       this.state.selected !== TabEnum.MOORING;
     
     const showTimeRange = this.state.selected === TabEnum.STICK ||
       this.state.selected === TabEnum.MOORING;
-    var time = null
-    var timeRange = null
+    let time = null;
+    let timeRange = null;
     if (this.state.dataset !== undefined) {
       if (showTimeRange) {
         timeRange = <TimePicker
@@ -627,79 +627,79 @@ export default class PointWindow extends React.Component {
           startDate={starttimeObj}
           date={timeObj}
           onTimeUpdate={this.onTimeUpdate}
-        />
+        />;
       }
       if (showTime) {
         time = <TimePicker
-        range={false}
-        key={this.state.time.toISOString()}  
-        dataset={this.state.dataset}
-        quantum={this.state.dataset_quantum}
-        startDate={starttimeObj}
-        date={timeObj}
-        onTimeUpdate={this.onTimeUpdate}
-      ></TimePicker> 
+          range={false}
+          key={this.state.time.toISOString()}  
+          dataset={this.state.dataset}
+          quantum={this.state.dataset_quantum}
+          startDate={starttimeObj}
+          date={timeObj}
+          onTimeUpdate={this.onTimeUpdate}
+        ></TimePicker>; 
       }
     }
     
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    var depthVariableScale 
+    let depthVariableScale; 
     if (this.state.dataset !== undefined && showDepthVariableScale) {
       depthVariableScale = <div>
-      <ComboBox
-        key='depth'
-        id='depth'
-        state={this.state.depth}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset + "&all=True"}
-        title={_("Depth")}></ComboBox>
+        <ComboBox
+          key='depth'
+          id='depth'
+          state={this.state.depth}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          url={`/api/depth/?variable=${  this.state.variable  }&dataset=${  this.state.dataset  }&all=True`}
+          title={_("Depth")}></ComboBox>
 
-      <ComboBox
-        key='variable'
-        id='variable'
-        state={this.state.variable}
-        def=''
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/variables/?dataset=" + this.state.dataset}
-        title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
+        <ComboBox
+          key='variable'
+          id='variable'
+          state={this.state.variable}
+          def=''
+          onUpdate={this.onLocalUpdate}
+          url={`/api/v1.0/variables/?dataset=${  this.state.dataset}`}
+          title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
-      <Range
-        auto
-        key='scale'
-        id='scale'
-        state={this.state.scale}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        title={_("Variable Range")} />
-    </div>
+        <Range
+          auto
+          key='scale'
+          id='scale'
+          state={this.state.scale}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")} />
+      </div>;
     }
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
-    var multiDepthVector
+    let multiDepthVector;
     if (this.state.dataset !== undefined && showMultiDepthAndVector) {
       multiDepthVector = <div>
-      <ComboBox
-        key='variable'
-        id='variable'
-        state={this.state.variable}
-        def=''
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset}
-        title={_("Variable")}><h1>Variable</h1></ComboBox>
+        <ComboBox
+          key='variable'
+          id='variable'
+          state={this.state.variable}
+          def=''
+          onUpdate={this.onLocalUpdate}
+          url={`/api/v1.0/variables/?3d_only&dataset=${  this.state.dataset}`}
+          title={_("Variable")}><h1>Variable</h1></ComboBox>
 
-      <ComboBox
-        key='depth'
-        id='depth'
-        multiple
-        state={this.state.depth}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset}
-        title={_("Depth")}></ComboBox>
-    </div>}
+        <ComboBox
+          key='depth'
+          id='depth'
+          multiple
+          state={this.state.depth}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          url={`/api/depth/?variable=${  this.state.variable  }&dataset=${  this.state.dataset}`}
+          title={_("Depth")}></ComboBox>
+      </div>;}
 
 
     // Create Variable dropdown for Profile and Observation
@@ -712,7 +712,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset + "&anom"}
+      url={`/api/v1.0/variables/?3d_only&dataset=${  this.state.dataset  }&anom`}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];
@@ -730,7 +730,7 @@ export default class PointWindow extends React.Component {
         />;
       } else {
         observation_data = this.props.point[0][2].datatypes.map(
-          function (o, i) {
+          (o, i) => {
             return { id: i, value: o.replace(/ \[.*\]/, "") };
           }
         );
@@ -805,7 +805,7 @@ export default class PointWindow extends React.Component {
         query={this.state.query} // For image saving link.
         permlink_subquery={permlink_subquery}
         action={this.props.action}
-      />
+      />;
     }
 
     return (
@@ -836,7 +836,7 @@ export default class PointWindow extends React.Component {
         </Nav>
         <Row>
           <Col lg={3}>
-          <Panel
+            <Panel
               key='data_selection'
               id='data_selection'
               collapsible

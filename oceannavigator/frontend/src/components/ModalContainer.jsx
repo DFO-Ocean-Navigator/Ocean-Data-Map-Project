@@ -10,15 +10,15 @@ import Class4Window from "./Class4Window.jsx";
 const i18n = require("../i18n.js");
 
 function formatLatLon(latitude, longitude) {
-    let formatted = "";
-    formatted += Math.abs(latitude).toFixed(4) + " ";
-    formatted += (latitude >= 0) ? "N" : "S";
-    formatted += ", ";
-    formatted += Math.abs(longitude).toFixed(4) + " ";
-    formatted += (longitude >= 0) ? "E" : "W";
+  let formatted = "";
+  formatted += `${Math.abs(latitude).toFixed(4)  } `;
+  formatted += (latitude >= 0) ? "N" : "S";
+  formatted += ", ";
+  formatted += `${Math.abs(longitude).toFixed(4)  } `;
+  formatted += (longitude >= 0) ? "E" : "W";
     
-    return formatted;
-  }
+  return formatted;
+}
 
 export default class ModalContainer extends React.Component {
   constructor(props) {
@@ -28,18 +28,18 @@ export default class ModalContainer extends React.Component {
 
   render() {    
     
-    let layer = Object.keys(this.props.data)[0]
-    let modalTitle = ''
-    let modalContent = ''
-    let data =  this.props.data['left']
+    const layer = Object.keys(this.props.data)[0];
+    let modalTitle = "";
+    let modalContent = "";
+    const data =  this.props.data.left;
     
     // Selects the type of Shape / Obs
     switch(this.props.modal) {
-        case "point":
+      case "point":
         modalContent = (
           <PointWindow
             data={data}  // Non compare data
-            data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
+            data_compare={"right" in this.props.data ? this.props.data.right : {}}
             //dataset={this.props.data[layer]['dataset']}
             //quantum={this.props.data[layer]['quantum']}
             point={this.props.point}
@@ -68,7 +68,7 @@ export default class ModalContainer extends React.Component {
         modalContent = (
           <LineWindow
             data={data}   // Non compare data
-            data_compare={'right' in this.props.data ? this.props.data['right']: {}}
+            data_compare={"right" in this.props.data ? this.props.data.right: {}}
             //dataset_0={this.state.dataset}
             //quantum={this.state.quantum}
             line={this.props.line}
@@ -90,15 +90,15 @@ export default class ModalContainer extends React.Component {
           />
         );
 
-        modalTitle = "(" + this.props.line[0].map(function(ll) {
+        modalTitle = `(${  this.props.line[0].map((ll) => {
           return formatLatLon(ll[0], ll[1]);
-        }).join("), (") + ")";
+        }).join("), (")  })`;
         break;
       case "area":
         modalContent = (
           <AreaWindow
             data={data}
-            data_compare={'right' in this.props.data ? this.props.data['right']: {}}
+            data_compare={"right" in this.props.data ? this.props.data.right: {}}
             //dataset_0={this.state}
             area={this.props.area}
             //scale={this.state.scale}
@@ -153,14 +153,14 @@ export default class ModalContainer extends React.Component {
     }
 
     return (
-        <div>
-            {modalContent}
-        </div>
+      <div>
+        {modalContent}
+      </div>
     );
   }
 }
 
 //***********************************************************************
 ModalContainer.propTypes = {
-    modal: PropTypes.string
+  modal: PropTypes.string
 };

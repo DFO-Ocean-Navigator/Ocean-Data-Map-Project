@@ -52,7 +52,7 @@ export default class IceDatasetSelector extends React.Component {
         variables = "&env_type=ice";
         break;
       case "meteorology":
-        variables = "&env_type=meteorology"
+        variables = "&env_type=meteorology";
         break;
       default:
         break;

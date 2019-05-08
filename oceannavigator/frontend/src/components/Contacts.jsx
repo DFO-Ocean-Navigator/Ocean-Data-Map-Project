@@ -20,7 +20,7 @@ export default class Contacts extends React.Component {
 
     this.state = {
       currentTab: 1,
-      trafficTypes: ['Marine Traffic'],
+      trafficTypes: ["Marine Traffic"],
       displayTraffic: true
     };
 
@@ -40,17 +40,17 @@ export default class Contacts extends React.Component {
   
   */
   singleClick(feature, pixel) {
-    if (feature.get('identity_name') === undefined) {
-      return
+    if (feature.get("identity_name") === undefined) {
+      return;
     }
     
     const contactInfo = <ShipOptions
-            key='selectedContact'
-            contact={feature}
-            pixel={pixel}
-            projection={this.props.state.projection}
-          ></ShipOptions>
-    return contactInfo
+      key='selectedContact'
+      contact={feature}
+      pixel={pixel}
+      projection={this.props.state.projection}
+    ></ShipOptions>;
+    return contactInfo;
 
   }
 
@@ -62,78 +62,78 @@ export default class Contacts extends React.Component {
       //Remove from Contacts layer
       case true:
         
-      this.props.mapComponent.toggleLayer(this.layer_contacts, 'remove')
+        this.props.mapComponent.toggleLayer(this.layer_contacts, "remove");
         this.setState({
           displayTraffic: true
-        })
+        });
         break;
 
       //Add to Contacts layer
       case false:
         this.setState({
           displayTraffic: false
-        })
-        this.props.mapComponent.removeMapInteractions('Circle')
+        });
+        this.props.mapComponent.removeMapInteractions("Circle");
 
         //CREATE A VECTOR SOURCE
-        let vectorSource = new ol.source.Vector({
+        const vectorSource = new ol.source.Vector({
           wrapX: false,
-          crossOrigin: 'anonymous'
-        })
+          crossOrigin: "anonymous"
+        });
 
 
         var draw = new ol.interaction.Draw({
           source: vectorSource,
-          type: 'Circle',
+          type: "Circle",
           stopClick: true
-        })
-        this.props.mapComponent.toggleDrawing(true)
+        });
+        this.props.mapComponent.toggleDrawing(true);
 
 
         // Handles selecting the contacting area, and loading the contacts
-        draw.on("drawend", function (e) {
+        draw.on("drawend", (e) => {
 
           // Disable zooming when drawing
           this.props.mapComponent.controlDoubleClickZoom(false);
-          let geometry = e.feature.clone().getGeometry();
-          let transformed_geo = e.feature.clone().getGeometry();
-          transformed_geo.transform(this.props.state.projection, "EPSG:4326")
-          let draw_radius = geometry.getRadius();
-          let draw_center = geometry.getCenter();
+          const geometry = e.feature.clone().getGeometry();
+          const transformed_geo = e.feature.clone().getGeometry();
+          transformed_geo.transform(this.props.state.projection, "EPSG:4326");
+          const draw_radius = geometry.getRadius();
+          const draw_center = geometry.getCenter();
           
-          let transformed_center = transformed_geo.getCenter()
-          let edgeCoordinate = [draw_center[0] + draw_radius, draw_center[1]];
-          let wgs84Sphere = new ol.Sphere(6378137)
-          let groundRadius = wgs84Sphere.haversineDistance(
-            ol.proj.transform(draw_center, 'EPSG:3857', 'EPSG:4326'),
-            ol.proj.transform(edgeCoordinate, 'EPSG:3857', 'EPSG:4326')
-          )
+          const transformed_center = transformed_geo.getCenter();
+          const edgeCoordinate = [draw_center[0] + draw_radius, draw_center[1]];
+          const wgs84Sphere = new ol.Sphere(6378137);
+          const groundRadius = wgs84Sphere.haversineDistance(
+            ol.proj.transform(draw_center, "EPSG:3857", "EPSG:4326"),
+            ol.proj.transform(edgeCoordinate, "EPSG:3857", "EPSG:4326")
+          );
 
           
-          let new_vectorSource
+          let new_vectorSource;
 
           // Create URL for contacts
-          let url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=' + this.props.state.projection + '&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=500&CQL_FILTER=DWITHIN(geopoint,Point(' + transformed_center[1] + '%20' + transformed_center[0] + '),' + groundRadius + ',meters)'
-          url = encodeURIComponent(url)
+          let url = `https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=${  this.props.state.projection  }&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=500&CQL_FILTER=DWITHIN(geopoint,Point(${  transformed_center[1]  }%20${  transformed_center[0]  }),${  groundRadius  },meters)`;
+          url = encodeURIComponent(url);
 
           // Proxy URL
-          const localUrl = "/api/v1.0/contacts/?query=" + url
+          const localUrl = `/api/v1.0/contacts/?query=${  url}`;
           
           // Add proxy to Layer
           new_vectorSource = new ol.source.Vector({
             url: localUrl,   
             format: new ol.format.GeoJSON(),
             
-          })
+          });
 
           //Places a circle on the map
-          new_vectorSource.addFeature(e.feature)
+          new_vectorSource.addFeature(e.feature);
           
           // Create Contacts Layer
           this.layer_contacts = new ol.layer.Vector({
             projection: this.props.state.projection,
             source: new_vectorSource,
-            style: function (feat, res) {
+            style (feat, res) {
               const red = 255;
               //const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
 
@@ -159,22 +159,22 @@ export default class Contacts extends React.Component {
           });
           
           // Add function to handle single click on map
-          this.layer_contacts.set('singleClick', this.singleClick)
+          this.layer_contacts.set("singleClick", this.singleClick);
 
           // Add Layer to map
-          this.props.mapComponent.toggleLayer(this.layer_contacts, 'add')
+          this.props.mapComponent.toggleLayer(this.layer_contacts, "add");
           this.props.mapComponent.map.removeInteraction(draw);
 
           // This should be changed to use the drawing function
           this.props.mapComponent._drawing = false;
 
           setTimeout(
-            function () { this.props.mapComponent.controlDoubleClickZoom(true); }.bind(this),
+            () => { this.props.mapComponent.controlDoubleClickZoom(true); },
             251
           );
-        }.bind(this));
+        });
 
-        this.props.mapComponent.map.addInteraction(draw)
+        this.props.mapComponent.map.addInteraction(draw);
         break;
 
     }
@@ -188,14 +188,14 @@ export default class Contacts extends React.Component {
   */
   getType() {
     $.ajax({
-      url: 'https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identity_types&maxFeatures=50&outputFormat=application%2Fjson'
+      url: "https://gpw.canmarnet.gc.ca/GEO/postgis/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=postgis:vi_m_identity_types&maxFeatures=50&outputFormat=application%2Fjson"
       ,
       dataType: "json",
       cache: true,
 
-      success: function (data) {
-        pass
-      }.bind(this),
+      success (data) {
+        pass;
+      },
       error: function (xhr, status, err) {
         if (this._mounted) {
           console.error("FAILED TO LOAD");
@@ -205,16 +205,16 @@ export default class Contacts extends React.Component {
   }
 
   render() {
-    let availableTypes = []
-    let self = this;
-    this.state.trafficTypes.forEach(function (type) {
+    const availableTypes = [];
+    const self = this;
+    this.state.trafficTypes.forEach((type) => {
       availableTypes.push(<ContactButton
-        key={type + '_key'}
+        key={`${type  }_key`}
         name={type}
         displayTraffic={self.state.displayTraffic}
         toggleTraffic={self.toggleTraffic}
-      />)
-    })
+      />);
+    });
 
     return (
       <div>

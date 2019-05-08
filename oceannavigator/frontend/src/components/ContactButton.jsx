@@ -16,7 +16,7 @@ export default class ContactButton extends React.Component {
 
     this.state = {
       showing: true,
-      displayState: 'Add',
+      displayState: "Add",
     };
 
     // Function bindings
@@ -31,40 +31,40 @@ export default class ContactButton extends React.Component {
 
   toggle() {
     switch(this.state.showing) {
-        case true:
+      case true:
 
-            this.props.toggleTraffic(this.props.name, !this.state.showing);
-            this.setState({
-                showing: false,
-            });
-            break;
+        this.props.toggleTraffic(this.props.name, !this.state.showing);
+        this.setState({
+          showing: false,
+        });
+        break;
 
-        case false:
+      case false:
                 
-            this.props.toggleTraffic(this.props.name, !this.state.showing);
+        this.props.toggleTraffic(this.props.name, !this.state.showing);
 
-            this.setState({
-                showing: true,
-            });
-            break;
+        this.setState({
+          showing: true,
+        });
+        break;
     }
   }
 
   render() {
 
-    let add_remove = this.state.showing ? 'Add' : 'Remove';
+    const add_remove = this.state.showing ? "Add" : "Remove";
     
     return (
-        <div>
-            <span>
-            <div>
-                {this.props.name}
-            </div>
-            <Button onClick={this.toggle}>
-                {add_remove}
-            </Button>
-            </span>
-        </div>
+      <div>
+        <span>
+          <div>
+            {this.props.name}
+          </div>
+          <Button onClick={this.toggle}>
+            {add_remove}
+          </Button>
+        </span>
+      </div>
     );
   }
 }

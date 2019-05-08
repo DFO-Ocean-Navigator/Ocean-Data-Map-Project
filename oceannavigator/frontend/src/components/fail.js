@@ -1,7 +1,7 @@
 // Changes the spinning hamster to a sad computer face if this
 // is a production Node.js environment.
 
-var fail;
+let fail;
 
 if (process.env.NODE_ENV == "production") {
   fail = require("../images/sad-computer.png");

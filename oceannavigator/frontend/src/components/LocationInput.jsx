@@ -26,18 +26,18 @@ export default class LocationInput extends React.Component {
   }
 
   keyPress(e) {
-    var key = e.which || e.keyCode;
+    const key = e.which || e.keyCode;
     if (key == 13) {
       this.updateParent();
       return false;
-    } else {
-      return true;
-    }
+    } 
+    return true;
+    
   }
 
   changed(key, value) {
     clearTimeout(this.timeout);
-    var state = {};
+    const state = {};
     state[key] = value;
     this.setState(state);
     this.timeout = setTimeout(this.updateParent, 500);
@@ -54,7 +54,7 @@ export default class LocationInput extends React.Component {
           <tbody>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_lat"}>{_("Lat:")}</label>
+                <label htmlFor={`${this.props.id  }_lat`}>{_("Lat:")}</label>
               </td>
               <td>
                 <NumericInput
@@ -64,13 +64,13 @@ export default class LocationInput extends React.Component {
                   onChange={(n,s) => this.changed("latitude", n)}
                   onBlur={this.updateParent}
                   onKeyPress={this.keyPress}
-                  id={this.props.id + "_lat"}
+                  id={`${this.props.id  }_lat`}
                 />
               </td>
             </tr>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_lon"}>{_("Lon:")}</label>
+                <label htmlFor={`${this.props.id  }_lon`}>{_("Lon:")}</label>
               </td>
               <td>
                 <NumericInput
@@ -80,7 +80,7 @@ export default class LocationInput extends React.Component {
                   onChange={(n,s) => this.changed("longitude", n)}
                   onBlur={this.updateParent}
                   onKeyPress={this.keyPress}
-                  id={this.props.id + "_lon"}
+                  id={`${this.props.id  }_lon`}
                 />
               </td>
             </tr>

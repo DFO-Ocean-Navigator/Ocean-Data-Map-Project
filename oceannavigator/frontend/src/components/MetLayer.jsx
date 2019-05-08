@@ -24,34 +24,34 @@ export default class MetLayer extends React.Component {
       
       //State Variables for dataset selector
       time: -1,
-      layerState: 'Add Layer',
-      dataset_quantum: 'day',
+      layerState: "Add Layer",
+      dataset_quantum: "day",
       depth: 0,
       scale_1: "0,1",
       scale: "0,1",
       setDefaultScale: false,
       default_scale: "0,1",
       opacity: 50,
-      display: 'contours,default',
+      display: "contours,default",
       datainfo: {},
 
       variables: [],
       datasets: [],
       colourmaps_val: [],
-      colourmap: 'default',
-      current_display: 'contours',
+      colourmap: "default",
+      current_display: "contours",
       current_variable: undefined,
       current_dataset: undefined,
     };
 
-    this.range = undefined
+    this.range = undefined;
 
     // Function bindings
     this.handleTabs = this.handleTabs.bind(this);
     this.createIce = this.createIce.bind(this);
     this.toggleLayer = this.toggleLayer.bind(this);
     this.localUpdate = this.localUpdate.bind(this);
-    this.changeDataset = this.changeDataset.bind(this)
+    this.changeDataset = this.changeDataset.bind(this);
     this.updateIce = this.updateIce.bind(this);
 
     //Getting metadata
@@ -66,7 +66,7 @@ export default class MetLayer extends React.Component {
 
 
   componentDidMount() {
-    this.getDataInfo()
+    this.getDataInfo();
     this.createIce();
   }
 
@@ -75,28 +75,28 @@ export default class MetLayer extends React.Component {
     // CODE TO RECEIVE ALL DATASETS // THIS IS TO ALLOW VARIABLE FIRST SELECTION
     
     $.ajax({
-      url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
+      url: `/api/v1.0/variables/?dataset=all&env_type=${  this.props.layerType}`,
       success: function(response) {
         this.setState({
-          'datainfo': response
-        })
-        let variables = this.getVariables();
+          "datainfo": response
+        });
+        const variables = this.getVariables();
         if (variables == []) {
           throw Error;
         }
         this.setState({
-          'variables': variables,
-          'current_variable': variables[0],
-        })
+          variables,
+          "current_variable": variables[0],
+        });
       
-        let datasets = this.getDatasets(this.state.current_variable);
+        const datasets = this.getDatasets(this.state.current_variable);
         this.setState({
-          'datasets': datasets,
-          'current_dataset': datasets[0],
-        })
+          datasets,
+          "current_dataset": datasets[0],
+        });
         this._mounted = true;
       }.bind(this),
-      error: function() {
+      error() {
         console.error("Error getting data!");
       }
     });
@@ -122,48 +122,48 @@ export default class MetLayer extends React.Component {
   }
 
   getVariables() {
-    let variables = []
+    const variables = [];
 
-    for (let key in this.state.datainfo) {
-      variables.push(key)
+    for (const key in this.state.datainfo) {
+      variables.push(key);
     }
 
-    return variables
+    return variables;
   }
 
   getDatasets(variable) {
     if (variable == undefined) {
-      let datasets = this.state.datainfo[variables[0]]['datasets']
-      return datasets
-    } else {
-      let datasets = this.state.datainfo[variable]['datasets']
-      return datasets
-    }
+      const datasets = this.state.datainfo[variables[0]].datasets;
+      return datasets;
+    } 
+    const datasets = this.state.datainfo[variable].datasets;
+    return datasets;
+    
   }
 
   // Updates Ice app state
   localUpdate(key, value) {
-    if (key == 'current_variable') {
-      let datasets = this.state.datainfo[value]['datasets']
+    if (key == "current_variable") {
+      const datasets = this.state.datainfo[value].datasets;
       if (!(this.state.current_dataset in datasets)) {
         this.setState({
-          'current_dataset': datasets[0]
-        })
+          "current_dataset": datasets[0]
+        });
       }
       this.setState({
-        'current_variable': value,
-        'datasets': datasets
-      })
-    } else if (key == 'current_dataset') {
+        "current_variable": value,
+        datasets
+      });
+    } else if (key == "current_dataset") {
       this.setState({
-        'current_dataset': value,
-      })
+        "current_dataset": value,
+      });
     } else {
-      let newState = this.state
-      newState[key] = value
+      const newState = this.state;
+      newState[key] = value;
       this.setState(newState, () => {
         console.log("SCALE IN CALLBACK: ", this.state.scale_1);
-      })
+      });
       
     }
     this.updateIce();
@@ -171,7 +171,7 @@ export default class MetLayer extends React.Component {
 
   createIce() {
 
-    let layer_ice = new ol.layer.Tile(
+    const layer_ice = new ol.layer.Tile(
       {
         preload: Infinity,
         opacity: this.state.opacity/100,
@@ -184,75 +184,75 @@ export default class MetLayer extends React.Component {
         }),
       });
 
-    layer_ice.set('name', this.props.layerType)
+    layer_ice.set("name", this.props.layerType);
 
     this.setState({
       ice_layer: layer_ice
-    })
+    });
 
   }
 
   updateIce() {
 
     if (this.state.current_dataset == undefined || this.state.current_variable == undefined || this.props.state.timestamps == undefined) {
-      return
+      return;
     } else if (this.props.state.timestamps === undefined) {
-      return
+      return;
     }
 
-    let layer_ice = this.state.ice_layer;
-    let props = layer_ice.getSource().getProperties();
+    const layer_ice = this.state.ice_layer;
+    const props = layer_ice.getSource().getProperties();
 
-    let time = this.props.state.timestamps['global']
+    const time = this.props.state.timestamps.global;
     this.setState({
-      quantum: 'day'
-    })
-    let hours = '00'
-    if (this.state.quantum === 'day') {
-      hours = '00'
+      quantum: "day"
+    });
+    let hours = "00";
+    if (this.state.quantum === "day") {
+      hours = "00";
       //time.setMinutes(0);
       //time.setSeconds(0);
-    } else if (this.state.quantum === 'month') {
-      hours = '00'
+    } else if (this.state.quantum === "month") {
+      hours = "00";
       time.setUTCMinutes(0);
       time.setUTCSeconds(0);
-      time.setUTCDate(0)
-    } else if (this.state.quantum === 'hour') {
+      time.setUTCDate(0);
+    } else if (this.state.quantum === "hour") {
       time.setUTCMinutes(0);
       time.setUTCSeconds(0);
     }
-    let month = time.getUTCMonth()
+    let month = time.getUTCMonth();
     if (month.toString().length === 1) {
-      month = '0' + month
+      month = `0${  month}`;
     }
-    let date = time.getUTCDate()
+    let date = time.getUTCDate();
     if (date.toString().length === 1) {
-        date = '0' + date
+      date = `0${  date}`;
     }
-    time.setUTCMonth(time.getUTCMonth() + 1)
-    month = time.getUTCMonth()
+    time.setUTCMonth(time.getUTCMonth() + 1);
+    month = time.getUTCMonth();
     if (month.toString().length === 1) {
-      month = '0' + month
+      month = `0${  month}`;
     }
     
-    let timeString = time.getUTCFullYear() + '-' + month + '-' + date + 'T' + hours + ':' + '00' + ':00+00:00'
+    const timeString = `${time.getUTCFullYear()  }-${  month  }-${  date  }T${  hours  }:` + "00" + ":00+00:00";
     
     
     // Sets new values for tiles
-    props.url = `/api/v1.0/tiles` + 
+    props.url = "/api/v1.0/tiles" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
                 `/${this.props.state.projection}` + 
                 `/${this.state.current_dataset}` + 
-                `/${this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id']}` + 
+                `/${this.state.datainfo[this.state.current_variable].info[this.state.current_dataset].id}` + 
                 //`/2018-07-12T00:00:00+00:00` +
                 `/${timeString}` + 
-                `/0` + 
+                "/0" + 
                 `/${this.state.scale_1}` + 
-                `/1` +
+                "/1" +
                 `/${this.state.current_display},${this.state.colourmap}` +
-                `/{z}/{x}/{y}.png`;
+                "/{z}/{x}/{y}.png";
     
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -263,7 +263,7 @@ export default class MetLayer extends React.Component {
     const newSource = new ol.source.XYZ(props);
     
     // Gives updated source to layer
-    layer_ice.setSource(newSource)
+    layer_ice.setSource(newSource);
 
     // Reloads layer to apply changes
     this.props.reloadLayer();
@@ -277,19 +277,18 @@ export default class MetLayer extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
+    const var_promise = $.ajax(`/api/v1.0/variables/?dataset=${  dataset}`).promise();
     const time_promise = $.ajax(
-      "/api/v1.0/timestamp/" +
-      this.state.dataset + "/" +
-      this.state.time + "/" +
-      dataset
+      `/api/v1.0/timestamp/${ 
+        this.state.dataset  }/${ 
+        this.state.time  }/${ 
+        dataset}`
     ).promise();
     
-    $.when(var_promise, time_promise).done(function(variable, time) {
+    $.when(var_promise, time_promise).done((variable, time) => {
       let newvariable = this.state.variable;
       
-      if ($.inArray(this.state.variable, variable[0].map(function(e) 
-      { return e.id; })) == -1) {
+      if ($.inArray(this.state.variable, variable[0].map((e) => { return e.id; })) == -1) {
         newvariable = variable[0][0].id;
       }
 
@@ -305,7 +304,7 @@ export default class MetLayer extends React.Component {
       state.busy = false;
 
       this.setState(state);
-    }.bind(this));
+    });
   }
 
 
@@ -318,38 +317,38 @@ export default class MetLayer extends React.Component {
   toggleLayer() {
     if (this.props.state.layers.includes(this.state.ice_layer)) {
 
-      let new_layers = this.props.state.layers;
-      let ice_layer = this.state.ice_layer;
+      const new_layers = this.props.state.layers;
+      const ice_layer = this.state.ice_layer;
       this.setState({
-        layerState: 'Add Layer'
-      })
+        layerState: "Add Layer"
+      });
 
       new_layers.splice(new_layers.indexOf(ice_layer), 1 );
       
-      this.props.globalUpdate('layers', new_layers)
-      this.props.toggleLayer(ice_layer, 'remove')
+      this.props.globalUpdate("layers", new_layers);
+      this.props.toggleLayer(ice_layer, "remove");
     } else {
 
       this.setState({
-        layerState: 'Remove Layer'
-      })
+        layerState: "Remove Layer"
+      });
 
-      let new_layers = this.props.state.layers
+      const new_layers = this.props.state.layers;
       
       new_layers.push(
         this.state.ice_layer
-      )
+      );
 
-      this.props.globalUpdate('layers', new_layers)
-      this.props.toggleLayer(this.state.ice_layer, 'add')
+      this.props.globalUpdate("layers", new_layers);
+      this.props.toggleLayer(this.state.ice_layer, "add");
     }
   }
 
   updateTransparency(e) {
     this.setState({
       opacity: e.value
-    })
-    this.state.ice_layer.setOpacity(e.value / 100)
+    });
+    this.state.ice_layer.setOpacity(e.value / 100);
   }
 
   
@@ -367,19 +366,19 @@ export default class MetLayer extends React.Component {
         def=''
         onUpdate={this.localUpdate}
         title={_("Variable Range")}
-        autourl={"/api/v0.1/range/" +
-                this.props.options.interpType + "/" +
-                this.props.options.interpRadius + "/" +
-                this.props.options.interpNeighbours + "/" +
-                this.state.current_dataset + "/" +
-                this.props.state.projection + "/" +
-                this.props.state.extent.join(",") + "/" +
-                this.state.depth + "/" +
-                this.props.state.time + "/" +
-                this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id'] + ".json"
+        autourl={`/api/v0.1/range/${ 
+          this.props.options.interpType  }/${ 
+          this.props.options.interpRadius  }/${ 
+          this.props.options.interpNeighbours  }/${ 
+          this.state.current_dataset  }/${ 
+          this.props.state.projection  }/${ 
+          this.props.state.extent.join(",")  }/${ 
+          this.state.depth  }/${ 
+          this.props.state.time  }/${ 
+          this.state.datainfo[this.state.current_variable].info[this.state.current_dataset].id  }.json`
         }
         default_scale={this.state.default_scale}
-      ></Range>
+      ></Range>;
     }
     
 
@@ -422,7 +421,7 @@ export default class MetLayer extends React.Component {
 
         <IceComboBox
           values={this.props.state.display}
-          current={'current_display'}
+          current={"current_display"}
           localUpdate={this.localUpdate}
         ></IceComboBox>
         
@@ -442,7 +441,7 @@ export default class MetLayer extends React.Component {
           step={1}
           label={true}
           onChange={this.updateTransparency}
-          />
+        />
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
           {this.state.layerState}
@@ -460,7 +459,7 @@ export default class MetLayer extends React.Component {
           header={_("Right Map")}
           bsStyle='primary'
         >
-        {/*
+          {/*
           <IceDatasetSelector 
           id='dataset_1'
           state={this.props.state.dataset_1}
@@ -478,30 +477,30 @@ export default class MetLayer extends React.Component {
             def=''
             onUpdate={this.localUpdate}
             title={_("Variable Range")}
-            autourl={"/api/v0.1/range/" +
-                    this.props.options.interpType + "/" +
-                    this.props.options.interpRadius + "/" +
-                    this.props.options.interpNeighbours + "/" +
-                    this.state.current_dataset + "/" +
-                    this.props.state.projection + "/" +
-                    this.props.state.extent.join(",") + "/" +
-                    this.state.depth + "/" +
-                    this.props.state.time + "/" +
-                    this.state.datainfo[this.state.current_variable]['info'] + ".json"
+            autourl={`/api/v0.1/range/${ 
+              this.props.options.interpType  }/${ 
+              this.props.options.interpRadius  }/${ 
+              this.props.options.interpNeighbours  }/${ 
+              this.state.current_dataset  }/${ 
+              this.props.state.projection  }/${ 
+              this.props.state.extent.join(",")  }/${ 
+              this.state.depth  }/${ 
+              this.props.state.time  }/${ 
+              this.state.datainfo[this.state.current_variable].info  }.json`
             }
             default_scale={this.props.state.dataset_1.variable_scale}
           ></Range>
           <Button className='addIceButton' onClick={this.toggleLayer}>
-              {this.state.layerState}
+            {this.state.layerState}
           </Button>
         </Panel>
       );
     }
     
     return (
-        <div>
-            {inputs  /* Renders Side Panel */}
-        </div>
+      <div>
+        {inputs  /* Renders Side Panel */}
+      </div>
     );
   }
 }

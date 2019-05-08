@@ -10,7 +10,7 @@ import {Button,
   Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
@@ -50,20 +50,20 @@ export default class PlotImage extends React.PureComponent {
       if (language == "pythonPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        url = `${window.location.origin  }/api/v1.0/generatescript/${  url  }/python/`;
       } else if (language == "rPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+        url = `${window.location.origin  }/api/v1.0/generatescript/${  url  }/r/`;
       } else {
 
-        var url = stringify(this.generateQuery(this.props.query)) +
-        `&save&format=csv&size=${this.props.query.size}` +
+        var url = `${stringify(this.generateQuery(this.props.query)) 
+        }&save&format=csv&size=${this.props.query.size}` +
         `&dpi=${this.props.query.dpi}`;
         if (language == "pythonCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+          url = `${window.location.origin  }/api/v1.0/generatescript/${  url  }/python/`;
         } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+          url = `${window.location.origin  }/api/v1.0/generatescript/${  url  }/r/`;
         }
       
       }
@@ -86,7 +86,7 @@ export default class PlotImage extends React.PureComponent {
     if (stringify(this.props.query) !== stringify(props.query) || stringify(this.props.query.compare_to) !== stringify(this.props.query.compare_to)) {
       this.setState({
         loading: true
-      })
+      });
       this.loadImage(this.generateQuery(props.query));
     }
   }
@@ -113,24 +113,24 @@ export default class PlotImage extends React.PureComponent {
         loading: true, 
         fail: false, 
         //url: LOADING_IMAGE,
-        paramString: paramString,
+        paramString,
         errorMessage: null,
       });
-      let url
-      if (this.props.query.type === 'class4' || this.props.query.type === 'drifter') {
-        url = '/plot/'
+      let url;
+      if (this.props.query.type === "class4" || this.props.query.type === "drifter") {
+        url = "/plot/";
       } else {
-        url = '/api/v1.0/plot/'
+        url = "/api/v1.0/plot/";
       }
       const promise = $.ajax({
-        url: url,
+        url,
         cache: true,
         data: paramString,
         dataType: "json",
         method: (paramString.length < 1536) ? "GET" : "POST",
       }).promise();
 
-      promise.done(function(data) {
+      promise.done((data) => {
         if (this._mounted) {
           this.setState({
             loading: false,
@@ -139,13 +139,13 @@ export default class PlotImage extends React.PureComponent {
             errorMessage: null,
           });
         }
-      }.bind(this));
+      });
             
-      promise.fail(function(xhr) {
+      promise.fail((xhr) => {
         if (this._mounted) {
           // Get our custom error message
 
-          console.warn('xhr: ', xhr)
+          console.warn("xhr: ", xhr);
           try {
             const message = JSON.parse(xhr.responseText).message;
             this.setState({
@@ -160,11 +160,11 @@ export default class PlotImage extends React.PureComponent {
               url: FAIL_IMAGE,
               loading: false,
               fail: true
-              });
+            });
           }
           
         }
-      }.bind(this));
+      });
     }
   }
 
@@ -181,11 +181,11 @@ export default class PlotImage extends React.PureComponent {
     //let hour = time.getUTCHours()
     //time = year + '-' + month + '-' + date + 'T' + hour + ':00:00+00:00'
     if (time === undefined) {
-      return
+      return;
     }
-    let formatted_time = time.format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]')
+    const formatted_time = time.format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
     
-    return formatted_time
+    return formatted_time;
   }
 
   generateQuery(q) {
@@ -195,31 +195,31 @@ export default class PlotImage extends React.PureComponent {
       quantum: q.quantum,
       names: q.names,
     };
-    if ('title' in q) {
-      query.plotTitle = q['title'];
+    if ("title" in q) {
+      query.plotTitle = q.title;
     }
-    if ('xscale' in q) {
-      query.xscale = q['xscale']
+    if ("xscale" in q) {
+      query.xscale = q.xscale;
     }
-    if ('yscale' in q) {
-      query.yscale = q['yscale']
+    if ("yscale" in q) {
+      query.yscale = q.yscale;
     }
 
-    if ('ylabel' in q) {
-      query.ylabel = q['ylabel']
+    if ("ylabel" in q) {
+      query.ylabel = q.ylabel;
     }
-    if ('xlabel' in q) {
-      query.xlabel = q['xlabel']
+    if ("xlabel" in q) {
+      query.xlabel = q.xlabel;
     }
-    let time
-    let starttime
-    let endtime
+    let time;
+    let starttime;
+    let endtime;
 
     switch(q.type) {
       case "profile":
       case "ts":
       case "sound":
-        time = this.formatTime(q.time)
+        time = this.formatTime(q.time);
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
@@ -234,8 +234,8 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "timeseries":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
+        starttime = this.formatTime(q.starttime);
+        endtime = this.formatTime(q.endtime);
         query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
@@ -246,7 +246,7 @@ export default class PlotImage extends React.PureComponent {
         query.colormap = q.colormap;
         break;
       case "transect":
-        time = this.formatTime(q.time)
+        time = this.formatTime(q.time);
         query.variable = q.variable;
         query.time = time;
         query.scale = q.scale;
@@ -260,12 +260,12 @@ export default class PlotImage extends React.PureComponent {
         query.selectedPlots = q.selectedPlots;
 
         if (q.compare_to) {
-          time = this.formatTime(q.compare_to.time)
+          time = this.formatTime(q.compare_to.time);
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
-            time: time,
+            time,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             variable: q.compare_to.variable,
@@ -275,8 +275,8 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "hovmoller":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
+        starttime = this.formatTime(q.starttime);
+        endtime = this.formatTime(q.endtime);
         query.variable = q.variable;
         query.starttime = starttime;
         query.endtime = endtime;
@@ -287,12 +287,12 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.name = q.name;
         if (q.compare_to) {
-            let starttime = this.formatTime(q.compare_to.starttime)
-            let endtime = this.formatTime(q.compare_to.endtime)
-            query.compare_to = {
+          const starttime = this.formatTime(q.compare_to.starttime);
+          const endtime = this.formatTime(q.compare_to.endtime);
+          query.compare_to = {
             variable: q.compare_to.variable,
-            starttime: starttime,
-            endtime: endtime,
+            starttime,
+            endtime,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             depth: q.compare_to.depth,
@@ -305,7 +305,7 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
-        time = this.formatTime(q.time)
+        time = this.formatTime(q.time);
         query.variable = q.variable;
         query.time = time;
         query.scale = q.scale;
@@ -322,7 +322,7 @@ export default class PlotImage extends React.PureComponent {
         query.neighbours = q.neighbours;
               
         if (q.compare_to) {
-          let compareTime = q.compare_to.time.toISOString();
+          const compareTime = q.compare_to.time.toISOString();
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
@@ -338,8 +338,8 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "drifter":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
+        starttime = this.formatTime(q.starttime);
+        endtime = this.formatTime(q.endtime);
         query.variable = q.variable;
         query.depth = q.depth;
         query.drifter = q.drifter;
@@ -363,8 +363,8 @@ export default class PlotImage extends React.PureComponent {
         query.variable = q.variable;
         break;
       case "stick":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
+        starttime = this.formatTime(q.starttime);
+        endtime = this.formatTime(q.endtime);
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
@@ -377,11 +377,11 @@ export default class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    if (q.type === 'drifter' || q.type === 'class4') {
-      return "/plot/?query=" + encodeURIComponent(stringify(query))
-    } else {
-      return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
-    }
+    if (q.type === "drifter" || q.type === "class4") {
+      return `/plot/?query=${  encodeURIComponent(stringify(query))}`;
+    } 
+    return `/api/v1.0/plot/?query=${  encodeURIComponent(stringify(query))}`;
+    
   }
 
   saveImage(format) {
@@ -411,7 +411,7 @@ export default class PlotImage extends React.PureComponent {
   render() {
     
     const imagelinkModalEntered = function() {
-      this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
+      this.imagelinkbox.style.height = `${this.imagelinkbox.scrollHeight + 5  }px`;
       this.imagelinkbox.select();
     }.bind(this);
 
@@ -421,7 +421,7 @@ export default class PlotImage extends React.PureComponent {
       errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
     }
     
-    var image
+    let image;
     if (this.state.loading) {
       image = <div className="spinner">
         <div className="sk-folding-cube">
@@ -430,11 +430,11 @@ export default class PlotImage extends React.PureComponent {
           <div className="sk-cube4 sk-cube"></div>
           <div className="sk-cube3 sk-cube"></div>
         </div>
-      </div>//<Icon icon="spinner" name='loading'/>
+      </div>;//<Icon icon="spinner" name='loading'/>
     } else {
       image = <div className="RenderedImage">
-          <img src={this.state.url} />
-        </div>
+        <img src={this.state.url} />
+      </div>;
     }
 
     return (
@@ -555,9 +555,9 @@ export default class PlotImage extends React.PureComponent {
               id="imagelink_area"
               readOnly
               value={
-                window.location.origin + this.urlFromQuery(this.props.query) +
-                  "&format=png&size=" + this.props.query.size +
-                  "&dpi=" + this.props.query.dpi
+                `${window.location.origin + this.urlFromQuery(this.props.query) 
+                }&format=png&size=${  this.props.query.size 
+                }&dpi=${  this.props.query.dpi}`
               }
             />
           </Modal.Body>

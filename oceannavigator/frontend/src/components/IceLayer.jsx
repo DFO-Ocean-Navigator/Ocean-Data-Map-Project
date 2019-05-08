@@ -23,8 +23,8 @@ export default class IceLayer extends React.Component {
       
       //State Variables for dataset selector
       time: -1,
-      layerState: 'Add Ice',
-      dataset_quantum: 'day',
+      layerState: "Add Ice",
+      dataset_quantum: "day",
       depth: 0,
       scale_1: "0,60000",
       scale: "0,1",
@@ -41,14 +41,14 @@ export default class IceLayer extends React.Component {
       current_dataset: undefined,
     };
 
-    this.range = undefined
+    this.range = undefined;
 
     // Function bindings
     this.handleTabs = this.handleTabs.bind(this);
     this.createIce = this.createIce.bind(this);
     this.toggleLayer = this.toggleLayer.bind(this);
     this.localUpdate = this.localUpdate.bind(this);
-    this.changeDataset = this.changeDataset.bind(this)
+    this.changeDataset = this.changeDataset.bind(this);
     this.updateIce = this.updateIce.bind(this);
 
     //Getting metadata
@@ -63,39 +63,39 @@ export default class IceLayer extends React.Component {
   getDataInfo() {
    
     $.ajax({
-      url: `/api/v1.0/variables/?dataset=all&env_type=ice`,
+      url: "/api/v1.0/variables/?dataset=all&env_type=ice",
       success: function(response) {
         
         this.setState({
-          'datainfo': response
-        })
+          "datainfo": response
+        });
 
-        let variables = this.getVariables();
+        const variables = this.getVariables();
         if (variables == []) {
           throw Error;
         }
         this.setState({
-          'variables': variables,
-          'current_variable': variables[0],
-        })
+          variables,
+          "current_variable": variables[0],
+        });
       
-        let datasets = this.getDatasets(this.state.current_variable);
+        const datasets = this.getDatasets(this.state.current_variable);
         this.setState({
-          'datasets': datasets,
-          'current_dataset': datasets[0],
-        })
+          datasets,
+          "current_dataset": datasets[0],
+        });
 
         this._mounted = true;
         
       }.bind(this),
-      error: function() {
+      error() {
         console.error("Error getting data!");
       }
     });
   }
 
   componentDidMount() {
-    this.getDataInfo()
+    this.getDataInfo();
     this.createIce();
   }
 
@@ -112,46 +112,46 @@ export default class IceLayer extends React.Component {
   }
 
   getVariables() {
-    let variables = []
+    const variables = [];
 
-    for (let key in this.state.datainfo) {
-      variables.push(key)
+    for (const key in this.state.datainfo) {
+      variables.push(key);
     }
 
-    return variables
+    return variables;
   }
 
   getDatasets(variable) {
     if (variable == undefined) {
-      let datasets = this.state.datainfo[variables[0]]['datasets']
-      return datasets
-    } else {
-      let datasets = this.state.datainfo[variable]['datasets']
-      return datasets
-    }
+      const datasets = this.state.datainfo[variables[0]].datasets;
+      return datasets;
+    } 
+    const datasets = this.state.datainfo[variable].datasets;
+    return datasets;
+    
   }
 
   // Updates Ice app state
   localUpdate(key, value) {
-    if (key == 'current_variable') {
-      let datasets = this.state.datainfo[value]['datasets']
+    if (key == "current_variable") {
+      const datasets = this.state.datainfo[value].datasets;
       if (!(this.state.current_dataset in datasets)) {
         this.setState({
-          'current_dataset': datasets[0]
-        })
+          "current_dataset": datasets[0]
+        });
       }
       this.setState({
-        'current_variable': value,
-        'datasets': datasets
-      })
-    } else if (key == 'current_dataset') {
+        "current_variable": value,
+        datasets
+      });
+    } else if (key == "current_dataset") {
       this.setState({
-        'current_dataset': value,
-      })
+        "current_dataset": value,
+      });
     } else {
-      let newState = this.state
-      newState[key] = value
-      this.setState(newState)
+      const newState = this.state;
+      newState[key] = value;
+      this.setState(newState);
       
     }
     this.updateIce();
@@ -159,7 +159,7 @@ export default class IceLayer extends React.Component {
 
   createIce() {
 
-    let layer_ice = new ol.layer.Tile(
+    const layer_ice = new ol.layer.Tile(
       {
         preload: Infinity,
         opacity: this.state.opacity/100,
@@ -172,36 +172,36 @@ export default class IceLayer extends React.Component {
         }),
       });
 
-    layer_ice.set('name', 'ice')
+    layer_ice.set("name", "ice");
 
     this.setState({
       ice_layer: layer_ice
-    })
+    });
 
   }
 
   updateIce() {
 
     if (this.state.current_dataset == undefined || this.state.current_variable == undefined) {
-      return
+      return;
     }
     
-    let layer_ice = this.state.ice_layer;
-    let props = layer_ice.getSource().getProperties();
+    const layer_ice = this.state.ice_layer;
+    const props = layer_ice.getSource().getProperties();
     
     // Sets new values for tiles
-    props.url = `/tiles/v0.1` + 
+    props.url = "/tiles/v0.1" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
                 `/${this.props.state.projection}` + 
                 `/${this.state.current_dataset}` + 
-                `/${this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id']}` + 
+                `/${this.state.datainfo[this.state.current_variable].info[this.state.current_dataset].id}` + 
                 `/${this.props.state.time}` + 
-                `/0` + 
+                "/0" + 
                 `/${this.state.scale_1}` + 
-                `/0` +
-                `/{z}/{x}/{y}.png`;
+                "/0" +
+                "/{z}/{x}/{y}.png";
     
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -212,7 +212,7 @@ export default class IceLayer extends React.Component {
     const newSource = new ol.source.XYZ(props);
     
     // Gives updated source to layer
-    layer_ice.setSource(newSource)
+    layer_ice.setSource(newSource);
 
     // Reloads layer to apply changes
     this.props.reloadLayer();
@@ -226,19 +226,18 @@ export default class IceLayer extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
+    const var_promise = $.ajax(`/api/v1.0/variables/?dataset=${  dataset}`).promise();
     const time_promise = $.ajax(
-      "/api/timestamp/" +
-      this.state.dataset + "/" +
-      this.state.time + "/" +
-      dataset
+      `/api/timestamp/${ 
+        this.state.dataset  }/${ 
+        this.state.time  }/${ 
+        dataset}`
     ).promise();
     
-    $.when(var_promise, time_promise).done(function(variable, time) {
+    $.when(var_promise, time_promise).done((variable, time) => {
       let newvariable = this.state.variable;
       
-      if ($.inArray(this.state.variable, variable[0].map(function(e) 
-      { return e.id; })) == -1) {
+      if ($.inArray(this.state.variable, variable[0].map((e) => { return e.id; })) == -1) {
         newvariable = variable[0][0].id;
       }
 
@@ -254,7 +253,7 @@ export default class IceLayer extends React.Component {
       state.busy = false;
 
       this.setState(state);
-    }.bind(this));
+    });
   }
 
 
@@ -267,38 +266,38 @@ export default class IceLayer extends React.Component {
   toggleLayer() {
     if (this.props.state.layers.includes(this.state.ice_layer)) {
 
-      let new_layers = this.props.state.layers;
-      let ice_layer = this.state.ice_layer;
+      const new_layers = this.props.state.layers;
+      const ice_layer = this.state.ice_layer;
       this.setState({
-        layerState: 'Add Ice'
-      })
+        layerState: "Add Ice"
+      });
 
       new_layers.splice(new_layers.indexOf(ice_layer), 1 );
       
-      this.props.globalUpdate('layers', new_layers)
-      this.props.toggleLayer(ice_layer, 'remove')
+      this.props.globalUpdate("layers", new_layers);
+      this.props.toggleLayer(ice_layer, "remove");
     } else {
 
       this.setState({
-        layerState: 'Remove Ice'
-      })
+        layerState: "Remove Ice"
+      });
 
-      let new_layers = this.props.state.layers
+      const new_layers = this.props.state.layers;
       
       new_layers.push(
         this.state.ice_layer
-      )
+      );
 
-      this.props.globalUpdate('layers', new_layers)
-      this.props.toggleLayer(this.state.ice_layer, 'add')
+      this.props.globalUpdate("layers", new_layers);
+      this.props.toggleLayer(this.state.ice_layer, "add");
     }
   }
 
   updateTransparency(e) {
     this.setState({
       opacity: e.value
-    })
-    this.state.ice_layer.setOpacity(e.value / 100)
+    });
+    this.state.ice_layer.setOpacity(e.value / 100);
   }
 
   
@@ -316,19 +315,19 @@ export default class IceLayer extends React.Component {
         def=''
         onUpdate={this.localUpdate}
         title={_("Variable Range")}
-        autourl={"/api/v0.1/range/" +
-                this.props.options.interpType + "/" +
-                this.props.options.interpRadius + "/" +
-                this.props.options.interpNeighbours + "/" +
-                this.state.current_dataset + "/" +
-                this.props.state.projection + "/" +
-                this.props.state.extent.join(",") + "/" +
-                this.state.depth + "/" +
-                this.props.state.time + "/" +
-                this.state.datainfo[this.state.current_variable]['info'][this.state.current_dataset]['id'] + ".json"
+        autourl={`/api/v0.1/range/${ 
+          this.props.options.interpType  }/${ 
+          this.props.options.interpRadius  }/${ 
+          this.props.options.interpNeighbours  }/${ 
+          this.state.current_dataset  }/${ 
+          this.props.state.projection  }/${ 
+          this.props.state.extent.join(",")  }/${ 
+          this.state.depth  }/${ 
+          this.props.state.time  }/${ 
+          this.state.datainfo[this.state.current_variable].info[this.state.current_dataset].id  }.json`
         }
         default_scale={this.state.default_scale}
-      ></Range>
+      ></Range>;
     }
     
 
@@ -376,7 +375,7 @@ export default class IceLayer extends React.Component {
           step={1}
           label={true}
           onChange={this.updateTransparency}
-          />
+        />
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
           {this.state.layerState}
@@ -394,7 +393,7 @@ export default class IceLayer extends React.Component {
           header={_("Right Map")}
           bsStyle='primary'
         >
-        {/*
+          {/*
           <IceDatasetSelector 
           id='dataset_1'
           state={this.props.state.dataset_1}
@@ -412,16 +411,16 @@ export default class IceLayer extends React.Component {
             def=''
             onUpdate={this.localUpdate}
             title={_("Variable Range")}
-            autourl={"/api/v0.1/range/" +
-                    this.props.options.interpType + "/" +
-                    this.props.options.interpRadius + "/" +
-                    this.props.options.interpNeighbours + "/" +
-                    this.state.current_dataset + "/" +
-                    this.props.state.projection + "/" +
-                    this.props.state.extent.join(",") + "/" +
-                    this.state.depth + "/" +
-                    this.props.state.time + "/" +
-                    this.state.datainfo[this.state.current_variable]['info'] + ".json"
+            autourl={`/api/v0.1/range/${ 
+              this.props.options.interpType  }/${ 
+              this.props.options.interpRadius  }/${ 
+              this.props.options.interpNeighbours  }/${ 
+              this.state.current_dataset  }/${ 
+              this.props.state.projection  }/${ 
+              this.props.state.extent.join(",")  }/${ 
+              this.state.depth  }/${ 
+              this.props.state.time  }/${ 
+              this.state.datainfo[this.state.current_variable].info  }.json`
             }
             default_scale={this.props.state.dataset_1.variable_scale}
           ></Range>
@@ -433,56 +432,56 @@ export default class IceLayer extends React.Component {
     }
     
     return (
-        <div>
-            <Panel
-              collapsible
-              defaultExpanded
-              header={_("Data Comparison")}
-              bsStyle='primary'
-            >
-              <DisplayType
-                types={this.props.state.availableTypes}
-              />
-              <Row>
-                <Col xs={9}>
-                  <SelectBox
-                    id='dataset_compare'
-                    state={this.props.state.dataset_compare}
-                    onUpdate={this.props.globalUpdate}
-                    title={_("Compare Datasets")}
-                  />
-                </Col>
-                <Col xs={3}>
-                  <Button 
-                    bsStyle="link"
-                    key='show_help'
-                    id='show_help'
-                    onClick={this.props.showHelp}
-                  >
-                    {_("Help")}
-                  </Button>
-                </Col>
-              </Row>
+      <div>
+        <Panel
+          collapsible
+          defaultExpanded
+          header={_("Data Comparison")}
+          bsStyle='primary'
+        >
+          <DisplayType
+            types={this.props.state.availableTypes}
+          />
+          <Row>
+            <Col xs={9}>
               <SelectBox
-                id='syncRanges'
+                id='dataset_compare'
+                state={this.props.state.dataset_compare}
                 onUpdate={this.props.globalUpdate}
-                title={_("Sync Variable Ranges")}
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+                title={_("Compare Datasets")}
               />
-              <Button
-                bsStyle="default"
-                block
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
-                onClick={this.props.swapViews}
+            </Col>
+            <Col xs={3}>
+              <Button 
+                bsStyle="link"
+                key='show_help'
+                id='show_help'
+                onClick={this.props.showHelp}
               >
-                {_("Swap Views")}
+                {_("Help")}
               </Button>
+            </Col>
+          </Row>
+          <SelectBox
+            id='syncRanges'
+            onUpdate={this.props.globalUpdate}
+            title={_("Sync Variable Ranges")}
+            style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+          />
+          <Button
+            bsStyle="default"
+            block
+            style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+            onClick={this.props.swapViews}
+          >
+            {_("Swap Views")}
+          </Button>
               
-            </Panel>
+        </Panel>
             
             
-            {inputs  /* Renders Side Panel */}
-        </div>
+        {inputs  /* Renders Side Panel */}
+      </div>
     );
   }
 }

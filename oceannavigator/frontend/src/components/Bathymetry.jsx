@@ -23,7 +23,7 @@ export default class Bathymetry extends React.Component {
   render() {    
     
     return (
-        <div>{/*<IceLayer
+      <div>{/*<IceLayer
           state={this.props.state}
           swapViews={this.props.swapViews}
           toggleLayer={this.props.toggleLayer}
@@ -36,7 +36,7 @@ export default class Bathymetry extends React.Component {
         />*/}
             
 
-        </div>
+      </div>
     );
   }
 }

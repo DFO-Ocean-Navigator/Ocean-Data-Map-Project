@@ -28,10 +28,10 @@ export default class ObservationSelector extends React.Component {
       dataType: "json",
       success: function(data) {
         this.setState({
-          data: data,
+          data,
         });
       }.bind(this),
-      error: function(r, status, err) {
+      error(r, status, err) {
         console.error("/api/observation/meta.json", status, err.toString());
       },
     });
@@ -51,10 +51,10 @@ export default class ObservationSelector extends React.Component {
   }
 
   render() {
-    const ship = this.state.data.ship.map(function(o) {
+    const ship = this.state.data.ship.map((o) => {
       return { id: o, value: o, };
     });
-    const trip = this.state.data.trip.map(function(o) {
+    const trip = this.state.data.trip.map((o) => {
       return { id: o, value: o, };
     });
     _("Ship");

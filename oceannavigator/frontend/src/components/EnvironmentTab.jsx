@@ -44,53 +44,53 @@ export default class EnvironmentTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span className='envTabName'>{_("Oceanography")}</span>}>
+          <Tab eventKey={1} title={<span className='envTabName'>{_("Oceanography")}</span>}>
                 
-                <Meteorology
-                  state={this.props.state}
-                  swapViews={this.props.swapViews}
-                  mapComponent={this.props.mapComponent}
-                  mapComponent2={this.props.mapComponent2}
-                  globalUpdate={this.props.changeHandler}
-                  showHelp={this.props.showHelp}
-                  options={this.props.state.options}
-                  updateOptions={this.props.updateOptions}
-                  layerType='ocean'
-                  layerName='Ocean'
-                  depthName='Depth'
-                />
-            </Tab>
-            <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
-                {<Meteorology
-                  state={this.props.state}
-                  swapViews={this.props.swapViews}
-                  mapComponent={this.props.mapComponent}
-                  mapComponent2={this.props.mapComponent2}
-                  globalUpdate={this.props.changeHandler}
-                  showHelp={this.props.showHelp}
-                  options={this.props.state.options}
-                  updateOptions={this.props.updateOptions}
-                  layerType='met'
-                  layerName='Met'
-                  depthName='Altitude'
-                />}
-            </Tab>
-            <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
-              <Meteorology
-                  state={this.props.state}
-                  swapViews={this.props.swapViews}
-                  mapComponent={this.props.mapComponent}
-                  mapComponent2={this.props.mapComponent2}
-                  globalUpdate={this.props.changeHandler}
-                  showHelp={this.props.showHelp}
-                  options={this.props.state.options}
-                  updateOptions={this.props.updateOptions}
-                  layerType='ice'
-                  layerName='Ice'
-                  depthName='Depth'
-                />
-            </Tab>
-            {/*
+            <Meteorology
+              state={this.props.state}
+              swapViews={this.props.swapViews}
+              mapComponent={this.props.mapComponent}
+              mapComponent2={this.props.mapComponent2}
+              globalUpdate={this.props.changeHandler}
+              showHelp={this.props.showHelp}
+              options={this.props.state.options}
+              updateOptions={this.props.updateOptions}
+              layerType='ocean'
+              layerName='Ocean'
+              depthName='Depth'
+            />
+          </Tab>
+          <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
+            {<Meteorology
+              state={this.props.state}
+              swapViews={this.props.swapViews}
+              mapComponent={this.props.mapComponent}
+              mapComponent2={this.props.mapComponent2}
+              globalUpdate={this.props.changeHandler}
+              showHelp={this.props.showHelp}
+              options={this.props.state.options}
+              updateOptions={this.props.updateOptions}
+              layerType='met'
+              layerName='Met'
+              depthName='Altitude'
+            />}
+          </Tab>
+          <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
+            <Meteorology
+              state={this.props.state}
+              swapViews={this.props.swapViews}
+              mapComponent={this.props.mapComponent}
+              mapComponent2={this.props.mapComponent2}
+              globalUpdate={this.props.changeHandler}
+              showHelp={this.props.showHelp}
+              options={this.props.state.options}
+              updateOptions={this.props.updateOptions}
+              layerType='ice'
+              layerName='Ice'
+              depthName='Depth'
+            />
+          </Tab>
+          {/*
             <Tab eventKey={4} title={<span className='envTabName'>{_("Waves")}</span>}>
                 <Waves
                   state={this.props.state}

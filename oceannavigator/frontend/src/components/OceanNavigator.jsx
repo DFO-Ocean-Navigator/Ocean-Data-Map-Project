@@ -21,10 +21,10 @@ const LOADING_IMAGE = require("../images/bar_loader.gif");
 
 function formatLatLon(latitude, longitude) {
   let formatted = "";
-  formatted += Math.abs(latitude).toFixed(4) + " ";
+  formatted += `${Math.abs(latitude).toFixed(4)  } `;
   formatted += (latitude >= 0) ? "N" : "S";
   formatted += ", ";
-  formatted += Math.abs(longitude).toFixed(4) + " ";
+  formatted += `${Math.abs(longitude).toFixed(4)  } `;
   formatted += (longitude >= 0) ? "E" : "W";
   
   return formatted;
@@ -34,7 +34,7 @@ export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
     
-    ReactGA.ga('send', 'pageview')
+    ReactGA.ga("send", "pageview");
 
     this.state = {
       _firstLayer: true,
@@ -55,12 +55,12 @@ export default class OceanNavigator extends React.Component {
       data: {},
       display: [
         {
-          id: 'colour',
-          value: 'Colour',
+          id: "colour",
+          value: "Colour",
         },
         {
-          id: 'contours',
-          value: 'Contours',
+          id: "contours",
+          value: "Contours",
         },
         /*{
           id: 'windbarbs',
@@ -93,7 +93,7 @@ export default class OceanNavigator extends React.Component {
       showHelp: false,
       showBugs: false,
       showCompareHelp: false,
-      availableTypes: ['colour', 'contour', 'hatching'],
+      availableTypes: ["colour", "contour", "hatching"],
       extent: [],
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
@@ -213,7 +213,7 @@ export default class OceanNavigator extends React.Component {
   }
 
   updateOptions(newOptions) {
-    let options = Object.assign({}, this.state.options);
+    const options = Object.assign({}, this.state.options);
     options.interpType = newOptions.interpType;
     options.interpRadius = newOptions.interpRadius;
     options.interpNeighbours = newOptions.interpNeighbours;
@@ -229,17 +229,17 @@ export default class OceanNavigator extends React.Component {
   // Updates global app state
   updateState(key, value) {
     
-    var newState = {};
+    let newState = {};
 
-    if (key === 'timeSources') {
+    if (key === "timeSources") {
       this.setState({
         timeSources: value
-      })
+      });
     }
-    if (key === 'timestamps') {
+    if (key === "timestamps") {
       this.setState({
         timestamps: value,
-      })
+      });
     }
     // Only updating one value
     if (typeof(key) === "string") {
@@ -342,9 +342,9 @@ export default class OceanNavigator extends React.Component {
         this.mapComponent.resetMap();
 
         ReactGA.event({
-          category: 'PointPlot',
-          action: 'click',
-          label: 'PointPlot'
+          category: "PointPlot",
+          action: "click",
+          label: "PointPlot"
         });
         
         /*
@@ -377,9 +377,9 @@ export default class OceanNavigator extends React.Component {
           // Disable point selection in both maps
           this.removeMapInteraction("Point");
           ReactGA.event({
-            category: 'PointPlot',
-            action: 'click',
-            label: 'PointPlot'
+            category: "PointPlot",
+            action: "click",
+            label: "PointPlot"
           });
 
           this.showModal();
@@ -403,10 +403,10 @@ export default class OceanNavigator extends React.Component {
           this.mapComponent.resetMap();
 
           ReactGA.event({
-            category: 'MultiPointPlot',
-            action: 'click',
-            label: 'MultiPointPlot'
-          })
+            category: "MultiPointPlot",
+            action: "click",
+            label: "MultiPointPlot"
+          });
           // Enable point selection in both maps
           
           this.mapComponent.multiPoint();  
@@ -417,7 +417,7 @@ export default class OceanNavigator extends React.Component {
             point: arg,
             modal: "point",
             names: [],
-          })
+          });
         }
       
         break;
@@ -433,9 +433,9 @@ export default class OceanNavigator extends React.Component {
           // Disable line drawing in both maps
           this.removeMapInteraction("Line");
           ReactGA.event({
-            category: 'LinePlot',
-            action: 'click',
-            label: 'LinePlot'
+            category: "LinePlot",
+            action: "click",
+            label: "LinePlot"
           });
 
           this.showModal();
@@ -457,9 +457,9 @@ export default class OceanNavigator extends React.Component {
           });
           this.removeMapInteraction("Area");
           ReactGA.event({
-            category: 'AreaPlot',
-            action: 'click',
-            label: 'AreaPlot'
+            category: "AreaPlot",
+            action: "click",
+            label: "AreaPlot"
           });
           this.showModal();
         } else {
@@ -477,9 +477,9 @@ export default class OceanNavigator extends React.Component {
           names: arg,
         });
         ReactGA.event({
-          category: 'DrifterPlot',
-          action: 'click',
-          label: 'DrifterPlot'
+          category: "DrifterPlot",
+          action: "click",
+          label: "DrifterPlot"
         });
         this.showModal();
         break;
@@ -542,17 +542,17 @@ export default class OceanNavigator extends React.Component {
       case "enable":
         this.setState({
           multiPoint: true
-        })
-        this.action("multi-point")
+        });
+        this.action("multi-point");
         break;
 
       //Removes Map Interaction
       case "disable":
         this.setState({
           multiPoint: false
-        })
+        });
         this.mapComponent.disableMulti();
-        this.removeMapInteraction("multiPoint")
+        this.removeMapInteraction("multiPoint");
         break;
 
       //Resets everything back to default
@@ -561,24 +561,24 @@ export default class OceanNavigator extends React.Component {
         this.setState({
           multiPoint: false,
           point: undefined
-        })
+        });
         break;
     }
   }
 
   toggleScreen(size, e) {
     if (e === false) {
-      return
+      return;
     }
     this.setState({
       screen: size
-    })
+    });
 
     switch (size) {
       case "small":
         this.setState({
           sidebarOpen: false
-        })
+        });
         break;
       case "medium":
         break;
@@ -602,7 +602,7 @@ export default class OceanNavigator extends React.Component {
     } else {
       this.setState({
         showModal: false,
-      })
+      });
       //window.history.back();
     }
   }
@@ -618,7 +618,7 @@ export default class OceanNavigator extends React.Component {
   */
 
   generatePermLink(subquery, permalinkSettings) {
-    let query = {};
+    const query = {};
     // We have a request from Point/Line/AreaWindow component.
     if (this.state.subquery !== undefined) {
       query.subquery = this.state.subquery;
@@ -635,18 +635,18 @@ export default class OceanNavigator extends React.Component {
       }
     }
     // We have a request from the Permalink component.
-    for (let setting in permalinkSettings) {
+    for (const setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
         query[setting] = this.state[setting];
       }
     }
 
-    return window.location.origin + window.location.pathname +
-      `?query=${encodeURIComponent(stringify(query))}`;
+    return `${window.location.origin + window.location.pathname 
+    }?query=${encodeURIComponent(stringify(query))}`;
   }
 
   render() {
-    let modalContent = "";
+    const modalContent = "";
     let modalTitle = "";
 
     
@@ -656,21 +656,21 @@ export default class OceanNavigator extends React.Component {
 
     _("Loading");
     
-    let contentClassName
+    let contentClassName;
     if (this.state.sidebarOpen) {
-      if (this.state.screen === 'small') {
-        contentClassName = "content small"
+      if (this.state.screen === "small") {
+        contentClassName = "content small";
       } else {
-        contentClassName = "content open"
+        contentClassName = "content open";
       }
     } else {
-      contentClassName = "content"
+      contentClassName = "content";
     }
     //const contentClassName = this.state.sidebarOpen ? "content open" : "content";
     
     // Pick which map we need
     let map = null;
-    if ('right' in this.state.data) {
+    if ("right" in this.state.data) {
       
       const secondState = $.extend(true, {}, this.state);
       for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
@@ -681,10 +681,10 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent = m}
           mapIdx='left'
-          data={this.state.data['left']}
+          data={this.state.data.left}
           timeSources={this.state.timeSources}
           state={this.state}
-          layers={this.state.layers['left']}
+          layers={this.state.layers.left}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
@@ -694,10 +694,10 @@ export default class OceanNavigator extends React.Component {
         <Map
           ref={(m) => this.mapComponent2 = m}
           mapIdx='right'
-          data={this.state.data['right']}
+          data={this.state.data.right}
           timeSources={this.state.timeSources}
           state={secondState}
-          layers={this.state.layers['right']}
+          layers={this.state.layers.right}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
@@ -711,7 +711,7 @@ export default class OceanNavigator extends React.Component {
         ref={(m) => this.mapComponent = m}
         mapIdx='left'
         layers={this.state.layers}
-        data={this.state.data['left']}
+        data={this.state.data.left}
         timeSources={this.state.timeSources}
         allSources={this.state.timeSources}
         state={this.state}
@@ -726,7 +726,7 @@ export default class OceanNavigator extends React.Component {
     
     if (this.mapComponent !== null) {
       //if (this.mapComponent2 === null) {
-        layerSelect = <LayerSelection
+      layerSelect = <LayerSelection
         state={this.state}
         swapViews={this.swapViews}
         mapComponent={this.mapComponent}
@@ -737,7 +737,7 @@ export default class OceanNavigator extends React.Component {
         toggleSidebar={this.toggleSidebar}
         sidebarOpen={this.state.sidebarOpen}
         updateOptions={this.updateOptions}
-      />
+      />;
       /*} else {
         layerSelect = <LayerSelection
         state={this.state}
@@ -759,15 +759,15 @@ export default class OceanNavigator extends React.Component {
       <div className='OceanNavigator'>
         <Media
           query="(max-width: 599px)"
-          onChange={(e) => this.toggleScreen('small', e)}
+          onChange={(e) => this.toggleScreen("small", e)}
         ></Media>
         <Media
           query="(max-width: 1199px)"
-          onChange={(e) => this.toggleScreen('medium', e)}
+          onChange={(e) => this.toggleScreen("medium", e)}
         ></Media>
         <Media
           query="(min-width: 1200px)"
-          onChange={(e) => this.toggleScreen('large', e)}
+          onChange={(e) => this.toggleScreen("large", e)}
         ></Media>
         {layerSelect}
         <div className={contentClassName}>
@@ -950,7 +950,7 @@ export default class OceanNavigator extends React.Component {
               60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
               a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
               a clear and understandable fix released soon. <br/>
-              <br/>
+            <br/>
             <p>
               you would like more detailed information you can view our bug tracking this problem on 
               our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue

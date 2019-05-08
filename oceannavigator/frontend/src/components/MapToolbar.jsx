@@ -91,7 +91,7 @@ export default class MapToolbar extends React.Component {
         defaultDate: this.state.class4Current,
       });
 
-      $(this.class4div).css("left", button.offset().left + "px");
+      $(this.class4div).css("left", `${button.offset().left  }px`);
     } else {
       this.class4Picker.show();
     }
@@ -117,7 +117,7 @@ export default class MapToolbar extends React.Component {
           pointFiles: data,
         });
       }.bind(this),
-      error: function(r, status, err) {
+      error(r, status, err) {
         console.error(this.props.url, status, err.toString());
       }
     });
@@ -130,7 +130,7 @@ export default class MapToolbar extends React.Component {
           lineFiles: data,
         });
       }.bind(this),
-      error: function(r, status, err) {
+      error(r, status, err) {
         console.error(this.props.url, status, err.toString());
       }
     });
@@ -143,7 +143,7 @@ export default class MapToolbar extends React.Component {
           areaFiles: data,
         });
       }.bind(this),
-      error: function(r, status, err) {
+      error(r, status, err) {
         console.error(this.props.url, status, err.toString());
       }
     });
@@ -153,14 +153,14 @@ export default class MapToolbar extends React.Component {
       cache: true,
       success: function(data) {
         this.setState({
-          class4Files: data.reduce(function(map, obj) {
+          class4Files: data.reduce((map, obj) => {
             map[obj.name] = obj.id;
             return map;
           }, {}),
           class4Current: data[0].name,
         });
       }.bind(this),
-      error: function(r, status, err) {
+      error(r, status, err) {
         console.error(this.props.url, status, err.toString());
       }
     });
@@ -181,7 +181,7 @@ export default class MapToolbar extends React.Component {
         this.props.action("point");
         break;
       case "draw-multi":
-        this.multiPointSelect()
+        this.multiPointSelect();
         break;
       case "observation":
         this.setState({showObservationSelect: true,});
@@ -196,7 +196,7 @@ export default class MapToolbar extends React.Component {
   }
 
   multiPointSelect() {
-    this.props.multiPointAction("enable")
+    this.props.multiPointAction("enable");
     //this.props.updateState("multiPoint", true)
     ///this.props.updateState("point", [])
     //this.props.action("multi-point");
@@ -338,7 +338,7 @@ export default class MapToolbar extends React.Component {
         complete: function(results) {
           
           // Convert everything to lowercase
-          const fields_lowered = results.meta.fields.map(function(f) {
+          const fields_lowered = results.meta.fields.map((f) => {
             return f.toLowerCase().trim();
           });
           
@@ -359,7 +359,7 @@ export default class MapToolbar extends React.Component {
             return;
           }
 
-          const points = results.data.map(function(point) {
+          const points = results.data.map((point) => {
             return [point[lat], point[lon]];
           });
 
@@ -390,7 +390,7 @@ export default class MapToolbar extends React.Component {
         skipEmptyLines: true,
         header: false,
         encoding: "ascii",
-        error: function(err, file, inputElem, reason) {
+        error(err, file, inputElem, reason) {
           console.error(err, reason);
         },
         complete: function(results) {
@@ -408,67 +408,67 @@ export default class MapToolbar extends React.Component {
           const lonCol = jQuery.inArray("Longitude [degrees_east]", headerLine);
           const staCol = jQuery.inArray("Station", headerLine);
 
-          var dateCol = findColumn("yyyy-mm-dd");
+          let dateCol = findColumn("yyyy-mm-dd");
           if (dateCol == -1) {
             dateCol = headerLine.length;
-            var col;
-            var split;
-            var d;
+            let col;
+            let split;
+            let d;
             if ((col = findColumn("mon/day/yr")) != -1 ||
                             (col = findColumn("mm/dd/yyyy")) != -1) {
 
               for (let i = 1; i < results.data.length; i++) {
                 split = results.data[i][col].split("/");
-                results.data[i][dateCol] = split[2] + "-" +
-                  split[0] + "-" +
-                  split[1] + " ";
+                results.data[i][dateCol] = `${split[2]  }-${ 
+                  split[0]  }-${ 
+                  split[1]  } `;
               }
             } else if ((col = findColumn("dd/mm/yyyy")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 split = results.data[i][col].split("/");
-                results.data[i][dateCol] = split[2] + "-" +
-                  split[1] + "-" +
-                  split[0] + " ";
+                results.data[i][dateCol] = `${split[2]  }-${ 
+                  split[1]  }-${ 
+                  split[0]  } `;
               }
             } else if ((col = findColumn("yyyy/mm/dd")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 split = results.data[i][col].split("/");
-                results.data[i][dateCol] = split[0] + "-" +
-                  split[1] + "-" +
-                  split[2] + " ";
+                results.data[i][dateCol] = `${split[0]  }-${ 
+                  split[1]  }-${ 
+                  split[2]  } `;
               }
             } else if ((col = findColumn("mmddyyyy")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 d = results.data[i][col];
-                results.data[i][dateCol] = d.substring(4, 4) + "-" +
-                  d.substring(0, 2) + "-" +
-                  d.substring(2, 2) + " ";
+                results.data[i][dateCol] = `${d.substring(4, 4)  }-${ 
+                  d.substring(0, 2)  }-${ 
+                  d.substring(2, 2)  } `;
               }
             } else if ((col = findColumn("ddmmyyyy")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 d = results.data[i][col];
-                results.data[i][dateCol] = d.substring(4, 4) + "-" +
-                  d.substring(2, 2) + "-" +
-                  d.substring(0, 2) + " ";
+                results.data[i][dateCol] = `${d.substring(4, 4)  }-${ 
+                  d.substring(2, 2)  }-${ 
+                  d.substring(0, 2)  } `;
               }
             } else if ((col = findColumn("yyyymmdd")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 d = results.data[i][col];
-                results.data[i][dateCol] = d.substring(0, 4) + "-" +
-                  d.substring(4, 2) + "-" +
-                  d.substring(6, 2) + " ";
+                results.data[i][dateCol] = `${d.substring(0, 4)  }-${ 
+                  d.substring(4, 2)  }-${ 
+                  d.substring(6, 2)  } `;
               }
             } else if ((col = findColumn("year")) != -1) {
               const yearcol = col;
               const monthcol = findColumn("month");
               const daycol = findColumn("day");
               for (let i = 1; i < results.data.length; i++) {
-                results.data[i][dateCol] = results.data[i][yearcol] + "-" +
-                  results.data[i][monthcol] + "-" +
-                  results.data[i][daycol] + " ";
+                results.data[i][dateCol] = `${results.data[i][yearcol]  }-${ 
+                  results.data[i][monthcol]  }-${ 
+                  results.data[i][daycol]  } `;
               }
             } else {
-              alert(_("Error: Unknown Date/Time format in file: " + file.name));
+              alert(_(`Error: Unknown Date/Time format in file: ${  file.name}`));
               return;
             }
 
@@ -479,22 +479,22 @@ export default class MapToolbar extends React.Component {
             } else if ((col = findColumn("hhmm")) != -1) {
               for (let i = 1; i < results.data.length; i++) {
                 results.data[i][dateCol] +=
-                  results.data[i][col].substring(0, 2) + ":" +
-                  results.data[i][col].substring(2, 2);
+                  `${results.data[i][col].substring(0, 2)  }:${ 
+                    results.data[i][col].substring(2, 2)}`;
               }
             } else if ((col = findColumn("hour")) != -1) {
               const minutecol = findColumn("minute");
               for (let i = 1; i < results.data.length; i++) {
-                results.data[i][dateCol] += results.data[i][col] + ":" +
-                  results.data[i][minutecol];
+                results.data[i][dateCol] += `${results.data[i][col]  }:${ 
+                  results.data[i][minutecol]}`;
               }
             }
           }
 
-          var depthCol = findColumn("Depth");
-          var depthunit = new RegExp(/\[(.*)\]/).exec(headerLine[depthCol])[1];
-          var datacols = [];
-          var dataheaders = [];
+          const depthCol = findColumn("Depth");
+          const depthunit = new RegExp(/\[(.*)\]/).exec(headerLine[depthCol])[1];
+          const datacols = [];
+          const dataheaders = [];
           for (let i = depthCol + 1; i < headerLine.length; i++) {
             if (headerLine[i] != "QF") {
               datacols.push(i);
@@ -502,12 +502,12 @@ export default class MapToolbar extends React.Component {
             }
           }
 
-          var cruiseCol = findColumn("Cruise");
-          var points = [];
+          const cruiseCol = findColumn("Cruise");
+          const points = [];
 
-          var station = "";
-          var cruise = "";
-          var point = {};
+          let station = "";
+          let cruise = "";
+          let point = {};
           for (let i = 1; i < results.data.length; i++) {
             if (results.data[i][cruiseCol] != "") {
               cruise = results.data[i][cruiseCol];
@@ -515,21 +515,21 @@ export default class MapToolbar extends React.Component {
             if (String(results.data[i][staCol]) != "" && results.data[i][staCol] != station) {
               station = results.data[i][staCol];
               point = {
-                station: cruise + " - " + station,
+                station: `${cruise  } - ${  station}`,
                 latitude: results.data[i][latCol],
                 longitude: results.data[i][lonCol],
                 time: new Date(results.data[i][dateCol]),
                 datatypes: dataheaders,
                 depth: [],
                 data: [],
-                depthunit: depthunit,
+                depthunit,
               };
               points.push(point);
             }
 
             points[points.length - 1].depth.push(results.data[i][depthCol]);
-            var data = [];
-            for (let j of datacols) {
+            const data = [];
+            for (const j of datacols) {
               data.push(results.data[i][j]);
             }
             points[points.length - 1].data.push(data);
@@ -544,13 +544,13 @@ export default class MapToolbar extends React.Component {
   }
 
   render() {
-    const pointFiles = this.state.pointFiles.map(function(d) {
+    const pointFiles = this.state.pointFiles.map((d) => {
       return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
     });
-    const lineFiles = this.state.lineFiles.map(function(d) {
+    const lineFiles = this.state.lineFiles.map((d) => {
       return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
     });
-    const areaFiles = this.state.areaFiles.map(function(d) {
+    const areaFiles = this.state.areaFiles.map((d) => {
       return <MenuItem eventKey={d.id} key={d.id}>{d.name}</MenuItem>;
     });
 
@@ -561,195 +561,195 @@ export default class MapToolbar extends React.Component {
     
     if (this.props.multiPoint) {
       plotTypes = <div>
-      <Nav>
-      <NavItem
-        name="disable-multi"
-        onClick={(e) => {
-          this.props.multiPointAction("disable");
-        }}
+        <Nav>
+          <NavItem
+            name="disable-multi"
+            onClick={(e) => {
+              this.props.multiPointAction("disable");
+            }}
         
-      >
-       <Icon icon='times-circle'/> {_("Disable Multi-Select")} 
-      </NavItem>
-      <NavItem 
-        name="plot"
-        onClick={this.buttonHandler}
-        disabled={!this.props.plotEnabled}
-      >
-        <Icon icon='line-chart' /> {_("Plot")}
-      </NavItem>
+          >
+            <Icon icon='times-circle'/> {_("Disable Multi-Select")} 
+          </NavItem>
+          <NavItem 
+            name="plot"
+            onClick={this.buttonHandler}
+            disabled={!this.props.plotEnabled}
+          >
+            <Icon icon='line-chart' /> {_("Plot")}
+          </NavItem>
           
-      <OverlayTrigger
-        placement="bottom"
-        overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
-      >
-        <NavItem
-          name="reset"
-          onClick={(e) => {
-              this.buttonHandler(e); 
-              this.props.updateState("plotEnabled", false);
-              this.props.updateState("modal", "");
-              this.props.updateState("multiPoint", false);
-              this.props.updateState("point", [this.props.point[0]])
-            }
-          }
-        >
-          <Icon icon='undo' alt={_("Reset Map")} />
-        </NavItem>
-      </OverlayTrigger>
-      </Nav>
-      </div>
+          <OverlayTrigger
+            placement="bottom"
+            overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
+          >
+            <NavItem
+              name="reset"
+              onClick={(e) => {
+                this.buttonHandler(e); 
+                this.props.updateState("plotEnabled", false);
+                this.props.updateState("modal", "");
+                this.props.updateState("multiPoint", false);
+                this.props.updateState("point", [this.props.point[0]]);
+              }
+              }
+            >
+              <Icon icon='undo' alt={_("Reset Map")} />
+            </NavItem>
+          </OverlayTrigger>
+        </Nav>
+      </div>;
     } else {
-    plotTypes = <div>
+      plotTypes = <div>
       
-      <Nav>
+        <Nav>
             
-      <NavDropdown
-      name="point"
-      id="point"
-      title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
-      onSelect={this.pointSelect}
-      >
-        <MenuItem
-          eventKey='draw'
-          key='draw'
-        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-        <MenuItem
-          eventKey='draw-multi'
-          key='draw-multi'
-        ><Icon icon="pencil" /> {_("Draw Multi Point")}</MenuItem>
-        <MenuItem divider />
-        {pointFiles}
-        <MenuItem divider />
-        <MenuItem
-          eventKey='observation'
-          key='observation'
-        ><Icon icon='list'/> {_("Observations…")}</MenuItem>
-        <MenuItem divider />
-        <MenuItem
-          eventKey='coordinates'
-          key='coordinates'
-        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-        <MenuItem
-          eventKey='csv'
-          key='csv'
-        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-        <MenuItem
-          eventKey='odv'
-          key='odv'
-        ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
-      </NavDropdown>
-      <NavDropdown 
-        name="line"
-        id="line"
-        title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
-        onSelect={this.lineSelect}
-      >
-        <MenuItem
-          eventKey='draw'
-          key='draw'
-        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-        <MenuItem divider />
-        {lineFiles}
-        <MenuItem divider />
-        <MenuItem
-          eventKey='coordinates'
-          key='coordinates'
-        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-        <MenuItem
-          eventKey='csv'
-          key='csv'
-        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-      </NavDropdown>
-      <NavDropdown
-        name="area"
-        id="area"
-        title={<span><Icon icon="square-o" /> {_("Area")}</span>}
-        onSelect={this.areaSelect}
-      >
-        <MenuItem
-          eventKey='draw'
-          key='draw'
-        ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
-        <MenuItem divider />
-        {areaFiles}
-        <MenuItem divider />
-        <MenuItem
-          eventKey='coordinates'
-          key='coordinates'
-        ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
-        <MenuItem
-          eventKey='csv'
-          key='csv'
-        ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
-      </NavDropdown>
-      <NavDropdown
-        id="class4"
-        name="class4"
-        title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
-        onClick={this.class4ButtonHandler}
-        ref={(b) => this.class4button = b}
-      >
-        <MenuItem>
-          <div ref={(d) => this.class4div = d}/>
-        </MenuItem>
-      </NavDropdown>
-      <NavDropdown
-        name="drifter"
-        id="drifter"
-        title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
-        onSelect={this.drifterSelect}
-      >
-        <MenuItem
-          eventKey='all'
-          key='all'
-        >{_("All")}</MenuItem>
-        <MenuItem
-          eventKey='active'
-          key='active'
-        >{_("Active")}</MenuItem>
-        <MenuItem
-          eventKey='not responding'
-          key='not responding'
-        >{_("Not Responding")}</MenuItem>
-        <MenuItem
-          eventKey='inactive'
-          key='inactive'
-        >{_("Inactive")}</MenuItem>
-        <MenuItem divider />
-        <MenuItem
-          eventKey='select'
-          key='select'
-        ><Icon icon='list'/> {_("Select…")}</MenuItem>
-      </NavDropdown>
+          <NavDropdown
+            name="point"
+            id="point"
+            title={<span><Icon icon="bullseye" /> {_("Point")}</span>}
+            onSelect={this.pointSelect}
+          >
+            <MenuItem
+              eventKey='draw'
+              key='draw'
+            ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+            <MenuItem
+              eventKey='draw-multi'
+              key='draw-multi'
+            ><Icon icon="pencil" /> {_("Draw Multi Point")}</MenuItem>
+            <MenuItem divider />
+            {pointFiles}
+            <MenuItem divider />
+            <MenuItem
+              eventKey='observation'
+              key='observation'
+            ><Icon icon='list'/> {_("Observations…")}</MenuItem>
+            <MenuItem divider />
+            <MenuItem
+              eventKey='coordinates'
+              key='coordinates'
+            ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+            <MenuItem
+              eventKey='csv'
+              key='csv'
+            ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+            <MenuItem
+              eventKey='odv'
+              key='odv'
+            ><Icon icon="upload" /> {_("Upload ODV…")}</MenuItem>
+          </NavDropdown>
+          <NavDropdown 
+            name="line"
+            id="line"
+            title={<span><Icon icon="pencil" /> {_("Line")}</span>} 
+            onSelect={this.lineSelect}
+          >
+            <MenuItem
+              eventKey='draw'
+              key='draw'
+            ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+            <MenuItem divider />
+            {lineFiles}
+            <MenuItem divider />
+            <MenuItem
+              eventKey='coordinates'
+              key='coordinates'
+            ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+            <MenuItem
+              eventKey='csv'
+              key='csv'
+            ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+          </NavDropdown>
+          <NavDropdown
+            name="area"
+            id="area"
+            title={<span><Icon icon="square-o" /> {_("Area")}</span>}
+            onSelect={this.areaSelect}
+          >
+            <MenuItem
+              eventKey='draw'
+              key='draw'
+            ><Icon icon="pencil" /> {_("Draw on Map")}</MenuItem>
+            <MenuItem divider />
+            {areaFiles}
+            <MenuItem divider />
+            <MenuItem
+              eventKey='coordinates'
+              key='coordinates'
+            ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
+            <MenuItem
+              eventKey='csv'
+              key='csv'
+            ><Icon icon="upload" /> {_("Upload CSV…")}</MenuItem>
+          </NavDropdown>
+          <NavDropdown
+            id="class4"
+            name="class4"
+            title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
+            onClick={this.class4ButtonHandler}
+            ref={(b) => this.class4button = b}
+          >
+            <MenuItem>
+              <div ref={(d) => this.class4div = d}/>
+            </MenuItem>
+          </NavDropdown>
+          <NavDropdown
+            name="drifter"
+            id="drifter"
+            title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
+            onSelect={this.drifterSelect}
+          >
+            <MenuItem
+              eventKey='all'
+              key='all'
+            >{_("All")}</MenuItem>
+            <MenuItem
+              eventKey='active'
+              key='active'
+            >{_("Active")}</MenuItem>
+            <MenuItem
+              eventKey='not responding'
+              key='not responding'
+            >{_("Not Responding")}</MenuItem>
+            <MenuItem
+              eventKey='inactive'
+              key='inactive'
+            >{_("Inactive")}</MenuItem>
+            <MenuItem divider />
+            <MenuItem
+              eventKey='select'
+              key='select'
+            ><Icon icon='list'/> {_("Select…")}</MenuItem>
+          </NavDropdown>
 
-      <NavItem 
-        name="plot"
-        onClick={this.buttonHandler}
-        disabled={!this.props.plotEnabled}
-      >
-        <Icon icon='line-chart' /> {_("Plot")}
-      </NavItem>
+          <NavItem 
+            name="plot"
+            onClick={this.buttonHandler}
+            disabled={!this.props.plotEnabled}
+          >
+            <Icon icon='line-chart' /> {_("Plot")}
+          </NavItem>
           
-      <OverlayTrigger
-        placement="bottom"
-        overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
-      >
-        <NavItem
-          name="reset"
-          onClick={(e) => {
-              this.buttonHandler(e); 
-              this.props.multiPointAction("reset")
-              this.props.updateState("plotEnabled", false);
-              this.props.updateState("modal", "");
-            }
-          }
-        >
-          <Icon icon='undo' alt={_("Reset Map")} />
-        </NavItem>
-      </OverlayTrigger>
-      </Nav>
-      </div>
+          <OverlayTrigger
+            placement="bottom"
+            overlay={<Tooltip id="tooltip">{_("Reset Map")}</Tooltip>}
+          >
+            <NavItem
+              name="reset"
+              onClick={(e) => {
+                this.buttonHandler(e); 
+                this.props.multiPointAction("reset");
+                this.props.updateState("plotEnabled", false);
+                this.props.updateState("modal", "");
+              }
+              }
+            >
+              <Icon icon='undo' alt={_("Reset Map")} />
+            </NavItem>
+          </OverlayTrigger>
+        </Nav>
+      </div>;
     }
 
     return (

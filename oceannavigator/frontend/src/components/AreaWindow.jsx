@@ -24,8 +24,8 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
-import Spinner from '../images/spinner.gif';
-import DataSelection from './DataSelection.jsx';
+import Spinner from "../images/spinner.gif";
+import DataSelection from "./DataSelection.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -121,20 +121,20 @@ export default class AreaWindow extends React.Component {
 
   */
   onTimeUpdate(key, value) {
-    if (typeof(key) === typeof('string')) {
-      value = moment(value.valueOf())
-      value.tz('GMT')
+    if (typeof(key) === typeof("string")) {
+      value = moment(value.valueOf());
+      value.tz("GMT");
       this.setState({
         [key]: value
-      })
+      });
     } else {
       //let date = moment.tz(key, 'GMT')
       //date.setUTCMonth(date.getUTCMonth() +1)
-      value = moment(key.valueOf())
-      value.tz('GMT')
+      value = moment(key.valueOf());
+      value.tz("GMT");
       this.setState({
-            time: key
-      })
+        time: key
+      });
     }
   }
 
@@ -159,123 +159,123 @@ export default class AreaWindow extends React.Component {
     If selected_right is null, empty, or undefined, will only load left map data
   */
   updateData(selected_left, selected_right) {
-    let selected = selected_left.split(',')
-    let data = this.props.data
+    const selected = selected_left.split(",");
+    const data = this.props.data;
 
     // Initialize non compare data
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
+    const layer = selected[0];
+    const index = selected[1];
+    const dataset = selected[2];
     //let variable = [selected[3]]
-    let variable = ''
+    let variable = "";
 
     if (selected.length > 4) {
       for (let v = 3; v < selected.length; v = v + 1) {
-        if (variable === '') {
-          variable = selected[v]
+        if (variable === "") {
+          variable = selected[v];
         } else {
-          variable = variable + ',' + selected[v]
+          variable = `${variable  },${  selected[v]}`;
         }
       }
     } else {
-      variable = [selected[3]]
+      variable = [selected[3]];
     }
 
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
-    let compare_time = moment(time.valueOf())
-    compare_time.tz('GMT')
-    time = moment(time.valueOf())
-    time.tz('GMT')
-    let output_starttime = moment(time.valueOf())
-    let output_endtime = moment(time.valueOf())
-    let depth = data[layer][index][dataset][variable].depth
+    const display = data[layer][index][dataset][variable].display;
+    const colourmap = data[layer][index][dataset][variable].colourmap;
+    const quantum = data[layer][index][dataset][variable].quantum;
+    const scale = data[layer][index][dataset][variable].scale;
+    let time = data[layer][index][dataset][variable].time;
+    let compare_time = moment(time.valueOf());
+    compare_time.tz("GMT");
+    time = moment(time.valueOf());
+    time.tz("GMT");
+    const output_starttime = moment(time.valueOf());
+    const output_endtime = moment(time.valueOf());
+    const depth = data[layer][index][dataset][variable].depth;
     
     if (jQuery.isEmptyObject(this.props.data_compare)) {
-      let data_compare = {
-        layer: layer,
-        index: index,
-        dataset: dataset,
-        variable: variable,
-        display: display,
-        colourmap: colourmap,
+      const data_compare = {
+        layer,
+        index,
+        dataset,
+        variable,
+        display,
+        colourmap,
         dataset_quantum: quantum,
-        scale: scale + ',auto',
-        depth: depth,
+        scale: `${scale  },auto`,
+        depth,
         time: compare_time
-      }
+      };
       this.setState({
-        data_compare: data_compare,
-        output_starttime: output_starttime,
-        output_endtime: output_endtime,
-      })
+        data_compare,
+        output_starttime,
+        output_endtime,
+      });
     } else {
-      let compare_display = data[layer][index][dataset][variable].display
-      let compare_colourmap = data[layer][index][dataset][variable].colourmap
-      let compare_quantum = data[layer][index][dataset][variable].quantum
-      let compare_scale = data[layer][index][dataset][variable].scale
-      compare_time = data[layer][index][dataset][variable].time
-      let depth = data[layer][index][dataset][variable].depth
-      let data_compare = {
-        layer: layer,
-        index: index,
-        dataset: dataset,
-        depth: depth,
-        variable: variable,
+      const compare_display = data[layer][index][dataset][variable].display;
+      const compare_colourmap = data[layer][index][dataset][variable].colourmap;
+      const compare_quantum = data[layer][index][dataset][variable].quantum;
+      const compare_scale = data[layer][index][dataset][variable].scale;
+      compare_time = data[layer][index][dataset][variable].time;
+      const depth = data[layer][index][dataset][variable].depth;
+      const data_compare = {
+        layer,
+        index,
+        dataset,
+        depth,
+        variable,
         display: compare_display,
         colourmap: compare_colourmap,
         quantum: compare_quantum,
-        scale: compare_scale + ',auto',
+        scale: `${compare_scale  },auto`,
         time: moment(compare_time.valueOf()),
-      }
+      };
 
       this.setState({
-        data_compare: data_compare,
-        output_starttime: output_starttime,
-        output_endtime: output_endtime
-      })
+        data_compare,
+        output_starttime,
+        output_endtime
+      });
     }
 
     this.setState({
       data: {
-        layer: layer,
-        index: index,
-        dataset: dataset,
-        variable: variable,
+        layer,
+        index,
+        dataset,
+        variable,
 
-        display: display,
-        colourmap: colourmap,
+        display,
+        colourmap,
         dataset_quantum: quantum,
-        scale: scale + ',auto',
-        time: time,
+        scale: `${scale  },auto`,
+        time,
         starttime: null,
       }
     }, () => {
-      this.updatePlot()
+      this.updatePlot();
       //this.populateVariables(dataset)
-    })
+    });
 
   }
 
   updateCompareData(selected) {
-    return
+    
   }
 
   populateVariables(dataset) {
     if (dataset === undefined) {
-      return
+      return;
     }
     $.ajax({
-      url: "/api/v1.0/variables/?dataset=" + dataset + "&anom",
+      url: `/api/v1.0/variables/?dataset=${  dataset  }&anom`,
       dataType: "json",
       cache: true,
 
       success: function (data) {
         if (this._mounted) {
-          const vars = data.map(function (d) {
+          const vars = data.map((d) => {
             return d.id;
           });
 
@@ -284,11 +284,11 @@ export default class AreaWindow extends React.Component {
           //}
 
           this.setState({
-            variables: data.map(function (d) {
+            variables: data.map((d) => {
               return d.id;
             }),
           }, () => {
-            this.updatePlot()
+            this.updatePlot();
           });
         }
         //this.updatePlot()
@@ -405,13 +405,13 @@ export default class AreaWindow extends React.Component {
   }*/
     if (this._mounted) {
       
-      let newState = this.state;
-      if (key === 'data') {
+      const newState = this.state;
+      if (key === "data") {
         newState[key] = value;
-      } else if (key === 'data_compare') {
+      } else if (key === "data_compare") {
         newState[key] = value;
-      } else if (key === 'compare_scale') {
-        newState['data_compare']['scale'] = value
+      } else if (key === "compare_scale") {
+        newState.data_compare.scale = value;
       } else if (typeof (key) === "string") {
         newState[key] = value;
       }
@@ -450,21 +450,21 @@ export default class AreaWindow extends React.Component {
   subsetArea() {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
 
-    window.location.href = "/subset/?" +
-      "&output_format=" + this.state.output_format +
-      "&dataset_name=" + this.state.data.dataset +
-      "&variables=" + this.state.output_variables.join() +
-      "&min_range=" + [AABB[0], AABB[2]].join() +
-      "&max_range=" + [AABB[1], AABB[3]].join() +
-      "&time=" + [this.state.output_starttime.toISOString(), this.state.output_endtime.toISOString()].join() +
-      "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
-      "&should_zip=" + (this.state.zip ? 1 : 0);
+    window.location.href = `${"/subset/?" +
+      "&output_format="}${  this.state.output_format 
+    }&dataset_name=${  this.state.data.dataset 
+    }&variables=${  this.state.output_variables.join() 
+    }&min_range=${  [AABB[0], AABB[2]].join() 
+    }&max_range=${  [AABB[1], AABB[3]].join() 
+    }&time=${  [this.state.output_starttime.toISOString(), this.state.output_endtime.toISOString()].join() 
+    }&user_grid=${  this.state.convertToUserGrid ? 1 : 0 
+    }&should_zip=${  this.state.zip ? 1 : 0}`;
   }
 
   saveScript(key) {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
 
-    let query = {
+    const query = {
       "output_format": this.state.output_format,
       "dataset_name": this.state.data.dataset,
       "variables": this.state.output_variables.join(),
@@ -475,7 +475,7 @@ export default class AreaWindow extends React.Component {
       "should_zip": (this.state.zip ? 1 : 0)
     };
 
-    window.location.href = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    window.location.href = `${window.location.origin  }/api/v1.0/generatescript/${  stringify(query)  }/${  key  }/`;
   }
 
   onTabChange(index) {
@@ -485,24 +485,24 @@ export default class AreaWindow extends React.Component {
   }
 
   updateLabel(e) {
-    let new_contour = this.state.contour
-    new_contour.clabel = !new_contour.clabel
+    const new_contour = this.state.contour;
+    new_contour.clabel = !new_contour.clabel;
 
     this.setState({
       contour: new_contour
-    })
+    });
   }
 
   updatePlot() {
     if (jQuery.isEmptyObject(this.state.data)) {
-      return
+      return;
     }
     switch (this.state.currentTab) {
       case 1:
         //this.plotQuery = undefined
 
         //if (this.plot_query === undefined) {
-        let plotQuery = {
+        const plotQuery = {
           dataset: this.state.data.dataset,
           quantum: this.state.data.dataset_quantum,
           scale: this.state.data.scale,
@@ -526,20 +526,20 @@ export default class AreaWindow extends React.Component {
         plotQuery.radius = this.props.options.interpRadius;
         plotQuery.neighbours = this.props.options.interpNeighbours;
         plotQuery.plotTitle = this.state.plotTitle;
-        plotQuery.random = Math.random()
+        plotQuery.random = Math.random();
         if (this.state.dataset_compare) {
-          let compare = jQuery.extend({}, plotQuery.compare_to)
-          compare = this.state.data_compare
-          let time = moment(this.state.data_compare.time.valueOf())
-          time.tz('GMT')
+          let compare = jQuery.extend({}, plotQuery.compare_to);
+          compare = this.state.data_compare;
+          const time = moment(this.state.data_compare.time.valueOf());
+          time.tz("GMT");
           compare.time = time;
           compare.scale_diff = this.state.scale_diff;
           compare.colormap_diff = this.state.colormap_diff;
-          plotQuery.compare_to = compare
+          plotQuery.compare_to = compare;
         }
         this.setState({
           plot_query: jQuery.extend({}, plotQuery)
-        })
+        });
         break;
       case 2:
         this.plot_query.time = this.state.data.time;
@@ -554,7 +554,7 @@ export default class AreaWindow extends React.Component {
 
         this.setState({
           plot_query: jQuery.extend({}, plotQuery)
-        })
+        });
 
         break;
     }
@@ -577,13 +577,13 @@ export default class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
-    let dataSelection = <DataSelection
+    const dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
-    ></DataSelection>
+    ></DataSelection>;
 
-    let contour_label = undefined;
-    if (this.state.contour.variable != '') {
+    let contour_label;
+    if (this.state.contour.variable != "") {
       contour_label = <Checkbox
         id='clabel'
         onChange={this.updateLabel}
@@ -591,12 +591,12 @@ export default class AreaWindow extends React.Component {
         style={this.props.style}
       >
         Contour Labels
-      </Checkbox>
+      </Checkbox>;
     }
-    let applyChanges2 = <Button
+    const applyChanges2 = <Button
       key='2'
       onClick={this.updatePlot}
-    >Apply Changes</Button>
+    >Apply Changes</Button>;
 
     const mapSettings = (<Panel
       collapsible
@@ -734,11 +734,11 @@ export default class AreaWindow extends React.Component {
     </Panel>);
 
 
-    let time = "";
-    let timeObj = this.state.output_endtime//new Date(this.props.state.time);
-    let starttimeObj = this.state.output_starttime//new Date(this.props.state.starttime);
+    const time = "";
+    const timeObj = this.state.output_endtime;//new Date(this.props.state.time);
+    const starttimeObj = this.state.output_starttime;//new Date(this.props.state.starttime);
     
-    var subsetPanel = null;
+    let subsetPanel = null;
     if (this._mounted) {
       subsetPanel = (<Panel
         key='subset'
@@ -755,7 +755,7 @@ export default class AreaWindow extends React.Component {
             state={this.state.output_variables}
             def={"defaults.dataset"}
             onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
-            url={"/api/v1.0/variables/?vectors&dataset=" + this.state.data.dataset
+            url={`/api/v1.0/variables/?vectors&dataset=${  this.state.data.dataset}`
             }
             title={_("Variables")}
           />
@@ -903,11 +903,11 @@ export default class AreaWindow extends React.Component {
     </Panel>
     );
 
-    let applyChanges1 = <Button
+    const applyChanges1 = <Button
       key='1'
       onClick={this.updatePlot}
-    >Apply Changes</Button>
-    var dataset = null
+    >Apply Changes</Button>;
+    let dataset = null;
     if (this.state.data.scale !== undefined) {
       dataset = (<Panel
         key='left_map'
@@ -918,12 +918,12 @@ export default class AreaWindow extends React.Component {
         bsStyle='primary'
       >
         {<DatasetSelector
-            key='data'
-            id='data'
-            multiple={this.state.currentTab === 2}
-            state={this.state.data}
-            onUpdate={this.onLocalUpdate}
-            depth={true}
+          key='data'
+          id='data'
+          multiple={this.state.currentTab === 2}
+          state={this.state.data}
+          onUpdate={this.onLocalUpdate}
+          depth={true}
         />}
         <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
           <Range
@@ -953,10 +953,10 @@ export default class AreaWindow extends React.Component {
 
     }
 
-    let applyChanges_compare = <Button
+    const applyChanges_compare = <Button
       key='compare'
       onClick={this.updatePlot}
-    >Apply Changes</Button>
+    >Apply Changes</Button>;
     const compare_dataset = <div key='compare_dataset'>
       <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>
         <Panel
@@ -1015,7 +1015,7 @@ export default class AreaWindow extends React.Component {
         leftInputs = [/*globalSettings*/mapSettings, subsetPanel];
 
         if (this.state.dataset_compare) {
-          rightInputs = [dataset, compare_dataset]
+          rightInputs = [dataset, compare_dataset];
         } else {
           rightInputs = [dataset];
         }

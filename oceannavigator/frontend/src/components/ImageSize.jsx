@@ -34,7 +34,7 @@ export default class ImageSize extends React.Component {
     newstate[key] = value;
     this.setState(newstate);
     if (key == "width" || key == "height") {
-      this.props.onUpdate("size", newstate.width + "x" + newstate.height);
+      this.props.onUpdate("size", `${newstate.width  }x${  newstate.height}`);
     } else if (key == "dpi") {
       this.props.onUpdate("dpi", value);
     }
@@ -48,36 +48,36 @@ export default class ImageSize extends React.Component {
         <table>
           <tbody>
             <tr>
-              <td><label htmlFor={this.props.id + "_width"}>{_("Width:")}</label></td>
+              <td><label htmlFor={`${this.props.id  }_width`}>{_("Width:")}</label></td>
               <td>
                 <NumericInput
-                  id={this.props.id + "_width"}
+                  id={`${this.props.id  }_width`}
                   step={0.25}
                   value={this.state.width}
                   precision={2}
                   onChange={(n, s) => this.changed("width", n)}
-                  format={(num) => {return num + " " + _("inches");}}
+                  format={(num) => {return `${num  } ${  _("inches")}`;}}
                 />
               </td>
             </tr>
             <tr>
-              <td><label htmlFor={this.props.id + "_height"}>{_("Height:")}</label></td>
+              <td><label htmlFor={`${this.props.id  }_height`}>{_("Height:")}</label></td>
               <td>
                 <NumericInput
-                  id={this.props.id + "_height"}
+                  id={`${this.props.id  }_height`}
                   step={0.25}
                   value={this.state.height}
                   precision={2}
                   onChange={(n, s) => this.changed("height", n)}
-                  format={(num) => {return num + " " + _("inches");}}
+                  format={(num) => {return `${num  } ${  _("inches")}`;}}
                 />
               </td>
             </tr>
             <tr>
-              <td><label htmlFor={this.props.id + "_dpi"}>{_("DPI:")}</label></td>
+              <td><label htmlFor={`${this.props.id  }_dpi`}>{_("DPI:")}</label></td>
               <td>
                 <NumericInput
-                  id={this.props.id + "_dpi"}
+                  id={`${this.props.id  }_dpi`}
                   step={1}
                   value={this.state.dpi}
                   precision={0}

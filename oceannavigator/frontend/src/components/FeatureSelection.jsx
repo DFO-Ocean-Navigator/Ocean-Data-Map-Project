@@ -23,22 +23,22 @@ export default class SettingsTab extends React.Component {
   }
 
   updateFeature(e) {
-    this.props.globalUpdate(e.target.id, !this.props.state[e.target.id])
+    this.props.globalUpdate(e.target.id, !this.props.state[e.target.id]);
   }
  
   render() {
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
-    let all_tabs = {
-      _foundation: 'Foundation',
-      _environment: 'Environment',
-      _intelligence: 'Intelligence',
-      _derived: 'Derived Products',
-      _planning: 'Planning Tools'
+    const all_tabs = {
+      _foundation: "Foundation",
+      _environment: "Environment",
+      _intelligence: "Intelligence",
+      _derived: "Derived Products",
+      _planning: "Planning Tools"
 
-    }
-    let check_boxes = []
+    };
+    const check_boxes = [];
 
-    for (let tab in this.props.state.allowedTabs) {
+    for (const tab in this.props.state.allowedTabs) {
       if (this.props.state.allowedTabs[tab] === true) {
         check_boxes.push(<Checkbox
           id={tab}
@@ -47,19 +47,19 @@ export default class SettingsTab extends React.Component {
           onChange={this.updateFeature}
         >
           {all_tabs[tab]}
-        </Checkbox>)
+        </Checkbox>);
       }
       
     }
 
 
     return (
-        <Panel
-              collapsible
-              defaultExpanded
-              header={_("Enabled Features")}
-              bsStyle='primary'
-        >
+      <Panel
+        collapsible
+        defaultExpanded
+        header={_("Enabled Features")}
+        bsStyle='primary'
+      >
 
         {check_boxes}
 
@@ -101,7 +101,7 @@ export default class SettingsTab extends React.Component {
           </Checkbox>
         */}
           
-        </Panel>
+      </Panel>
 
     );
   }

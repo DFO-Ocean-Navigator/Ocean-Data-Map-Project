@@ -17,7 +17,7 @@ export default class DrifterWindow extends React.Component {
     super(props);
     this.state = {
       showmap: true,
-      variable: '', //props.data.variable.indexOf(",") == -1 ? [props.data.variable] : props.data.variable.split(","),
+      variable: "", //props.data.variable.indexOf(",") == -1 ? [props.data.variable] : props.data.variable.split(","),
       latlon: false,
       buoyvariable: ["sst"],
       starttime: null,
@@ -43,8 +43,8 @@ export default class DrifterWindow extends React.Component {
       dataType: "json",
       cache: true,
       success: function(data) {
-        let data_min = moment(data.min).tz('GMT')
-        let data_max = moment(data.max).tz('GMT')
+        const data_min = moment(data.min).tz("GMT");
+        const data_max = moment(data.max).tz("GMT");
         this.setState({
           mindate: data_min,
           maxdate: data_max,
@@ -53,24 +53,24 @@ export default class DrifterWindow extends React.Component {
         }, this.updatePlot);
         
       }.bind(this),
-      error: function(xhr, status, err) {
+      error(xhr, status, err) {
         console.error(xhr.url, status, err.toString());
-      }.bind(this)
+      }
     });
   }
 
   populateVariables(dataset) {
     if (dataset === undefined) {
-      return
+      return;
     }
     $.ajax({
-      url: "/api/v1.0/variables/?dataset=" + dataset,
+      url: `/api/v1.0/variables/?dataset=${  dataset}`,
       dataType: "json",
       cache: true,
 
       success: function (data) {
         if (this._mounted) {
-          const vars = data.map(function (d) {
+          const vars = data.map((d) => {
             return d.id;
           });
 
@@ -79,11 +79,11 @@ export default class DrifterWindow extends React.Component {
           //}
 
           this.setState({
-            variables: data.map(function (d) {
+            variables: data.map((d) => {
               return d.id;
             }),
           }, () => {
-            this.updatePlot()
+            this.updatePlot();
           });
         }
         //this.updatePlot()
@@ -98,64 +98,64 @@ export default class DrifterWindow extends React.Component {
   }
 
   updateData(selected) {
-    selected = selected.split(',')
-    let data = this.props.data
+    selected = selected.split(",");
+    const data = this.props.data;
 
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
+    const layer = selected[0];
+    const index = selected[1];
+    const dataset = selected[2];
+    let variable = "";
 
     if (selected.length > 4) {
       for (let v = 3; v < selected.length; v=v+1) {
-        if (variable === '') {
-          variable = selected[v]
+        if (variable === "") {
+          variable = selected[v];
         } else {
-          variable = variable + ',' + selected[v]  
+          variable = `${variable  },${  selected[v]}`;  
         }
       }
     } else {
-      variable = [selected[3]]
+      variable = [selected[3]];
     }
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
+    const display = data[layer][index][dataset][variable].display;
+    const colourmap = data[layer][index][dataset][variable].colourmap;
+    const quantum = data[layer][index][dataset][variable].quantum;
+    const scale = data[layer][index][dataset][variable].scale;
     //let time = data[layer][index][dataset][variable].time
     //console.warn("TIME: ", time)
     //time = moment.tz(time, 'GMT')
     //console.warn("MOMENT: ", time)
     //time.setUTCMonth(time.getUTCMonth() - 1)
     this.setState({
-      layer: layer,
-      index: index,
-      dataset: dataset,
-      variable: variable,
+      layer,
+      index,
+      dataset,
+      variable,
 
-      display: display,
-      colourmap: colourmap,
-      quantum: quantum,
-      scale: scale,
+      display,
+      colourmap,
+      quantum,
+      scale,
       //time: time,
     }, () => {
-      this.updatePlot()
-      this.populateVariables(dataset)
-    })
+      this.updatePlot();
+      this.populateVariables(dataset);
+    });
   }
 
   onLocalUpdate(key, value) {
-    var newState = {};
+    const newState = {};
     if (typeof(key) === "string") {
       newState[key] = value;
     } else {
-      for (var i = 0; i < key.length; i++) {
+      for (let i = 0; i < key.length; i++) {
         newState[key[i]] = value[i];
       }
     }
     this.setState(newState);
 
-    var parentKeys = [];
-    var parentValues = [];
+    const parentKeys = [];
+    const parentValues = [];
 
     if (newState.hasOwnProperty("variable_scale") && this.state.variable.length == 1) {
       parentKeys.push("variable_scale");
@@ -170,11 +170,11 @@ export default class DrifterWindow extends React.Component {
     if (parentKeys.length > 0) {
       this.props.onUpdate(parentKeys, parentValues);
     }
-    this.updatePlot()
+    this.updatePlot();
   }
 
   updatePlot() {
-    var plot_query = {
+    const plot_query = {
       dataset: this.state.dataset,
       quantum: this.state.quantum,
       scale: this.state.scale,
@@ -195,8 +195,8 @@ export default class DrifterWindow extends React.Component {
     }
 
     this.setState({
-      plot_query: plot_query
-    })
+      plot_query
+    });
   }
 
   render() {
@@ -208,7 +208,7 @@ export default class DrifterWindow extends React.Component {
     _("Start Time");
     _("End Time");
     _("Saved Image Size");
-    var dataset = <ComboBox
+    const dataset = <ComboBox
       key='dataset'
       id='dataset'
       state={this.state.dataset}
@@ -217,34 +217,34 @@ export default class DrifterWindow extends React.Component {
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
-    var buoyvariable = <ComboBox
+    const buoyvariable = <ComboBox
       key='buoyvariable'
       id='buoyvariable'
       multiple
       state={this.state.buoyvariable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/drifters/vars/" + this.props.drifter}
+      url={`/api/drifters/vars/${  this.props.drifter}`}
       title={_("Buoy Variable")}
     ><h1>Buoy Variable</h1></ComboBox>;
-    var variable = <ComboBox
+    const variable = <ComboBox
       key='variable'
       id='variable'
       multiple
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/variables/?dataset="+this.props.dataset}
+      url={`/api/v1.0/variables/?dataset=${this.props.dataset}`}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
-    var showmap = <SelectBox
+    const showmap = <SelectBox
       key='showmap'
       id='showmap'
       state={this.state.showmap}
       onUpdate={this.onLocalUpdate}
       title={_("Show Map")}
     >{_("showmap_help")}</SelectBox>;
-    var latlon = <SelectBox
+    const latlon = <SelectBox
       key='latlon'
       id='latlon'
       state={this.state.latlon}
@@ -252,17 +252,17 @@ export default class DrifterWindow extends React.Component {
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</SelectBox>;
 
-    var timeRange = null
+    let timeRange = null;
     if (dataset !== undefined) {
       timeRange = <TimePicker
         range={true}
-        key={'timeRange'}  //toISOString()}
+        key={"timeRange"}  //toISOString()}
         dataset={this.state.dataset}
         quantum={this.state.quantum}
         startDate={this.state.starttime}
         date={this.state.endtime}
         onTimeUpdate={this.onTimeUpdate}
-      />
+      />;
     }
    
     /*
@@ -284,28 +284,28 @@ export default class DrifterWindow extends React.Component {
       min={this.state.starttime}
       max={this.state.maxdate}
     />;*/
-    var size = <ImageSize
+    const size = <ImageSize
       key='size'
       id='size'
       state={this.state.size}
       onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")}
     />;
-    var depth = <ComboBox
+    const depth = <ComboBox
       key='depth'
       id='depth'
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={"/api/depth/?variable=" +
-        this.state.variable +
-        "&dataset=" +
-        this.state.dataset
+      url={`/api/depth/?variable=${ 
+        this.state.variable 
+      }&dataset=${ 
+        this.state.dataset}`
       }
       title={_("Depth")}
     ></ComboBox>;
 
-    var inputs = [];
+    let inputs = [];
     
     inputs = [
       dataset, showmap, latlon, timeRange, /*starttime, endtime,*/ buoyvariable, variable,
@@ -313,18 +313,18 @@ export default class DrifterWindow extends React.Component {
     ];
 
     
-    let dataSelection = <DataSelection
+    const dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
-    ></DataSelection>
+    ></DataSelection>;
 
-    var plotImage = null
+    let plotImage = null;
     if (this.state.plot_query !== undefined) {
       plotImage = <PlotImage
         query={this.state.plot_query} // For image saving link.
         permlink_subquery={this.state}
         action={this.props.action}
-      />
+      />;
     }
 
     return (

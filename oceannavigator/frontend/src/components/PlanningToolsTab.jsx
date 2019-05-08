@@ -38,39 +38,39 @@ export default class PlannningToolsTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Navy")}</span></span>}>
-                <Panel
-                  collapsible
-                  defaultExpanded
-                  header={_("Navy")}
-                  bsStyle='primary'
-                >
-                </Panel>
-            </Tab>
-            <Tab eventKey={2} title={<span>{_("Army")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Army")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
-            <Tab eventKey={3} title={<span>{_("Air")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Air")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
-            <Tab eventKey={4} title={<span>{_("Joint")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Joint")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
+          <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Navy")}</span></span>}>
+            <Panel
+              collapsible
+              defaultExpanded
+              header={_("Navy")}
+              bsStyle='primary'
+            >
+            </Panel>
+          </Tab>
+          <Tab eventKey={2} title={<span>{_("Army")}</span>}>
+            <Panel
+              collapsible
+              header={_("Army")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
+          <Tab eventKey={3} title={<span>{_("Air")}</span>}>
+            <Panel
+              collapsible
+              header={_("Air")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
+          <Tab eventKey={4} title={<span>{_("Joint")}</span>}>
+            <Panel
+              collapsible
+              header={_("Joint")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
         </Tabs>
       </div>
         

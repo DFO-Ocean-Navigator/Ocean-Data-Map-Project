@@ -37,7 +37,7 @@ export default class DatasetSelector extends React.Component {
   }
 
   onUpdate(key, value) {
-    const newState = this.props.state
+    const newState = this.props.state;
 
     if (typeof(key) === "string") {
       newState[key] = value;
@@ -52,19 +52,19 @@ export default class DatasetSelector extends React.Component {
   }
 
   onTimeUpdate(key, value) {
-    let new_state = this.props.state
-    if (typeof(key) === typeof('string')) {
-      value = moment(value.valueOf())
-      value.tz('GMT')
+    const new_state = this.props.state;
+    if (typeof(key) === typeof("string")) {
+      value = moment(value.valueOf());
+      value.tz("GMT");
 
-      new_state[key] = value
+      new_state[key] = value;
     } else {
-      value = moment(key.valueOf())
-      value.tz('GMT')
+      value = moment(key.valueOf());
+      value.tz("GMT");
 
-      new_state.time = value
+      new_state.time = value;
     }
-    this.props.onUpdate(jQuery.extend({}, new_state))
+    this.props.onUpdate(jQuery.extend({}, new_state));
   }
   
   render() {
@@ -83,16 +83,16 @@ export default class DatasetSelector extends React.Component {
 
     // Determine which timepicker we need
     let time = "";
-    let timeObj = this.props.state.time
+    let timeObj = this.props.state.time;
     if (timeObj !== null) {
-      timeObj = moment(timeObj.valueOf()) //new Date(this.props.state.time);
-      timeObj.tz('GMT')
+      timeObj = moment(timeObj.valueOf()); //new Date(this.props.state.time);
+      timeObj.tz("GMT");
     }
     
-    let starttimeObj = this.props.state.starttime //new Date(this.props.state.starttime);
+    let starttimeObj = this.props.state.starttime; //new Date(this.props.state.starttime);
     if (starttimeObj !== undefined && starttimeObj !== null) {
-      starttimeObj = moment(starttimeObj.valueOf())
-      starttimeObj.tz('GMT')
+      starttimeObj = moment(starttimeObj.valueOf());
+      starttimeObj.tz("GMT");
     }
 
     switch (this.props.time) {
@@ -112,7 +112,7 @@ export default class DatasetSelector extends React.Component {
         break;
       case "single":
       default:
-          time =<TimePicker
+        time =<TimePicker
           range={false}
           key='time'
           dataset={this.props.state.dataset}
@@ -123,31 +123,31 @@ export default class DatasetSelector extends React.Component {
         />;      
     }
 
-    let velocity_selector = null;
+    const velocity_selector = null;
     
     return (
       <div className='DatasetSelector'>
         
-          {<ComboBox
-            id='dataset'
-            state={this.props.state.dataset}
-            def={"defaults.dataset"}
-            onUpdate={this.onUpdate}
-            url='/api/datasets/'
-            title={_("Dataset")}>
-          </ComboBox>
+        {<ComboBox
+          id='dataset'
+          state={this.props.state.dataset}
+          def={"defaults.dataset"}
+          onUpdate={this.onUpdate}
+          url='/api/datasets/'
+          title={_("Dataset")}>
+        </ComboBox>
         }
-          <ComboBox
-            id='variable'
-            multiple={this.props.multiple}
-            state={this.props.state.variable}
-            def={"defaults.dataset"}
-            onUpdate={this.variableUpdate}
-            url={"/api/v1.0/variables/?3d_only&dataset=" + this.props.state.dataset + variables
-            }
-            title={_("Variable")}
-          ><h1>{_("Variable")}</h1>
-          </ComboBox>
+        <ComboBox
+          id='variable'
+          multiple={this.props.multiple}
+          state={this.props.state.variable}
+          def={"defaults.dataset"}
+          onUpdate={this.variableUpdate}
+          url={`/api/v1.0/variables/?3d_only&dataset=${  this.props.state.dataset  }${variables}`
+          }
+          title={_("Variable")}
+        ><h1>{_("Variable")}</h1>
+        </ComboBox>
         
         
         
@@ -159,10 +159,10 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.depth}
           def={0}
           onUpdate={this.onUpdate}
-          url={"/api/depth/?variable=" +
-            this.props.state.variable +
-            "&dataset=" +
-            this.props.state.dataset
+          url={`/api/depth/?variable=${ 
+            this.props.state.variable 
+          }&dataset=${ 
+            this.props.state.dataset}`
           }
           title={_("Depth")}
         ></ComboBox>}

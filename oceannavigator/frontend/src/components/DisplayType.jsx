@@ -25,9 +25,9 @@ export default class DisplayType extends React.Component {
     
     
     return (
-        <div>
+      <div>
             
-        </div>
+      </div>
     );
   }
 }

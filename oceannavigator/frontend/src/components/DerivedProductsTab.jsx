@@ -39,31 +39,31 @@ export default class DerivedProductsTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span>{_("Navy")}</span>}>
-                <Panel
-                  collapsible
-                  defaultExpanded
-                  header={_("Navy")}
-                  bsStyle='primary'
-                >
-                </Panel>
-            </Tab>
-            <Tab eventKey={2} title={<span>{_("Army")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Army")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
-            <Tab eventKey={3} title={<span>{_("Air")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Air")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
+          <Tab eventKey={1} title={<span>{_("Navy")}</span>}>
+            <Panel
+              collapsible
+              defaultExpanded
+              header={_("Navy")}
+              bsStyle='primary'
+            >
+            </Panel>
+          </Tab>
+          <Tab eventKey={2} title={<span>{_("Army")}</span>}>
+            <Panel
+              collapsible
+              header={_("Army")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
+          <Tab eventKey={3} title={<span>{_("Air")}</span>}>
+            <Panel
+              collapsible
+              header={_("Air")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
         </Tabs>
       </div>
         

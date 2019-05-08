@@ -43,7 +43,7 @@ export default class VelocitySelector extends React.Component {
       <div>
         <SelectBox
           key='magnitude'
-          state={this.state.velocity_plots[PlotTypes["magnitude"]]}
+          state={this.state.velocity_plots[PlotTypes.magnitude]}
           id='magnitude'
           onUpdate={this.updatePlotType}
           title={_("Magnitude")}
@@ -53,7 +53,7 @@ export default class VelocitySelector extends React.Component {
 
         <SelectBox
           key='parallel'
-          state={this.state.velocity_plots[PlotTypes["parallel"]]}
+          state={this.state.velocity_plots[PlotTypes.parallel]}
           id='parallel'
           onUpdate={this.updatePlotType}
           title={_("Parallel")}
@@ -63,7 +63,7 @@ export default class VelocitySelector extends React.Component {
         
         <SelectBox
           key='perpendicular'
-          state={this.state.velocity_plots[PlotTypes["perpendicular"]]}
+          state={this.state.velocity_plots[PlotTypes.perpendicular]}
           id='perpendicular'
           onUpdate={this.updatePlotType}
           title={_("Perpendicular")}

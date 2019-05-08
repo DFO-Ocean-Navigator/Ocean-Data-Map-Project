@@ -19,10 +19,10 @@ export default class ShipOptions extends React.Component {
     super(props);
 
     this.state = {
-      display: 'select'
-    }
+      display: "select"
+    };
     
-    this.display = 'select'
+    this.display = "select";
 
     this.trackShip = this.trackShip.bind(this);
     this.quickInfo = this.quickInfo.bind(this);
@@ -36,8 +36,8 @@ export default class ShipOptions extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.contact !== this.props.contact) {
       this.setState({
-        display: 'select'
-      })
+        display: "select"
+      });
     }
   }
 
@@ -54,26 +54,26 @@ export default class ShipOptions extends React.Component {
   }
 
   quickInfo() {
-    let display
-    if (this.state.display === 'info') {
-      display = 'select'
+    let display;
+    if (this.state.display === "info") {
+      display = "select";
     } else {
-      display = 'info'
+      display = "info";
     }
 
     this.setState({
-      display: display
-    })
+      display
+    });
   }
 
   launchPlot() {
-    this.display = 'launch'
+    this.display = "launch";
   }
 
   convertToClick (e) {
-    const evt = new MouseEvent('click', { bubbles: true })
-    evt.stopPropagation = () => {}
-    e.target.dispatchEvent(evt)
+    const evt = new MouseEvent("click", { bubbles: true });
+    evt.stopPropagation = () => {};
+    e.target.dispatchEvent(evt);
   }
 
 
@@ -81,42 +81,42 @@ export default class ShipOptions extends React.Component {
     
     
 
-    let style = {
-      width: '100%',
-      height: 'fit-content',
-      transition: 'inherit',
-    }
+    const style = {
+      width: "100%",
+      height: "fit-content",
+      transition: "inherit",
+    };
 
-    let button_style = {
-      width: '100%',
-      height: '20px',
-    }
+    const button_style = {
+      width: "100%",
+      height: "20px",
+    };
 
-    let elems = ['entity_type', 'mmsi', 'flag', 'report_date_time', ];
-    let elem_names = ['Vessel Type: ', 'MMSI: ', 'Country of Origin: ', 'Last Reported: ', ];
-    let contact_info = [];
-    for (let elem in elems) {
-      let new_div = <div>{elem_names[elem]}{this.props.contact.get(elems[elem])}</div>;
+    const elems = ["entity_type", "mmsi", "flag", "report_date_time", ];
+    const elem_names = ["Vessel Type: ", "MMSI: ", "Country of Origin: ", "Last Reported: ", ];
+    const contact_info = [];
+    for (const elem in elems) {
+      const new_div = <div>{elem_names[elem]}{this.props.contact.get(elems[elem])}</div>;
       contact_info.push(new_div);
     }
     
-    let display = [];
-    let buttons = []
+    const display = [];
+    let buttons = [];
     switch(this.state.display) {
-      case 'info':
+      case "info":
         display.push(contact_info);
         break;
-      }
-    let info = <div onMouseUp={this.convertToClick}>
-        <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
-      </div>
-    let plot = <div onMouseUp={this.convertToClick}>
-        <div className='topRight' onClick={this.trackShip}><Icon icon='line-chart'/></div>  
-      </div>
-    let center = <div onMouseUp={this.convertToClick}>
-        <div className='btmLeft' onClick={this.quickInfo}><Icon icon='thumb-tack'/></div>
-      </div>
-    buttons = [info, plot, center]
+    }
+    const info = <div onMouseUp={this.convertToClick}>
+      <div className='topLeft' onClick={this.quickInfo}><Icon icon='info'/></div>
+    </div>;
+    const plot = <div onMouseUp={this.convertToClick}>
+      <div className='topRight' onClick={this.trackShip}><Icon icon='line-chart'/></div>  
+    </div>;
+    const center = <div onMouseUp={this.convertToClick}>
+      <div className='btmLeft' onClick={this.quickInfo}><Icon icon='thumb-tack'/></div>
+    </div>;
+    buttons = [info, plot, center];
 
     return (
       <div className='shipOptions_container'>

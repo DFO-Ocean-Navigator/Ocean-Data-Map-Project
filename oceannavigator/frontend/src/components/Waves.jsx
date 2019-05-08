@@ -23,20 +23,20 @@ export default class Waves extends React.Component {
   render() {    
     
     return (
-        <div>
-            <IceLayer
-              state={this.props.state}
-              swapViews={this.props.swapViews}
-              toggleLayer={this.props.toggleLayer}
-              reloadLayer={this.props.reloadLayer}
-              mapComponent={this.props.mapComponent}
-              globalUpdate={this.props.globalUpdate}
-              showHelp={this.props.showHelp}
-              options={this.props.state.options}
-              updateOptions={this.props.updateOptions}
-            />
+      <div>
+        <IceLayer
+          state={this.props.state}
+          swapViews={this.props.swapViews}
+          toggleLayer={this.props.toggleLayer}
+          reloadLayer={this.props.reloadLayer}
+          mapComponent={this.props.mapComponent}
+          globalUpdate={this.props.globalUpdate}
+          showHelp={this.props.showHelp}
+          options={this.props.state.options}
+          updateOptions={this.props.updateOptions}
+        />
 
-        </div>
+      </div>
     );
   }
 }

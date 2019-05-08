@@ -60,17 +60,17 @@ export default class StatsTable extends React.Component {
       cache: true,
       
     }).promise();
-    promise.done(function(data) {
+    promise.done((data) => {
       if (this._mounted) {
         this.setState({
-          data: data,
+          data,
           fail: false,
           loading: false,
           errorMessage: null,
         });
       }
-    }.bind(this));
-    promise.fail(function(xhr) {
+    });
+    promise.fail((xhr) => {
       if (this._mounted) {
         const message = JSON.parse(xhr.responseText).message;
         console.error(xhr);
@@ -80,7 +80,7 @@ export default class StatsTable extends React.Component {
           errorMessage: message,
         });
       }
-    }.bind(this));
+    });
     
     
   }
@@ -105,7 +105,7 @@ export default class StatsTable extends React.Component {
       area: q.area,
     };
 
-    return "/stats/?query=" + encodeURIComponent(stringify(query));
+    return `/stats/?query=${  encodeURIComponent(stringify(query))}`;
   }
 
   render() {
@@ -129,10 +129,10 @@ export default class StatsTable extends React.Component {
         </tbody>
       );
     } else {
-      content = this.state.data.map(function(area) {
-        const vars = area.variables.map(function(v) {
+      content = this.state.data.map((area) => {
+        const vars = area.variables.map((v) => {
           return (
-            <tr key={area.name + "_" + v.name}>
+            <tr key={`${area.name  }_${  v.name}`}>
               <td>{v.name} ({v.unit})</td>
               <td>{v.min}</td>
               <td>{v.max}</td>

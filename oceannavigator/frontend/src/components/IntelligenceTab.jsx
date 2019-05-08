@@ -40,35 +40,35 @@ export default class IntelligenceTab extends React.Component {
         >
 
           {/* Creates the Data Selection Tab */}
-            <Tab eventKey={1} title={<span className='envTabName'>{_("Contact")}</span>}>
-                <Contacts
-                  state={this.props.state}
-                  swapViews={this.props.swapViews}
-                  toggleLayer={this.props.toggleLayer}
-                  reloadLayer={this.props.mapComponent.reloadLayer}
-                  mapComponent={this.props.mapComponent}
-                  changeHandler={this.props.changeHandler}
-                  showHelp={this.props.showHelp}
-                  options={this.props.state.options}
-                  updateOptions={this.props.updateOptions}
-                />
-            </Tab>
-            <Tab eventKey={2} title={<span className='envTabName'>{_("Events")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Events")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
-            <Tab eventKey={3} title={<span className='envTabName'>{_("Other")}</span>}>
-                <Panel
-                  collapsible
-                  header={_("Other")}
-                  bsStyle='primary'
-                > 
-                </Panel>
-            </Tab>
+          <Tab eventKey={1} title={<span className='envTabName'>{_("Contact")}</span>}>
+            <Contacts
+              state={this.props.state}
+              swapViews={this.props.swapViews}
+              toggleLayer={this.props.toggleLayer}
+              reloadLayer={this.props.mapComponent.reloadLayer}
+              mapComponent={this.props.mapComponent}
+              changeHandler={this.props.changeHandler}
+              showHelp={this.props.showHelp}
+              options={this.props.state.options}
+              updateOptions={this.props.updateOptions}
+            />
+          </Tab>
+          <Tab eventKey={2} title={<span className='envTabName'>{_("Events")}</span>}>
+            <Panel
+              collapsible
+              header={_("Events")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
+          <Tab eventKey={3} title={<span className='envTabName'>{_("Other")}</span>}>
+            <Panel
+              collapsible
+              header={_("Other")}
+              bsStyle='primary'
+            > 
+            </Panel>
+          </Tab>
         </Tabs>
       </div>
         

@@ -18,7 +18,7 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DataSelection from "./DataSelection.jsx";
-import Spinner from '../images/spinner.gif';
+import Spinner from "../images/spinner.gif";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -43,7 +43,7 @@ export default class LineWindow extends React.Component {
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
-      scale_diff: '0,0',
+      scale_diff: "0,0",
       size: "10x7",
       dpi: 144,
       depth_limit: false,
@@ -89,104 +89,104 @@ export default class LineWindow extends React.Component {
     
   */
   updateData(selected) {
-    selected = selected.split(',')
-    let data = this.props.data
+    selected = selected.split(",");
+    const data = this.props.data;
 
     // Initialize non compare data
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
+    const layer = selected[0];
+    const index = selected[1];
+    const dataset = selected[2];
+    let variable = "";
 
     if (selected.length > 4) {
       for (let v = 3; v < selected.length; v = v + 1) {
-        if (variable === '') {
-          variable = selected[v]
+        if (variable === "") {
+          variable = selected[v];
         } else {
-          variable = variable + ',' + selected[v]
+          variable = `${variable  },${  selected[v]}`;
         }
       }
     } else {
-      variable = [selected[3]]
+      variable = [selected[3]];
     }
     
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
-    let compare_time = moment(time.valueOf())
-    compare_time.tz('GMT')
-    time = moment(time.valueOf())
-    time.tz('GMT')
-    let output_starttime = moment(time.valueOf())
-    let output_endtime = moment(time.valueOf())
+    const display = data[layer][index][dataset][variable].display;
+    const colourmap = data[layer][index][dataset][variable].colourmap;
+    const quantum = data[layer][index][dataset][variable].quantum;
+    const scale = data[layer][index][dataset][variable].scale;
+    let time = data[layer][index][dataset][variable].time;
+    let compare_time = moment(time.valueOf());
+    compare_time.tz("GMT");
+    time = moment(time.valueOf());
+    time.tz("GMT");
+    const output_starttime = moment(time.valueOf());
+    const output_endtime = moment(time.valueOf());
     
     if (jQuery.isEmptyObject(this.props.data_compare)) {
-        let data_compare = {
-          layer: layer,
-          index: index,
-          dataset: dataset,
-          variable: variable,
+      const data_compare = {
+        layer,
+        index,
+        dataset,
+        variable,
     
-          display: display,
-          colourmap: colourmap,
-          dataset_quantum: quantum,
-          scale: scale + ',auto',
-          time: time,  
-        }
+        display,
+        colourmap,
+        dataset_quantum: quantum,
+        scale: `${scale  },auto`,
+        time,  
+      };
         
-        this.setState({
-          data_compare: data_compare,
-          output_starttime: output_starttime,
-          output_endtime: output_endtime,
-        })
+      this.setState({
+        data_compare,
+        output_starttime,
+        output_endtime,
+      });
     } else {
 
-      let compare_display = data[layer][index][dataset][variable].display
-      let compare_colourmap = data[layer][index][dataset][variable].colourmap
-      let compare_quantum = data[layer][index][dataset][variable].quantum
-      let compare_scale = data[layer][index][dataset][variable].scale
-      compare_time = data[layer][index][dataset][variable].time
+      const compare_display = data[layer][index][dataset][variable].display;
+      const compare_colourmap = data[layer][index][dataset][variable].colourmap;
+      const compare_quantum = data[layer][index][dataset][variable].quantum;
+      const compare_scale = data[layer][index][dataset][variable].scale;
+      compare_time = data[layer][index][dataset][variable].time;
       
-      let depth = data[layer][index][dataset][variable].depth
+      const depth = data[layer][index][dataset][variable].depth;
       
-      let data_compare = {
-        layer: layer,
-        index: index,
-        dataset: dataset,
-        depth: depth,
-        variable: variable,
+      const data_compare = {
+        layer,
+        index,
+        dataset,
+        depth,
+        variable,
         display: compare_display,
         colourmap: compare_colourmap,
         quantum: compare_quantum,
-        scale: compare_scale + ',auto',
+        scale: `${compare_scale  },auto`,
         time: moment(compare_time.valueOf()),
-      }
+      };
       
       this.setState({
-        data_compare: data_compare,
-        output_starttime: output_starttime,
-        output_endtime: output_endtime,
-      })
+        data_compare,
+        output_starttime,
+        output_endtime,
+      });
     }
     
     this.setState({
       data: {
-        layer: layer,
-        index: index,
-        dataset: dataset,
-        variable: variable,
+        layer,
+        index,
+        dataset,
+        variable,
   
-        display: display,
-        colourmap: colourmap,
+        display,
+        colourmap,
         dataset_quantum: quantum,
-        scale: scale + ',auto',
-        time: time,
+        scale: `${scale  },auto`,
+        time,
       }
     }, () => {
-      this.updatePlot()
-   })
+      this.updatePlot();
+    });
     
   }
 
@@ -196,16 +196,16 @@ export default class LineWindow extends React.Component {
   */
   populateVariables(dataset) {
     if (dataset === undefined) {
-      return
+      return;
     }
     $.ajax({
-      url: "/api/v1.0/variables/?dataset=" + dataset + "&anom",
+      url: `/api/v1.0/variables/?dataset=${  dataset  }&anom`,
       dataType: "json",
       cache: true,
 
       success: function (data) {
         if (this._mounted) {
-          const vars = data.map(function (d) {
+          const vars = data.map((d) => {
             return d.id;
           });
 
@@ -214,11 +214,11 @@ export default class LineWindow extends React.Component {
           //}
 
           this.setState({
-            variables: data.map(function (d) {
+            variables: data.map((d) => {
               return d.id;
             }),
           }, () => {
-            this.updatePlot()
+            this.updatePlot();
           });
         }
         //this.updatePlot()
@@ -236,7 +236,7 @@ export default class LineWindow extends React.Component {
     I have no idea what this does
   */
   updateSelectedPlots (plots_selected, compare) {
-    let temp = [1, 0, 0];
+    const temp = [1, 0, 0];
     
     if(plots_selected[0]) {
       temp[0] = 1;
@@ -272,23 +272,23 @@ export default class LineWindow extends React.Component {
   onLocalUpdate(key, value) {
     if (this._mounted) {
       
-      var newState = {};
+      const newState = {};
 
-      if (key === 'data') {
+      if (key === "data") {
         newState[key] = value;
       } else if (typeof(key) === "string") {
-        if (key === 'scale') {
-          let data = jQuery.extend({}, this.state.data)
-          data['scale'] = value
-          newState.data = data
+        if (key === "scale") {
+          const data = jQuery.extend({}, this.state.data);
+          data.scale = value;
+          newState.data = data;
         } else {
           newState[key] = value;
         }
       } else {
-        if (key[0] === 'colourmap') {
-          let data = jQuery.extend({}, this.state.data)
-          data['colourmap'] = value.join()
-          newState.data = data
+        if (key[0] === "colourmap") {
+          const data = jQuery.extend({}, this.state.data);
+          data.colourmap = value.join();
+          newState.data = data;
         } else {
           for (let i = 0; i < key.length; ++i) {
             newState[key[i]] = value[i];
@@ -309,7 +309,7 @@ export default class LineWindow extends React.Component {
   */
   updatePlot() {
     if (jQuery.isEmptyObject(this.state.data)) {
-      return
+      return;
     }
 
     
@@ -337,7 +337,7 @@ export default class LineWindow extends React.Component {
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.state.dataset_compare) {
-          plot_query.compare_to = this.state.data_compare
+          plot_query.compare_to = this.state.data_compare;
           plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -351,7 +351,7 @@ export default class LineWindow extends React.Component {
         plot_query.starttime = this.state.data.starttime;//this.props.starttime;
         plot_query.depth = this.state.data.depth;
         if (this.state.dataset_compare) {
-          plot_query.compare_to = this.state.data_compare
+          plot_query.compare_to = this.state.data_compare;
           plot_query.compare_to.dataset = this.state.data_compare.dataset;
           plot_query.compare_to.scale = this.state.data_compare.scale;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -361,8 +361,8 @@ export default class LineWindow extends React.Component {
         break;
     }
     this.setState({
-      plot_query: plot_query
-    })
+      plot_query
+    });
   }
 
   /*
@@ -388,15 +388,15 @@ export default class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
-    let dataSelection = <DataSelection
+    const dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
-    ></DataSelection>
-    let applyChanges1 = <Button
-        key='1'
-        onClick={this.updatePlot}
-        >Apply Changes
-      </Button>
+    ></DataSelection>;
+    const applyChanges1 = <Button
+      key='1'
+      onClick={this.updatePlot}
+    >Apply Changes
+    </Button>;
     const global = (<Panel 
       key='global_settings'
       id='global_settings'
@@ -479,154 +479,154 @@ export default class LineWindow extends React.Component {
       ></CustomPlotLabels>
       {applyChanges1}
     </Panel>);
-    let applyChanges2 = <Button
+    const applyChanges2 = <Button
       key='2'
       onClick={this.updatePlot}
-      >Apply Changes
-    </Button>
-    var transectSettings
+    >Apply Changes
+    </Button>;
+    let transectSettings;
     if (this._mounted) {
       transectSettings = <Panel
-      key='transect_settings'
-      id='transect_settings'
-      collapsible
-      defaultExpanded
-      header={_("Transect Settings")}
-      bsStyle='primary'
-    >
-      <ComboBox
-        key='surfacevariable'
-        id='surfacevariable'
-        state={this.state.surfacevariable}
-        onUpdate={this.onLocalUpdate}
-        title={_("Surface Variable")}
-        url={"/api/v1.0/variables/?dataset=" + this.state.data.dataset}
-      >{_("surfacevariable_help")}</ComboBox>
-
-      <NumberBox
-        key='linearthresh'
-        id='linearthresh'
-        state={this.state.linearthresh}
-        onUpdate={this.onLocalUpdate}
-        title={_("Linear Threshold")}
-      >{_("linearthresh_help")}</NumberBox>
-
-      <DepthLimit
-        key='depth_limit'
-        id='depth_limit'
-        state={this.state.depth_limit}
-        onUpdate={this.onLocalUpdate}
-      />
-
-      <div
-        style={{display: this.state.dataset_compare &&
-                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}>
+        key='transect_settings'
+        id='transect_settings'
+        collapsible
+        defaultExpanded
+        header={_("Transect Settings")}
+        bsStyle='primary'
+      >
         <ComboBox
-          key='colormap_diff'
-          id='colormap_diff'
-          state={this.state.colormap_diff}
+          key='surfacevariable'
+          id='surfacevariable'
+          state={this.state.surfacevariable}
+          onUpdate={this.onLocalUpdate}
+          title={_("Surface Variable")}
+          url={`/api/v1.0/variables/?dataset=${  this.state.data.dataset}`}
+        >{_("surfacevariable_help")}</ComboBox>
+
+        <NumberBox
+          key='linearthresh'
+          id='linearthresh'
+          state={this.state.linearthresh}
+          onUpdate={this.onLocalUpdate}
+          title={_("Linear Threshold")}
+        >{_("linearthresh_help")}</NumberBox>
+
+        <DepthLimit
+          key='depth_limit'
+          id='depth_limit'
+          state={this.state.depth_limit}
+          onUpdate={this.onLocalUpdate}
+        />
+
+        <div
+          style={{display: this.state.dataset_compare &&
+                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}>
+          <ComboBox
+            key='colormap_diff'
+            id='colormap_diff'
+            state={this.state.colormap_diff}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/colormaps/'
+            title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+          </ComboBox>
+        </div>
+        {applyChanges2}
+      </Panel>;
+    }
+    
+    const applyChanges3 = <Button
+      key='3'
+      onClick={this.updatePlot}
+    >Apply Changes
+    </Button>;
+    let dataset = null;
+    if (this.state.data.scale !== undefined) {
+      dataset = <Panel 
+        key='left_map'
+        id='left_map'
+        collapsible
+        defaultExpanded
+        header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        bsStyle='primary'
+      >
+        <DatasetSelector
+          key='data'
+          id='data'
+          state={this.state.data}
+          onUpdate={this.onLocalUpdate}
+          depth={this.state.selected == 2}
+          variables={this.state.selected == 2 ? "all" : "3d"}
+          time={this.state.selected == 2 ? "range" : "single"}
+          line={true}
+          updateSelectedPlots={this.updateSelectedPlots}
+          compare={this.state.dataset_compare}
+        />
+      
+        <Range
+          auto
+          key='scale'
+          id='scale'
+          state={this.state.data.scale}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")}
+        />
+
+        <ComboBox
+          key='colourmap'
+          id='colourmap'
+          state={this.state.data.colourmap}
           def='default'
           onUpdate={this.onLocalUpdate}
           url='/api/colormaps/'
-          title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+          title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
-      </div>
-      {applyChanges2}
-    </Panel>;
-    }
-    
-    let applyChanges3 = <Button
-      key='3'
-      onClick={this.updatePlot}
-      >Apply Changes
-    </Button>
-    var dataset = null
-    if (this.state.data.scale !== undefined) {
-      dataset = <Panel 
-      key='left_map'
-      id='left_map'
-      collapsible
-      defaultExpanded
-      header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-      bsStyle='primary'
-    >
-      <DatasetSelector
-        key='data'
-        id='data'
-        state={this.state.data}
-        onUpdate={this.onLocalUpdate}
-        depth={this.state.selected == 2}
-        variables={this.state.selected == 2 ? "all" : "3d"}
-        time={this.state.selected == 2 ? "range" : "single"}
-        line={true}
-        updateSelectedPlots={this.updateSelectedPlots}
-        compare={this.state.dataset_compare}
-      />
-      
-      <Range
-        auto
-        key='scale'
-        id='scale'
-        state={this.state.data.scale}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        title={_("Variable Range")}
-      />
-
-      <ComboBox
-        key='colourmap'
-        id='colourmap'
-        state={this.state.data.colourmap}
-        def='default'
-        onUpdate={this.onLocalUpdate}
-        url='/api/colormaps/'
-        title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-      </ComboBox>
-      {applyChanges3}
-    </Panel>;
+        {applyChanges3}
+      </Panel>;
     }
     
 
     if (jQuery.isEmptyObject(this.state.data_compare) === false && this.state.data_compare.scale !== undefined) {
       var compare_dataset = <div key='compare_dataset'>
-      <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>  
-        <Panel 
-          key='right_map'
-          id='right_map'
-          collapsible
-          defaultExpanded
-          header={_("Right Map")}
-          bsStyle='primary'
-        >
-          <DatasetSelector
-            key='data_compare'
-            id='data_compare'
-            state={this.state.data_compare}
-            onUpdate={this.onLocalUpdate}
-            depth={this.state.selected == 2}
-            variables={this.state.selected == 2 ? "all" : "3d"}
-            time={this.state.selected == 2 ? "range" : "single"}
-          />
-          <Range
-            auto
-            key='compare_scale'
-            id='compare_scale'
-            state={this.state.data_compare.scale}
-            def={""}
-            onUpdate={this.onLocalUpdate}
-            title={_("Variable Range")}
-          />
-          <ComboBox
-            key='compare_colourmap'
-            id='compare_colourmap'
-            state={this.state.data_compare.colourmap}
-            def='default'
-            onUpdate={this.onLocalUpdate}
-            url='/api/colormaps/'
-            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-          </ComboBox>
-        </Panel>
-      </div></div>;
+        <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>  
+          <Panel 
+            key='right_map'
+            id='right_map'
+            collapsible
+            defaultExpanded
+            header={_("Right Map")}
+            bsStyle='primary'
+          >
+            <DatasetSelector
+              key='data_compare'
+              id='data_compare'
+              state={this.state.data_compare}
+              onUpdate={this.onLocalUpdate}
+              depth={this.state.selected == 2}
+              variables={this.state.selected == 2 ? "all" : "3d"}
+              time={this.state.selected == 2 ? "range" : "single"}
+            />
+            <Range
+              auto
+              key='compare_scale'
+              id='compare_scale'
+              state={this.state.data_compare.scale}
+              def={""}
+              onUpdate={this.onLocalUpdate}
+              title={_("Variable Range")}
+            />
+            <ComboBox
+              key='compare_colourmap'
+              id='compare_colourmap'
+              state={this.state.data_compare.colourmap}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/colormaps/'
+              title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>
+          </Panel>
+        </div></div>;
     }
     
     
@@ -643,14 +643,14 @@ export default class LineWindow extends React.Component {
       leftInputs.push(transectSettings);
     }
     
-    let plotImage = ''
+    let plotImage = "";
     if (this.state.plot_query !== undefined) {
       if (this.state.data.time !== undefined) {
         plotImage = <PlotImage
           query={this.state.plot_query}
           permlink_subquery={this.state.data}
           action={this.props.action}
-        />
+        />;
       }
     } else {
       <img src={Spinner} />;
@@ -669,7 +669,7 @@ export default class LineWindow extends React.Component {
         <Row>
           
           <Col lg={2}>
-          <Panel
+            <Panel
               key='data_selection'
               id='data_selection'
               collapsible

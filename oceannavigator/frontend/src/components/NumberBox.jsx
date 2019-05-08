@@ -36,14 +36,14 @@ export default class NumberBox extends React.Component {
   }
 
   keyPress(e) {
-    var key = e.which || e.keyCode;
+    const key = e.which || e.keyCode;
     if (key === 13) {
       this.changed();
       this.updateParent();
       return false;
-    } else {
-      return true;
-    }
+    } 
+    return true;
+    
   }
 
   closeHelp() {
@@ -59,7 +59,7 @@ export default class NumberBox extends React.Component {
   }
 
   render() {
-    var hasHelp = (
+    const hasHelp = (
       this.props.children != null &&
       this.props.children.length > 0
     );

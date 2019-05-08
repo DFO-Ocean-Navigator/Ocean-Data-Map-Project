@@ -1,4 +1,4 @@
-var currentLanguage = {
+const currentLanguage = {
   language: "en"
 };
 
