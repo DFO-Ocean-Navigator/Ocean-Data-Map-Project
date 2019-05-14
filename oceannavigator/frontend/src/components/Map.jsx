@@ -225,14 +225,14 @@ export default class Map extends React.PureComponent {
             color: 'rgba(0, 0, 0, 1)'
           }),
 				  fill: new ol.style.Fill({
-					  color: 'white' //#ADD8E6'
+					  color: 'white'
             })
           }),
         source: new ol.source.VectorTile({
           format: new ol.format.MVT(),
           tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}`,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
         }),
       });
 
@@ -243,16 +243,13 @@ export default class Map extends React.PureComponent {
           style: new ol.style.Style({
             stroke: new ol.style.Stroke({
               color: 'rgba(0, 0, 0, 1)'
-            }),
-            fill: new ol.style.Fill({
-              color: 'white' //#ADD8E6'
-              })
-            }),
+            })
+          }),
           source: new ol.source.VectorTile({
             format: new ol.format.MVT(),
             tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
             tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/bath/{z}/{x}/{y}`,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
           }),
         });
 
