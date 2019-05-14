@@ -301,6 +301,10 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
   return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
-@bp_v1_0.route('/api/v1.0/mbt/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
-def mbt(tiletype: str, zoom: int, x: int, y: int):
-  return routes.routes_impl.mbt_impl(tiletype, zoom, x, y)
+
+#
+# Request shapefiles
+#
+@bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
+def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
+  return routes.routes_impl.mbt_impl(projection, tiletype, zoom, x, y)

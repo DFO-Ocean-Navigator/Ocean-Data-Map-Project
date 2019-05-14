@@ -628,12 +628,18 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
 
-def mbt_impl(tiletype: str, zoom: int, x: int, y: int):
+def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
   cache_dir = current_app.config['CACHE_DIR']
   shape_file_dir = current_app.config['SHAPE_FILE_DIR']
-  if zoom < 7:
-    return send_file(shape_file_dir + "/blank.mbt")
   directory = str(os.path.join(cache_dir, request.path[1:]))
+  # This is a funky way of splitting the string to only include characters up to the 10th instance of '/'
+  basedir = "/".join(directory.split("/", 10)[:10])
+
+  # Send blank tile if conditions aren't met
+  if (zoom < 7) or (projection != "EPSG:3857"):
+    return send_file(shape_file_dir + "/blank.mbt")
+
+# Send file if cached or select data in SQLite file
   if os.path.isfile(directory):
     return send_file(directory)
   else:
@@ -645,7 +651,8 @@ def mbt_impl(tiletype: str, zoom: int, x: int, y: int):
     tile = selector.fetchone()
     if tile == None:
         return send_file(shape_file_dir + "/blank.mbt")
-    basedir = "/".join(directory.split("/", 9)[:9])
+
+    # Write tile to cache and send file
     if os.path.isdir(basedir):
       pass
     else:
