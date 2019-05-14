@@ -210,13 +210,7 @@ export default class Map extends React.PureComponent {
         preload: 0,
       });
 
-
-    this.geojsonfetch = function(url) {
-      fetch(url).then(function(response) {
-        return response.json();
-      });
-    };
-
+    // MBTiles Land shapes (high res)
     this.layer_landshapes = new ol.layer.VectorTile(
       {
         opacity: 1,
@@ -233,9 +227,10 @@ export default class Map extends React.PureComponent {
           tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+          projection: this.props.state.projection,
         }),
       });
-
+    // MBTiles Bathymetry shapes (high res)
       this.layer_bathshapes = new ol.layer.VectorTile(
         {
           opacity: this.props.options.mapBathymetryOpacity,
@@ -976,6 +971,25 @@ export default class Map extends React.PureComponent {
             `/tiles/bath/${this.props.state.projection}` +
             "/{z}/{x}/{y}.png"
           ),
+          projection: this.props.state.projection,
+        })
+      );
+
+      this.layer_bathshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+        })
+      );
+
+      this.layer_landshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
         })
       );
