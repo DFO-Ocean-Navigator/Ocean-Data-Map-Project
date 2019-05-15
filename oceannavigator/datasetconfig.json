@@ -114,7 +114,7 @@
                 "scale_factor": 1,
                 "unit": "Celsius",
                 "equation": "votemper - 273.15",
-                "dims": ["time_counter", "deptht", "y", "x"]
+                "dims": ["time_counter", "depth", "y", "x"]
             },
             "vozocrtx": {
                 "hide": "false",
@@ -191,7 +191,7 @@
                 "scale": [1400, 1600],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "equation": "sspeed(deptht, nav_lat, vosaline, votemper - 273.15)"
+                "equation": "sspeed(depth, nav_lat, vosaline, votemper - 273.15)"
             },
             "temp_gradientx": {
                 "hide": "true",
@@ -203,7 +203,7 @@
                 "scale_factor": 1000,
                 "unit": "degree Celsius/km",
                 "equation": "gradient_x(votemper, nav_lat, nav_lon)",
-                "dims": ["time_counter", "deptht", "y", "x"],
+                "dims": ["time_counter", "depth", "y", "x"],
                 "zero_centered": "True"
             },
             "temp_gradienty": {
@@ -216,7 +216,7 @@
                 "scale_factor": 1000,
                 "unit": "degree Celsius/km",
                 "equation": "gradient_y(votemper, nav_lat, nav_lon)",
-                "dims": ["time_counter", "deptht", "y", "x"],
+                "dims": ["time_counter", "depth", "y", "x"],
                 "zero_centered": "True"
             },
             "temp_gradientx,temp_gradienty": {
@@ -272,7 +272,7 @@
             "vozocrtx": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "vomecrty": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "vozocrtx,vomecrty": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3] },
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "deptht", "y", "x"] },
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
             "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
             "aice": { "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1] },
