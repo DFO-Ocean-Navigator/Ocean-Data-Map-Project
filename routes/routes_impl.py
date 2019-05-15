@@ -629,6 +629,9 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
         return _cache_and_send_img(img, f)
 
 def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
+  """
+       Serves mbt files
+  """
   cache_dir = current_app.config['CACHE_DIR']
   shape_file_dir = current_app.config['SHAPE_FILE_DIR']
   directory = str(os.path.join(cache_dir, request.path[1:]))
