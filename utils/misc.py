@@ -12,10 +12,7 @@ from thredds_crawler.crawl import Crawl
 import datetime
 import pyproj
 from operator import itemgetter
-from oceannavigator.dataset_config import (
-    get_dataset_url, get_variable_name,
-    get_variable_unit, get_dataset_climatology
-)
+from oceannavigator import DatasetConfig
 import re
 from data import open_dataset
 import pickle as pickle
@@ -703,13 +700,13 @@ def list_class4_models(class4_id):
 
 
 def get_point_data(dataset, variable, time, depth, location):
-    variables_anom = variable.split(",")
-    variables = [re.sub('_anom$', '', v) for v in variables_anom]
+    variables = variable.split(",")
 
     data = []
     names = []
     units = []
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    dsc = DatasetConfig(dataset)
+    with open_dataset(dsc) as ds:
         timestamp = ds.timestamps[time]
         for v in variables:
             d = ds.get_point(
@@ -719,30 +716,12 @@ def get_point_data(dataset, variable, time, depth, location):
                 time,
                 v
             )
-            variable_name = get_variable_name(dataset, ds.variables[v])
-            variable_unit = get_variable_unit(dataset, ds.variables[v])
-
-            if variable_unit.startswith("Kelvin"):
-                variable_unit = "Celsius"
-                d = np.add(d, -273.15)
+            variable_name = dsc.variable[ds.variables[v]].name
+            variable_unit = dsc.variable[ds.variables[v]].unit
 
             data.append(d)
             names.append(variable_name)
             units.append(variable_unit)
-
-    if variables != variables_anom:
-        with open_dataset(get_dataset_climatology(dataset)) as ds:
-            for idx, v in enumerate(variables):
-                d = ds.get_point(
-                    location[0],
-                    location[1],
-                    depth,
-                    timestamp.month,
-                    v
-                )
-
-                data[idx] = data[idx] - d
-                names[idx] = names[idx] + " Anomaly"
 
     result = {
         'value': ['%s' % float('%.4g' % f) for f in data],

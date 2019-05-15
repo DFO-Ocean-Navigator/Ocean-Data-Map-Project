@@ -3,8 +3,6 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import plotting.utils as utils
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_variable_scale_factor
 import pytz
 import dateutil.parser
 from flask import current_app
@@ -107,7 +105,7 @@ class DrifterPlotter(Plotter):
             self.end += len(self.times)
         self.end = np.clip(self.end, 0, len(self.times) - 1)
 
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             depth = int(self.depth)
 
             try:
@@ -162,21 +160,13 @@ class DrifterPlotter(Plotter):
             scale_factors = []
 
             for v in self.variables:
-                variable_units.append(get_variable_unit(self.dataset_name,
-                                                        dataset.variables[v]))
-                variable_names.append(get_variable_name(self.dataset_name,
-                                                        dataset.variables[v]))
-                scale_factors.append(
-                    get_variable_scale_factor(self.dataset_name,
-                                              dataset.variables[v])
-                )
+                vc = self.dataset_config.variable[v]
+                variable_units.append(vc.unit)
+                variable_names.append(vc.name)
+                scale_factors.append(vc.scale_factor)
 
             for idx, sf in enumerate(scale_factors):
                 model_data[idx, :] = np.multiply(model_data[idx, :], sf)
-
-            for idx, u in enumerate(variable_units):
-                variable_units[idx], model_data[idx, :] = \
-                    self.kelvin_to_celsius(u, model_data[idx, :])
 
             self.model_data = model_data
             self.model_times = list(map(datetime.datetime.utcfromtimestamp, mt))

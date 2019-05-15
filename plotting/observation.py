@@ -5,7 +5,6 @@ import plotting.utils
 import plotting.point as plPoint
 from textwrap import wrap
 import pint
-from oceannavigator.dataset_config import get_dataset_url
 from utils.errors import ClientError
 import re
 import dateutil.parser
@@ -62,7 +61,7 @@ class ObservationPlotter(plPoint.PointPlotter):
 
                 self.points = [[o['latitude'], o['longitude']] for o in self.observation]
 
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             ts = dataset.timestamps
 
             observation_times = []
@@ -91,11 +90,6 @@ class ObservationPlotter(plPoint.PointPlotter):
             point_data = np.ma.array(point_data)
 
             point_data = self.apply_scale_factors(point_data)
-
-            self.variable_units, point_data = self.kelvin_to_celsius(
-                self.variable_units,
-                point_data
-            )
 
         self.data = point_data
         self.observation_time = observation_time

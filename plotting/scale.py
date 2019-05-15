@@ -1,10 +1,9 @@
 import numpy as np
 from pyproj import Proj
-from oceannavigator.dataset_config import (
-    get_dataset_url, get_dataset_climatology, get_variable_unit
-)
+from oceannavigator import DatasetConfig
 import re
 from data import open_dataset
+from plotting.utils import normalize_scale
 
 """
     Calculates and returns the range (min, max values) of a selected variable,
@@ -17,10 +16,10 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
     dest = Proj(init=projection)
     lon, lat = dest(xx, yy, inverse=True)
 
-    variables_anom = variable.split(",")
-    variables = [re.sub('_anom$', '', v) for v in variables_anom]
+    variables = variable.split(",")
+    config = DatasetConfig(dataset)
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         timestamp = ds.timestamps[time]
         
         d = ds.get_area(
@@ -46,42 +45,4 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             )
             d = np.sqrt(d0 ** 2 + d1 ** 2)
 
-        variable_unit = get_variable_unit(dataset,
-                                          ds.variables[variables[0]])
-        if variable_unit.startswith("Kelvin"):
-            variable_unit = "Celsius"
-            d = np.add(d, -273.15)
-
-    if variables != variables_anom:
-        with open_dataset(get_dataset_climatology(dataset), 'r') as ds:
-            c = ds.get_area(
-                np.array([lat, lon]),
-                depth,
-                timestamp.month - 1,
-                variables[0],
-                interp,
-                radius,
-                neighbours
-            )
-
-            if len(variables) > 1:
-                c0 = c
-                c1 = ds.get_area(
-                    np.array([lat, lon]),
-                    depth,
-                    timestamp.month - 1,
-                    variables[1],
-                    interp,
-                    radius,
-                    neighbours
-                )
-                c = np.sqrt(c0 ** 2 + c1 ** 2)
-
-            d = d - c
-
-            m = max(abs(d.nanmin()), abs(d.nanmax()))
-            return -m, m
-
-    # Return min and max values of selected variable, while ignoring
-    # nan values
-    return np.nanmin(d), np.nanmax(d)
+        return normalize_scale(d, config.variable[",".join(variables)])

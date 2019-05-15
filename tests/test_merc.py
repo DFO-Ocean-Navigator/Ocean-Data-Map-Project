@@ -18,7 +18,7 @@ class TestMercator(unittest.TestCase):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             variables = n.variables
 
-            self.assertEqual(len(variables), 6)
+            self.assertEqual(len(variables), 1)
             self.assertTrue('votemper' in variables)
             self.assertEqual(variables['votemper'].name,
                              'Sea water potential temperature')
@@ -45,10 +45,10 @@ class TestMercator(unittest.TestCase):
                 13.0, -149.0, 0, 0, 'votemper'
             )
 
-        self.assertEqual(len(lat.ravel()), 100)
-        self.assertEqual(len(lon.ravel()), 100)
-        self.assertEqual(len(data.ravel()), 100)
-        self.assertAlmostEqual(data[4, 4], 298.6, places=1)
+        self.assertEqual(len(lat.ravel()), 156)
+        self.assertEqual(len(lon.ravel()), 156)
+        self.assertEqual(len(data.values.ravel()), 156)
+        self.assertAlmostEqual(data.values[4, 4], 298.8, places=1)
 
     def test_get_profile(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:

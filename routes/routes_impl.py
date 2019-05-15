@@ -15,12 +15,7 @@ from io import BytesIO
 from PIL import Image
 import io
 
-from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets,
-    get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden, get_dataset_cache, get_dataset_help,
-    get_dataset_name, get_dataset_quantum, get_dataset_attribution
-)
+from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
 
@@ -208,19 +203,21 @@ def query_datasets_impl(args):
 
     data = []
     if 'id' not in args:
-        for key in get_datasets():
+        for key in DatasetConfig.get_datasets():
+            config = DatasetConfig(key)
             data.append({
                 'id': key,
-                'value': get_dataset_name(key),
-                'quantum': get_dataset_quantum(key),
-                'help': get_dataset_help(key),
-                'attribution': get_dataset_attribution(key),
+                'value': config.name,
+                'quantum': config.quantum,
+                'help': config.help,
+                'attribution': config.attribution,
             })
     else:
-        for key in get_datasets():
+        for key in DatasetConfig.get_datasets():
+            config = DatasetConfig(key)
             data.append({
                 'id': key,
-                'value': get_dataset_name(key)
+                'value': config.name
             })
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
@@ -306,13 +303,13 @@ def depth_impl(args):
 
     var = args.get('variable')
     variables = var.split(',')
-    variables = [re.sub('_anom$', '', v) for v in variables]
 
     data = []
    
     dataset = args['dataset']
+    config = DatasetConfig(dataset)
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         for variable in variables:
             if variable and \
                 variable in ds.variables and \
@@ -375,20 +372,12 @@ def vars_query_impl(args):
 
     data = []       #Initializes empty data list
     dataset = args['dataset']   #Dataset Specified in query
-
-    #Queries config files
-    if get_dataset_climatology(dataset) != "" and 'anom' in args:   #If a url exists for the dataset and an anomaly
-            
-        with open_dataset(get_dataset_climatology(dataset)) as ds:
-            climatology_variables = list(map(str, ds.variables))
-    
-    else:
-        climatology_variables = []
+    config = DatasetConfig(dataset)
 
     #three_d = '3d_only' in args     #Checks if 3d_only is in args
     #If three_d is true - Only 3d variables will be returned
 
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
 
             # 'v' is a Variable in the Dataset
@@ -409,22 +398,18 @@ def vars_query_impl(args):
                     ):
                         continue
                     else:
-                        if not is_variable_hidden(dataset, v):
+                        if not config.variable[v].is_hidden:
                              
                             data.append({
                                 'id': v.key,
-                                'value': get_variable_name(dataset, v),
-                                'scale': get_variable_scale(dataset, v)
+                                'value': config.variable[v].name,
+                                'scale': config.variable[v].scale
                             })
-                            if v.key in climatology_variables:
-                                data.append({
-                                    'id': v.key + "_anom",
-                                    'value': get_variable_name(dataset, v) + " Anomaly",
-                                    'scale': [-10, 10]
-                                })
      
+        """
         VECTOR_MAP = {
-            'vozocrtx': 'vozocrtx,vomecrty',
+            #'vozocrtx': 'vozocrtx,vomecrty',
+            'vozocrte': 'vozocrte,vomecrtn',
             'itzocrtx': 'itzocrtx,itmecrty',
             'iicevelu': 'iicevelu,iicevelv',
             'u_wind': 'u_wind,v_wind',
@@ -439,15 +424,21 @@ def vars_query_impl(args):
             rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
             for key, value in list(VECTOR_MAP.items()):
                 if key in ds.variables:
-                    n = get_variable_name(dataset, ds.variables[key]) #Returns a normal variable type   
+                    n = config.variable[ds.variables[key]].name #Returns a normal variable type   
                     data.append({
                         'id': value,
                         'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                        'scale': [0, get_variable_scale(
-                            dataset,
-                            ds.variables[key]
-                        )[1]]
+                        'scale': [0, config.variable[ds.variables[key]].scale[1]]
                     })
+        """
+    #If Vectors are needed
+    if 'vectors' in args or 'vectors_only' in args:
+        for variable in config.vector_variables:
+            data.append({
+                'id': variable,
+                'value': config.variable[variable].name,
+                'scale': config.variable[variable].scale,
+            })
 
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     
@@ -470,9 +461,10 @@ def time_query_impl(args):
 
     data = []
     dataset = args['dataset']
+    config = DatasetConfig(dataset)
     quantum = args.get('quantum')
     
-    with open_dataset(get_dataset_url(dataset)) as ds:
+    with open_dataset(config) as ds:
         for idx, date in enumerate(ds.timestamps):
             if quantum == 'month':
                 date = datetime.datetime(
@@ -511,10 +503,12 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     **Used when changing datasets.**
     """
 
-    with open_dataset(get_dataset_url(old_dataset)) as ds:
+    old_config = DatasetConfig(old_dataset)
+    new_config = DatasetConfig(new_dataset)
+    with open_dataset(old_config) as ds:
         timestamp = ds.timestamps[date]
 
-    with open_dataset(get_dataset_url(new_dataset)) as ds:
+    with open_dataset(new_config) as ds:
         timestamps = ds.timestamps
 
     diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
@@ -726,7 +720,8 @@ def subset_query_impl(args):
 
     working_dir = None
     subset_filename = None
-    with open_dataset(get_dataset_url(args.get('dataset_name'))) as dataset:
+    config = DatasetConfig(args.get('dataset_name'))
+    with open_dataset(config) as dataset:
         working_dir, subset_filename = dataset.subset(args)
             
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
@@ -897,8 +892,9 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
         Returns True if dataset cache is valid
     """
 
+    config = DatasetConfig(dataset)
     if os.path.isfile(f):
-        cache_time = get_dataset_cache(dataset)
+        cache_time = config.cache
         if cache_time is not None:
             modtime = datetime.datetime.fromtimestamp(
                 os.path.getmtime(f)

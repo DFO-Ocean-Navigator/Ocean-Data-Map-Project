@@ -6,12 +6,7 @@ from io import BytesIO
 from PIL import Image
 import io
 import hashlib
-from oceannavigator.dataset_config import (
-    get_variable_name, get_datasets,
-    get_dataset_url, get_dataset_climatology, get_variable_scale,
-    is_variable_hidden, get_dataset_cache, get_dataset_help,
-    get_dataset_name, get_dataset_quantum, get_dataset_attribution
-)
+from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
 
@@ -114,8 +109,8 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
 #
 @bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
 def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
-  
-  with open_dataset(get_dataset_url(dataset)) as ds:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)
     return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, date)
 
@@ -125,8 +120,8 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
 # 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
 def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
-  
-  with open_dataset(get_dataset_url(dataset)) as ds:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)
     #print(date)
     return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
@@ -160,7 +155,8 @@ def stats_v1_0():
     args = request.form
   query = json.loads(args.get('query'))
 
-  with open_dataset(get_dataset_url(query.get('dataset'))) as dataset:
+  config = DatasetConfig(query.get('dataset'))
+  with open_dataset(config) as dataset:
     date = dataset.convert_to_timestamp(query.get('time'))
     date = {'time' : date}
     query.update(date)
@@ -189,7 +185,8 @@ def plot_v1_0():
     args = request.form
   query = json.loads(args.get('query'))
 
-  with open_dataset(get_dataset_url(query.get('dataset'))) as dataset:
+  config = DatasetConfig(query.get('dataset'))
+  with open_dataset(config) as dataset:
     if 'time' in query:
       query['time'] = dataset.convert_to_timestamp(query.get('time'))  
     else:
@@ -280,7 +277,8 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
   
-  with open_dataset(get_dataset_url(dataset)) as ds:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
     date = ds.convert_to_timestamp(time)
     return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
 

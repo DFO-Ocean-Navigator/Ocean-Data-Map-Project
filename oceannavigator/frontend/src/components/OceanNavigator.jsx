@@ -660,9 +660,11 @@ export default class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
           />
+          {/*
           <WarningBar
             showWarningInfo={this.showBugsModal}
           />
+          */}
           {map}
         </div>
 

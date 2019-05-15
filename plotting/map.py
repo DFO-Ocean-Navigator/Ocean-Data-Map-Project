@@ -13,8 +13,7 @@ from osgeo import gdal
 import osr
 import tempfile
 import os
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_variable_scale_factor
+from oceannavigator import DatasetConfig
 from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
 from shapely.ops import cascaded_union
 from matplotlib.patches import Polygon
@@ -178,30 +177,38 @@ class MapPlotter(pl.Plotter):
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
-        with open_dataset(get_dataset_url(self.dataset_name)) as dataset:
+        with open_dataset(self.dataset_config) as dataset:
             if self.time < 0:
                 self.time += len(dataset.timestamps)
             self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
 
-            self.variable_unit = self.get_variable_units(
-                dataset, self.variables
-            )[0]
-            self.variable_name = self.get_variable_names(
-                dataset,
-                self.variables
-            )[0]
-            scale_factor = self.get_variable_scale_factors(
-                dataset, self.variables
-            )[0]
+            if len(self.variables) > 1:
+                self.variable_unit = self.get_vector_variable_unit(
+                    dataset, self.variables
+                )
+                self.variable_name = self.get_vector_variable_name(
+                    dataset, self.variables
+                )
+                scale_factor = self.get_vector_variable_scale_factor(
+                    dataset, self.variables
+                )
+            else:
+                self.variable_unit = self.get_variable_units(
+                    dataset, self.variables
+                )[0]
+                self.variable_name = self.get_variable_names(
+                    dataset,
+                    self.variables
+                )[0]
+                scale_factor = self.get_variable_scale_factors(
+                    dataset, self.variables
+                )[0]
 
             if self.cmap is None:
                 if len(self.variables) == 1:
                     self.cmap = colormap.find_colormap(self.variable_name)
                 else:
                     self.cmap = colormap.colormaps.get('speed')
-
-            if len(self.variables) == 2:
-                self.variable_name = self.vector_name(self.variable_name)
 
             if self.depth == 'bottom':
                 depth_value_map = 'Bottom'
@@ -239,8 +246,6 @@ class MapPlotter(pl.Plotter):
                     )
 
                 d = np.multiply(d, scale_factor)
-                self.variable_unit, d = self.kelvin_to_celsius(
-                    self.variable_unit, d)
 
                 data.append(d)
                 if self.filetype not in ['csv', 'odv', 'txt']:
@@ -268,8 +273,8 @@ class MapPlotter(pl.Plotter):
                 for v in self.quiver['variable'].split(','):
                     allvars.append(v)
                     var = dataset.variables[v]
-                    quiver_unit = get_variable_unit(self.dataset_name, var)
-                    quiver_name = get_variable_name(self.dataset_name, var)
+                    quiver_unit = self.dataset_config.variable[var].unit
+                    quiver_name = self.dataset_config.variable[var].name
                     quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
                     d = dataset.get_area(
                         np.array([quiver_lat, quiver_lon]),
@@ -294,7 +299,9 @@ class MapPlotter(pl.Plotter):
                     )
                     quiver_data_fullgrid.append(d)
 
-                self.quiver_name = self.vector_name(quiver_name)
+                self.quiver_name = self.get_vector_variable_name(
+                    dataset, self.quiver['variable'].split(',')
+                )
                 self.quiver_longitude = quiver_lon
                 self.quiver_latitude = quiver_lat
                 self.quiver_unit = quiver_unit
@@ -317,16 +324,10 @@ class MapPlotter(pl.Plotter):
                     self.radius,
                     self.neighbours,
                 )
-                contour_unit = get_variable_unit(
-                    self.dataset_name,
-                    dataset.variables[self.contour['variable']])
-                contour_name = get_variable_name(
-                    self.dataset_name,
-                    dataset.variables[self.contour['variable']])
-                contour_factor = get_variable_scale_factor(
-                    self.dataset_name,
-                    dataset.variables[self.contour['variable']])
-                contour_unit, d = self.kelvin_to_celsius(contour_unit, d)
+                vc = self.dataset_config.variable[self.contour['variable']]
+                contour_unit = vc.unit
+                contour_name = vc.name
+                contour_factor = vc.scale_factor
                 d = np.multiply(d, contour_factor)
                 contour_data.append(d)
                 self.contour_unit = contour_unit
@@ -338,9 +339,8 @@ class MapPlotter(pl.Plotter):
 
         if self.compare:
             self.variable_name += " Difference"
-            with open_dataset(
-                get_dataset_url(self.compare['dataset'])
-            ) as dataset:
+            compare_config = DatasetConfig(self.compare['dataset'])
+            with open_dataset(compare_config) as dataset:
                 data = []
                 for v in self.compare['variables']:
                     var = dataset.variables[v]
@@ -359,10 +359,6 @@ class MapPlotter(pl.Plotter):
                     data = np.sqrt(data[0] ** 2 + data[1] ** 2)
                 else:
                     data = data[0]
-
-                u, data = self.kelvin_to_celsius(
-                    dataset.variables[self.compare['variables'][0]].unit,
-                    data)
 
                 self.data -= data
 
@@ -580,11 +576,8 @@ class MapPlotter(pl.Plotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin = np.amin(self.data)
-            vmax = np.amax(self.data)
-            if self.compare:
-                vmax = max(abs(vmax), abs(vmin))
-                vmin = -vmax
+            vmin, vmax = utils.normalize_scale(self.data,
+                    self.dataset_config.variable[",".join(self.variables)])
 
         c = self.basemap.imshow(
             self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)
@@ -595,6 +588,8 @@ class MapPlotter(pl.Plotter):
                                                       self.quiver_longitude,
                                                       self.quiver_latitude,
                                                       returnxy=True)
+            qx = np.ma.masked_where(np.ma.getmask(self.quiver_data[0]), qx)
+            qy = np.ma.masked_where(np.ma.getmask(self.quiver_data[1]), qy)
             quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
@@ -702,7 +697,7 @@ class MapPlotter(pl.Plotter):
             if (self.contour_data[0].min() != self.contour_data[0].max()):
                 cmin, cmax = utils.normalize_scale(
                     self.contour_data[0],
-                    self.contour_name, self.contour_unit
+                    self.dataset_config.variable[self.contour['variable']]
                 )
                 levels = None
                 if self.contour.get('levels') is not None and \
