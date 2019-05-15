@@ -106,7 +106,7 @@ export default class PointWindow extends React.Component {
 
   populateVariables(dataset) {
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset + "&anom",
+      url: "/api/variables/?dataset=" + dataset,
       dataType: "json",
       cache: true,
   
@@ -377,7 +377,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?3d_only&dataset="+this.props.dataset + "&anom"}
+      url={"/api/variables/?3d_only&dataset="+this.props.dataset}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];

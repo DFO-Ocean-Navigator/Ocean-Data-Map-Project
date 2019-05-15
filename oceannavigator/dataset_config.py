@@ -1,202 +1,290 @@
 import os
 import json
-import oceannavigator
 import re
 import json
 from flask import current_app
 
-_config = None # Hold global config dictionary
 
-def __get_dataset_config() -> dict:
-    global _config
-    if _config is None:
-        cwd = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(cwd, current_app.config['datasetConfig']), 'r') as f:
-            _config = json.load(f)
+class DatasetConfig():
+    """Access class for the dataset configuration"""
+    __config = None
 
-    return _config
+    def __init__(self, dataset: str):
+        self._config = DatasetConfig._get_dataset_config()[dataset]
 
-def __get_dataset_attribute(dataset: str, key: str) -> str:
-    return __get_dataset_config()[dataset].get(key) if not None else ""
+    @staticmethod
+    def get_datasets() -> list:
+        """
+            Returns a list of the currently enabled datasets in the dataset config file
+        """
+        config = DatasetConfig._get_dataset_config()
 
-"""
-    Returns a list of the currently enabled datasets in the dataset config file
-"""
-def get_datasets() -> list:
-    config = __get_dataset_config()
+        # Only return "enabled" datasets
+        return [key for key in config.keys() if config[key].get("enabled")]
 
-    # Only return "enabled" datasets
-    return [key for key in config.keys() if config[key].get("enabled")]
+    @staticmethod
+    def _get_dataset_config() -> dict:
+        if DatasetConfig.__config is None:
+            cwd = os.path.dirname(os.path.realpath(__file__))
+            with open(os.path.join(cwd, current_app.config['datasetConfig']), 'r') as f:
+                DatasetConfig.__config = json.load(f)
 
-"""
-    Returns the THREDDS url to the given dataset
-    
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_url(dataset: str) -> str:
-    return __get_dataset_attribute(dataset, "url")
+        return DatasetConfig.__config
 
-"""
-    Returns the THREDDS climatology URL for a dataset
+    def _get_attribute(self, key: str) -> str:
+        return self._config.get(key) if not None else ""
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_climatology(dataset: str) -> str:
-    return __get_dataset_attribute(dataset, "climatology")
+    @property
+    def url(self) -> str:
+        """
+        Returns the THREDDS url to the given dataset
+        """
+        return self._get_attribute("url")
 
-"""
-    Returns the "nice" name for a dataset. E.g. Giops Day, BIOMER, etc.
+    @property
+    def climatology(self) -> str:
+        """
+        Returns the THREDDS climatology URL for a dataset
+        """
+        return self._get_attribute("climatology")
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_name(dataset: str) -> str:
-    return __get_dataset_attribute(dataset, "name")
+    @property
+    def name(self) -> str:
+        """
+        Returns the "nice" name for a dataset. E.g. Giops Day, BIOMER, etc.
+        """
+        return self._get_attribute("name")
 
-"""
-    Returns the help text for a given dataset
+    @property
+    def help(self) -> str:
+        """
+        Returns the help text for a given dataset
+        """
+        return self._get_attribute("help")
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_help(dataset: str) -> str:
-    return __get_dataset_attribute(dataset, "help")
+    @property
+    def quantum(self) -> str:
+        """
+        Returns the "quantum" (aka "time scale") of a dataset
+        """
+        return self._get_attribute("quantum")
 
-"""
-    Returns the "quantum" (aka "time scale") of a dataset
+    @property
+    def attribution(self) -> str:
+        """
+        Returns the attribution for a given dataset.
+        """
+        # Strip any HTML from this
+        try:
+            return re.sub(
+                r"<[^>]*>",
+                "",
+                self._get_attribute("attribution")
+            )
+        except:
+            return ""
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_quantum(dataset: str) -> str:
-    return __get_dataset_attribute(dataset, "quantum")
+    @property
+    def cache(self) -> int:
+        """
+        Returns the cache value for a dataset as defined in dataset config file
+        """
+        cache = self._get_attribute("cache")
+        if cache is not None and isinstance(cache, str):
+            cache = int(cache)
 
-"""
-    Returns the attribution for a given dataset.
+        return cache
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_attribution(dataset: str) -> str:
-    # Strip any HTML from this
-    try:
-        return re.sub(
-            r"<[^>]*>",
-            "",
-            __get_dataset_config()[dataset].get("attribution")
-        )
-    except:
-        return ""
+    @property
+    def variables(self) -> list:
+        """
+            Returns a list of the variables for the specified dataset
+            not hidden in dataset config file
+        """
+        variables = []
+        for key,data in self._get_attribute("variables").items():
+            is_hidden = data.get("hide")
+            is_vector = ',' in key
 
-"""
-    Returns the cache value for a dataset as defined in dataset config file
+            if (is_hidden is False or \
+                    is_hidden is None or \
+                    is_hidden in ['false', 'False']) and \
+                    not is_vector:
+                variables.append(key)
+        return variables
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_dataset_cache(dataset: str):
-    cache = __get_dataset_config()[dataset].get("cache")
-    if cache is not None and isinstance(cache, str):
-        cache = int(cache)
+    @property
+    def vector_variables(self) -> dict:
+        variables = {}
+        for key,data in self._get_attribute("variables").items():
+            is_hidden = data.get("hide")
+            is_vector = ',' in key
 
-    return cache
+            if (is_hidden is False or \
+                    is_hidden is None or \
+                    is_hidden in ['false', 'False']) and \
+                    is_vector:
+                variables[key] = data
+        return variables
 
-"""
-    Returns a list of the variables for the specified dataset
-    not hidden in dataset config file
+    @property
+    def calculated_variables(self) -> dict:
+        """
+            Returns a dict of the calculated variables for the specified dataset
+        """
+        variables = {}
+        for key,data in self._get_attribute("variables").items():
+            if "equation" in data.keys():
+                variables[key] = data
+        return variables
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-"""
-def get_variables(dataset: str) -> list:
-    variable_keys = __get_dataset_config()[dataset]["variables"].keys()
+    @property
+    def variable(self):
+        """
+            Accessor for variables.
+            Returns a private class that implements __getitem__, so that
+            DatasetConfig.variable["variablename"] works.
+        """
+        return self._VariableGetter(self)
 
-    variables = []
-    for key in variable_keys:
-        is_hidden = __get_dataset_config()[dataset]["variables"][key].get("hide")
+    class _VariableGetter():
+        def __init__(self, datasetconfig):
+            self._config = datasetconfig
 
-        if is_hidden is False or is_hidden is None or is_hidden in ['false', 'False']:
-            variables.append(key)
-    return variables
+        def __getitem__(self, key):
+            return VariableConfig(self._config, key)
 
-"""
-    Returns the "nice" name of a given variable. E.g. Temperature, Salinity, etc.
+class VariableConfig():
+    """
+    Access class for an individual variable's portion of the datasetconfig.
+    """
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-    variable: Either xArray variable object or NetCDF4 variable object
-"""
-def get_variable_name(dataset: str, variable) -> str:
-    ds_vars = get_variables(dataset)
+    def __init__(self, datasetconfig, variable):
+        """
+        Parameters:
+        datasetconfig -- the parent DatasetConfig object
+        variable -- either the string key for the variable, or the
+                    xarray/netcdf4 Variable object
+        """
+        self._config = datasetconfig
+        if isinstance(variable, str):
+            # In the case that the passed variable is a string, we need to make
+            # is so attempts to read the underlying variable attributes do not
+            # crash the rest of the code, so we use this attrdict class that
+            # will return None for any attribute. It extends a dict in case any
+            # future code is added that will need any attributes populated.
+            self._key = variable
+            class attrdict(dict):
+                #def __init__(self, *args, **kwargs):
+                #    dict.__init__(self, *args, **kwargs)
+                #    self.__dict__ = self
+                def __getattr__(self, key):
+                    return None
 
-    key = variable.key.lower()
-    if key in ds_vars:
-        return __get_dataset_config()[dataset]["variables"][key]["name"]
-    elif variable.name is not None:
-        return variable.name
-    else:
-        return str(variable.key).title()
+            self._variable = attrdict()
+        else:
+            self._variable = variable
+            self._key = variable.key.lower()
 
-"""
-    Returns the units for a given variable as defined in dataset config file
+    def __get_attribute(self, attr):
+        return self._config._get_attribute("variables")[self._key].get(attr)
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-    variable: Either xArray variable object or NetCDF4 variable object
-"""
-def get_variable_unit(dataset: str, variable) -> str:
-    ds_vars = get_variables(dataset)
+    @property
+    def name(self) -> str:
+        """
+        Returns the "nice" name of a given variable. E.g. Temperature, Salinity, etc.
+        """
+        try:
+            name = self.__get_attribute("name")
+        except KeyError:
+            name = None
 
-    key = variable.key.lower()
-    if key in ds_vars:
-        return __get_dataset_config()[dataset]["variables"][key]["unit"]
-    elif variable.unit is not None:
-        return variable.unit
-    else:
-        return "Unknown"
+        if name is not None:
+            return name
+        elif self._variable.name is not None:
+            return self._variable.name
+        else:
+            return str(self._key).title()
 
-"""
-    Returns variable scale from dataset config file
+    @property
+    def unit(self) -> str:
+        """
+        Returns the units for a given variable as defined in dataset config file
+        """
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-    variable: Either xArray variable object or NetCDF4 variable object
-"""
-def get_variable_scale(dataset: str, variable) -> list:
-    ds_vars = get_variables(dataset)
+        try:
+            unit = self.__get_attribute("unit")
+        except KeyError:
+            unit = None
 
-    key = variable.key.lower()
-    if key in ds_vars:
-        scale = __get_dataset_config()[dataset]["variables"][key].get("scale")
+        if unit is not None:
+            return unit
+        elif self._variable.unit is not None:
+            return self._variable.unit
+        else:
+            return "Unknown"
+
+    @property
+    def scale(self) -> list:
+        """
+        Returns variable scale from dataset config file
+        """
+        try:
+            scale = self.__get_attribute("scale")
+        except KeyError:
+            scale = None
+
         if scale is not None:
             return scale
-    if variable.valid_min is not None and variable.valid_max is not None:
-        return [variable.valid_min, variable.valid_max]
+        elif self._variable.valid_min is not None \
+                and self._variable.valid_max is not None:
+            return [self._variable.valid_min, self._variable.valid_max]
+        else:
+            return [0, 100]
 
-    return [0, 100]
+    @property
+    def scale_factor(self) -> float:
+        """
+        Returns variable scale factor from dataset config file
+        """
+        
+        try:
+            scale_factor = self.__get_attribute("scale_factor")
+        except KeyError:
+            scale_factor = None
 
-"""
-    Returns variable scale factor from dataset config file
+        if scale_factor is not None:
+            return scale_factor
+        else:
+            return 1.0
 
-    dataset: ID of dataset...giops_day, biomer, etc.
-    variable: Either xArray variable object or NetCDF4 variable object
-"""
-def get_variable_scale_factor(dataset: str, variable) -> float:
-    ds_vars = get_variables(dataset)
+    @property
+    def is_hidden(self) -> bool:
+        """
+        Is the given variable marked as hidden in the dataset config file
+        """
 
-    key = variable.key.lower()
-    if key in ds_vars:
-        factor = __get_dataset_config()[dataset]["variables"][key].get("scale_factor")
-        if factor is not None:
-            return factor
+        try:
+            from_config = self.__get_attribute("hide")
+            return from_config in ['true', 'True'] or from_config == True
+        except KeyError:
+            return True
 
-    return 1.0
+    @property
+    def hidden(self) -> bool:
+        """
+        Is the given variable marked as hidden in the dataset config file
+        """
+        return self.is_hidden
 
-"""
-    Is the given variable marked as hidden in the dataset config file
-    
-    dataset: ID of dataset...giops_day, biomer, etc.
-    variable: Either xArray variable object or NetCDF4 variable object
-"""
-def is_variable_hidden(dataset: str, variable) -> bool:
-    try:
-        from_config = __get_dataset_config()[dataset]["variables"][variable.key.lower()].get("hide")
-    except KeyError:
-        return True
+    @property
+    def is_zero_centered(self) -> bool:
+        """
+        Is the given variable marked as zero centered in the dataset config file
+        """
+        try:
+            from_config = self.__get_attribute("zero_centered")
+            return from_config in ['true', 'True'] or from_config == True
+        except KeyError:
+            return False
 
-    if from_config in ['true', 'True'] or from_config == True:
-        return True
-
-    return False
-    

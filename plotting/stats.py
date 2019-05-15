@@ -1,6 +1,5 @@
 import numpy as np
-from oceannavigator.dataset_config import get_variable_name, get_variable_unit, \
-    get_dataset_url, get_variable_scale_factor
+from oceannavigator import DatasetConfig
 from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
 from shapely.ops import cascaded_union
 from utils.misc import list_areas
@@ -66,7 +65,8 @@ class Stats:
             self.area.stats = self.inner_area.stats
 
     def get_values(self, area_info, dataset_name, variables):
-        with open_dataset(get_dataset_url(dataset_name)) as dataset:
+        config = DatasetConfig(dataset_name)
+        with open_dataset(config) as dataset:
 
             if self.time is None or (type(self.time) == str and
                                             len(self.time) == 0):
@@ -101,9 +101,9 @@ class Stats:
             for v_idx, v in enumerate(variables):
                 var = dataset.variables[v]
 
-                variable_name = get_variable_name(dataset_name, var)
-                variable_unit = get_variable_unit(dataset_name, var)
-                scale_factor = get_variable_scale_factor(dataset_name, var)
+                variable_name = config.variable[var].name
+                variable_unit = config.variable[var].unit
+                scale_factor = config.variable[var].scale_factor
 
                 lat, lon, d = dataset.get_raw_point(
                     lat.ravel(),
@@ -115,10 +115,6 @@ class Stats:
 
                 if scale_factor != 1.0:
                     d = np.multiply(d, scale_factor)
-
-                if variable_unit.startswith("Kelvin"):
-                    variable_unit = "Celsius"
-                    d = d - 273.15
 
                 lon[np.where(lon > 180)] -= 360
 
@@ -274,8 +270,6 @@ def wrap_computer_stats(query, dataset_name, lon_values):
 
     area_data.split_area(wrap_val)
 
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
     area_data.names, area_data.inner_area.all_rings = get_names_rings(area_data.inner_area.area_query)
     _, area_data.outter_area.all_rings = get_names_rings(area_data.outter_area.area_query)
 
@@ -315,11 +309,6 @@ def computer_stats(area, query, dataset_name):
     variables = query.get('variable')
     if isinstance(variables, str) or isinstance(variables, unicode):
         variables = variables.split(',')
-
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
-    variables = [re.sub('_anom$', '', v) for v in variables]
-
 
     area_data.names, area_data.area.all_rings = get_names_rings(area_data.area.area_query)
     area_data.area.bounds = compute_bounds(area_data.area.all_rings)

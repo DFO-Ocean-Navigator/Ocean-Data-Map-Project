@@ -12,7 +12,7 @@ import data
 import requests
 import routes
 from urllib.parse import urlencode
-from oceannavigator.dataset_config import __get_dataset_config, get_datasets, get_variables
+from oceannavigator import DatasetConfig
 import warnings
 import sys
 from flask import current_app
@@ -48,10 +48,10 @@ class SetUpTest:
             self.app = create_app()
             with self.app.app_context():
 
-                datasets = get_datasets()
+                datasets = DatasetConfig.get_datasets()
                 variables = {}
                 for dataset in datasets:
-                    variables.update({dataset: get_variables(dataset)})
+                    variables.update({dataset: DatasetConfig(dataset).variables})
                 data = {
                     'datasets': datasets,
                     'variables': variables
