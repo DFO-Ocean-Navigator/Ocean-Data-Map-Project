@@ -230,6 +230,7 @@ export default class Map extends React.PureComponent {
           projection: this.props.state.projection,
         }),
       });
+
     // MBTiles Bathymetry shapes (high res)
       this.layer_bathshapes = new ol.layer.VectorTile(
         {
@@ -975,6 +976,7 @@ export default class Map extends React.PureComponent {
         })
       );
 
+      // Update Hi-res bath layer
       this.layer_bathshapes.setSource(
         new ol.source.VectorTile({
           format: new ol.format.MVT(),
@@ -984,6 +986,7 @@ export default class Map extends React.PureComponent {
         })
       );
 
+      // Update Hi-res land layer
       this.layer_landshapes.setSource(
         new ol.source.VectorTile({
           format: new ol.format.MVT(),
