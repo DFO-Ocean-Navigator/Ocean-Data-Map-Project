@@ -8,7 +8,6 @@ require("openlayers/css/ol.css");
 const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
-const geojsonvt = require("geojson-vt/geojson-vt.js");
 
 ol.proj.setProj4(proj4);
 
