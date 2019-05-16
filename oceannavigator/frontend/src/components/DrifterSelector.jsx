@@ -80,16 +80,16 @@ export default class DrifterSelector extends React.Component {
     }
 
     this.props.select(Array.from(new Set([].concat.apply([], [].concat(
-            newState.imei.map(function (o) {
-              return this.state.imei_map[o];
-            }.bind(this)),
-            newState.wmo.map(function (o) {
-              return this.state.wmo_map[o];
-            }.bind(this)),
-            newState.deployment.map(function (o) {
-              return this.state.deployment_map[o];
-            }.bind(this))
-        )))));
+      newState.imei.map(function (o) {
+        return this.state.imei_map[o];
+      }.bind(this)),
+      newState.wmo.map(function (o) {
+        return this.state.wmo_map[o];
+      }.bind(this)),
+      newState.deployment.map(function (o) {
+        return this.state.deployment_map[o];
+      }.bind(this))
+    )))));
     this.setState(newState);
   }
 

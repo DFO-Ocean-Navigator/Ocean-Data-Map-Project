@@ -5,21 +5,21 @@ import i18n from "i18next";
 
 
 i18n
-    .init({
-      lng: "en",
-      nsSeparator: false,
-      keySeparator: false,
-      whitelist: ["en", "fr"],
-      fallbackLng: ["en"],
-      resources: {
-        fr: {
-          translation: require("../../translations/fr.json"),
-        },
-        en: {
-          translation: require("../../translations/en.json"),
-        },
+  .init({
+    lng: "en",
+    nsSeparator: false,
+    keySeparator: false,
+    whitelist: ["en", "fr"],
+    fallbackLng: ["en"],
+    resources: {
+      fr: {
+        translation: require("../../translations/fr.json"),
       },
-    });
+      en: {
+        translation: require("../../translations/en.json"),
+      },
+    },
+  });
 
 
 module.exports = i18n;
