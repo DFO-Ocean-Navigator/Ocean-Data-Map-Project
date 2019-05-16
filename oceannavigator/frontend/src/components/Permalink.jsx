@@ -35,7 +35,7 @@ export default class Permalink extends React.Component {
     this.refs.permalink.select();
 
     try {
-      document.execCommand('copy');
+      document.execCommand("copy");
     } catch(err) {
       alert("Please manually copy the selected text.");
     }
