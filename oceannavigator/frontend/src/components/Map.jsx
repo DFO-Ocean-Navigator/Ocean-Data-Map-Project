@@ -187,7 +187,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
-        preload: 0,
+        preload: 7,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -206,7 +206,7 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: 0,
+        preload: 7,
       });
 
     // MBTiles Land shapes (high res)
@@ -223,7 +223,7 @@ export default class Map extends React.PureComponent {
           }),
         source: new ol.source.VectorTile({
           format: new ol.format.MVT(),
-          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
@@ -242,7 +242,7 @@ export default class Map extends React.PureComponent {
           }),
           source: new ol.source.VectorTile({
             format: new ol.format.MVT(),
-            tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+            tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
             tilePixelRatio: 8,
             url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
           }),
@@ -657,7 +657,7 @@ export default class Map extends React.PureComponent {
         console.warn(shadedRelief);
 
         return new ol.layer.Tile({
-          preload: 0,
+          preload: 7,
           source: new ol.source.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -670,7 +670,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ol.layer.Tile({
-          preload: 0,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -683,7 +683,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ol.layer.Tile({
-          preload: 0,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
