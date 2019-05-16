@@ -34,7 +34,7 @@ export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
     
-    ReactGA.ga('send', 'pageview')
+    ReactGA.ga("send", "pageview");
 
     this.state = {
       dataset: "giops_day",
@@ -304,9 +304,9 @@ export default class OceanNavigator extends React.Component {
           // Disable point selection in both maps
           this.removeMapInteraction("Point");
           ReactGA.event({
-            category: 'PointPlot',
-            action: 'click',
-            label: 'PointPlot'
+            category: "PointPlot",
+            action: "click",
+            label: "PointPlot"
           });
 
           this.showModal();
@@ -330,9 +330,9 @@ export default class OceanNavigator extends React.Component {
           // Disable line drawing in both maps
           this.removeMapInteraction("Line");
           ReactGA.event({
-            category: 'LinePlot',
-            action: 'click',
-            label: 'LinePlot'
+            category: "LinePlot",
+            action: "click",
+            label: "LinePlot"
           });
 
           this.showModal();
@@ -354,9 +354,9 @@ export default class OceanNavigator extends React.Component {
           });
           this.removeMapInteraction("Area");
           ReactGA.event({
-            category: 'AreaPlot',
-            action: 'click',
-            label: 'AreaPlot'
+            category: "AreaPlot",
+            action: "click",
+            label: "AreaPlot"
           });
           this.showModal();
         } else {
@@ -374,9 +374,9 @@ export default class OceanNavigator extends React.Component {
           names: arg,
         });
         ReactGA.event({
-          category: 'DrifterPlot',
-          action: 'click',
-          label: 'DrifterPlot'
+          category: "DrifterPlot",
+          action: "click",
+          label: "DrifterPlot"
         });
         this.showModal();
         break;
@@ -812,7 +812,7 @@ export default class OceanNavigator extends React.Component {
               60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
               a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
               a clear and understandable fix released soon. <br/>
-              <br/>
+            <br/>
             <p>
               you would like more detailed information you can view our bug tracking this problem on 
               our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
