@@ -201,7 +201,7 @@ export default class Map extends React.PureComponent {
     this.layer_bath = new ol.layer.Tile(
       {
         source: new ol.source.XYZ({
-          url: `/api/v1.0/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
+          url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
         opacity: this.props.options.mapBathymetryOpacity,
