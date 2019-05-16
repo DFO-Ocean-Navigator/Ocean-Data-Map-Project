@@ -46,7 +46,7 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 8,
+  "EPSG:3857": 13,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };
@@ -187,7 +187,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
-        preload: Infinity,
+        preload: 7,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -206,8 +206,47 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: Infinity,
+        preload: 7,
       });
+
+    // MBTiles Land shapes (high res)
+    this.layer_landshapes = new ol.layer.VectorTile(
+      {
+        opacity: 1,
+        style: new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 1)'
+          }),
+				  fill: new ol.style.Fill({
+					  color: 'white'
+            })
+          }),
+        source: new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+          projection: this.props.state.projection,
+        }),
+      });
+
+    // MBTiles Bathymetry shapes (high res)
+      this.layer_bathshapes = new ol.layer.VectorTile(
+        {
+          opacity: this.props.options.mapBathymetryOpacity,
+          visible: this.props.options.bathymetry,
+          style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgba(0, 0, 0, 1)'
+            })
+          }),
+          source: new ol.source.VectorTile({
+            format: new ol.format.MVT(),
+            tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          }),
+        });
 
     // Drawing layer
     this.layer_vector = new ol.layer.Vector(
@@ -344,7 +383,9 @@ export default class Map extends React.PureComponent {
       layers: [
         this.layer_basemap,
         this.layer_data,
+        this.layer_landshapes,
         this.layer_bath,
+        this.layer_bathshapes,
         this.layer_vector,
       ],
       controls: ol.control.defaults({
@@ -616,7 +657,7 @@ export default class Map extends React.PureComponent {
         console.warn(shadedRelief);
 
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -629,7 +670,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -642,7 +683,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -930,6 +971,27 @@ export default class Map extends React.PureComponent {
             `/tiles/bath/${this.props.state.projection}` +
             "/{z}/{x}/{y}.png"
           ),
+          projection: this.props.state.projection,
+        })
+      );
+
+      // Update Hi-res bath layer
+      this.layer_bathshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+        })
+      );
+
+      // Update Hi-res land layer
+      this.layer_landshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
         })
       );
