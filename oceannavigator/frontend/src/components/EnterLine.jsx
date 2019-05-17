@@ -15,7 +15,7 @@ export default class EnterLine extends React.Component {
         endCoord: []
       },
     };
- }
+  }
 
   setCoordData(state, id) {
     const newState = this.state;

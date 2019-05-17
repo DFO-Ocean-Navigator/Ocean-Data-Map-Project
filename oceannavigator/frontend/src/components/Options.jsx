@@ -123,13 +123,13 @@ export default class Options extends React.Component {
           <SelectBox
             id='bathymetry'
             state={this.state.bathymetry}
-            onUpdate={(e, val) => {this.setState({"bathymetry": val,})} }
+            onUpdate={(e, val) => {this.setState({"bathymetry": val,});} }
             title={_("Show Bathymetry Contours")}
           />
           <SelectBox
             id='topoShadedRelief'
             state={this.state.topoShadedRelief}
-            onUpdate={(e, val) => {this.setState({"topoShadedRelief": val,})}}
+            onUpdate={(e, val) => {this.setState({"topoShadedRelief": val,});}}
             title={_("Topography Shaded Relief")}
           />
           <Row>

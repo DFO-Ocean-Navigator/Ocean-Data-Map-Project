@@ -475,7 +475,7 @@ export default class AreaWindow extends React.Component {
           </FormControl>
         </FormGroup>
 
-{/*
+        {/*
         <SelectBox
           id='convertToUserGrid'
           key='convertToUserGrid'

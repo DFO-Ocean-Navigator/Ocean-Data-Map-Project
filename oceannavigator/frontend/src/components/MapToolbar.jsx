@@ -223,7 +223,7 @@ export default class MapToolbar extends React.Component {
         this.props.action("line");
         break;
       case "coordinates":
-      this.props.updateState("plotEnabled", true);
+        this.props.updateState("plotEnabled", true);
         this.setState({showLineCoordModal: true,});
         break;
       default:
@@ -699,9 +699,9 @@ export default class MapToolbar extends React.Component {
               <NavItem
                 name="reset"
                 onClick={(e) => {
-                    this.buttonHandler(e); 
-                    this.props.updateState("plotEnabled", false);
-                  }
+                  this.buttonHandler(e); 
+                  this.props.updateState("plotEnabled", false);
+                }
                 }
               >
                 <Icon icon='undo' alt={_("Reset Map")} />

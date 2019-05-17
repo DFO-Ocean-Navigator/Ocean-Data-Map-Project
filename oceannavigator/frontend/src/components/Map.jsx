@@ -658,7 +658,7 @@ export default class Map extends React.PureComponent {
     switch(source) {
       case "topo":
 
-        const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
+        const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
         console.warn(shadedRelief);
 
         return new ol.layer.Tile({
@@ -817,7 +817,7 @@ export default class Map extends React.PureComponent {
       const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
       this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
       this.map.removeInteraction(draw);
@@ -854,7 +854,7 @@ export default class Map extends React.PureComponent {
       );
       // Draw line(s) on map(s)
       this.props.action("add", "line", points);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
@@ -896,7 +896,7 @@ export default class Map extends React.PureComponent {
       };
       // Draw area on map(s)
       this.props.action("add", "area", points);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
@@ -913,7 +913,7 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = `/tiles/v0.1` + 
+    props.url = "/tiles/v0.1" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
@@ -923,7 +923,7 @@ export default class Map extends React.PureComponent {
                 `/${this.props.state.time}` + 
                 `/${this.props.state.depth}` + 
                 `/${this.props.scale}` + 
-                `/{z}/{x}/{y}.png`;
+                "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
       new ol.Attribution({
@@ -1097,9 +1097,9 @@ export default class Map extends React.PureComponent {
     var feat;
     switch(type) {
       case "point":
-        this.props.updateState('point', data)
-        this.props.updateState('modal', 'point')
-        this.props.updateState('names', data[0])
+        this.props.updateState("point", data);
+        this.props.updateState("modal", "point");
+        this.props.updateState("names", data[0]);
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
@@ -1112,9 +1112,9 @@ export default class Map extends React.PureComponent {
         }
         break;
       case "line":
-        this.props.updateState('line', [data])
-        this.props.updateState('modal', 'line')
-        this.props.updateState('names', data)
+        this.props.updateState("line", [data]);
+        this.props.updateState("modal", "line");
+        this.props.updateState("names", data);
         geom = new ol.geom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
@@ -1129,13 +1129,13 @@ export default class Map extends React.PureComponent {
         this.vectorSource.addFeature(feat);
         break;
       case "area":
-        this.props.updateState('area', [{
-          'innerrings': [],
-          'name': '',
-          'polygons': [data]
-        }])
-        this.props.updateState('modal', 'area')
-        this.props.updateState('names', data)
+        this.props.updateState("area", [{
+          "innerrings": [],
+          "name": "",
+          "polygons": [data]
+        }]);
+        this.props.updateState("modal", "area");
+        this.props.updateState("names", data);
         geom = new ol.geom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
@@ -1182,14 +1182,14 @@ export default class Map extends React.PureComponent {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-        <div className={'balloonClose'}>
-        <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
-        </div>
-        <div className={'balloonLaunch'}>
-        <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
-        </div>      
+          <div className={"balloonClose"}>
+            <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+          </div>
+          <div className={"balloonLaunch"}>
+            <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+          </div>      
         
-        <div ref={(c) => this.infoPopupContent = c}></div>
+          <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>
     );

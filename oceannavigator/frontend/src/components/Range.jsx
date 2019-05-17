@@ -50,8 +50,8 @@ export default class Range extends React.Component {
 
     //Sets scale to default on variable change
     if (this.props.setDefaultScale == true) {
-      this.handleDefaultButton()  //Changes Scale
-      this.props.onUpdate("setDefaultScale", false) //Resets set to default flag
+      this.handleDefaultButton();  //Changes Scale
+      this.props.onUpdate("setDefaultScale", false); //Resets set to default flag
     }
     if (stringify(this.props) !== stringify(nextProps)) {
 

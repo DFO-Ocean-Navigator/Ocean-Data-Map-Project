@@ -339,9 +339,9 @@ ComboBox.propTypes = {
   title: PropTypes.string,
   data: PropTypes.array,
   state: PropTypes.oneOfType([PropTypes.string, 
-                              PropTypes.number, 
-                              PropTypes.array
-                            ]),
+    PropTypes.number, 
+    PropTypes.array
+  ]),
   onUpdate: PropTypes.func,
   id: PropTypes.string,
   url: PropTypes.string,
