@@ -177,6 +177,11 @@ export default class Map extends React.PureComponent {
       loader: this.loader.bind(this),
     });
 
+    this.vectorTileGrid = new ol.tilegrid.createXYZ({
+      tileSize:512, 
+      maxZoom: MAX_ZOOM[this.props.state.projection]
+    }),
+
     // Basemap layer
     this.layer_basemap = this.getBasemap(
       this.props.state.basemap,
@@ -223,7 +228,7 @@ export default class Map extends React.PureComponent {
           }),
         source: new ol.source.VectorTile({
           format: new ol.format.MVT(),
-          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
+          tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
@@ -242,7 +247,7 @@ export default class Map extends React.PureComponent {
           }),
           source: new ol.source.VectorTile({
             format: new ol.format.MVT(),
-            tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 13}),
+            tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
             url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
           }),
@@ -979,7 +984,7 @@ export default class Map extends React.PureComponent {
       this.layer_bathshapes.setSource(
         new ol.source.VectorTile({
           format: new ol.format.MVT(),
-          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
         })
@@ -989,7 +994,7 @@ export default class Map extends React.PureComponent {
       this.layer_landshapes.setSource(
         new ol.source.VectorTile({
           format: new ol.format.MVT(),
-          tileGrid: new ol.tilegrid.createXYZ({tileSize:512, maxZoom: 14}),
+          tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,

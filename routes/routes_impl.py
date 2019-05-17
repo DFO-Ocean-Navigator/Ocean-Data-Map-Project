@@ -592,8 +592,10 @@ def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
     """
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+
     if zoom > 7:
-        return send_file("/opt/tiles/blank.png")
+        return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
@@ -610,8 +612,11 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
     """
        Generates bathymetry tiles
     """
+
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+
     if zoom > 7:
-        return send_file("/opt/tiles/blank.png")
+        return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
