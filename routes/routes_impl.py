@@ -633,17 +633,16 @@ def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
   """
   cache_dir = current_app.config['CACHE_DIR']
   shape_file_dir = current_app.config['SHAPE_FILE_DIR']
-  directory = str(os.path.join(cache_dir, request.path[1:]))
-  # This is a funky way of splitting the string to only include characters up to the 10th instance of '/'
-  basedir = "/".join(directory.split("/", 10)[:10])
+  requestf = str(os.path.join(cache_dir, request.path[1:]))
+  basedir = requestf.rsplit("/", 1)[0]
 
   # Send blank tile if conditions aren't met
   if (zoom < 7) or (projection != "EPSG:3857"):
     return send_file(shape_file_dir + "/blank.mbt")
 
 # Send file if cached or select data in SQLite file
-  if os.path.isfile(directory):
-    return send_file(directory)
+  if os.path.isfile(requestf):
+    return send_file(requestf)
   else:
     y = (2**zoom-1) - y
     connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
@@ -659,12 +658,12 @@ def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
       pass
     else:
       os.makedirs(basedir)
-    with open(directory + ".pbf", 'wb') as f:
+    with open(requestf + ".pbf", 'wb') as f:
       f.write(tile[0])
-    with gzip.open(directory + ".pbf", 'rb') as gzipped:
-      with open(directory, 'wb') as tileout:
+    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
+      with open(requestf, 'wb') as tileout:
         shutil.copyfileobj(gzipped, tileout)
-    return send_file(directory)
+    return send_file(requestf)
 
 
 def drifter_query_impl(q: str, drifter_id: str):
