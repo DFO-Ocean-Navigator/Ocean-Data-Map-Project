@@ -219,9 +219,8 @@ def plot(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
     
-    if z > 7:
-        pass
-    else:
+    # Mask out any topography if we're below the vector-tile threshold
+    if z < 8:
         with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
             bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
 

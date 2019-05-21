@@ -654,9 +654,7 @@ def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
-    if os.path.isdir(basedir):
-      pass
-    else:
+    if not os.path.isdir(basedir):
       os.makedirs(basedir)
     with open(requestf + ".pbf", 'wb') as f:
       f.write(tile[0])
