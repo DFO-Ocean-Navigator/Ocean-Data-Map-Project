@@ -289,7 +289,6 @@ def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, datase
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
   hull_shade = shaded_relief == 'true'
-
   return routes.routes_impl.topo_impl(projection, zoom, x, y, hull_shade)
 
 
@@ -300,3 +299,10 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
   return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
+
+#
+# Request shapefiles
+#
+@bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
+def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
+  return routes.routes_impl.mbt_impl(projection, tiletype, zoom, x, y)

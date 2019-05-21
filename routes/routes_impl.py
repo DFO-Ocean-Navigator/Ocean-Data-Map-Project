@@ -40,6 +40,9 @@ import os
 import netCDF4
 import base64
 import pytz
+import gzip
+import shutil
+import sqlite3
 from data import open_dataset
 
 MAX_CACHE = 315360000
@@ -589,6 +592,10 @@ def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
     """
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+
+    if zoom > 7:
+        return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
@@ -606,6 +613,11 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
        Generates bathymetry tiles
     """
 
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+
+    if zoom > 7:
+        return send_file(shape_file_dir + "/blank.png")
+
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
 
@@ -614,6 +626,42 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
     else:
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
+
+def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
+  """
+       Serves mbt files
+  """
+  cache_dir = current_app.config['CACHE_DIR']
+  shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+  requestf = str(os.path.join(cache_dir, request.path[1:]))
+  basedir = requestf.rsplit("/", 1)[0]
+
+  # Send blank tile if conditions aren't met
+  if (zoom < 7) or (projection != "EPSG:3857"):
+    return send_file(shape_file_dir + "/blank.mbt")
+
+# Send file if cached or select data in SQLite file
+  if os.path.isfile(requestf):
+    return send_file(requestf)
+  else:
+    y = (2**zoom-1) - y
+    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
+    selector = connection.cursor()
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+    if tile == None:
+        return send_file(shape_file_dir + "/blank.mbt")
+
+    # Write tile to cache and send file
+    if not os.path.isdir(basedir):
+      os.makedirs(basedir)
+    with open(requestf + ".pbf", 'wb') as f:
+      f.write(tile[0])
+    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
+      with open(requestf, 'wb') as tileout:
+        shutil.copyfileobj(gzipped, tileout)
+    return send_file(requestf)
 
 
 def drifter_query_impl(q: str, drifter_id: str):
