@@ -213,6 +213,10 @@ class NetCDFData(Data):
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
 
+        # Workaround for https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
+        if '_NCProperties' in subset.attrs.keys():
+                del subset.attrs['_NCProperties']
+
         # "Special" output
         if output_format == "NETCDF3_NC":
             # Regrids an input data array according to it's input grid definition
