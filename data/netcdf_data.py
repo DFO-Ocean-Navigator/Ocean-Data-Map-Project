@@ -125,8 +125,6 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = [v.key for v in self.variables]
-
         # Get lat/lon variable names from dataset (since they all differ >.>)
         lat_var = find_variable("lat", list(self._dataset.variables.keys()))
         lon_var = find_variable("lon", list(self._dataset.variables.keys()))
