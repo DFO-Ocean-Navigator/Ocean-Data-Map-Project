@@ -126,11 +126,9 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = [v.key for v in self.variables]
-
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", variable_list)
-        lon_var = find_variable("lon", variable_list)
+        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
@@ -213,6 +211,10 @@ class NetCDFData(Data):
         output_format = query.get('output_format')
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
+
+        # Workaround for https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
+        if '_NCProperties' in subset.attrs.keys():
+                del subset.attrs['_NCProperties']
 
         # "Special" output
         if output_format == "NETCDF3_NC":

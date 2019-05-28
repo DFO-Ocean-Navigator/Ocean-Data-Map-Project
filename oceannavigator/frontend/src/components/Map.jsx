@@ -46,7 +46,7 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 8,
+  "EPSG:3857": 13,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };
@@ -177,6 +177,11 @@ export default class Map extends React.PureComponent {
       loader: this.loader.bind(this),
     });
 
+    this.vectorTileGrid = new ol.tilegrid.createXYZ({
+      tileSize:512, 
+      maxZoom: MAX_ZOOM[this.props.state.projection]
+    }),
+
     // Basemap layer
     this.layer_basemap = this.getBasemap(
       this.props.state.basemap,
@@ -187,7 +192,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ol.layer.Tile(
       {
-        preload: Infinity,
+        preload: 7,
         source: new ol.source.XYZ({
           attributions: [
             new ol.Attribution({
@@ -206,8 +211,47 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: Infinity,
+        preload: 7,
       });
+
+    // MBTiles Land shapes (high res)
+    this.layer_landshapes = new ol.layer.VectorTile(
+      {
+        opacity: 1,
+        style: new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'rgba(0, 0, 0, 1)'
+          }),
+				  fill: new ol.style.Fill({
+					  color: 'white'
+            })
+          }),
+        source: new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: this.vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+          projection: this.props.state.projection,
+        }),
+      });
+
+    // MBTiles Bathymetry shapes (high res)
+      this.layer_bathshapes = new ol.layer.VectorTile(
+        {
+          opacity: this.props.options.mapBathymetryOpacity,
+          visible: this.props.options.bathymetry,
+          style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgba(0, 0, 0, 1)'
+            })
+          }),
+          source: new ol.source.VectorTile({
+            format: new ol.format.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          }),
+        });
 
     // Drawing layer
     this.layer_vector = new ol.layer.Vector(
@@ -344,7 +388,9 @@ export default class Map extends React.PureComponent {
       layers: [
         this.layer_basemap,
         this.layer_data,
+        this.layer_landshapes,
         this.layer_bath,
+        this.layer_bathshapes,
         this.layer_vector,
       ],
       controls: ol.control.defaults({
@@ -612,11 +658,11 @@ export default class Map extends React.PureComponent {
     switch(source) {
       case "topo":
 
-        const shadedRelief = this.props.options.topoShadedRelief ? 'true' : 'false';
+        const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
         console.warn(shadedRelief);
 
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -629,7 +675,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -642,7 +688,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ol.layer.Tile({
-          preload: Infinity,
+          preload: 7,
           source: new ol.source.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -771,7 +817,7 @@ export default class Map extends React.PureComponent {
       const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
       this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
       this.map.removeInteraction(draw);
@@ -808,7 +854,7 @@ export default class Map extends React.PureComponent {
       );
       // Draw line(s) on map(s)
       this.props.action("add", "line", points);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Send line(s) to LineWindow
       this.props.action("line", [points]);
       this.map.removeInteraction(draw);
@@ -850,7 +896,7 @@ export default class Map extends React.PureComponent {
       };
       // Draw area on map(s)
       this.props.action("add", "area", points);
-      this.props.updateState("plotEnabled", true)
+      this.props.updateState("plotEnabled", true);
       // Send area to AreaWindow
       this.props.action("area", [area]);
       this.map.removeInteraction(draw);
@@ -867,7 +913,7 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = `/tiles/v0.1` + 
+    props.url = "/tiles/v0.1" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
@@ -877,7 +923,7 @@ export default class Map extends React.PureComponent {
                 `/${this.props.state.time}` + 
                 `/${this.props.state.depth}` + 
                 `/${this.props.scale}` + 
-                `/{z}/{x}/{y}.png`;
+                "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
       new ol.Attribution({
@@ -930,6 +976,27 @@ export default class Map extends React.PureComponent {
             `/tiles/bath/${this.props.state.projection}` +
             "/{z}/{x}/{y}.png"
           ),
+          projection: this.props.state.projection,
+        })
+      );
+
+      // Update Hi-res bath layer
+      this.layer_bathshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: this.vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+        })
+      );
+
+      // Update Hi-res land layer
+      this.layer_landshapes.setSource(
+        new ol.source.VectorTile({
+          format: new ol.format.MVT(),
+          tileGrid: this.vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
         })
       );
@@ -1030,9 +1097,9 @@ export default class Map extends React.PureComponent {
     var feat;
     switch(type) {
       case "point":
-        this.props.updateState('point', data)
-        this.props.updateState('modal', 'point')
-        this.props.updateState('names', data[0])
+        this.props.updateState("point", data);
+        this.props.updateState("modal", "point");
+        this.props.updateState("names", data[0]);
         for (let c of data) {
           geom = new ol.geom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
@@ -1045,9 +1112,9 @@ export default class Map extends React.PureComponent {
         }
         break;
       case "line":
-        this.props.updateState('line', [data])
-        this.props.updateState('modal', 'line')
-        this.props.updateState('names', data)
+        this.props.updateState("line", [data]);
+        this.props.updateState("modal", "line");
+        this.props.updateState("names", data);
         geom = new ol.geom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
@@ -1062,13 +1129,13 @@ export default class Map extends React.PureComponent {
         this.vectorSource.addFeature(feat);
         break;
       case "area":
-        this.props.updateState('area', [{
-          'innerrings': [],
-          'name': '',
-          'polygons': [data]
-        }])
-        this.props.updateState('modal', 'area')
-        this.props.updateState('names', data)
+        this.props.updateState("area", [{
+          "innerrings": [],
+          "name": "",
+          "polygons": [data]
+        }]);
+        this.props.updateState("modal", "area");
+        this.props.updateState("names", data);
         geom = new ol.geom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
@@ -1115,14 +1182,14 @@ export default class Map extends React.PureComponent {
           className='ballon ol-popup'
           ref={(c) => this.infoPopup = c}
         >
-        <div className={'balloonClose'}>
-        <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
-        </div>
-        <div className={'balloonLaunch'}>
-        <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
-        </div>      
+          <div className={"balloonClose"}>
+            <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+          </div>
+          <div className={"balloonLaunch"}>
+            <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+          </div>      
         
-        <div ref={(c) => this.infoPopupContent = c}></div>
+          <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>
     );
