@@ -18,6 +18,7 @@ import uuid
 import pandas
 import zipfile
 import pint
+import cftime
 
 
 class NetCDFData(Data):
@@ -125,11 +126,9 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = [v.key for v in self.variables]
-
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", variable_list)
-        lon_var = find_variable("lon", variable_list)
+        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
@@ -528,7 +527,7 @@ class NetCDFData(Data):
             var = self.__get_time_variable()
 
             # Convert timestamps to UTC
-            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
+            t = cftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values
