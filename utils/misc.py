@@ -2,7 +2,6 @@ import fcntl
 import os
 import time
 from flask import current_app
-# from pykml import parser
 import xml.etree.ElementTree as ET
 from shapely.geometry.polygon import LinearRing
 from netCDF4 import Dataset, chartostring
