@@ -129,19 +129,25 @@ export default class StatsTable extends React.Component {
         </tbody>
       );
     } else {
-      content = this.state.data.map(function(area) {
-        const vars = area.variables.map(function(v) {
-          return (
-            <tr key={area.name + "_" + v.name}>
-              <td>{v.name} ({v.unit})</td>
-              <td>{v.min}</td>
-              <td>{v.max}</td>
-              <td>{v.median}</td>
-              <td>{v.mean}</td>
-              <td>{v.stddev}</td>
-              <td>{v.num}</td>
-            </tr>
-          );
+      const arrayData = Object.entries(this.state.data);
+    
+      content = arrayData.map(function(area) {
+        const vars = area.map(function(v) {
+          if(typeof(v)=="object"){
+
+            return (
+              <tr key={v.name}>
+                <td>{v.name}(@{v.depth}m) ({v.unit})</td>
+                <td>{v.min}</td>
+                <td>{v.max}</td>
+                <td>{v.median}</td>
+                <td>{v.mean}</td>
+                <td>{v.skewness}</td>
+                <td>{v.kurtosis}</td>
+                <td>{v.standard_dev}</td>
+                <td>{v.sampled_points}</td>
+              </tr>
+            )}
         });
         let name = "";
         if (area.name) {
@@ -159,7 +165,7 @@ export default class StatsTable extends React.Component {
         );
       });
     }
-
+    
     return (
       <div>
         <Table 
@@ -174,8 +180,10 @@ export default class StatsTable extends React.Component {
               <th>{_("Variable")}</th>
               <th title={_("Minimum Value")}>{_("Min")}</th>
               <th title={_("Maximum Value")}>{_("Max")}</th>
-              <th title={_("Median Value")}>{_("Median")}</th>
+              <th title={_("Median Value")}>{_("Med")}</th>
               <th title={_("Average Value")}>{_("Mean")}</th>
+              <th title={_("Skewness Value")}>{_("Skew")}</th>
+              <th title={_("Kortosis Value")}>{_("Kort")}</th>
               <th title={_("Standard Deviation")}>{_("Std Dev")}</th>
               <th title={_("Number of Valid Points in Area")}>{_("# Valid Pts")}</th>
             </tr>

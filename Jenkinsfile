@@ -19,13 +19,14 @@ pipeline {
         sh '''
                 #!/usr/bin/env bash
 
-                py=/opt/tools/miniconda3/bin/python
+                TEST=/opt/tools/miniconda3/envs/navigator/bin/python -m unittest
 
-                $py -m unittest tests/test_geo.py
-                $py -m unittest tests/test_nemo.py
-                $py -m unittest tests/test_api_v1_0_plot_line.py
-                $py -m unittest tests/test_oceannavigator_cfg.py
-                $py -m unittest tests/test_datasetconfig.py
+                $TEST tests/test_geo.py
+                $TEST tests/test_nemo.py
+                $TEST tests/test_api_v1_0_plot_line.py
+                $TEST tests/test_stats.py
+                $TEST tests/test_oceannavigator_cfg.py
+                $TEST tests/test_datasetconfig.py
            '''
       }
     }

@@ -63,6 +63,7 @@ class NetCDFData(Data):
 
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
+        TODO: figure out what this is doing and junk it.
     """
     def convert_to_timestamp(self, date):
         
@@ -85,6 +86,24 @@ class NetCDFData(Data):
                 date_formatted.update(new_date)     #Add Next pair
                 i += 1
             return date_formatted
+
+    
+    def find_time_index_from_date(self, isoDate: datetime.datetime):
+        """[summary]
+        
+        Arguments:
+            isoDate {datetime.datetime} -- [description]
+        
+        Returns:
+            int -- index of timestamp
+        """
+
+        for idx, date in enumerate(self.timestamps):
+            if isoDate == date:
+                return idx
+
+        raise IndexError("The given isoDate does not have a corresponding time index: ", isoDate)
+
         
     """
         Subsets a netcdf file with all depths
@@ -110,7 +129,7 @@ class NetCDFData(Data):
             time_range = [int(x) for x in query.get('time').split(',')]
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
-            
+            """
             quantum = query.get('quantum')
             if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
@@ -129,9 +148,9 @@ class NetCDFData(Data):
                         if date.date().year == isoDate.date().year and \
                         date.date().month == isoDate.date().month:
                             return idx
-
+            """
             time_range = [dateutil.parser.parse(x) for x in query.get('time').split(',')]
-            time_range = [find_time_index(x) for x in time_range]
+            time_range = [self.find_time_index_from_date(x) for x in time_range]
 
         apply_time_range = False
         if time_range[0] != time_range[1]:

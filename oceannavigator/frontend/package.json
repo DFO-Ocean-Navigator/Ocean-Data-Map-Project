@@ -41,6 +41,7 @@
     "react-fontawesome": "^1.6.1",
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
+    "react-mathjax": "^1.0.1",
     "react-numeric-input": "^2.2.3",
     "webfontloader": "^1.6.28"
   },
