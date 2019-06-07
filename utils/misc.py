@@ -276,6 +276,33 @@ def areas(area_id, projection, resolution, extent):
     return result
 
 
+def drifter_meta():
+    imei = {}
+    wmo = {}
+    deployment = {}
+
+    with Dataset(current_app.config['DRIFTER_AGG_URL'], 'r') as ds:
+        for idx, b in enumerate(ds.variables['buoy'][:]):
+            bid = str(chartostring(b))[:-3]
+
+            for data, key in [
+                [imei, 'imei'],
+                [wmo, 'wmo'],
+                [deployment, 'deployment']
+            ]:
+                d = str(chartostring(ds.variables[key][idx][0]))
+                if data.get(d) is None:
+                    data[d] = [bid]
+                else:
+                    data[d].append(bid)
+
+    return {
+        'imei': imei,
+        'wmo': wmo,
+        'deployment': deployment,
+    }
+
+
 def observation_vars():
     result = []
     with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
