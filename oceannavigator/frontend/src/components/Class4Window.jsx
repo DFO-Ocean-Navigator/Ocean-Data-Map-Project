@@ -60,6 +60,7 @@ export default class Class4Window extends React.Component {
   render() {
     const plot_query = {
       type: "class4",
+      dataset: this.props.dataset,
       forecast: this.state.forecast,
       class4id: this.props.class4id,
       showmap: this.state.showmap,
@@ -165,6 +166,7 @@ export default class Class4Window extends React.Component {
 //***********************************************************************
 Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
+  dataset: PropTypes.string,
   class4id: PropTypes.array,
   init: PropTypes.object,
   action: PropTypes.func,
