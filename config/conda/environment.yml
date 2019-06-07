@@ -6,6 +6,7 @@ dependencies:
   - asn1crypto=0.24.0=py37_1003
   - babel=2.7.0=py_0
   - basemap=1.2.0=py37hf62cb97_3
+  - basemap-data-hires=1.2.0=0
   - beautifulsoup4=4.7.1=py37_1001
   - boost-cpp=1.68.0=h11c811c_1000
   - bzip2=1.0.6=h14c3975_1002
