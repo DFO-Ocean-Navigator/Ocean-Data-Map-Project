@@ -47,6 +47,19 @@ def __check_for_valid_points(data_array: np.ndarray):
 
     return np.count_nonzero(~np.isnan(data_array))
 
+    
+def __calculate_median(data_array: np.ndarray):
+    """ Calculates median of thegiven data.
+
+    Arguments: 
+       Data_array {np.ndarray} -- An array-like of data values for a variable.
+
+       Returns:
+       A ndarray holding the result.
+    """
+    
+    return np.median(data_array)
+
 
 def __calculate_variable_stats(data_array: np.ndarray):
     """Calculates the stats for a single data array (variable).
@@ -64,8 +77,22 @@ def __calculate_variable_stats(data_array: np.ndarray):
     sampled_points, min_max, mean, variance, skewness, kurtosis = stats.describe(data_array)
 
     variable_stats["sampled_points"] = sampled_points
+
     variable_stats["mean"] = mean.item()
-    #...continue filling in dict
+
+    variable_stats["min"] = min_max[0].item()
+
+    variable_stats["max"] = min_max[1].item()
+
+    variable_stats["variance"] = variance.item()
+
+    variable_stats["skewness"] = skewness
+
+    variable_stats["kurtosis"] = kurtosis
+
+    variable_stats["statndard_dev"] = __compute_std_dev_from_variance(variance).item()
+    variable_stats["median"] = __calculate_median(data_array).item()
+   
 
     return variable_stats
 

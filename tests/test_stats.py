@@ -27,7 +27,14 @@ class TestStats(ut.TestCase):
         expected_stats = json.dumps({
             "votemper": {
                 "sampled_points": 100,
-                "mean": 301.0411682128906
+                "mean": 301.0411682128906,
+                "min": 300.02716064453125,
+                "max": 301.7696533203125,
+                "variance": 0.20325061678886414,
+                "skewness": -0.34470564126968384,
+                "kurtosis": -1.0160059953972307,
+                "statndard_dev": 0.450833261013031,
+                "median": 301.1199951171875
             }
         })
 
