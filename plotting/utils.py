@@ -1,8 +1,11 @@
-import numpy as np
-import re
 import datetime
+import re
+
+import numpy as np
 from mpl_toolkits.basemap import Basemap
+
 from utils.errors import ClientError, ServerError
+
 
 def get_filename(plot_type, dataset_name, extension):
     outname = [
@@ -151,26 +154,3 @@ def point_plot(points):
 
 def path_plot(points, quiver=True):
     _map_plot(points, True, quiver=quiver)
-
-
-def _find_var(dataset, candidates):
-    for c in candidates:
-        if c in dataset.variables:
-            return dataset.variables[c]
-
-    return None
-
-
-def get_time_var(dataset):
-    return _find_var(dataset, [
-        'time_counter',
-        'time',
-    ])
-
-
-def get_latlon_vars(dataset):
-    return (
-        _find_var(dataset, ['nav_lat', 'latitude']),
-        _find_var(dataset, ['nav_lon', 'longitude']),
-    )
-

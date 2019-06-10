@@ -2,7 +2,6 @@ import React from "react";
 import Map from "./Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
-import WarningBar from "./WarningBar.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -583,6 +582,7 @@ export default class OceanNavigator extends React.Component {
       case "class4":
         modalContent = (
           <Class4Window
+            dataset={this.state.dataset}
             class4id={this.state.class4}
             init={this.state.subquery}
             action={this.action}
@@ -660,11 +660,6 @@ export default class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
           />
-          {/*
-          <WarningBar
-            showWarningInfo={this.showBugsModal}
-          />
-          */}
           {map}
         </div>
 
