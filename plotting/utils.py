@@ -1,8 +1,11 @@
-import numpy as np
-import re
 import datetime
+import re
+
+import numpy as np
 from mpl_toolkits.basemap import Basemap
+
 from utils.errors import ClientError, ServerError
+
 
 def get_filename(plot_type, dataset_name, extension):
     outname = [

@@ -1,24 +1,26 @@
-import netCDF4
-from flask_babel import format_date
+import datetime
+import os
+import re
+import uuid
+import warnings
+import zipfile
+
+import cftime
 import dateutil.parser
+import geopy
+import netCDF4
+import numpy as np
+import pandas
+import pint
+import pyresample
+import pytz
+import xarray as xr
+from cachetools import TTLCache
+from flask_babel import format_date
+
+import data.calculated
 from data.data import Data, Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
-import data.calculated
-import xarray as xr
-import os
-from cachetools import TTLCache
-import pytz
-import warnings
-import pyresample
-import numpy as np
-import re
-import geopy
-import datetime
-import uuid
-import pandas
-import zipfile
-import pint
-import cftime
 
 
 class NetCDFData(Data):
@@ -57,6 +59,7 @@ class NetCDFData(Data):
                 return self._dataset.variables[c]
         
         raise KeyError("None of ", candidates, " where found in ", self._dataset)
+
 
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
