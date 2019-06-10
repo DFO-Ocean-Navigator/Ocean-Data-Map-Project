@@ -151,26 +151,3 @@ def point_plot(points):
 
 def path_plot(points, quiver=True):
     _map_plot(points, True, quiver=quiver)
-
-
-def _find_var(dataset, candidates):
-    for c in candidates:
-        if c in dataset.variables:
-            return dataset.variables[c]
-
-    return None
-
-
-def get_time_var(dataset):
-    return _find_var(dataset, [
-        'time_counter',
-        'time',
-    ])
-
-
-def get_latlon_vars(dataset):
-    return (
-        _find_var(dataset, ['nav_lat', 'latitude']),
-        _find_var(dataset, ['nav_lon', 'longitude']),
-    )
-

@@ -49,8 +49,6 @@ class HovmollerPlotter(plLine.LinePlotter):
 
         # Load left/Main Map
         with open_dataset(self.dataset_config) as dataset:
-            
-            latvar, lonvar = utils.get_latlon_vars(dataset)
             self.depth, self.depth_value, self.depth_unit = find_depth(self.depth, len(dataset.depths) - 1, dataset)
 
             self.fix_startend_times(dataset, self.starttime, self.endtime)
@@ -97,7 +95,6 @@ class HovmollerPlotter(plLine.LinePlotter):
         if self.compare:
             compare_config = DatasetConfig(self.compare['dataset'])
             with open_dataset(compare_config) as dataset:
-                latvar, lonvar = utils.get_latlon_vars(dataset)
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(self.compare['depth'], len(dataset.depths) - 1, dataset)
 
                 self.fix_startend_times(dataset, self.compare['starttime'], self.compare['endtime'])
