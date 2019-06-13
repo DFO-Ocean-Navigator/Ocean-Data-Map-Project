@@ -1,8 +1,11 @@
-import unittest
-from data.nemo import Nemo
-import numpy as np
 import datetime
+import unittest
+
+import numpy as np
 import pytz
+
+from data.nemo import Nemo
+
 
 class TestNemo(unittest.TestCase):
 
@@ -22,6 +25,19 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(variables['votemper'].name,
                              'Water temperature at CMC')
             self.assertEqual(variables['votemper'].unit, 'Kelvins')
+
+    def test_time_variable(self):
+        with Nemo('tests/testdata/nemo_test.nc') as n:
+            time_var = n.time_variable
+
+            self.assertEqual(time_var.attrs["title"], "Time")
+
+    def test_latlon_variables(self):
+        with Nemo('tests/testdata/nemo_test.nc') as n:
+            lat, lon = n.latlon_variables
+
+            self.assertEqual(lat.attrs["long_name"], "Latitude")
+            self.assertEqual(lon.attrs["long_name"], "Longitude")
 
     def test_get_point(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:

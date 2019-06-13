@@ -2,9 +2,10 @@ import fcntl
 import os
 import time
 from flask import current_app
-from pykml import parser
+import xml.etree.ElementTree as ET
 from shapely.geometry.polygon import LinearRing
-from netCDF4 import Dataset, chartostring, netcdftime
+from netCDF4 import Dataset, chartostring
+import cftime
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
@@ -22,14 +23,17 @@ def list_kml_files(subdir):
 
     files = []
     for f in os.listdir(DIR):
+        name = None
         if not f.endswith(".kml"):
             continue
-
-        doc = parser.parse(os.path.join(DIR, f)).getroot()
-        folder = doc.Document.Folder
-
+        root = ET.parse(DIR + "/" + f).getroot()
+        nsmap = root.tag.split("}", 1)[0] + "}"
+        for folder in root.iter(nsmap + "Folder"):
+            for filename in folder.iter(nsmap + "name"):
+                name = filename.text
+                break
         entry = {
-            'name': folder.name.text,
+            'name': name,
             'id': f[:-4]
         }
 
@@ -52,8 +56,15 @@ def _get_view(extent):
 def _get_kml(subdir, file_id):
     DIR = os.path.join(current_app.config['OVERLAY_KML_DIR'], subdir)
     f = os.path.join(DIR, "%s.kml" % file_id)
-    doc = parser.parse(f).getroot()
-    return doc.Document.Folder, {"k": doc.nsmap[None]}
+    folder = None
+    root = ET.parse(f).getroot()
+    for doc in root:
+        if "Document" in doc.tag:
+            for folder in doc:
+                if "Folder" in folder.tag:
+                    break
+    nsmap = root.tag.split("}", 1)[0] + "}"
+    return folder, nsmap
 
 
 def points(file_id, projection, resolution, extent):
@@ -61,27 +72,30 @@ def points(file_id, projection, resolution, extent):
     view = _get_view(extent)
     folder, nsmap = _get_kml('point', file_id)
     points = []
+    name = None
 
-    for place in folder.Placemark:
-        c_txt = place.Point.coordinates.text
-        lonlat = list(map(float, c_txt.split(',')))
-
-        x, y = proj(lonlat[0], lonlat[1])
-        p = Point(y, x)
-
-        if view.envelope.intersects(p):
-            points.append({
-                'type': "Feature",
-                'geometry': {
-                    'type': "Point",
-                    'coordinates': lonlat,
-                },
-                'properties': {
-                    'name': place.name.text,
-                    'type': 'point',
-                    'resolution': 0,
-                }
-            })
+    for child in folder.iter():
+        if "name" in child.tag:
+            name = child.text
+        if "coordinates" in child.tag:
+            c_txt = child.text
+            lonlat = list(map(float, c_txt.split(',')))
+            x, y = proj(lonlat[0], lonlat[1])
+            p = Point(y, x)
+            
+            if view.envelope.intersects(p):
+                points.append({
+                    'type': "Feature",
+                    'geometry': {
+                        'type': "Point",
+                        'coordinates': lonlat,
+                    },
+                    'properties': {
+                        'name': name,
+                        'type': 'point',
+                        'resolution': 0,
+                    }
+                })
 
     result = {
         'type': "FeatureCollection",
@@ -94,34 +108,37 @@ def lines(file_id, projection, resolution, extent):
     proj = pyproj.Proj(init=projection)
     view = _get_view(extent)
     folder, nsmap = _get_kml('line', file_id)
-
     lines = []
+    name = None
 
-    for place in folder.Placemark:
-        c_txt = place.LineString.coordinates.text
+    for child in folder.iter():
         coords = []
-        for point_txt in c_txt.split():
-            lonlat = point_txt.split(',')
-            coords.append(list(map(float, lonlat)))
+        if "name" in child.tag:
+            name = child.text
+        if "coordinates" in child.tag:
+            c_txt = child.text
+            for point_txt in c_txt.split():
+                lonlat = point_txt.split(',')
+                coords.append(list(map(float, lonlat)))
 
-        coords = np.array(coords)
+            coords = np.array(coords)
 
-        x, y = proj(coords[:, 0], coords[:, 1])
-        ls = LineString(list(zip(y, x)))
+            x, y = proj(coords[:, 0], coords[:, 1])
+            ls = LineString(list(zip(y, x)))
 
-        if view.envelope.intersects(ls):
-            lines.append({
-                'type': "Feature",
-                'geometry': {
-                    'type': "LineString",
-                    'coordinates': coords.astype(float).tolist()
-                },
-                'properties': {
-                    'name': place.name.text,
-                    'type': 'line',
-                    'resolution': 0,
-                }
-            })
+            if view.envelope.intersects(ls):
+                lines.append({
+                    'type': "Feature",
+                    'geometry': {
+                        'type': "LineString",
+                        'coordinates': coords.astype(float).tolist()
+                    },
+                    'properties': {
+                        'name': name,
+                        'type': 'line',
+                        'resolution': 0,
+                    }
+                })
 
     result = {
         'type': "FeatureCollection",
@@ -135,74 +152,82 @@ def list_areas(file_id, simplify=True):
 
     areas = []
     f = os.path.join(AREA_DIR, "%s.kml" % file_id)
-
-    doc = parser.parse(f).getroot()
-    folder = doc.Document.Folder
-    nsmap = {"k": doc.nsmap[None]}
+    folder = ET.parse(f).getroot()
+    nsmap = folder.tag.split("}", 1)[0] + "}"
 
     def get_coords(path):
         result = []
-        for c in place.iterfind(path, nsmap):
-            tuples = c.coordinates.text.split(' ')
-            coords = []
-            for tup in tuples:
-                tup = tup.strip()
-                if not tup:
-                    continue
-                lonlat = tup.split(',')
-                coords.append([float(lonlat[1]), float(lonlat[0])])
-
-            if simplify:
-                coords = list(LinearRing(coords).simplify(1.0 / 32).coords)
-
-            result.append(coords)
-
+        for bound in place.iter(nsmap + path):
+            for c in bound.iter(nsmap + "coordinates"):
+                tuples = c.text.split(' ')
+                coords = []
+                for tup in tuples:
+                    tup = tup.strip()
+                    if not tup:
+                        continue
+                    lonlat = tup.split(',')
+                    coords.append([float(lonlat[1]), float(lonlat[0])])
+                
+                if simplify:
+                    coords = list(LinearRing(coords).simplify(1.0 / 32).coords)
+                
+                result.append(coords)
+            
         return result
 
-    for place in folder.Placemark:
-        outers = get_coords('.//k:outerBoundaryIs//k:LinearRing')
-        inners = get_coords('.//k:innerBoundaryIs//k:LinearRing')
-
+    for place in folder.iter(nsmap + "Placemark"):
+        outers = get_coords("outerBoundaryIs")
+        inners = get_coords("innerBoundaryIs")
+        
+        name = None
+        for placename in place.iter(nsmap + "name"):
+            name = placename.text
         centroids = [LinearRing(x).centroid for x in outers]
         areas.append({
-            'name': place.name.text,
+            'name': name,
             'polygons': outers,
             'innerrings': inners,
             'centroids': [(c.y, c.x) for c in centroids],
-            'key': file_id + "/" + place.name.text,
+            'key': file_id + "/" + name,
         })
-
+    
     areas = sorted(areas, key=lambda k: k['name'])
 
     return areas
 
 
 def areas(area_id, projection, resolution, extent):
-    folder, nsmap = _get_kml('area', area_id)
+    AREA_DIR = os.path.join(current_app.config['OVERLAY_KML_DIR'], 'area')
+    folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
+    nsmap = folder.tag.split("}", 1)[0] + "}"
 
     proj = pyproj.Proj(init=projection)
     view = _get_view(extent)
     areas = []
 
-    for place in folder.Placemark:
+    for place in folder.iter(nsmap + "Placemark"):
+        for name in place.iter(nsmap + "name"):
+            pname = name.text
         polys = []
 
-        for p in place.iterfind('.//k:Polygon', nsmap):
-            lonlat = np.array(
-                [c.split(',') for c in p.outerBoundaryIs.LinearRing.coordinates.text.split()]
-            ).astype(float)
-            ox, oy = proj(lonlat[:, 0], lonlat[:, 1])
-
+        for p in place.iter(nsmap + "Polygon"):
+            for outer in p.iter(nsmap + "outerBoundaryIs"):
+                for coords in outer.iter(nsmap + "coordinates"):
+                    lonlat = np.array(
+                        [c.split(',') for c in coords.text.split()]
+                    ).astype(float)
+                    ox, oy = proj(lonlat[:, 0], lonlat[:, 1])
             holes = []
-            for i in p.iterfind('.//k:innerBoundaryIs/k:LinearRing', nsmap):
-                lonlat_inner = np.array(
-                    [c.split(',') for c in i.coordinates.text.split()]
-                ).astype(float)
-                ix, iy = proj(lonlat_inner[:, 0], lonlat_inner[:, 1])
-                holes.append(list(zip(iy, ix)))
-
+            for inner in p.iter(nsmap + "innerBoundaryIs"):
+                for coords in inner.iter(nsmap + "coordinates"):
+                    lonlat_inner = np.array(
+                        [c.split(',') for c in coords.text.split()]
+                    ).astype(float)
+                    ix, iy = proj(lonlat_inner[:, 0], lonlat_inner[:, 1])
+                    holes.append(list(zip(iy, ix)))
+    
             polys.append(Polygon(list(zip(oy, ox)), holes))
-
+        
         mp = MultiPolygon(polys).simplify(resolution * 1.5)
 
         def get_coordinates(poly):
@@ -232,11 +257,11 @@ def areas(area_id, projection, resolution, extent):
                     'coordinates': coordinates,
                 },
                 'properties': {
-                    'name': place.name.text,
+                    'name': pname,
                     'type': "area",
                     'resolution': resolution,
                     'key': "%s/%s" % (area_id,
-                                      place.name.text),
+                                      pname),
                     'centroid': proj(mp.centroid.y, mp.centroid.x,
                                      inverse=True),
                 },
@@ -475,7 +500,7 @@ def drifters_time(drifter_id):
     for d in drifters:
         with Dataset(current_app.config["DRIFTER_URL"] % d, 'r') as ds:
             var = ds['data_date']
-            ut = netcdftime.utime(var.units)
+            ut = cftime.utime(var.units)
             mins.append(ut.num2date(var[:].min()))
             maxes.append(ut.num2date(var[:].max()))
 
@@ -663,7 +688,7 @@ def list_class4_forecasts(class4_id):
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
-                         netcdftime.utime(var.units).num2date(var[:])]
+                         cftime.utime(var.units).num2date(var[:])]
 
     res = [{
         'id': 'best',

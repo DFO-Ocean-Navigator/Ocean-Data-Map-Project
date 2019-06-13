@@ -1,23 +1,26 @@
-import netCDF4
-from flask_babel import format_date
+import datetime
+import os
+import re
+import uuid
+import warnings
+import zipfile
+
+import cftime
 import dateutil.parser
+import geopy
+import netCDF4
+import numpy as np
+import pandas
+import pint
+import pyresample
+import pytz
+import xarray as xr
+from cachetools import TTLCache
+from flask_babel import format_date
+
+import data.calculated
 from data.data import Data, Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
-import data.calculated
-import xarray as xr
-import os
-from cachetools import TTLCache
-import pytz
-import warnings
-import pyresample
-import numpy as np
-import re
-import geopy
-import datetime
-import uuid
-import pandas
-import zipfile
-import pint
 
 
 class NetCDFData(Data):
@@ -39,6 +42,24 @@ class NetCDFData(Data):
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         pass
+
+
+    def __find_variable(self, candidates: list):
+        """Finds a matching variable in the dataset given a list
+        of candidate keys.
+        
+        Arguments:
+            candidates {list} -- list of possible variable key strings
+        
+        Returns:
+            xArray.DataArray -- the corresponding variable's DataArray
+        """
+        for c in candidates:
+            if c in self._dataset.variables.keys():
+                return self._dataset.variables[c]
+        
+        raise KeyError("None of ", candidates, " where found in ", self._dataset)
+
 
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
@@ -125,11 +146,9 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = [v.key for v in self.variables]
-
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", variable_list)
-        lon_var = find_variable("lon", variable_list)
+        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
@@ -433,21 +452,32 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
        
-    """
-        Finds and returns the xArray.IndexVariable containing
-        the time dimension in self._dataset
-    """
-    def __get_time_variable(self):
-        for v in self.time_variables:
-            if v in self._dataset.variables.keys():
-                # Get the xarray.DataArray for time variable
-                return self.get_dataset_variable(v)
+    
+    @property
+    def time_variable(self):
+        """Finds and returns the xArray.IndexVariable containing
+            the time dimension in self._dataset
+        """
+        return self.__find_variable(['time', 'time_counter', 'Times'])
+
+    @property
+    def latlon_variables(self):
+        """Finds the lat and lon variable arrays in the dataset.
+        
+        Returns:
+            list -- list containing the xarray.DataArray's for latitude and 
+            longitude.
+        """
+        return (
+            self.__find_variable(['nav_lat', 'latitude']),
+            self.__find_variable(['nav_lon', 'longitude'])
+        )
 
     """
         Returns the possible names of the depth dimension in the dataset
     """
     @property
-    def depth_dimensions(self) -> list:
+    def depth_dimensions(self):
         return ['depth', 'deptht', 'z']
 
     """
@@ -456,18 +486,22 @@ class NetCDFData(Data):
     def get_dataset_variable(self, key: str):
         return self._dataset.variables[key]
 
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
+    
     @property
     def variables(self):
+        """Returns a list of all data variables and their 
+        attributes in the dataset.
+        
+        Returns:
+            VariableList -- contains all the data variables (no coordinates)
+        """
+
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
         if self._variable_list == None:
             l = []
-            # Get "data variables" from dataset
+            # Get data variables variables from dataset
             variables = list(self._dataset.data_vars.keys())
 
             for name in variables:
@@ -510,25 +544,18 @@ class NetCDFData(Data):
         
         return self._variable_list
 
-    """
-        Returns the possible names of the time dimension in the dataset
-    """
-    @property
-    def time_variables(self):
-        return ['time', 'time_counter', 'Times']
 
-    """
-        Loads, caches, and returns the time dimension from a dataset.
-    """
     @property
     def timestamps(self):
+        """Loads, caches, and returns the time dimension from a dataset.
+        """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
             
-            var = self.__get_time_variable()
+            var = self.time_variable
 
             # Convert timestamps to UTC
-            t = netCDF4.netcdftime.utime(var.attrs['units']) # Get time units from variable
+            t = cftime.utime(var.attrs['units']) # Get time units from variable
             time_list = list(map(
                                 lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
                                 var.values
