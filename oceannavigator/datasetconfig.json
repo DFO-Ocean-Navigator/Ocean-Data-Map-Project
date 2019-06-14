@@ -286,7 +286,8 @@
             "vice": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10] },
             "u_wind": { "name": "Zonal Wind",      "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
             "v_wind": { "name": "Meridional Wind", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
-            "wind": { "name": "Wind", "unit": "m/s", "scale": [0, 20] }
+            "wind": { "name": "Wind", "unit": "m/s", "scale": [0, 20] },
+            "sokaraml": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 4000] }
         }
     },
     "riops_daily": {
