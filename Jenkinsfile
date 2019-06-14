@@ -25,6 +25,7 @@ pipeline {
                 $py -m unittest tests/test_nemo.py
                 $py -m unittest tests/test_api_v1_0_plot_line.py
                 $py -m unittest tests/test_oceannavigator_cfg.py
+                $py -m unittest tests/test_datasetconfig.py
            '''
       }
     }

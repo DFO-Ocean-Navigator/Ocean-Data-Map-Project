@@ -1545,6 +1545,7 @@
         "quantum": "hour",
         "enabled": true,
         "attribution": "GEM Global from Environment and Climate Change Canada",
+        "help": "",
         "variables": {
             "v-component_of_wind_height_above_ground": { "name": "Meridional Wind", "unit": "m/s", "scale": [-30, 30], "zero_centered": "true"  },
             "u-component_of_wind_height_above_ground": { "name": "Zonal Wind", "unit": "m/s", "scale": [-30, 30], "zero_centered": "true"  },
@@ -1560,14 +1561,13 @@
         "enabled": false,
         "attribution": "Gulf from CONCEPTS",
         "help": "Regional Deterministic Prediction System Coupled over the Gulf of St. Lawrence",
+        "climatology": "",
         "variables": {
             "sometauy"     : {"hide": true},
             "sossheigh"    : {"hide": true},
             "sozotaux"     : {"hide": true},
             "u_wind"       : {"hide": true},
             "v_wind"       : {"hide": true},
-            "wind_east_vel": {"hide": true},
-            "wind_north_vel":{"hide": true},
             "vozocrtx"     : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
             "vomecrty"     : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
             "vozocrtx,vomecrty" : { "name": "Water Velocity",   "unit": "m/s", "scale": [0, 3] },
@@ -1604,6 +1604,7 @@
         "enabled": false,
         "attribution": "Gulf from CONCEPTS",
         "help": "Regional Deterministic Prediction System Coupled over the Gulf of St. Lawrence Averaged Daily",
+        "climatology": "",
         "variables": {
             "vozocrtx"    : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
             "vomecrty"    : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
@@ -1633,6 +1634,7 @@
         "enabled": false,
         "attribution": "Gulf from CONCEPTS",
         "help": "Regional Deterministic Prediction System Coupled over the Gulf of St. Lawrence Averaged Monthly",
+        "climatology": "",
         "variables": {
             "vozocrtx"     : { "name": "Water X Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
             "vomecrty"     : { "name": "Water Y Velocity",   "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"  },
