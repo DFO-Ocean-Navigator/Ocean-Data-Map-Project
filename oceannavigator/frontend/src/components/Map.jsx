@@ -1,14 +1,15 @@
 /* eslint react/no-deprecated: 0 */
 import React from "react";
-import ol from "openlayers";
+import * as ol from "ol";
 import PropTypes from "prop-types";
 
-require("openlayers/css/ol.css");
+require("ol/ol.css");
 
 const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
 
+ol.proj.proj4.register(proj4);
 ol.proj.setProj4(proj4);
 
 const X_IMAGE = require("../images/x.png");
