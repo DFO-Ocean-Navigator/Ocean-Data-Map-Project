@@ -1514,7 +1514,7 @@
     "fvcom_demo": {
         "url": "http://localhost:8080/thredds/dodsC/misc/sfm5m_sjr_0001_30h.nc",
         "name": "FVCOM Demo",
-        "enabled": false,
+        "enabled": true,
         "quantum": "hour",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "School for Marine Science and Technology",
