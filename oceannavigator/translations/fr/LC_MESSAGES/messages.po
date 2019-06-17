@@ -8,19 +8,20 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-14 15:11-0430\n"
-"PO-Revision-Date: 2019-06-14 15:12-0330\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2019-06-17 14:21-0230\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.7.0\n"
+"Last-Translator: \n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 #: oceannavigator/frontend/src/index.jsx:33
 msgid "Ocean Navigator"
-msgstr ""
+msgstr "Navigateur d'Océan"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:256
 #: oceannavigator/frontend/src/components/DatasetSelector.jsx:57
@@ -31,7 +32,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:209
 #: oceannavigator/frontend/src/components/PointWindow.jsx:235
 msgid "Dataset"
-msgstr ""
+msgstr "Jeu de données"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:257
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:439
@@ -40,7 +41,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:210
 #: oceannavigator/frontend/src/components/PointWindow.jsx:285
 msgid "Time"
-msgstr ""
+msgstr "Heure"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:258
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:439
@@ -51,7 +52,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:212
 #: oceannavigator/frontend/src/components/PointWindow.jsx:300
 msgid "Start Time"
-msgstr ""
+msgstr "L'Heure de départ"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:259
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:456
@@ -62,7 +63,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:213
 #: oceannavigator/frontend/src/components/PointWindow.jsx:310
 msgid "End Time"
-msgstr ""
+msgstr "L'Heure de fin"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:260
 #: oceannavigator/frontend/src/components/DatasetSelector.jsx:59
@@ -74,7 +75,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:325
 #: oceannavigator/frontend/src/components/PointWindow.jsx:366
 msgid "Depth"
-msgstr ""
+msgstr "Profondeur"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:261
 #: oceannavigator/frontend/src/components/DatasetSelector.jsx:58
@@ -90,7 +91,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:381
 #: oceannavigator/frontend/src/components/StatsTable.jsx:174
 msgid "Variable"
-msgstr ""
+msgstr "Variable"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:262
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:564
@@ -117,7 +118,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:30
 #: oceannavigator/frontend/src/components/QuiverSelector.jsx:41
 msgid "Colourmap"
-msgstr ""
+msgstr "Carte de couleur"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:264
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:342
@@ -129,12 +130,12 @@ msgstr ""
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:265
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:363
 msgid "Arrows"
-msgstr ""
+msgstr "Flèches"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:266
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:376
 msgid "Additional Contours"
-msgstr ""
+msgstr "Contours additionnel"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:267
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:350
@@ -152,11 +153,11 @@ msgstr ""
 #: oceannavigator/frontend/src/components/PointWindow.jsx:218
 #: oceannavigator/frontend/src/components/PointWindow.jsx:261
 msgid "Saved Image Size"
-msgstr ""
+msgstr "Taille de l'image sauvegarder"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:273
 msgid "Area Settings"
-msgstr ""
+msgstr "Paramètres de la Région"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:284
 #: oceannavigator/frontend/src/components/LineWindow.jsx:184
@@ -171,13 +172,13 @@ msgstr ""
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:751
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:735
 msgid "Help"
-msgstr ""
+msgstr "Aide"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:306
 #: oceannavigator/frontend/src/components/LineWindow.jsx:206
 #: oceannavigator/frontend/src/components/MapInputs.jsx:172
 msgid "Swap Views"
-msgstr ""
+msgstr "Échanger vues"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:320
 #: oceannavigator/frontend/src/components/LineWindow.jsx:221
@@ -186,7 +187,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:329
 msgid "Diff. Colourmap"
-msgstr ""
+msgstr "Table de couleurs différentielle"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:331
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:576
@@ -196,7 +197,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/LineWindow.jsx:377
 #: oceannavigator/frontend/src/components/PointWindow.jsx:500
 msgid "colourmap_help"
-msgstr ""
+msgstr "cartecouleur_aide"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:352
 msgid "showarea_help"
@@ -204,17 +205,17 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:365
 msgid "arrows_help"
-msgstr ""
+msgstr "flèches_aide"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:378
 msgid "contour_help"
-msgstr ""
+msgstr "contour_aide"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:394
 #: oceannavigator/frontend/src/components/LineWindow.jsx:245
 #: oceannavigator/frontend/src/components/PointWindow.jsx:268
 msgid "Plot Title"
-msgstr ""
+msgstr "Graphe Titre"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:405
 msgid "Subset"
@@ -222,7 +223,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:418
 msgid "Variables"
-msgstr ""
+msgstr "Variables"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:426
 msgid "Select Time Range"
@@ -254,11 +255,11 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:492
 msgid "Compress as *.zip"
-msgstr ""
+msgstr "Compressser en *.zip"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:501
 msgid "Save"
-msgstr ""
+msgstr "Sauveguarder"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:505
 msgid "API Scripts"
@@ -304,17 +305,17 @@ msgstr ""
 #: oceannavigator/frontend/src/components/MapInputs.jsx:186
 #: oceannavigator/frontend/src/components/Options.jsx:105
 msgid "Map"
-msgstr ""
+msgstr "Carte"
 
 #: oceannavigator/frontend/src/components/AreaWindow.jsx:700
 msgid "Statistics"
-msgstr ""
+msgstr "Statistiques "
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:76
 #: oceannavigator/frontend/src/components/ComboBox.jsx:115
 #: routes/routes_impl.py:247
 msgid "None"
-msgstr ""
+msgstr "Rien"
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:80
 msgid "Value - Observation"
@@ -327,7 +328,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/Class4Window.jsx:88
 #: oceannavigator/frontend/src/components/Class4Window.jsx:113
 msgid "Forecast"
-msgstr ""
+msgstr "Prévoir"
 
 #: oceannavigator/frontend/src/components/Class4Window.jsx:89
 #: oceannavigator/frontend/src/components/Class4Window.jsx:121
@@ -388,7 +389,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:776
 #: oceannavigator/frontend/src/components/PlotImage.jsx:480
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
 #: oceannavigator/frontend/src/components/ComboBox.jsx:306
 #: oceannavigator/frontend/src/components/NumberBox.jsx:83
@@ -412,7 +413,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/ContourSelector.jsx:76
 msgid "Levels"
-msgstr ""
+msgstr "Niveaux"
 
 #: oceannavigator/frontend/src/components/CoordInputPanel.jsx:58
 msgid "Latitude"
@@ -445,18 +446,18 @@ msgstr ""
 #: oceannavigator/frontend/src/components/DatasetSelector.jsx:60
 #: oceannavigator/frontend/src/components/DatasetSelector.jsx:121
 msgid "Time (UTC)"
-msgstr ""
+msgstr "L'Heure (UTC)"
 
 #: oceannavigator/frontend/src/components/DepthLimit.jsx:49
 #: oceannavigator/frontend/src/components/DepthLimit.jsx:53
 #: oceannavigator/frontend/src/components/DepthLimit.jsx:64
 msgid "Depth Limit"
-msgstr ""
+msgstr "Limite de Profondeur"
 
 #: oceannavigator/frontend/src/components/DepthLimit.jsx:50
 #: oceannavigator/frontend/src/components/DepthLimit.jsx:56
 msgid "Limit Depth"
-msgstr ""
+msgstr "Limiter la Profondeur"
 
 #: oceannavigator/frontend/src/components/DrifterSelector.jsx:128
 #: oceannavigator/frontend/src/components/DrifterSelector.jsx:140
@@ -471,32 +472,33 @@ msgstr ""
 #: oceannavigator/frontend/src/components/DrifterSelector.jsx:130
 #: oceannavigator/frontend/src/components/DrifterSelector.jsx:158
 msgid "Deployment"
-msgstr ""
+msgstr "Déploiement"
 
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:85
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:109
 msgid "Buoy Variable"
-msgstr ""
+msgstr "Buoy Variable"
 
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:87
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:126
 msgid "Show Map"
-msgstr ""
+msgstr "Afficher carte"
 
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:88
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:133
 msgid "Show Latitude/Longitude Plots"
-msgstr ""
+msgstr "Afficher Graphiques de Latitude/Longitude"
 
 #: oceannavigator/frontend/src/components/DrifterWindow.jsx:134
 msgid "latlon_help"
-msgstr ""
+msgstr "latlon_aide"
 
 #: oceannavigator/frontend/src/components/EnterArea.jsx:41
 #: oceannavigator/frontend/src/components/EnterLine.jsx:42
 #: oceannavigator/frontend/src/components/EnterPoint.jsx:14
 msgid "Please enter numerical values. Example: 3.14, or 314e-2, or 0.0314E+2."
 msgstr ""
+"SVP Entre les values numérique. Exemples: 3.14, ou 314e-2, ou 0.0314E+2"
 
 #: oceannavigator/frontend/src/components/EnterArea.jsx:45
 msgid "Point 1"
@@ -516,33 +518,33 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/EnterLine.jsx:46
 msgid "Start Coordinate"
-msgstr ""
+msgstr "Coordonnée Premier"
 
 #: oceannavigator/frontend/src/components/EnterLine.jsx:51
 msgid "End Coordinate"
-msgstr ""
+msgstr "Coordonnée Dernière "
 
 #: oceannavigator/frontend/src/components/EnterPoint.jsx:17
 msgid "Lat/Long Pair"
-msgstr ""
+msgstr "Paire Lat/Long "
 
 #: oceannavigator/frontend/src/components/ImageSize.jsx:44
 #: oceannavigator/frontend/src/components/ImageSize.jsx:59
 #: oceannavigator/frontend/src/components/ImageSize.jsx:72
 msgid "inches"
-msgstr ""
+msgstr "Pouces"
 
 #: oceannavigator/frontend/src/components/ImageSize.jsx:51
 msgid "Width:"
-msgstr ""
+msgstr "Largeur:"
 
 #: oceannavigator/frontend/src/components/ImageSize.jsx:64
 msgid "Height:"
-msgstr ""
+msgstr "Hauteur:"
 
 #: oceannavigator/frontend/src/components/ImageSize.jsx:77
 msgid "DPI:"
-msgstr ""
+msgstr "PPP:"
 
 #: oceannavigator/frontend/src/components/LineWindow.jsx:165
 #: oceannavigator/frontend/src/components/LineWindow.jsx:273
@@ -601,7 +603,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/Map.jsx:480
 msgid "Loading..."
-msgstr ""
+msgstr "En train..."
 
 #: oceannavigator/frontend/src/components/Map.jsx:1189
 msgid "Plot Point"
@@ -621,7 +623,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:181
 msgid "Settings"
-msgstr ""
+msgstr "Paramètres "
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:194
 msgid "Global"
@@ -629,11 +631,11 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:195
 msgid "Arctic"
-msgstr ""
+msgstr "Arctique"
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:196
 msgid "Antarctic"
-msgstr ""
+msgstr "Antarctique"
 
 #: oceannavigator/frontend/src/components/MapInputs.jsx:198
 #: oceannavigator/frontend/src/components/Permalink.jsx:89
@@ -720,7 +722,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:626
 msgid "Area"
-msgstr ""
+msgstr "Région "
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:649
 msgid "Class4"
@@ -728,7 +730,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:667
 msgid "All"
-msgstr ""
+msgstr "Tous"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:671
 msgid "Active"
@@ -748,7 +750,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:692
 msgid "Plot"
-msgstr ""
+msgstr "Graphique"
 
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:716
 #: oceannavigator/frontend/src/components/MapToolbar.jsx:722
@@ -786,7 +788,7 @@ msgstr ""
 #: oceannavigator/frontend/src/components/ObservationSelector.jsx:60
 #: oceannavigator/frontend/src/components/ObservationSelector.jsx:70
 msgid "Ship"
-msgstr ""
+msgstr "Bateau"
 
 #: oceannavigator/frontend/src/components/ObservationSelector.jsx:61
 #: oceannavigator/frontend/src/components/ObservationSelector.jsx:79
@@ -817,7 +819,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/OceanNavigator.jsx:830
 msgid "Please Wait…"
-msgstr ""
+msgstr "S.V.P. Attendez..."
 
 #: oceannavigator/frontend/src/components/Options.jsx:43
 msgid " Colour Interpolation"
@@ -902,7 +904,7 @@ msgstr ""
 
 #: oceannavigator/frontend/src/components/PlotImage.jsx:360
 msgid "Save Image"
-msgstr ""
+msgstr "Sauvegarder image"
 
 #: oceannavigator/frontend/src/components/PlotImage.jsx:395
 msgid "CSV"
@@ -1320,8 +1322,8 @@ msgstr ""
 
 #: plotting/hovmoller.py:145
 msgid ""
-"Please ensure the Start Time and End Time for the Left and Right maps are"
-" identical."
+"Please ensure the Start Time and End Time for the Left and Right maps are "
+"identical."
 msgstr ""
 
 #: plotting/hovmoller.py:228 plotting/hovmoller.py:234
@@ -1355,22 +1357,22 @@ msgstr ""
 
 #: plotting/map.py:133
 msgid ""
-"You have requested an area that exceeds the width of the world."
-"                                         Thinking big is good but plots "
-"need to be less than 360 deg wide."
+"You have requested an area that exceeds the width of the "
+"world.                                         Thinking big is good but "
+"plots need to be less than 360 deg wide."
 msgstr ""
 
 #: plotting/observation.py:86
 msgid ""
-"The selected variable(s) were not found in the dataset.                 "
-"Most likely, this variable is a derived product from existing dataset "
+"The selected variable(s) were not found in the dataset.                 Most "
+"likely, this variable is a derived product from existing dataset "
 "variables.                 Please select another variable."
 msgstr ""
 
 #: plotting/observation.py:241 plotting/profile.py:139 plotting/sound.py:53
 #: plotting/transect.py:851
 msgid "Depth (m)"
-msgstr ""
+msgstr "Profondeur (m)"
 
 #: plotting/observation.py:247
 #, python-format
@@ -1384,8 +1386,8 @@ msgstr ""
 
 #: plotting/profile.py:28
 msgid ""
-"The selected variable(s) were not found in the dataset.                 "
-"Most likely, this variable is a derived product from existing dataset "
+"The selected variable(s) were not found in the dataset.                 Most "
+"likely, this variable is a derived product from existing dataset "
 "variables.                 Please select another variable. "
 msgstr ""
 
@@ -1415,64 +1417,62 @@ msgstr ""
 
 #: plotting/stats.py:173
 msgid ""
-"there are no datapoints in the area you selected."
-"                                                 you may have selected a "
-"area on land or you may                                                 "
-"have an ara that is smallenough to fit between"
-"                                                 the datapoints try "
-"selection a different area or"
-"                                                 a larger area"
+"there are no datapoints in the area you "
+"selected.                                                 you may have "
+"selected a area on land or you "
+"may                                                 have an ara that is "
+"smallenough to fit between                                                 "
+"the datapoints try selection a different area "
+"or                                                 a larger area"
 msgstr ""
 
 #: plotting/stats.py:182
 msgid ""
-"An Error has occurred. When opening the dataset."
-"                                 Please try again or try a different "
-"dataset.                                 If you would like to report this"
-" error please                                 contact "
-"oceandatamap@gmail.com"
+"An Error has occurred. When opening the "
+"dataset.                                 Please try again or try a different "
+"dataset.                                 If you would like to report this "
+"error please                                 contact oceandatamap@gmail.com"
 msgstr ""
 
 #: plotting/stats.py:260
 msgid ""
-"something went wrong. It seems you are trying to create a plot across the"
-" international date line.While we do support this function it must be "
-"done within 360 deg of the default map view. Try refreshing the page and "
-"try again"
+"something went wrong. It seems you are trying to create a plot across the "
+"international date line.While we do support this function it must be done "
+"within 360 deg of the default map view. Try refreshing the page and try again"
 msgstr ""
 
 #: plotting/stats.py:294 plotting/stats.py:321
 msgid ""
-"there are no datapoints in the area you selected."
-"                                             You may have selected a area"
-" on land or you may                                             have an "
-"ara that is too small.                                             Try "
-"selection a different area or"
-"                                             a larger area"
+"there are no datapoints in the area you "
+"selected.                                             You may have selected "
+"a area on land or you may                                             have "
+"an ara that is too small.                                             Try "
+"selection a different area or                                             a "
+"larger area"
 msgstr ""
 
 #: plotting/stats.py:349
 msgid ""
-"Unknown Error: you have tried something that we did not expect."
-"                                 Please try again or try something else. "
-"If you would like to report                                 this error "
+"Unknown Error: you have tried something that we did not "
+"expect.                                 Please try again or try something "
+"else. If you would like to report                                 this error "
 "please contact oceandatamap@gmail.com. "
 msgstr ""
 
 #: plotting/stats.py:354
 msgid ""
-"Error: you are trying to create a plot that is wider than the world."
-"         The desired information is ambiguous please select a smaller "
-"area and try again"
+"Error: you are trying to create a plot that is wider than the world.         "
+"The desired information is ambiguous please select a smaller area and try "
+"again"
 msgstr ""
 
 #: plotting/stats.py:361
 msgid ""
-"Unknown Error: you have tried something that we did not expect."
-"                         Please try again or try something else. If you "
-"would like to report                         this error please contact "
+"Unknown Error: you have tried something that we did not "
+"expect.                         Please try again or try something else. If "
+"you would like to report                         this error please contact "
 "oceandatamap@gmail.com"
-msgstr ""
+msgstr "Vous avez encontre une erreur que nous n'avons pas prevoir"
 
 #: plotting/stick.py:143
 #, python-format
@@ -1504,53 +1504,52 @@ msgstr ""
 
 #: routes/routes_impl.py:235
 msgid "Black"
-msgstr ""
+msgstr "Noir"
 
 #: routes/routes_impl.py:236
 msgid "Blue"
-msgstr ""
+msgstr "Bleu"
 
 #: routes/routes_impl.py:237
 msgid "Green"
-msgstr ""
+msgstr "Vert"
 
 #: routes/routes_impl.py:238
 msgid "Red"
-msgstr ""
+msgstr "Rouge"
 
 #: routes/routes_impl.py:239
 msgid "Cyan"
-msgstr ""
+msgstr "Cyan"
 
 #: routes/routes_impl.py:240
 msgid "Magenta"
-msgstr ""
+msgstr "Magenta"
 
 #: routes/routes_impl.py:241
 msgid "Yellow"
-msgstr ""
+msgstr "Jaune"
 
 #: routes/routes_impl.py:242
 msgid "White"
-msgstr ""
+msgstr "Blanc"
 
 #: routes/routes_impl.py:245
 msgid "Randomize"
-msgstr ""
+msgstr "Randomiser"
 
 #: routes/routes_impl.py:267
 msgid "Default for Variable"
-msgstr ""
+msgstr "Défaut pour Variable"
 
 #: routes/routes_impl.py:322
 msgid "All Depths"
-msgstr ""
+msgstr "Tous Profondeurs"
 
 #: routes/routes_impl.py:332
 msgid "Bottom"
-msgstr ""
+msgstr "Fond"
 
 #: routes/routes_impl.py:709
 msgid "Please specify either forecasts or models using /models/ or /forecasts/"
 msgstr ""
-
