@@ -18,7 +18,7 @@ import io
 from oceannavigator import DatasetConfig
 from utils.errors import ErrorBase, ClientError, APIError
 import utils.misc
-
+from oceannavigator.backend.stats import calculate_stats
 from plotting.transect import TransectPlotter
 from plotting.drifter import DrifterPlotter
 from plotting.map import MapPlotter
@@ -30,7 +30,6 @@ from plotting.hovmoller import HovmollerPlotter
 from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
-from plotting.stats import stats as areastats
 import plotting.colormap
 import plotting.tile
 import plotting.scale
@@ -876,6 +875,7 @@ def stats_impl(args, query = None):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
+    
     if query == None:
         #Invalid API Check
         if 'query' not in args: #Invalid API Check
@@ -884,8 +884,13 @@ def stats_impl(args, query = None):
         query = json.loads(args.get('query'))
 
     dataset = query.get('dataset')  #Retrieves dataset from query
+    variable = query.get('variable').split(',')
+    time = query.get('time')
+    depth = query.get('depth')
+    area = query.get('area')
 
-    data = areastats(dataset, query)
+    data = calculate_stats(dataset, variable, time, depth, area)
+    
     return Response(data, status=200, mimetype='application/json')
 
 

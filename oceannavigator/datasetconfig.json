@@ -239,7 +239,7 @@
     },
     "giops_day": {
         "name": "GIOPS Daily",
-        "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca/thredds/dodsC/giops/daily/aggregated.ncml",
         "enabled": true,
         "quantum": "day",
         "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",

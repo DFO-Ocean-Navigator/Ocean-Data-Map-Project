@@ -6,7 +6,7 @@ import numpy as np
 import scipy.stats as stats
 
 from data import open_dataset
-
+from oceannavigator import DatasetConfig
 
 def __compute_median(data_array: np.ndarray):
     """[summary]
@@ -119,13 +119,20 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
     Returns:
         str -- JSON string containing stats for all requested variables.
     """
-
-    with open_dataset(dataset) as ds:
-
+    
+    config = DatasetConfig(dataset)
+    with open_dataset(config) as ds:
+        
         stats = {}
         for var in variables:
+            
+            area = area[0]['polygons'][0]
+            area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
+            
+            
             data_array = ds.get_area(area, depth, time, var, "nearest", 25000, 10).ravel()
-
+            
+            
             stats[var] = __calculate_variable_stats(data_array)
-
+            
         return json.dumps(stats)

@@ -21,7 +21,6 @@ from plotting.hovmoller import HovmollerPlotter
 from plotting.observation import ObservationPlotter
 from plotting.class4 import Class4Plotter
 from plotting.stick import StickPlotter
-from plotting.stats import stats as areastats
 import plotting.colormap
 import plotting.tile
 import plotting.scale

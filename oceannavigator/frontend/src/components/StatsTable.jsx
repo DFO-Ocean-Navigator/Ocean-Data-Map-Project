@@ -129,10 +129,11 @@ export default class StatsTable extends React.Component {
         </tbody>
       );
     } else {
+      console.warn(this.state.data);
       content = this.state.data.map(function(area) {
         const vars = area.variables.map(function(v) {
           return (
-            <tr key={area.name + "_" + v.name}>
+            <tr key={v.name}>
               <td>{v.name} ({v.unit})</td>
               <td>{v.min}</td>
               <td>{v.max}</td>
