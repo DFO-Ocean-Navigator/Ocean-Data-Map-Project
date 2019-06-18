@@ -6,7 +6,10 @@ import numpy as np
 import scipy.stats as stats
 
 from data import open_dataset
-from oceannavigator import DatasetConfig
+from oceannavigator.dataset_config import DatasetConfig
+from oceannavigator.dataset_config import VariableConfig
+#from oceannavigator import VariableConfig
+
 
 def __compute_median(data_array: np.ndarray):
     """[summary]
@@ -121,10 +124,13 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
     """
     
     config = DatasetConfig(dataset)
+    
     with open_dataset(config) as ds:
         
         stats = {}
         for var in variables:
+            variableName = VariableConfig(config,var).name
+            variableUnit = VariableConfig(config,var).unit
             
             area = area[0]['polygons'][0]
             area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
@@ -134,5 +140,9 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
             
             
             stats[var] = __calculate_variable_stats(data_array)
+            
+            stats["name"] = variableName
+            stats["unit"] = variableUnit
+            
             
         return json.dumps(stats)
