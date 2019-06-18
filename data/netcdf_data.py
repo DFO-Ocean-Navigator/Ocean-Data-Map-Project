@@ -238,11 +238,16 @@ class NetCDFData(Data):
 
         # "Special" output
         if output_format == "NETCDF3_NC":
+
+            GRID_RESOLUTION = 50
+
             # Regrids an input data array according to it's input grid definition
             # to the output definition
             def regrid( data: np.ndarray,
                         input_def: pyresample.geometry.SwathDefinition,
                         output_def: pyresample.geometry.SwathDefinition):
+
+                orig_shape = data.shape
                 
                 data = np.rollaxis(data, 0, 4) # Roll time axis backward
                 data = np.rollaxis(data, 0, 4) # Roll depth axis backward
@@ -250,9 +255,9 @@ class NetCDFData(Data):
                 
                 # Perform regridding using nearest neighbour weighting
                 regridded = pyresample.kd_tree.resample_nearest(input_def, data, output_def, 50000, fill_value=None, nprocs=8)
-                return np.moveaxis(regridded, -1, 0) # Move merged axis back to front
-
-            GRID_RESOLUTION = 50
+                regridded = np.moveaxis(regridded, -1, 0) # Move merged axis back to front
+                # Match target output grid (netcdf4 used to do this automatically but now it doesn't >.>)
+                return np.reshape(regridded, (orig_shape[0], orig_shape[1], GRID_RESOLUTION, GRID_RESOLUTION))
 
             # Check lat/lon wrapping
             lon_vals, lat_vals = pyresample.utils.check_and_wrap(lons=subset[lon_var].values, lats=subset[lat_var].values)
@@ -316,12 +321,9 @@ class NetCDFData(Data):
             levels.positive = "down"
             levels.NAVO_code = 5
 
-            if temp_var is not None:
-                origshape = subset[temp_var].shape
-                temp_data = regrid(subset[temp_var].values, input_def, output_def)
-                temp_data = np.reshape(temp_data, (origshape[0], origshape[1], GRID_RESOLUTION, GRID_RESOLUTION))
-                
+            if temp_var is not None:            
                 temp = ds.createVariable('water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                temp_data = regrid(subset[temp_var].values, input_def, output_def) 
 
                 # Convert from Kelvin to Celsius
                 ureg = pint.UnitRegistry()
@@ -348,7 +350,7 @@ class NetCDFData(Data):
                 temp.NAVO_code = 15
             if saline_var is not None:
                 salinity = ds.createVariable('salinity', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[:] # Note the automatic reshaping by numpy here ^.^
+                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[:]
                 salinity.long_name = "Salinity"
                 salinity.units = "psu"
                 salinity.valid_min = 0.0
