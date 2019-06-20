@@ -129,9 +129,16 @@ export default class StatsTable extends React.Component {
         </tbody>
       );
     } else {
-      console.warn(this.state.data);
-      content = this.state.data.map(function(area) {
-        const vars = area.variables.map(function(v) {
+      const arrayData = Object.entries(this.state.data);
+      //for (const [varibl, calculatedValues] of arrayData){
+      // console.warn(variabl)}
+      //for (let [key, value] of Object.entries(this.state.data)) {
+      //  console.warn(key, value);
+      //}
+      console.warn(arrayData)
+      console.warn(this.state.data)
+      content = arrayData.map(function(area) {
+        const vars = area.map(function(v) {
           return (
             <tr key={v.name}>
               <td>{v.name} ({v.unit})</td>
@@ -139,8 +146,10 @@ export default class StatsTable extends React.Component {
               <td>{v.max}</td>
               <td>{v.median}</td>
               <td>{v.mean}</td>
-              <td>{v.stddev}</td>
-              <td>{v.num}</td>
+              <td>{v.skewness}</td>
+              <td>{v.kurtosis}</td>
+              <td>{v.standard_dev}</td>
+              <td>{v.sampled_points}</td>
             </tr>
           );
         });
@@ -160,7 +169,7 @@ export default class StatsTable extends React.Component {
         );
       });
     }
-
+    //console.warn(content);
     return (
       <div>
         <Table 
@@ -177,6 +186,8 @@ export default class StatsTable extends React.Component {
               <th title={_("Maximum Value")}>{_("Max")}</th>
               <th title={_("Median Value")}>{_("Median")}</th>
               <th title={_("Average Value")}>{_("Mean")}</th>
+              <th title={_("Skewness Value")}>{_("Skew")}</th>
+              <th title={_("Kortosis Value")}>{_("Kortosis")}</th>
               <th title={_("Standard Deviation")}>{_("Std Dev")}</th>
               <th title={_("Number of Valid Points in Area")}>{_("# Valid Pts")}</th>
             </tr>
@@ -191,5 +202,5 @@ export default class StatsTable extends React.Component {
 
 //***********************************************************************
 StatsTable.propTypes = {
-  query: PropTypes.object,
+query: PropTypes.object,
 };

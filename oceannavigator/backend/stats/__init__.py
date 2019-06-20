@@ -81,20 +81,21 @@ def __calculate_variable_stats(data_array: np.ndarray):
 
     variable_stats["sampled_points"] = sampled_points
 
-    variable_stats["mean"] = mean.item()
+    variable_stats["mean"] = round(mean.item(),2)
 
-    variable_stats["min"] = min_max[0].item()
+    variable_stats["min"] = round(min_max[0].item(),2)
 
-    variable_stats["max"] = min_max[1].item()
+    variable_stats["max"] = round(min_max[1].item(),2)
 
-    variable_stats["variance"] = variance.item()
+    variable_stats["variance"] = round(variance.item(),2)
 
-    variable_stats["skewness"] = skewness
+    variable_stats["skewness"] = round(skewness,2)
 
-    variable_stats["kurtosis"] = kurtosis
+    variable_stats["kurtosis"] = round(kurtosis,2)
 
-    variable_stats["statndard_dev"] = __compute_std_dev_from_variance(variance).item()
-    variable_stats["median"] = __calculate_median(data_array).item()
+    variable_stats["standard_dev"] = round(__compute_std_dev_from_variance(variance).item(),2)
+
+    variable_stats["median"] = round(__calculate_median(data_array).item(),2)
    
 
     return variable_stats
@@ -141,8 +142,8 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
             
             stats[var] = __calculate_variable_stats(data_array)
             
-            stats["name"] = variableName
-            stats["unit"] = variableUnit
+            stats[var]["name"] = variableName
+            stats[var]["unit"] = variableUnit
             
             
         return json.dumps(stats)
