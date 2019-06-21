@@ -132,7 +132,7 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
         for var in variables:
             variableName = VariableConfig(config,var).name
             variableUnit = VariableConfig(config,var).unit
-            
+            variableDepth = depth
             area = area[0]['polygons'][0]
             area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
             
@@ -144,6 +144,6 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
             
             stats[var]["name"] = variableName
             stats[var]["unit"] = variableUnit
-            
+            stats[var]["depth"] = variableDepth
             
         return json.dumps(stats)

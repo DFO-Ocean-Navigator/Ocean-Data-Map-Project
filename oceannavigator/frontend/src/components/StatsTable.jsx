@@ -137,7 +137,7 @@ export default class StatsTable extends React.Component {
 
             return (
               <tr key={v.name}>
-                <td>{v.name} ({v.unit})</td>
+                <td>{v.name}(@{v.depth}m) ({v.unit})</td>
                 <td>{v.min}</td>
                 <td>{v.max}</td>
                 <td>{v.median}</td>
