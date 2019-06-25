@@ -1,16 +1,19 @@
-import pyresample
-import numpy as np
+import math
+import re
 import warnings
-from netCDF4 import Dataset
+
 import cftime
-from data.calculated import CalculatedData
-from pint import UnitRegistry
+import numpy as np
+import pyresample
+import pytz
 from cachetools import TTLCache
+from netCDF4 import Dataset
+from pint import UnitRegistry
+
+from data.calculated import CalculatedData
 from data.data import Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
-import math
-import pytz
-import re
+
 
 class Mercator(CalculatedData):
     __depths = None
@@ -27,8 +30,7 @@ class Mercator(CalculatedData):
         super(Mercator, self).__enter__()
 
         if self.latvar is None:
-            self.latvar = self.__find_var(['nav_lat', 'latitude', 'lat'])
-            self.lonvar = self.__find_var(['nav_lon', 'longitude', 'lon'])
+            self.latvar, self.lonvar = self.latlon_variables
             self.__latsort = np.argsort(self.latvar[:])
             self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
@@ -60,13 +62,6 @@ class Mercator(CalculatedData):
             self.__depths.flags.writeable = False
 
         return self.__depths
-
-    def __find_var(self, candidates):
-        for c in candidates:
-            if c in self._dataset.variables:
-                return self.get_dataset_variable(c)
-
-        return None
 
     def __bounding_box(self, lat, lon, n=10):
 

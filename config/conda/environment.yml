@@ -1,185 +1,183 @@
 name: navigator
-channels: !!python/tuple
-- !!python/unicode
-  'defaults'
+channels:
+  - defaults
+  - conda-forge
 dependencies:
-- conda-forge::basemap=1.2.0=py36h50ae964_0
-- conda-forge::basemap-data-hires=1.2.0=0
-- conda-forge::cachetools=2.0.1=py_0
-- conda-forge::cartopy=0.17.0=py36h81b52dc_0
-- conda-forge::cmocean=2.0=py_0
-- conda-forge::flask-babel=0.11.2=py36_0
-- conda-forge::flask-compress=1.4.0=py_0
-- conda-forge::geographiclib=1.49=py_0
-- conda-forge::geopy=1.13.0=py_1
-- conda-forge::h5netcdf=0.5.1=py_0
-- conda-forge::ipython_genutils=0.2.0=py_1
-- conda-forge::metpy=0.10.0=py36_1001
-- conda-forge::mkl_fft=1.0.10=py36_0
-- conda-forge::mkl_random=1.0.2=py36_0
-- conda-forge::owslib=0.17.1=py_0
-- conda-forge::pandas=0.23.4=py36hf8a1672_0
-- conda-forge::pint=0.8.1=py36_0
-- conda-forge::ply=3.11=py_1
-- conda-forge::pooch=0.2.1=py36_1000
-- conda-forge::pyepsg=0.4.0=py_0
-- conda-forge::pykdtree=1.3.1=py36h7eb728f_2
-- conda-forge::pykml=0.1.3=py36_0
-- conda-forge::pyproj=1.9.5.1=py36h508ed2a_6
-- conda-forge::pyresample=1.9.0=py36_0
-- conda-forge::seawater=3.3.4=py36_0
-- conda-forge::shapely=1.6.4=py36h164cb2d_1
-- conda-forge::thredds_crawler=1.5.4=py_1
-- conda-forge::traitlets=4.3.2=py36_1000
-- conda-forge::xarray=0.11.3=py36_0
-- configobj=5.0.6=py36_0
-- https://repo.anaconda.com/pkgs/main::babel=2.5.3=py36_0
-- https://repo.anaconda.com/pkgs/main::blas=1.0=mkl
-- https://repo.anaconda.com/pkgs/main::bokeh=0.12.15=py36_0
-- https://repo.anaconda.com/pkgs/main::boost=1.65.1=py36_4
-- https://repo.anaconda.com/pkgs/main::boost-cpp=1.65.1=h14c3975_4
-- https://repo.anaconda.com/pkgs/main::bottleneck=1.2.1=py36haac1ea0_0
-- https://repo.anaconda.com/pkgs/main::cffi=1.11.5=py36h9745a5d_0
-- https://repo.anaconda.com/pkgs/main::click=6.7=py36h5253387_0
-- https://repo.anaconda.com/pkgs/main::cloudpickle=0.5.2=py36_1
-- https://repo.anaconda.com/pkgs/main::cryptography=2.2.2=py36h14c3975_0
-- https://repo.anaconda.com/pkgs/main::cycler=0.10.0=py36h93f1223_0
-- https://repo.anaconda.com/pkgs/main::cytoolz=0.9.0.1=py36h14c3975_0
-- https://repo.anaconda.com/pkgs/main::dask=0.17.2=py36_0
-- https://repo.anaconda.com/pkgs/main::dask-core=0.17.2=py36_0
-- https://repo.anaconda.com/pkgs/main::dbus=1.13.2=hc3f9b76_0
-- https://repo.anaconda.com/pkgs/main::decorator=4.3.0=py36_0
-- https://repo.anaconda.com/pkgs/main::distributed=1.21.6=py36_0
-- https://repo.anaconda.com/pkgs/main::flask=0.12.2=py36hb24657c_0
-- https://repo.anaconda.com/pkgs/main::geotiff=1.4.2=h8e81d37_0
-- https://repo.anaconda.com/pkgs/main::gettext=0.19.8.1=hd7bead4_3
-- https://repo.anaconda.com/pkgs/main::gst-plugins-base=1.12.4=h33fb286_0
-- https://repo.anaconda.com/pkgs/main::gstreamer=1.12.4=hb53b477_0
-- https://repo.anaconda.com/pkgs/main::gunicorn=19.7.1=py36h38c4014_0
-- https://repo.anaconda.com/pkgs/main::h5py=2.7.1=py36h3585f63_0
-- https://repo.anaconda.com/pkgs/main::heapdict=1.0.0=py36_2
-- https://repo.anaconda.com/pkgs/main::imageio=2.3.0=py36_0
-- https://repo.anaconda.com/pkgs/main::itsdangerous=0.24=py36h93cc618_1
-- https://repo.anaconda.com/pkgs/main::jinja2=2.10=py36ha16c418_0
-- https://repo.anaconda.com/pkgs/main::kiwisolver=1.0.1=py36h764f252_0
-- https://repo.anaconda.com/pkgs/main::libgcc-ng=7.2.0=hdf63c60_3
-- https://repo.anaconda.com/pkgs/main::libstdcxx-ng=7.2.0=hdf63c60_3
-- https://repo.anaconda.com/pkgs/main::libxslt=1.1.32=h1312cb7_0
-- https://repo.anaconda.com/pkgs/main::locket=0.2.0=py36h787c0ad_1
-- https://repo.anaconda.com/pkgs/main::markupsafe=1.0=py36hd9260cd_1
-- https://repo.anaconda.com/pkgs/main::matplotlib=2.2.2=py36h0e671d2_1
-- https://repo.anaconda.com/pkgs/main::msgpack-python=0.5.6=py36h6bb024c_0
-- https://repo.anaconda.com/pkgs/main::netcdf4=1.3.1=py36hfd655bd_2
-- https://repo.anaconda.com/pkgs/main::networkx=2.1=py36_0
-- https://repo.anaconda.com/pkgs/main::numpy=1.14.3=py36hcd700cb_1
-- https://repo.anaconda.com/pkgs/main::numpy-base=1.14.3=py36h9be14a7_1
-- https://repo.anaconda.com/pkgs/main::olefile=0.45.1=py36_0
-- https://repo.anaconda.com/pkgs/main::packaging=17.1=py36_0
-- https://repo.anaconda.com/pkgs/main::partd=0.3.8=py36h36fd896_0
-- https://repo.anaconda.com/pkgs/main::pillow=5.1.0=py36h3deb7b8_0
-- https://repo.anaconda.com/pkgs/main::pip=9.0.3=py36_0
-- https://repo.anaconda.com/pkgs/main::psutil=5.4.5=py36h14c3975_0
-- https://repo.anaconda.com/pkgs/main::py-boost=1.65.1=py36hf484d3e_4
-- https://repo.anaconda.com/pkgs/main::pyparsing=2.2.0=py36hee85983_1
-- https://repo.anaconda.com/pkgs/main::pyqt=5.9.2=py36h751905a_0
-- https://repo.anaconda.com/pkgs/main::pyshp=1.2.12=py36h04d6e4e_0
-- https://repo.anaconda.com/pkgs/main::pysocks=1.6.8=py36_0
-- https://repo.anaconda.com/pkgs/main::python=3.6.5=hc3d631a_1
-- https://repo.anaconda.com/pkgs/main::python-dateutil=2.7.2=py36_0
-- https://repo.anaconda.com/pkgs/main::pytz=2018.4=py36_0
-- https://repo.anaconda.com/pkgs/main::pywavelets=0.5.2=py36he602eb0_0
-- https://repo.anaconda.com/pkgs/main::pyyaml=3.12=py36hafb9ca4_1
-- https://repo.anaconda.com/pkgs/main::qt=5.9.4=h4e5bff0_0
-- https://repo.anaconda.com/pkgs/main::scikit-image=0.13.1=py36h14c3975_1
-- https://repo.anaconda.com/pkgs/main::scipy=1.1.0=py36hfc37229_0
-- https://repo.anaconda.com/pkgs/main::setuptools=39.0.1=py36_0
-- https://repo.anaconda.com/pkgs/main::sip=4.19.8=py36hf484d3e_0
-- https://repo.anaconda.com/pkgs/main::sortedcontainers=1.5.10=py36_0
-- https://repo.anaconda.com/pkgs/main::sqlite=3.23.1=he433501_0
-- https://repo.anaconda.com/pkgs/main::tblib=1.3.2=py36h34cf8b6_0
-- https://repo.anaconda.com/pkgs/main::toolz=0.9.0=py36_0
-- https://repo.anaconda.com/pkgs/main::tornado=5.0.2=py36_0
-- https://repo.anaconda.com/pkgs/main::werkzeug=0.14.1=py36_0
-- https://repo.anaconda.com/pkgs/main::wheel=0.31.0=py36_0
-- https://repo.anaconda.com/pkgs/main::xz=5.2.3=h5e939de_4
-- https://repo.anaconda.com/pkgs/main::zict=0.1.3=py36h3a3bf81_0
-- https://repo.continuum.io/pkgs/main::asn1crypto=0.24.0=py36_0
-- https://repo.continuum.io/pkgs/main::bzip2=1.0.6=h9a117a8_4
-- https://repo.continuum.io/pkgs/main::ca-certificates=2018.03.07=0
-- https://repo.continuum.io/pkgs/main::cairo=1.14.12=h77bcde2_0
-- https://repo.continuum.io/pkgs/main::certifi=2018.4.16=py36_0
-- https://repo.continuum.io/pkgs/main::chardet=3.0.4=py36h0f667ec_1
-- https://repo.continuum.io/pkgs/main::curl=7.59.0=h84994c4_0
-- https://repo.continuum.io/pkgs/main::expat=2.2.5=he0dffb1_0
-- https://repo.continuum.io/pkgs/main::fontconfig=2.12.6=h49f89f6_0
-- https://repo.continuum.io/pkgs/main::freetype=2.8=hab7d2ae_1
-- https://repo.continuum.io/pkgs/main::freexl=1.0.5=h14c3975_0
-- https://repo.continuum.io/pkgs/main::gdal=2.2.2=py36hc209d97_1
-- https://repo.continuum.io/pkgs/main::geos=3.6.2=heeff764_2
-- https://repo.continuum.io/pkgs/main::giflib=5.1.4=h26a3ec6_1
-- https://repo.continuum.io/pkgs/main::glib=2.53.6=h5d9569c_2
-- https://repo.continuum.io/pkgs/main::hdf4=4.2.13=h3ca952b_2
-- https://repo.continuum.io/pkgs/main::hdf5=1.10.1=h9caa474_1
-- https://repo.continuum.io/pkgs/main::icu=58.2=h9c2bf20_1
-- https://repo.continuum.io/pkgs/main::idna=2.6=py36h82fb2a8_1
-- https://repo.continuum.io/pkgs/main::intel-openmp=2018.0.0=8
-- https://repo.continuum.io/pkgs/main::jpeg=9b=h024ee3a_2
-- https://repo.continuum.io/pkgs/main::json-c=0.12.1=ha6a3662_2
-- https://repo.continuum.io/pkgs/main::kealib=1.4.7=h79811e5_5
-- https://repo.continuum.io/pkgs/main::krb5=1.16=h3f6afd0_6
-- https://repo.continuum.io/pkgs/main::libboost=1.65.1=habcd387_4
-- https://repo.continuum.io/pkgs/main::libcurl=7.59.0=h1ad7b7a_0
-- https://repo.continuum.io/pkgs/main::libdap4=3.19.0=h5bd89bb_2
-- https://repo.continuum.io/pkgs/main::libedit=3.1=heed3624_0
-- https://repo.continuum.io/pkgs/main::libffi=3.2.1=hd88cf55_4
-- https://repo.continuum.io/pkgs/main::libgcc=7.2.0=h69d50b8_2
-- https://repo.continuum.io/pkgs/main::libgdal=2.2.2=h804cdde_1
-- https://repo.continuum.io/pkgs/main::libgfortran-ng=7.2.0=hdf63c60_3
-- https://repo.continuum.io/pkgs/main::libiconv=1.15=h63c8f33_5
-- https://repo.continuum.io/pkgs/main::libkml=1.3.0=h9d32c78_3
-- https://repo.continuum.io/pkgs/main::libnetcdf=4.4.1.1=h816af47_8
-- https://repo.continuum.io/pkgs/main::libpng=1.6.34=hb9fc6fc_0
-- https://repo.continuum.io/pkgs/main::libpq=10.3=h1ad7b7a_0
-- https://repo.continuum.io/pkgs/main::libspatialite=4.3.0a=h72746d6_18
-- https://repo.continuum.io/pkgs/main::libssh2=1.8.0=h9cfc8f7_4
-- https://repo.continuum.io/pkgs/main::libtiff=4.0.9=h28f6b97_0
-- https://repo.continuum.io/pkgs/main::libuuid=1.0.3=h1bed415_2
-- https://repo.continuum.io/pkgs/main::libxcb=1.13=h1bed415_1
-- https://repo.continuum.io/pkgs/main::libxml2=2.9.8=hf84eae3_0
-- https://repo.continuum.io/pkgs/main::lxml=4.2.1=py36h23eabaa_0
-- https://repo.continuum.io/pkgs/main::mkl=2018.0.2=1
-- https://repo.continuum.io/pkgs/main::ncurses=6.0=h9df7e31_2
-- https://repo.continuum.io/pkgs/main::openjpeg=2.3.0=hef292c2_0
-- https://repo.continuum.io/pkgs/main::openssl=1.0.2o=h20670df_0
-- https://repo.continuum.io/pkgs/main::pcre=8.42=h439df22_0
-- https://repo.continuum.io/pkgs/main::pixman=0.34.0=hceecf20_3
-- https://repo.continuum.io/pkgs/main::poppler=0.60.1=hc909a00_0
-- https://repo.continuum.io/pkgs/main::poppler-data=0.4.8=hf2eda46_0
-- https://repo.continuum.io/pkgs/main::proj4=4.9.3=hc8507d1_7
-- https://repo.continuum.io/pkgs/main::pycosat=0.6.3=py36h0a5515d_0
-- https://repo.continuum.io/pkgs/main::pycparser=2.18=py36hf9f622e_1
-- https://repo.continuum.io/pkgs/main::pyopenssl=17.5.0=py36h20ba746_0
-- https://repo.continuum.io/pkgs/main::readline=7.0=ha6073c6_4
-- https://repo.continuum.io/pkgs/main::requests=2.18.4=py36he2e5f8d_1
-- https://repo.continuum.io/pkgs/main::ruamel_yaml=0.15.35=py36h14c3975_1
-- https://repo.continuum.io/pkgs/main::six=1.11.0=py36h372c433_1
-- https://repo.continuum.io/pkgs/main::tk=8.6.7=hc745277_3
-- https://repo.continuum.io/pkgs/main::urllib3=1.22=py36hbe7ace6_0
-- https://repo.continuum.io/pkgs/main::xerces-c=3.2.1=hac72e42_0
-- https://repo.continuum.io/pkgs/main::yaml=0.1.7=had09818_2
-- https://repo.continuum.io/pkgs/main::zlib=1.2.11=ha838bed_2
-- util-linux=2.21=0
-- pip:
-  - astroid==1.6.3
-  - ipython-genutils==0.2.0
-  - isort==4.3.4
-  - lazy-object-proxy==1.3.1
-  - mccabe==0.6.1
-  - mkl-fft==1.0.10
-  - mkl-random==1.0.2
-  - pylint==1.8.4
-  - ruamel-yaml==0.15.35
-  - thredds-crawler==1.5.4
-  - wrapt==1.10.11
-prefix: /home/gholden/.conda/envs/navigator
+  - asn1crypto=0.24.0=py36_1003
+  - babel=2.7.0=py_0
+  - basemap=1.2.0=py36hf62cb97_3
+  - basemap-data-hires=1.2.0=0
+  - blas=1.1=openblas
+  - bokeh=1.2.0=py36_0
+  - boost-cpp=1.68.0=h11c811c_1000
+  - bzip2=1.0.6=h14c3975_1002
+  - ca-certificates=2019.3.9=hecc5488_0
+  - cachetools=2.0.1=py_0
+  - cairo=1.16.0=ha4e643d_1000
+  - cartopy=0.17.0=py36h0aa2c8f_1004
+  - certifi=2019.3.9=py36_0
+  - cffi=1.11.5=py36_0
+  - cftime=1.0.0=py36_0
+  - chardet=3.0.4=py36_1003
+  - click=7.0=py_0
+  - cloudpickle=1.2.0=py_0
+  - cmocean=2.0=py_0
+  - configobj=5.0.6=py_0
+  - cryptography=2.7=py36h72c5cf5_0
+  - cycler=0.10.0=py_1
+  - cytoolz=0.9.0.1=py36h14c3975_1001
+  - dask=1.2.2=py_3
+  - dask-core=1.2.2=py_0
+  - dbus=1.13.6=he372182_0
+  - decorator=4.4.0=py_0
+  - distributed=1.28.1=py36_0
+  - expat=2.2.5=hf484d3e_1002
+  - flask=0.12.2=py36_0
+  - flask-babel=0.11.2=py_1
+  - flask-compress=1.4.0=py_0
+  - fontconfig=2.13.1=he4413a7_1000
+  - freetype=2.10.0=he983fc9_0
+  - freexl=1.0.5=h14c3975_1002
+  - gdal=2.4.1=py36hf242f0b_0
+  - geographiclib=1.49=py_0
+  - geopy=1.13.0=py_1
+  - geos=3.7.1=hf484d3e_1000
+  - geotiff=1.4.3=h1105359_1000
+  - gettext=0.19.8.1=hc5be6a0_1002
+  - giflib=5.1.7=h516909a_1
+  - glib=2.58.3=hf63aee3_1001
+  - gst-plugins-base=1.14.5=h0935bb2_0
+  - gstreamer=1.14.5=h36ae1b5_0
+  - gunicorn=19.9.0=py36_1000
+  - hdf4=4.2.13=0
+  - hdf5=1.10.4=nompi_h3c11f04_1106
+  - heapdict=1.0.0=py36_1000
+  - icu=58.2=0
+  - idna=2.8=py36_1000
+  - imageio=2.5.0=py36_0
+  - ipython_genutils=0.2.0=py_1
+  - itsdangerous=1.1.0=py_0
+  - jansson=2.11=h516909a_1001
+  - jinja2=2.10.1=py_0
+  - jpeg=9c=h14c3975_1001
+  - json-c=0.13.1=h14c3975_1001
+  - kealib=1.4.10=h1978553_1003
+  - kiwisolver=1.1.0=py36hc9558a2_0
+  - krb5=1.16.3=h05b26f9_1001
+  - libdap4=3.19.1=hd48c02d_1000
+  - libedit=3.1.20170329=hf8c457e_1001
+  - libffi=3.2.1=3
+  - libgdal=2.4.1=hdb8f723_0
+  - libgfortran=3.0.0=1
+  - libiconv=1.15=h516909a_1005
+  - libkml=1.3.0=h328b03d_1009
+  - libnetcdf=4.6.2=hbdf4f91_1001
+  - libpng=1.6.37=hed695b0_0
+  - libpq=11.3=h4e4e079_0
+  - libspatialite=4.3.0a=hb5ec416_1026
+  - libssh2=1.8.2=h22169c7_2
+  - libtiff=4.0.10=h57b8799_1003
+  - libuuid=2.32.1=h14c3975_1000
+  - libxcb=1.13=h14c3975_1002
+  - libxml2=2.9.9=h13577e0_0
+  - libxslt=1.1.32=0
+  - locket=0.2.0=py_2
+  - lxml=4.2.2=py36_0
+  - lz4-c=1.8.3=he1b5a44_1001
+  - markupsafe=1.0=py36_0
+  - matplotlib=3.1.0=py36_1
+  - matplotlib-base=3.1.0=py36hfd891ef_1
+  - metpy=0.10.0=py36_1001
+  - mkl_fft=1.0.13=py36h516909a_1
+  - mkl_random=1.0.4=py36hf2d7682_0
+  - msgpack-python=0.6.1=py36h6bb024c_0
+  - ncurses=6.1=hf484d3e_1002
+  - netcdf4=1.5.1.2=py36had58050_0
+  - networkx=2.3=py_0
+  - numpy=1.16.2=py36_blas_openblash1522bff_0
+  - olefile=0.46=py_0
+  - openblas=0.3.3=h9ac9557_1001
+  - openjpeg=2.3.1=h58a6597_0
+  - openssl=1.1.1b=h14c3975_1
+  - owslib=0.17.1=py_0
+  - packaging=19.0=py_0
+  - pandas=0.24.2=py36hb3f55d8_0
+  - partd=0.3.10=py_1
+  - pcre=8.41=hf484d3e_1003
+  - pillow=6.0.0=py36he7afcd5_0
+  - pint=0.8.1=py_1
+  - pip=19.1.1=py36_0
+  - pixman=0.34.0=h14c3975_1003
+  - ply=3.11=py_1
+  - pooch=0.2.1=py36_1000
+  - poppler=0.67.0=h2ad7f00_6
+  - poppler-data=0.4.9=1
+  - postgresql=11.3=hbeee2d4_0
+  - proj4=5.2.0=he1b5a44_1003
+  - psutil=5.6.2=py36h516909a_0
+  - pthread-stubs=0.4=h14c3975_1001
+  - pycparser=2.19=py36_1
+  - pyepsg=0.4.0=py_0
+  - pykdtree=1.3.1=py36h3010b51_1002
+  - pyopenssl=19.0.0=py36_0
+  - pyparsing=2.4.0=py_0
+  - pyproj=1.9.5.1=py36hc0953d3_1007
+  - pyqt=5.9.2=py36hcca6a23_0
+  - pyresample=1.9.0=py36_0
+  - pyshp=2.1.0=py_0
+  - pysocks=1.7.0=py36_0
+  - python-dateutil=2.7.2=py_0
+  - pytz=2019.1=py_0
+  - pywavelets=1.0.3=py36hd352d35_1
+  - pyyaml=5.1.1=py36h516909a_0
+  - qt=5.9.7=h52cfd70_2
+  - readline=7.0=hf8c457e_1001
+  - requests=2.22.0=py36_0
+  - scikit-image=0.15.0=py36he1b5a44_0
+  - scipy=1.1.0=py36_blas_openblash1522bff_1202
+  - seawater=3.3.4=py_1
+  - setuptools=41.0.1=py36_0
+  - shapely=1.6.4=py36h2afed24_1004
+  - sip=4.19.8=py36hf484d3e_1000
+  - six=1.12.0=py36_1000
+  - sortedcontainers=2.1.0=py_0
+  - sqlite=3.28.0=h8b20d00_0
+  - tblib=1.4.0=py_0
+  - thredds_crawler=1.5.4=py_1
+  - tk=8.6.9=hed695b0_1002
+  - toolz=0.9.0=py_1
+  - tornado=6.0.2=py36h516909a_0
+  - traitlets=4.3.2=py36_1000
+  - tzcode=2019a=h516909a_1002
+  - urllib3=1.24.3=py36_0
+  - uwsgi=2.0.18=py36h4472670_1
+  - werkzeug=0.14.1=py_0
+  - wheel=0.33.4=py36_0
+  - xarray=0.11.3=py36_0
+  - xerces-c=3.2.2=hac72e42_1001
+  - xorg-kbproto=1.0.7=h14c3975_1002
+  - xorg-libice=1.0.9=h516909a_1004
+  - xorg-libsm=1.2.3=h84519dc_1000
+  - xorg-libx11=1.6.7=h14c3975_1000
+  - xorg-libxau=1.0.9=h14c3975_0
+  - xorg-libxdmcp=1.1.3=h516909a_0
+  - xorg-libxext=1.3.4=h516909a_0
+  - xorg-libxrender=0.9.10=h516909a_1002
+  - xorg-renderproto=0.11.1=h14c3975_1002
+  - xorg-xextproto=7.3.0=h14c3975_1002
+  - xorg-xproto=7.0.31=h14c3975_1007
+  - xz=5.2.4=h14c3975_1001
+  - yaml=0.1.7=h14c3975_1001
+  - zict=0.1.4=py_0
+  - zlib=1.2.11=0
+  - zstd=1.4.0=h3b9ef0a_0
+  - curl=7.62.0=hbc83047_0
+  - intel-openmp=2019.4=243
+  - libcurl=7.62.0=h20c2e04_0
+  - libgcc-ng=8.2.0=hdf63c60_1
+  - libgfortran-ng=7.3.0=hdf63c60_0
+  - libstdcxx-ng=8.2.0=hdf63c60_1
+  - mkl=2019.4=243
+  - python=3.6.8=h0371630_0
+prefix: /opt/tools/miniconda3/envs/navigator
 
