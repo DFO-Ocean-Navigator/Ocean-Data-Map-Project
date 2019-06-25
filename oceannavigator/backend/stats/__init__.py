@@ -134,6 +134,7 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
             variableUnit = VariableConfig(config,var).unit
             variableDepth = depth
             area = area[0]['polygons'][0]
+            area.pop()
             area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
             
             
