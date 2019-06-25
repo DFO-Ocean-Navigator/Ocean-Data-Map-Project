@@ -3,7 +3,7 @@
 
 import json
 import unittest as ut
-
+from oceannavigator import create_app
 import numpy as np
 
 from oceannavigator.backend.stats import calculate_stats
@@ -20,7 +20,12 @@ class TestStats(ut.TestCase):
                 np.linspace(-150, -160, 10)
             )
         )
+        self.app = create_app()
+        self.ctx = self.app.app_context()
+        self.ctx.push()
 
+    def tearDown(self):
+        self.ctx.pop()
 
     def test_calculate_stats_returns_correct_stats(self):
 
