@@ -14,6 +14,8 @@ import * as ollayer from "ol/layer";
 import * as olstyle from "ol/style";
 import * as olinteraction from "ol/interaction";
 import * as olcondition from "ol/events/condition";
+import * as olgeom from "ol/geom";
+import * as olextent from "ol/extent";
 
 require("ol/ol.css");
 
@@ -279,7 +281,7 @@ export default class Map extends React.PureComponent {
                   }),
                 }),
                 new olstyle.Style({
-                  geometry: new ol.geom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+                  geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
                   text: new olstyle.Text({
                     text: feat.get("name"),
                     fill: new olstyle.Fill({
@@ -332,11 +334,11 @@ export default class Map extends React.PureComponent {
                   })
                 }),
                 new olstyle.Style({
-                  geometry: new ol.geom.Point(end),
+                  geometry: new olgeom.Point(end),
                   image: endImage,
                 }),
                 new olstyle.Style({
-                  geometry: new ol.geom.Point(start),
+                  geometry: new olgeom.Point(start),
                   image: new olstyle.Circle({
                     radius: SmartPhone.isAny() ? 6 : 4,
                     fill: new olstyle.Fill({
@@ -531,7 +533,7 @@ export default class Map extends React.PureComponent {
               }),
             }),
             new olstyle.Style({
-              geometry: new ol.geom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+              geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
               text: new olstyle.Text({
                 text: feat.get("name"),
                 fill: new olstyle.Fill({
@@ -1109,7 +1111,7 @@ export default class Map extends React.PureComponent {
         this.props.updateState("modal", "point");
         this.props.updateState("names", data[0]);
         for (let c of data) {
-          geom = new ol.geom.Point([c[1], c[0]]);
+          geom = new olgeom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
             geometry: geom,
@@ -1123,7 +1125,7 @@ export default class Map extends React.PureComponent {
         this.props.updateState("line", [data]);
         this.props.updateState("modal", "line");
         this.props.updateState("names", data);
-        geom = new ol.geom.LineString(data.map(function (c) {
+        geom = new olgeom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
         
@@ -1144,10 +1146,10 @@ export default class Map extends React.PureComponent {
         }]);
         this.props.updateState("modal", "area");
         this.props.updateState("names", data);
-        geom = new ol.geom.Polygon([data.map(function (c) {
+        geom = new olgeom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
-        const centroid = ol.extent.getCenter(geom.getExtent());
+        const centroid = olextent.getCenter(geom.getExtent());
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
@@ -1159,7 +1161,7 @@ export default class Map extends React.PureComponent {
         break;
       case "observation":
         for (let p of data) {
-          geom = new ol.geom.Point([p.longitude, p.latitude]);
+          geom = new olgeom.Point([p.longitude, p.latitude]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
             geometry: geom,
@@ -1173,7 +1175,7 @@ export default class Map extends React.PureComponent {
     }
 
     const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
-    if (!ol.extent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
+    if (!olextent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }
   }
