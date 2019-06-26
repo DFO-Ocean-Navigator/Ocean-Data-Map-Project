@@ -13,12 +13,12 @@ export default class Permalink extends React.Component {
     this.state = {
       center: true,
       projection: true,
-      basemap: true,
+      basemap: false,
       bathymetry: false,
-      dataset_compare: true,
+      dataset_compare: false,
       zoom: true,
       dataset: true,
-      dataset_1: true,
+      dataset_1: false,
       variable: true,
       depth: true,
       vectortype: true,
@@ -70,6 +70,7 @@ export default class Permalink extends React.Component {
         <br />
         <Panel
           collapsible
+          defaultExpanded
           header={_("Advanced")}
           bsStyle="warning"
         >
