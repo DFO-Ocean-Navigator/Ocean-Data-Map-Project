@@ -37,11 +37,7 @@
     "prop-types": "^15.5.10",
     "react": "^16.8.6",
     "react-bootstrap": "^0.31.0",
-<<<<<<< HEAD
-    "react-dom": "~15.6.1",
-=======
     "react-dom": "^16.8.6",
->>>>>>> a2930567418445d2901ab9dd235d2b4fb8a4a71a
     "react-fontawesome": "^1.6.1",
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
