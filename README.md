@@ -47,7 +47,21 @@ The main display uses the OpenLayers mapping API to allow the user to pan around
 
 ## Development
 
-These development notes were created after the primary individiual left this project, so please feel free to suggest new standards that improve code reliability, stability, etc. Also, most of the codebase doesn't reflect these decisions, so a good task would be to bring all the code up to scratch.
+### Local Installation
+Run this one-shot-install script:
+[https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/Installer_Linux.sh](https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/Installer_Linux.sh)
+
+* While altering Javascript code, it can be actively transpiled using:
+	* `cd oceannavigator/frontend`
+	* `yarn run dev`
+* There's also a linter available:`yarn run lint`.
+
+### Running the webserver
+Assuming the above installation script succeeded, your PATH should be set to point towards `/opt/tools/miniconda3/bin`, and the `navigator` conda environment has been activated.
+* Debug server (single-threaded):
+	* `python runserver.py`
+* Multi-threaded (via gUnicorn):
+	* `./runserver.sh`
 
 ### Coding Style (Javascript)
 Javascript is a dynamically-typed language so it's super important to have clear and concise code, that demonstrates it's exact purpose.
@@ -108,20 +122,3 @@ Javascript is a dynamically-typed language so it's super important to have clear
 
 ### Coding Style (Python)
 Coming soon...
-
-### Setting up the Javascript environment
-* Run the following commands to install NodeJS:
-	* `sudo	apt	install	python-software-properties curl`
-	* `curl	-sL	https://deb.nodesource.com/setup_4.x | sudo	-E bash -`
-	* `sudo	apt install	nodejs`
-	* `sudo npm install -g bower`
-	* `sudo npm install -g npm@next`
-	* `cd oceannavigator/frontend`
-	* `npm install`
-* While altering Javascript code, it can be actively transpiled using:
-	* `cd oceannavigator/frontend`
-	* `npm run dev`
-
-### Running the webserver
-* To run the debug server, execute:
-	* `sudo /opt/tools/anaconda2/bin/python runserver.py`
