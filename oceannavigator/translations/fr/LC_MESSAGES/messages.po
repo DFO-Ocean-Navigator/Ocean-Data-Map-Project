@@ -1,7 +1,6 @@
-# French translations for PROJECT.
-# Copyright (C) 2019 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+# French translations for Ocean-Data-Map-Project.
+# This file is distributed under the same license as the Ocean-Data-Map-Project.
+# James Rayner james.rayner@dfo-mpo.gc.ca, 2019.
 #
 msgid ""
 msgstr ""
