@@ -882,7 +882,7 @@ def stats_impl(args, query = None):
             raise APIError("A Query must be specified in the form /stats/?query='...' ")
         #Retrieves Query as JSON based on Request Method
         query = json.loads(args.get('query'))
-
+    
     dataset = query.get('dataset')  #Retrieves dataset from query
     variable = query.get('variable').split(',')
     time = query.get('time')

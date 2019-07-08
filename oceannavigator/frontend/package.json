@@ -42,7 +42,9 @@
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-mathjax": "^1.0.1",
+    "react-mathjax2": "^0.0.2",
     "react-numeric-input": "^2.2.3",
+    "tooltip": "^1.6.1",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

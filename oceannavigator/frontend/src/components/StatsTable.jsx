@@ -1,6 +1,8 @@
 import React from "react";
-import {Table, Alert} from "react-bootstrap";
+import {Table, Alert,Popover,OverlayTrigger,Tooltip} from "react-bootstrap";
 import PropTypes from "prop-types";
+//import MathJax from "react-mathjax"
+const MathJax = require("react-mathjax2");
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -129,8 +131,9 @@ export default class StatsTable extends React.Component {
         </tbody>
       );
     } else {
+
       const arrayData = Object.entries(this.state.data);
-    
+      
       content = arrayData.map(function(area) {
         const vars = area.map(function(v) {
           if(typeof(v)=="object"){
@@ -142,9 +145,11 @@ export default class StatsTable extends React.Component {
                 <td>{v.max}</td>
                 <td>{v.median}</td>
                 <td>{v.mean}</td>
+                <td>{v.variance}</td>
+                <td>{v.standard_dev}</td>
                 <td>{v.skewness}</td>
                 <td>{v.kurtosis}</td>
-                <td>{v.standard_dev}</td>
+                
                 <td>{v.sampled_points}</td>
               </tr>
             )}
@@ -165,34 +170,188 @@ export default class StatsTable extends React.Component {
         );
       });
     }
-    
-    return (
-      <div>
-        <Table 
-          responsive 
-          className='StatsTable'
-          hover
-          striped
-          bordered
-        >
-          <thead>
-            <tr>
-              <th>{_("Variable")}</th>
-              <th title={_("Minimum Value")}>{_("Min")}</th>
-              <th title={_("Maximum Value")}>{_("Max")}</th>
-              <th title={_("Median Value")}>{_("Med")}</th>
-              <th title={_("Average Value")}>{_("Mean")}</th>
-              <th title={_("Skewness Value")}>{_("Skew")}</th>
-              <th title={_("Kortosis Value")}>{_("Kort")}</th>
-              <th title={_("Standard Deviation")}>{_("Std Dev")}</th>
-              <th title={_("Number of Valid Points in Area")}>{_("# Valid Pts")}</th>
-            </tr>
-          </thead>
-          {content}
-        </Table>
-        {errorAlert}
-      </div>
+    ////////required latex code and popover for Min cell OverlayTrigger
+    const minimumTex =[`X_{ min}`]
+    const minimunFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{minimumTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const minimumPopover = (
+      <Popover id="pop" title="Minimum Value" >
+        {minimunFormula}
+      </Popover>
     );
+    ////////required latex code and popover Max cell OverlayTrigger
+    const maximumTex =[`X_{ max}`]
+    const maximumFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{maximumTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const maximumPopover = (
+      <Popover id="pop" title="Maximum Value" >
+        {maximumFormula}
+      </Popover>
+    );
+   
+    ////////required latex code and popover for Med cell OverlayTrigger
+    const medianTex =[`\\widetilde{X}=\\left\\{  \\frac{N+1}{2} \\right\\}th`]//latex code of Median formula
+    const medianFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{medianTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const medianPopover = (
+      <Popover id="pop" title="Median Value" >
+        {medianFormula}
+      </Popover>
+    );
+    ////////required latex code and popover for Mean cell OverlayTrigger
+    const meanTex =[`\\overline{X}=\\frac{\\sum_{i=1}^N{x_{i}}}{N}`]//latex code of Mean formula
+    const meanFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{meanTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const meanPopover = (
+      <Popover id="pop" title="Average Value" >
+        {meanFormula}
+      </Popover>
+    );
+    ////////required varibles for Var cell OverlayTrigger
+    const varianceTex =[`s^{2}=\\frac{{\\sum_{i=1}^N}{{(x_{i}-\\overline{X})}^{2}}}{N-1}`]//latex code of Variance formula
+    const varianceFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{varianceTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const variancePopover = (
+      <Popover id="pop" title="Variance" >
+        {varianceFormula}
+      </Popover>
+    );
+    ////////required latex code and popover for Std cell OverlayTrigger
+    const stdTex =[`\\delta=\\sqrt{{\\frac{1}{N-1}}{\\sum_{i=1}^N}{{({x_{i}-\\overline{X}})}^{2}}}`]//latex code of Standars Deviation formula
+    const stdFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{stdTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const stdPopover = (
+      <Popover id="pop" title="Standard Deviation" >
+        {stdFormula}
+      </Popover>
+    );
+
+    ////////required latex code and popover for Skew cell OverlayTrigger
+    const skewnessTex =[`skew = \\frac{{3({\\overline{X}-{\\widetilde{X}}})}}{\\delta}`]//latex code of Skewness formula
+    const skewnessFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{skewnessTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const skewnessPopover = (
+      <Popover id="pop" title="Standard Deviation" >
+        {skewnessFormula}
+      </Popover>
+    );
+    ////////required latex code and popover for Kurt cell OverlayTrigger
+    const kurtosisTex =[`kurtosis = N\\frac{{\\sum_{i=1}^N}{{(x_{i}-\\overline{X})}^{4}}}{{({\\sum_{i=1}^N}{{(x_{i}-\\overline{X})}^{2}})}^{2}}-3`]//latex code of Kurtosis formula
+    const kurtosisFormula =
+      <MathJax.Context input='tex'>
+        <div>
+          <MathJax.Node>{kurtosisTex}</MathJax.Node>  
+        </div>
+      </MathJax.Context>
+     
+    const kurtosisPopover = (
+      <Popover id="pop" title="Excess Kurtosis" >
+        {kurtosisFormula}
+      </Popover>
+    );
+    ////////tooltip for N cell
+    const Ntooltip = ( 
+      <Tooltip id="tooltip">
+        <strong>{"Number of Points in Bounding Box"}</strong>
+      </Tooltip>
+
+    )
+
+    return(
+        <div>
+          
+          <Table 
+            responsive 
+            className='StatsTable' 
+            striped
+            hover
+            bordered
+          >
+            <thead>
+              <tr>
+              
+                <th>{_("Variable")}</th>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={minimumPopover}>
+                  <th data-container="body"> {_("Min")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={maximumPopover}>
+                  <th data-container="body">{_("Max")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={medianPopover}>
+                  <th data-container="body">{_("Med")}</th>
+                </OverlayTrigger> 
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={meanPopover}>
+                  <th data-container="body">{_("Mean")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={variancePopover}>
+                  <th data-container="body">{_("Var")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={stdPopover}> 
+                 <th data-container="body">{_("Std Dev")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={skewnessPopover}>
+                  <th data-container="body">{_("Skew")}</th>
+                </OverlayTrigger>
+
+                <OverlayTrigger trigger="hover" placement="right" overlay={kurtosisPopover}>
+                  <th data-container="body">{_("Kurt")}</th>
+                </OverlayTrigger>
+                
+                <OverlayTrigger trigger="hover" placement="right" overlay={Ntooltip}>
+                  <th data-container="body">{_("# N")}</th>
+                </OverlayTrigger>
+              </tr>
+            </thead>
+            {content}
+          </Table>
+          
+          
+          
+        
+        </div>
+    )
   }
 }
 
