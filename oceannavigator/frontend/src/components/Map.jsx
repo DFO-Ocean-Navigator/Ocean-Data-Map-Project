@@ -1,16 +1,26 @@
 /* eslint react/no-deprecated: 0 */
 import React from "react";
-import ol from "openlayers";
 import PropTypes from "prop-types";
+import proj4 from "proj4";
+import * as ol from "ol";
+import * as olproj from "ol/proj";
+import * as olproj4 from "ol/proj/proj4";
+import * as olcontrol from "ol/control";
+import * as olsource from "ol/source";
+import * as olloadingstrategy from "ol/loadingstrategy";
+import * as olformat from "ol/format";
+import * as oltilegrid from "ol/tilegrid";
+import * as ollayer from "ol/layer";
+import * as olstyle from "ol/style";
+import * as olinteraction from "ol/interaction";
+import * as olcondition from "ol/events/condition";
+import * as olgeom from "ol/geom";
+import * as olextent from "ol/extent";
 
-require("openlayers/css/ol.css");
+require("ol/ol.css");
 
-const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
-
-ol.proj.setProj4(proj4);
-
 const X_IMAGE = require("../images/x.png");
 
 var app = {};
@@ -74,12 +84,12 @@ app.ResetPanButton = function(opt_options) {
   element.className = "reset-pan ol-unselectable ol-control";
   element.appendChild(button);
 
-  ol.control.Control.call(this, {
+  olcontrol.Control.call(this, {
     element: element,
     target: options.target,
   });
 };
-ol.inherits(app.ResetPanButton, ol.control.Control);
+ol.inherits(app.ResetPanButton, olcontrol.Control);
 
 // Variable scale legend
 app.ScaleViewer = function(opt_options) {
@@ -94,15 +104,18 @@ app.ScaleViewer = function(opt_options) {
   element.className = "scale-viewer ol-unselectable ol-control";
   element.appendChild(scale);
 
-  ol.control.Control.call(this, {
+  olcontrol.Control.call(this, {
     element: element,
     target: options.target,
   });
 };
-ol.inherits(app.ScaleViewer, ol.control.Control);
+ol.inherits(app.ScaleViewer, olcontrol.Control);
 
 proj4.defs("EPSG:32661", "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
-var proj32661 = ol.proj.get("EPSG:32661");
+proj4.defs("EPSG:3031", "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
+olproj4.register(proj4);
+
+var proj32661 = olproj.get("EPSG:32661");
 proj32661.setWorldExtent([-180.0, 60.0, 180.0, 90.0]);
 proj32661.setExtent([
   -1154826.7379766018,
@@ -111,8 +124,7 @@ proj32661.setExtent([
   5154826.737976601
 ]);
 
-proj4.defs("EPSG:3031", "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
-var proj3031 = ol.proj.get("EPSG:3031");
+var proj3031 = olproj.get("EPSG:3031");
 proj3031.setWorldExtent([-180.0, -90.0, 180.0, -60.0]);
 proj3031.setExtent([
   -3087442.3458218463,
@@ -144,7 +156,7 @@ export default class Map extends React.PureComponent {
             `/${this.props.state.vectorid}.json`
           ),
           success: function(response) {
-            var features = (new ol.format.GeoJSON()).readFeatures(response, {
+            var features = (new olformat.GeoJSON()).readFeatures(response, {
               featureProjection: this.props.state.projection,
             });
             var featToAdd = [];
@@ -170,14 +182,14 @@ export default class Map extends React.PureComponent {
         });
       }
     };
-    this.vectorSource = new ol.source.Vector({
+    this.vectorSource = new olsource.Vector({
       features: [],
-      strategy: ol.loadingstrategy.bbox,
-      format: new ol.format.GeoJSON(),
+      strategy: olloadingstrategy.bbox,
+      format: new olformat.GeoJSON(),
       loader: this.loader.bind(this),
     });
 
-    this.vectorTileGrid = new ol.tilegrid.createXYZ({
+    this.vectorTileGrid = new oltilegrid.createXYZ({
       tileSize:512, 
       maxZoom: MAX_ZOOM[this.props.state.projection]
     }),
@@ -190,12 +202,12 @@ export default class Map extends React.PureComponent {
     );
 
     // Data layer
-    this.layer_data = new ol.layer.Tile(
+    this.layer_data = new ollayer.Tile(
       {
         preload: 7,
-        source: new ol.source.XYZ({
+        source: new olsource.XYZ({
           attributions: [
-            new ol.Attribution({
+            new olcontrol.Attribution({
               html: "CONCEPTS",
             })
           ],
@@ -203,9 +215,9 @@ export default class Map extends React.PureComponent {
       });
 
     // Bathymetry layer
-    this.layer_bath = new ol.layer.Tile(
+    this.layer_bath = new ollayer.Tile(
       {
-        source: new ol.source.XYZ({
+        source: new olsource.XYZ({
           url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
@@ -215,19 +227,19 @@ export default class Map extends React.PureComponent {
       });
 
     // MBTiles Land shapes (high res)
-    this.layer_landshapes = new ol.layer.VectorTile(
+    this.layer_landshapes = new ollayer.VectorTile(
       {
         opacity: 1,
-        style: new ol.style.Style({
-          stroke: new ol.style.Stroke({
+        style: new olstyle.Style({
+          stroke: new olstyle.Stroke({
             color: 'rgba(0, 0, 0, 1)'
           }),
-				  fill: new ol.style.Fill({
+				  fill: new olstyle.Fill({
 					  color: 'white'
             })
           }),
-        source: new ol.source.VectorTile({
-          format: new ol.format.MVT(),
+        source: new olsource.VectorTile({
+          format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
@@ -236,17 +248,17 @@ export default class Map extends React.PureComponent {
       });
 
     // MBTiles Bathymetry shapes (high res)
-      this.layer_bathshapes = new ol.layer.VectorTile(
+      this.layer_bathshapes = new ollayer.VectorTile(
         {
           opacity: this.props.options.mapBathymetryOpacity,
           visible: this.props.options.bathymetry,
-          style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
+          style: new olstyle.Style({
+            stroke: new olstyle.Stroke({
               color: 'rgba(0, 0, 0, 1)'
             })
           }),
-          source: new ol.source.VectorTile({
-            format: new ol.format.MVT(),
+          source: new olsource.VectorTile({
+            format: new olformat.MVT(),
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
             url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
@@ -254,7 +266,7 @@ export default class Map extends React.PureComponent {
         });
 
     // Drawing layer
-    this.layer_vector = new ol.layer.Vector(
+    this.layer_vector = new ollayer.Vector(
       {
         source: this.vectorSource,
         style: function(feat, res) {
@@ -262,17 +274,17 @@ export default class Map extends React.PureComponent {
           switch (feat.get("type")) {
             case "area": {
               return [
-                new ol.style.Style({
-                  stroke: new ol.style.Stroke({
+                new olstyle.Style({
+                  stroke: new olstyle.Stroke({
                     color: "#000000",
                     width: 1,
                   }),
                 }),
-                new ol.style.Style({
-                  geometry: new ol.geom.Point(ol.proj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-                  text: new ol.style.Text({
+                new olstyle.Style({
+                  geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+                  text: new olstyle.Text({
                     text: feat.get("name"),
-                    fill: new ol.style.Fill({
+                    fill: new olstyle.Fill({
                       color: "#000",
                     }),
                   }),
@@ -291,17 +303,17 @@ export default class Map extends React.PureComponent {
                 drifter_color[feat.get("name")] = color;
               }
               if (feat.get("status") == "inactive" || feat.get("status") == "not responding") {
-                endImage = new ol.style.Icon({
+                endImage = new olstyle.Icon({
                   src: X_IMAGE,
                   scale: 0.75,
                 });
               } else {
-                endImage = new ol.style.Circle({
+                endImage = new olstyle.Circle({
                   radius: SmartPhone.isAny() ? 6 : 4,
-                  fill: new ol.style.Fill({
+                  fill: new olstyle.Fill({
                     color: "#ff0000",
                   }),
-                  stroke: new ol.style.Stroke({
+                  stroke: new olstyle.Stroke({
                     color: "#000000",
                     width: 1
                   }),
@@ -309,30 +321,30 @@ export default class Map extends React.PureComponent {
               }
 
               const styles = [
-                new ol.style.Style({
-                  stroke: new ol.style.Stroke({
+                new olstyle.Style({
+                  stroke: new olstyle.Stroke({
                     color: [color[0], color[1], color[2], 0.004],
                     width: 8,
                   }),
                 }),
-                new ol.style.Style({
-                  stroke: new ol.style.Stroke({
+                new olstyle.Style({
+                  stroke: new olstyle.Stroke({
                     color: color,
                     width: SmartPhone.isAny() ? 4 : 2,
                   })
                 }),
-                new ol.style.Style({
-                  geometry: new ol.geom.Point(end),
+                new olstyle.Style({
+                  geometry: new olgeom.Point(end),
                   image: endImage,
                 }),
-                new ol.style.Style({
-                  geometry: new ol.geom.Point(start),
-                  image: new ol.style.Circle({
+                new olstyle.Style({
+                  geometry: new olgeom.Point(start),
+                  image: new olstyle.Circle({
                     radius: SmartPhone.isAny() ? 6 : 4,
-                    fill: new ol.style.Fill({
+                    fill: new olstyle.Fill({
                       color: "#008000",
                     }),
-                    stroke: new ol.style.Stroke({
+                    stroke: new olstyle.Stroke({
                       color: "#000000",
                       width: 1
                     }),
@@ -347,13 +359,13 @@ export default class Map extends React.PureComponent {
               const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
               const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
               
-              return new ol.style.Style({
-                image: new ol.style.Circle({
+              return new olstyle.Style({
+                image: new olstyle.Circle({
                   radius: SmartPhone.isAny() ? 6 : 4,
-                  fill: new ol.style.Fill({
+                  fill: new olstyle.Fill({
                     color: [red, green, 0, 1],
                   }),
-                  stroke: new ol.style.Stroke({
+                  stroke: new olstyle.Stroke({
                     color: "#000000",
                     width: 1
                   }),
@@ -362,17 +374,17 @@ export default class Map extends React.PureComponent {
             }
 
             default:
-              return new ol.style.Style({
-                stroke: new ol.style.Stroke({
+              return new olstyle.Style({
+                stroke: new olstyle.Stroke({
                   color: "#ff0000",
                   width: SmartPhone.isAny() ? 8 : 4,
                 }),
-                image: new ol.style.Circle({
+                image: new olstyle.Circle({
                   radius: SmartPhone.isAny() ? 6 : 4,
-                  fill: new ol.style.Fill({
+                  fill: new olstyle.Fill({
                     color: "#ff0000",
                   }),
-                  stroke: new ol.style.Stroke({
+                  stroke: new olstyle.Stroke({
                     color: "#000000",
                     width: 1
                   }),
@@ -393,7 +405,7 @@ export default class Map extends React.PureComponent {
         this.layer_bathshapes,
         this.layer_vector,
       ],
-      controls: ol.control.defaults({
+      controls: olcontrol.defaults({
         zoom: true,
         attributionOptions: ({
           collapsible: false,
@@ -401,21 +413,21 @@ export default class Map extends React.PureComponent {
         })
       }).extend([
         new app.ResetPanButton(), 
-        new ol.control.FullScreen(),
-        new ol.control.MousePosition({
+        new olcontrol.FullScreen(),
+        new olcontrol.MousePosition({
           projection: "EPSG:4326",
           coordinateFormat: function(c) {
             return "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>";
           }
         }),
         new ol.Graticule({
-          strokeStyle: new ol.style.Stroke({color: "rgba(128, 128, 128, 0.9)", lineDash: [0.5, 4]})
+          strokeStyle: new olstyle.Stroke({color: "rgba(128, 128, 128, 0.9)", lineDash: [0.5, 4]})
         }),
       ])
     });
     this.map.on("moveend", this.refreshFeatures.bind(this));
     this.map.on("moveend", function() {
-      const c = ol.proj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
+      const c = olproj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
       this.props.updateState("center", c);
       this.props.updateState("zoom", this.mapView.getZoom());
       const extent = this.mapView.calculateExtent(this.map.getSize());
@@ -438,7 +450,7 @@ export default class Map extends React.PureComponent {
     const projection = this.props.state.projection;
         
     this.mapView = new ol.View({
-      center: ol.proj.transform(center, "EPSG:4326", projection),
+      center: olproj.transform(center, "EPSG:4326", projection),
       projection: projection,
       zoom: zoom,
       maxZoom: MAX_ZOOM[this.props.state.projection],
@@ -481,7 +493,7 @@ export default class Map extends React.PureComponent {
       if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
-      const location = ol.proj.transform(coord, this.props.state.projection, "EPSG:4326");
+      const location = olproj.transform(coord, this.props.state.projection, "EPSG:4326");
       this.setState({
         location: [location[0], location[1]]
       });
@@ -510,38 +522,38 @@ export default class Map extends React.PureComponent {
       });
     }.bind(this));
 
-    var select = new ol.interaction.Select({
+    var select = new olinteraction.Select({
       style: function(feat, res) {
         if (feat.get("type") == "area") {
           return [
-            new ol.style.Style({
-              stroke: new ol.style.Stroke({
+            new olstyle.Style({
+              stroke: new olstyle.Stroke({
                 color: "#0099ff",
                 width: 3,
               }),
             }),
-            new ol.style.Style({
-              geometry: new ol.geom.Point(ol.proj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-              text: new ol.style.Text({
+            new olstyle.Style({
+              geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+              text: new olstyle.Text({
                 text: feat.get("name"),
-                fill: new ol.style.Fill({
+                fill: new olstyle.Fill({
                   color: "#0099ff",
                 }),
               }),
             }),
           ];
         } else {
-          return new ol.style.Style({
-            stroke: new ol.style.Stroke({
+          return new olstyle.Style({
+            stroke: new olstyle.Stroke({
               color: "#0099ff",
               width: 4
             }),
-            image: new ol.style.Circle({
+            image: new olstyle.Circle({
               radius: SmartPhone.isAny() ? 6 : 4,
-              fill: new ol.style.Fill({
+              fill: new olstyle.Fill({
                 color: "#0099ff",
               }),
-              stroke: new ol.style.Stroke({
+              stroke: new olstyle.Stroke({
                 color: "#ffffff",
                 width: 1
               }),
@@ -560,8 +572,8 @@ export default class Map extends React.PureComponent {
     this.selectedFeatures = select.getFeatures();
     this.map.addInteraction(select);
 
-    const dragBox = new ol.interaction.DragBox({
-      condition: ol.events.condition.platformModifierKeyOnly
+    const dragBox = new olinteraction.DragBox({
+      condition: olcondition.platformModifierKeyOnly
     });
     this.map.addInteraction(dragBox);
 
@@ -657,43 +669,41 @@ export default class Map extends React.PureComponent {
   getBasemap(source, projection, attribution) {
     switch(source) {
       case "topo":
-
         const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
-        console.warn(shadedRelief);
 
-        return new ol.layer.Tile({
+        return new ollayer.Tile({
           preload: 7,
-          source: new ol.source.XYZ({
+          source: new olsource.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
             attributions: [
-              new ol.Attribution({
+              new olcontrol.Attribution({
                 html: attribution,
               })
             ],
           })
         });
       case "ocean":
-        return new ol.layer.Tile({
+        return new ollayer.Tile({
           preload: 7,
-          source: new ol.source.XYZ({
+          source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
             attributions: [
-              new ol.Attribution({
+              new olcontrol.Attribution({
                 html: attribution,
               })
             ],
           })
         });
       case "world":
-        return new ol.layer.Tile({
+        return new ollayer.Tile({
           preload: 7,
-          source: new ol.source.XYZ({
+          source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
             attributions: [
-              new ol.Attribution({
+              new olcontrol.Attribution({
                 html: attribution,
               })
             ],
@@ -777,7 +787,7 @@ export default class Map extends React.PureComponent {
       ret: false,
     };
     interactions.forEach(function(e, i, a) {
-      if (e instanceof ol.interaction.Draw) {
+      if (e instanceof olinteraction.Draw) {
         stat.coll.remove(e);
         if (e.get("type") === type) {
           stat.ret = true;
@@ -791,7 +801,7 @@ export default class Map extends React.PureComponent {
     const interactions = this.map.getInteractions();
     for (let i = 0; i < interactions.getLength(); i++) {
       const interaction = interactions.item(i);
-      if (interaction instanceof ol.interaction.DoubleClickZoom) {
+      if (interaction instanceof olinteraction.DoubleClickZoom) {
         interaction.setActive(active);
       }
     }
@@ -806,7 +816,7 @@ export default class Map extends React.PureComponent {
 
     //Resets map (in case other plots have been drawn)
     this.resetMap();
-    const draw = new ol.interaction.Draw({
+    const draw = new olinteraction.Draw({
       source: this.vectorSource,
       type: "Point",
     });
@@ -814,7 +824,7 @@ export default class Map extends React.PureComponent {
     draw.on("drawend", function(e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      const lonlat = ol.proj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
       this.props.updateState("plotEnabled", true);
@@ -838,7 +848,7 @@ export default class Map extends React.PureComponent {
     this._drawing = true;
 
     this.resetMap();
-    const draw = new ol.interaction.Draw({
+    const draw = new olinteraction.Draw({
       source: this.vectorSource,
       type: "LineString"
     });
@@ -848,7 +858,7 @@ export default class Map extends React.PureComponent {
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates().map(
         function (c) {
-          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
+          const lonlat = olproj.transform(c, this.props.state.projection,"EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
@@ -875,7 +885,7 @@ export default class Map extends React.PureComponent {
     this._drawing = true;
 
     this.resetMap();
-    const draw = new ol.interaction.Draw({
+    const draw = new olinteraction.Draw({
       source: this.vectorSource,
       type: "Polygon"
     });
@@ -885,7 +895,7 @@ export default class Map extends React.PureComponent {
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
-          const lonlat = ol.proj.transform(c, this.props.state.projection,"EPSG:4326");
+          const lonlat = olproj.transform(c, this.props.state.projection,"EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
@@ -926,14 +936,14 @@ export default class Map extends React.PureComponent {
                 "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
-      new ol.Attribution({
+      new olcontrol.Attribution({
         html: this.props.state.dataset_attribution,
       }),
     ];
 
     CURRENT_PROJ = this.props.state.projection;
 
-    const newSource = new ol.source.XYZ(props);
+    const newSource = new olsource.XYZ(props);
 
     datalayer.setSource(newSource);
 
@@ -959,7 +969,7 @@ export default class Map extends React.PureComponent {
       this.map.getLayers().setAt(0, this.layer_basemap);
       this.mapView = new ol.View({
         projection: this.props.state.projection,
-        center: ol.proj.transform(
+        center: olproj.transform(
           DEF_CENTER[this.props.state.projection],
           "EPSG:4326",
           this.props.state.projection
@@ -971,7 +981,7 @@ export default class Map extends React.PureComponent {
 
       // Update bathymetry
       this.layer_bath.setSource(
-        new ol.source.XYZ({
+        new olsource.XYZ({
           url: (
             `/tiles/bath/${this.props.state.projection}` +
             "/{z}/{x}/{y}.png"
@@ -982,8 +992,8 @@ export default class Map extends React.PureComponent {
 
       // Update Hi-res bath layer
       this.layer_bathshapes.setSource(
-        new ol.source.VectorTile({
-          format: new ol.format.MVT(),
+        new olsource.VectorTile({
+          format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
@@ -992,8 +1002,8 @@ export default class Map extends React.PureComponent {
 
       // Update Hi-res land layer
       this.layer_landshapes.setSource(
-        new ol.source.VectorTile({
-          format: new ol.format.MVT(),
+        new olsource.VectorTile({
+          format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
@@ -1101,7 +1111,7 @@ export default class Map extends React.PureComponent {
         this.props.updateState("modal", "point");
         this.props.updateState("names", data[0]);
         for (let c of data) {
-          geom = new ol.geom.Point([c[1], c[0]]);
+          geom = new olgeom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
             geometry: geom,
@@ -1115,7 +1125,7 @@ export default class Map extends React.PureComponent {
         this.props.updateState("line", [data]);
         this.props.updateState("modal", "line");
         this.props.updateState("names", data);
-        geom = new ol.geom.LineString(data.map(function (c) {
+        geom = new olgeom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
         
@@ -1136,10 +1146,10 @@ export default class Map extends React.PureComponent {
         }]);
         this.props.updateState("modal", "area");
         this.props.updateState("names", data);
-        geom = new ol.geom.Polygon([data.map(function (c) {
+        geom = new olgeom.Polygon([data.map(function (c) {
           return [c[1], c[0]];
         })]);
-        const centroid = ol.extent.getCenter(geom.getExtent());
+        const centroid = olextent.getCenter(geom.getExtent());
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
@@ -1151,7 +1161,7 @@ export default class Map extends React.PureComponent {
         break;
       case "observation":
         for (let p of data) {
-          geom = new ol.geom.Point([p.longitude, p.latitude]);
+          geom = new olgeom.Point([p.longitude, p.latitude]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
             geometry: geom,
@@ -1165,7 +1175,7 @@ export default class Map extends React.PureComponent {
     }
 
     const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
-    if (!ol.extent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
+    if (!olextent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }
   }
