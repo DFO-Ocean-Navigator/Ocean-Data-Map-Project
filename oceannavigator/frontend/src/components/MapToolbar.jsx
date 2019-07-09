@@ -660,7 +660,6 @@ export default class MapToolbar extends React.Component {
               id="drifter"
               title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
               onSelect={this.drifterSelect}
-              disabled
             >
               <MenuItem
                 eventKey='all'
