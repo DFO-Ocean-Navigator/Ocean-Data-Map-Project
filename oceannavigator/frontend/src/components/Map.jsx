@@ -481,6 +481,7 @@ export default class Map extends React.PureComponent {
       }
     }.bind(this));
 
+    /*
     // Info popup balloon
     this.map.on("singleclick", function(e) {
       if (this._drawing) { // Prevent conflict with drawing
@@ -521,6 +522,7 @@ export default class Map extends React.PureComponent {
         }.bind(this),
       });
     }.bind(this));
+    */
 
     var select = new olinteraction.Select({
       style: function(feat, res) {
