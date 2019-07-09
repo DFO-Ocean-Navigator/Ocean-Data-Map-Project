@@ -7,17 +7,6 @@ import scipy.stats as stats
 from data import open_dataset
 from oceannavigator.dataset_config import DatasetConfig
 from oceannavigator.dataset_config import VariableConfig
-#from oceannavigator import VariableConfig
-
-
-def __compute_median(data_array: np.ndarray):
-    """[summary]
-    
-    Arguments:
-        data_array {np.ndarray} -- [description]
-    """
-    
-    return
 
 
 def __compute_std_dev_from_variance(variance: np.ndarray):
@@ -51,7 +40,7 @@ def __check_for_valid_points(data_array: np.ndarray):
 
     
 def __calculate_median(data_array: np.ndarray):
-    """ Calculates median of thegiven data.
+    """ Calculates median of the given data.
 
     Arguments: 
        Data_array {np.ndarray} -- An array-like of data values for a variable.
@@ -76,26 +65,25 @@ def __calculate_variable_stats(data_array: np.ndarray):
 
     variable_stats = {}
 
-    # compute our stats
     sampled_points, min_max, mean, variance, skewness, kurtosis = stats.describe(data_array)
 
     variable_stats["sampled_points"] = sampled_points
 
-    variable_stats["mean"] = round(mean.item(),2)
+    variable_stats["mean"] = np.round(mean.item(), 5)
 
-    variable_stats["min"] = round(min_max[0].item(),2)
+    variable_stats["min"] = min_max[0].item()
 
-    variable_stats["max"] = round(min_max[1].item(),2)
+    variable_stats["max"] = min_max[1].item()
 
-    variable_stats["variance"] = round(variance.item(),2)
+    variable_stats["variance"] = np.round(variance.item(), 5)
 
-    variable_stats["skewness"] = round(skewness,2)
+    variable_stats["skewness"] = np.round(skewness, 5)
 
-    variable_stats["kurtosis"] = round(kurtosis,2)
+    variable_stats["kurtosis"] = np.round(kurtosis, 5)
 
-    variable_stats["standard_dev"] = round(__compute_std_dev_from_variance(variance).item(),2)
+    variable_stats["standard_dev"] = np.round(__compute_std_dev_from_variance(variance).item(), 5)
 
-    variable_stats["median"] = round(__calculate_median(data_array).item(),2)
+    variable_stats["median"] = __calculate_median(data_array).item()
    
 
     return variable_stats
@@ -114,11 +102,11 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
     * max
     
     Arguments:
-        dataset {str} -- URL pointing a dataset.
+        dataset {str} -- URL pointing a dataset OR a dataset key found in datasetconfig.json.
         variables {list} -- Variable keys to compute the stats of.
         time {int} -- Time index in dataset.
         depth {int} -- Depth index in dataset.
-        area {np.ndarray} -- [description]
+        area {np.ndarray} -- Lats/lons describing the area: [[lats...], [lons...]]
     
     Returns:
         str -- JSON string containing stats for all requested variables.
@@ -136,7 +124,18 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
             
             variableName = VariableConfig(config,var).name
             variableUnit = VariableConfig(config,var).unit
+<<<<<<< HEAD
             data_array = ds.get_area(newArea, depth, time, var, "nearest", 25000, 10).ravel()
+=======
+            area = area[0]['polygons'][0]
+            area.pop()
+            area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
+            
+            
+            data_array = ds.get_area(area, depth, time, var, "nearest", 25000, 10).ravel()
+            
+            
+>>>>>>> e1d047ea1a4cee9954e206d4d85838816351284e
             stats[var] = __calculate_variable_stats(data_array)
             stats[var]["name"] = variableName
             stats[var]["unit"] = variableUnit
