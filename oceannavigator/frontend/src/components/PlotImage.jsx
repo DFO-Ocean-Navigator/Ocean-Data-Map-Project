@@ -45,7 +45,7 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
       });
-      console.warn("This Feature is not yet available for Class4's");
+      alert("This feature is not yet available for Class4's.");
     } else {
       if (language == "pythonPlot") {
 
