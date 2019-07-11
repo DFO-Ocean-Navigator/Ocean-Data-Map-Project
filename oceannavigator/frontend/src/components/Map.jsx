@@ -587,7 +587,8 @@ export default class Map extends React.PureComponent {
         if (feature.get("type") != null) {
           switch(feature.get("type")) {
             case "class4":
-              content.push(feature.get("id"));
+              const class4id = feature.get("id").replace("/", "_");
+              content.push(class4id);
               break;
             case "point":
               var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
