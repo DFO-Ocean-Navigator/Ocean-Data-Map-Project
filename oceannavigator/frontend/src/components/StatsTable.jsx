@@ -48,7 +48,6 @@ export default class StatsTable extends React.Component {
       errorMessage: null,
     });
   
-    const url = this.urlFromQuery(props.query);
     const query = this.query(props.query);
     const paramString = $.param({
       query: stringify(query),
@@ -94,20 +93,10 @@ export default class StatsTable extends React.Component {
       time: q.time,
       depth: q.depth,
       area: q.area,
+      projection: q.projection,
     };
+    
     return query;
-  }
-
-  urlFromQuery(q) {
-    const query = {
-      dataset: q.dataset,
-      variable: q.variable,
-      time: q.time,
-      depth: q.depth,
-      area: q.area,
-    };
-
-    return "/stats/?query=" + encodeURIComponent(stringify(query));
   }
 
   render() {

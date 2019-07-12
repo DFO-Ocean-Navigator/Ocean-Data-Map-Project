@@ -630,6 +630,7 @@ export default class AreaWindow extends React.Component {
       quantum: this.state.dataset_0.dataset_quantum,
       scale: this.state.scale,
       name: this.props.name,
+      projection: this.props.projection,
     };
 
     let content = null;
@@ -645,7 +646,6 @@ export default class AreaWindow extends React.Component {
         plot_query.contour = this.state.contour;
         plot_query.showarea = this.state.showarea;
         plot_query.variable = this.state.dataset_0.variable; 
-        plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
         plot_query.interp = this.props.options.interpType;

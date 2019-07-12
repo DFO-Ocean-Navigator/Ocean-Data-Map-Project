@@ -871,6 +871,7 @@ def stats_impl(args, query = None):
         time     : Time retrieved data was gathered/modeled
         depth    : Water Depth - found using /api/depth/?dataset='...'
         area     : Selected Area
+        projection: Projection code (e.g. EPSG:3857)
     }
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
@@ -888,6 +889,7 @@ def stats_impl(args, query = None):
     time = query.get('time')
     depth = query.get('depth')
     area = query.get('area')
+    projection = query.get('projection')
 
     data = calculate_stats(dataset, variable, time, depth, area)
     
