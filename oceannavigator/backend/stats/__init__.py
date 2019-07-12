@@ -71,9 +71,9 @@ def __calculate_variable_stats(data_array: np.ndarray):
 
     variable_stats["mean"] = np.round(mean.item(), 5)
 
-    variable_stats["min"] = min_max[0].item()
+    variable_stats["min"] = np.round(min_max[0].item(),5)
 
-    variable_stats["max"] = min_max[1].item()
+    variable_stats["max"] = np.round(min_max[1].item())
 
     variable_stats["variance"] = np.round(variance.item(), 5)
 
@@ -83,7 +83,7 @@ def __calculate_variable_stats(data_array: np.ndarray):
 
     variable_stats["standard_dev"] = np.round(__compute_std_dev_from_variance(variance).item(), 5)
 
-    variable_stats["median"] = __calculate_median(data_array).item()
+    variable_stats["median"] = np.round(__calculate_median(data_array).item(),5)
    
 
     return variable_stats
@@ -120,22 +120,16 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
         area = area[0]['polygons'][0]
         area.pop()
         newArea = np.asarray([[c[0]for c in area], [c[1]for c in area]])
+        
+        
+        
         for var in variables:
             
             variableName = VariableConfig(config,var).name
             variableUnit = VariableConfig(config,var).unit
-<<<<<<< HEAD
+            
             data_array = ds.get_area(newArea, depth, time, var, "nearest", 25000, 10).ravel()
-=======
-            area = area[0]['polygons'][0]
-            area.pop()
-            area = np.asarray([[c[0]for c in area], [c[1]for c in area]])
             
-            
-            data_array = ds.get_area(area, depth, time, var, "nearest", 25000, 10).ravel()
-            
-            
->>>>>>> e1d047ea1a4cee9954e206d4d85838816351284e
             stats[var] = __calculate_variable_stats(data_array)
             stats[var]["name"] = variableName
             stats[var]["unit"] = variableUnit
