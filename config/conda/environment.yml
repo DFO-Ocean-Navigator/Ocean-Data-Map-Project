@@ -4,11 +4,8 @@ channels:
   - conda-forge
 dependencies:
   - asn1crypto=0.24.0=py36_1003
-  - babel=2.7.0=py_0
   - basemap=1.2.0=py36hf62cb97_3
-  - basemap-data-hires=1.2.0=0
   - blas=1.1=openblas
-  - bokeh=1.2.0=py36_0
   - boost-cpp=1.68.0=h11c811c_1000
   - bzip2=1.0.6=h14c3975_1002
   - ca-certificates=2019.3.9=hecc5488_0
@@ -27,18 +24,14 @@ dependencies:
   - cycler=0.10.0=py_1
   - cytoolz=0.9.0.1=py36h14c3975_1001
   - dask=1.2.2=py_3
-  - dask-core=1.2.2=py_0
   - dbus=1.13.6=he372182_0
-  - decorator=4.4.0=py_0
-  - distributed=1.28.1=py36_0
   - expat=2.2.5=hf484d3e_1002
-  - flask=0.12.2=py36_0
   - flask-babel=0.11.2=py_1
   - flask-compress=1.4.0=py_0
   - fontconfig=2.13.1=he4413a7_1000
   - freetype=2.10.0=he983fc9_0
   - freexl=1.0.5=h14c3975_1002
-  - gdal=2.4.1=py36hf242f0b_0
+  - gdal=2.3.3=py36hf242f0b_1
   - geographiclib=1.49=py_0
   - geopy=1.13.0=py_1
   - geos=3.7.1=hf484d3e_1000
@@ -54,7 +47,6 @@ dependencies:
   - heapdict=1.0.0=py36_1000
   - icu=58.2=0
   - idna=2.8=py36_1000
-  - imageio=2.5.0=py36_0
   - ipython_genutils=0.2.0=py_1
   - itsdangerous=1.1.0=py_0
   - jansson=2.11=h516909a_1001
@@ -67,8 +59,7 @@ dependencies:
   - libdap4=3.19.1=hd48c02d_1000
   - libedit=3.1.20170329=hf8c457e_1001
   - libffi=3.2.1=3
-  - libgdal=2.4.1=hdb8f723_0
-  - libgfortran=3.0.0=1
+  - libgdal=2.3.3=hdb8f723_1
   - libiconv=1.15=h516909a_1005
   - libkml=1.3.0=h328b03d_1009
   - libnetcdf=4.6.2=hbdf4f91_1001
@@ -84,29 +75,25 @@ dependencies:
   - locket=0.2.0=py_2
   - lxml=4.2.2=py36_0
   - lz4-c=1.8.3=he1b5a44_1001
-  - markupsafe=1.0=py36_0
   - matplotlib=3.1.0=py36_1
   - matplotlib-base=3.1.0=py36hfd891ef_1
-  - metpy=0.10.0=py36_1001
+  - metpy=0.10.2=py36_0
   - mkl_fft=1.0.13=py36h516909a_1
   - mkl_random=1.0.4=py36hf2d7682_0
   - msgpack-python=0.6.1=py36h6bb024c_0
   - ncurses=6.1=hf484d3e_1002
   - netcdf4=1.5.1.2=py36had58050_0
-  - networkx=2.3=py_0
   - numpy=1.16.2=py36_blas_openblash1522bff_0
   - olefile=0.46=py_0
   - openblas=0.3.3=h9ac9557_1001
   - openjpeg=2.3.1=h58a6597_0
   - openssl=1.1.1b=h14c3975_1
-  - owslib=0.17.1=py_0
   - packaging=19.0=py_0
   - pandas=0.24.2=py36hb3f55d8_0
   - partd=0.3.10=py_1
   - pcre=8.41=hf484d3e_1003
   - pillow=6.0.0=py36he7afcd5_0
   - pint=0.8.1=py_1
-  - pip=19.1.1=py36_0
   - pixman=0.34.0=h14c3975_1003
   - ply=3.11=py_1
   - pooch=0.2.1=py36_1000
@@ -119,30 +106,22 @@ dependencies:
   - pycparser=2.19=py36_1
   - pyepsg=0.4.0=py_0
   - pykdtree=1.3.1=py36h3010b51_1002
-  - pyopenssl=19.0.0=py36_0
-  - pyparsing=2.4.0=py_0
   - pyproj=1.9.5.1=py36hc0953d3_1007
   - pyqt=5.9.2=py36hcca6a23_0
   - pyresample=1.9.0=py36_0
-  - pyshp=2.1.0=py_0
-  - pysocks=1.7.0=py36_0
   - python-dateutil=2.7.2=py_0
-  - pytz=2019.1=py_0
   - pywavelets=1.0.3=py36hd352d35_1
   - pyyaml=5.1.1=py36h516909a_0
   - qt=5.9.7=h52cfd70_2
   - readline=7.0=hf8c457e_1001
-  - requests=2.22.0=py36_0
   - scikit-image=0.15.0=py36he1b5a44_0
   - scipy=1.1.0=py36_blas_openblash1522bff_1202
   - seawater=3.3.4=py_1
-  - setuptools=41.0.1=py36_0
   - shapely=1.6.4=py36h2afed24_1004
   - sip=4.19.8=py36hf484d3e_1000
   - six=1.12.0=py36_1000
   - sortedcontainers=2.1.0=py_0
   - sqlite=3.28.0=h8b20d00_0
-  - tblib=1.4.0=py_0
   - thredds_crawler=1.5.4=py_1
   - tk=8.6.9=hed695b0_1002
   - toolz=0.9.0=py_1
@@ -152,8 +131,6 @@ dependencies:
   - urllib3=1.24.3=py36_0
   - uwsgi=2.0.18=py36h4472670_1
   - werkzeug=0.14.1=py_0
-  - wheel=0.33.4=py36_0
-  - xarray=0.11.3=py36_0
   - xerces-c=3.2.2=hac72e42_1001
   - xorg-kbproto=1.0.7=h14c3975_1002
   - xorg-libice=1.0.9=h516909a_1004
@@ -169,15 +146,38 @@ dependencies:
   - xz=5.2.4=h14c3975_1001
   - yaml=0.1.7=h14c3975_1001
   - zict=0.1.4=py_0
-  - zlib=1.2.11=0
   - zstd=1.4.0=h3b9ef0a_0
+  - babel=2.7.0=py_0
+  - basemap-data-hires=1.2.0=0
+  - bokeh=1.2.0=py36_0
   - curl=7.62.0=hbc83047_0
+  - dask-core=1.2.2=py_0
+  - decorator=4.4.0=py_0
+  - distributed=1.28.1=py36_0
+  - flask=0.12.2=py36_0
+  - imageio=2.5.0=py36_0
   - intel-openmp=2019.4=243
   - libcurl=7.62.0=h20c2e04_0
   - libgcc-ng=8.2.0=hdf63c60_1
+  - libgfortran=3.0.0=1
   - libgfortran-ng=7.3.0=hdf63c60_0
   - libstdcxx-ng=8.2.0=hdf63c60_1
+  - markupsafe=1.0=py36_0
   - mkl=2019.4=243
+  - networkx=2.3=py_0
+  - owslib=0.17.1=py_0
+  - pip=19.1.1=py36_0
+  - pyopenssl=19.0.0=py36_0
+  - pyparsing=2.4.0=py_0
+  - pyshp=2.1.0=py_0
+  - pysocks=1.7.0=py36_0
   - python=3.6.8=h0371630_0
+  - pytz=2019.1=py_0
+  - requests=2.22.0=py36_0
+  - setuptools=41.0.1=py36_0
+  - tblib=1.4.0=py_0
+  - wheel=0.33.4=py36_0
+  - xarray=0.11.3=py36_0
+  - zlib=1.2.11=0
 prefix: /opt/tools/miniconda3/envs/navigator
 
