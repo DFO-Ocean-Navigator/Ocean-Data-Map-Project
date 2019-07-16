@@ -7,6 +7,7 @@ from contextlib import closing
 from PIL import Image
 import json
 
+plot_url = %s
 
 # Set Navigator URL
 base_url = "http://navigator.oceansdata.ca/api/v1.0/%s/?"

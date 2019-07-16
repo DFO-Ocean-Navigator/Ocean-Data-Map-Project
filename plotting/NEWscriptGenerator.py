@@ -28,4 +28,29 @@ def time_query_conversion(dataset, index):
 
 
 def generatePython(url):
-    
+    if "class4" in url:
+        script_type = "class4id"
+    elif "drifter" in url:
+        script_type = "drifter"
+    else:
+        script_type = "variable"
+
+    try:
+        url = json.loads(url)
+        plot_url = "True"
+    except:
+        plot_url = "False"
+        url_tail = "&" + re.findall("&(.*)", url)[0]
+        url = re.sub("&(.*)", "", url)
+        url = json.loads(url)
+        fileExtension = "csv"
+    if 'output_format' in url:
+        netcdf = True
+        fileExtension = "nc"
+        data_type = "subset"
+
+    query = url
+
+    with open('data.txt', 'r') as file:
+        script = file.read()
+        script.format(plot_url, query, script_type)
