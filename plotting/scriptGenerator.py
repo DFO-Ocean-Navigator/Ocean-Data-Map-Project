@@ -36,9 +36,12 @@ def time_query_conversion(dataset, index):
              
 def generatePython(url):
 
+    isClass4 = False
     notPlot = False
     netcdf = False
     data_type = "plot"
+    if "class4id" in url:
+        isClass4 = True
     try:
         url = json.loads(url)
     except:
@@ -72,7 +75,10 @@ def generatePython(url):
     script.write("\n\n")
     #Set Navigators URL
     script.write("#Set Navigator URL\n")
-    script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/%s/?"\n\n' % (data_type))
+    if not isClass4:
+        script.write('base_url = "http://navigator.oceansdata.ca/api/v1.0/%s/?"\n\n' % (data_type))
+    else:
+        script.write('base_url = "http://navigator.oceansdata.ca/%s/?"\n\n' % (data_type))
     #---------------------------
     
         
@@ -107,6 +113,8 @@ def generatePython(url):
         script.write("  img = Image.open(f)\n")
         if url.get("type") == "drifter":
             script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["drifter"]) + ".png", "PNG")\n')
+        elif isClass4:
+            script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["class4id"]) + ".png" , "PNG")\n')
         else:
             script.write('  img.save("script_template_" + str(query["dataset"]) + "_" + str(query["variable"]) + ".png" , "PNG")\n')
     else:
@@ -130,9 +138,12 @@ def generatePython(url):
 
 def generateR(url):
 
+    isClass4 = False
     notPlot = False
     netcdf = False
     data_type = "plot"
+    if "class4id" in url:
+        isClass4 = True
     try:
         url = json.loads(url)
         fileExtension = ".png"
@@ -151,7 +162,10 @@ def generateR(url):
     
     #FILE CONTENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     script.write("#Assigns Base Url\n\n")
-    script.write('base_url <- "http://navigator.oceansdata.ca/api/v1.0/' + data_type + '/"\n\n\n')
+    if not isClass4:
+        script.write('base_url <- "http://navigator.oceansdata.ca/api/v1.0/' + data_type + '/"\n\n\n')
+    else:
+        script.write('base_url <- "http://navigator.oceansdata.ca/' + data_type + '/"\n\n\n')
     old_query = dict(url)
     #Assign Query Variables
     script.write("#Assignes Query Variables\n")
