@@ -21,7 +21,7 @@ class TestOceanNavigatorCfg(unittest.TestCase):
         self.assertEqual(self.config.get("cache_dir"), "\"/tmp/oceannavigator\"")
         self.assertEqual(self.config.get("tile_cache_dir"), "\"/tmp/oceannavigator/tiles\"")
         self.assertEqual(self.config.get("bathymetry_file"),
-                         "\"/data/hdd/misc/ETOPO1_Bed_g_gmt4.grd\"")
+                         "\"/data/misc/ETOPO1_Bed_g_gmt4.grd\"")
         self.assertEqual(self.config.get("overlay_kml_dir"), "\"./kml\"")
         self.assertEqual(self.config.get("drifter_agg_url"),
                          "\"http://localhost:8080/thredds/dodsC/drifter/aggregated.ncml\"")
@@ -38,6 +38,6 @@ class TestOceanNavigatorCfg(unittest.TestCase):
         self.assertEqual(self.config.get("observation_agg_url"),
                          "\"http://localhost:8080/thredds/dodsC/misc/observations/aggregated.ncml\"")
         self.assertEqual(self.config.get("etopo_file"),
-                         "\"/data/hdd/misc/etopo_%s_z%d.nc\"")
+                         "\"/data/misc/etopo_%s_z%d.nc\"")
         self.assertEqual(self.config.get("shape_file_dir"),
-                         "\"/data/hdd/misc/shapes\"")
+                         "\"/data/misc/shapes\"")
