@@ -1,0 +1,32 @@
+import requests
+import os
+import shutil
+from urllib.request import urlopen
+from urllib.parse import urlencode
+from contextlib import closing
+try:
+   from PIL import Image
+except:
+   print("If you are on a Windows machine, please install PIL (imaging library) using 'python -m pip install Pillow' in the Anaconda Prompt")
+   exit()
+import json
+
+
+# json object for the query
+query = {%s}
+
+
+# Assemble full request
+base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"
+url = base_url + urlencode({"query": json.dumps(query)}) + '&save&format=csv&size=10x7&dpi=144'
+print(url)
+
+
+# Save file and finish
+data_file = requests.get(url, stream=True)
+dump = data_file.raw
+location = os.path.abspath('/home/script_output.csv')
+with open("script_output.csv", "wb") as location:
+  print('Saving File')
+  shutil.copyfileobj(dump, location)
+  print('Done')
