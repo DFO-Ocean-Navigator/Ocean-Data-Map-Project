@@ -26,7 +26,6 @@ def time_query_conversion(dataset, index):
         except IndexError:
             return ClientError("Timestamp does not exist")
 
-
 def generatePython(url, scriptType):
     if "class4id" in url:
         var = "class4id"
