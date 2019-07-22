@@ -1657,5 +1657,29 @@
             "u_wind"      : {"hide": true},
             "v_wind"      : {"hide": true}
         }
+    },
+     "SJAP100": {
+        "name": "Port of Saint John (100m)",
+        "url": "http://localhost:8080/thredds/dodsC/ports/SJ/Navigator_Links/SJAP100/aggregated.ncml",
+        "enabled": true,
+        "help": "",
+        "climatology": "",
+        "quantum": "day",
+        "attribution": "",
+        "variables": {
+            "uo": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "tauuo": { "name": "Wind Stress East",  "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true" },
+            "ubar": { "name": "Ocean Baroptropic East Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"},
+            "thetao": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "so": { "name": "Salinity", "unit": "1e-3", "scale": [30, 40] },
+            "mldr10_1": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 4000] },
+            "heatc": { "name": "Heat Content", "unit": "J/m2", "scale": [0, 30] },
+            "saltc": { "name": "Salt Content Vertically Integrated", "unit": "1e-3*kg/m2", "scale": [0, 30] },
+            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "zos": { "name": "Sea Surface Height", "units": "m", "scale": [-3, 3], "zero_centered": "true" },
+            "vo": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "tauvo": { "name": "Wind Stress North", "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true" },
+            "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"}
+        }
     }
 }
