@@ -243,7 +243,7 @@ export default class AreaWindow extends React.Component {
       "should_zip": (this.state.zip ? 1:0)
     };
 
-    window.location.href = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/";
+    window.location.href = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/" + "SUBSET/";
   }
 
   onTabChange(index) {
