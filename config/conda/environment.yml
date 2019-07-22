@@ -14,7 +14,7 @@ dependencies:
   - cartopy=0.17.0=py36h0aa2c8f_1004
   - certifi=2019.3.9=py36_0
   - cffi=1.11.5=py36_0
-  - cftime=1.0.0=py36_0
+  - cftime=1.0.1=py36h3010b51_1001
   - chardet=3.0.4=py36_1003
   - click=7.0=py_0
   - cloudpickle=1.2.0=py_0
