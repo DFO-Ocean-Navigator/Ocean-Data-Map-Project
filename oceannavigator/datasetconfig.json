@@ -1683,7 +1683,7 @@
             "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, vosaline, thetao)" },
             "uo,vo": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "scale_factor": 1},
             "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(uo, vo, nav_lat, nav_lon)", "zero_centered": "true" },
-            "divergence": { "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(uo, vo, nav_lat, nav_lon)", "zero_centered": "true"},
+            "divergence": { "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(uo, vo, nav_lat, nav_lon)", "zero_centered": "true"}
         }
     }
 }
