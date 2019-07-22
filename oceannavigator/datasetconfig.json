@@ -1681,4 +1681,5 @@
             "tauvo": { "name": "Wind Stress North", "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true" },
             "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"}
         }
+    }
 }
