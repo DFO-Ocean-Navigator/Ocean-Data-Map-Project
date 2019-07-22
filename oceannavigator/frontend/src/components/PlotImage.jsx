@@ -40,15 +40,7 @@ export default class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
-    
-    if (this.props.query.type == "class4") {
-      this.setState({
-        errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
-      });
-      console.warn("This Feature is not yet available for Class4's");
-    } else {
       if (language == "pythonPlot") {
-
         var url = stringify(this.generateQuery(this.props.query));
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
       } else if (language == "rPlot") {
@@ -67,7 +59,6 @@ export default class PlotImage extends React.PureComponent {
         }
       
       }
-    }
     
     window.location.href = url;
   }

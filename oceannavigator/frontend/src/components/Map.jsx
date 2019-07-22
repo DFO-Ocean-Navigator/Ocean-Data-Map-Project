@@ -481,6 +481,7 @@ export default class Map extends React.PureComponent {
       }
     }.bind(this));
 
+    /*
     // Info popup balloon
     this.map.on("singleclick", function(e) {
       if (this._drawing) { // Prevent conflict with drawing
@@ -521,6 +522,7 @@ export default class Map extends React.PureComponent {
         }.bind(this),
       });
     }.bind(this));
+    */
 
     var select = new olinteraction.Select({
       style: function(feat, res) {
@@ -585,7 +587,9 @@ export default class Map extends React.PureComponent {
         if (feature.get("type") != null) {
           switch(feature.get("type")) {
             case "class4":
-              content.push(feature.get("id"));
+              // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
+              const class4id = feature.get("id").replace("/", "_");
+              content.push(class4id);
               break;
             case "point":
               var c = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates();
