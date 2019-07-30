@@ -1,38 +1,11 @@
-from flask import Blueprint, Response, request, redirect, send_file, send_from_directory, jsonify
-from flask_babel import gettext, format_date
 import json
-import datetime
-from io import BytesIO
-from PIL import Image
-import io
-from oceannavigator import DatasetConfig
-from utils.errors import ErrorBase, ClientError, APIError
-import utils.misc
 
-from plotting.transect import TransectPlotter
-from plotting.drifter import DrifterPlotter
-from plotting.map import MapPlotter
-from plotting.timeseries import TimeseriesPlotter
-from plotting.ts import TemperatureSalinityPlotter
-from plotting.sound import SoundSpeedPlotter
-from plotting.profile import ProfilePlotter
-from plotting.hovmoller import HovmollerPlotter
-from plotting.observation import ObservationPlotter
-from plotting.class4 import Class4Plotter
-from plotting.stick import StickPlotter
-from plotting.stats import stats as areastats
-import plotting.colormap
-import plotting.tile
-import plotting.scale
-import numpy as np
-import re
-import os
-import netCDF4
-import base64
-import pytz
-from data import open_dataset
-from data.netcdf_data import NetCDFData
+from flask import Blueprint, jsonify, request
+
 import routes.routes_impl
+from data import open_dataset
+from oceannavigator import DatasetConfig
+from utils.errors import APIError, ErrorBase
 
 bp_v0_0 = Blueprint('api_v0_0', __name__)
 
@@ -179,20 +152,21 @@ def subset_query_v0():
 
 @bp_v0_0.route('/plot/', methods=['GET', 'POST'])
 def plot_v0():
-    if request.method == "GET":
-        if 'query' not in request.args:
-            raise APIError("Please Provide a Query")
-        query = json.loads(request.args.get('query'))
-        #if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
-            #raise ValueError
-        return routes.routes_impl.plot_impl(request.args)
+
+    if request.method == 'GET':
+        args = request.args
     else:
-        if 'query' not in request.args:
-            raise APIError("Please Provide a Query")
-        query = json.loads(request.form.get('query'))
-        if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
-            raise ValueError
-        return routes.routes_impl.plot_impl(request.form)
+        args = request.form
+
+    if "query" not in args:
+        raise APIError("Please provide a query.")
+
+    query = json.loads(args.get('query'))
+
+    if timestamp_outOfBounds(query.get('dataset'), query.get('time')):
+        raise ValueError("The given timestamp is not available in the given dataset.")
+
+    return routes.routes_impl.plot_impl(args)
 
 
 @bp_v0_0.route('/stats/', methods=['GET', 'POST'])
@@ -207,10 +181,3 @@ def stats_v0():
         if (timestamp_outOfBounds(query.get('dataset'), query.get('time'))):
             raise ValueError
         return routes.routes_impl.stats_impl(request.form)
-
-
-
-
-
-
-
