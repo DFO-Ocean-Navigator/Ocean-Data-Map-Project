@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import json
-
+from matplotlib.path import Path
+from netCDF4 import Dataset, chartostring
 import numpy as np
 import scipy.stats as stats
 from data import open_dataset
 from oceannavigator.dataset_config import DatasetConfig
 from oceannavigator.dataset_config import VariableConfig
+from data.nearest_grid_point import find_nearest_grid_point
 
 
 def __compute_std_dev_from_variance(variance: np.ndarray):
@@ -111,28 +113,68 @@ def calculate_stats(dataset: str, variables: list, time: (int, str), depth: (int
     Returns:
         str -- JSON string containing stats for all requested variables.
     """
-    
+    stats = {}
     config = DatasetConfig(dataset)
-    
+    area = area[0]['polygons'][0]
+    polygon_vertics = []
+
     with open_dataset(config) as ds:
-        
-        stats = {}
-        area = area[0]['polygons'][0]
-        area.pop()
-        newArea = np.asarray([[c[0]for c in area], [c[1]for c in area]])
-        
-        
-        
+
         for var in variables:
+
+            datasetpoints = ds.latlon_variables
+            latvar = (ds.latlon_variables[0])
+            lonvar = (ds.latlon_variables[1])
+            len_lat = latvar.shape[0]
+            len_lon = latvar.shape[1]
             
+            for point in area:
+
+                lat = point[0]
+                lon = point[1]
+
+                y, x, d = find_nearest_grid_point(lat, lon, dataset, latvar, lonvar, 1)
+
+                nearest_grid_point = np.array((latvar[y][x], lonvar[y][x]))
+                
+                polygon_vertics.append(nearest_grid_point)
+
+                
+            poly = np.array(polygon_vertics)
+            poly_tuple = tuple(map(tuple, poly))
+            latlon = np.dstack((latvar, lonvar))
+            latlon_flat = latlon.reshape((-1,2))
+
+            mpath = Path(poly_tuple)
+            mask_flat = mpath.contains_points(latlon_flat)
+            mask = mask_flat.reshape(latvar.shape)
+            
+            new_mask = []
+            
+
+            _mask = np.asarray(mask).astype(int)
+            final_mask = np.asarray(_mask)
+
+            final_lon = np.asarray(lonvar)
+            final_lat = np.asarray(latvar)
+
+            masked_latvar = final_mask*final_lat 
+            masked_lonvar = final_mask*final_lon
+            
+            final_masked_latvar = masked_latvar[masked_latvar !=0]
+            final_masked_lonvar = masked_lonvar[masked_lonvar !=0]
+
+            newArea = np.asarray([final_masked_latvar, final_masked_lonvar])
+            
+           
+
             variableName = VariableConfig(config,var).name
             variableUnit = VariableConfig(config,var).unit
-            
+              
             data_array = ds.get_area(newArea, depth, time, var, "nearest", 25000, 10).ravel()
-            
             stats[var] = __calculate_variable_stats(data_array)
             stats[var]["name"] = variableName
             stats[var]["unit"] = variableUnit
             stats[var]["depth"] = depth
-            
+                
         return json.dumps(stats)
