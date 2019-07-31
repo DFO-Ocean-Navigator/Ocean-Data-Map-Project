@@ -18,7 +18,7 @@ query = {q}
 
 # Assemble full request
 base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"
-url = base_url + urlencode({{"query": json.dumps(query)}}}) + '&save&format=csv&size=10x7&dpi=144'
+url = base_url + urlencode({{"query": json.dumps(query)}}) + '&save&format=csv&size=10x7&dpi=144'
 print(url)
 
 
