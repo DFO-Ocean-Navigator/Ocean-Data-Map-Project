@@ -36,13 +36,15 @@ def generatePython(url, scriptType):
     query = url
     print(query)
 
+    # format query for python, could do with regular expressions
+    query = query.replace(',"', ',\n"')
     if "true" in query:
         query = query.replace("true", "1")
     if "false" in query:
         query = query.replace("false", "0")
     if "null"  in query:
         query = query.replace("null", "None")
-
+    
     with open("plotting/python" + scriptType + "template.txt", 'r') as file:
         template = str(file.read())
 
