@@ -212,6 +212,10 @@ class Plotter(metaclass=ABCMeta):
     def __get_showmap(self, showmap: str):
         return showmap is None or bool(showmap)
 
+    def __get_showmap(self, showmap: str):
+        return showmap is None or bool(showmap)
+
+
     @abstractmethod
     def load_data(self):
         pass
