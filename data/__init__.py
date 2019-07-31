@@ -15,6 +15,7 @@ def open_dataset(dataset):
     Params:
     dataset -- Either a string URL for the dataset, or a DatasetConfig object
     """
+    url = None
     if hasattr(dataset, "url"):
         url = dataset.url
         calculated = dataset.calculated_variables
@@ -40,10 +41,6 @@ def open_dataset(dataset):
                 elif 'siglay' in variable_list:
                     
                     __dataset_cache[url] = fvcom.Fvcom(url,
-                            calculated=calculated)
-                elif 'polar_stereographic' in variable_list:
-                    
-                    __dataset_cache[url] = nemo.Nemo(url,
                             calculated=calculated)
                 else:
                     

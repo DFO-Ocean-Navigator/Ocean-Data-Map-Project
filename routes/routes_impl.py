@@ -7,43 +7,44 @@ Handles API Queries
 This module handles all API Queries
 """
 
-from flask import Response, Blueprint, request, redirect, send_file, send_from_directory, jsonify, current_app
-from flask_babel import gettext, format_date
-import json
-import datetime
-from io import BytesIO
-from PIL import Image
-import io
-
-from oceannavigator import DatasetConfig
-from utils.errors import ErrorBase, ClientError, APIError
-import utils.misc
-
-from plotting.transect import TransectPlotter
-from plotting.drifter import DrifterPlotter
-from plotting.map import MapPlotter
-from plotting.timeseries import TimeseriesPlotter
-from plotting.ts import TemperatureSalinityPlotter
-from plotting.sound import SoundSpeedPlotter
-from plotting.profile import ProfilePlotter
-from plotting.hovmoller import HovmollerPlotter
-from plotting.observation import ObservationPlotter
-from plotting.class4 import Class4Plotter
-from plotting.stick import StickPlotter
-from plotting.stats import stats as areastats
-import plotting.colormap
-import plotting.tile
-import plotting.scale
-import numpy as np
-import re
-import os
-import netCDF4
 import base64
-import pytz
+import datetime
 import gzip
+import io
+import json
+import os
+import re
 import shutil
 import sqlite3
+from io import BytesIO
+
+import netCDF4
+import numpy as np
+import pytz
+from flask import (Response, current_app, jsonify, request, send_file,
+                   send_from_directory)
+from flask_babel import format_date, gettext
+from PIL import Image
+
+import plotting.colormap
+import plotting.scale
+import plotting.tile
+import utils.misc
 from data import open_dataset
+from oceannavigator import DatasetConfig
+from plotting.class4 import Class4Plotter
+from plotting.drifter import DrifterPlotter
+from plotting.hovmoller import HovmollerPlotter
+from plotting.map import MapPlotter
+from plotting.observation import ObservationPlotter
+from plotting.profile import ProfilePlotter
+from plotting.sound import SoundSpeedPlotter
+from plotting.stats import stats as areastats
+from plotting.stick import StickPlotter
+from plotting.timeseries import TimeseriesPlotter
+from plotting.transect import TransectPlotter
+from plotting.ts import TemperatureSalinityPlotter
+from utils.errors import APIError, ClientError
 
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")

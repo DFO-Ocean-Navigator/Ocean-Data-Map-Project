@@ -1,16 +1,19 @@
-from abc import ABCMeta, abstractmethod
-from io import StringIO, BytesIO
-import matplotlib.pyplot as plt
-import datetime
-import numpy as np
-import plotting.utils as utils
-import plotting.colormap as colormap
-import re
-import pint
-from oceannavigator import DatasetConfig
-from flask_babel import format_date, format_datetime
 import contextlib
+import datetime
+import re
+from abc import ABCMeta, abstractmethod
+from io import BytesIO, StringIO
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pint
+from flask_babel import format_date, format_datetime
 from PIL import Image
+
+import plotting.colormap as colormap
+import plotting.utils as utils
+from oceannavigator import DatasetConfig
+
 
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
@@ -24,9 +27,12 @@ class Plotter(metaclass=ABCMeta):
         self.plotTitle: str = None
         self.compare: bool = False
         self.data = None
+        self.variables = None
         self.variable_names = None
         self.variable_units = None
+        self.scale = None
         self.scale_factors = None
+        self.date_formatter = None
         # Init interpolation stuff
         self.interp: str = "gaussian"
         self.radius: int = 25000 # radius in meters
@@ -65,56 +71,26 @@ class Plotter(metaclass=ABCMeta):
 
     # Receives query sent from javascript and parses it.
     @abstractmethod
-    def parse_query(self, query: str):
-        quantum = query.get('quantum')
-        if quantum == 'month':
-            self.date_formatter = lambda x: format_date(x, "MMMM yyyy")
-        elif quantum == 'day':
-            self.date_formatter = lambda x: format_date(x, "long")
-        elif quantum == 'hour':
-            self.date_formatter = lambda x: format_datetime(x)
-        else:
-            self.date_formatter = lambda x: format_date(x, "long")
+    def parse_query(self, query: dict):
 
-        def get_time(param):
-            if query.get(param) is None or len(str(query.get(param))) == 0:
-                return -1
-            else:
-                try:
-                    return int(query.get(param))
-                except ValueError:
-                    return query.get(param)
+        self.date_formatter = self.__get_date_formatter(query.get('quantum'))
 
-        self.time = get_time('time')
-        self.starttime = get_time('starttime')
-        self.endtime = get_time('endtime')
+        self.time = self.__get_time(query.get('time'))
+        self.starttime = self.__get_time(query.get('starttime'))
+        self.endtime = self.__get_time(query.get('endtime'))
 
         if query.get('interp') is not None:
             self.interp = query.get('interp')
         if query.get('radius') is not None:
-            self.radius = query.get('radius') * 1000
+            self.radius = query.get('radius') * 1000 # Convert to meters
         if query.get('neighbours') is not None:
             self.neighbours = query.get('neighbours')
 
-        # Sets custom plot title
         self.plotTitle = query.get('plotTitle')
 
-        # Parse variable scale
-        def parse_scale(query_scale):
-            if query_scale is None or 'auto' in query_scale:
-                return None     
-            return [float(x) for x in query_scale.split(',')]
+        self.scale = self.__get_scale(query.get('scale'))
 
-        self.scale = parse_scale(query.get('scale'))
-
-        variables = query.get('variable')
-        if variables is None:
-            variables = ['votemper']
-
-        if isinstance(variables, str) or isinstance(variables, str):
-            variables = variables.split(',')
-
-        self.variables = [v for v in variables if v != '']
+        self.variables = self.__get_variables(query.get('variable'))
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -135,20 +111,102 @@ class Plotter(metaclass=ABCMeta):
             except KeyError:
                 print("Ignoring scale_diff attribute.")
 
-        cmap = query.get('colormap')
+        
+        self.cmap = self.__get_colormap(query.get('colormap'))
+
+        self.linearthresh = self.__get_linear_threshold(query.get('linearthresh'))
+
+        self.depth = self.__get_depth(query.get('depth'))
+
+        self.showmap = self.__get_showmap(query.get('showmap'))
+
+
+    def __get_date_formatter(self, quantum: str):
+        """
+        Returns the correct lambda to format a date given a quantum.
+        
+        Arguments:
+            quantum {str} -- Dataset quantum ("hour", "month", "day")
+        
+        Returns:
+            [lambda] -- Lambda that formats a given date string
+        """
+
+        if quantum == 'month':
+            return lambda x: format_date(x, "MMMM yyyy")
+        elif quantum == 'hour':
+            return lambda x: format_datetime(x)
+        else:
+            return lambda x: format_date(x, "long")
+
+
+    def __get_scale(self, query_scale: str):
+        """
+        Splits a given query scale into a list.
+        
+        Arguments:
+            query_scale {str} -- Comma-separated min/max values for variable data range.
+        
+        Returns:
+            [list] -- List of min/max values of query_scale
+        """
+
+        if query_scale is None or 'auto' in query_scale:
+            return None     
+        
+        return [float(x) for x in query_scale.split(',')]
+
+
+    def __get_variables(self, variables: str):
+        """
+        Splits a given variable string into a list.
+        
+        Arguments:
+            variables {str} -- Comma-separated variable keys
+        
+        Returns:
+            [list] -- List of varaible keys from variables
+        """
+        
+        if variables is None:
+            variables = ['votemper']
+
+        if isinstance(variables, str) or isinstance(variables, str):
+            variables = variables.split(',')
+
+        return [v for v in variables if v != '']
+
+
+    def __get_time(self, param: str):
+        if param is None or len(str(param)) == 0:
+            return -1
+        else:
+            try:
+                return int(param)
+            except ValueError:
+                return param
+
+
+    def __get_colormap(self, cmap: str):
         if cmap is not None:
             cmap = colormap.colormaps.get(cmap)
-        self.cmap = cmap
+        
+        return cmap
 
-        linearthresh = query.get('linearthresh')
+
+    def __get_linear_threshold(self, linearthresh: str):
+
         if linearthresh is None or linearthresh == '':
             linearthresh = 200
         linearthresh = float(linearthresh)
         if not linearthresh > 0:
             linearthresh = 1
-        self.linearthresh = linearthresh
+        
+        return linearthresh
 
-        depth = query.get('depth')
+
+    def __get_depth(self, depth: str):
+
         if depth is None or len(str(depth)) == 0:
             depth = 0
 
@@ -160,10 +218,12 @@ class Plotter(metaclass=ABCMeta):
                 if isinstance(depth[i], str) and depth[i].isdigit():
                     depth[i] = int(depth[i])
 
-        self.depth = depth
+        return depth
 
-        self.showmap = query.get('showmap') is None or \
-            bool(query.get('showmap'))
+
+    def __get_showmap(self, showmap: str):
+        return showmap is None or bool(showmap)
+
 
     @abstractmethod
     def load_data(self):
@@ -400,4 +460,3 @@ class Plotter(metaclass=ABCMeta):
         if legend:
             for legobj in legend.legendHandles:
                 legobj.set_linewidth(4.0)
-

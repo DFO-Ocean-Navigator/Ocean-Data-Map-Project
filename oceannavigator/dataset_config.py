@@ -1,7 +1,7 @@
+import json
 import os
-import json
 import re
-import json
+
 from flask import current_app
 
 

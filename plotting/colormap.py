@@ -1,12 +1,14 @@
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import cmocean
-import re
-import plotting
 import os
-import numpy as np
+import re
 from io import BytesIO
+
+import cmocean
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
 from flask_babel import gettext
+
+import plotting
 
 
 def make_colormap(seq):
