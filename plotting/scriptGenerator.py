@@ -34,7 +34,6 @@ def generatePython(url, scriptType):
     else:
         var = "variable"
     query = url
-    print(query)
 
     # format query for python, could do with regular expressions
     query = query.replace(',"', ',\n"')
@@ -52,7 +51,7 @@ def generatePython(url, scriptType):
             template = template.format(q = query, var = var)
         else:
             template = template.format(q = query)
-        print(template)
+
         finalScript = BytesIO()
         finalScript.write(bytes(template,'utf-8'))
         finalScript.seek(0)
