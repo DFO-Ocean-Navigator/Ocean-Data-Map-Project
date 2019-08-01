@@ -21,6 +21,8 @@ class TestUtil(unittest.TestCase):
                 "help": "my_help",
                 "quantum": "my_quantum",
                 "type": "my_type",
+                "time_dim_units": "my_time_units",
+                "variable_layout": "my_layout",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
                 "variables": {
@@ -40,6 +42,8 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(result.help, "my_help")
         self.assertEqual(result.quantum, "my_quantum")
         self.assertEqual(result.type, "my_type")
+        self.assertEqual(result.time_dim_units, "my_time_units")
+        self.assertEqual(result.variable_layout, "my_layout")
         self.assertEqual(result.attribution, "my_attribution")
         self.assertEqual(result.cache, 123)
 
