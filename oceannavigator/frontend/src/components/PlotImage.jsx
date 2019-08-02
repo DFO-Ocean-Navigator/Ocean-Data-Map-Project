@@ -53,7 +53,9 @@ export default class PlotImage extends React.PureComponent {
         if (language == "pythonCSV") {
           url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "CSV/";
         } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/" + "CSV/";
+          url = window.location.origin + "/api/v1.0/generatescript/" + url +
+          `&save&format=csv&size=${this.props.query.size}` +
+          `&dpi=${this.props.query.dpi}` + "/r/" + "CSV/";
         }
       
       }
