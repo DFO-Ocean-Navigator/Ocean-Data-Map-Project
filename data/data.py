@@ -1,7 +1,9 @@
 import abc
+
 import numpy as np
-import data.geo as geo
 from scipy.interpolate import interp1d
+
+import data.geo as geo
 
 __author__ = 'Geoff Holden'
 

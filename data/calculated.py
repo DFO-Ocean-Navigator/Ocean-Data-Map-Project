@@ -15,12 +15,12 @@ class CalculatedData(NetCDFData):
     def __init__(self, url: str, **kwargs):
         """
         Parameters:
-        url -- the URL for the dataet
+        url -- the URL for the dataset
 
         Keyword Parameters:
         calculated -- a dict of the calculated variables.
         """
-        super(CalculatedData, self).__init__(url)
+        super(CalculatedData, self).__init__(url, **kwargs)
         if 'calculated' in kwargs:
             self._calculated = kwargs['calculated']
         else:
@@ -202,4 +202,3 @@ def get_with_default(d, key, default):
         return d[key]
     except KeyError:
         return default
-

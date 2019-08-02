@@ -1,35 +1,42 @@
-from pykdtree.kdtree import KDTree
-import pyresample
-import numpy as np
+import re
 import warnings
-from data.calculated import CalculatedData
-from netCDF4 import Dataset, chartostring
-from data.data import Variable, VariableList
+
+import dateutil.parser
+import netCDF4 as netcdf
+import numpy as np
+import pyresample
 import pytz
 from cachetools import TTLCache
-import dateutil.parser
+from pykdtree.kdtree import KDTree
+
+from data.calculated import CalculatedData
+from data.data import Variable, VariableList
 from utils.errors import ServerError
-import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
+
+class Fvcom(CalculatedData):
 """
     FVCOM datasets have a non-uniform grid,
     so xArray can't handle it/
 
 """
-class Fvcom(CalculatedData):
-    __depths = None
 
-    def __init__(self, url: str, **kwargs):
+  __depths = None
+
+   def __init__(self, url: str, **kwargs):
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        
+
         super(Fvcom, self).__init__(url, **kwargs)
-    
+
     def __enter__(self):
-        self._dataset = Dataset(self.url, 'r')
+        if self._nc_files:
+            self._dataset = netcdf.MFDataset(self._nc_files)
+        else:
+            self._dataset = netcdf.Dataset(self.url, 'r')
 
         return self
 
@@ -41,16 +48,14 @@ class Fvcom(CalculatedData):
         return ['siglev', 'siglay']
 
     def subset(self, query):
-        raise ServerError("Subsetting FVCOM datasets is currently not supported.")
+        raise ServerError(
+            "Subsetting FVCOM datasets is currently not supported.")
 
-    """
-        Supposedly FVCOM is surface only?
-    """
     @property
     def depths(self):
         if self.__depths is None:
             self.__depths = np.array([0])
-            self.__depths.setflags(write=False) # Make immutable
+            self.__depths.setflags(write=False)  # Make immutable
 
         return self.__depths
 
@@ -67,12 +72,12 @@ class Fvcom(CalculatedData):
 
             tz = pytz.timezone(var.time_zone)
             time_list = list(map(
-                lambda dateStr: 
+                lambda dateStr:
                 dateutil.parser.parse(dateStr).replace(tzinfo=tz),
-                chartostring(var[:])
+                netcdf.chartostring(var[:])
             ))
             timestamps = np.array(time_list)
-            timestamps.setflags(write=False) # Make immutable
+            timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
@@ -90,7 +95,7 @@ class Fvcom(CalculatedData):
             l = []
             for name in self._dataset.variables:
                 var = self.get_dataset_variable(name)
-                
+
                 if 'coordinates' not in var.ncattrs():
                     continue
 
@@ -117,8 +122,8 @@ class Fvcom(CalculatedData):
                 l.append(Variable(name, long_name, units, var.dimensions,
                                   valid_min, valid_max))
 
-            self._variable_list = VariableList(l) # Cache for later
-        
+            self._variable_list = VariableList(l)  # Cache for later
+
         return self._variable_list
 
     def __find_var(self, candidates):
@@ -217,7 +222,7 @@ class Fvcom(CalculatedData):
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1. / r #** 2
+            return 1. / r  # ** 2
 
         data = np.squeeze(var[:])
 
