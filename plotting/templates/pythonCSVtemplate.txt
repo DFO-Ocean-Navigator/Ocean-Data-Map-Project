@@ -12,21 +12,26 @@ except:
 import json
 
 
-# json object for the query
-query = {q}
+def requestFile():
+   # json object for the query
+   query = {q}
 
 
-# Assemble full request
-base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"
-url = base_url + urlencode({{"query": json.dumps(query)}}) + '&save&format=csv&size=10x7&dpi=144'
-print(url)
+   # Assemble full request
+   base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"
+   url = base_url + urlencode({{"query": json.dumps(query)}}) + '&save&format=csv&size=10x7&dpi=144'
+   print(url)
 
 
-# Save file and finish
-data_file = requests.get(url, stream=True)
-dump = data_file.raw
-location = os.path.abspath('/home/script_output.csv')
-with open("script_output.csv", "wb") as location:
-  print('Saving File')
-  shutil.copyfileobj(dump, location)
-  print('Done')
+   # Save file and finish
+   data_file = requests.get(url, stream=True)
+   dump = data_file.raw
+   location = os.path.abspath('/home/script_output.csv')
+   with open("script_output.csv", "wb") as location:
+      print('Saving File')
+      shutil.copyfileobj(dump, location)
+      print('Done')
+
+
+if __name__ == '__main__':
+   requestFile()
