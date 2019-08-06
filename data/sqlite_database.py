@@ -51,20 +51,21 @@ class SQLiteDatabase:
 
         query = ""
         if 'variable' in kwargs:
-            query = "SELECT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id INNER JOIN Variables ON Variables.variable_id = Timestamps.variable_id WHERE timestamp=? AND variable=?"
+            query = "SELECT DISTINCT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id INNER JOIN Variables ON Variables.variable_id = Timestamps.variable_id WHERE timestamp=? AND variable=?"
 
             for ts in kwargs['timestamp']:
                 for variable in kwargs['variable']:
                     self.c.execute(query, (ts, variable, ))
                     file_list.append(self.__flatten_list(self.c.fetchall()))
         else:
-            query = "SELECT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id WHERE timestamp=?"
+            query = "SELECT DISTINCT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id WHERE timestamp=?"
 
             for ts in kwargs['timestamp']:
                 self.c.execute(query, (ts, ))
                 file_list.append(self.__flatten_list(self.c.fetchall()))
 
-        return self.__flatten_list(file_list)
+        # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
+        return list(set(self.__flatten_list(file_list)))
 
     def get_all_timestamps(self, **kwargs):
         """Retrieves all timestamps from the open database sorted in ascending order.
