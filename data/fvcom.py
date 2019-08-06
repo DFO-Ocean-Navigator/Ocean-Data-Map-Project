@@ -27,7 +27,7 @@ class Fvcom(CalculatedData):
 
     __depths = None
 
-   def __init__(self, url: str, **kwargs):
+    def __init__(self, url: str, **kwargs):
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
 

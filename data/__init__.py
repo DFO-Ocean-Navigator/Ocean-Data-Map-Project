@@ -10,7 +10,6 @@ from data.sqlite_database import SQLiteDatabase
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
 
-
 def open_dataset(dataset, **kwargs):
     """
     Opens a dataset.
