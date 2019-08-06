@@ -5,6 +5,8 @@ from flask import Blueprint, Flask, Response, jsonify, request, send_file
 
 import routes.routes_impl
 from data import open_dataset
+from data.utils import time_index_to_datetime
+from data.sqlite_database import SQLiteDatabase
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
@@ -56,15 +58,6 @@ def vars_query_v1_0():
 @bp_v1_0.route('/api/v1.0/observationvariables/')
 def obs_vars_query_v1():
     return routes.routes_impl.obs_vars_query_impl()
-
-
-#
-# Unchanged from v0.0
-#
-@bp_v1_0.route('/api/v1.0/timestamps/')
-def time_query_v1_0():
-    return routes.routes_impl.time_query_impl(request.args)
-
 
 #
 # Unchanged from v0.0
@@ -248,6 +241,62 @@ def query_id_v1_0(q: str, q_id: str):
 def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_id: str):
     return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
 
+
+@bp_v1_0.route('/api/v1.0/timestamps/')
+def timestamps():
+    """
+    Returns all timestamps available for a given variable in a dataset. This is variable-dependent
+    because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
+    3D variables may be daily.
+    
+    Raises:
+        APIError: if dataset or variable is not specified in the request
+    """
+
+    params = {}
+    
+    args = request.args
+    if "dataset" not in args:
+        raise APIError("Please specify a dataset via ?dataset=dataset_name")
+
+    dataset = args.get("dataset")
+    config = DatasetConfig(dataset)
+
+    if "variable" not in args:
+            raise APIError("Please specify a variable via ?variable=variable_name")
+    variable = args.get("variable")
+
+    if config.variables_split():
+        params["variable"] = variable
+
+
+    vals = []
+    with SQLiteDatabase(config.url) as db:
+        vals = db.get_all_timestamps(**params)
+    vals = time_index_to_datetime(vals, config.time_dim_units)
+
+    result = []
+    for idx, date in enumerate (vals):
+        if config.quantum == 'month' or config.variable[variable].quantum == 'month':
+            date = datetime.datetime(
+                date.year,
+                date.month,
+                15
+            )
+        result.append({'id': idx, 'value': date})
+    result = sorted(result, key=lambda k: k['id'])
+
+    class DateTimeEncoder(json.JSONEncoder):
+        
+        def default(self, o):
+            if isinstance(o, datetime.datetime):
+                return o.isoformat()
+
+            return json.JSONEncoder.default(self, o)
+    js = json.dumps(result, cls=DateTimeEncoder)
+
+    resp = Response(js, status=200, mimetype='application/json')
+    return resp
 
 #
 # Unchanged from v0.0

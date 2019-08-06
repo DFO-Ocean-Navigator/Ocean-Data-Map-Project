@@ -13,7 +13,6 @@ import numpy as np
 import pandas
 import pint
 import pyresample
-import pytz
 import xarray as xr
 from cachetools import TTLCache
 from flask_babel import format_date
@@ -21,6 +20,7 @@ from flask_babel import format_date
 import data.calculated
 from data.data import Data, Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
+from data.utils import time_index_to_datetime
 
 
 class NetCDFData(Data):
@@ -64,7 +64,7 @@ class NetCDFData(Data):
 
         raise KeyError("None of ", candidates,
                        " where found in ", self._dataset)
-
+  
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
     """
@@ -592,12 +592,7 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            # Get time units from variable
-            t = cftime.utime(var.attrs['units'])
-            time_list = list(map(
-                lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
-                var.values
-            ))
+            time_list = time_index_to_datetime(var.values, var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps

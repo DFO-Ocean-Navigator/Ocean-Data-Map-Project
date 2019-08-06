@@ -18,15 +18,16 @@ EARTH_RADIUS = 6378137.0
 
 
 class Fvcom(CalculatedData):
-"""
-    FVCOM datasets have a non-uniform grid,
-    so xArray can't handle it/
 
-"""
 
-  __depths = None
+    """
+        FVCOM datasets have a non-uniform grid,
+        so xArray can't handle it/
+    """
 
-   def __init__(self, url: str, **kwargs):
+    __depths = None
+
+    def __init__(self, url: str, **kwargs):
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
 
