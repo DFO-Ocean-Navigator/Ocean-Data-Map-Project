@@ -25,7 +25,7 @@ class TestDatasetConfig(unittest.TestCase):
             self.assertTrue(ds in actual_datasets)
 
     def test_all_datasets_have_required_attributes(self):
-        expected_attributes = ["url", "name", "enabled", "quantum", "attribution", "climatology", "variables", "help", "type", "variable_layout", "time_dim_units"]
+        expected_attributes = ["url", "name", "enabled", "quantum", "attribution", "climatology", "variables", "help", "type", "variable_layout"]
 
         for ds in self.datasetConfig:
             actual_attribs = self.datasetConfig[ds].keys()
