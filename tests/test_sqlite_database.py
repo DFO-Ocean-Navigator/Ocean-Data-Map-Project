@@ -12,6 +12,8 @@ class TestSqliteDatabase(TestCase):
         self.historical_combined_timestamps = sorted([2195510400, 2195596800])
 
         self.historical_split_db = 'tests/testdata/databases/historical-split.sqlite3'
+        self.historical_split_timestamps = sorted(
+            [2144966400, 2145052800, 2145139200, 2145225600, 2145312000, 2145398400, 2145484800])
 
     def test_get_all_timestamps_returns_all_timestamps_for_historical_combined(self):
 
@@ -22,13 +24,12 @@ class TestSqliteDatabase(TestCase):
             self.assertTrue(self.historical_combined_timestamps == timestamps)
 
     def test_get_all_timestamps_returns_all_timestamps_for_historical_split(self):
-        return
-        expected_timestamps = sorted([2191800600])
+
         with SQLiteDatabase(self.historical_split_db) as db:
 
-            timestamps = db.get_all_timestamps(variable="votemper")
+            timestamps = db.get_all_timestamps(variable="vo")
 
-            self.assertTrue(expected_timestamps == timestamps)
+            self.assertTrue(self.historical_split_timestamps == timestamps)
 
     def test_get_all_variables_returns_all_variables(self):
 
@@ -51,4 +52,12 @@ class TestSqliteDatabase(TestCase):
             self.assertTrue(expected_nc_files == nc_files)
 
     def test_get_netcdf_files_returns_correct_files_for_historical_split(self):
-        return
+        expected_nc_files = [
+            '/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc']
+
+        with SQLiteDatabase(self.historical_split_db) as db:
+
+            nc_files = sorted(db.get_netcdf_files(
+                timestamp=self.historical_split_timestamps))
+
+            self.assertTrue(expected_nc_files == nc_files)
