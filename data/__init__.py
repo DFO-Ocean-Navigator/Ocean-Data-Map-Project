@@ -42,7 +42,7 @@ def open_dataset(dataset, **kwargs):
             __check_kwargs(**kwargs)
             # Get required NC files from database and add to args
             with SQLiteDatabase(url) as db:
-                args['nc_files'] = db.get_netcdf_files(**kwargs)
+                args['nc_files'] = db.get_netcdf_files(kwargs['timestamp'], kwargs['variable'])
 
         # Figure out which wrapper we need and cache it by URL
         if __is_mercator(variable_list):

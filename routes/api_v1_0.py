@@ -266,13 +266,10 @@ def timestamps():
             raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
 
-    if config.variables_split():
-        params["variable"] = variable
-
 
     vals = []
     with SQLiteDatabase(config.url) as db:
-        vals = db.get_all_timestamps(**params)
+        vals = db.get_all_timestamps(variable)
     vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
