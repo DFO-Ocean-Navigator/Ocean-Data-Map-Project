@@ -9,7 +9,6 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
-        "variable_layout": "combined",
         "url": "http://localhost:8080/thredds/dodsC/giops/monthly/aggregated.ncml",
         "variables": {
             "aice": {
@@ -701,7 +700,6 @@
         "name": "RIOPS Monthly Average",
         "quantum": "month",
         "type": "historical",
-        "variable_layout": "split",
         "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -810,7 +808,6 @@
         "name": "RIOPS Forecast",
         "quantum": "hour",
         "type": "forecast",
-        "variable_layout": "split",
         "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
@@ -1594,7 +1591,6 @@
         "enabled": true,
         "quantum": "hour",
         "type": "historical",
-        "variable_layout": "split",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "School for Marine Science and Technology",
         "help": "Bay of Fundy: Saint John",
