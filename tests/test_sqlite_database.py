@@ -8,56 +8,53 @@ from data.sqlite_database import SQLiteDatabase
 class TestSqliteDatabase(TestCase):
 
     def setUp(self):
-        self.historical_combined_db = 'tests/testdata/databases/historical-combined.sqlite3'
-        self.historical_combined_timestamps = sorted([2195510400, 2195596800])
+        self.historical_db = 'tests/testdata/databases/Historical.sqlite3'
+        self.historical_timestamps = sorted([2144966400,
+                                             2145052800,
+                                             2145139200,
+                                             2145225600,
+                                             2145312000,
+                                             2145398400,
+                                             2145484800
+                                             ])
 
-        self.historical_split_db = 'tests/testdata/databases/historical-split.sqlite3'
-        self.historical_split_timestamps = sorted(
-            [2144966400, 2145052800, 2145139200, 2145225600, 2145312000, 2145398400, 2145484800])
+    def test_get_timestamps_returns_correct_timestamps_for_historical(self):
 
-    def test_get_all_timestamps_returns_all_timestamps_for_historical_combined(self):
+        with SQLiteDatabase(self.historical_db) as db:
 
-        with SQLiteDatabase(self.historical_combined_db) as db:
+            timestamps = db.get_timestamps("vo")
 
-            timestamps = db.get_all_timestamps()
-
-            self.assertTrue(self.historical_combined_timestamps == timestamps)
-
-    def test_get_all_timestamps_returns_all_timestamps_for_historical_split(self):
-
-        with SQLiteDatabase(self.historical_split_db) as db:
-
-            timestamps = db.get_all_timestamps(variable="vo")
-
-            self.assertTrue(self.historical_split_timestamps == timestamps)
+            self.assertTrue(self.historical_timestamps == timestamps)
 
     def test_get_all_variables_returns_all_variables(self):
 
-        expected_vars = sorted(['aice', 'depth', 'nav_lat', 'nav_lon', 'sossheig',
-                                'time_counter', 'vice', 'vomecrty', 'vosaline', 'votemper', 'vozocrtx'])
-        with SQLiteDatabase(self.historical_combined_db) as db:
+        expected_vars = sorted(["nav_lat",
+                                "nav_lon",
+                                "time_centered",
+                                "time_centered_bounds",
+                                "time_counter",
+                                "time_counter_bounds",
+                                "zos",
+                                "depthv",
+                                "depthv_bounds",
+                                "time_instant",
+                                "time_instant_bounds",
+                                "vo"
+                                ])
+
+        with SQLiteDatabase(self.historical_db) as db:
 
             variables = sorted(db.get_all_variables())
 
             self.assertTrue(expected_vars == variables)
 
-    def test_get_netcdf_files_returns_correct_files_for_historical_combined(self):
-        expected_nc_files = ['/home/nabil/test-mapper/giops_2019072800_024.nc',
-                             '/home/nabil/test-mapper/giops_2019072900_024.nc']
-        with SQLiteDatabase(self.historical_combined_db) as db:
-
-            nc_files = sorted(db.get_netcdf_files(
-                timestamp=self.historical_combined_timestamps))
-
-            self.assertTrue(expected_nc_files == nc_files)
-
-    def test_get_netcdf_files_returns_correct_files_for_historical_split(self):
+    def test_get_netcdf_files_returns_correct_files_for_historical(self):
         expected_nc_files = [
-            '/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc']
+            "/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc"]
 
-        with SQLiteDatabase(self.historical_split_db) as db:
+        with SQLiteDatabase(self.historical_db) as db:
 
             nc_files = sorted(db.get_netcdf_files(
-                timestamp=self.historical_split_timestamps))
+                self.historical_timestamps, "vo"))
 
             self.assertTrue(expected_nc_files == nc_files)

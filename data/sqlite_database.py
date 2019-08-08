@@ -33,58 +33,74 @@ class SQLiteDatabase:
     def __flatten_list(self, some_list: list):
         return list(itertools.chain(*some_list))
 
-    def get_netcdf_files(self, **kwargs):
-        """Retrieves the netCDF files that are mapped to the given timestamp(s) and/or (variable(s)).
+    def get_netcdf_files(self, timestamp: list, variable: str):
+        """Retrieves the netCDF files that are mapped to the given timestamp(s) and variable.
 
         Arguments:
             * timestamp {list} -- List of raw netCDF time indices (e.g. 2195510400)
-
-        Optional Arguments:
-            * variable: If the dataset is determined to have a split variable layout (from DatasetConfig), 
-                    this value should be provided to further narrow down the relevant file list.
+            * variable {str} -- Key of the variable of interest (e.g. votemper)
 
         Returns:
-            [list] -- List of netCDF file paths corresponding to given timestamp(s) (or variable(s))
+            * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
+            * None if timestamp or variable are empty
         """
+
+        if not timestamp:
+            return None
+        if not variable:
+            return None
 
         file_list = []
 
-        query = ""
-        if 'variable' in kwargs:
-            query = "SELECT DISTINCT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id INNER JOIN Variables ON Variables.variable_id = Timestamps.variable_id WHERE timestamp=? AND variable=?"
+        query = """
+        SELECT
+            filepath
+        FROM
+            TimestampVariableFilepath tvf
+            JOIN Filepaths fp ON fp.id = tvf.filepath_id
+            JOIN Variables v ON tvf.variable_id = v.id
+            JOIN Timestamps t ON tvf.timestamp_id = t.id
+        WHERE
+            variable = ?
+            AND timestamp = ?;
+        """
 
-            for ts in kwargs['timestamp']:
-                for variable in kwargs['variable']:
-                    self.c.execute(query, (ts, variable, ))
-                    file_list.append(self.__flatten_list(self.c.fetchall()))
-        else:
-            query = "SELECT DISTINCT filepath FROM Timestamps INNER JOIN Filepaths ON Filepaths.filepath_id = Timestamps.filepath_id WHERE timestamp=?"
-
-            for ts in kwargs['timestamp']:
-                self.c.execute(query, (ts, ))
-                file_list.append(self.__flatten_list(self.c.fetchall()))
+        for ts in timestamp:
+            self.c.execute(query, (variable, ts))
+            file_list.append(self.__flatten_list(self.c.fetchall()))
+            
 
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
         return list(set(self.__flatten_list(file_list)))
 
-    def get_all_timestamps(self, **kwargs):
-        """Retrieves all timestamps from the open database sorted in ascending order.
+    def get_timestamps(self, variable: str):
+        """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
 
-        Optional **kwargs:
-        * variable: If the dataset is determined to have a split quantum (from DatasetConfig), this value should be
-            a string corresponding to the variable of interest, since the underlying SQL query is different in 
-            this case.
+        Arguments:
+            * variable: Key of the variable of interest (e.g. votemper)
 
         Returns:
-            [list] -- List of all raw netCDF timestamps for this database. Your problem to convert them to ISO.
+            * [list] -- List of all raw netCDF timestamps for this database. Your problem to convert them to Datetime objects.
+            * None if variable string is empty
         """
 
-        if 'variable' in kwargs:
-            self.c.execute(
-                "SELECT timestamp FROM Timestamps INNER JOIN Variables ON Variables.variable_id = Timestamps.variable_id WHERE variable=? ORDER BY timestamp ASC", (kwargs["variable"], ))
-        else:
-            self.c.execute(
-                "SELECT timestamp FROM Timestamps ORDER BY timestamp ASC")
+        if not variable:
+            return None
+
+        self.c.execute(
+            """
+            SELECT
+                timestamp
+            FROM
+                TimestampVariableFilepath tvf
+                JOIN Timestamps ts ON tvf.timestamp_id = ts.id
+                JOIN Variables v ON tvf.variable_id = v.id
+            WHERE
+                variable = ?
+            ORDER BY
+                timestamp ASC;
+
+            """, (variable, ))
 
         return self.__flatten_list(self.c.fetchall())
 
