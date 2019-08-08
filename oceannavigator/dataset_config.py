@@ -49,23 +49,6 @@ class DatasetConfig():
         return self._get_attribute("type")
 
     @property
-    def variable_layout(self) -> str:
-        """
-        Returns the variable layout of the dataset.
-
-        Values can be "split" or "combined".
-
-        * Split: Variables are spread across multiple files per timestamp
-        * Combined: Variables are in 1 NC file per timestamp
-        """
-        return self._get_attribute("variable_layout")
-
-
-    def variables_split(self) -> bool:
-        return self.variable_layout == "split"
-
-
-    @property
     def time_dim_units(self) -> str:
         return self._get_attribute("time_dim_units")
 
