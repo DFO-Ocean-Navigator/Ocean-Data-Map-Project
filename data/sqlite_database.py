@@ -48,6 +48,11 @@ class SQLiteDatabase:
             * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
         """
 
+        if not timestamp:
+            return None
+        if not variable:
+            return None
+
         file_list = []
 
         query = """
