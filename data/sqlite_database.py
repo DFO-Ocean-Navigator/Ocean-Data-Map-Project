@@ -3,6 +3,7 @@
 import itertools
 import re
 import sqlite3
+import re
 
 from data.variable import Variable
 from data.variable_list import VariableList
