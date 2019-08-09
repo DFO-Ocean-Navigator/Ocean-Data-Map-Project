@@ -48,6 +48,26 @@ class TestSqliteDatabase(TestCase):
 
             self.assertTrue(expected_vars == variables)
 
+    def test_get_variable_dims_returns_correct_dims(self):
+
+        expected_dims = sorted(["depthv", "time_counter", "x", "y"])
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            dims = sorted(db.get_variable_dims("vo"))
+
+            self.assertTrue(expected_dims == dims)
+
+    def test_get_data_variables_returns_data_variables(self):
+
+        expected_vars = sorted(["zos", "vo"])
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            variables = sorted(db.get_data_variables())
+
+            self.assertTrue(expected_vars == variables)
+
     def test_get_netcdf_files_returns_correct_files_for_historical(self):
         expected_nc_files = [
             "/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc"]
@@ -58,3 +78,16 @@ class TestSqliteDatabase(TestCase):
                 self.historical_timestamps, "vo"))
 
             self.assertTrue(expected_nc_files == nc_files)
+
+    def test_erroneous_args_return_empty_lists(self):
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            ncfiles = db.get_netcdf_files(
+                self.historical_timestamps, "fake_variable")
+            timestamps = db.get_timestamps("fake_variable")
+            dims = db.get_variable_dims("fake_variable")
+
+            self.assertFalse(ncfiles)
+            self.assertFalse(timestamps)
+            self.assertFalse(dims)

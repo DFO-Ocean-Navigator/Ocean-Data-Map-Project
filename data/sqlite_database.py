@@ -2,6 +2,7 @@
 
 import itertools
 import sqlite3
+import re
 
 
 class SQLiteDatabase:
@@ -68,10 +69,38 @@ class SQLiteDatabase:
         for ts in timestamp:
             self.c.execute(query, (variable, ts))
             file_list.append(self.__flatten_list(self.c.fetchall()))
-            
 
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
         return list(set(self.__flatten_list(file_list)))
+
+    def get_variable_dims(self, variable: str):
+        """Retrieves the given variables dimensions.
+
+        Arguments:
+            * variable: Key of the variable of interest (e.g. votemper)
+
+        Returns:
+            * [list] -- List of dimension names for the given variable.
+            * None if variable string is empty.
+        """
+
+        if not variable:
+            return None
+
+        self.c.execute(
+            """
+            SELECT
+                name
+            FROM
+                VarsDims vd
+                JOIN Variables v ON vd.variable_id = v.id
+                JOIN Dimensions d ON vd.dim_id = d.id
+            WHERE
+                variable = ?;
+            """, (variable, )
+        )
+
+        return self.__flatten_list(self.c.fetchall())
 
     def get_timestamps(self, variable: str):
         """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
@@ -100,17 +129,31 @@ class SQLiteDatabase:
             ORDER BY
                 timestamp ASC;
 
-            """, (variable, ))
+            """, (variable, )
+        )
 
         return self.__flatten_list(self.c.fetchall())
 
     def get_all_variables(self):
-        """Retrieves all variables from the open database.
+        """Retrieves all variables from the open database (including depth, time, etc.)
 
         Returns:
-            [list] -- list of all variable names for this database.
+            [list] -- List of all variable names for this database.
         """
 
         self.c.execute("SELECT variable FROM Variables")
 
         return self.__flatten_list(self.c.fetchall())
+
+    def get_data_variables(self):
+        """Retrieves all data variables from the open database (i.e. depth, time, etc. are filtered out).
+
+        Returns:
+            [list] -- List of all data variable names.
+        """
+
+        all_vars = self.get_all_variables()
+
+        regex = re.compile(r'^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$')
+
+        return list(filter(lambda i: not regex.match(i), all_vars))
