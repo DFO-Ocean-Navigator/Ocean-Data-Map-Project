@@ -58,6 +58,16 @@ class TestSqliteDatabase(TestCase):
 
             self.assertTrue(expected_dims == dims)
 
+    def test_get_variable_units_returns_correct_units(self):
+
+        expected_units = "m"
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            units = db.get_variable_units("zos")
+
+            self.assertEqual(expected_units, units)
+
     def test_get_data_variables_returns_data_variables(self):
 
         expected_vars = sorted(["zos", "vo"])
@@ -87,7 +97,9 @@ class TestSqliteDatabase(TestCase):
                 self.historical_timestamps, "fake_variable")
             timestamps = db.get_timestamps("fake_variable")
             dims = db.get_variable_dims("fake_variable")
+            units = db.get_variable_units("fake_variable")
 
             self.assertFalse(ncfiles)
             self.assertFalse(timestamps)
             self.assertFalse(dims)
+            self.assertFalse(units)

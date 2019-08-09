@@ -81,7 +81,7 @@ class SQLiteDatabase:
 
         Returns:
             * [list] -- List of dimension names for the given variable.
-            * None if variable string is empty.
+            * None if variable argument is empty.
         """
 
         if not variable:
@@ -101,6 +101,38 @@ class SQLiteDatabase:
         )
 
         return self.__flatten_list(self.c.fetchall())
+
+    def get_variable_units(self, variable: str):
+        """Retrieves the units for a given variable name.
+
+        Arguments:
+            * variable: Key of the variable of interest (e.g. votemper)
+
+        Returns:
+            * str -- String containing the variable units. Empty string is
+            returned if variable has no units.
+            * None if variable argument is empty.
+
+        """
+
+        if not variable:
+            return None
+
+        self.c.execute(
+            """
+            SELECT
+                units
+            FROM
+                Variables
+            WHERE
+                variable = ?;
+
+            """, (variable, )
+        )
+
+        result = self.__flatten_list(self.c.fetchall())
+
+        return result[0] if result else ""
 
     def get_timestamps(self, variable: str):
         """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
