@@ -1,9 +1,10 @@
-import xarray as xr
 import numpy as np
+import xarray as xr
 
-from data.netcdf_data import NetCDFData
-from data.data import Variable, VariableList
 import data.calculated_parser.parser
+from data.netcdf_data import NetCDFData
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class CalculatedData(NetCDFData):

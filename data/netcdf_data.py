@@ -18,9 +18,11 @@ from cachetools import TTLCache
 from flask_babel import format_date
 
 import data.calculated
-from data.data import Data, Variable, VariableList
+from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
 from data.utils import time_index_to_datetime
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class NetCDFData(Data):
@@ -64,7 +66,7 @@ class NetCDFData(Data):
 
         raise KeyError("None of ", candidates,
                        " where found in ", self._dataset)
-  
+
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
     """

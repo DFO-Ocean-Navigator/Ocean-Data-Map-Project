@@ -11,8 +11,9 @@ from netCDF4 import Dataset
 from pint import UnitRegistry
 
 from data.calculated import CalculatedData
-from data.data import Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class Mercator(CalculatedData):

@@ -10,7 +10,8 @@ from cachetools import TTLCache
 from pykdtree.kdtree import KDTree
 
 from data.calculated import CalculatedData
-from data.data import Variable, VariableList
+from data.variable import Variable
+from data.variable_list import VariableList
 from utils.errors import ServerError
 
 RAD_FACTOR = np.pi / 180.0
