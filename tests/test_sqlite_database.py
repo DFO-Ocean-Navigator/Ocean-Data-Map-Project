@@ -54,6 +54,26 @@ class TestSqliteDatabase(TestCase):
 
             self.assertEqual(expected_units, units)
 
+    def test_get_latest_timestamp_returns_latest_timestamp(self):
+
+        expected_value = 2145483000
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            latest = db.get_latest_timestamp("zos")
+
+            self.assertEqual(expected_value, latest)
+
+    def test_get_earliest_timestamp_returns_earliest_timestamp(self):
+    
+        expected_value = 2144881800
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            earliest = db.get_earliest_timestamp("zos")
+
+            self.assertEqual(expected_value, earliest)
+
     def test_get_data_variables_returns_variable_list(self):
 
         with SQLiteDatabase(self.historical_db) as db:

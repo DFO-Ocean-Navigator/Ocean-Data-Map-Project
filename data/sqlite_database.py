@@ -163,6 +163,62 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())
 
+    def get_latest_timestamp(self, variable: str):
+        """Returns the latest raw timestamp value for a given variable.
+        
+        Arguments:
+            variable {str} -- Key of the variable of interest (e.g. votemper)
+        
+        Returns:
+            [type] -- Most recent timestamp value.
+        """
+
+        if not variable:
+            return None
+
+        self.c.execute(
+            """
+            SELECT
+                MAX(timestamp)
+            FROM
+                TimestampVariableFilepath tvf
+                JOIN Variables v ON tvf.variable_id = v.id
+                JOIN Timestamps t ON tvf.timestamp_id = t.id
+            WHERE
+                variable = ?;
+            """, (variable, )
+        )
+
+        return self.__flatten_list(self.c.fetchall())[0]
+
+    def get_earliest_timestamp(self, variable: str):
+        """Returns the earliest raw timestamp value for a given variable.
+        
+        Arguments:
+            variable {str} -- Key of the variable of interest (e.g. votemper)
+        
+        Returns:
+            [type] -- Earliest timestamp value.
+        """
+
+        if not variable:
+            return None
+
+        self.c.execute(
+            """
+            SELECT
+                MIN(timestamp)
+            FROM
+                TimestampVariableFilepath tvf
+                JOIN Variables v ON tvf.variable_id = v.id
+                JOIN Timestamps t ON tvf.timestamp_id = t.id
+            WHERE
+                variable = ?;
+            """, (variable, )
+        )
+
+        return self.__flatten_list(self.c.fetchall())[0]
+
     def get_all_variables(self):
         """Retrieves all variables from the open database (including depth, time, etc.)
 
