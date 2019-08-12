@@ -3,7 +3,6 @@
 import itertools
 import re
 import sqlite3
-import re
 
 from data.variable import Variable
 from data.variable_list import VariableList
@@ -48,11 +47,6 @@ class SQLiteDatabase:
         Returns:
             * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
         """
-
-        if not timestamp:
-            return None
-        if not variable:
-            return None
 
         file_list = []
 
