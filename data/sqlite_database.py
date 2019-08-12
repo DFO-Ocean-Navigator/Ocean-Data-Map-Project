@@ -55,7 +55,7 @@ class SQLiteDatabase:
             filepath
         FROM
             TimestampVariableFilepath tvf
-            JOIN Filepaths fp ON fp.id = tvf.filepath_id
+            JOIN Filepaths fp ON tvf.filepath_id = fp.id
             JOIN Variables v ON tvf.variable_id = v.id
             JOIN Timestamps t ON tvf.timestamp_id = t.id
         WHERE

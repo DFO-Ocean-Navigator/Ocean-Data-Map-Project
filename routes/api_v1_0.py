@@ -47,15 +47,17 @@ def query_datasets_v1_0():
 @bp_v1_0.route('/api/v1.0/variables/')
 def variables_query_v1_0():
     """
-    API Format: /api/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
+    API Format: /api/v1.0/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
 
     dataset      : Dataset - Can be found using /api/datasets
     3d_only      : Boolean Value; When True, only variables with depth will be shown
-    vectors_only : Boolean Value; When True, only variables with magnitude will be shown 
+    vectors_only : Boolean Value; When True, only variables with magnitude will be shown
     vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean value: True / False**
     """
+
+    args = request.args
 
     if 'dataset' not in args:
         raise APIError("Please Specify a dataset Using ?dataset='...' ")
@@ -103,8 +105,56 @@ def obs_vars_query_v1():
 # Unchanged from v0.0
 #
 @bp_v1_0.route('/api/v1.0/depth/')
-def depth_v1():
-    return routes.routes_impl.depth_impl(request.args)
+def depth_query_v1_0():
+    """
+    API Format: /api/v1.0/depth/?dataset=''&variable=''
+
+    dataset  : Dataset to extract data - Can be found using /api/datasets
+    variable : Type of data to retrieve - found using /api/variables/?dataset='...'
+
+    Returns all depths available for that variable in the dataset
+    """
+
+    args = request.args
+
+    if 'dataset' not in args:
+        raise APIError("Please specify a dataset using &dataset='...'")
+    if 'variable' not in args:
+        raise APIError("Please specify a variable using &variable='...' ")
+
+    dataset = args.get('dataset')
+    variable = args.get('variable')
+
+    config = DatasetConfig(dataset)
+
+    with SQLiteDatabase(dataset.url) as db:
+        latest_timestamp = db.get_latest_timestamp(variable)
+
+    data = []
+    with open_dataset(config, variable=variable, timestamp=latest_timestamp) as ds:
+        if not variable in ds.variables:
+            raise APIError("Variable not found in dataset: ", variable)
+
+        if ds.variable_has_depth(variable):
+            if str(args.get('all')).lower() in ['true', 'yes', 'on']:
+                data.append(
+                    {'id': 'all', 'value': gettext('All Depths')})
+
+            for idx, value in enumerate(np.round(ds.depths)):
+                data.append({
+                    'id': idx,
+                    'value': "%d m" % (value)
+                })
+
+            if len(data) > 0:
+                data.insert(
+                    0, {'id': 'bottom', 'value': gettext('Bottom')})
+
+    data = [
+        e for i, e in enumerate(data) if data.index(e) == i
+    ]
+
+    return jsonify(data)
 
 
 #

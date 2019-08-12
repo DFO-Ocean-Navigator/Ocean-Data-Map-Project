@@ -75,6 +75,9 @@ def __check_kwargs(**kwargs):
         raise RuntimeError(
             "Opening a dataset via sqlite requires the 'timestamp' keyword argument")
 
+    if not isinstance(kwargs['timestamp'], list):
+        kwargs['timestamp'] = list(kwargs['timestamp'])
+
 
 def __is_mercator(variable_list: list):
     return 'latitude_longitude' in variable_list or \
