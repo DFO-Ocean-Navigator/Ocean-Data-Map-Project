@@ -44,12 +44,52 @@ def query_datasets_v1_0():
     return routes.routes_impl.query_datasets_impl(request.args)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/variables/')
-def vars_query_v1_0():
-    return routes.routes_impl.vars_query_impl(request.args)
+def variables_query_v1_0():
+    """
+    API Format: /api/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
+
+    dataset      : Dataset - Can be found using /api/datasets
+    3d_only      : Boolean Value; When True, only variables with depth will be shown
+    vectors_only : Boolean Value; When True, only variables with magnitude will be shown 
+    vectors      : Boolean Value; When True, magnitude components will be included
+
+    **Boolean value: True / False**
+    """
+
+    if 'dataset' not in args:
+        raise APIError("Please Specify a dataset Using ?dataset='...' ")
+
+    dataset = args.get('dataset')
+    config = DatasetConfig(dataset)
+
+    data = []
+
+    if 'vectors_only' not in args:
+        with open_dataset(config) as ds:
+
+            for v in ds.variables:
+                if ('3d_only' in args) and not (set(ds.depth_dimensions) & set(v.dimensions)):
+                    continue
+
+                if not config.variable[v].is_hidden:
+                    data.append({
+                                'id': v.key,
+                                'value': config.variable[v].name,
+                                'scale': config.variable[v].scale
+                                })
+
+    if 'vectors' in args or 'vectors_only' in args:
+        for variable in config.vector_variables:
+            data.append({
+                'id': variable,
+                'value': config.variable[variable].name,
+                'scale': config.variable[variable].scale,
+            })
+
+    data = sorted(data, key=lambda k: k['value'])
+
+    return jsonify(data)
 
 
 #
@@ -248,13 +288,13 @@ def timestamps():
     Returns all timestamps available for a given variable in a dataset. This is variable-dependent
     because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
     3D variables may be daily.
-    
+
     Raises:
         APIError: if dataset or variable is not specified in the request
     """
 
     params = {}
-    
+
     args = request.args
     if "dataset" not in args:
         raise APIError("Please specify a dataset via ?dataset=dataset_name")
@@ -263,9 +303,8 @@ def timestamps():
     config = DatasetConfig(dataset)
 
     if "variable" not in args:
-            raise APIError("Please specify a variable via ?variable=variable_name")
+        raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
-
 
     vals = []
     with SQLiteDatabase(config.url) as db:
@@ -273,7 +312,7 @@ def timestamps():
     vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
-    for idx, date in enumerate (vals):
+    for idx, date in enumerate(vals):
         if config.quantum == 'month' or config.variable[variable].quantum == 'month':
             date = datetime.datetime(
                 date.year,
@@ -284,7 +323,7 @@ def timestamps():
     result = sorted(result, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
-        
+
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
