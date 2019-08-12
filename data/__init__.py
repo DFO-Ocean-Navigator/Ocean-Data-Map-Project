@@ -136,6 +136,9 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
     if timestamp > 0 and endtime < 0:
         return db.get_timestamp_range(timestamp, all_timestamps[endtime], variable)
 
+    if not isinstance(kwargs['timestamp'], list):
+        kwargs['timestamp'] = list(kwargs['timestamp'])
+
 
 def __is_mercator(variable_list: list):
     return 'latitude_longitude' in variable_list or 'LatLon_Projection' in variable_list
