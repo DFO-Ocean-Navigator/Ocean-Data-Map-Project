@@ -27,6 +27,7 @@ pipeline {
                 $py -m unittest tests/test_oceannavigator_cfg.py
                 $py -m unittest tests/test_datasetconfig.py
                 $py -m unittest tests/test_sqlite_database.py
+                $py -m unittest tests/test_data_open_dataset.py
            '''
       }
     }

@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 import itertools
-import sqlite3
 import re
+import sqlite3
+
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class SQLiteDatabase:
@@ -43,13 +46,7 @@ class SQLiteDatabase:
 
         Returns:
             * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
-            * None if timestamp or variable are empty
         """
-
-        if not timestamp:
-            return None
-        if not variable:
-            return None
 
         file_list = []
 
@@ -173,19 +170,43 @@ class SQLiteDatabase:
             [list] -- List of all variable names for this database.
         """
 
-        self.c.execute("SELECT variable FROM Variables")
+        self.c.execute(
+            "SELECT variable, units, longName, validMin, validMax FROM Variables")
 
-        return self.__flatten_list(self.c.fetchall())
+        result = self.c.fetchall()
+
+        l = [self.__build_variable_wrapper(v) for v in result]
+
+        return VariableList(l)
 
     def get_data_variables(self):
         """Retrieves all data variables from the open database (i.e. depth, time, etc. are filtered out).
 
         Returns:
-            [list] -- List of all data variable names.
+            [VariableList] -- VariableList of all data variable names.
         """
 
         all_vars = self.get_all_variables()
 
         regex = re.compile(r'^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$')
 
-        return list(filter(lambda i: not regex.match(i), all_vars))
+        return VariableList(filter(lambda i: not regex.match(i.key), all_vars))
+
+    def __build_variable_wrapper(self, var_result: list):
+        """Builds a Variable object from a given row list.
+
+        Arguments:
+            var_result {list} -- A row from the Variable table in the sqlite database.
+
+        Returns:
+            [Variable] -- constructed Variable object.
+        """
+
+        # Look at the SELECT statement in get_all_variables to see the order of values
+        name = var_result[0]
+        units = var_result[1] if var_result[1] else None
+        long_name = var_result[2] if var_result[2] else name
+        valid_min = var_result[3] if var_result[3] != 1.17549e-38 else None
+        valid_max = var_result[4] if var_result[4] != 3.40282e+38 else None
+
+        return Variable(name, long_name, units, self.get_variable_dims(name), valid_min, valid_max)

@@ -28,25 +28,11 @@ class TestSqliteDatabase(TestCase):
 
     def test_get_all_variables_returns_all_variables(self):
 
-        expected_vars = sorted(["nav_lat",
-                                "nav_lon",
-                                "time_centered",
-                                "time_centered_bounds",
-                                "time_counter",
-                                "time_counter_bounds",
-                                "zos",
-                                "depthv",
-                                "depthv_bounds",
-                                "time_instant",
-                                "time_instant_bounds",
-                                "vo"
-                                ])
-
         with SQLiteDatabase(self.historical_db) as db:
 
-            variables = sorted(db.get_all_variables())
+            variables = db.get_all_variables()
 
-            self.assertTrue(expected_vars == variables)
+            self.assertEqual(len(variables), 12)
 
     def test_get_variable_dims_returns_correct_dims(self):
 
@@ -68,15 +54,18 @@ class TestSqliteDatabase(TestCase):
 
             self.assertEqual(expected_units, units)
 
-    def test_get_data_variables_returns_data_variables(self):
-
-        expected_vars = sorted(["zos", "vo"])
+    def test_get_data_variables_returns_variable_list(self):
 
         with SQLiteDatabase(self.historical_db) as db:
 
-            variables = sorted(db.get_data_variables())
+            variables = db.get_data_variables()
 
-            self.assertTrue(expected_vars == variables)
+            self.assertEqual(len(variables), 2)
+            self.assertTrue('vo' in variables)
+            self.assertTrue('zos' in variables)
+            self.assertEqual(
+                variables['vo'].name, "Sea Water Y Velocity")
+            self.assertEqual(variables['vo'].unit, "m/s")
 
     def test_get_netcdf_files_returns_correct_files_for_historical(self):
         expected_nc_files = [

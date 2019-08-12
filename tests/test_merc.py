@@ -1,10 +1,13 @@
 import datetime
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pytz
 
 from data.mercator import Mercator
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class TestMercator(unittest.TestCase):
@@ -16,7 +19,13 @@ class TestMercator(unittest.TestCase):
         with Mercator('tests/testdata/mercator_test.nc'):
             pass
 
-    def test_variables(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variables(self, mock_query_func):
+        mock_query_func.return_value = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
+
         with Mercator('tests/testdata/mercator_test.nc') as n:
             variables = n.variables
 
@@ -25,6 +34,8 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(variables['votemper'].name,
                              'Sea water potential temperature')
             self.assertEqual(variables['votemper'].unit, 'Kelvin')
+            self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
+                ['time', 'depth', 'latitude', 'longitude']))
 
     def test_time_variable(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:

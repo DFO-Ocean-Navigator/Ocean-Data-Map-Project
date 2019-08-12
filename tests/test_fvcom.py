@@ -1,7 +1,13 @@
-import unittest
-from data.fvcom import Fvcom
 import datetime
+import unittest
+from unittest.mock import patch
+
 import pytz
+
+from data.fvcom import Fvcom
+from data.variable import Variable
+from data.variable_list import VariableList
+
 
 class TestFvcom(unittest.TestCase):
 
@@ -12,7 +18,14 @@ class TestFvcom(unittest.TestCase):
             self.assertEqual(len(depths), 1)
             self.assertEqual(depths[0], 0)
 
-    def test_variables(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variables(self, mock_query_func):
+        mock_query_func.return_value = VariableList([
+            Variable('h', 'Bathymetry', 'm', ["node"]),
+            Variable('zeta', "Water elevation", "m", []),
+            Variable('temp', "Temp", "Kelvin", [])
+        ])
+
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             variables = n.variables
 
@@ -20,6 +33,7 @@ class TestFvcom(unittest.TestCase):
             self.assertTrue('h' in variables)
             self.assertEqual(variables['h'].name, 'Bathymetry')
             self.assertEqual(variables['h'].unit, 'm')
+            self.assertEqual(variables['h'].dimensions, ["node"])
 
     def test_get_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
@@ -67,6 +81,7 @@ class TestFvcom(unittest.TestCase):
             # List is immutable
             with self.assertRaises(ValueError):
                 n.timestamps[0] = 0
+
 
 if __name__ == '__main__':
     unittest.main()

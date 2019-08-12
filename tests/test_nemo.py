@@ -1,10 +1,15 @@
+#!/usr/bin/env python
+
 import datetime
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pytz
 
 from data.nemo import Nemo
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class TestNemo(unittest.TestCase):
@@ -16,15 +21,23 @@ class TestNemo(unittest.TestCase):
         with Nemo('tests/testdata/nemo_test.nc'):
             pass
 
-    def test_variables(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variables(self, mock_query_func):
+        mock_query_func.return_value = VariableList([
+            Variable('votemper', 'Water temperature at CMC',
+                     'Kelvins', sorted(["deptht", "time_counter", "y", "x"]))
+        ])
+
         with Nemo('tests/testdata/nemo_test.nc') as n:
             variables = n.variables
 
-            self.assertEqual(len(variables), 3)
+            self.assertEqual(len(variables), 1)
             self.assertTrue('votemper' in variables)
             self.assertEqual(variables['votemper'].name,
                              'Water temperature at CMC')
             self.assertEqual(variables['votemper'].unit, 'Kelvins')
+            self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
+                ["deptht", "time_counter", "y", "x"]))
 
     def test_time_variable(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:

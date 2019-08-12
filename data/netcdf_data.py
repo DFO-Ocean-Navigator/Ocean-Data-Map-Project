@@ -23,6 +23,7 @@ from data.nearest_grid_point import find_nearest_grid_point
 from data.utils import time_index_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
+from data.sqlite_database import SQLiteDatabase
 
 
 class NetCDFData(Data):
@@ -518,6 +519,7 @@ class NetCDFData(Data):
     """
     @property
     def depth_dimensions(self):
+        # This needs to be replaced with a query to the sqlite database
         return ['depth', 'deptht', 'z']
 
     """
@@ -540,47 +542,10 @@ class NetCDFData(Data):
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
         if self._variable_list == None:
-            l = []
-            # Get data variables variables from dataset
-            variables = list(self._dataset.data_vars.keys())
+            
+            with SQLiteDatabase(self.url) as db:
 
-            for name in variables:
-                # Get variable DataArray
-                # http://xarray.pydata.org/en/stable/api.html#dataarray
-                var = self._dataset.variables[name]
-                if (len(var.dims) == 0):
-                    # Skip any variables without dimensions, this makes the
-                    # xarray based datasets behave more like the netcdf4-python
-                    # ones.
-                    continue
-
-                # Get variable attributes
-                attrs = list(var.attrs.keys())
-
-                if 'long_name' in attrs:
-                    long_name = var.attrs['long_name']
-                else:
-                    long_name = name
-
-                if 'units' in attrs:
-                    units = var.attrs['units']
-                else:
-                    units = None
-
-                if 'valid_min' in attrs:
-                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                             str(var.attrs['valid_min'])))
-                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                             str(var.attrs['valid_max'])))
-                else:
-                    valid_min = None
-                    valid_max = None
-
-                # Add to our "Variable" wrapper
-                l.append(Variable(name, long_name, units, var.dims,
-                                  valid_min, valid_max))
-
-            self._variable_list = VariableList(l)  # Cache the list for later
+                self._variable_list = db.get_data_variables()  # Cache the list for later
 
         return self._variable_list
 

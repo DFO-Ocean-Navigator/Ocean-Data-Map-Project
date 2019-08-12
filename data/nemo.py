@@ -1,9 +1,13 @@
-from pykdtree.kdtree import KDTree
-import pyresample
+#!/usr/bin/env python
+
 import numpy as np
-from data.calculated import CalculatedData
+import pyresample
 from pint import UnitRegistry
+from pykdtree.kdtree import KDTree
+
+from data.calculated import CalculatedData
 from data.nearest_grid_point import find_nearest_grid_point
+
 
 class Nemo(CalculatedData):
     __depths = None
@@ -21,7 +25,7 @@ class Nemo(CalculatedData):
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
-    def depths(self) -> np.ndarray:
+    def depths(self):
         if self.__depths is None:
             var = None
             # Look through possible dimension names
