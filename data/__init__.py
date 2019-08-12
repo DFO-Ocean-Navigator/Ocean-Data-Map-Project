@@ -157,6 +157,9 @@ def __get_nc_file_list(url: str, **kwargs):
         return db.get_netcdf_files(
             timestamp, variable)
 
+    if not isinstance(kwargs['timestamp'], list):
+        kwargs['timestamp'] = list(kwargs['timestamp'])
+
 
 def __is_mercator(variable_list: list):
     return 'latitude_longitude' in variable_list or 'LatLon_Projection' in variable_list
