@@ -12,6 +12,12 @@ from data.variable_list import VariableList
 
 class TestMercator(unittest.TestCase):
 
+    def setUp(self):
+        self.variable_list_mock = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
+
     def test_init(self):
         Mercator(None)
 
@@ -21,10 +27,7 @@ class TestMercator(unittest.TestCase):
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_variables(self, mock_query_func):
-        mock_query_func.return_value = VariableList([
-            Variable('votemper', 'Sea water potential temperature',
-                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
-        ])
+        mock_query_func.return_value = self.variable_list_mock
 
         with Mercator('tests/testdata/mercator_test.nc') as n:
             variables = n.variables
@@ -36,6 +39,13 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(variables['votemper'].unit, 'Kelvin')
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ['time', 'depth', 'latitude', 'longitude']))
+
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variable_has_depth(self, mock_query_func):
+        mock_query_func.return_value = self.variable_list_mock
+
+        with Mercator('tests/testdata/mercator_test.nc') as n:
+            self.assertTrue(n.variable_has_depth("votemper"))
 
     def test_time_variable(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:

@@ -14,6 +14,12 @@ from data.variable_list import VariableList
 
 class TestNemo(unittest.TestCase):
 
+    def setUp(self):
+        self.variable_list_mock = VariableList([
+            Variable('votemper', 'Water temperature at CMC',
+                     'Kelvins', sorted(["deptht", "time_counter", "y", "x"]))
+        ])
+
     def test_init(self):
         Nemo(None)
 
@@ -23,10 +29,7 @@ class TestNemo(unittest.TestCase):
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_variables(self, mock_query_func):
-        mock_query_func.return_value = VariableList([
-            Variable('votemper', 'Water temperature at CMC',
-                     'Kelvins', sorted(["deptht", "time_counter", "y", "x"]))
-        ])
+        mock_query_func.return_value = self.variable_list_mock
 
         with Nemo('tests/testdata/nemo_test.nc') as n:
             variables = n.variables
@@ -38,6 +41,14 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(variables['votemper'].unit, 'Kelvins')
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ["deptht", "time_counter", "y", "x"]))
+
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variable_has_depth(self, mock_query_func):
+        mock_query_func.return_value = self.variable_list_mock
+
+        with Nemo('tests/testdata/nemo_test.nc') as n:
+
+            self.assertTrue(n.variable_has_depth('votemper'))
 
     def test_time_variable(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:

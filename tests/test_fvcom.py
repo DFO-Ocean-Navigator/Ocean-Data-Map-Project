@@ -11,6 +11,13 @@ from data.variable_list import VariableList
 
 class TestFvcom(unittest.TestCase):
 
+    def setUp(self):
+        self.variable_list_mock = VariableList([
+            Variable('h', 'Bathymetry', 'm', ["node"]),
+            Variable('zeta', "Water elevation", "m", []),
+            Variable('temp', "Temp", "Kelvin", [])
+        ])
+
     def test_depths(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             depths = n.depths
@@ -20,11 +27,7 @@ class TestFvcom(unittest.TestCase):
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_variables(self, mock_query_func):
-        mock_query_func.return_value = VariableList([
-            Variable('h', 'Bathymetry', 'm', ["node"]),
-            Variable('zeta', "Water elevation", "m", []),
-            Variable('temp', "Temp", "Kelvin", [])
-        ])
+        mock_query_func.return_value = self.variable_list_mock
 
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             variables = n.variables
@@ -34,6 +37,13 @@ class TestFvcom(unittest.TestCase):
             self.assertEqual(variables['h'].name, 'Bathymetry')
             self.assertEqual(variables['h'].unit, 'm')
             self.assertEqual(variables['h'].dimensions, ["node"])
+
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variable_depth(self, mock_query_func):
+        mock_query_func.return_value = self.variable_list_mock
+
+        with Fvcom('tests/testdata/fvcom_test.nc') as n:
+            self.assertFalse(n.variable_has_depth('temp'))
 
     def test_get_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
