@@ -23,11 +23,15 @@ pipeline {
 
                 $py -m unittest tests/test_geo.py
                 $py -m unittest tests/test_nemo.py
-                $py -m unittest tests/test_api_v1_0_plot_line.py
+                $py -m unittest tests/test_merc.py
+                $py -m unittest tests/test_fvcom.py
                 $py -m unittest tests/test_oceannavigator_cfg.py
                 $py -m unittest tests/test_datasetconfig.py
                 $py -m unittest tests/test_sqlite_database.py
                 $py -m unittest tests/test_data_open_dataset.py
+                $py -m unittest tests/test_api_v_1_0.py
+                $py -m unittest tests/test_calculated_data.py
+                $py -m unittest tests/test_calculated_parser.py
            '''
       }
     }
