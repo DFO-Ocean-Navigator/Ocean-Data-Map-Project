@@ -44,14 +44,31 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        res = self.app.get('/api/v1.0/variables/?dataset=giops')
+        res = self.app.get('/api/v1.0/variables/?dataset=giops&3d_only')
 
         self.assertEqual(res.status_code, 200)
 
-        resp_data = self.__get_response_data(res)[0]
-        self.assertEqual(resp_data['id'], 'votemper')
-        self.assertEqual(resp_data['scale'], [-5, 30])
-        self.assertEqual(resp_data['value'], 'Temperature')
+        resp_data = self.__get_response_data(res)
+        self.assertEqual(len(resp_data), 1)
+        self.assertEqual(resp_data[0]['id'], 'votemper')
+        self.assertEqual(resp_data[0]['scale'], [-5, 30])
+        self.assertEqual(resp_data[0]['value'], 'Temperature')
+
+        
+        res = self.app.get('/api/v1.0/variables/?dataset=giops&vectors')
+
+        self.assertEqual(res.status_code, 200)
+
+        resp_data = self.__get_response_data(res)
+        self.assertEqual(len(resp_data), 1)
+
+        res = self.app.get('/api/v1.0/variables/?dataset=giops&vectors_only')
+
+        self.assertEqual(res.status_code, 200)
+
+        resp_data = self.__get_response_data(res)
+        self.assertEqual(len(resp_data), 0)
+
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_latest_timestamp')
