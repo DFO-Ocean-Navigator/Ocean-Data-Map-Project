@@ -1,12 +1,14 @@
 import hashlib
 import json
 
+import numpy as np
 from flask import Blueprint, Flask, Response, jsonify, request, send_file
+from flask_babel import gettext
 
 import routes.routes_impl
 from data import open_dataset
-from data.utils import time_index_to_datetime
 from data.sqlite_database import SQLiteDatabase
+from data.utils import time_index_to_datetime
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
