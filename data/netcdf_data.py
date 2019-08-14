@@ -527,19 +527,18 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                                                            output_def, radius_of_influence=float(self.radius), nprocs=8)
 
-    
     def variable_has_depth(self, variable: str):
         """Checks if a given variable has depth (i.e. is 3D).
-        
+
         Arguments:
             variable {str} -- Key of variable in question (e.g. votemper)
-        
+
         Returns:
             [bool] -- If given variable has depth.
         """
-        
+
         return set(self.depth_dimensions) & set(self.variables[variable].dimensions)
-    
+
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing
