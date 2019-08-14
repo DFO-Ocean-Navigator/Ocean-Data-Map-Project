@@ -33,6 +33,7 @@ class NetCDFData(Data):
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         self._nc_files: list = kwargs['nc_files'] if 'nc_files' in kwargs else None
+        self._time_variable = None
 
         super(NetCDFData, self).__init__(url)
 
@@ -68,17 +69,32 @@ class NetCDFData(Data):
         raise KeyError("None of ", candidates,
                        " where found in ", self._dataset)
 
+    def timestamp_to_time_index(self, timestamp: int):
+        """Converts a given timestamp (e.g. 2031436800) into the corresponding
+        time index for the time dimension.
+
+        Arguments:
+            timestamp {int} -- Raw timestamp.
+
+        Returns:
+            [int] -- Time index.
+        """
+
+        time_var = self.time_variable
+
+        return np.where(time_var == timestamp)[0]
+
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
     """
 
-    def convert_to_timestamp(self, date):
+    def convert_to_timestamp(self, date: str):
 
         # Time is in ISO 8601 Extended format
         # Get time index from dataset
 
         time_range = [dateutil.parser.parse(x) for x in date.split(',')]
-        time_var = self.__get_time_variable()
+        time_var = self.time_variable
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(
             x, time_var.attrs['units']) for x in time_range]
@@ -494,25 +510,27 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                                                            output_def, radius_of_influence=float(self.radius), nprocs=8)
 
-    
     def variable_has_depth(self, variable: str):
         """Checks if a given variable has depth (i.e. is 3D).
-        
+
         Arguments:
             variable {str} -- Key of variable in question (e.g. votemper)
-        
+
         Returns:
             [bool] -- If given variable has depth.
         """
-        
+
         return set(self.depth_dimensions) & set(self.variables[variable].dimensions)
-    
+
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing
             the time dimension in self._dataset
         """
-        return self.__find_variable(['time', 'time_counter', 'Times'])
+        if not self._time_variable:
+            self._time_variable = self.__find_variable(
+                ['time', 'time_counter', 'Times'])
+        return self._time_variable
 
     @property
     def latlon_variables(self):
@@ -555,7 +573,7 @@ class NetCDFData(Data):
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
         if self._variable_list == None:
-            
+
             with SQLiteDatabase(self.url) as db:
 
                 self._variable_list = db.get_data_variables()  # Cache the list for later

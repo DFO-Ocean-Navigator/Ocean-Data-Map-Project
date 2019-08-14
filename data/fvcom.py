@@ -20,7 +20,6 @@ EARTH_RADIUS = 6378137.0
 
 class Fvcom(CalculatedData):
 
-
     """
         FVCOM datasets have a non-uniform grid,
         so xArray can't handle it/
@@ -52,6 +51,24 @@ class Fvcom(CalculatedData):
     def subset(self, query):
         raise ServerError(
             "Subsetting FVCOM datasets is currently not supported.")
+
+    def timestamp_to_time_index(self, timestamp: int):
+        """Converts a given timestamp (e.g. 2031436800) into the corresponding
+        time index for the time dimension. Overloaded for Fvcom to handle
+        floating-point time indices.
+
+        Arguments:
+            timestamp {int} -- Raw timestamp.
+
+        Returns:
+            [int] -- Time index.
+        """
+
+        time_var = self.time_variable
+
+        # https: // stackoverflow.com/a/41022847/2231969
+        # We use 1.e-7 since the default 1.e-5 doesn't provide enough precision
+        return next(i for i, _ in enumerate(time_var) if np.isclose(_, timestamp, 1.e-7))
 
     @property
     def depths(self):

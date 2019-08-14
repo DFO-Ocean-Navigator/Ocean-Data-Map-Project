@@ -45,6 +45,12 @@ class TestFvcom(unittest.TestCase):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             self.assertFalse(n.variable_has_depth('temp'))
 
+    def test_timestamp_to_time_index(self):
+        with Fvcom('tests/testdata/fvcom_test.nc') as n:
+            idx = n.timestamp_to_time_index(57209.043)
+
+            self.assertEqual(idx, 1)
+
     def test_get_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             data, depth = n.get_point(45.3, -64.0, 0, 0, 'temp',

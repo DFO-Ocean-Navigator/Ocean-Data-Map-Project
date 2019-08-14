@@ -47,6 +47,12 @@ class TestMercator(unittest.TestCase):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             self.assertTrue(n.variable_has_depth("votemper"))
 
+    def test_timestamp_to_time_index(self):
+        with Mercator('tests/testdata/mercator_test.nc') as n:
+            idx = n.timestamp_to_time_index(2119651200)
+
+            self.assertEqual(idx, 0)
+    
     def test_time_variable(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             time_var = n.time_variable
