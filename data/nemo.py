@@ -173,7 +173,7 @@ class Nemo(CalculatedData):
 
         raise LookupError("Cannot find latitude & longitude variables")
 
-    def get_raw_point(self, latitude, longitude, depth, time, variable):
+    def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
@@ -183,6 +183,8 @@ class Nemo(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+        
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -223,7 +225,7 @@ class Nemo(CalculatedData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable,
+    def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
         latvar, lonvar = self.__latlon_vars(variable)
 
@@ -236,6 +238,9 @@ class Nemo(CalculatedData):
 
         # Get xarray.Variable
         var = self.get_dataset_variable(variable)
+
+        time = self.timestamp_to_time_index(timestamp)
+        
 
         if depth == 'bottom':
             
@@ -314,7 +319,7 @@ class Nemo(CalculatedData):
         else:
             return res
 
-    def get_profile(self, latitude, longitude, time, variable):
+    def get_profile(self, latitude, longitude, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
         
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -326,11 +331,13 @@ class Nemo(CalculatedData):
 
         var = self.get_dataset_variable(variable)
 
+        time_index = self.timestamp_to_time_index(timestamp)
+
         res = self.__resample(
             latvar[miny:maxy, minx:maxx],
             lonvar[miny:maxy, minx:maxx],
             [latitude], [longitude],
-            var[time, :, miny:maxy, minx:maxx].values,
+            var[time_index, :, miny:maxy, minx:maxx].values,
         )
 
         return res, np.squeeze([self.depths] * len(latitude))

@@ -165,22 +165,10 @@ def plot(projection, x, y, z, args):
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
 
+    time = args.get('time')
+
     data = []
-    with open_dataset(config) as dataset:
-        if args.get('time') is None or (type(args.get('time')) == str and
-                                        len(args.get('time')) == 0):
-            time = -1
-        else:
-            time = int(args.get('time'))
-
-        t_len = len(dataset.timestamps)
-        while time >= t_len:
-            time -= t_len
-
-        while time < 0:
-            time += len(dataset.timestamps)
-
-        timestamp = dataset.timestamps[time]
+    with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
         for v in variable:
             data.append(dataset.get_area(

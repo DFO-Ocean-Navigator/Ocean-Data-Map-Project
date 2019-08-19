@@ -368,22 +368,17 @@ def vars_query_impl(args):
     **Boolean: True / False**
     """ 
 
-    if 'dataset' not in args.keys():
-        raise APIError("Please Specify a Dataset Using ?dataset='...' ")
+    if 'dataset' not in args:
+        raise APIError("Please Specify a dataset Using ?dataset='...' ")
 
-    data = []       #Initializes empty data list
-    dataset = args['dataset']   #Dataset Specified in query
+    data = []
+    dataset = args['dataset']
     config = DatasetConfig(dataset)
-
-    #three_d = '3d_only' in args     #Checks if 3d_only is in args
-    #If three_d is true - Only 3d variables will be returned
 
     with open_dataset(config) as ds:
         if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
 
-            # 'v' is a Variable in the Dataset
-            #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-            for v in ds.variables:  #Iterates through all the variables in the dataset
+            for v in ds.variables:
 
                 #If a time period and at least one other unit type is specified
                 if ('time_counter' in v.dimensions or   
@@ -407,31 +402,7 @@ def vars_query_impl(args):
                                 'scale': config.variable[v].scale
                             })
      
-        """
-        VECTOR_MAP = {
-            #'vozocrtx': 'vozocrtx,vomecrty',
-            'vozocrte': 'vozocrte,vomecrtn',
-            'itzocrtx': 'itzocrtx,itmecrty',
-            'iicevelu': 'iicevelu,iicevelv',
-            'u_wind': 'u_wind,v_wind',
-            'u': 'u,v',
-            'ua': 'ua,va',
-            'u-component_of_wind_height_above_ground': 'u-component_of_wind_height_above_ground,v-component_of_wind_height_above_ground',
-        }
-
-        #If Vectors are needed
-        if 'vectors' in args or 'vectors_only' in args:
-            
-            rxp = r"(?i)(x |y |zonal |meridional |northward |eastward |East |North)"
-            for key, value in list(VECTOR_MAP.items()):
-                if key in ds.variables:
-                    n = config.variable[ds.variables[key]].name #Returns a normal variable type   
-                    data.append({
-                        'id': value,
-                        'value': re.sub(r" +", " ", re.sub(rxp, " ", n)),
-                        'scale': [0, config.variable[ds.variables[key]].scale[1]]
-                    })
-        """
+    
     #If Vectors are needed
     if 'vectors' in args or 'vectors_only' in args:
         for variable in config.vector_variables:
@@ -443,7 +414,6 @@ def vars_query_impl(args):
 
     data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
     
-    #Data is set of scale, id, value objects
     resp = jsonify(data)
     return resp
 

@@ -112,3 +112,7 @@ class TestSqliteDatabase(TestCase):
             self.assertFalse(timestamps)
             self.assertFalse(dims)
             self.assertFalse(units)
+
+
+if __name__ == '__main__':
+    unittest.main()

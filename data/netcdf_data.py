@@ -33,7 +33,7 @@ class NetCDFData(Data):
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         self._nc_files: list = kwargs['nc_files'] if 'nc_files' in kwargs else None
-        self._time_variable = None
+        self._time_variable: xr.IndexVariable = None
 
         super(NetCDFData, self).__init__(url)
 
@@ -69,20 +69,22 @@ class NetCDFData(Data):
         raise KeyError("None of ", candidates,
                        " where found in ", self._dataset)
 
-    def timestamp_to_time_index(self, timestamp: int):
+    def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
-        time index for the time dimension.
+        time index(es) for the time dimension.
 
         Arguments:
-            timestamp {int} -- Raw timestamp.
+            timestamp {int or list} -- Raw timestamp(s).
 
         Returns:
-            [int] -- Time index.
+            [int or list] -- Time index(es).
         """
 
         time_var = self.time_variable
 
-        return np.where(time_var == timestamp)[0]
+        result = np.nonzero(np.isin(time_var, timestamp))[0]
+
+        return result if result.shape[0] > 1 else result[0]
 
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
@@ -527,9 +529,12 @@ class NetCDFData(Data):
         """Finds and returns the xArray.IndexVariable containing
             the time dimension in self._dataset
         """
-        if not self._time_variable:
-            self._time_variable = self.__find_variable(
-                ['time', 'time_counter', 'Times'])
+
+        if self._time_variable is not None:
+            return self._time_variable
+
+        self._time_variable = self.__find_variable(
+            ['time', 'time_counter', 'Times'])
         return self._time_variable
 
     @property

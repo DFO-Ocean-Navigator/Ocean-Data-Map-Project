@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 
@@ -8,7 +9,7 @@ from flask_babel import gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import time_index_to_datetime
+from data.utils import time_index_to_datetime, DateTimeEncoder
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
@@ -40,9 +41,8 @@ def generateScript(query: str, lang: str, scriptType: str):
 # Unchanged from v0.0
 #
 
-
 @bp_v1_0.route('/api/v1.0/datasets/')
-def query_datasets_v1_0():
+def datasets_query_v1_0():
     return routes.routes_impl.query_datasets_impl(request.args)
 
 
@@ -73,7 +73,7 @@ def variables_query_v1_0():
         with open_dataset(config) as ds:
 
             for v in ds.variables:
-                if ('3d_only' in args) and not (set(ds.depth_dimensions) & set(v.dimensions)):
+                if ('3d_only' in args) and not ds.variable_has_depth(v):
                     continue
 
                 if not config.variable[v].is_hidden:
@@ -96,16 +96,11 @@ def variables_query_v1_0():
     return jsonify(data)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/observationvariables/')
 def obs_vars_query_v1():
     return routes.routes_impl.obs_vars_query_impl()
 
-#
-# Unchanged from v0.0
-#
+
 @bp_v1_0.route('/api/v1.0/depth/')
 def depth_query_v1_0():
     """
@@ -129,7 +124,7 @@ def depth_query_v1_0():
 
     config = DatasetConfig(dataset)
 
-    with SQLiteDatabase(dataset.url) as db:
+    with SQLiteDatabase(config.url) as db:
         latest_timestamp = db.get_latest_timestamp(variable)
 
     data = []
@@ -159,17 +154,11 @@ def depth_query_v1_0():
     return jsonify(data)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale_v1_0(dataset: str, variable: str, scale: str):
     return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 
-#
-# Change to timestamp from v0.0
-#
 @bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
 def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
     config = DatasetConfig(dataset)
@@ -178,9 +167,6 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
         return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, date)
 
 
-# Changes from v0.0:
-# ~ Added timestamp conversion
-#
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
 def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
     config = DatasetConfig(dataset)
@@ -190,25 +176,16 @@ def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: 
         return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
 def class4_query_v1_0(q: str, class4_id: str):
     return routes.routes_impl.class4_query_impl(q, class4_id, 0)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/drifters/<string:q>/<string:drifter_id>')
 def drifter_query_v1_0(q: str, drifter_id: str):
     return routes.routes_impl.drifter_query_impl(q, drifter_id)
 
 
-#
-# Change to timestamp from v0.0
-#
 @bp_v1_0.route('/api/v1.0/stats/', methods=['GET', 'POST'])
 def stats_v1_0():
 
@@ -227,18 +204,12 @@ def stats_v1_0():
         return routes.routes_impl.stats_impl(args, query)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/subset/')
 def subset_query_v1_0():
     query = json.loads(request.args.get('query'))
     return routes.routes_impl.subset_query_impl(query)
 
 
-#
-# Change to timestamp from v0.0
-#
 @bp_v1_0.route('/api/v1.0/plot/', methods=['GET', 'POST'])
 def plot_v1_0():
 
@@ -276,59 +247,37 @@ def plot_v1_0():
             return Response(plotData, status=200, mimetype='application/json')
         return resp
 
-#
-# Unchanged from v0.0
-#
-
 
 @bp_v1_0.route('/api/v1.0/colors/')
 def colors_v1_0():
     return routes.routes_impl.colors_impl(request.args)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/colormaps/')
 def colormaps_v1_0():
     return routes.routes_impl.colormaps_impl()
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/colormaps.png')
 def colormap_image_v1_0():
     return routes.routes_impl.colormap_image_impl()
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/')
 def info_v1_0():
     return routes.routes_impl.info_impl()
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/<string:q>/')
 def query_v1_0(q: str):
     return routes.routes_impl.query_impl(q)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/<string:q>/<string:q_id>.json')
 def query_id_v1_0(q: str, q_id: str):
     return routes.routes_impl.query_id_impl(q, q_id)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
 def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_id: str):
     return routes.routes_impl.query_file_impl(q, projection, resolution, extent, file_id)
@@ -337,6 +286,10 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def timestamps():
     """
+    API Format: /api/timestamps/?dataset=''
+
+    dataset : Dataset to extract data - Can be found using /api/datasets
+
     Returns all timestamps available for a given variable in a dataset. This is variable-dependent
     because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
     3D variables may be daily.
@@ -360,45 +313,33 @@ def timestamps():
 
     vals = []
     with SQLiteDatabase(config.url) as db:
-        vals = db.get_all_timestamps(variable)
-    vals = time_index_to_datetime(vals, config.time_dim_units)
+        vals = db.get_timestamps(variable)
+    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
-    for idx, date in enumerate(vals):
+    for idx, date in enumerate(converted_vals):
         if config.quantum == 'month' or config.variable[variable].quantum == 'month':
             date = datetime.datetime(
                 date.year,
                 date.month,
                 15
             )
-        result.append({'id': idx, 'value': date})
+        result.append({'id': vals[idx], 'value': date})
     result = sorted(result, key=lambda k: k['id'])
 
-    class DateTimeEncoder(json.JSONEncoder):
-
-        def default(self, o):
-            if isinstance(o, datetime.datetime):
-                return o.isoformat()
-
-            return json.JSONEncoder.default(self, o)
     js = json.dumps(result, cls=DateTimeEncoder)
 
     resp = Response(js, status=200, mimetype='application/json')
     return resp
 
-#
-# Unchanged from v0.0
-#
+
 @bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
-#
-# Change to timestamp from v0.0
-#
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
 
     config = DatasetConfig(dataset)
     with open_dataset(config) as ds:
@@ -406,26 +347,17 @@ def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, datase
         return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
 
 
-#
-# Allow toggle of shaded relief
-#
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     hull_shade = shaded_relief == 'true'
     return routes.routes_impl.topo_impl(projection, zoom, x, y, hull_shade)
 
 
-#
-# Unchanged from v0.0
-#
 @bp_v1_0.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
     return routes.routes_impl.bathymetry_impl(projection, zoom, x, y)
 
 
-#
-# Request shapefiles
-#
 @bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
 def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     return routes.routes_impl.mbt_impl(projection, tiletype, zoom, x, y)

@@ -141,7 +141,7 @@ class Mercator(CalculatedData):
 
         return np.squeeze(output)
 
-    def get_raw_point(self, latitude, longitude, depth, time, variable):
+    def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
 
@@ -150,6 +150,8 @@ class Mercator(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -193,7 +195,7 @@ class Mercator(CalculatedData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable,
+    def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -204,6 +206,8 @@ class Mercator(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -288,7 +292,7 @@ class Mercator(CalculatedData):
         else:
             return res
 
-    def get_profile(self, latitude, longitude, time, variable):
+    def get_profile(self, latitude, longitude, timestamp, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
 
@@ -297,6 +301,8 @@ class Mercator(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+        time = self.timestamp_to_time_index(timestamp)
+
         res = self.__resample(
             self.latvar[miny:maxy],
             self.lonvar[minx:maxx],

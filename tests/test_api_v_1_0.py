@@ -8,8 +8,7 @@ from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
 
-app = create_app()
-app.testing = True
+app = create_app(testing=True)
 
 # Note that patches are applied in bottom-up order
 
@@ -23,6 +22,7 @@ class TestAPIv1(unittest.TestCase):
             "giops": {
                 "enabled": True,
                 "url": "tests/testdata/nemo_test.nc",
+                "time_dim_units": "seconds since 1950-01-01 00:00:00",
                 "variables": {
                     "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins"},
                 }
@@ -54,7 +54,6 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(resp_data[0]['scale'], [-5, 30])
         self.assertEqual(resp_data[0]['value'], 'Temperature')
 
-        
         res = self.app.get('/api/v1.0/variables/?dataset=giops&vectors')
 
         self.assertEqual(res.status_code, 200)
@@ -68,7 +67,6 @@ class TestAPIv1(unittest.TestCase):
 
         resp_data = self.__get_response_data(res)
         self.assertEqual(len(resp_data), 0)
-
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_latest_timestamp')
@@ -87,6 +85,24 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(len(res_data), 51)
         self.assertEqual(res_data[0]['id'], 'bottom')
         self.assertEqual(res_data[0]['value'], 'Bottom')
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_timestamps')
+    def test_timestamps_endpoint(self, patch_get_all_timestamps, patch_get_dataset_config):
+
+        patch_get_all_timestamps.return_value = sorted(
+            [2031436800, 2034072000])
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get(
+            '/api/v1.0/timestamps/?dataset=giops&variable=votemper')
+
+        self.assertEqual(res.status_code, 200)
+
+        res_data = self.__get_response_data(res)
+        self.assertEqual(len(res_data), 2)
+        self.assertEqual(res_data[0]['id'], 2031436800)
+        self.assertEqual(res_data[0]['value'], '2014-05-17T00:00:00+00:00')
 
 
 if __name__ == '__main__':
