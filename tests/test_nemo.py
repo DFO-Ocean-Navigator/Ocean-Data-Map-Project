@@ -52,9 +52,9 @@ class TestNemo(unittest.TestCase):
     def test_timestamp_to_time_index(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:
 
-            idx = n.timestamp_to_time_index(2034072000)
+            idx = n.timestamp_to_time_index(2031436800)
 
-            self.assertEqual(idx, 1)
+            self.assertEqual(idx, 0)
 
     def test_time_variable(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:

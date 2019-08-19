@@ -51,7 +51,7 @@ class TestMercator(unittest.TestCase):
             idx = n.timestamp_to_time_index(2119651200)
 
             self.assertEqual(idx, 0)
-    
+
     def test_time_variable(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             time_var = n.time_variable
