@@ -36,11 +36,6 @@ def generateScript(query: str, lang: str, scriptType: str):
   
   return resp
 
-
-#
-# Unchanged from v0.0
-#
-
 @bp_v1_0.route('/api/v1.0/datasets/')
 def datasets_query_v1_0():
     return routes.routes_impl.query_datasets_impl(request.args)
