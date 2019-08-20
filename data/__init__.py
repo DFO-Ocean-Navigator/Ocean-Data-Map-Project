@@ -12,6 +12,7 @@ from data.sqlite_database import SQLiteDatabase
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
 
+
 def open_dataset(dataset, **kwargs):
     """
     Opens a dataset.
@@ -159,6 +160,24 @@ def __get_nc_file_list(url: str, **kwargs):
 
     if not isinstance(kwargs['timestamp'], list):
         kwargs['timestamp'] = list(kwargs['timestamp'])
+
+def __get_nc_file_list(url: str, **kwargs):
+    with SQLiteDatabase(url) as db:
+
+        variable = kwargs['variable']
+        if not isinstance(variable, list):
+            variable = list(variable)
+
+        timestamp = kwargs['timestamp']
+        if 'endtime' in kwargs:
+            timestamp = db.get_timestamp_range(
+                timestamp, kwargs['endtime'], variable[0])
+
+        if not isinstance(timestamp, list):
+            timestamp = list(timestamp)
+
+        return db.get_netcdf_files(
+            timestamp, variable)
 
 
 def __is_mercator(variable_list: list):
