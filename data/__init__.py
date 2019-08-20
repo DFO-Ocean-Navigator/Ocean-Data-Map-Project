@@ -10,6 +10,7 @@ from data.sqlite_database import SQLiteDatabase
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
 
+
 def open_dataset(dataset, **kwargs):
     """
     Opens a dataset.
@@ -41,10 +42,8 @@ def open_dataset(dataset, **kwargs):
         if __is_sqlite_database(url):
             __check_kwargs(**kwargs)
             # Get required NC files from database and add to args
-            with SQLiteDatabase(url) as db:
-                args['nc_files'] = db.get_netcdf_files(kwargs['timestamp'], kwargs['variable'])
+            args['nc_files'] = __get_nc_file_list(url, **kwargs)
 
-        # Figure out which wrapper we need and cache it by URL
         if __is_mercator(variable_list):
             return mercator.Mercator(url, **args)
         elif __is_fvcom(variable_list):
@@ -70,13 +69,29 @@ def __is_sqlite_database(url: str):
 def __check_kwargs(**kwargs):
     if 'variable' not in kwargs:
         raise RuntimeError(
-            "Opening a dataset via sqlite requires the 'variable' keyword argument")
+            "Opening a dataset via sqlite requires the 'variable' keyword argument.")
     if 'timestamp' not in kwargs:
         raise RuntimeError(
-            "Opening a dataset via sqlite requires the 'timestamp' keyword argument")
+            "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
 
-    if not isinstance(kwargs['timestamp'], list):
-        kwargs['timestamp'] = list(kwargs['timestamp'])
+
+def __get_nc_file_list(url: str, **kwargs):
+    with SQLiteDatabase(url) as db:
+
+        variable = kwargs['variable']
+        if not isinstance(variable, list):
+            variable = list(variable)
+
+        timestamp = kwargs['timestamp']
+        if 'endtime' in kwargs:
+            timestamp = db.get_timestamp_range(
+                timestamp, kwargs['endtime'], variable[0])
+
+        if not isinstance(timestamp, list):
+            timestamp = list(timestamp)
+
+        return db.get_netcdf_files(
+            timestamp, variable)
 
 
 def __is_mercator(variable_list: list):

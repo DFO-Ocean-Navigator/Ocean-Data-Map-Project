@@ -229,10 +229,10 @@ class Plotter(metaclass=ABCMeta):
     def load_data(self):
         pass
 
-    def load_misc(self, data, variables):
-        self.variable_names = self.get_variable_names(data, variables)
-        self.variable_units = self.get_variable_units(data, variables)
-        self.scale_factors = self.get_variable_scale_factors(data, variables)
+    def load_misc(self, dataset, variables):
+        self.variable_names = self.get_variable_names(dataset, variables)
+        self.variable_units = self.get_variable_units(dataset, variables)
+        self.scale_factors = self.get_variable_scale_factors(dataset, variables)
 
     def plot(self, fig=None):
         

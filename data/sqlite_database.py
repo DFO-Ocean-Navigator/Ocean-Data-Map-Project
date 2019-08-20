@@ -37,12 +37,12 @@ class SQLiteDatabase:
     def __flatten_list(self, some_list: list):
         return list(itertools.chain(*some_list))
 
-    def get_netcdf_files(self, timestamp: list, variable: str):
+    def get_netcdf_files(self, timestamp: list, variable: list):
         """Retrieves the netCDF files that are mapped to the given timestamp(s) and variable.
 
         Arguments:
             * timestamp {list} -- List of raw netCDF time indices (e.g. 2195510400)
-            * variable {str} -- Key of the variable of interest (e.g. votemper)
+            * variable {list} -- List of the variables of interest (e.g. votemper)
 
         Returns:
             * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
@@ -64,8 +64,9 @@ class SQLiteDatabase:
         """
 
         for ts in timestamp:
-            self.c.execute(query, (variable, ts))
-            file_list.append(self.__flatten_list(self.c.fetchall()))
+            for v in variable:
+                self.c.execute(query, (variable, ts))
+                file_list.append(self.__flatten_list(self.c.fetchall()))
 
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
         return list(set(self.__flatten_list(file_list)))
