@@ -219,6 +219,36 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())[0]
 
+    def get_timestamp_range(self, starttime: int, endtime: int, variable: str):
+        """Retrieves all raw timestamps in the interval [starttime, endtime] for a variable.
+        
+        Arguments:
+            starttime {int} -- Starting timestamp
+            endtime {int} -- Ending timestamp
+            variable {str} -- Variable of intereste (e.g. votemper)
+
+        Returns:
+            [list] -- List of all timestamps in the given interval.
+        """
+
+        self.c.execute(
+            """
+            SELECT
+                timestamp
+            FROM
+                TimestampVariableFilepath tvf
+                JOIN Variables v ON tvf.variable_id = v.id
+                JOIN Timestamps t ON tvf.timestamp_id = t.id
+            WHERE
+                variable = ?
+                AND timestamp BETWEEN ?
+                and ?;
+
+            """, (variable, starttime, endtime, )
+        )
+
+        return self.__flatten_list(self.c.fetchall())
+
     def get_all_variables(self):
         """Retrieves all variables from the open database (including depth, time, etc.)
 

@@ -34,6 +34,13 @@ class TestSqliteDatabase(TestCase):
 
             self.assertEqual(len(variables), 12)
 
+    def test_get_timestamp_range_returns_range(self):
+
+        with SQLiteDatabase(self.historical_db) as db:
+            rng = db.get_timestamp_range(2144966400, 2145225600, "vo")
+
+            self.assertEqual(len(rng), 4)
+
     def test_get_variable_dims_returns_correct_dims(self):
 
         expected_dims = sorted(["depthv", "time_counter", "x", "y"])
