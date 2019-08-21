@@ -281,7 +281,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def timestamps():
     """
-    API Format: /api/timestamps/?dataset=''
+    API Format: /api/timestamps/?dataset=''&variable=''
 
     dataset : Dataset to extract data - Can be found using /api/datasets
 
@@ -336,10 +336,10 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
 
-    config = DatasetConfig(dataset)
-    with open_dataset(config) as ds:
-        date = ds.convert_to_timestamp(time)
-        return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, date, depth, scale, zoom, x, y)
+    #config = DatasetConfig(dataset)
+    #with open_dataset(config) as ds:
+        #date = ds.convert_to_timestamp(time)
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')

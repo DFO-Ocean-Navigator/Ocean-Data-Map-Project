@@ -79,10 +79,11 @@ export default class DatasetSelector extends React.Component {
             state={this.props.state.starttime}
             def=''
             quantum={this.props.state.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
+            url={"/api/v1.0/timestamps/?dataset=" +
                 this.props.state.dataset +
-                "&quantum=" +
-                this.props.state.dataset_quantum}
+                "&variable=" +
+                this.props.state.variable
+            }
             title={_("Start Time")}
             onUpdate={this.onUpdate}
             max={this.props.state.time}
@@ -94,10 +95,11 @@ export default class DatasetSelector extends React.Component {
             state={this.props.state.time}
             def=''
             quantum={this.props.state.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
+            url={"/api/v1.0/timestamps/?dataset=" +
                 this.props.state.dataset +
-                "&quantum=" +
-                this.props.state.dataset_quantum}
+                "&variable=" +
+                this.props.state.variable
+            }
             title={_("End Time")}
             onUpdate={this.onUpdate}
             min={this.props.state.starttime}
@@ -113,10 +115,10 @@ export default class DatasetSelector extends React.Component {
           def={-1}
           quantum={this.props.state.dataset_quantum}
           onUpdate={this.onUpdate}
-          url={"/api/timestamps/?dataset=" +
+          url={"/api/v1.0/timestamps/?dataset=" +
             this.props.state.dataset +
-            "&quantum=" +
-            this.props.state.dataset_quantum
+            "&variable=" +
+            this.props.state.variable
           }
           title={_("Time (UTC)")}
         />;
@@ -141,7 +143,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.dataset}
           def={"defaults.dataset"}
           onUpdate={this.onUpdate}
-          url='/api/datasets/'
+          url='/api/v1.0/datasets/'
           title={_("Dataset")}></ComboBox>
 
         <ComboBox
@@ -150,7 +152,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.variable}
           def={"defaults.dataset"}
           onUpdate={this.variableUpdate}
-          url={"/api/variables/?vectors&dataset=" + this.props.state.dataset + variables
+          url={"/api/v1.0/variables/?vectors&dataset=" + this.props.state.dataset + variables
           }
           title={_("Variable")}
         ><h1>{_("Variable")}</h1></ComboBox>
@@ -162,7 +164,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.depth}
           def={0}
           onUpdate={this.onUpdate}
-          url={"/api/depth/?variable=" +
+          url={"/api/v1.0/depth/?variable=" +
             this.props.state.variable +
             "&dataset=" +
             this.props.state.dataset
@@ -194,4 +196,3 @@ DatasetSelector.propTypes = {
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
 };
-

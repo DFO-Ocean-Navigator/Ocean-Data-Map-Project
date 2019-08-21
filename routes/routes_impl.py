@@ -532,7 +532,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
 
 def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     """
-        Produces the data tiles
+        Produces the map data tiles
     """
     
     cache_dir = current_app.config['CACHE_DIR']
