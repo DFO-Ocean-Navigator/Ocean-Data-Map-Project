@@ -38,13 +38,6 @@ class TestFvcom(unittest.TestCase):
             self.assertEqual(variables['h'].unit, 'm')
             self.assertEqual(variables['h'].dimensions, ["node"])
 
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_variable_depth(self, mock_query_func):
-        mock_query_func.return_value = self.variable_list_mock
-
-        with Fvcom('tests/testdata/fvcom_test.nc') as n:
-            self.assertFalse(n.variable_has_depth('temp'))
-
     def test_timestamp_to_time_index(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             idx = n.timestamp_to_time_index(57209.043)

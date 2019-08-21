@@ -7,6 +7,8 @@ class Variable(object):
     Provides a common interface between dataset types (xarray vs netCDF4).
     """
 
+    __depth_dims = {'depth', 'deptht', 'z'}
+
     def __init__(self, key, name, unit, dimensions, valid_min=None,
                  valid_max=None):
         self._key: str = key
@@ -39,6 +41,17 @@ class Variable(object):
     @property
     def valid_max(self):
         return self._valid_max
+
+    def has_depth(self):
+        """Checks if this variable has depth (i.e. is 3D).
+
+        Returns:
+            [bool] -- If variable has depth.
+        """
+        return self.__depth_dims & set(self.dimensions)
+
+    def is_surface_only(self):
+        return not self.has_depth()
 
     def __str__(self):
         return self._key

@@ -40,13 +40,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ['time', 'depth', 'latitude', 'longitude']))
 
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_variable_has_depth(self, mock_query_func):
-        mock_query_func.return_value = self.variable_list_mock
-
-        with Mercator('tests/testdata/mercator_test.nc') as n:
-            self.assertTrue(n.variable_has_depth("votemper"))
-
     def test_timestamp_to_time_index(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             idx = n.timestamp_to_time_index(2119651200)

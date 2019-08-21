@@ -57,7 +57,7 @@ def variables_query_v1_0():
     args = request.args
 
     if 'dataset' not in args:
-        raise APIError("Please Specify a dataset Using ?dataset='...' ")
+        raise APIError("Please specify a dataset Using ?dataset='...' ")
 
     dataset = args.get('dataset')
     config = DatasetConfig(dataset)
@@ -65,10 +65,10 @@ def variables_query_v1_0():
     data = []
 
     if 'vectors_only' not in args:
-        with open_dataset(config) as ds:
+        with SQLiteDatabase(config.url) as db:
 
-            for v in ds.variables:
-                if ('3d_only' in args) and not ds.variable_has_depth(v):
+            for v in db.get_data_variables():
+                if ('3d_only' in args) and v.is_surface_only():
                     continue
 
                 if not config.variable[v].is_hidden:
@@ -127,7 +127,9 @@ def depth_query_v1_0():
         if not variable in ds.variables:
             raise APIError("Variable not found in dataset: ", variable)
 
-        if ds.variable_has_depth(variable):
+        v = ds.variables[variable]
+
+        if v.has_depth():
             if str(args.get('all')).lower() in ['true', 'yes', 'on']:
                 data.append(
                     {'id': 'all', 'value': gettext('All Depths')})
@@ -337,7 +339,7 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
 
     #config = DatasetConfig(dataset)
-    #with open_dataset(config) as ds:
+    # with open_dataset(config) as ds:
         #date = ds.convert_to_timestamp(time)
     return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
 

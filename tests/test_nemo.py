@@ -42,14 +42,6 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ["deptht", "time_counter", "y", "x"]))
 
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_variable_has_depth(self, mock_query_func):
-        mock_query_func.return_value = self.variable_list_mock
-
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-
-            self.assertTrue(n.variable_has_depth('votemper'))
-
     def test_timestamp_to_time_index(self):
         with Nemo('tests/testdata/nemo_test.nc') as n:
 
