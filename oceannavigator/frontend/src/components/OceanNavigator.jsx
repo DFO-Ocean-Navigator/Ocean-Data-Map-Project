@@ -120,6 +120,8 @@ export default class OceanNavigator extends React.Component {
     this.updateOptions = this.updateOptions.bind(this);
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
+    this.get_variables_promise = this.get_variables_promise.bind(this);
+    this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
   }
   
   //Updates the page language upon user request
@@ -239,6 +241,20 @@ export default class OceanNavigator extends React.Component {
     });
   }
 
+  get_variables_promise(dataset) {
+    return $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
+  }
+
+  get_timestamp_promise(dataset, variable) {
+
+      return $.ajax(
+      "/api/v1.0/timestamps/?dataset=" +
+      dataset +
+      "&variable=" +
+      variable
+    ).promise();
+  }
+
   changeDataset(dataset, state) {
     // Busy modal
     this.setState({
@@ -246,7 +262,36 @@ export default class OceanNavigator extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+    const var_promise = this.get_variables_promise(dataset);
+    $.when(var_promise).done(function(variable_result) {
+
+      let newVariable = this.state.variable;
+      if ($.inArray(this.state.variable, variable_result.map(function(e)
+      { return e.id; })) == -1) {
+        newVariable = variable_result[0].id;
+      }
+
+
+      let newTime = 0;
+      const time_promise = this.get_timestamp_promise(dataset, newVariable);
+      $.when(time_promise).done(function(time) {
+        newTime = time[time.length-1].id;
+      }.bind(this));
+
+
+      if (state === undefined) {
+        state = { };
+      }
+      state.dataset = dataset;
+      state.variable = newVariable;
+      state.time = newTime;
+      state.busy = false;
+
+      this.setState(state);
+
+    }.bind(this));
+
+/*
     const time_promise = $.ajax(
       "/api/timestamp/" +
       this.state.dataset + "/" +
@@ -275,6 +320,7 @@ export default class OceanNavigator extends React.Component {
 
       this.setState(state);
     }.bind(this));
+   */
   }
 
   action(name, arg, arg2, arg3) {

@@ -927,7 +927,7 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = "/tiles/v0.1" + 
+    props.url = "/api/v1.0/tiles/" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
@@ -957,7 +957,7 @@ export default class Map extends React.PureComponent {
     }
     this.scaleViewer = new app.ScaleViewer({
       image: (
-        `/scale/${this.props.state.dataset}` +
+        `/api/v1.0/scale/${this.props.state.dataset}` +
         `/${this.props.state.variable}` +
         `/${this.props.scale}.png`
       )
