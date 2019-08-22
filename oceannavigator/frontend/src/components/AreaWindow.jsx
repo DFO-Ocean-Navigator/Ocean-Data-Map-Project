@@ -439,7 +439,6 @@ export default class AreaWindow extends React.Component {
           title={this.state.output_timerange ? _("Start Time") : _("Time")}
           onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
           max={this.state.dataset_0.time + 1}
-          updateDate={this.updateDate}
         />
 
         <div style={{display: this.state.output_timerange ? "block" : "none",}}>

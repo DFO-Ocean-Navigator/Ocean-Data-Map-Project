@@ -87,7 +87,6 @@ export default class DatasetSelector extends React.Component {
             title={_("Start Time")}
             onUpdate={this.onUpdate}
             max={this.props.state.time}
-            updateDate={this.updateDate}
           />
           <TimePicker
             key='time'
