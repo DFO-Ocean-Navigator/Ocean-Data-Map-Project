@@ -39,7 +39,7 @@ class NetCDFData(Data):
 
     def __enter__(self):
         if self._nc_files:
-            self._dataset = xr.open_mfdataset(self._nc_files)
+            self._dataset = xr.open_mfdataset(self._nc_files, decode_times=False)
         else:
             # Don't decode times since we do it anyways.
             self._dataset = xr.open_dataset(self.url, decode_times=False)
