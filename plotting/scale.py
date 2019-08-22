@@ -7,6 +7,8 @@ from data import open_dataset
 from oceannavigator import DatasetConfig
 from plotting.utils import normalize_scale
 
+def __magnitude(a, b):
+    return np.sqrt(a.dot(a) + b.dot(b))
 
 def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, radius, neighbours):
     """
@@ -23,13 +25,11 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
     config = DatasetConfig(dataset)
 
     with open_dataset(config, variable=variables, timestamp=timestamp) as ds:
-        
-        time = ds.timestamp_to_time_index(timestamp)
 
         d = ds.get_area(
             np.array([lat, lon]),
             depth,
-            time,
+            timestamp,
             variables[0],
             interp,
             radius,
@@ -41,12 +41,12 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
             d1 = ds.get_area(
                 np.array([lat, lon]),
                 depth,
-                time,
+                timestamp,
                 variables[1],
                 interp,
                 radius,
                 neighbours
             )
-            d = np.sqrt(d0.dot(d0) + d1.dot(d1)) # Use your dot-product instead of exponents
+            d = __magnitude(d1, d2)# Use your dot-product instead of exponents
 
         return normalize_scale(d, config.variable[",".join(variables)])
