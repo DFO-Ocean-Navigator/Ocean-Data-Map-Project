@@ -145,7 +145,7 @@ def __get_nc_file_list(url: str, **kwargs):
 
         variable = kwargs['variable']
         if not isinstance(variable, list):
-            variable = list(variable)
+            variable = [variable]
 
         timestamp = kwargs['timestamp']
         if 'endtime' in kwargs:
@@ -153,7 +153,7 @@ def __get_nc_file_list(url: str, **kwargs):
                 timestamp, kwargs['endtime'], variable[0])
 
         if not isinstance(timestamp, list):
-            timestamp = list(timestamp)
+            timestamp = [timestamp]
 
         return db.get_netcdf_files(
             timestamp, variable)
