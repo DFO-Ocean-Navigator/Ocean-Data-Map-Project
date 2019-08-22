@@ -927,7 +927,7 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = "/api/v1.0/tiles/" + 
+    props.url = "/api/v1.0/tiles" + 
                 `/${this.props.options.interpType}` + 
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +

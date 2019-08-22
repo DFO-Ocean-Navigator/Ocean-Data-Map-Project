@@ -247,7 +247,7 @@ export default class OceanNavigator extends React.Component {
 
   get_timestamp_promise(dataset, variable) {
 
-      return $.ajax(
+    return $.ajax(
       "/api/v1.0/timestamps/?dataset=" +
       dataset +
       "&variable=" +
@@ -276,18 +276,17 @@ export default class OceanNavigator extends React.Component {
       const time_promise = this.get_timestamp_promise(dataset, newVariable);
       $.when(time_promise).done(function(time) {
         newTime = time[time.length-1].id;
+
+        if (state === undefined) {
+          state = {};
+        }
+        state.dataset = dataset;
+        state.variable = newVariable;
+        state.time = newTime;
+        state.busy = false;
+
+        this.setState(state);
       }.bind(this));
-
-
-      if (state === undefined) {
-        state = { };
-      }
-      state.dataset = dataset;
-      state.variable = newVariable;
-      state.time = newTime;
-      state.busy = false;
-
-      this.setState(state);
 
     }.bind(this));
 
