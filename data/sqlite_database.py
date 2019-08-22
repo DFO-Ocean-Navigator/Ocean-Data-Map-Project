@@ -65,7 +65,7 @@ class SQLiteDatabase:
 
         for ts in timestamp:
             for v in variable:
-                self.c.execute(query, (variable, ts))
+                self.c.execute(query, (v, ts))
                 file_list.append(self.__flatten_list(self.c.fetchall()))
 
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
