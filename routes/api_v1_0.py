@@ -153,6 +153,16 @@ def depth_query_v1_0():
 
 @bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
 def scale_v1_0(dataset: str, variable: str, scale: str):
+    """
+    API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
+
+    <string:dataset>  : Dataset to extract data
+    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <string:scale>    : Desired scale
+
+    Returns a scale bar
+    """
+
     return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 

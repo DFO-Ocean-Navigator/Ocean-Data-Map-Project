@@ -104,6 +104,17 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res_data[0]['id'], 2031436800)
         self.assertEqual(res_data[0]['value'], '2014-05-17T00:00:00+00:00')
 
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_scale_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30.png')
+
+        self.assertEqual(res.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()
