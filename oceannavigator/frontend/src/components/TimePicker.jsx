@@ -46,6 +46,7 @@ export default class TimePicker extends React.Component {
     this.getMinMaxTimestamps = this.getMinMaxTimestamps.bind(this);
     this.getNextTimestamp = this.getNextTimestamp.bind(this);
     this.getPrevTimestamp = this.getPrevTimestamp.bind(this);
+    this.getTimestampFromIndex = this.getTimestampFromIndex.bind(this);
   }
 
   componentDidMount() {
@@ -65,6 +66,15 @@ export default class TimePicker extends React.Component {
     ) {
       this.populate(nextProps);
     }
+  }
+
+  getTimestampFromIndex(index) {
+    const keys = Object.keys(this.state.map);
+    if (index < 0) {
+      return keys[keys.length + index];
+    }
+
+    return keys[index];
   }
 
   getMinMaxTimestamps(props, data) {
@@ -265,16 +275,18 @@ export default class TimePicker extends React.Component {
           this.props.onUpdate(this.props.id, times[0].id);
         }
       }
-    } else if (this.refs.picker != null) {
-      if (
-        this.props.quantum == "month" &&
-        $.data(this.refs.picker, "KidSysco-MonthPicker")
-      ) {
+    } 
+    else if (this.refs.picker !== null) {
+      
+      if (this.props.quantum == "month" &&
+        $.data(this.refs.picker, "KidSysco-MonthPicker")) 
+      {
         d = $(this.refs.picker).MonthPicker("GetSelectedDate");
-      } else {
+      } 
+      else {
         d = $(this.refs.picker).datepicker("getDate");
       }
-      if (d != null) {
+      if (d !== null) {
         const utcDate = new Date(
           Date.UTC(
             d.getFullYear(),
@@ -290,11 +302,12 @@ export default class TimePicker extends React.Component {
           this.props.id,
           this.state.revmap[utcDate.toUTCString()]
         );
-      } else {
+      }
+      else {
         if (this.props.state < 0) {
           this.props.onUpdate(
             this.props.id,
-            this.state.data.length + this.props.state
+            this.getTimestampFromIndex(this.props.state)
           );
         }
       }
