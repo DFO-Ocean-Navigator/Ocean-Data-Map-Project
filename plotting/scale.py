@@ -1,15 +1,18 @@
+import re
+
 import numpy as np
 from pyproj import Proj
-from oceannavigator import DatasetConfig
-import re
+
 from data import open_dataset
+from oceannavigator import DatasetConfig
 from plotting.utils import normalize_scale
 
-"""
+
+def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, radius, neighbours):
+    """
     Calculates and returns the range (min, max values) of a selected variable,
     given the current map extents.
-"""
-def get_scale(dataset, variable, depth, time, projection, extent, interp, radius, neighbours):
+    """
     x = np.linspace(extent[0], extent[2], 50)
     y = np.linspace(extent[1], extent[3], 50)
     xx, yy = np.meshgrid(x, y)
@@ -19,9 +22,10 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
     variables = variable.split(",")
     config = DatasetConfig(dataset)
 
-    with open_dataset(config) as ds:
-        timestamp = ds.timestamps[time]
+    with open_dataset(config, variable=variables, timestamp=timestamp) as ds:
         
+        time = ds.timestamp_to_time_index(timestamp)
+
         d = ds.get_area(
             np.array([lat, lon]),
             depth,
@@ -31,7 +35,7 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
             radius,
             neighbours
         )
-        
+
         if len(variables) > 1:
             d0 = d
             d1 = ds.get_area(
@@ -43,6 +47,6 @@ def get_scale(dataset, variable, depth, time, projection, extent, interp, radius
                 radius,
                 neighbours
             )
-            d = np.sqrt(d0 ** 2 + d1 ** 2)
+            d = np.sqrt(d0.dot(d0) + d1.dot(d1)) # Use your dot-product instead of exponents
 
         return normalize_scale(d, config.variable[",".join(variables)])
