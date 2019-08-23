@@ -47,6 +47,7 @@ export default class TimePicker extends React.Component {
     this.getNextTimestamp = this.getNextTimestamp.bind(this);
     this.getPrevTimestamp = this.getPrevTimestamp.bind(this);
     this.getTimestampFromIndex = this.getTimestampFromIndex.bind(this);
+    this.getIndexFromTimestamp = this.getIndexFromTimestamp.bind(this);
   }
 
   componentDidMount() {
@@ -68,6 +69,11 @@ export default class TimePicker extends React.Component {
     }
   }
 
+  getIndexFromTimestamp(timestamp) {
+    const keys = Object.keys(this.state.map);
+    return keys.indexOf(timestamp.toString());
+  }
+
   getTimestampFromIndex(index) {
     const keys = Object.keys(this.state.map);
     if (index < 0) {
@@ -78,11 +84,9 @@ export default class TimePicker extends React.Component {
   }
 
   getMinMaxTimestamps(props, data) {
-    const keys = Object.keys(this.state.map);
-    
     let min = data[0].id;
     let max = data[data.length - 1].id;
-      
+
     if ("min" in props) {
       min = this.getNextTimestamp(parseInt(props.min));
     }
@@ -95,13 +99,13 @@ export default class TimePicker extends React.Component {
 
   getNextTimestamp(timestamp) {
     const keys = Object.keys(this.state.map);
-    const nextIndex = keys.indexOf(timestamp) + 1;
+    const nextIndex = keys.indexOf(timestamp.toString()) + 1;
     return keys[nextIndex];
   }
 
   getPrevTimestamp(timestamp) {
     const keys = Object.keys(this.state.map);
-    const prevIndex = keys.indexOf(timestamp) - 1;
+    const prevIndex = keys.indexOf(timestamp.toString()) - 1;
     return keys[prevIndex];
   }
 
@@ -112,7 +116,7 @@ export default class TimePicker extends React.Component {
         dataType: "json",
         cache: false,
 
-        success: function(data) {
+        success: function (data) {
           let map = {};
           let revmap = {};
 
@@ -147,7 +151,7 @@ export default class TimePicker extends React.Component {
               min: min,
               max: max
             },
-            function() {
+            function () {
               switch (props.quantum) {
                 case "month":
                   $(this.refs.picker).MonthPicker({
@@ -156,11 +160,11 @@ export default class TimePicker extends React.Component {
                     OnAfterMenuClose: this.pickerChange,
                     MinMonth: new Date(
                       map[min].getTime() +
-                        map[min].getTimezoneOffset() * 60 * 1000
+                      map[min].getTimezoneOffset() * 60 * 1000
                     ),
                     MaxMonth: new Date(
                       map[max].getTime() +
-                        map[max].getTimezoneOffset() * 60 * 1000
+                      map[max].getTimezoneOffset() * 60 * 1000
                     ),
                     i18n: {
                       year: _("Year"),
@@ -235,7 +239,7 @@ export default class TimePicker extends React.Component {
           );
         }.bind(this),
 
-        error: function(xhr, status, err) {
+        error: function (xhr, status, err) {
           console.warn(props.url, status, err.toString());
         }.bind(this)
       });
@@ -251,7 +255,7 @@ export default class TimePicker extends React.Component {
       var times = [];
       d = $(this.refs.picker).datepicker("getDate");
       const isodatestr = dateFormat(d, "yyyy-mm-dd");
-      
+
       for (let i = 0; i < this.state.data.length; ++i) {
         if (this.state.data[i].value.indexOf(isodatestr) === 0) {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
@@ -275,14 +279,13 @@ export default class TimePicker extends React.Component {
           this.props.onUpdate(this.props.id, times[0].id);
         }
       }
-    } 
+    }
     else if (this.refs.picker !== null) {
-      
+
       if (this.props.quantum == "month" &&
-        $.data(this.refs.picker, "KidSysco-MonthPicker")) 
-      {
+        $.data(this.refs.picker, "KidSysco-MonthPicker")) {
         d = $(this.refs.picker).MonthPicker("GetSelectedDate");
-      } 
+      }
       else {
         d = $(this.refs.picker).datepicker("getDate");
       }
@@ -332,7 +335,7 @@ export default class TimePicker extends React.Component {
       {
         value: value
       },
-      function() {
+      function () {
         this.updatePicker(old_value, value);
       }.bind(this)
     );
@@ -346,7 +349,7 @@ export default class TimePicker extends React.Component {
       {
         value: value
       },
-      function() {
+      function () {
         this.updatePicker(old_value, value);
       }.bind(this)
     );
@@ -355,9 +358,12 @@ export default class TimePicker extends React.Component {
   }
 
   updatePicker(oldstate, newstate) {
+    const old_idx = this.getIndexFromTimestamp(oldstate);
+    const new_idx = this.getIndexFromTimestamp(newstate);
+
     if (
-      this.state.data[oldstate].value.substring(0, 10) !==
-      this.state.data[newstate].value.substring(0, 10)
+      this.state.data[old_idx].value.substring(0, 10) !==
+      this.state.data[new_idx].value.substring(0, 10)
     ) {
       this.pickerChange();
     }
@@ -401,7 +407,7 @@ export default class TimePicker extends React.Component {
     }
 
     let timeinput = null;
-    const options = this.state.times.map(function(t) {
+    const options = this.state.times.map(function (t) {
       return (
         <option key={t.id} value={t.id}>
           {t.value}
