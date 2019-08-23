@@ -124,10 +124,8 @@ def scale(args):
         variable_unit = config.variable[",".join(variable)].unit
         variable_name = config.variable[",".join(variable)].name
     else:
-        with SQLiteDatabase(config.url) as db:
-            variables = db.get_data_variables()
-            variable_unit = config.variable[variables[variable[0]]].unit
-            variable_name = config.variable[variables[variable[0]]].name
+        variable_unit = config.variable[variable[0]].unit
+        variable_name = config.variable[variable[0]].name
 
     cmap = colormap.find_colormap(variable_name)
 
