@@ -69,8 +69,6 @@ def __is_aggregated_or_raw_netcdf(url: str):
 def __is_sqlite_database(url: str):
     return url.endswith(".sqlite3")
 
-def __meta_only(**kwargs):
-    return kwargs.get('meta_only', False)
 
 def __meta_only(**kwargs):
     return kwargs.get('meta_only', False)
@@ -152,8 +150,9 @@ def __get_nc_file_list(url: str, **kwargs):
         calculated_variables = datasetconfig.calculated_variables
         if variable[0] in calculated_variables:
             regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
-            equation = calculated_variables[variable[0]].equation
-            variable = re.findall(regex, equation)
+            equation = calculated_variables[variable[0]]['equation']
+            variable = list(set(re.findall(regex, equation)) &
+                            set(db.get_data_variables(raw=True)))
 
         timestamp = kwargs['timestamp']
         if 'endtime' in kwargs:
