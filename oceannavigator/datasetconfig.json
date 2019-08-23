@@ -7,6 +7,7 @@
         "name": "GIOPS Monthly",
         "quantum": "month",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
         "url": "http://localhost:8080/thredds/dodsC/giops/monthly/aggregated.ncml",
         "variables": {
@@ -246,6 +247,7 @@
         "quantum": "day",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "GIOPS Daily Values from CONCEPTS",
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",

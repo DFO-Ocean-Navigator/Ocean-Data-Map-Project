@@ -74,6 +74,10 @@ class DatasetConfig():
         return self._get_attribute("help")
 
     @property
+    def grid_angle_file_url(self):
+        return self._get_attribute("grid_angle_file_url")
+
+    @property
     def quantum(self) -> str:
         """
         Returns the "quantum" (aka "time scale") of a dataset

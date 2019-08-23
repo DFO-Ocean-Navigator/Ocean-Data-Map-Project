@@ -110,8 +110,14 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
         if timestamp[0] == -1:
             timestamp[0] = db.get_latest_timestamp(variable[0])
 
-        return db.get_netcdf_files(
+        file_list = db.get_netcdf_files(
             timestamp, variable)
+
+        angle_file_url = datasetconfig.angle_file_url
+        if angle_file_url:
+            file_list.append(angle_file_url)
+
+        return file_list
 
 
 def __is_mercator(variable_list: list):
