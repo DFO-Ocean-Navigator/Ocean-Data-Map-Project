@@ -119,11 +119,12 @@ def depth_query_v1_0():
 
     config = DatasetConfig(dataset)
 
+    latest_timestamp = None
     with SQLiteDatabase(config.url) as db:
         latest_timestamp = db.get_latest_timestamp(variable)
 
     data = []
-    with open_dataset(config, meta_only=True) as ds:
+    with open_dataset(config, variable=variable, timestamp=latest_timestamp) as ds:
         if not variable in ds.variables:
             raise APIError("Variable not found in dataset: ", variable)
 
