@@ -40,7 +40,7 @@ class NetCDFData(Data):
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):
-        if self._meta_only:
+        if not self._meta_only:
             if self._nc_files:
                 self._dataset = xr.open_mfdataset(self._nc_files, decode_times=False)
             else:
