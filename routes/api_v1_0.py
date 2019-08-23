@@ -214,6 +214,7 @@ def subset_query_v1_0():
 @bp_v1_0.route('/api/v1.0/plot/', methods=['GET', 'POST'])
 def plot_v1_0():
 
+    args = None
     if request.method == 'GET':
         args = request.args
     else:
@@ -224,29 +225,18 @@ def plot_v1_0():
 
     query = json.loads(args.get('query'))
 
-    config = DatasetConfig(query.get('dataset'))
-    with open_dataset(config) as dataset:
-        if 'time' in query:
-            query['time'] = dataset.convert_to_timestamp(query.get('time'))
-        else:
-            query['starttime'] = dataset.convert_to_timestamp(
-                query.get('starttime'))
-            query['endtime'] = dataset.convert_to_timestamp(
-                query.get('endtime'))
+    resp = routes.routes_impl.plot_impl(query, args)
 
-        resp = routes.routes_impl.plot_impl(args, query)
-
-        m = hashlib.md5()
-        m.update(str(resp).encode())
-        if 'data' in request.args:
-            plotData = {
-                'data': str(resp),
-                'shape': resp.shape,
-                'mask': str(resp.mask)
-            }
-            plotData = json.dumps(plotData)
-            return Response(plotData, status=200, mimetype='application/json')
-        return resp
+    if 'data' in args:
+        plotData = {
+            'data': str(resp),
+            'shape': resp.shape,
+            'mask': str(resp.mask)
+        }
+        plotData = json.dumps(plotData)
+        return Response(plotData, status=200, mimetype='application/json')
+    
+    return resp
 
 
 @bp_v1_0.route('/api/v1.0/colors/')

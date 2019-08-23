@@ -17,16 +17,17 @@ from oceannavigator import DatasetConfig
 
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.dataset_name: str = dataset_name
         self.dataset_config: DatasetConfig = DatasetConfig(dataset_name)
         self.query: dict = query
-        self.format: str = format
-        self.dpi: int = 72
-        self.size: str = '11x9'
+        self.format: str = kwargs['format']
+        self.dpi: int = int(kwargs['dpi'])
+        self.size: str = kwargs['size']
         self.plotTitle: str = None
         self.compare: bool = False
         self.data = None
+        self.time: int = None
         self.variables = None
         self.variable_names = None
         self.variable_units = None
@@ -35,22 +36,16 @@ class Plotter(metaclass=ABCMeta):
         self.date_formatter = None
         # Init interpolation stuff
         self.interp: str = "gaussian"
-        self.radius: int = 25000 # radius in meters
+        self.radius: int = 25000  # radius in meters
         self.neighbours: int = 10
-        self.filetype, self.mime = utils.get_mimetype(format)
-        self.filename = utils.get_filename(
+        self.filetype, self.mime = utils.get_mimetype(kwargs['format'])
+        self.filename: str = utils.get_filename(
             self.plottype,
             dataset_name,
             self.filetype
         )
-    
-    def prepare_plot(self, **kwargs):
-        if 'size' in kwargs and kwargs.get('size') is not None:
-            self.size = kwargs.get('size')
 
-        if 'dpi' in kwargs and kwargs.get('dpi') is not None:
-            self.dpi = float(kwargs.get('dpi'))
-
+    def prepare_plot(self):
         # Extract requested data
         self.parse_query(self.query)
         self.load_data()
@@ -59,8 +54,8 @@ class Plotter(metaclass=ABCMeta):
 
     # Called by routes_impl.py to parse query, load data, and return the generated file
     # to be displayed by Javascript.
-    def run(self, **kwargs):
-        self.prepare_plot(**kwargs)
+    def run(self):
+        _ = self.prepare_plot()
 
         if self.filetype == 'csv':
             return self.csv()
@@ -82,7 +77,7 @@ class Plotter(metaclass=ABCMeta):
         if query.get('interp') is not None:
             self.interp = query.get('interp')
         if query.get('radius') is not None:
-            self.radius = query.get('radius') * 1000 # Convert to meters
+            self.radius = query.get('radius') * 1000  # Convert to meters
         if query.get('neighbours') is not None:
             self.neighbours = query.get('neighbours')
 
@@ -102,32 +97,32 @@ class Plotter(metaclass=ABCMeta):
 
             try:
                 # Variable scale
-                self.compare['scale'] = parse_scale(self.compare['scale'])
+                self.compare['scale'] = self.__get_scale(self.compare['scale'])
             except KeyError:
                 print("Ignoring scale attribute.")
             try:
                 # Difference plot scale
-                self.compare['scale_diff'] = parse_scale(self.compare['scale_diff'])
+                self.compare['scale_diff'] = self.__get_scale(
+                    self.compare['scale_diff'])
             except KeyError:
                 print("Ignoring scale_diff attribute.")
 
-        
         self.cmap = self.__get_colormap(query.get('colormap'))
 
-        self.linearthresh = self.__get_linear_threshold(query.get('linearthresh'))
+        self.linearthresh = self.__get_linear_threshold(
+            query.get('linearthresh'))
 
         self.depth = self.__get_depth(query.get('depth'))
 
         self.showmap = self.__get_showmap(query.get('showmap'))
 
-
     def __get_date_formatter(self, quantum: str):
         """
         Returns the correct lambda to format a date given a quantum.
-        
+
         Arguments:
             quantum {str} -- Dataset quantum ("hour", "month", "day")
-        
+
         Returns:
             [lambda] -- Lambda that formats a given date string
         """
@@ -139,35 +134,33 @@ class Plotter(metaclass=ABCMeta):
         else:
             return lambda x: format_date(x, "long")
 
-
     def __get_scale(self, query_scale: str):
         """
         Splits a given query scale into a list.
-        
+
         Arguments:
             query_scale {str} -- Comma-separated min/max values for variable data range.
-        
+
         Returns:
             [list] -- List of min/max values of query_scale
         """
 
         if query_scale is None or 'auto' in query_scale:
-            return None     
-        
-        return [float(x) for x in query_scale.split(',')]
+            return None
 
+        return [float(x) for x in query_scale.split(',')]
 
     def __get_variables(self, variables: str):
         """
         Splits a given variable string into a list.
-        
+
         Arguments:
             variables {str} -- Comma-separated variable keys
-        
+
         Returns:
             [list] -- List of varaible keys from variables
         """
-        
+
         if variables is None:
             variables = ['votemper']
 
@@ -175,7 +168,6 @@ class Plotter(metaclass=ABCMeta):
             variables = variables.split(',')
 
         return [v for v in variables if v != '']
-
 
     def __get_time(self, param: str):
         if param is None or len(str(param)) == 0:
@@ -186,13 +178,11 @@ class Plotter(metaclass=ABCMeta):
             except ValueError:
                 return param
 
-
     def __get_colormap(self, cmap: str):
         if cmap is not None:
             cmap = colormap.colormaps.get(cmap)
-        
-        return cmap
 
+        return cmap
 
     def __get_linear_threshold(self, linearthresh: str):
 
@@ -201,9 +191,8 @@ class Plotter(metaclass=ABCMeta):
         linearthresh = float(linearthresh)
         if not linearthresh > 0:
             linearthresh = 1
-        
-        return linearthresh
 
+        return linearthresh
 
     def __get_depth(self, depth: str):
 
@@ -220,10 +209,8 @@ class Plotter(metaclass=ABCMeta):
 
         return depth
 
-
     def __get_showmap(self, showmap: str):
         return showmap is None or bool(showmap)
-
 
     @abstractmethod
     def load_data(self):
@@ -232,18 +219,19 @@ class Plotter(metaclass=ABCMeta):
     def load_misc(self, dataset, variables):
         self.variable_names = self.get_variable_names(dataset, variables)
         self.variable_units = self.get_variable_units(dataset, variables)
-        self.scale_factors = self.get_variable_scale_factors(dataset, variables)
+        self.scale_factors = self.get_variable_scale_factors(
+            dataset, variables)
 
     def plot(self, fig=None):
-        
+
         if fig is None:
             fig = plt.gcf()
 
         fig.text(1.0, 0.015, self.dataset_config.attribution,
-                ha='right', size='small', va='top')
+                 ha='right', size='small', va='top')
         if self.compare:
             fig.text(1.0, 0.0, DatasetConfig(self.compare['dataset']).attribution,
-                ha='right', size='small', va='top')
+                     ha='right', size='small', va='top')
 
         with contextlib.closing(BytesIO()) as buf:
             plt.savefig(
@@ -355,8 +343,9 @@ class Plotter(metaclass=ABCMeta):
         """
         names = []
 
-        for idx, v in enumerate(variables):
-            names.append(self.dataset_config.variable[dataset.variables[v]].name)
+        for _, v in enumerate(variables):
+            names.append(
+                self.dataset_config.variable[dataset.variables[v]].name)
 
         return names
 
@@ -382,7 +371,8 @@ class Plotter(metaclass=ABCMeta):
         units = []
 
         for idx, v in enumerate(variables):
-            units.append(self.dataset_config.variable[dataset.variables[v]].unit)
+            units.append(
+                self.dataset_config.variable[dataset.variables[v]].unit)
 
         return units
 
@@ -408,7 +398,8 @@ class Plotter(metaclass=ABCMeta):
         factors = []
 
         for idx, v in enumerate(variables):
-            factors.append(self.dataset_config.variable[dataset.variables[v]].scale_factor)
+            factors.append(
+                self.dataset_config.variable[dataset.variables[v]].scale_factor)
 
         return factors
 

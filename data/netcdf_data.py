@@ -93,6 +93,12 @@ class NetCDFData(Data):
 
         return result if result.shape[0] > 1 else result[0]
 
+    def timestamp_to_iso_8601(self, timestamp):
+        
+        time_var = self.time_variable
+
+        return time_index_to_datetime(timestamp, time_var.attrs['units'])
+
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
     """

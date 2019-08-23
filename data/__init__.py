@@ -107,7 +107,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
             timestamp = [timestamp]
 
         # The latest timestamp was requested
-        if timestamp[0] == -1:
+        if timestamp[0] < 0:
             timestamp[0] = db.get_latest_timestamp(variable[0])
 
         file_list = db.get_netcdf_files(

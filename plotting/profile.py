@@ -8,37 +8,34 @@ from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
 from plotting.point import PointPlotter
 from utils.errors import ClientError
+from oceannavigator.dataset_config import DatasetConfig
 
 
 class ProfilePlotter(PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
-        super(ProfilePlotter, self).__init__(dataset_name, query, format)
+        super(ProfilePlotter, self).__init__(dataset_name, query, kwargs)
 
     def load_data(self):
 
-        timestamp = self.time
-        if timestamp < 0:
-            with SQLiteDatabase(self.url) as db:
-                timestamp = db.get_latest_timestamp(self.variables[0])
-
-        with open_dataset(self.dataset_config, timestamp=timestamp, variable=self.variables) as d:
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=self.variables) as ds:
 
             try:
-                self.load_misc(d, self.variables)
+                self.load_misc(ds, self.variables)
             except IndexError as e:
                 raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
                 Please select another variable. ") + str(e))
 
             point_data, point_depths = self.get_data(
-                d, self.variables, timestamp)
+                ds, self.variables, self.time)
             point_data = self.apply_scale_factors(point_data)
+
+            self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
 
         self.data = self.subtract_other(point_data)
         self.depths = point_depths
-        self.timestamp = timestamp
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.1f" % x)
@@ -48,7 +45,7 @@ class ProfilePlotter(PointPlotter):
         points = np.array(self.points)
         latitude = np.repeat(points[:, 0], len(self.depths))
         longitude = np.repeat(points[:, 1], len(self.depths))
-        time = np.repeat(self.timestamp, data.shape[0])
+        time = np.repeat(self.iso_timestamp, data.shape[0])
         depth = self.depths[:, 0, :]
 
         return super(ProfilePlotter, self).odv_ascii(
@@ -66,7 +63,7 @@ class ProfilePlotter(PointPlotter):
     def csv(self):
         header = [
             ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp.isoformat()]
         ]
 
         columns = [
@@ -120,7 +117,7 @@ class ProfilePlotter(PointPlotter):
         is_y_label_plotted = False
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
-        for idx, v in enumerate(self.variables):
+        for idx, _ in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
 
             plt.plot(
@@ -150,11 +147,11 @@ class ProfilePlotter(PointPlotter):
 
         self.plot_legend(fig, self.names)
 
-        if self.plotTitle is None or self.plotTitle == "":
+        if not self.plotTitle:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
                                              ", ".join(self.names),
                                              ", ".join(self.variable_names),
-                                             self.date_formatter(self.timestamp)),
+                                             self.date_formatter(self.iso_timestamp)),
                          fontsize=15)
         else:
             plt.suptitle(self.plotTitle, fontsize=15)

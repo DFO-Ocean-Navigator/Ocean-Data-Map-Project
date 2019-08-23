@@ -700,7 +700,7 @@ def subset_query_impl(args):
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
 
-def plot_impl(args, query = None):
+def plot_impl(query: dict, args):
     """
     API Format: /plot/?query='...'&format
 
@@ -718,15 +718,9 @@ def plot_impl(args, query = None):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
-
-    #Checks if query has already been extracted from args
-    if query == None:
-        if 'query' not in args:
-            raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
-        query = json.loads(args.get('query'))
     
-    if ("format" in args and args.get("format") == "json"):
-        # Generates a Base64 encoded string
+    fmt = args.get('format')
+    if fmt == 'json':
         def make_response(data, mime):
             b64 = base64.encodebytes(data).decode()
 
@@ -739,13 +733,9 @@ def plot_impl(args, query = None):
             return Response(data, status=200, mimetype=mime)
 
     dataset = query.get('dataset')
-    
-    opts = {
-        'dpi': 72,
-        'query': query,
-    }
     plottype = query.get('type')
 
+    """
     if 'station' in query:
         station = query.get('station')
 
@@ -765,61 +755,49 @@ def plot_impl(args, query = None):
                 station[index][1] = wrapdeg(station[index][1])
             else:
                 station[index][1] = wrapdeg(station[index][1])
-
-    size = None
-    if 'save' in args:
-        if 'size' in args:
-            size = args.get('size')
-        if 'dpi' in args:
-            opts['dpi'] = args.get('dpi')
-
-    if 'format' in args:
-        opts['format'] = args.get('format')
+    """
 
 
-    if size is None:
-        opts['size'] = '11x9'
-    else:
-        opts['size'] = size
-
-    filename = 'png'
-    img = ""
-
+    options = {}
+    options['format'] = fmt
+    options['size'] = args.get('size', '11x9')
+    options['dpi'] = args.get('dpi', 72)
 
     # Determine which plotter we need.
     if plottype == 'map':
-        plotter = MapPlotter(dataset, query, args.get('format'))
+        plotter = MapPlotter(dataset, query, options)
     elif plottype == 'transect':
-        plotter = TransectPlotter(dataset, query, args.get('format'))
+        plotter = TransectPlotter(dataset, query, options)
     elif plottype == 'timeseries':
-        plotter = TimeseriesPlotter(dataset, query, args.get('format'))
+        plotter = TimeseriesPlotter(dataset, query, options)
     elif plottype == 'ts':
-        plotter = TemperatureSalinityPlotter(dataset, query, args.get('format'))
+        plotter = TemperatureSalinityPlotter(dataset, query, options)
     elif plottype == 'sound':
-        plotter = SoundSpeedPlotter(dataset, query, args.get('format'))
+        plotter = SoundSpeedPlotter(dataset, query, options)
     elif plottype == 'profile':
-        plotter = ProfilePlotter(dataset, query, args.get('format'))
+        plotter = ProfilePlotter(dataset, query, options)
     elif plottype == 'hovmoller':
-        plotter = HovmollerPlotter(dataset, query, args.get('format'))
+        plotter = HovmollerPlotter(dataset, query, options)
     elif plottype == 'observation':
-        plotter = ObservationPlotter(dataset, query, args.get('format'))
+        plotter = ObservationPlotter(dataset, query, options)
     elif plottype == 'drifter':
-        plotter = DrifterPlotter(dataset, query, args.get('format'))
+        plotter = DrifterPlotter(dataset, query, options)
     elif plottype == 'class4':
-        plotter = Class4Plotter(dataset, query, args.get('format'))
+        plotter = Class4Plotter(dataset, query, options)
     elif plottype == 'stick':
-        plotter = StickPlotter(dataset, query, args.get('format'))
+        plotter = StickPlotter(dataset, query, options)
     else:
         raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
 
-    # Get the data from the selected plotter.
+    filename = 'png'
+
     if 'data' in request.args:
-        data = plotter.prepare_plot(size=size, dpi=args.get('dpi'))
+        data = plotter.prepare_plot()
         return data   
     
-    img, mime, filename = plotter.run(size=size, dpi=args.get('dpi'))
+    img, mime, filename = plotter.run()
     
-    if img != "":
+    if img:
         response = make_response(img, mime)
     else:
         raise FAILURE
