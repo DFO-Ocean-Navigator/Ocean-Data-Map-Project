@@ -4,9 +4,9 @@ import re
 
 from netCDF4 import Dataset
 
-import data.fvcom
-import data.mercator
-import data.nemo
+from data.fvcom import Fvcom
+from data.mercator import Mercator
+from data.nemo import Nemo
 from data.sqlite_database import SQLiteDatabase
 
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
@@ -49,11 +49,11 @@ def open_dataset(dataset, **kwargs):
                 args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
 
         if __is_mercator(variable_list):
-            return mercator.Mercator(url, **args)
+            return Mercator(url, **args)
         elif __is_fvcom(variable_list):
-            return fvcom.Fvcom(url, **args)
+            return Fvcom(url, **args)
         else:
-            return nemo.Nemo(url, **args)
+            return Nemo(url, **args)
 
     raise TypeError("Dataset url is None.")
 
@@ -105,6 +105,10 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
 
         if not isinstance(timestamp, list):
             timestamp = [timestamp]
+
+        # The latest timestamp was requested
+        if timestamp[0] == -1:
+            timestamp[0] = db.get_latest_timestamp(variable[0])
 
         return db.get_netcdf_files(
             timestamp, variable)
