@@ -96,7 +96,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
             regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
             equation = calculated_variables[variable[0]]['equation']
             variable = list(set(re.findall(regex, equation)) &
-                            set(db.get_data_variables(raw=True)))
+                            set([v.key for v in db.get_data_variables()]))
 
         timestamp = kwargs['timestamp']
         if 'endtime' in kwargs:

@@ -250,7 +250,7 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())
 
-    def get_all_variables(self, raw: bool = False):
+    def get_all_variables(self):
         """Retrieves all variables from the open database (including depth, time, etc.)
 
         Returns:
@@ -262,32 +262,24 @@ class SQLiteDatabase:
 
         result = self.c.fetchall()
 
-        if raw:
-            return self.__flatten_list(result)
-
         l = [self.__build_variable_wrapper(v) for v in result]
 
         return VariableList(l)
 
-    def get_data_variables(self, raw: bool = False):
+    def get_data_variables(self):
         """Retrieves all data variables from the open database (i.e. depth, time, etc. are filtered out).
 
         Returns:
             [VariableList] -- VariableList of all data variable names.
         """
 
-        all_vars = self.get_all_variables(raw)
+        all_vars = self.get_all_variables()
 
         regex = re.compile(r'^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$')
 
-        if raw:
-            def func(i): return not regex.match(i)
-        else:
-            def func(i): return not regex.match(i.key)
+        result = list(filter(lambda i: not regex.match(i.key), all_vars))
 
-        result = list(filter(func, all_vars))
-
-        return result if raw else VariableList(result)
+        return VariableList(result)
 
     def __build_variable_wrapper(self, var_result: list):
         """Builds a Variable object from a given row list.
