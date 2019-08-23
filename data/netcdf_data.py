@@ -32,9 +32,9 @@ class NetCDFData(Data):
         self._dataset: [xr.core.dataset.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._nc_files: list = kwargs['nc_files'] if 'nc_files' in kwargs else None
+        self._nc_files: list = kwargs.get('nc_files', None)
         self._time_variable: xr.IndexVariable = None
-        self._meta_only: bool = kwargs['meta_only']
+        self._meta_only: bool = kwargs.get('meta_only', False)
         self._dataset_open: bool = False
 
         super(NetCDFData, self).__init__(url)
@@ -54,6 +54,7 @@ class NetCDFData(Data):
     def __exit__(self, exc_type, exc_value, traceback):
         if self._dataset_open:
             self._dataset.close()
+            self._dataset_open = False
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         pass

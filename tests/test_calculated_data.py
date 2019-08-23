@@ -27,7 +27,11 @@ class TestCalculatedData(unittest.TestCase):
             self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875)
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_new_variable(self, mock_query_func):
+    @patch('data.sqlite_database.SQLiteDatabase.get_variable_dims')
+    def test_new_variable(self, mock_get_var_dims, mock_query_func):
+        mock_get_var_dims.return_value = [
+            'time', 'depth', 'latitude', 'longitude']
+
         mock_query_func.return_value = VariableList([
             Variable('votemper', 'Sea water potential temperature',
                      'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))

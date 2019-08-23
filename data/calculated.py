@@ -3,6 +3,7 @@ import xarray as xr
 
 import data.calculated_parser.parser
 from data.netcdf_data import NetCDFData
+from data.sqlite_database import SQLiteDatabase
 from data.variable import Variable
 from data.variable_list import VariableList
 
@@ -34,6 +35,7 @@ class CalculatedData(NetCDFData):
 
         key: The raw name of the variable
     """
+
     def get_dataset_variable(self, key: str):
         if key in self._calculated:
             # if the variable is a calculated one, return the CalculatedArray,
@@ -41,20 +43,20 @@ class CalculatedData(NetCDFData):
             attrs = {}
             if key in super(CalculatedData, self).variables:
                 attrs = super(CalculatedData,
-                        self).get_dataset_variable(key).attrs
+                              self).get_dataset_variable(key).attrs
 
             attrs = {**attrs, **self._calculated[key]}
             return CalculatedArray(self._dataset,
-                    self._calculated[key]['equation'], attrs)
+                                   self._calculated[key]['equation'], attrs)
         else:
             return self._dataset.variables[key]
 
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
     @property
     def variables(self):
+        """
+        Returns a list of all data variables and their 
+        attributes in the dataset.
+        """
         if self._calculated_variable_list is None:
             variable_list = super(CalculatedData, self).variables
             temp_list = list(variable_list)
@@ -62,19 +64,20 @@ class CalculatedData(NetCDFData):
             for name, data in self._calculated.items():
                 if name not in variable_list:
                     # New Variable
-                    dims = CalculatedArray(self._dataset, data['equation']).dims
+                    dims = CalculatedArray(
+                        self._dataset, data['equation'], db_url=self.url).dims
                     temp_list.append(
-                            Variable(
-                                name,
-                                get_with_default(data, 'long_name', name),
-                                get_with_default(data,'units','1'),
-                                dims,
-                                get_with_default(data,'valid_min',
-                                    np.finfo(np.float64).min),
-                                get_with_default(data,'valid_max',
-                                    np.finfo(np.float64).max),
-                                )
-                            )
+                        Variable(
+                            name,
+                            data.get('long_name', name),
+                            data.get('units', '1'),
+                            dims,
+                            data.get('valid_min',
+                                     np.finfo(np.float64).min),
+                            data.get('valid_max',
+                                     np.finfo(np.float64).max),
+                        )
+                    )
                 else:
                     pass
 
@@ -82,12 +85,14 @@ class CalculatedData(NetCDFData):
 
         return self._calculated_variable_list
 
+
 class CalculatedArray():
     """This class is the equivalent of an xarray or netcdf Variable object, but
     parses the expression and does any requested calculations before returning
     data to the calling method.
     """
-    def __init__(self, parent, expression, attrs={}):
+
+    def __init__(self, parent, expression, attrs={}, db_url=""):
         """
         Parameters:
         parent -- the underlying dataset
@@ -99,6 +104,7 @@ class CalculatedArray():
         self._parser = data.calculated_parser.parser.Parser()
         self._parser.lexer.lexer.input(expression)
         self._attrs = attrs
+        self._db_url = db_url
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
@@ -131,7 +137,8 @@ class CalculatedArray():
                 if d != key_dims:
                     return np.nan
 
-        data = self._parser.parse(self._expression, self._parent, key, key_dims)
+        data = self._parser.parse(
+            self._expression, self._parent, key, key_dims)
         return xr.DataArray(data)
 
     @property
@@ -146,32 +153,31 @@ class CalculatedArray():
     @property
     def shape(self):
         return max(
-                map(
-                    lambda v: self._parent.variables[v].shape,
-                    filter(
-                        lambda x: x in self._parent.variables,
-                        self._parser.lexer.variables
-                        )
-                    ),
-                key=len
+            map(
+                lambda v: self._parent.variables[v].shape,
+                filter(
+                    lambda x: x in self._parent.variables,
+                    self._parser.lexer.variables
                 )
+            ),
+            key=len
+        )
 
     @property
     def dims(self):
         result = ()
 
-        for v in self._parser.lexer.variables:
-            if v not in self._parent.variables:
-                continue
+        with SQLiteDatabase(self._db_url) as db:
+            variables = db.get_data_variables()
+            
+            for v in self._parser.lexer.variables:
+                if v not in variables:
+                    continue
 
-            if hasattr(self._parent.variables[v], "dims"):
-                # xarray calls it dims
-                d = self._parent.variables[v].dims
-            else:
-                d = self._parent.variables[v].dimensions
+                d = db.get_variable_dims(v)
 
-            if len(d) > len(result):
-                result = d
+                if len(d) > len(result):
+                    result = d
 
         return result
 
@@ -188,7 +194,7 @@ class CalculatedArray():
         for idx, d in enumerate(self.dims):
             keys[d] = slice(0, shape[idx])
 
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             keys[k] = v
 
         key = []
@@ -196,10 +202,3 @@ class CalculatedArray():
             key.append(keys[d])
 
         return self[tuple(key)]
-
-
-def get_with_default(d, key, default):
-    try:
-        return d[key]
-    except KeyError:
-        return default
