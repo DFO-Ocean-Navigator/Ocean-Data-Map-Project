@@ -113,7 +113,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
         file_list = db.get_netcdf_files(
             timestamp, variable)
 
-        angle_file_url = datasetconfig.angle_file_url
+        angle_file_url = datasetconfig.grid_angle_file_url
         if angle_file_url:
             file_list.append(angle_file_url)
 
