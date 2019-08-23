@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import re
+
 from netCDF4 import Dataset
 
 import data.fvcom
@@ -44,7 +46,7 @@ def open_dataset(dataset, **kwargs):
             if __is_sqlite_database(url):
                 __check_kwargs(**kwargs)
                 # Get required NC files from database and add to args
-                args['nc_files'] = __get_nc_file_list(url, **kwargs)
+                args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
 
         if __is_mercator(variable_list):
             return mercator.Mercator(url, **args)
@@ -79,12 +81,19 @@ def __check_kwargs(**kwargs):
             "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
 
 
-def __get_nc_file_list(url: str, **kwargs):
+def __get_nc_file_list(url: str, datasetconfig, **kwargs):
+
     with SQLiteDatabase(url) as db:
 
         variable = kwargs['variable']
         if not isinstance(variable, list):
             variable = [variable]
+        
+        calculated_variables = datasetconfig.calculated_variables
+        if variable[0] in calculated_variables:
+            regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
+            equation = calculated_variables[variable[0]].equation
+            variable = re.findall(regex, equation)
 
         timestamp = kwargs['timestamp']
         if 'endtime' in kwargs:
