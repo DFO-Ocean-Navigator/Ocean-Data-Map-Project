@@ -69,6 +69,8 @@ def __is_aggregated_or_raw_netcdf(url: str):
 def __is_sqlite_database(url: str):
     return url.endswith(".sqlite3")
 
+def __meta_only(**kwargs):
+    return kwargs.get('meta_only', False)
 
 def __meta_only(**kwargs):
     return kwargs.get('meta_only', False)
