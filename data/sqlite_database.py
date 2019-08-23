@@ -280,7 +280,12 @@ class SQLiteDatabase:
 
         regex = re.compile(r'^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$')
 
-        result = list(filter(lambda i: not regex.match(i.key), all_vars))
+        if raw:
+            def func(i): return not regex.match(i)
+        else:
+            def func(i): return not regex.match(i.key)
+
+        result = list(filter(func, all_vars))
 
         return result if raw else VariableList(result)
 
