@@ -34,20 +34,26 @@ class NetCDFData(Data):
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         self._nc_files: list = kwargs['nc_files'] if 'nc_files' in kwargs else None
         self._time_variable: xr.IndexVariable = None
+        self._meta_only: bool = kwargs['meta_only']
+        self._dataset_open: bool = False
 
         super(NetCDFData, self).__init__(url)
 
     def __enter__(self):
-        if self._nc_files:
-            self._dataset = xr.open_mfdataset(self._nc_files, decode_times=False)
-        else:
-            # Don't decode times since we do it anyways.
-            self._dataset = xr.open_dataset(self.url, decode_times=False)
+        if self._meta_only:
+            if self._nc_files:
+                self._dataset = xr.open_mfdataset(self._nc_files, decode_times=False)
+            else:
+                # Don't decode times since we do it anyways.
+                self._dataset = xr.open_dataset(self.url, decode_times=False)
+
+            self._dataset_open = True
 
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._dataset.close()
+        if self._dataset_open:
+            self._dataset.close()
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         pass

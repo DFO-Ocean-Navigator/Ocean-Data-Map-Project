@@ -65,9 +65,9 @@ def variables_query_v1_0():
     data = []
 
     if 'vectors_only' not in args:
-        with SQLiteDatabase(config.url) as db:
+        with open_dataset(config, meta_only=True) as ds:
 
-            for v in db.get_data_variables():
+            for v in ds.variables:
                 if ('3d_only' in args) and v.is_surface_only():
                     continue
 
@@ -123,7 +123,7 @@ def depth_query_v1_0():
         latest_timestamp = db.get_latest_timestamp(variable)
 
     data = []
-    with open_dataset(config, variable=variable, timestamp=latest_timestamp) as ds:
+    with open_dataset(config, meta_only=True) as ds:
         if not variable in ds.variables:
             raise APIError("Variable not found in dataset: ", variable)
 

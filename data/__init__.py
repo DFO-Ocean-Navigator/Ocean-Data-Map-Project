@@ -38,11 +38,13 @@ def open_dataset(dataset, **kwargs):
 
         args = {}
         args['calculated'] = calculated
+        args['meta_only'] = __meta_only(**kwargs)
 
-        if __is_sqlite_database(url):
-            __check_kwargs(**kwargs)
-            # Get required NC files from database and add to args
-            args['nc_files'] = __get_nc_file_list(url, **kwargs)
+        if not args['meta_only']:
+            if __is_sqlite_database(url):
+                __check_kwargs(**kwargs)
+                # Get required NC files from database and add to args
+                args['nc_files'] = __get_nc_file_list(url, **kwargs)
 
         if __is_mercator(variable_list):
             return mercator.Mercator(url, **args)
@@ -65,6 +67,8 @@ def __is_aggregated_or_raw_netcdf(url: str):
 def __is_sqlite_database(url: str):
     return url.endswith(".sqlite3")
 
+def __meta_only(**kwargs):
+    return kwargs.get('meta_only', False)
 
 def __check_kwargs(**kwargs):
     if 'variable' not in kwargs:

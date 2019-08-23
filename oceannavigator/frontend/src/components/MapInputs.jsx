@@ -100,16 +100,16 @@ export default class MapInputs extends React.Component {
             def=''
             onUpdate={this.props.changeHandler}
             title={_("Variable Range")}
-            autourl={"/api/v0.1/range/" +
+            autourl={"/api/v1.0/range/" +
+                    this.props.state.dataset_1.dataset + "/" +
+                    this.props.state.dataset_1.variable + "/" +
                     this.props.options.interpType + "/" +
                     this.props.options.interpRadius + "/" +
                     this.props.options.interpNeighbours + "/" +
-                    this.props.state.dataset_1.dataset + "/" +
                     this.props.state.projection + "/" +
                     this.props.state.extent.join(",") + "/" +
                     this.props.state.dataset_1.depth + "/" +
-                    this.props.state.dataset_1.time + "/" +
-                    this.props.state.dataset_1.variable + ".json"
+                    this.props.state.dataset_1.time + ".json"
             }
             default_scale={this.props.state.dataset_1.variable_scale}
           ></Range>
