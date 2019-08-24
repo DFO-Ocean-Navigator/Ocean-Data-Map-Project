@@ -1469,7 +1469,7 @@
                 "name": "Chlorophyll",
                 "scale": [
                     0,
-                    0
+                    3
                 ],
                 "scale_factor": 1,
                 "unit": "mg/m^3"
@@ -1479,7 +1479,7 @@
                 "name": "Iron",
                 "scale": [
                     0,
-                    0.05
+                    0.02
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
@@ -1489,7 +1489,7 @@
                 "name": "Nitrate",
                 "scale": [
                     0,
-                    0
+                    23
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
@@ -1498,8 +1498,8 @@
                 "hide": "false",
                 "name": "Dissolved Oxygen",
                 "scale": [
-                    0,
-                    0
+                    200,
+                    425
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
@@ -1509,7 +1509,7 @@
                 "name": "Phytoplankton expressed as carbon",
                 "scale": [
                     0,
-                    0
+                    10
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
@@ -1519,7 +1519,7 @@
                 "name": "Phosphate",
                 "scale": [
                     0,
-                    0
+                    1.4
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
@@ -1529,7 +1529,7 @@
                 "name": "Primary Productivity of Carbon",
                 "scale": [
                     0,
-                    0
+                    0.1
                 ],
                 "scale_factor": 1,
                 "unit": "g/m^3/day"
@@ -1539,7 +1539,7 @@
                 "name": "Silicate",
                 "scale": [
                     0,
-                    0
+                    100
                 ],
                 "scale_factor": 1,
                 "unit": "mmol/m^3"
