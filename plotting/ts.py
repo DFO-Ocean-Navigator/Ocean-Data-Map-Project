@@ -24,6 +24,19 @@ class TemperatureSalinityPlotter(PointPlotter):
         regex = re.compile(regex_pattern)
         return list(filter(regex.match, variable_list))[0]
 
+    def __load_temp_sal(self, dataset, time: int, temp_var: str, sal_var: str):
+
+        data, depths = self.get_data(dataset, [temp_var, sal_var], time)
+        self.temperature = data[:, 0, :].view(np.ma.MaskedArray)
+        self.salinity = data[:, 1, :].view(np.ma.MaskedArray)
+        self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
+        self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
+        self.load_misc(dataset, [temp_var, sal_var])
+
+        for idx, factor in enumerate(self.scale_factors):
+            if factor != 1.0:
+                data[:, idx, :] = np.multiply(data[:, idx, :], factor)
+
     def load_data(self):
         variables = self.dataset_config.variables
         temp_var_key = self.__find_var_key(variables, r'^(.*temp.*|thetao.*)$')
@@ -33,7 +46,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
             self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
 
-            self.load_temp_sal(ds, self.time, temp_var_key, sal_var_key)
+            self.__load_temp_sal(ds, self.time, temp_var_key, sal_var_key)
 
     def csv(self):
         header = [
