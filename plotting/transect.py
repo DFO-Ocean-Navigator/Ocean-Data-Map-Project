@@ -55,7 +55,7 @@ class TransectPlotter(LinePlotter):
     def load_data(self):
         vars_to_load = self.variables
         if self.surface:
-            vars_to_load += self.surface
+            vars_to_load.append(self.surface)
 
         with open_dataset(self.dataset_config, timestamp=self.time, variable=vars_to_load) as dataset:
 
