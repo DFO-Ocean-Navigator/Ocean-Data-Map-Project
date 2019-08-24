@@ -303,6 +303,24 @@
             "iicepressure": { "name": "Internal Ice Pressure", "unit": "Nm-1", "scale": [-1, 1], "quantum": "hour" }
         }
     },
+    "giops-reanalysis": {
+        "url": "/home/buildadm/ocean-nav/db/GIOPS-Reanalysis.sqlite3",
+        "name": "GIOPS Reanalysis",
+        "type": "historical",
+        "enabled": true,
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "quantum": "split",
+        "help": "",
+        "attribution": "",
+        "variables": {
+            "zos": { "name": "Sea Surface Height", "scale": [-3, 3], "unit": "m", "quantum": "hour" },
+            "vo": { "name": "Water Y Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true, "quantum": "day" },
+            "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true, "quantum": "day" },
+            "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius", "quantum": "day"},
+            "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU", "quantum": "day" },
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
+        }
+    },
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
