@@ -102,7 +102,9 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        return super(SoundSpeedPlotter, self).plot(fig)
+        # This is a little strange where we want to skip calling the TSP.plot and go straigh
+        # to Point.plot
+        return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
         header = [
@@ -137,6 +139,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                     "%0.1f" % self.sspeed[idx][idx2]
                 ])
 
-        return super(SoundSpeedPlotter, self).csv(
+        return super(TemperatureSalinityPlotter, self).csv(
             header, columns, data
         )
