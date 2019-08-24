@@ -11,8 +11,8 @@ class PointPlotter(pl.Plotter):
     def parse_query(self, query):
         super(PointPlotter, self).parse_query(query)
 
-        self.parse_names_points(query.get('names'), query.get('station'))
         self.points: list = []
+        self.parse_names_points(query.get('names'), query.get('station'))
 
     def setup_subplots(self, numplots):
         fig, ax = plt.subplots(

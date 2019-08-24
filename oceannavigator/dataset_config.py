@@ -75,7 +75,8 @@ class DatasetConfig():
 
     @property
     def grid_angle_file_url(self):
-        return self._get_attribute("grid_angle_file_url")
+        #return self._get_attribute("grid_angle_file_url")
+        return ""
 
     @property
     def quantum(self) -> str:

@@ -765,27 +765,27 @@ def plot_impl(query: dict, args):
 
     # Determine which plotter we need.
     if plottype == 'map':
-        plotter = MapPlotter(dataset, query, options)
+        plotter = MapPlotter(dataset, query, **options)
     elif plottype == 'transect':
-        plotter = TransectPlotter(dataset, query, options)
+        plotter = TransectPlotter(dataset, query, **options)
     elif plottype == 'timeseries':
-        plotter = TimeseriesPlotter(dataset, query, options)
+        plotter = TimeseriesPlotter(dataset, query, **options)
     elif plottype == 'ts':
-        plotter = TemperatureSalinityPlotter(dataset, query, options)
+        plotter = TemperatureSalinityPlotter(dataset, query, **options)
     elif plottype == 'sound':
-        plotter = SoundSpeedPlotter(dataset, query, options)
+        plotter = SoundSpeedPlotter(dataset, query, **options)
     elif plottype == 'profile':
-        plotter = ProfilePlotter(dataset, query, options)
+        plotter = ProfilePlotter(dataset, query, **options)
     elif plottype == 'hovmoller':
-        plotter = HovmollerPlotter(dataset, query, options)
+        plotter = HovmollerPlotter(dataset, query, **options)
     elif plottype == 'observation':
-        plotter = ObservationPlotter(dataset, query, options)
+        plotter = ObservationPlotter(dataset, query, **options)
     elif plottype == 'drifter':
-        plotter = DrifterPlotter(dataset, query, options)
+        plotter = DrifterPlotter(dataset, query, **options)
     elif plottype == 'class4':
-        plotter = Class4Plotter(dataset, query, options)
+        plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
-        plotter = StickPlotter(dataset, query, options)
+        plotter = StickPlotter(dataset, query, **options)
     else:
         raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
 

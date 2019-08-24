@@ -15,7 +15,7 @@ class ProfilePlotter(PointPlotter):
 
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
-        super(ProfilePlotter, self).__init__(dataset_name, query, kwargs)
+        super(ProfilePlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
 

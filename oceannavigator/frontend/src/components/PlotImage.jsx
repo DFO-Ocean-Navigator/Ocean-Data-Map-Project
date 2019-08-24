@@ -102,7 +102,7 @@ export default class PlotImage extends React.PureComponent {
       });
 
       const promise = $.ajax({
-        url: "/plot/",
+        url: "/api/v1.0/plot/",
         cache: true,
         data: paramString,
         dataType: "json",
@@ -295,7 +295,7 @@ export default class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    return "/plot/?query=" + encodeURIComponent(stringify(query));
+    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {
