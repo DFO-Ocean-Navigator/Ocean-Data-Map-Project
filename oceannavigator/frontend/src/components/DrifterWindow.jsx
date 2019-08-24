@@ -115,7 +115,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?dataset="+this.props.dataset}
+      url={"/api/v1.0/variables/?dataset="+this.props.dataset}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
     var showmap = <SelectBox
