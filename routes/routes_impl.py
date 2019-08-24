@@ -760,7 +760,7 @@ def plot_impl(query: dict, args):
 
     options = {}
     options['format'] = fmt
-    options['size'] = args.get('size', '11x9')
+    options['size'] = args.get('size', '15x9')
     options['dpi'] = args.get('dpi', 72)
 
     # Determine which plotter we need.
