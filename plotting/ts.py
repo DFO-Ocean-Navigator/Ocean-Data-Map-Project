@@ -1,12 +1,14 @@
+import re
+
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import seawater
 from flask_babel import gettext
 
-from plotting.point import PointPlotter
 import plotting.utils as utils
 from data import open_dataset
+from plotting.point import PointPlotter
 
 
 # Temperature/Salinity Diagram for a Point
@@ -18,12 +20,20 @@ class TemperatureSalinityPlotter(PointPlotter):
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
                                                          **kwargs)
 
+    def __find_var_key(self, variable_list: list, regex_pattern: str):
+        regex = re.compile(regex_pattern)
+        return list(filter(regex.match, variable_list))[0]
+
     def load_data(self):
-        with open_dataset(self.dataset_config, timestamp=self.time, variable=) as dataset:
+        variables = self.dataset_config.variables
+        temp_var_key = self.__find_var_key(variables, r'^(.*temp.*|thetao.*)$')
+        sal_var_key = self.__find_var_key(variables, r'^(.*sal.*|so)$')
+
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=[temp_var_key, sal_var_key]) as ds:
 
             self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
 
-            self.load_temp_sal(dataset, self.time)
+            self.load_temp_sal(ds, self.time, temp_var_key, sal_var_key)
 
     def csv(self):
         header = [

@@ -80,27 +80,15 @@ class PointPlotter(pl.Plotter):
 
         return data
 
-    def load_temp_sal(self, dataset, time):
-        temp_var = None
-        if "votemper" in dataset.variables:
-            temp_var = "votemper"
-        elif "temp" in dataset.variables:
-            temp_var = "temp"
-
-        sal_var = None
-        if "vosaline" in dataset.variables:
-            sal_var = "vosaline"
-        elif "salinity" in dataset.variables:
-            sal_var = "salinity"
-
+    def load_temp_sal(self, dataset, time: int, temp_var: str, sal_var: str):
         self.variables = [temp_var, sal_var]
 
-        data, depths = self.get_data(dataset, [temp_var, sal_var], time)
+        data, depths = self.get_data(dataset, self.variables, time)
         self.temperature = data[:, 0, :].view(np.ma.MaskedArray)
         self.salinity = data[:, 1, :].view(np.ma.MaskedArray)
         self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
         self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
-        self.load_misc(dataset, [temp_var, sal_var])
+        self.load_misc(dataset, self.variables)
 
         for idx, factor in enumerate(self.scale_factors):
             if factor != 1.0:
