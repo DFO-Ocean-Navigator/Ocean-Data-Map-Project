@@ -262,7 +262,7 @@ export default class LineWindow extends React.Component {
         state={this.state.surfacevariable}
         onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
-        url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
+        url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
       >{_("surfacevariable_help")}</ComboBox>
 
       <NumberBox
@@ -289,7 +289,7 @@ export default class LineWindow extends React.Component {
           state={this.state.colormap_diff}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </div>
@@ -333,7 +333,7 @@ export default class LineWindow extends React.Component {
         state={this.state.colormap}
         def='default'
         onUpdate={this.onLocalUpdate}
-        url='/api/colormaps/'
+        url='/api/v1.0/colormaps/'
         title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
     </Panel>;
@@ -373,7 +373,7 @@ export default class LineWindow extends React.Component {
           state={this.state.colormap_right}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </Panel>
