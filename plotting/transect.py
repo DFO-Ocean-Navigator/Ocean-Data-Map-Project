@@ -53,7 +53,11 @@ class TransectPlotter(LinePlotter):
                 break
 
     def load_data(self):
-        with open_dataset(self.dataset_config, timestamp=self.time, variable=self.variables) as dataset:
+        vars_to_load = self.variables
+        if self.surface:
+            vars_to_load += self.surface
+
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=vars_to_load) as dataset:
 
             for idx, v in enumerate(self.variables):
                 var = dataset.variables[v]
@@ -134,7 +138,7 @@ class TransectPlotter(LinePlotter):
                 "magnitude": magnitude,
             }
 
-            if self.surface is not None:
+            if self.surface:
                 surface_pts, surface_dist, _, surface_value = \
                     dataset.get_path(
                         self.points,
