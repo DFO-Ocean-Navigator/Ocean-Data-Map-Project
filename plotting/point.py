@@ -74,7 +74,7 @@ class PointPlotter(pl.Plotter):
                     dataset, self.compare['variables'], self.compare['time']
                 )
 
-            for idx, v in enumerate(self.variables):
+            for idx, _ in enumerate(self.variables):
                 data[:, idx, :] = \
                     data[:, idx, :] - cli[:, idx, :]
 

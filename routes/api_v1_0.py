@@ -289,8 +289,6 @@ def timestamps():
         APIError: if dataset or variable is not specified in the request
     """
 
-    params = {}
-
     args = request.args
     if "dataset" not in args:
         raise APIError("Please specify a dataset via ?dataset=dataset_name")

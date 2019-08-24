@@ -1,24 +1,34 @@
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import seawater
-import plotting.point as plPoint
-import matplotlib.gridspec as gridspec
-import plotting.utils as utils
 from flask_babel import gettext
+
+from plotting.point import PointPlotter
+import plotting.utils as utils
 from data import open_dataset
 
-# Temperature/Salinity Diagram for a Point
-class TemperatureSalinityPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+# Temperature/Salinity Diagram for a Point
+class TemperatureSalinityPlotter(PointPlotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "ts"
+
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
-                                                         format)
+                                                         **kwargs)
+
+    def load_data(self):
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=) as dataset:
+
+            self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
+
+            self.load_temp_sal(dataset, self.time)
 
     def csv(self):
         header = [
             ["Dataset", self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp]
         ]
 
         columns = [
@@ -62,10 +72,9 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
         # Render point location
         if self.showmap:
             plt.subplot(gs[0, 0])
-            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
-                                        [x[1] for x in self.points]])) # Longitudes
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]))  # Longitudes
 
-        
         # Plot TS Diagram
         plt.subplot(gs[:, 1 if self.showmap else 0])
 
@@ -97,7 +106,7 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
 
         plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
         plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
-        
+
         if len(self.points) == 1:
             labels = []
             for idx, d in enumerate(self.temperature_depths[0]):
@@ -118,26 +127,15 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
                             arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
                         )
 
-
         self.plot_legend(fig, self.names)
 
-        if self.plotTitle is None or self.plotTitle == "":  
+        if self.plotTitle is None or self.plotTitle == "":
             plt.title(gettext("T/S Diagram for (%s)\n%s") % (
                 ", ".join(self.names),
-                self.date_formatter(self.timestamp)),
+                self.date_formatter(self.iso_timestamp)),
                 fontsize=15
-                )
-        else :
-            plt.title(self.plotTitle,fontsize=15)
+            )
+        else:
+            plt.title(self.plotTitle, fontsize=15)
 
         return super(TemperatureSalinityPlotter, self).plot(fig)
-
-    def load_data(self):
-        with open_dataset(self.dataset_config) as dataset:
-            if self.time < 0:
-                self.time += len(dataset.timestamps)
-            time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
-
-            self.timestamp = dataset.timestamps[time]
-
-            self.load_temp_sal(dataset, time)
