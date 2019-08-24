@@ -100,7 +100,7 @@ def _map_plot(points, path=True, quiver=True):
         urcrnrlat=maxlat,
         lat_0=np.mean(points[0, :]),
         lon_0=np.mean(points[1, :]),
-        resolution='c', projection='merc',
+        resolution='l', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
     )    
 
