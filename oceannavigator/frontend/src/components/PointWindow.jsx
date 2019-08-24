@@ -307,7 +307,7 @@ export default class PointWindow extends React.Component {
         state={this.props.time}
         def=''
         quantum={this.props.quantum}
-        url={"/api/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
+        url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
         title={_("End Time")}
         onUpdate={this.props.onUpdate}
         min={this.state.starttime}
@@ -331,7 +331,7 @@ export default class PointWindow extends React.Component {
         state={this.props.variable}
         def=''
         onUpdate={this.props.onUpdate}
-        url={"/api/variables/?vectors&dataset="+this.props.dataset}
+        url={"/api/v1.0/variables/?vectors&dataset="+this.props.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -353,7 +353,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/variables/?vectors_only&dataset="+this.props.dataset}
+        url={"/api/v1.0/variables/?vectors_only&dataset="+this.props.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox
@@ -363,7 +363,7 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
+        url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
         title={_("Depth")}></ComboBox> 
     </div> : null;
   
