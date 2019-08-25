@@ -140,6 +140,29 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
     if not isinstance(kwargs['timestamp'], list):
         kwargs['timestamp'] = list(kwargs['timestamp'])
 
+def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime):
+
+    if timestamp > 0 and not endtime:
+        # We've received a specific timestamp (e.g. 21100345)
+        if not isinstance(timestamp, list):
+            return [timestamp]
+        return timestamp
+
+    if timestamp > 0 and endtime > 0:
+        # We've received a request for a time range
+        # with specific timestamps given
+        return db.get_timestamp_range(
+            timestamp, endtime, variable)
+
+    # Otherwise assume negative values are indices into timestamp list
+    all_timestamps = db.get_timestamps(variable)
+    if timestamp < 0 and endtime > 0:
+        return db.get_timestamp_range(all_timestamps[timestamp], endtime, variable)
+
+    if timestamp > 0 and endtime < 0:
+        return db.get_timestamp_range(timestamp, all_timestamps[endtime], variable)
+
+
 def __is_mercator(variable_list: list):
     return 'latitude_longitude' in variable_list or 'LatLon_Projection' in variable_list
 
