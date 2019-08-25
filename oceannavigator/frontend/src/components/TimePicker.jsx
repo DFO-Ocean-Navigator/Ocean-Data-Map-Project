@@ -194,7 +194,7 @@ export default class TimePicker extends React.Component {
                     }
                   });
                   break;
-                case "day":
+                case "hour":
                   $(this.refs.picker).datepicker({
                     Button: false,
                     dateFormat: "dd MM yy",
@@ -202,7 +202,6 @@ export default class TimePicker extends React.Component {
                     minDate: new Date(map[min]),
                     maxDate: new Date(map[max])
                   });
-
                   $(this.refs.picker).datepicker(
                     "option",
                     "minDate",
@@ -214,7 +213,8 @@ export default class TimePicker extends React.Component {
                     new Date(map[max])
                   );
                   break;
-                case "hour":
+                case "day":
+                default:
                   $(this.refs.picker).datepicker({
                     Button: false,
                     dateFormat: "dd MM yy",
@@ -222,6 +222,7 @@ export default class TimePicker extends React.Component {
                     minDate: new Date(map[min]),
                     maxDate: new Date(map[max])
                   });
+
                   $(this.refs.picker).datepicker(
                     "option",
                     "minDate",

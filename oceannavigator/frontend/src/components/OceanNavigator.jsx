@@ -38,6 +38,7 @@ export default class OceanNavigator extends React.Component {
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
+      quantum: "day",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
       time: -1,
