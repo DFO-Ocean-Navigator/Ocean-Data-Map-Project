@@ -15,7 +15,7 @@ class TestVariable(unittest.TestCase):
         self.assertEqual(self.variable.key, "my_key")
         self.assertEqual(self.variable.name, "my_name")
         self.assertEqual(self.variable.unit, "my_unit")
-        self.assertEqual(self.variable.dimensions, ('depth', 'dim2'))
+        self.assertTupleEqual(self.variable.dimensions, ('depth', 'dim2'))
         self.assertEqual(self.variable.valid_min, 0)
         self.assertEqual(self.variable.valid_max, 100)
 
