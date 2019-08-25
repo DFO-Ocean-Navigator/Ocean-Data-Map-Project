@@ -32,6 +32,7 @@ pipeline {
                 $py -m unittest tests/test_api_v_1_0.py
                 $py -m unittest tests/test_calculated_data.py
                 $py -m unittest tests/test_calculated_parser.py
+                $py -m unittest tests/test_variable.py
            '''
       }
     }
