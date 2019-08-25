@@ -98,17 +98,8 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
             variable = list(set(re.findall(regex, equation)) &
                             set([v.key for v in db.get_data_variables()]))
 
-        timestamp = kwargs['timestamp']
-        if 'endtime' in kwargs:
-            timestamp = db.get_timestamp_range(
-                timestamp, kwargs['endtime'], variable[0])
-
-        if not isinstance(timestamp, list):
-            timestamp = [timestamp]
-
-        # The latest timestamp was requested
-        if timestamp[0] < 0:
-            timestamp[0] = db.get_latest_timestamp(variable[0])
+        timestamp = __get_requested_timestamps(
+            db, variable[0], kwargs['timestamp'], kwargs.get('endtime'))
 
         file_list = db.get_netcdf_files(
             timestamp, variable)
@@ -118,6 +109,29 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
             file_list.append(angle_file_url)
 
         return file_list
+
+
+def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime):
+
+    if timestamp > 0 and not endtime:
+        # We've received a specific timestamp (e.g. 21100345)
+        if not isinstance(timestamp, list):
+            return [timestamp]
+        return timestamp
+
+    if timestamp > 0 and endtime > 0:
+        # We've received a request for a time range
+        # with specific timestamps given
+        return db.get_timestamp_range(
+            timestamp, endtime, variable)
+
+    # Otherwise assume negative values are indices into timestamp list
+    all_timestamps = db.get_timestamps(variable)
+    if timestamp < 0 and endtime > 0:
+        return db.get_timestamp_range(all_timestamps[timestamp], endtime, variable)
+
+    if timestamp > 0 and endtime < 0:
+        return db.get_timestamp_range(timestamp, all_timestamps[endtime], variable)
 
 
 def __is_mercator(variable_list: list):
