@@ -148,6 +148,10 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
             return [timestamp]
         return timestamp
 
+    if timestamp < 0 and endtime is None:
+        all_timestamps = db.get_timestamps(variable)
+        return [all_timestamps[timestamp]]
+
     if timestamp > 0 and endtime > 0:
         # We've received a request for a time range
         # with specific timestamps given
