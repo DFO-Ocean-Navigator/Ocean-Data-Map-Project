@@ -44,6 +44,7 @@ export default class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
+      starttime: -5, // Default starting point for Hovmoller is current day minus 5.
     };
 
     if (props.init !== null) {
@@ -420,7 +421,7 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.props.starttime;
+        plot_query.starttime = this.state.starttime;
         plot_query.depth = this.props.depth;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
@@ -478,9 +479,7 @@ LineWindow.propTypes = {
   scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   scale_1: PropTypes.string,
   init: PropTypes.object,
-  starttime: PropTypes.number,
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
-  starttime_1: PropTypes.number,
 };
