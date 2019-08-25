@@ -113,7 +113,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
 
 def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime):
 
-    if timestamp > 0 and not endtime:
+    if timestamp > 0 and endtime is None:
         # We've received a specific timestamp (e.g. 21100345)
         if not isinstance(timestamp, list):
             return [timestamp]
