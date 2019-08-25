@@ -23,6 +23,10 @@ class TestAPIv1(unittest.TestCase):
                 "enabled": True,
                 "url": "tests/testdata/nemo_test.nc",
                 "time_dim_units": "seconds since 1950-01-01 00:00:00",
+                "quantum": "day",
+                "name": "GIOPS",
+                "help": "help",
+                "attribution": "attrib",
                 "variables": {
                     "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins"},
                 }
@@ -112,6 +116,33 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30.png')
+
+        self.assertEqual(res.status_code, 200)
+
+    @patch.object(DatasetConfig, 'get_datasets')
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_datasets_endpoint(self, patch_get_dataset_config, patch_get_datasets):
+
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+        patch_get_datasets = ["giops"]
+
+        res = self.app.get('/api/v1.0/datasets/')
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_colors_endpoint(self):
+
+        res = self.app.get('/api/v1.0/colors/')
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_colormaps_endpoint(self):
+        res = self.app.get('/api/v1.0/colormaps/')
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_colormaps_image_endpoint(self):
+        res = self.app.get('/api/v1.0/colormaps.png')
 
         self.assertEqual(res.status_code, 200)
 
