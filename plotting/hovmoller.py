@@ -25,7 +25,7 @@ class HovmollerPlotter(LinePlotter):
     def load_data(self):
 
         def find_depth(depth, clip_length, dataset):
-        """
+            """
             Calculates and returns the depth, depth-value, and depth unit from a given dataset
             Args:
                 * depth: Stored depth information (self.depth or self.compare['depth'])
@@ -33,7 +33,7 @@ class HovmollerPlotter(LinePlotter):
                 * dataset: Opened dataset
             Returns:
                 (depth, depth_value, depth_unit)
-        """
+            """
             depth_value = 0
             depth_unit = "m"
 
@@ -52,7 +52,7 @@ class HovmollerPlotter(LinePlotter):
 
         # Load left/Main Map
         with open_dataset(self.dataset_config, timestamp=self.starttime, endtime=self.endtime, variable=self.variables) as dataset:
-            
+
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
 
