@@ -290,10 +290,267 @@
             "sokaraml": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 4000] }
         }
     },
-    "riops_daily": {
+    "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": true,
+        "help": "Regional Ice Ocean Prediction System <
+            ul >
+            <
+            li > North Atlantic and Arctic < /li> <
+            li > Tri - polar ORCA grid 1 / 12° resolution < /li> <
+            li > 50 vertical z - levels < /li> <
+            li > Available as daily values on 3 hr intervals from 00: 00(May 28, 2016 to present) < /li> <
+            li > Variables Available:
+            <
+            ul >
+            <
+            li > Depth - Integrated Sea Ice Strength < /li> <
+            li > Depth - Integrated Internal Sea Ice Pressure < /li> <
+            li > Ocean Mixed Layer Depth Based on Density Criterion < /li> <
+            li > Sea Ice Area Fraction < /li> <
+            li > Sea Ice Volume Per Unit Grid Cell Area < /li> <
+            li > Sea Ice Velocity < /li> <
+            li > Sea Ice East Velocity < /li> <
+            li > Sea Ice North Velocity < /li> <
+            li > Sea Ice X Velocity < /li> <
+            ul >
+            <
+            li > ice velocity along model x grid lines < /li> <
+            /ul> <
+            li > Sea Ice Y Velocity < /li> <
+            ul >
+            <
+            li > ice velocity along model y grid lines < /li> <
+            /ul> <
+            li > Sea Surface Height Above Geoid < /li> <
+            li > Sea Water Potential Temperature < /li> <
+            li > Sea Water Salinity < /li> <
+            li > Sea Water Velocity < /li> <
+            li > Sea Water East Velocity < /li> <
+            li > Sea Water North Velocity < /li> <
+            li > Sea Water X Velocity < /li> <
+            ul >
+            <
+            li > water velocity along model x grid lines < /li> <
+            /ul> <
+            li > Sea Water Y Velocity < /li> <
+            ul >
+            <
+            li > water velocity along model y grid lines < /li> <
+            /ul> <
+            li > Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice < /li> <
+            li > Turbocline Depth < /li> <
+            li > Volume Of Snow On Sea Ice Per Unit Grid Cell Area < /li> <
+            /ul> <
+            /li> <
+            /ul>",
+        "name": "RIOPS Daily Average (Surface)",
+        "quantum": "hour",
+        "type": "historical",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "url": "http://localhost:8080/thredds/dodsC/riops/daily/2D/aggregated.ncml",
+        "variables": {
+            "east_vel": {
+                "name": "Water East Velocity",
+                "scale": [-3, 3],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "ice_east_vel": {
+                "name": "Sea Ice East Velocity",
+                "scale": [-1, 1],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "ice_north_vel": {
+                "name": "Sea Ice North Velocity",
+                "scale": [-1, 1],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "iiceconc": {
+                "name": "Ice Concentration",
+                "scale": [0, 1],
+                "scale_factor": 1,
+                "unit": "fraction"
+            },
+            "iicepressure": {
+                "name": "Internal Sea Ice Pressure",
+                "scale": [
+                    0,
+                    200000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicestrength": {
+                "name": "Compressive Sea Ice Strength",
+                "scale": [
+                    0,
+                    60000
+                ],
+                "scale_factor": 1,
+                "unit": "N/m"
+            },
+            "iicesurftemp": {
+                "name": "Ice/Snow Surface Temperature",
+                "scale": [
+                    -5,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius",
+                "equation": "iicesurftemp - 273.15",
+                "dims": ["time", "depth", "yc", "xc"]
+            },
+            "iicevol": {
+                "name": "Ice Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "isnowvol": {
+                "name": "Snow Volume",
+                "scale": [
+                    0,
+                    10
+                ],
+                "scale_factor": 1,
+                "unit": "cm"
+            },
+            "itmecrty": {
+
+                "name": "Sea Ice Y Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "itzocrtx": {
+
+                "name": "Sea Ice X Velocity",
+                "scale": [
+                    -1,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "itzocrtx,itmecrty": {
+
+                "name": "Sea Ice Velocity",
+                "scale": [
+                    0,
+                    1
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "north_vel": {
+
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "sokaraml": {
+
+                "name": "Ocean Mixed Layer Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "somixhgt": {
+
+                "name": "Turbocline Depth",
+                "scale": [
+                    0,
+                    4000
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "sossheig": {
+
+                "name": "Sea Surface Height",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m"
+            },
+            "vomecrty": {
+
+                "name": "Water Y Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vosaline": {
+
+                "name": "Salinity",
+                "scale": [
+                    30,
+                    40
+                ],
+                "scale_factor": 1,
+
+                "unit": "PSU"
+            },
+            "votemper": {
+
+                "name": "Temperature",
+                "scale": [
+                    -5,
+                    30
+                ],
+                "scale_factor": 1,
+                "unit": "Celsius",
+                "equation": "votemper - 273.15",
+                "dims": ["time", "depth", "yc", "xc"]
+            },
+            "vozocrtx": {
+
+                "name": "Water X Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            },
+            "vozocrtx,vomecrty": {
+
+                "name": "Water Velocity",
+                "scale": [
+                    0,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s"
+            }
+        }
+    },
+    "riops_daily": {
+        "attribution": "RIOPS Daily Averages from CONCEPTS",
+        "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": false,
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "name": "RIOPS Daily Average",
         "quantum": "day",
