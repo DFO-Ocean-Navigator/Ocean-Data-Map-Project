@@ -536,7 +536,7 @@
                 "name": "Salinity",
                 "unit": "PSU",
                 "scale": [30, 40]
-            },
+            }
         }
     },
     "riops": {
