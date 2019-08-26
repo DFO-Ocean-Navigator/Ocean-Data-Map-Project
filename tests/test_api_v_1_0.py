@@ -7,6 +7,7 @@ from unittest.mock import patch
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
+from utils.errors import APIError
 
 app = create_app(testing=True)
 
@@ -23,12 +24,12 @@ class TestAPIv1(unittest.TestCase):
                 "enabled": True,
                 "url": "tests/testdata/nemo_test.nc",
                 "time_dim_units": "seconds since 1950-01-01 00:00:00",
-                "quantum": "day",
+                "quantum": "split",
                 "name": "GIOPS",
                 "help": "help",
                 "attribution": "attrib",
                 "variables": {
-                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins"},
+                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins", "quantum": "day"},
                 }
             }
         }
@@ -145,6 +146,20 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get('/api/v1.0/colormaps.png')
 
         self.assertEqual(res.status_code, 200)
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_quantum_query(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get('/api/v1.0/quantum/?dataset=giops&variable=votemper')
+
+        self.assertEqual(res.status_code, 200)
+
+        res_data = self.__get_response_data(res)
+        self.assertEqual(res_data, "day")
+
+        with self.assertRaises(APIError):
+            _ = self.app.get('/api/v1.0/quantum/?dataset=giops')
 
 
 if __name__ == '__main__':

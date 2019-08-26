@@ -41,6 +41,28 @@ def datasets_query_v1_0():
     return routes.routes_impl.query_datasets_impl(request.args)
 
 
+@bp_v1_0.route('/api/v1.0/quantum/')
+def quantum_query_v1_0():
+    args = request.args
+
+    if 'dataset' not in args:
+        raise APIError("Please specify a dataset Using ?dataset='...' ")
+
+    dataset = args.get('dataset')
+    config = DatasetConfig(dataset)
+
+    quantum = config.quantum
+    if quantum != 'split':
+        return jsonify(quantum)
+
+    if 'variable' not in args:
+        raise APIError(
+            "This dataset has multiple quantums, please specify a variable using &variable='...'")
+
+    variable = args.get('variable')
+    return jsonify(config.variable[variable].quantum)
+
+
 @bp_v1_0.route('/api/v1.0/variables/')
 def variables_query_v1_0():
     """
@@ -235,7 +257,7 @@ def plot_v1_0():
         }
         plotData = json.dumps(plotData)
         return Response(plotData, status=200, mimetype='application/json')
-    
+
     return resp
 
 
