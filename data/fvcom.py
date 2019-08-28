@@ -128,7 +128,7 @@ class Fvcom(CalculatedData):
 
         return None
 
-    def __find_index(self, lat, lon, element=False, n=10):
+    def find_index(self, lat, lon, element=False, n=10):
         index = int(element)
 
         if element:
@@ -167,7 +167,7 @@ class Fvcom(CalculatedData):
         return np.squeeze(minindex_1d), dist_sq_min * EARTH_RADIUS
 
     def __bounding_box(self, lat, lon, element=False, n=10):
-        index, d = self.__find_index(lat, lon, element, n)
+        index, d = self.find_index(lat, lon, element, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -194,7 +194,7 @@ class Fvcom(CalculatedData):
 
         return mini[0], maxi[0], np.clip(np.amax(d), 5000, 50000)
 
-    def __latlon_vars(self, data_var):
+    def latlon_vars(self, data_var):
         var = self.get_dataset_variable(data_var)
         if 'latc' in var.coordinates:
             latvar = self.get_dataset_variable('latc')
@@ -279,7 +279,7 @@ class Fvcom(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
-        latvar, lonvar = self.__latlon_vars(variable)
+        latvar, lonvar = self.latlon_vars(variable)
 
         if depth == 'bottom':
             depth = -1
@@ -298,7 +298,7 @@ class Fvcom(CalculatedData):
     def get_point(self, latitude, longitude, depth, time, variable,
                   return_depth=False):
         var = self.get_dataset_variable(variable)
-        latvar, lonvar = self.__latlon_vars(variable)
+        latvar, lonvar = self.latlon_vars(variable)
 
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude,

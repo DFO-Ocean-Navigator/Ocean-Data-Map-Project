@@ -489,10 +489,11 @@ class NetCDFData(Data):
             list -- list containing the xarray.DataArray's for latitude and 
             longitude.
         """
-        return (
-            self.__find_variable(['nav_lat', 'latitude']),
-            self.__find_variable(['nav_lon', 'longitude'])
-        )
+        return [
+            self.__find_variable(['nav_lat', 'latitude', 'latc']),
+            self.__find_variable(['nav_lon', 'longitude', 'lonc'])
+            
+        ]
 
     """
         Returns the possible names of the depth dimension in the dataset
