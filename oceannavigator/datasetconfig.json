@@ -313,7 +313,7 @@
         "help": "",
         "attribution": "",
         "variables": {
-            "zos": { "name": "Sea Surface Height", "scale": [-3, 3], "unit": "m", "quantum": "hour" }
+            "zos": { "name": "Sea Surface Height", "scale": [-3, 3], "unit": "m"}
         }
     },
     "giops_reanalysis_3d": {
@@ -326,10 +326,10 @@
         "help": "",
         "attribution": "",
         "variables": {
-            "vo": { "name": "Water Y Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true, "quantum": "day" },
-            "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true, "quantum": "day" },
-            "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius", "quantum": "day"},
-            "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU", "quantum": "day" },
+            "vo": { "name": "Water Y Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true},
+            "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true },
+            "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius"},
+            "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU"},
             "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
         }
     },
