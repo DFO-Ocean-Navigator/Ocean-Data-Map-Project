@@ -17,7 +17,7 @@ class PointPlotter(pl.Plotter):
     def setup_subplots(self, numplots):
         fig, ax = plt.subplots(
             1, numplots, sharey=True,
-            figsize=self.figuresize(),
+            figsize=self.figuresize,
             dpi=self.dpi
         )
 
@@ -58,7 +58,7 @@ class PointPlotter(pl.Plotter):
                 )
                 data.append(prof)
                 depths.append(d)
-            
+
             point_data.append(np.ma.array(data))
             point_depths.append(np.ma.array(depths))
 
@@ -87,6 +87,7 @@ class PointPlotter(pl.Plotter):
 
         return data
 
+    @property
     def figuresize(self):
         figuresize = list(map(float, self.size.split("x")))
         if len(self.points) > 10:

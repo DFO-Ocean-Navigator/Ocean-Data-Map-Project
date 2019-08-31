@@ -32,6 +32,7 @@ class TemperatureSalinityPlotter(PointPlotter):
         self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
         self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
         self.load_misc(dataset, [temp_var, sal_var])
+        self.data = data
 
         for idx, factor in enumerate(self.scale_factors):
             if factor != 1.0:
@@ -82,7 +83,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
     def plot(self):
         # Create base figure
-        fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
+        fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
 
         # Setup figure layout
         width = 2 if self.showmap else 1
