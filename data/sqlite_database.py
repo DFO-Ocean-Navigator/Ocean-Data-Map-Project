@@ -166,10 +166,10 @@ class SQLiteDatabase:
 
     def get_latest_timestamp(self, variable: str):
         """Returns the latest raw timestamp value for a given variable.
-        
+
         Arguments:
             variable {str} -- Key of the variable of interest (e.g. votemper)
-        
+
         Returns:
             [type] -- Most recent timestamp value.
         """
@@ -194,10 +194,10 @@ class SQLiteDatabase:
 
     def get_earliest_timestamp(self, variable: str):
         """Returns the earliest raw timestamp value for a given variable.
-        
+
         Arguments:
             variable {str} -- Key of the variable of interest (e.g. votemper)
-        
+
         Returns:
             [type] -- Earliest timestamp value.
         """
@@ -222,7 +222,7 @@ class SQLiteDatabase:
 
     def get_timestamp_range(self, starttime: int, endtime: int, variable: str):
         """Retrieves all raw timestamps in the interval [starttime, endtime] for a variable.
-        
+
         Arguments:
             starttime {int} -- Starting timestamp
             endtime {int} -- Ending timestamp
@@ -234,7 +234,7 @@ class SQLiteDatabase:
 
         self.c.execute(
             """
-            SELECT
+            SELECT DISTINCT
                 timestamp
             FROM
                 TimestampVariableFilepath tvf
@@ -245,7 +245,7 @@ class SQLiteDatabase:
                 AND timestamp BETWEEN ?
                 and ?;
 
-            """, (variable, starttime, endtime, )
+            """, (variable[0] if isinstance(variable, list) else variable, starttime, endtime, )
         )
 
         return self.__flatten_list(self.c.fetchall())

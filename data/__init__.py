@@ -8,6 +8,7 @@ from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
 from data.sqlite_database import SQLiteDatabase
+from data.utils import roll_time
 
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
@@ -129,11 +130,14 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
 
     # Otherwise assume negative values are indices into timestamp list
     all_timestamps = db.get_timestamps(variable)
+    len_timestamps = len(all_timestamps)
     if timestamp < 0 and endtime > 0:
-        return db.get_timestamp_range(all_timestamps[timestamp], endtime, variable)
+        idx = roll_time(timestamp, len_timestamps)
+        return db.get_timestamp_range(all_timestamps[idx], endtime, variable)
 
     if timestamp > 0 and endtime < 0:
-        return db.get_timestamp_range(timestamp, all_timestamps[endtime], variable)
+        idx = roll_time(endtime, len_timestamps)
+        return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
 
 
 def __is_mercator(variable_list: list):

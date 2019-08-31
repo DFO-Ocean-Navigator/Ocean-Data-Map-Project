@@ -14,6 +14,7 @@ from data import open_dataset
 from oceannavigator import DatasetConfig
 from plotting.line import LinePlotter
 from utils.errors import ClientError, ServerError
+from data.sqlite_database import SQLiteDatabase
 
 
 class HovmollerPlotter(LinePlotter):
@@ -55,6 +56,9 @@ class HovmollerPlotter(LinePlotter):
 
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
+
+            with SQLiteDatabase(self.dataset_config.url) as db:
+                time = db.get_timestamp_range(self.starttime, self.endtime, self.variables)
 
             if len(self.variables) > 1:
                 v = []
