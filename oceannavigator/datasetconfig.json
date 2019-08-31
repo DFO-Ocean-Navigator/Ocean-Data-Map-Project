@@ -305,7 +305,7 @@
     },
     "giops_reanalysis_surface": {
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Reanalysis-Surface.sqlite3",
-        "name": "GIOPS Reanalysis",
+        "name": "GIOPS Reanalysis (Surface)",
         "type": "historical",
         "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
@@ -318,7 +318,7 @@
     },
     "giops_reanalysis_3d": {
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Reanalysis-3D.sqlite3",
-        "name": "GIOPS Reanalysis",
+        "name": "GIOPS Reanalysis (3D)",
         "type": "historical",
         "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
