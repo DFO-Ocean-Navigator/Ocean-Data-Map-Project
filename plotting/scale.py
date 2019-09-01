@@ -47,6 +47,6 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
                 radius,
                 neighbours
             )
-            d = __magnitude(d1, d2)# Use your dot-product instead of exponents
+            d = __magnitude(d0, d1)# Use your dot-product instead of exponents
 
         return normalize_scale(d, config.variable[",".join(variables)])
