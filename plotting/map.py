@@ -185,10 +185,7 @@ class MapPlotter(Plotter):
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
-        with open_dataset(self.dataset_config) as dataset:
-            if self.time < 0:
-                self.time += len(dataset.timestamps)
-            self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
+        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
 
             if len(self.variables) > 1:
                 self.variable_unit = self.get_vector_variable_unit(
@@ -343,7 +340,7 @@ class MapPlotter(Plotter):
 
             self.contour_data = contour_data
 
-            self.timestamp = dataset.timestamps[self.time]
+            self.timestamp = dataset.timestamp_to_iso_8601(self.time)
 
         if self.compare:
             self.variable_name += " Difference"
