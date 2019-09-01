@@ -325,7 +325,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.colormap_diff} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
-          url='/api/colormaps/' 
+          url='/api/v1.0/colormaps/' 
           title={_("Diff. Colourmap")}
         >
           {_("colourmap_help")}
@@ -432,10 +432,10 @@ export default class AreaWindow extends React.Component {
           state={this.state.output_starttime}
           def=''
           quantum={this.state.dataset_0.dataset_quantum}
-          url={"/api/timestamps/?dataset=" +
+          url={"/api/v1.0/timestamps/?dataset=" +
                 this.state.dataset_0.dataset +
-                "&quantum=" +
-                this.state.dataset_0.dataset_quantum}
+                "&variable=" +
+                this.state.dataset_0.variable}
           title={this.state.output_timerange ? _("Start Time") : _("Time")}
           onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
           max={this.state.dataset_0.time + 1}
@@ -448,10 +448,10 @@ export default class AreaWindow extends React.Component {
             state={this.state.output_endtime}
             def=''
             quantum={this.state.dataset_0.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
+            url={"/api/v1.0/timestamps/?dataset=" +
                 this.state.dataset_0.dataset +
-                "&quantum=" +
-                this.state.dataset_0.dataset_quantum}
+                "&variable=" +
+                this.state.dataset_0.variable}
             title={_("End Time")}
             onUpdate={(key, value) => { this.setState({output_endtime: value,}); }}
             min={this.state.dataset_0.time}
@@ -569,7 +569,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.leftColormap} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
-          url='/api/colormaps/' 
+          url='/api/v1,0/colormaps/' 
           title={_("Colourmap")}
         >
           {_("colourmap_help")}
@@ -611,7 +611,7 @@ export default class AreaWindow extends React.Component {
             state={this.state.rightColormap} 
             def='default' 
             onUpdate={this.onLocalUpdate} 
-            url='/api/colormaps/' 
+            url='/api/v1.0/colormaps/' 
             title={_("Colourmap")}
           >
             {_("colourmap_help")}
