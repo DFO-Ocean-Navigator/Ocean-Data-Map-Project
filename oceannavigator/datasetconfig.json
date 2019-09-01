@@ -276,7 +276,7 @@
         "quantum": "split",
         "type": "forecast",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "enabled": true,
+        "enabled": false,
         "cache": 6,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "GIOPS 10-day Forecast from CONCEPTS",
@@ -306,7 +306,7 @@
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Reanalysis-Surface.sqlite3",
         "name": "GIOPS Reanalysis (Surface)",
         "type": "historical",
-        "enabled": true,
+        "enabled": false,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "quantum": "hour",
         "help": "",
@@ -587,7 +587,7 @@
         "quantum": "hour",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "enabled": true,
+        "enabled": false,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Values from CONCEPTS",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
@@ -711,7 +711,7 @@
         "name": "RIOPS Monthly Average",
         "quantum": "month",
         "type": "historical",
-        "enabled": true,
+        "enabled": false,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Daily Averages from CONCEPTS",
