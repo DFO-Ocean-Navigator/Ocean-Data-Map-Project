@@ -65,7 +65,7 @@ class HovmollerPlotter(LinePlotter):
                 self.endtime = dataset.timestamp_to_time_index(self.endtime)
 
             time = time_var[slice(min(self.starttime, self.endtime), max(
-                self.starttime, self.endtime))].values
+                self.starttime, self.endtime) + 1)].values
 
             if len(self.variables) > 1:
                 v = []
