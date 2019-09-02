@@ -98,9 +98,9 @@ class HovmollerPlotter(LinePlotter):
 
             self.variable_unit = variable_units[0]
             self.data = value
-            self.times = dataset.timestamps[self.starttime: self.endtime + 1]
+            self.iso_timestamps = dataset.timestamp_to_iso_8601(time)
             self.data = np.multiply(self.data, scale_factors[0])
-            #self.data = self.data.transpose()
+            self.data = self.data.transpose()
 
             # Get colourmap
             if self.cmap is None:
@@ -225,7 +225,7 @@ class HovmollerPlotter(LinePlotter):
             gettext(self.variable_name),
             vmin, vmax,
             self.data,
-            self.times,
+            self.iso_timestamps,
             self.cmap,
             self.variable_unit,
             gettext(self.variable_name) +
@@ -284,7 +284,7 @@ class HovmollerPlotter(LinePlotter):
                 )
 
         # Image title
-        if self.plotTitle is None or self.plotTitle == "":
+        if self.plotTitle:
             fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
                 self.name
             ), fontsize=15)
