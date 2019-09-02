@@ -47,7 +47,7 @@ class CalculatedData(NetCDFData):
 
             attrs = {**attrs, **self._calculated[key]}
             return CalculatedArray(self._dataset,
-                                   self._calculated[key]['equation'], attrs, self.url)
+                                   self._calculated[key]['equation'], attrs, self.url, self._meta_only)
         else:
             return self._dataset.variables[key]
 
@@ -92,7 +92,7 @@ class CalculatedArray():
     data to the calling method.
     """
 
-    def __init__(self, parent, expression, attrs={}, db_url=""):
+    def __init__(self, parent, expression, attrs={}, db_url="", meta_only=False):
         """
         Parameters:
         parent -- the underlying dataset
@@ -105,6 +105,7 @@ class CalculatedArray():
         self._parser.lexer.lexer.input(expression)
         self._attrs: dict = attrs
         self._db_url: str = db_url
+        self._meta_only: bool = meta_only
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
@@ -125,11 +126,7 @@ class CalculatedArray():
             if v not in self._parent.variables:
                 continue
 
-            if hasattr(self._parent.variables[v], "dims"):
-                # xarray calls it dims
-                d = self._parent.variables[v].dims
-            else:
-                d = self._parent.variables[v].dimensions
+            d = self.__get_parent_variable_dims(v)
 
             if len(d) > len(key_dims):
                 key_dims = d
@@ -165,11 +162,18 @@ class CalculatedArray():
 
     @property
     def dims(self):
+
+        if self._meta_only:
+            return self.__dims_meta_only()
+
+        return self.__dims_opened()
+
+    def __dims_meta_only(self):
         result = ()
 
         with SQLiteDatabase(self._db_url) as db:
             variables = db.get_data_variables()
-            
+
             for v in self._parser.lexer.variables:
                 if v not in variables:
                     continue
@@ -180,6 +184,28 @@ class CalculatedArray():
                     result = d
 
         return result
+
+    def __dims_opened(self):
+        result = ()
+
+        for v in self._parser.lexer.variables:
+            if v not in self._parent.variables:
+                continue
+
+            d = self.__get_parent_variable_dims(v)
+
+            if len(d) > len(result):
+                result = d
+
+        return result
+
+    def __get_parent_variable_dims(self, variable: str):
+
+        if hasattr(self._parent.variables[variable], "dims"):
+            # xarray calls it dims
+            return self._parent.variables[variable].dims
+        else:
+            return self._parent.variables[variable].dimensions
 
     def isel(self, **kwargs):
         """
