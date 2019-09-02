@@ -65,7 +65,7 @@ class CalculatedData(NetCDFData):
                 if name not in variable_list:
                     # New Variable
                     dims = CalculatedArray(
-                        self._dataset, data['equation'], db_url=self.url).dims
+                        self._dataset, data['equation'], db_url=self.url, meta_only=self._meta_only).dims
                     temp_list.append(
                         Variable(
                             name,
