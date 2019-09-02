@@ -242,7 +242,8 @@ def subset_query_v1_0():
 
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
-    with open_dataset(config, variable=args['variables'], timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
+    variables = args['variables'].split(',')
+    with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
         working_dir, subset_filename = dataset.subset(args)
 
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
