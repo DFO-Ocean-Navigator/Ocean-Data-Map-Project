@@ -47,7 +47,7 @@ class CalculatedData(NetCDFData):
 
             attrs = {**attrs, **self._calculated[key]}
             return CalculatedArray(self._dataset,
-                                   self._calculated[key]['equation'], attrs)
+                                   self._calculated[key]['equation'], attrs, self.url)
         else:
             return self._dataset.variables[key]
 
@@ -103,8 +103,8 @@ class CalculatedArray():
         self._expression = expression
         self._parser = data.calculated_parser.parser.Parser()
         self._parser.lexer.lexer.input(expression)
-        self._attrs = attrs
-        self._db_url = db_url
+        self._attrs: dict = attrs
+        self._db_url: str = db_url
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
