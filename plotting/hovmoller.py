@@ -12,7 +12,6 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import get_requested_timestamps
 from oceannavigator import DatasetConfig
 from plotting.line import LinePlotter
 from utils.errors import ClientError, ServerError
