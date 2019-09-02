@@ -5,10 +5,14 @@ import itertools
 import json
 
 import cftime
+import numpy as np
 import pytz
 
 
 def time_index_to_datetime(timestamps, time_units: str):
+
+    if isinstance(timestamps, np.ndarray):
+        timestamps = timestamps.tolist()
 
     if not isinstance(timestamps, list):
         timestamps = [timestamps]
