@@ -43,7 +43,8 @@ class NetCDFData(Data):
     def __enter__(self):
         if not self._meta_only:
             if self._nc_files:
-                self._dataset = xr.open_mfdataset(self._nc_files, decode_times=False)
+                self._dataset = xr.open_mfdataset(
+                    self._nc_files, decode_times=False)
             else:
                 # Don't decode times since we do it anyways.
                 self._dataset = xr.open_dataset(self.url, decode_times=False)
@@ -95,7 +96,7 @@ class NetCDFData(Data):
         return result if result.shape[0] > 1 else result[0]
 
     def timestamp_to_iso_8601(self, timestamp):
-        
+
         time_var = self.time_variable
 
         result = time_index_to_datetime(timestamp, time_var.attrs['units'])
@@ -151,10 +152,11 @@ class NetCDFData(Data):
         # Time range
         try:
             # Time is an index into timestamps array
-            time_range = [self.timestamp_to_time_index(int(x)) for x in query.get('time').split(',')]
+            time_range = [self.timestamp_to_time_index(
+                int(x)) for x in query.get('time').split(',')]
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
-            
+
             """
             quantum = query.get('quantum')
             if quantum == 'day' or quantum == 'hour':
@@ -557,19 +559,18 @@ class NetCDFData(Data):
             self.__find_variable(['nav_lon', 'longitude'])
         )
 
-    """
-        Returns the possible names of the depth dimension in the dataset
-    """
     @property
     def depth_dimensions(self):
-        # This needs to be replaced with a query to the sqlite database
+        """
+        Returns the possible names of the depth dimension in the dataset
+        """
+
         return ['depth', 'deptht', 'z']
 
-    """
-        Returns the value of a given variable name from the dataset
-    """
-
     def get_dataset_variable(self, key: str):
+        """
+        Returns the value of a given variable name from the dataset
+        """
         return self._dataset.variables[key]
 
     @property
@@ -594,7 +595,8 @@ class NetCDFData(Data):
 
     @property
     def timestamps(self):
-        """Loads, caches, and returns the time dimension from a dataset.
+        """
+        Loads, caches, and returns the time dimension from a dataset.
         """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:

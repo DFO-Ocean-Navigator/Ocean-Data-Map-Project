@@ -11,10 +11,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
+from data.sqlite_database import SQLiteDatabase
+from data.utils import get_requested_timestamps
 from oceannavigator import DatasetConfig
 from plotting.line import LinePlotter
 from utils.errors import ClientError, ServerError
-from data.sqlite_database import SQLiteDatabase
 
 
 class HovmollerPlotter(LinePlotter):
@@ -57,8 +58,12 @@ class HovmollerPlotter(LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
 
-            with SQLiteDatabase(self.dataset_config.url) as db:
-                time = db.get_timestamp_range(self.starttime, self.endtime, self.variables)
+            time_var = dataset.time_variable
+            if self.starttime > 0:
+                self.starttime = dataset.timestamp_to_time_index(self.starttime)
+            if self.endtime > 0:
+                self.endtime = dataset.timestamp_to_time_index(self.starttime)
+            time = time_var[self.starttime:self.endtime]
 
             if len(self.variables) > 1:
                 v = []
@@ -102,7 +107,7 @@ class HovmollerPlotter(LinePlotter):
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
             compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config) as dataset:
+            with open_dataset(compare_config, variable=self.compare['variables']) as dataset:
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(
                     self.compare['depth'], len(dataset.depths) - 1, dataset)
 
@@ -151,7 +156,8 @@ class HovmollerPlotter(LinePlotter):
 
                 self.compare['variable_unit'] = variable_units[0]
                 self.compare['data'] = value
-                self.compare['times'] = dataset.timestamps[self.compare['starttime']: self.compare['endtime'] + 1]
+                self.compare['times'] = dataset.timestamps[self.compare['starttime']
+                    : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(
                     self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
