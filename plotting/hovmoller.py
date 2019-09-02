@@ -59,10 +59,13 @@ class HovmollerPlotter(LinePlotter):
 
             time_var = dataset.time_variable
             if self.starttime > 0:
-                self.starttime = dataset.timestamp_to_time_index(self.starttime)
+                self.starttime = dataset.timestamp_to_time_index(
+                    self.starttime)
             if self.endtime > 0:
                 self.endtime = dataset.timestamp_to_time_index(self.endtime)
-            time = time_var[self.starttime:self.endtime].values
+
+            time = time_var[slice(min(self.starttime, self.endtime), max(
+                self.starttime, self.endtime))].values
 
             if len(self.variables) > 1:
                 v = []
@@ -97,7 +100,7 @@ class HovmollerPlotter(LinePlotter):
             self.data = value
             self.times = dataset.timestamps[self.starttime: self.endtime + 1]
             self.data = np.multiply(self.data, scale_factors[0])
-            self.data = self.data.transpose()
+            #self.data = self.data.transpose()
 
             # Get colourmap
             if self.cmap is None:
@@ -155,8 +158,7 @@ class HovmollerPlotter(LinePlotter):
 
                 self.compare['variable_unit'] = variable_units[0]
                 self.compare['data'] = value
-                self.compare['times'] = dataset.timestamps[self.compare['starttime']
-                    : self.compare['endtime'] + 1]
+                self.compare['times'] = dataset.timestamps[self.compare['starttime']                                                           : self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(
                     self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()
