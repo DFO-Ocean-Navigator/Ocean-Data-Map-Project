@@ -3,13 +3,14 @@ import hashlib
 import json
 
 import numpy as np
-from flask import Blueprint, Flask, Response, jsonify, request, send_file
+from flask import (Blueprint, Flask, Response, jsonify, request, send_file,
+                   send_from_directory)
 from flask_babel import gettext
 
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import time_index_to_datetime, DateTimeEncoder
+from data.utils import DateTimeEncoder, time_index_to_datetime
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
@@ -227,10 +228,24 @@ def stats_v1_0():
         return routes.routes_impl.stats_impl(args, query)
 
 
-@bp_v1_0.route('/api/v1.0/subset/')
+@bp_v1_0.route('/api/v1.0/subset/', methods=['GET', 'POST'])
 def subset_query_v1_0():
-    query = json.loads(request.args.get('query'))
-    return routes.routes_impl.subset_query_impl(query)
+
+    args = None
+    if request.method == 'GET':
+        args = request.args
+    else:
+        args = request.form
+
+    working_dir = None
+    subset_filename = None
+
+    config = DatasetConfig(args.get('dataset_name'))
+    time_range = args['time'].split(',')
+    with open_dataset(config, variable=args['variables'], timestamp=time_range[0], endtime=time_range[1]) as dataset:
+        working_dir, subset_filename = dataset.subset(args)
+
+    return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
 
 @bp_v1_0.route('/api/v1.0/plot/', methods=['GET', 'POST'])
