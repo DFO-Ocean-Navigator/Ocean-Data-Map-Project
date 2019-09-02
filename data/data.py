@@ -87,7 +87,7 @@ class Data(object, metaclass=abc.ABCMeta):
     def get_path(self, path, depth, time, variable, numpoints=100, times=None,
                  return_depth=False):
         if times is None:
-            if isinstance(time, slice):
+            if hasattr(time, "__len__"):
                 times = self.timestamps[time]
             else:
                 times = None

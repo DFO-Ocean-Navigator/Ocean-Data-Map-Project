@@ -57,11 +57,12 @@ class HovmollerPlotter(LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
 
+            time_var = dataset.time_variable
             if self.starttime > 0:
                 self.starttime = dataset.timestamp_to_time_index(self.starttime)
             if self.endtime > 0:
                 self.endtime = dataset.timestamp_to_time_index(self.endtime)
-            time = slice(self.starttime, self.endtime)
+            time = time_var[self.starttime:self.endtime].values
 
             if len(self.variables) > 1:
                 v = []
