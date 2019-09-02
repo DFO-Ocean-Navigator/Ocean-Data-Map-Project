@@ -53,6 +53,8 @@ FAILURE = ClientError("Bad API usage")
 """
     Error handler
 """
+
+
 def handle_error_impl(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
@@ -62,6 +64,8 @@ def handle_error_impl(error):
 """
     Range Query V0.1
 """
+
+
 def range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
 
@@ -76,7 +80,9 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
 
 
 def info_impl():
-    raise APIError("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+    raise APIError(
+        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+
 
 def query_impl(q: str):
     """
@@ -88,7 +94,7 @@ def query_impl(q: str):
     """
 
     data = []
-    
+
     if q == 'points':
         data = utils.misc.list_kml_files('point')
     elif q == 'lines':
@@ -98,7 +104,8 @@ def query_impl(q: str):
     elif q == 'class4':
         data = utils.misc.list_class4_files()
     else:
-        raise APIError("Invalid API Query - Please review the API documentation for help.")
+        raise APIError(
+            "Invalid API Query - Please review the API documentation for help.")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -122,7 +129,8 @@ def query_id_impl(q: str, q_id: str):
     elif q == 'observation' and q_id == 'meta':
         data = utils.misc.observation_meta()
     else:
-        raise APIError("The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
+        raise APIError(
+            "The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -138,7 +146,7 @@ def get_data_impl(dataset: str, variable: str, time: int, depth: str, location: 
     <int:time>        : Time retrieved data was gathered/modeled
     <string:depth>    : Water Depth - found using /api/depth/?dataset='...'
     <string:location> : Location of the data you want to retrieve (Lat, Long)
-    
+
     **All Components Must be Included**
     """
     data = utils.misc.get_point_data(
@@ -246,7 +254,7 @@ def colors_impl(args):
         data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
     if args.get('none'):
         data.insert(0, {'id': 'none', 'value': gettext('None')})
-    
+
     resp = jsonify(data)
     return resp
 
@@ -294,19 +302,20 @@ def depth_impl(args):
     Returns all depths available for that variable in the dataset
     """
 
-    #Checking for valid Query
+    # Checking for valid Query
     if 'variable' not in args or ('dataset' not in args):
         if 'dataset' in args:
             raise APIError("Please Specify a variable using &variable='...' ")
         if 'variable' in args:
             raise APIError("Please Specify a Dataset using &dataset='...' ")
-        raise APIError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
+        raise APIError(
+            "Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
 
     var = args.get('variable')
     variables = var.split(',')
 
     data = []
-   
+
     dataset = args['dataset']
     config = DatasetConfig(dataset)
 
@@ -317,8 +326,8 @@ def depth_impl(args):
                     set(ds.depth_dimensions) & \
                set(ds.variables[variable].dimensions):
                 if str(args.get('all')).lower() in ['true',
-                                                            'yes',
-                                                            'on']:
+                                                    'yes',
+                                                    'on']:
                     data.append(
                         {'id': 'all', 'value': gettext('All Depths')})
 
@@ -366,7 +375,7 @@ def vars_query_impl(args):
     vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean: True / False**
-    """ 
+    """
 
     if 'dataset' not in args:
         raise APIError("Please Specify a dataset Using ?dataset='...' ")
@@ -376,12 +385,12 @@ def vars_query_impl(args):
     config = DatasetConfig(dataset)
 
     with open_dataset(config) as ds:
-        if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
+        if 'vectors_only' not in args:  # Vectors_only -> Magnitude Only
 
             for v in ds.variables:
 
-                #If a time period and at least one other unit type is specified
-                if ('time_counter' in v.dimensions or   
+                # If a time period and at least one other unit type is specified
+                if ('time_counter' in v.dimensions or
                     'time' in v.dimensions) \
                         and ('y' in v.dimensions or
                              'yc' in v.dimensions or
@@ -395,15 +404,14 @@ def vars_query_impl(args):
                         continue
                     else:
                         if not config.variable[v].is_hidden:
-                             
+
                             data.append({
                                 'id': v.key,
                                 'value': config.variable[v].name,
                                 'scale': config.variable[v].scale
                             })
-     
-    
-    #If Vectors are needed
+
+    # If Vectors are needed
     if 'vectors' in args or 'vectors_only' in args:
         for variable in config.vector_variables:
             data.append({
@@ -412,8 +420,9 @@ def vars_query_impl(args):
                 'scale': config.variable[variable].scale,
             })
 
-    data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
-    
+    # Sorts data alphabetically using the value
+    data = sorted(data, key=lambda k: k['value'])
+
     resp = jsonify(data)
     return resp
 
@@ -434,7 +443,7 @@ def time_query_impl(args):
     dataset = args['dataset']
     config = DatasetConfig(dataset)
     quantum = args.get('quantum')
-    
+
     with open_dataset(config) as ds:
         for idx, date in enumerate(ds.timestamps):
             if quantum == 'month':
@@ -449,20 +458,18 @@ def time_query_impl(args):
     data = sorted(data, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
-    
+
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
-    
+
     resp = Response(js, status=200, mimetype='application/json')
     return resp
-    
 
 
-    
 def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     """
     API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
@@ -486,7 +493,7 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     idx = np.where(diffs <= 0)[0]
     res = 0
     if len(idx) > 0:
-        res = idx.max().item() # https://stackoverflow.com/a/11389998/2231969
+        res = idx.max().item()  # https://stackoverflow.com/a/11389998/2231969
 
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
@@ -507,8 +514,9 @@ def scale_impl(dataset: str, variable: str, scale: str):
         'variable': variable,
         'scale': scale,
     })
-    
+
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
+
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
@@ -525,19 +533,20 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     dataIO = BytesIO(bytesIOBuff.read())
     im = Image.open(dataIO)
-    im.save(f, format='PNG', optimize=True) # For cache
+    im.save(f, format='PNG', optimize=True)  # For cache
 
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
+
 
 def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     """
         Produces the map data tiles
     """
-    
+
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
-    
+
     # Check if the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
@@ -559,6 +568,7 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
 
         return _cache_and_send_img(img, f)
 
+
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
@@ -570,12 +580,12 @@ def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
-    
+
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
         bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, shaded_relief)
-        
+
         return _cache_and_send_img(bytesIOBuff, f)
 
 
@@ -598,41 +608,44 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
 
+
 def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
-  """
-       Serves mbt files
-  """
-  cache_dir = current_app.config['CACHE_DIR']
-  shape_file_dir = current_app.config['SHAPE_FILE_DIR']
-  requestf = str(os.path.join(cache_dir, request.path[1:]))
-  basedir = requestf.rsplit("/", 1)[0]
+    """
+         Serves mbt files
+    """
+    cache_dir = current_app.config['CACHE_DIR']
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+    requestf = str(os.path.join(cache_dir, request.path[1:]))
+    basedir = requestf.rsplit("/", 1)[0]
 
-  # Send blank tile if conditions aren't met
-  if (zoom < 7) or (projection != "EPSG:3857"):
-    return send_file(shape_file_dir + "/blank.mbt")
-
-# Send file if cached or select data in SQLite file
-  if os.path.isfile(requestf):
-    return send_file(requestf)
-  else:
-    y = (2**zoom-1) - y
-    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
-    selector.execute(sqlite)
-    tile = selector.fetchone()
-    if tile == None:
+    # Send blank tile if conditions aren't met
+    if (zoom < 7) or (projection != "EPSG:3857"):
         return send_file(shape_file_dir + "/blank.mbt")
 
-    # Write tile to cache and send file
-    if not os.path.isdir(basedir):
-      os.makedirs(basedir)
-    with open(requestf + ".pbf", 'wb') as f:
-      f.write(tile[0])
-    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
-      with open(requestf, 'wb') as tileout:
-        shutil.copyfileobj(gzipped, tileout)
-    return send_file(requestf)
+# Send file if cached or select data in SQLite file
+    if os.path.isfile(requestf):
+        return send_file(requestf)
+    else:
+        y = (2**zoom-1) - y
+        connection = sqlite3.connect(
+            shape_file_dir + "/{}.mbtiles".format(tiletype))
+        selector = connection.cursor()
+        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(
+            zoom, x, y)
+        selector.execute(sqlite)
+        tile = selector.fetchone()
+        if tile == None:
+            return send_file(shape_file_dir + "/blank.mbt")
+
+        # Write tile to cache and send file
+        if not os.path.isdir(basedir):
+            os.makedirs(basedir)
+        with open(requestf + ".pbf", 'wb') as f:
+            f.write(tile[0])
+        with gzip.open(requestf + ".pbf", 'rb') as gzipped:
+            with open(requestf, 'wb') as tileout:
+                shutil.copyfileobj(gzipped, tileout)
+        return send_file(requestf)
 
 
 def drifter_query_impl(q: str, drifter_id: str):
@@ -646,7 +659,7 @@ def drifter_query_impl(q: str, drifter_id: str):
     Time - Returns the max and min time of the specified drifter
     }
     """
-    
+
     if q == 'vars':
         pts = utils.misc.drifters_vars(drifter_id)
     elif q == 'time':
@@ -671,35 +684,23 @@ def class4_query_impl(q: str, class4_id: str, index: str):
 
     if class4_id == None:
         raise APIError("Please Specify an ID ")
-    
+
     if q == 'forecasts':
         pts = utils.misc.list_class4_forecasts(class4_id)
     elif q == 'models':
         pts = utils.misc.list_class4_models(class4_id)
     else:
-        raise APIError(gettext("Please specify either forecasts or models using /models/ or /forecasts/"))
+        raise APIError(gettext(
+            "Please specify either forecasts or models using /models/ or /forecasts/"))
 
     resp = jsonify(pts)
     resp.cache_control.max_age = 86400
     return resp
-    
-def subset_query_impl(args):
-    """
-    API Format: /subset/?query='...'
-    
-    **Query must be written in JSON and converted to encodedURI**
-    **Not all components of query are required
-    """
 
-    working_dir = None
-    subset_filename = None
-    
-    config = DatasetConfig(args.get('dataset_name'))
-    time_range = args['time'].split(',')
-    with open_dataset(config, variable=args['variables'], timestamp=time_range[0], endtime=time_range[1]) as dataset:
-        working_dir, subset_filename = dataset.subset(args)
-            
-    return send_from_directory(working_dir, subset_filename, as_attachment=True)
+
+def subset_query_impl(args):
+    raise APIError(
+        gettext("This endpoint is deprecated. Use /api/v1.0/subset/... instead."))
 
 
 def plot_impl(query: dict, args):
@@ -720,7 +721,7 @@ def plot_impl(query: dict, args):
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
     """
-    
+
     fmt = args.get('format')
     if fmt == 'json':
         def make_response(data, mime):
@@ -759,7 +760,6 @@ def plot_impl(query: dict, args):
                 station[index][1] = wrapdeg(station[index][1])
     """
 
-
     options = {}
     options['format'] = fmt
     options['size'] = args.get('size', '15x9')
@@ -789,16 +789,17 @@ def plot_impl(query: dict, args):
     elif plottype == 'stick':
         plotter = StickPlotter(dataset, query, **options)
     else:
-        raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
+        raise APIError(
+            "You Have Not Selected a Plot Type - Please Review your Query")
 
     filename = 'png'
 
     if 'data' in request.args:
         data = plotter.prepare_plot()
-        return data   
-    
+        return data
+
     img, mime, filename = plotter.run()
-    
+
     if img:
         response = make_response(img, mime)
     else:
@@ -813,7 +814,7 @@ def plot_impl(query: dict, args):
     return response
 
 
-def stats_impl(args, query = None):
+def stats_impl(args, query=None):
     """
     API Format: /stats/?query='...'
 
@@ -828,13 +829,14 @@ def stats_impl(args, query = None):
     **Not all components of query are required
     """
     if query == None:
-        #Invalid API Check
-        if 'query' not in args: #Invalid API Check
-            raise APIError("A Query must be specified in the form /stats/?query='...' ")
-        #Retrieves Query as JSON based on Request Method
+        # Invalid API Check
+        if 'query' not in args:  # Invalid API Check
+            raise APIError(
+                "A Query must be specified in the form /stats/?query='...' ")
+        # Retrieves Query as JSON based on Request Method
         query = json.loads(args.get('query'))
 
-    dataset = query.get('dataset')  #Retrieves dataset from query
+    dataset = query.get('dataset')  # Retrieves dataset from query
 
     data = areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')

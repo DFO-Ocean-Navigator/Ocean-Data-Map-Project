@@ -20,10 +20,11 @@ from flask_babel import format_date
 import data.calculated
 from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
+from data.sqlite_database import SQLiteDatabase
 from data.utils import time_index_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
-from data.sqlite_database import SQLiteDatabase
+from utils.errors import ServerError
 
 
 class NetCDFData(Data):
@@ -150,10 +151,11 @@ class NetCDFData(Data):
         # Time range
         try:
             # Time is an index into timestamps array
-            time_range = [int(x) for x in query.get('time').split(',')]
+            time_range = [self.timestamp_to_time_index(int(x)) for x in query.get('time').split(',')]
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
-
+            
+            """
             quantum = query.get('quantum')
             if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
@@ -176,6 +178,8 @@ class NetCDFData(Data):
             time_range = [dateutil.parser.parse(
                 x) for x in query.get('time').split(',')]
             time_range = [find_time_index(x) for x in time_range]
+            """
+            raise ServerError("Not implemented.")
 
         apply_time_range = False
         if time_range[0] != time_range[1]:
