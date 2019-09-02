@@ -218,7 +218,7 @@ export default class AreaWindow extends React.Component {
   subsetArea() {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
     
-    window.location.href = "/subset/?" +
+    window.location.href = "/api/v1.0/subset/?" +
        "&output_format=" + this.state.output_format +
        "&dataset_name=" + this.state.dataset_0.dataset +
        "&variables=" + this.state.output_variables.join() +

@@ -693,8 +693,10 @@ def subset_query_impl(args):
 
     working_dir = None
     subset_filename = None
+    
     config = DatasetConfig(args.get('dataset_name'))
-    with open_dataset(config) as dataset:
+    time_range = args['time'].split(',')
+    with open_dataset(config, variable=args['variables'], timestamp=time_range[0], endtime=time_range[1]) as dataset:
         working_dir, subset_filename = dataset.subset(args)
             
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
