@@ -179,12 +179,10 @@ class TransectPlotter(LinePlotter):
                 return np.ma.masked_invalid(output).transpose()
 
             self.compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(self.compare_config, timestamp=self.compare['time'], variables=self.compare['variables']) as dataset:
-                # Get and format date
-                self.compare['date'] = np.clip(
-                    np.int64(self.compare['time']), 0, len(dataset.timestamps) - 1)
-                self.compare['date'] = dataset.timestamps[int(
-                    self.compare['date'])]
+            self.compare['time'] = int(self.compare['time'])
+            with open_dataset(self.compare_config, timestamp=self.compare['time'], variable=self.compare['variables']) as dataset:
+                self.compare['iso_timestamp'] = dataset.timestamp_to_iso_8601(
+                    self.compare['time'])
 
                 # 1 variable
                 if len(self.compare['variables']) == 1:
@@ -392,7 +390,7 @@ class TransectPlotter(LinePlotter):
             data
         )
 
-    def gridSetup(self):
+    def __create_plot_grid(self):
         # velocity has 2 variable components (parallel, perpendicular)
         velocity = len(self.variables) == 2 or \
             self.compare and len(self.compare['variables']) == 2
@@ -501,26 +499,26 @@ class TransectPlotter(LinePlotter):
 
     def plot(self):
 
-        gs, fig, velocity = self.gridSetup()
+        gs, fig, velocity = self.__create_plot_grid()
 
         # Plot the transect on a map
         if self.showmap:
             plt.subplot(gs[0, 0])
             utils.path_plot(self.transect_data['points'])
 
-        # Args:
-        #    subplots: a GridSpec object (gs)
-        #    map_subplot: Row number (Note: don't use consecutive rows to allow
-        #                 for expanding figure height)
-        #    data: Data to be plotted
-        #    name: subplot title
-        #    cmapLabel: label for colourmap legend
-        #    vmin: minimum value for a variable (grabbed from the lowest value of some data)
-        #    vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
-        #    units: units for variable (PSU, Celsius, etc)
-        #    cmap: colormap for variable
-        #
         def do_plot(subplots, map_subplot, data, name, cmapLabel, vmin, vmax, units, cmap):
+            """
+            Args:
+                subplots: a GridSpec object (gs)
+                map_subplot: Row number (Note: don't use consecutive rows to allow for expanding figure height)
+                data: Data to be plotted
+                name: subplot title
+                cmapLabel: label for colourmap legend
+                vmin: minimum value for a variable (grabbed from the lowest value of some data)
+                vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
+                units: units for variable (PSU, Celsius, etc)
+                cmap: colormap for variable
+            """
 
             plt.subplot(subplots[map_subplot[0], map_subplot[1]])
 
@@ -528,17 +526,18 @@ class TransectPlotter(LinePlotter):
                 data, self.depth, name, vmin, vmax, cmapLabel, units, cmap)
 
             if self.surface:
-                self._surface_plot(divider)
+                self.__add_surface_plot(divider)
 
-        """
-        Finds and returns the correct min/max values for the variable scale
-        Args:
-            scale: scale for the left or Right Map (self.scale or self.compare['scale])
-            data: transect_data
-        Returns:
-            (min, max)
-        """
+        
         def find_minmax(scale, data):
+            """
+                Finds and returns the correct min/max values for the variable scale
+                Args:
+                    scale: scale for the left or Right Map (self.scale or self.compare['scale])
+                    data: transect_data
+                Returns:
+                    (min, max)
+            """
             if scale:
                 return (scale[0], scale[1])
             else:
@@ -662,7 +661,7 @@ class TransectPlotter(LinePlotter):
                         gs, [1, Col],
                         self.compare['parallel'],
                         self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(
-                            " for ") + self.date_formatter(self.compare['date']),
+                            " for ") + self.date_formatter(self.compare['iso_timestamp']),
                         gettext("Parallel"),
                         vmin,
                         vmax,
@@ -674,7 +673,7 @@ class TransectPlotter(LinePlotter):
                         gs, [1, Col],
                         self.compare['perpendicular'],
                         self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(
-                            " for ") + self.date_formatter(self.compare['date']),
+                            " for ") + self.date_formatter(self.compare['iso_timestamp']),
                         gettext("Perpendicular"),
                         vmin,
                         vmax,
@@ -717,7 +716,7 @@ class TransectPlotter(LinePlotter):
                     gs, [1, Col],
                     self.transect_data['compare_data'],
                     self.compare['name'] + gettext(" for ") +
-                    self.date_formatter(self.compare['date']),
+                    self.date_formatter(self.compare['iso_timestamp']),
                     self.compare['name'],
                     vmin,
                     vmax,
@@ -815,7 +814,7 @@ class TransectPlotter(LinePlotter):
 
         return super(TransectPlotter, self).plot(fig)
 
-    def _surface_plot(self, axis_divider):
+    def __add_surface_plot(self, axis_divider):
         ax = axis_divider.append_axes("top", size="35%", pad=0.35)
         ax.plot(self.surface_data['distance'],
                 self.surface_data['data'], color='r')
