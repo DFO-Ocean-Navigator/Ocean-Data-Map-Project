@@ -319,16 +319,16 @@ class HovmollerPlotter(LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        try:
-            c = plt.pcolormesh(self.distance, times, data,
-                               cmap=cmap,
-                               shading='gouraud',  # Smooth shading
-                               vmin=vmin,
-                               vmax=vmax
-                               )
-        except TypeError as e:
-            raise ServerError(
-                gettext("Internal server error occured: " + str(e)))
+        
+        c = plt.pcolormesh(self.distance,
+                            times,
+                            data,
+                            cmap=cmap,
+                            shading='gouraud',  # Smooth shading
+                            vmin=vmin,
+                            vmax=vmax
+                            )
+
 
         ax = plt.gca()
         ax.set_title(title, fontsize=14)  # Set title of subplot
