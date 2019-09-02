@@ -37,6 +37,10 @@ class Data(object, metaclass=abc.ABCMeta):
     def get_profile(self, latitude, longitude, time, variable):
         pass
 
+    @abc.abstractmethod
+    def timestamp_to_iso_8601(self, timestamp):
+        pass
+
     @abc.abstractproperty
     def timestamps(self):
         pass
@@ -88,7 +92,7 @@ class Data(object, metaclass=abc.ABCMeta):
                  return_depth=False):
         if times is None:
             if hasattr(time, "__len__"):
-                times = self.timestamps[time]
+                times = self.timestamp_to_iso_8601(time)
             else:
                 times = None
         distances, times, lat, lon, bearings = \
