@@ -420,7 +420,7 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.props.starttime;
+        plot_query.starttime = this.props.dataset_0.starttime;
         plot_query.depth = this.props.depth;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
