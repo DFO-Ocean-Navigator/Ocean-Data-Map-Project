@@ -26,7 +26,8 @@ def requestFile():
    # Save file and finish
    data_file = requests.get(url, stream=True)
    dump = data_file.raw
-   location = os.path.abspath('/home/script_output.csv')
+   # change this if you want a different save location
+   location = os.getcwd()
    with open("script_output.csv", "wb") as location:
       print('Saving File')
       shutil.copyfileobj(dump, location)

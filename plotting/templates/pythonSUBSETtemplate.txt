@@ -4,11 +4,6 @@ import shutil
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from contextlib import closing
-try:
-   from PIL import Image
-except:
-   print("If you are on a Windows machine, please install PIL (imaging library) using 'python -m pip install Pillow' in the Anaconda Prompt")
-   exit()
 import json
 
 
@@ -26,7 +21,8 @@ def requestFile():
    #Open URL and save response
    data_file = requests.get(url, stream=True)
    dump = data_file.raw
-   location = os.path.abspath('/home/script_output.nc')
+   # change this if you want a different save location
+   location = os.getcwd()
    with open("script_output.nc", "wb") as location:
       print('Saving File')
       shutil.copyfileobj(dump, location)
