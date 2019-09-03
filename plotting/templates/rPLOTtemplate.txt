@@ -1,0 +1,17 @@
+library(jsonlite)
+
+
+query <- '{q}'
+
+dpi <- 144
+
+fname <- "script_template_" + toString(query["dataset"]) + "_" + toString(query["{var}"]) + ".png"
+
+gsub("[\r\n]", "", query)
+base_url <- "http://navigator.oceansdata.ca/plot/?"
+url <- base_url + URLencode(query) + "&dpi=" + toString(dpi)
+print(url)
+
+
+print("Downloading file and exiting..)
+download.file(url, fname, wget)

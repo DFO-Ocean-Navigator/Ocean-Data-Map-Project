@@ -43,15 +43,15 @@ bp_v1_0 = Blueprint('api_v1_0', __name__)
 # API INTERFACE 
 #~~~~~~~~~~~~~~~~~~~~~~~
 
-@bp_v1_0.route("/api/v1.0/generatescript/<string:url>/<string:type>/")
-def generateScript(url: str, type: str):
+@bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
+def generateScript(query: str, lang: str, scriptType: str):
 
-  if type == "python":
-    b = generatePython(url)
+  if lang == "python":
+    b = generatePython(query, scriptType)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
     
-  elif type == "r":
-    b = generateR(url)
+  elif lang == "r":
+    b = generateR(query, scriptType)
     resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
   
   return resp
