@@ -44,8 +44,8 @@ def generatePython(url, scriptType):
     if "null"  in query:
         query = query.replace("null", "None")
     
-    with open("plotting/templates/python" + scriptType + "template.txt", 'r') as file:
-        template = str(file.read())
+    with open("plotting/templates/python" + scriptType + "template.txt", 'r') as f:
+        template = str(f.read())
 
         if scriptType == "PLOT":
             template = template.format(q = query, var = var)
