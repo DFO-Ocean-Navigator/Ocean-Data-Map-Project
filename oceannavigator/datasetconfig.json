@@ -333,7 +333,7 @@
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
-        "enabled": false,
+        "enabled": true,
         "help": "",
         "name": "RIOPS Daily Average (Surface)",
         "quantum": "day",
@@ -345,19 +345,22 @@
                 "name": "Water East Velocity",
                 "scale": [-3, 3],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "hide": "true"
             },
             "ice_east_vel": {
                 "name": "Sea Ice East Velocity",
                 "scale": [-1, 1],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "hide": "true"
             },
             "ice_north_vel": {
                 "name": "Sea Ice North Velocity",
                 "scale": [-1, 1],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "hide": "true"
             },
             "iiceconc": {
                 "name": "Ice Concentration",
@@ -413,7 +416,6 @@
                 "unit": "cm"
             },
             "itmecrty": {
-
                 "name": "Sea Ice Y Velocity",
                 "scale": [
                     -1,
@@ -423,7 +425,6 @@
                 "unit": "m/s"
             },
             "itzocrtx": {
-
                 "name": "Sea Ice X Velocity",
                 "scale": [
                     -1,
@@ -433,7 +434,6 @@
                 "unit": "m/s"
             },
             "itzocrtx,itmecrty": {
-
                 "name": "Sea Ice Velocity",
                 "scale": [
                     0,
@@ -443,18 +443,17 @@
                 "unit": "m/s"
             },
             "north_vel": {
-
                 "name": "Water North Velocity",
                 "scale": [
                     -3,
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "hide": "true"
             },
             "sokaraml": {
-
-                "name": "Ocean Mixed Layer Depth",
+                "name": "Ocean Mixed Layer Depth (Density)",
                 "scale": [
                     0,
                     4000
@@ -463,7 +462,6 @@
                 "unit": "m"
             },
             "somixhgt": {
-
                 "name": "Turbocline Depth",
                 "scale": [
                     0,
@@ -473,7 +471,6 @@
                 "unit": "m"
             },
             "sossheig": {
-
                 "name": "Sea Surface Height",
                 "scale": [
                     -3,
@@ -483,7 +480,6 @@
                 "unit": "m"
             },
             "vomecrty": {
-
                 "name": "Water Y Velocity",
                 "scale": [
                     -3,
@@ -493,7 +489,6 @@
                 "unit": "m/s"
             },
             "vosaline": {
-
                 "name": "Salinity",
                 "scale": [
                     30,
@@ -504,7 +499,6 @@
                 "unit": "PSU"
             },
             "votemper": {
-
                 "name": "Temperature",
                 "scale": [
                     -5,
@@ -516,7 +510,6 @@
                 "dims": ["time", "depth", "yc", "xc"]
             },
             "vozocrtx": {
-
                 "name": "Water X Velocity",
                 "scale": [
                     -3,
@@ -526,7 +519,6 @@
                 "unit": "m/s"
             },
             "vozocrtx,vomecrty": {
-
                 "name": "Water Velocity",
                 "scale": [
                     0,
@@ -576,7 +568,8 @@
                 "name": "Salinity",
                 "unit": "PSU",
                 "scale": [30, 40]
-            }
+            },
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)" }
         }
     },
     "riops_hourly_surface": {
