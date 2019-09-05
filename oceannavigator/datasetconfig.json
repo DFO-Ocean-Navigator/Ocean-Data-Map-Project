@@ -332,7 +332,7 @@
     },
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
-        "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
         "enabled": true,
         "help": "",
         "name": "RIOPS Daily Average (Surface)",
