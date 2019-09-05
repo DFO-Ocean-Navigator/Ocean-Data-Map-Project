@@ -9,7 +9,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
-        "url": "http://localhost:8080/thredds/dodsC/giops/monthly/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GIOPS-Monthly.sqlite3",
         "variables": {
             "aice": {
                 "hide": "false",
@@ -188,7 +188,7 @@
                 "zero_centered": "True"
             },
             "temp_gradienty": {
-                "hide": "false",
+                "hide": "true",
                 "name": "Temperature Gradient Y",
                 "scale": [
                     -0.5,
@@ -204,7 +204,8 @@
                 "name": "Temperature Gradient",
                 "unit": "degree Celsius/km",
                 "scale_factor": 1000,
-                "scale": [0, 0.5]
+                "scale": [0, 0.5],
+                "hide": "true"
             },
             "geo_x": {
                 "hide": "false",
@@ -242,7 +243,7 @@
     },
     "giops_day": {
         "name": "GIOPS Daily",
-        "url": "http://localhost:8080/thredds/dodsC/giops/daily/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GIOPS-Daily.sqlite3",
         "enabled": true,
         "quantum": "day",
         "type": "historical",
@@ -260,9 +261,6 @@
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
             "aice": { "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1] },
             "vice": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10] },
-            "u_wind": { "name": "Zonal Wind",      "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
-            "v_wind": { "name": "Meridional Wind", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
-            "wind":   { "name": "Wind",            "unit": "m/s", "scale": [0, 20] },
             "divergence": { "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true"},
             "vozocrte": { "name": "Water East Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true", "hide": true },
             "vomecrtn": { "name": "Water North Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true", "hide": true },
@@ -335,7 +333,7 @@
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "name": "RIOPS Daily Average (Surface)",
         "quantum": "day",
@@ -548,7 +546,7 @@
         "quantum": "day",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/riops/daily/3D/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-3D.sqlite3",
         "variables": {
             "vozocrtx": {
                 "name": "Water X Velocity",
@@ -587,7 +585,7 @@
         "quantum": "hour",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "enabled": true,
+        "enabled": false,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Values from CONCEPTS",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
@@ -692,12 +690,12 @@
 
         }
     },
-    "riops_monthly": {
-        "url": "http://localhost:8080/thredds/dodsC/riops/monthly/aggregated.ncml",
-        "name": "RIOPS Monthly Average",
+    "riops_monthly_surface": {
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-Surface.sqlite3",
+        "name": "RIOPS Monthly Average (Surface)",
         "quantum": "month",
         "type": "historical",
-        "enabled": false,
+        "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Daily Averages from CONCEPTS",
@@ -800,12 +798,55 @@
                 }
             }
     },
+    "riops_monthly_3d": {
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-3D.sqlite3",
+        "name": "RIOPS Monthly Average (3D)",
+        "quantum": "month",
+        "type": "historical",
+        "enabled": true,
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "RIOPS Daily Averages from CONCEPTS",
+        "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
+
+        "variables": {
+                "vozocrtx": {
+                    "name": "Water X Velocity",
+                    "unit": "m/s",
+                    "scale": [-3, 3],
+                    "zero_centered": "true"
+                },
+                "vomecrty": {
+                    "name": "Water Y Velocity",
+                    "unit": "m/s",
+                    "scale": [-3, 3],
+                    "zero_centered": "true"
+                },
+                "vozocrtx,vomecrty": {
+                    "name": "Water Velocity",
+                    "unit": "m/s",
+                    "scale": [0, 3]
+                },
+                "votemper": {
+                    "name": "Temperature",
+                    "unit": "Celsius",
+                    "scale": [-5, 30],
+                    "equation": "votemper - 273.15",
+                    "dims": ["time", "depth", "yc", "xc"]
+                },
+                "vosaline": {
+                    "name": "Salinity",
+                    "unit": "PSU",
+                    "scale": [30, 40]
+                }
+            }
+    },
     "riops_forecast": {
         "url": "http://localhost:8080/thredds/dodsC/riops/forecast/aggregated.ncml",
         "name": "RIOPS Forecast",
         "quantum": "hour",
         "type": "forecast",
-        "enabled": true,
+        "enabled": false,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Forecast from CONCEPTS",
@@ -918,7 +959,7 @@
         "quantum": "month",
         "type": "historical",   
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/glorys/monthly/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GLORYSV3.sqlite3",
         "variables": {
             "iicethic": {
                 "hide": "false",
@@ -939,7 +980,8 @@
                 "scale_factor": 1,
                 "unit": "m/s",
                 "zero_centered": "true",
-                "equation": "iicevelu * cos_alpha - iicevelv * sin_alpha"
+                "equation": "iicevelu * cos_alpha - iicevelv * sin_alpha",
+                "hide": "true"
             },
             "iiceveln": {
                 "name": "Sea Ice North Velocity",
@@ -950,7 +992,8 @@
                 "scale_factor": 1,
                 "unit": "m/s",
                 "zero_centered": "true",
-                "equation": "iicevelu * sin_alpha + iicevelv * cos_alpha"
+                "equation": "iicevelu * sin_alpha + iicevelv * cos_alpha",
+                "hide": "true"
             },
             "iicevelu": {
                 "hide": "false",
@@ -973,7 +1016,7 @@
                 "unit": "m/s"
             },
             "iicevele,iiceveln": {
-                "hide": "false",
+                "hide": "true",
                 "name": "Sea Ice Velocity",
                 "scale": [
                     0,
@@ -1043,7 +1086,7 @@
                 "unit": "m/s"
             },
             "vozocrte": {
-                "hide": "false",
+                "hide": "true",
                 "name": "Water East Velocity",
                 "scale": [
                     -3,
@@ -1055,7 +1098,7 @@
                 "zero_centered": "true"
             },
             "vomecrtn": {
-                "hide": "false",
+                "hide": "true",
                 "name": "Water North Velocity",
                 "scale": [
                     -3,
@@ -1067,7 +1110,7 @@
                 "zero_centered": "true"
             },
             "vozocrte,vomecrtn": {
-                "hide": "false",
+                "hide": "true",
                 "name": "Water Velocity",
                 "scale": [
                     0,
@@ -1081,7 +1124,7 @@
     "glorys4": {
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
-        "enabled": true,
+        "enabled": false,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "name": "GLORYS v4",
         "quantum": "month",
@@ -1285,7 +1328,7 @@
         "name": "GLORYS v4 Climatology",
         "quantum": "month",
         "type": "historical",       
-        "enabled": true,
+        "enabled": false,
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
@@ -1315,7 +1358,7 @@
     "glorys_climatology": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
-        "enabled": true,
+        "enabled": false,
         "help": "Global Ocean Reanalysis and Simulation             <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Computed from the monthly averages January 1993&ndash;December 2013</li>             <li>Variables Available:                 <ul>                     <li>Eastward Velocity</li>                     <li>Ice Concentration</li>                     <li>Northward Velocity</li>                     <li>Salinity</li>                     <li>Sea Ice Eastward Velocity</li>                     <li>Sea Ice Northward Velocity</li>                     <li>Sea Ice Thickness</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Surface Height</li>                     <li>Sea Water Velocity</li>                     <li>Temperature</li>                 </ul>             </li>             </ul>",
         "name": "GLORYS Climatology",
         "quantum": "month",
@@ -1477,7 +1520,7 @@
         "quantum": "month",
         "type": "historical",       
         "time_dim_units": "seconds since 1900-01-01 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/biomer/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/BIOMER.sqlite3",
         "variables": {
             "chl": {
                 "hide": "false",
@@ -1567,7 +1610,7 @@
         "quantum": "month",
         "type": "historical",       
         "time_dim_name": "seconds since 1900-01-01 00:00:00",
-        "enabled": true,
+        "enabled": false,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/biomer/aggregated.ncml",
         "attribution": "BIOMER from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "help": "Global Biogeochemical Reanalysis -&nbsp;         <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/10/FS-BIOMER_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>         <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Available as monthly averages (January 1998&ndash;December 2013)</li>             <li>Variables Available:                 <ul>                     <li>Chlorophyll</li>                     <li>Dissolved Oxygen</li>                     <li>Iron</li>                     <li>Nitrate</li>                     <li>Phosphate</li>                     <li>Phytoplankton expressed as carbon</li>                     <li>Primary Productivity of Carbon</li>                     <li>Silicate</li>                 </ul>             </li>         </ul>",
