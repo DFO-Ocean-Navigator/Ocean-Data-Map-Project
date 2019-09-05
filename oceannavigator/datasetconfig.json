@@ -339,7 +339,7 @@
         "quantum": "day",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/riops/daily/2D/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
         "variables": {
             "east_vel": {
                 "name": "Water East Velocity",
