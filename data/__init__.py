@@ -109,6 +109,8 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
         if angle_file_url:
             file_list.append(angle_file_url)
 
+        return file_list
+
 
 def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime):
 
