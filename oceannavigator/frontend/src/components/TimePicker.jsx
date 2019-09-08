@@ -251,7 +251,7 @@ export default class TimePicker extends React.Component {
   pickerChange() {
     const [min, max] = this.getMinMaxTimestamps(this.props, this.state.data);
 
-    let d;
+    let d = null;
     if (this.props.quantum === "hour") {
       var times = [];
       d = $(this.refs.picker).datepicker("getDate");
@@ -262,7 +262,7 @@ export default class TimePicker extends React.Component {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
             times.unshift({
               id: this.state.data[i].id,
-              value: dateFormat(this.state.map[i], "HH:MM")
+              value: dateFormat(this.state.data[i].value, "HH:MM")
             });
           }
         }
@@ -275,7 +275,7 @@ export default class TimePicker extends React.Component {
         if (this.state.value === undefined) {
           this.props.onUpdate(this.props.id, times[0].id);
         } else if (
-          this.state.data[this.props.state].value.indexOf(isodatestr) !== 0
+          this.state.data[this.getIndexFromTimestamp(this.props.state)].value.indexOf(isodatestr) !== 0
         ) {
           this.props.onUpdate(this.props.id, times[0].id);
         }

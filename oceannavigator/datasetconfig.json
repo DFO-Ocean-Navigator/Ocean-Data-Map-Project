@@ -660,12 +660,12 @@
                 "somixhgt": {
                     "name": "Turbocline Depth",
                     "unit": "m",
-                    "scale": [0, 4000]
+                    "scale": [7, 110]
                 },
                 "sokaraml": {
                     "name": "Ocean Mixed Layer Depth (Density)",
                     "unit": "m",
-                    "scale": [0, 4000]
+                    "scale": [-3, 42]
                 }
             }
     },
