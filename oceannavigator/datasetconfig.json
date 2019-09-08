@@ -671,7 +671,7 @@
     },
     "riops_hourly_3d": {
         "name": "RIOPS Hourly (3D)",
-        "url": "/home/buildadm/ocean-nav/db/RIOPS-Hourly-3D.sqlite",
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Hourly-3D.sqlite3",
         "quantum": "hour",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
