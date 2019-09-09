@@ -345,6 +345,23 @@
             "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-0.5, 0.5], "unit": "m"}
         }
     },
+    "riops_reanalysis_3d": {
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Reanalysis-3D.sqlite3",
+        "name": "RIOPS Reanalysis (3D)",
+        "type": "historical",
+        "enabled": true,
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "quantum": "day",
+        "help": "",
+        "attribution": "",
+        "variables": {
+            "vo": { "name": "Water Y Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true},
+            "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true },
+            "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius"},
+            "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU"},
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
+        }
+    },
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
