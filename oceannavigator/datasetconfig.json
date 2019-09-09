@@ -330,6 +330,21 @@
             "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
         }
     },
+    "riops_reanalysis_surface": {
+        "url": "/home/buildadm/ocean-nav/db/RIOPS-Reanalysis-Surface.sqlite3",
+        "name": "RIOPS Reanalysis (Surface)",
+        "type": "historical",
+        "enabled": true,
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "quantum": "hour",
+        "help": "",
+        "attribution": "",
+        "variables": {
+            "zos": { "name": "Sea Surface Height", "scale": [-3, 3], "unit": "m" },
+            "tdhm": { "name": "Mean Tide Harmonic Analysis", "scale": [0, 10], "unit": "m"},
+            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m"}
+        }
+    },
     "riops_daily_surface": {
         "attribution": "RIOPS Daily Averages from CONCEPTS",
         "climatology": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
