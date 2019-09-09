@@ -1826,34 +1826,22 @@
             "v_wind"      : {"hide": true}
         }
     },
-    "SJAP100": {
-        "name": "Port of Saint John (100m)",
-        "url": "http://localhost:8080/thredds/dodsC/ports/SJ/Navigator_Links/SJAP100/aggregated.ncml",
-        "enabled": false,
+    "SJAP100_surface": {
+        "name": "Port of Saint John Surface (100m)",
+        "url": "/home/buildadm/ocean-nav/db/Saint-John-Port-Surface.sqlite3",
+        "enabled": true,
         "help": "",
         "climatology": "",
-        "quantum": "split",
+        "quantum": "hour",
         "type": "historical",       
         "time_dim_name": "seconds since 1950-01-01 00:00:00",
         "attribution": "",
         "variables": {
-            "uo": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "tauuo": { "name": "Wind Stress East",  "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "ubar": { "name": "Ocean Baroptropic East Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day"},
-            "thetao": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "quantum": "day" },
-            "so": { "name": "Salinity", "unit": "1e-3", "scale": [0, 40], "quantum": "day" },
-            "mldr10_1": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 40], "quantum": "day" },
-            "heatc": { "name": "Heat Content", "unit": "J/m2", "scale": [0, 30], "quantum": "day" },
-            "saltc": { "name": "Salt Content Vertically Integrated", "unit": "1e-3*kg/m2", "scale": [0, 3734855], "quantum": "day" },
-            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "unit": "m", "scale": [-0.2, -0.18], "quantum": "day" },
-            "zos": { "name": "Sea Surface Height", "units": "m", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "vo": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "tauvo": { "name": "Wind Stress North", "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day"},
-            "sspeed": { "name": "Speed of Sound", "hide":"true", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)", "quantum": "day" },
-            "uo,vo": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "scale_factor": 1, "quantum": "day"},
-            "vorticity": { "name": "Water Vorticity", "hide":"true", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(uo, vo, nav_lat, nav_lon)", "zero_centered": "true", "quantum": "day" },
-            "divergence": { "name": "Water Divergence", "hide":"true", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(uo, vo, nav_lat, nav_lon)", "zero_centered": "true", "quantum": "day"}
+            "uos": { "name": "Water X Velocity", "scale": [-3, 3], "unit": "m/s"},
+            "vos": { "name": "Water Y Velocity", "scale": [-3, 3], "unit": "m/s"},
+            "tos": { "name": "Temperature", "scale": [-5, 30], "unit": "degC"},
+            "sos": { "name": "Salinity", "scale": [30, 40], "unit": "1e-3"},
+            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m"}
         }
     },
     "BayOfFundy": {
