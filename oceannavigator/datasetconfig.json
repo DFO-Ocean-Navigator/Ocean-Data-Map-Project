@@ -341,8 +341,8 @@
         "attribution": "",
         "variables": {
             "zos": { "name": "Sea Surface Height", "scale": [-3, 3], "unit": "m" },
-            "tdhm": { "name": "Mean Tide Harmonic Analysis", "scale": [0, 10], "unit": "m"},
-            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m"}
+            "tdhm": { "name": "Mean Tide Harmonic Analysis", "scale": [-3, 3], "unit": "m"},
+            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-0.5, 0.5], "unit": "m"}
         }
     },
     "riops_daily_surface": {
