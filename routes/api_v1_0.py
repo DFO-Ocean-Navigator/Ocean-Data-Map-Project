@@ -18,32 +18,59 @@ from utils.errors import APIError, ErrorBase
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# API INTERFACE
+# API INTERFACE V1.0
 # ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 @bp_v1_0.errorhandler(ErrorBase)
 def handle_error_v1(error):
     return routes.routes_impl.handle_error_impl(error)
+
+
 @bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
 def generateScript(query: str, lang: str, scriptType: str):
 
-  if lang == "python":
-    b = generatePython(query, scriptType)
-    resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
-    
-  elif lang == "r":
-    b = generateR(query, scriptType)
-    resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
-  
-  return resp
+    if lang == "python":
+        b = generatePython(query, scriptType)
+        resp = send_file(b, as_attachment=True,
+                         attachment_filename='script_template.py', mimetype='application/x-python')
+
+    elif lang == "r":
+        b = generateR(query, scriptType)
+        resp = send_file(b, as_attachment=True,
+                         attachment_filename='script_template.r', mimetype='application/x-python')
+
+    return resp
+
 
 @bp_v1_0.route('/api/v1.0/datasets/')
 def datasets_query_v1_0():
+    """
+    API Format: /api/v1.0/datasets/
+    
+    Optional arguments:
+    * id : Show only the name and id of the datasets
+
+    Returns a list of available datasets w/ some metadata.
+    """
+
     return routes.routes_impl.query_datasets_impl(request.args)
 
 
 @bp_v1_0.route('/api/v1.0/quantum/')
 def quantum_query_v1_0():
+    """
+    Returns the quantum of a given dataset.
+
+    API Format: /api/v1.0/quantum/
+    
+    Raises:
+        APIError: If `dataset` is not present in API arguments.
+    
+    Returns:
+        Response -- Response object containing the dataset quantum string as JSON.
+    """
+
     args = request.args
 
     if 'dataset' not in args:
@@ -67,12 +94,17 @@ def quantum_query_v1_0():
 @bp_v1_0.route('/api/v1.0/variables/')
 def variables_query_v1_0():
     """
+    Returns the available variables for a given dataset.
+
     API Format: /api/v1.0/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
 
-    dataset      : Dataset - Can be found using /api/datasets
-    3d_only      : Boolean Value; When True, only variables with depth will be shown
-    vectors_only : Boolean Value; When True, only variables with magnitude will be shown
-    vectors      : Boolean Value; When True, magnitude components will be included
+    Required Arguments:
+    * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
+
+    Optional Arguments:
+    * 3d_only      : Boolean Value; When True, only variables with depth will be shown
+    * vectors_only : Boolean Value; When True, only variables with magnitude will be shown
+    * vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean value: True / False**
     """
@@ -124,10 +156,12 @@ def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
 
-    dataset  : Dataset to extract data - Can be found using /api/datasets
-    variable : Type of data to retrieve - found using /api/variables/?dataset='...'
+    Required Arguments:
+    * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
+    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
 
-    Returns all depths available for that variable in the dataset
+    Returns:
+        Response -- Response object containing all depths available for the given variable as a JSON array.
     """
 
     args = request.args
