@@ -1829,7 +1829,7 @@
     "SJAP100_surface": {
         "name": "Port of Saint John Surface (100m)",
         "url": "/home/buildadm/ocean-nav/db/Saint-John-Port-Surface.sqlite3",
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "climatology": "",
         "quantum": "hour",
@@ -1842,6 +1842,33 @@
             "tos": { "name": "Temperature", "scale": [-5, 30], "unit": "degC"},
             "sos": { "name": "Salinity", "scale": [30, 40], "unit": "1e-3"},
             "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m"}
+        }
+    },
+    "SJAP100_3d": {
+        "name": "Port of Saint John 3D (100m)",
+        "url": "/home/buildadm/ocean-nav/db/Saint-John-Port-3D.sqlite3",
+        "enabled": true,
+        "help": "",
+        "climatology": "",
+        "quantum": "day",
+        "type": "historical",       
+        "time_dim_name": "seconds since 1950-01-01 00:00:00",
+        "attribution": "",
+        "variables": {
+            "uo": { "name": "Water X Velocity", "scale": [-3, 3], "unit": "m/s", "zero_centered": "true"},
+            "vo": { "name": "Water Y Velocity", "scale": [-3, 3], "unit": "m/s", "zero_centered": "true"},
+            "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "degC"},
+            "so": { "name": "Salinity", "scale": [30, 40], "unit": "1e-3"},
+            "mldr10_1": { "name": "Ocean Mixed Layer Depth (sigma theta)", "scale": [0, 40], "unit": "m"},
+            "heatc": { "name": "Heat Content (Vertically Integrated)", "scale": [0, 30], "unit": "J/m2"},
+            "saltc": { "name": "Salt Content (Vertically Integrated)", "unit": "1e-3*kg/m2", "scale": [0, 3734855]},
+            "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m", "zero_centered": "true"},
+            "zos": { "name": "Sea Surface Height", "units": "m", "scale": [-3, 3], "zero_centered": "true"},
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)"},
+            "ubar": { "name": "Ocean Baroptropic East Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"},
+            "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"},
+            "tauuo": { "name": "Wind Stress East",  "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true"},
+            "tauvo": { "name": "Wind Stress North", "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true"}
         }
     },
     "BayOfFundy": {
