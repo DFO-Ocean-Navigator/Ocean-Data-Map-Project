@@ -1173,13 +1173,13 @@
     "glorys4": {
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
-        "enabled": false,
+        "enabled": true,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "name": "GLORYS v4",
         "quantum": "month",
         "type": "historical",      
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/glorys/v4/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GLORYSV4.sqlite3",
         "variables": {
             "iicevele": {
                 "name": "Sea Ice East Velocity",
@@ -1404,16 +1404,16 @@
                 "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
-    "glorys_climatology": {
+    "glorysv3_climatology": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
-        "enabled": false,
+        "enabled": true,
         "help": "Global Ocean Reanalysis and Simulation             <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Computed from the monthly averages January 1993&ndash;December 2013</li>             <li>Variables Available:                 <ul>                     <li>Eastward Velocity</li>                     <li>Ice Concentration</li>                     <li>Northward Velocity</li>                     <li>Salinity</li>                     <li>Sea Ice Eastward Velocity</li>                     <li>Sea Ice Northward Velocity</li>                     <li>Sea Ice Thickness</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Surface Height</li>                     <li>Sea Water Velocity</li>                     <li>Temperature</li>                 </ul>             </li>             </ul>",
-        "name": "GLORYS Climatology",
+        "name": "GLORYSV3 Climatology",
         "quantum": "month",
         "type": "historical",    
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
-        "url": "http://localhost:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GLORYSV3-Climatology.sqlite3",
         "variables": {
             "iicethic": {
                 "hide": "false",
@@ -1847,7 +1847,7 @@
     "SJAP100_3d": {
         "name": "Port of Saint John 3D (100m)",
         "url": "/home/buildadm/ocean-nav/db/Saint-John-Port-3D.sqlite3",
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "climatology": "",
         "quantum": "day",
