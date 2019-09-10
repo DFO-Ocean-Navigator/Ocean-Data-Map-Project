@@ -57,7 +57,6 @@ export default class ComboBox extends React.Component {
         }
       }
     }
-    
     if (typeof(this.props.onUpdate) === "function") {
       // State key ID: "variable", "dataset", "projection", etc.
       const keys = [this.props.id];
@@ -234,7 +233,6 @@ export default class ComboBox extends React.Component {
   }
 
   render() {
-
     //Creates one drop down function for each option sent back
     const options = this.state.data.map(function(o) {
       var opts = {

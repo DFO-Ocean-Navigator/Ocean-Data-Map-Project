@@ -57,7 +57,6 @@ class CalculatedData(NetCDFData):
         if self._calculated_variable_list is None:
             variable_list = super(CalculatedData, self).variables
             temp_list = list(variable_list)
-
             for name, data in self._calculated.items():
                 if name not in variable_list:
                     # New Variable

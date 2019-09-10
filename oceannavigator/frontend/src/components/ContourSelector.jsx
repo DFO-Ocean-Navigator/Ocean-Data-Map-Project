@@ -66,7 +66,7 @@ export default class ContourSelector extends React.Component {
     _("Auto Levels");
     return (
       <div className='ContourSelector input'>
-        <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate} url={"/api/variables/?dataset=" + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
+        <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate} url={"/api/v1.0/variables/?dataset=" + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
         <div className='sub' style={{"display": (this.props.state.variable == "none" || this.props.state.variable == "") ? "none" : "block"}}>
           <SelectBox key='hatch' id='hatch' state={this.props.state.hatch} onUpdate={this.onUpdate} title={_("Crosshatch")}></SelectBox>
           <div style={{"display": this.props.state.hatch ? "none" : "block"}}>

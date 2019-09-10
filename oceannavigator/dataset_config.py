@@ -56,6 +56,14 @@ class DatasetConfig():
         return self._get_attribute("name")
 
     @property
+    def envtype(self) -> list:
+        """
+        Returns a list of all the envtypes for variables in the dataset
+        """
+        print("ENVTYPE: ", self._get_attribute("envtype"))
+        return self._get_attribute("envtype")
+
+    @property
     def help(self) -> str:
         """
         Returns the help text for a given dataset
@@ -287,4 +295,18 @@ class VariableConfig():
             return from_config in ['true', 'True'] or from_config == True
         except KeyError:
             return False
+
+    @property
+    def envtype(self) -> str:
+        try:
+            envtype = self.__get_attribute("envtype")
+            if (type(envtype) == str):
+                envtype.lower()
+                return envtype
+            #else:
+            #    return ""
+            
+            
+        except KeyError:
+            return KeyError
 

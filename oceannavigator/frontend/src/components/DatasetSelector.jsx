@@ -1,10 +1,10 @@
-/* eslint react/no-deprecated: 0 */
-
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 import VelocitySelector from "./VelocitySelector.jsx";
+import moment from "moment";
+import IceComboBox from "./IceComboBox.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -12,9 +12,9 @@ const i18n = require("../i18n.js");
 const DATA_ELEMS = [
   "dataset",
   "dataset_attribution",
-  "dataset_quantum",
+  "quantum",
   "variable",
-  "variable_scale", // Default range values for variable
+  "scale", // Default range values for variable
   "depth",
   "time",
   "starttime",
@@ -28,6 +28,7 @@ export default class DatasetSelector extends React.Component {
     // Function bindings
     this.variableUpdate = this.variableUpdate.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
+    this.onTimeUpdate = this.onTimeUpdate.bind(this);
   }
 
   variableUpdate(key, value) {
@@ -36,10 +37,7 @@ export default class DatasetSelector extends React.Component {
   }
 
   onUpdate(key, value) {
-    const newState = DATA_ELEMS.reduce((a,b) => {
-      a[b] = this.props.state[b];
-      return a;
-    }, {});
+    const newState = this.props.state
 
     if (typeof(key) === "string") {
       newState[key] = value;
@@ -53,14 +51,29 @@ export default class DatasetSelector extends React.Component {
     this.props.onUpdate(this.props.id, newState);
   }
 
+  onTimeUpdate(key, value) {
+    let new_state = this.props.state
+    if (typeof(key) === typeof('string')) {
+      value = moment(value.valueOf())
+      value.tz('GMT')
+
+      new_state[key] = value
+    } else {
+      value = moment(key.valueOf())
+      value.tz('GMT')
+
+      new_state.time = value
+    }
+    this.props.onUpdate(jQuery.extend({}, new_state))
+  }
+  
   render() {
     _("Dataset");
     _("Variable");
     _("Depth");
     _("Time (UTC)");
-
     let variables = "";
-    switch (this.props.variables) {
+    switch (this.props.state.variables) {
       case "3d":
         variables = "&3d_only";
         break;
@@ -70,93 +83,77 @@ export default class DatasetSelector extends React.Component {
 
     // Determine which timepicker we need
     let time = "";
+    let timeObj = this.props.state.time
+    if (timeObj !== null) {
+      timeObj = moment(timeObj.valueOf()) //new Date(this.props.state.time);
+      timeObj.tz('GMT')
+    }
+    
+    let starttimeObj = this.props.state.starttime //new Date(this.props.state.starttime);
+    if (starttimeObj !== undefined && starttimeObj !== null) {
+      starttimeObj = moment(starttimeObj.valueOf())
+      starttimeObj.tz('GMT')
+    }
+
     switch (this.props.time) {
       case "range":
         time = (<div>
           <TimePicker
+            range={true}
+            startid='starttime'
             key='starttime'
-            id='starttime'
-            state={this.props.state.starttime}
-            def=''
+            dataset={this.props.state.dataset}
             quantum={this.props.state.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
-                this.props.state.dataset +
-                "&quantum=" +
-                this.props.state.dataset_quantum}
-            title={_("Start Time")}
-            onUpdate={this.onUpdate}
-            max={this.props.state.time}
-            updateDate={this.updateDate}
-          />
-          <TimePicker
-            key='time'
-            id='time'
-            state={this.props.state.time}
-            def=''
-            quantum={this.props.state.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
-                this.props.state.dataset +
-                "&quantum=" +
-                this.props.state.dataset_quantum}
-            title={_("End Time")}
-            onUpdate={this.onUpdate}
-            min={this.props.state.starttime}
+            startDate={starttimeObj}
+            date={timeObj}
+            onTimeUpdate={this.onTimeUpdate}
           />
         </div>);
         break;
       case "single":
       default:
-        time = <TimePicker
+          time =<TimePicker
+          range={false}
           key='time'
-          id='time'
-          state={this.props.state.time}
-          def={-1}
+          dataset={this.props.state.dataset}
           quantum={this.props.state.dataset_quantum}
-          onUpdate={this.onUpdate}
-          url={"/api/timestamps/?dataset=" +
-            this.props.state.dataset +
-            "&quantum=" +
-            this.props.state.dataset_quantum
-          }
-          title={_("Time (UTC)")}
-        />;
+          startDate={starttimeObj}
+          date={timeObj}
+          onTimeUpdate={this.onTimeUpdate}
+        />;      
     }
 
     let velocity_selector = null;
-    if(this.props.line && !this.props.compare && (this.props.state.variable === "vozocrtx,vomecrty" || this.props.state.variable === "east_vel,north_vel")) {
-      velocity_selector = [
-        <VelocitySelector
-          key='velocityType'
-          id='velocityType'
-          updateSelectedPlots={this.props.updateSelectedPlots}
-        />
-      ];  
-    }
-
+    
     return (
       <div className='DatasetSelector'>
-
-        <ComboBox
-          id='dataset'
-          state={this.props.state.dataset}
-          def={"defaults.dataset"}
-          onUpdate={this.onUpdate}
-          url='/api/datasets/'
-          title={_("Dataset")}></ComboBox>
-
-        <ComboBox
-          id='variable'
-          multiple={this.props.multiple}
-          state={this.props.state.variable}
-          def={"defaults.dataset"}
-          onUpdate={this.variableUpdate}
-          url={"/api/variables/?vectors&dataset=" + this.props.state.dataset + variables
-          }
-          title={_("Variable")}
-        ><h1>{_("Variable")}</h1></ComboBox>
+        
+          {<ComboBox
+            id='dataset'
+            state={this.props.state.dataset}
+            def={"defaults.dataset"}
+            onUpdate={this.onUpdate}
+            url='/api/datasets/'
+            title={_("Dataset")}>
+          </ComboBox>
+        }
+          <ComboBox
+            id='variable'
+            multiple={this.props.multiple}
+            state={this.props.state.variable}
+            def={"defaults.dataset"}
+            onUpdate={this.variableUpdate}
+            url={"/api/v1.0/variables/?3d_only&dataset=" + this.props.state.dataset + variables
+            }
+            title={_("Variable")}
+          ><h1>{_("Variable")}</h1>
+          </ComboBox>
+        
+        
+        
 
         {velocity_selector}
-
+        
         {this.props.depth && <ComboBox
           id='depth'
           state={this.props.state.depth}
@@ -194,4 +191,3 @@ DatasetSelector.propTypes = {
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
 };
-
