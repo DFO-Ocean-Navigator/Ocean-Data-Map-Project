@@ -47,11 +47,12 @@ def generateScript(query: str, lang: str, scriptType: str):
 def datasets_query_v1_0():
     """
     API Format: /api/v1.0/datasets/
-    
+
     Optional arguments:
     * id : Show only the name and id of the datasets
 
-    Returns a list of available datasets w/ some metadata.
+    Returns:
+        Response -- Response object containing list of available datasets w/ some metadata.
     """
 
     return routes.routes_impl.query_datasets_impl(request.args)
@@ -63,10 +64,10 @@ def quantum_query_v1_0():
     Returns the quantum of a given dataset.
 
     API Format: /api/v1.0/quantum/
-    
+
     Raises:
         APIError: If `dataset` is not present in API arguments.
-    
+
     Returns:
         Response -- Response object containing the dataset quantum string as JSON.
     """
@@ -349,16 +350,22 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
 @bp_v1_0.route('/api/v1.0/timestamps/')
 def timestamps():
     """
-    API Format: /api/timestamps/?dataset=''&variable=''
-
-    dataset : Dataset to extract data - Can be found using /api/datasets
-
     Returns all timestamps available for a given variable in a dataset. This is variable-dependent
     because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
     3D variables may be daily.
 
+    API Format: /api/timestamps/?dataset=''&variable=''
+
+    Required Arguments:
+    * dataset : Dataset key - Can be found using /api/v1.0/datasets
+    * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
+
     Raises:
         APIError: if dataset or variable is not specified in the request
+
+    Returns:
+        Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
+        dataset and variable.
     """
 
     args = request.args
@@ -401,10 +408,6 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
-
-    #config = DatasetConfig(dataset)
-    # with open_dataset(config) as ds:
-        #date = ds.convert_to_timestamp(time)
     return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
 
 
