@@ -1,17 +1,7 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
-import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
+import { Tabs, Tab} from "react-bootstrap";
 import PropTypes from "prop-types";
-import Oceanography from "./Oceanography.jsx";
-import Ice from "./Ice.jsx";
-import Meteorology from "./Meteorology.jsx";
-import Waves from "./Waves.jsx";
-import Biogeochem from "./Biogeochem.jsx";
+import LayerWrap from "./LayerWrap.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -46,7 +36,7 @@ export default class EnvironmentTab extends React.Component {
           {/* Creates the Data Selection Tab */}
             <Tab eventKey={1} title={<span className='envTabName'>{_("Oceanography")}</span>}>
                 
-                <Meteorology
+                <LayerWrap
                   state={this.props.state}
                   swapViews={this.props.swapViews}
                   mapComponent={this.props.mapComponent}
@@ -61,7 +51,7 @@ export default class EnvironmentTab extends React.Component {
                 />
             </Tab>
             <Tab eventKey={2} title={<span className='envTabName'>{_("Meteorology")}</span>}>
-                {<Meteorology
+                {<LayerWrap
                   state={this.props.state}
                   swapViews={this.props.swapViews}
                   mapComponent={this.props.mapComponent}
@@ -76,7 +66,7 @@ export default class EnvironmentTab extends React.Component {
                 />}
             </Tab>
             <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
-              <Meteorology
+              <LayerWrap
                   state={this.props.state}
                   swapViews={this.props.swapViews}
                   mapComponent={this.props.mapComponent}
@@ -91,6 +81,8 @@ export default class EnvironmentTab extends React.Component {
                 />
             </Tab>
             {/*
+            NEEDS TO BE UPDATE TO USE LAYERWRAP AND LAYER CLASS
+
             <Tab eventKey={4} title={<span className='envTabName'>{_("Waves")}</span>}>
                 <Waves
                   state={this.props.state}

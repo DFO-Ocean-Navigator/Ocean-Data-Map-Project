@@ -1,10 +1,6 @@
 import React from "react";
 import Map from "./Map.jsx";
-import ol from "openlayers";
-import MapInputs from "./MapInputs.jsx";
 import MapToolbar from "./MapToolbar.jsx";
-import WarningBar from "./WarningBar.jsx";
-import moment from "moment-timezone";
 import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
@@ -36,6 +32,8 @@ export default class OceanNavigator extends React.Component {
     ReactGA.ga("send", "pageview");
 
     this.state = {
+
+      // Tabs that are enabled by default
       _firstLayer: true,
       _foundation: true,
       _environment: true,
@@ -43,6 +41,7 @@ export default class OceanNavigator extends React.Component {
       _derived: false,
       _planning: false,
 
+      // Tabs that the user can enable/disable
       allowedTabs: {
         _foundation: true,
         _environment: true,
@@ -51,7 +50,11 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
+      // Variable which stores information about the data currently being displayed
       data: {},
+
+      // Different methods of visualizing the data that have been implemented in python
+      // This is for the tiles, not for plotting
       display: [
         {
           id: 'colour',

@@ -1,15 +1,5 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
-import IceLayer from "./IceLayer.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -21,7 +11,7 @@ export default class Bathymetry extends React.Component {
   }
 
   render() {    
-    
+    // UPDATE TO USE LAYERWRAP AND LAYER COMPONENT    
     return (
         <div>{/*<IceLayer
           state={this.props.state}

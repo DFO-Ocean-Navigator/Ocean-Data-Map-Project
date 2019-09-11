@@ -16,18 +16,13 @@ import * as olinteraction from "ol/interaction";
 import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olextent from "ol/extent";
-import { Button } from "react-bootstrap";
-import Icon from "./Icon.jsx";
 import LayerRearrange from "./LayerRearrange.jsx";
-import TimeBarContainer from "./TimeBarContainer.jsx";
-import moment from "moment-timezone";
+import TimeBarContainer from "./time/TimeBarContainer.jsx";
 require("ol/ol.css");
 
-const proj4 = require("proj4/lib/index.js").default;
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
 
-ol.proj.setProj4(proj4);
 
 const X_IMAGE = require("../images/x.png");
 
@@ -100,7 +95,7 @@ app.ResetPanButton = function (opt_options) {
 ol.inherits(app.ResetPanButton, olcontrol.Control);
 
 // Variable scale legend
-/*
+
 app.ScaleViewer = function(opt_options) {
   const options = opt_options || {};
 
@@ -410,12 +405,12 @@ export default class Map extends React.PureComponent {
         }.bind(this),
       });
     
-    var scaleLineControl = new ol.control.ScaleLine()
+    var scaleLineControl = new olcontrol.ScaleLine()
     // Construct our map
     this.map = new ol.Map({
       layers: [
         this.layer_basemap,
-        this.layer_data,
+        //ethis.layer_data,
         this.layer_landshapes,
         this.layer_bath,
         this.layer_bathshapes,
@@ -768,7 +763,7 @@ export default class Map extends React.PureComponent {
       case "topo":
         const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
 
-        let new ollayer.Tile({
+        return new ollayer.Tile({
           preload: 7,
           source: new olsource.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
@@ -780,7 +775,6 @@ export default class Map extends React.PureComponent {
             ],
           })
         });
-        return layer;
 
       case "ocean":
         return new ollayer.Tile({

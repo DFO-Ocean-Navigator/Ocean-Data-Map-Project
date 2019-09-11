@@ -22,7 +22,7 @@ import ImageSize from "./ImageSize.jsx";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
-import TimePicker from "./TimePicker.jsx";
+import TimePicker from "./time/TimePicker.jsx";
 import PropTypes from "prop-types";
 import Spinner from '../images/spinner.gif';
 import DataSelection from './DataSelection.jsx';
