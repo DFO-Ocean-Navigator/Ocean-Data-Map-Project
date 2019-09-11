@@ -18,10 +18,10 @@ class Class4Plotter(pl.Plotter):
         super(Class4Plotter, self).parse_query(query)
 
         class4 = query.get("class4id")
-        if isinstance(class4, str) or isinstance(class4, str):
+        if isinstance(class4, str):
             class4 = class4.split(",")
 
-        self.class4 = np.array([c.split("/") for c in class4])
+        self.class4 = np.array([c.rsplit("_", 1) for c in class4])
         self.forecast = query.get('forecast')
         self.climatology = query.get('climatology') is None or \
             bool(query.get('climatology'))

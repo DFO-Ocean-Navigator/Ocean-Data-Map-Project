@@ -9,7 +9,6 @@ from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
 from cachetools import LRUCache
 import pytz
-#import cftime
 import cftime
 from bisect import bisect_left
 import plotting.utils

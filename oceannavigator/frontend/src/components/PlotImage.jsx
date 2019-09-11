@@ -48,22 +48,21 @@ export default class PlotImage extends React.PureComponent {
       });
     } else {
       if (language == "pythonPlot") {
-
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "PLOT/";
       } else if (language == "rPlot") {
 
         var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/" + "PLOT/";
       } else {
 
-        var url = stringify(this.generateQuery(this.props.query)) +
-        `&save&format=csv&size=${this.props.query.size}` +
-        `&dpi=${this.props.query.dpi}`;
+        var url = stringify(this.generateQuery(this.props.query));
         if (language == "pythonCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/";
+          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "CSV/";
         } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/";
+          url = window.location.origin + "/api/v1.0/generatescript/" + url +
+          `&save&format=csv&size=${this.props.query.size}` +
+          `&dpi=${this.props.query.dpi}` + "/r/" + "CSV/";
         }
       
       }
@@ -219,11 +218,10 @@ export default class PlotImage extends React.PureComponent {
       case "profile":
       case "ts":
       case "sound":
-        time = this.formatTime(q.time)
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
-        query.time = time;
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -234,21 +232,18 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "timeseries":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
         query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
-        query.starttime = starttime;
-        query.endtime = endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         query.scale = q.scale;
         query.colormap = q.colormap;
         break;
       case "transect":
-        time = this.formatTime(q.time)
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
-        query.time = time;
         query.scale = q.scale;
         query.path = q.path;
         query.showmap = q.showmap;
@@ -275,11 +270,9 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "hovmoller":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
         query.variable = q.variable;
-        query.starttime = starttime;
-        query.endtime = endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         query.scale = q.scale;
         query.colormap = q.colormap;
         query.path = q.path;
@@ -287,12 +280,10 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.name = q.name;
         if (q.compare_to) {
-            let starttime = this.formatTime(q.compare_to.starttime)
-            let endtime = this.formatTime(q.compare_to.endtime)
             query.compare_to = {
             variable: q.compare_to.variable,
-            starttime: starttime,
-            endtime: endtime,
+            starttime: this.formatTime(q.compare_to.starttime),
+            endtime: this.formatTime(q.compare_to.endtime),
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             depth: q.compare_to.depth,
@@ -305,9 +296,8 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
-        time = this.formatTime(q.time)
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
-        query.time = time;
         query.scale = q.scale;
         query.depth = q.depth;
         query.colormap = q.colourmap;
@@ -338,16 +328,14 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "drifter":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
         query.variable = q.variable;
         query.depth = q.depth;
         query.drifter = q.drifter;
         query.showmap = q.showmap;
         query.latlon = q.latlon;
         query.buoyvariable = q.buoyvariable;
-        query.starttime = starttime;
-        query.endtime = endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         break;
       case "class4":
         query.class4id = q.class4id;
@@ -363,15 +351,14 @@ export default class PlotImage extends React.PureComponent {
         query.variable = q.variable;
         break;
       case "stick":
-        starttime = this.formatTime(q.starttime)
-        endtime = this.formatTime(q.endtime)
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
-        query.starttime = starttime;
-        query.endtime = endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         break;
     }
+    // Creates a duplicate to force an update
     return jQuery.extend({}, query);
   }
 

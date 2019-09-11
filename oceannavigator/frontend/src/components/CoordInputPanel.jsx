@@ -16,7 +16,7 @@ export default class CoordInputPanel extends React.Component {
     this.state = {
       coordinate: [],
     };
- }
+  }
 
   // Parses a given float
   str2float(targetValue) {

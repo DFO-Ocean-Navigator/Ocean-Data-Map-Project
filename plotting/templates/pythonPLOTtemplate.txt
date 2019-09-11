@@ -1,0 +1,34 @@
+from urllib.request import urlopen
+from urllib.parse import urlencode
+from contextlib import closing
+try:
+   from PIL import Image
+except:
+   print("If you are on a Windows machine, please install PIL (imaging library) using 'python -m pip install Pillow' in the Anaconda Prompt")
+   exit()
+import json
+
+
+def requestFile():
+   # json object for the query
+   query = {q}
+
+   dpi = 144
+
+
+   # Assemble full request
+   base_url = "http://navigator.oceansdata.ca/plot/?"
+   url = base_url + urlencode({{"query": json.dumps(query)}}) + "&dpi=" + str(dpi)
+   print(url)
+
+
+   #Open URL and save response
+   with closing(urlopen(url)) as f:
+      img = Image.open(f)
+      fname = "script_template_" + str(query["dataset"]) + "_" + str(query["{var}"]) + ".png"
+      print("Saving as " + fname + " and exiting...")
+      img.save(fname , "PNG")
+
+
+if __name__ == '__main__':
+   requestFile()

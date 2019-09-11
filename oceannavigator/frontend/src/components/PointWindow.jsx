@@ -12,7 +12,7 @@ import moment from "moment-timezone";
 import PlotImage from "./PlotImage.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
-import TimePicker from "./TimePicker.jsx";
+import TimePicker from "./time/TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";

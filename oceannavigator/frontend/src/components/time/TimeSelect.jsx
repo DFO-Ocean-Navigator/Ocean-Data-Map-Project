@@ -1,23 +1,10 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
 import moment from "moment-timezone";
-import momentcl from 'moment';
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import { Panel, Button, Row, Col, Tabs, Tab, ProgressBar } from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
+import { Button } from "react-bootstrap";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
-import ReactSimpleRange from "react-simple-range";
-import IceComboBox from "./IceComboBox.jsx";
-import { type } from "os";
-import Rectangle from 'react-rectangle';
 import Timeline from './Timeline.jsx';
 
-const i18n = require("../i18n.js");
+const i18n = require("../../i18n.js");
 
 export default class TimeSelect extends React.Component {
     constructor(props) {

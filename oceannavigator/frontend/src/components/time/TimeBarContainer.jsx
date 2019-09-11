@@ -1,27 +1,17 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
+import { Button } from "react-bootstrap";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
-import ReactSimpleRange from "react-simple-range";
-import IceComboBox from "./IceComboBox.jsx";
 import TimeSelect from "./TimeSelect.jsx";
 import moment from "moment-timezone";
 // IMPORT ICONS
-import Ice_Icon from '../images/ice_symbol.png';
-import Met_Icon from '../images/cloud_symbol.png';
-import Ocean_Icon from '../images/ocean_symbol.png'
-import Wave_Icon from '../images/waves_symbol.png'
-import Iceberg_Icon from '../images/iceberg_symbol.png'
+import Ice_Icon from '../../images/ice_symbol.png';
+import Met_Icon from '../../images/cloud_symbol.png';
+import Ocean_Icon from '../../images/ocean_symbol.png'
+import Wave_Icon from '../../images/waves_symbol.png'
+import Iceberg_Icon from '../../images/iceberg_symbol.png'
 
 
-const i18n = require("../i18n.js");
+const i18n = require("../../i18n.js");
 
 export default class TimeBarContainer extends React.Component {
     constructor(props) {

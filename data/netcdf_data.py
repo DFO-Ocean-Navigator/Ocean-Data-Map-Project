@@ -1,24 +1,26 @@
-import netCDF4
+import datetime
+import os
+import re
+import uuid
+import warnings
+import zipfile
+
 import cftime
-from flask_babel import format_date
 import dateutil.parser
+import geopy
+import netCDF4
+import numpy as np
+import pandas
+import pint
+import pyresample
+import pytz
+import xarray as xr
+from cachetools import TTLCache
+from flask_babel import format_date
+
+import data.calculated
 from data.data import Data, Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
-import data.calculated
-import xarray as xr
-import os
-from cachetools import TTLCache
-import pytz
-import warnings
-import pyresample
-import numpy as np
-import re
-import geopy
-import datetime
-import uuid
-import pandas
-import zipfile
-import pint
 
 
 class NetCDFData(Data):
@@ -41,6 +43,24 @@ class NetCDFData(Data):
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
         pass
 
+
+    def __find_variable(self, candidates: list):
+        """Finds a matching variable in the dataset given a list
+        of candidate keys.
+        
+        Arguments:
+            candidates {list} -- list of possible variable key strings
+        
+        Returns:
+            xArray.DataArray -- the corresponding variable's DataArray
+        """
+        for c in candidates:
+            if c in self._dataset.variables.keys():
+                return self._dataset.variables[c]
+        
+        raise KeyError("None of ", candidates, " where found in ", self._dataset)
+
+
     """
         Converts ISO 8601 Extended date, to the corresponding dataset time index
     """
@@ -54,6 +74,7 @@ class NetCDFData(Data):
         time_range[0] = time_range[0].replace(tzinfo=None)
         time_range = [netCDF4.date2num(x, time_var.attrs['units']) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
+
         if len(time_range) == 1:    #Single Date
             return int(str(time_range[0][0]))
         else:                          #Multiple Dates
@@ -65,30 +86,6 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
         
-
-    """
-        Converts a time index to its corresponding date
-
-        requires: time index
-
-    """
-    def convert_to_date(self, index):
-        
-        times = []
-        indexes = index.split(',')
-        
-        for idx, date in enumerate(self.timestamps):
-                        # Only compare year, month, day.
-                        # Some daily/hourly average datasets have an 
-                        # hour and minute offset that messes up 
-                        # the index search.
-                  
-                        if str(idx) in indexes:
-                            times.append(date.date())
-        
-        return times
-
-
     """
         Subsets a netcdf file with all depths
     """
@@ -149,10 +146,9 @@ class NetCDFData(Data):
                     return key
             return None
 
-        variable_list = [v.key for v in self.variables]
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", self._dataset.variables.keys())
-        lon_var = find_variable("lon", self._dataset.variables.keys())
+        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self._dataset.variables.keys()))
 
@@ -236,13 +232,22 @@ class NetCDFData(Data):
         filename =  dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
                     + "_" + timestamp + endtimestamp + "_" + output_format
 
+        # Workaround for https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
+        if '_NCProperties' in subset.attrs.keys():
+                del subset.attrs['_NCProperties']
+
         # "Special" output
         if output_format == "NETCDF3_NC":
+
+            GRID_RESOLUTION = 50
+
             # Regrids an input data array according to it's input grid definition
             # to the output definition
             def regrid( data: np.ndarray,
                         input_def: pyresample.geometry.SwathDefinition,
                         output_def: pyresample.geometry.SwathDefinition):
+
+                orig_shape = data.shape
                 
                 data = np.rollaxis(data, 0, 4) # Roll time axis backward
                 data = np.rollaxis(data, 0, 4) # Roll depth axis backward
@@ -250,9 +255,9 @@ class NetCDFData(Data):
                 
                 # Perform regridding using nearest neighbour weighting
                 regridded = pyresample.kd_tree.resample_nearest(input_def, data, output_def, 50000, fill_value=None, nprocs=8)
-                return np.moveaxis(regridded, -1, 0) # Move merged axis back to front
-
-            GRID_RESOLUTION = 50
+                regridded = np.moveaxis(regridded, -1, 0) # Move merged axis back to front
+                # Match target output grid (netcdf4 used to do this automatically but now it doesn't >.>)
+                return np.reshape(regridded, (orig_shape[0], orig_shape[1], GRID_RESOLUTION, GRID_RESOLUTION))
 
             # Check lat/lon wrapping
             lon_vals, lat_vals = pyresample.utils.check_and_wrap(lons=subset[lon_var].values, lats=subset[lat_var].values)
@@ -265,20 +270,6 @@ class NetCDFData(Data):
             XI_mg, YI_mg = np.meshgrid(XI, YI)
 
             # Define input/output grid definitions
-            lon_len = len(lon_vals)
-            lat_len = len(lat_vals)
-            if len(lat_vals.shape) == 1:
-                lat_vals, lon_vals = np.meshgrid(lat_vals, lon_vals)
-            #if lon_len > lat_len:
-            #    lon_vals = lon_vals[:lat_len]
-            #    print("MODIFIED LON: ", lon_vals)
-            #    print("MODIFIED LON SHAPE: ", lon_vals.shape)
-            #else:
-            #    lat_vals = lat_vals[:lon_vals]
-            #    print("MODIFIED LON: ", lat_vals)
-            #    print("MODIFIED LON SHAPE: ", lat_vals.shape)
-
-
             input_def = pyresample.geometry.SwathDefinition(lons=lon_vals, lats=lat_vals)
             output_def = pyresample.geometry.SwathDefinition(lons=XI_mg, lats=YI_mg)
 
@@ -330,12 +321,9 @@ class NetCDFData(Data):
             levels.positive = "down"
             levels.NAVO_code = 5
 
-            if temp_var is not None:
-                origshape = subset[temp_var].shape
-                temp_data = regrid(subset[temp_var].values, input_def, output_def)
-                temp_data = np.reshape(temp_data, (origshape[0], origshape[1], GRID_RESOLUTION, GRID_RESOLUTION))
-                
+            if temp_var is not None:            
                 temp = ds.createVariable('water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
+                temp_data = regrid(subset[temp_var].values, input_def, output_def) 
 
                 # Convert from Kelvin to Celsius
                 ureg = pint.UnitRegistry()
@@ -362,7 +350,7 @@ class NetCDFData(Data):
                 temp.NAVO_code = 15
             if saline_var is not None:
                 salinity = ds.createVariable('salinity', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[:] # Note the automatic reshaping by numpy here ^.^
+                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[:]
                 salinity.long_name = "Salinity"
                 salinity.units = "psu"
                 salinity.valid_min = 0.0
@@ -465,25 +453,33 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                     output_def, radius_of_influence=float(self.radius), nprocs=8)
+       
+    
+    @property
+    def time_variable(self):
+        """Finds and returns the xArray.IndexVariable containing
+            the time dimension in self._dataset
+        """
+        return self.__find_variable(['time', 'time_counter', 'Times'])
 
-            elif self.interp == 'none':
-                return pyresample.kd_tree.resample_nearest(input_def, data,
-                    output_def, radius_of_influence=float(150), nprocs=4)
-    """
-        Finds and returns the xArray.IndexVariable containing
-        the time dimension in self._dataset
-    """
-    def __get_time_variable(self):
-        for v in self.time_variables:
-            if v in self._dataset.variables.keys():
-                # Get the xarray.DataArray for time variable
-                return self.get_dataset_variable(v)
+    @property
+    def latlon_variables(self):
+        """Finds the lat and lon variable arrays in the dataset.
+        
+        Returns:
+            list -- list containing the xarray.DataArray's for latitude and 
+            longitude.
+        """
+        return (
+            self.__find_variable(['nav_lat', 'latitude']),
+            self.__find_variable(['nav_lon', 'longitude'])
+        )
 
     """
         Returns the possible names of the depth dimension in the dataset
     """
     @property
-    def depth_dimensions(self) -> list:
+    def depth_dimensions(self):
         return ['depth', 'deptht', 'z']
 
     """
@@ -492,19 +488,24 @@ class NetCDFData(Data):
     def get_dataset_variable(self, key: str):
         return self._dataset.variables[key]
 
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
+    
     @property
     def variables(self):
+        """Returns a list of all data variables and their 
+        attributes in the dataset.
+        
+        Returns:
+            VariableList -- contains all the data variables (no coordinates)
+        """
+
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
         if self._variable_list == None:
             l = []
-            # Get "data variables" from dataset
+            # Get data variables variables from dataset
             variables = list(self._dataset.data_vars.keys())
+
             for name in variables:
                 # Get variable DataArray
                 # http://xarray.pydata.org/en/stable/api.html#dataarray
@@ -545,22 +546,15 @@ class NetCDFData(Data):
         
         return self._variable_list
 
-    """
-        Returns the possible names of the time dimension in the dataset
-    """
-    @property
-    def time_variables(self):
-        return ['time', 'time_counter', 'Times']
 
-    """
-        Loads, caches, and returns the time dimension from a dataset.
-    """
     @property
     def timestamps(self):
+        """Loads, caches, and returns the time dimension from a dataset.
+        """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
             
-            var = self.__get_time_variable()
+            var = self.time_variable
 
             # Convert timestamps to UTC
             t = cftime.utime(var.attrs['units']) # Get time units from variable

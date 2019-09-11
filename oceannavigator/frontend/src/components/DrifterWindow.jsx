@@ -8,7 +8,7 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import DataSelection from "./DataSelection.jsx";
 import moment from "moment-timezone";
-import TimePicker from "./TimePicker.jsx";
+import TimePicker from "./time/TimePicker.jsx";
 
 const i18n = require("../i18n.js");
 

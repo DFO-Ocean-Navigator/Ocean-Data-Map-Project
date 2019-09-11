@@ -3,16 +3,12 @@
 import React from "react";
 import $ from "jquery";
 /*eslint no-unused-vars: ["error", {"varsIgnorePattern": "jQuery" }]*/
-import jQuery from "jquery";
-import dateFormat from "dateformat";
-import {Button} from "react-bootstrap";
-import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
+import { DateRangePicker, SingleDatePicker } from 'react-dates';
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css';
 import moment from "moment-timezone";
-import IceComboBox from "./IceComboBox.jsx";
+import IceComboBox from "../IceComboBox.jsx";
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
@@ -23,7 +19,7 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-const i18n = require("../i18n.js");
+const i18n = require("../../i18n.js");
  
 export default class TimePicker extends React.Component {
   constructor(props) {

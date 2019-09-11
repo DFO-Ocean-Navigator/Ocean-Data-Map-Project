@@ -978,4 +978,3 @@ MapToolbar.propTypes = {
   toggleOptionsSidebar: PropTypes.func,
   updateLanguage: PropTypes.func,
 };
-

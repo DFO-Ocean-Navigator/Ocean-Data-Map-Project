@@ -1,16 +1,19 @@
-import pyresample
-import numpy as np
+import math
+import re
 import warnings
-from netCDF4 import Dataset
+
 import cftime
-from data.calculated import CalculatedData
-from pint import UnitRegistry
+import numpy as np
+import pyresample
+import pytz
 from cachetools import TTLCache
+from netCDF4 import Dataset
+from pint import UnitRegistry
+
+from data.calculated import CalculatedData
 from data.data import Variable, VariableList
 from data.nearest_grid_point import find_nearest_grid_point
-import math
-import pytz
-import re
+
 
 class Mercator(CalculatedData):
     __depths = None

@@ -21,7 +21,6 @@ from skimage import measure
 import contextlib
 from data import open_dataset
 from flask import current_app
-#import cartopy.crs as ccrs
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -210,7 +209,6 @@ def plot(projection, x, y, z, args):
                 args.get('neighbours')
             ))
 
-
         vc = config.variable[dataset.variables[variable[0]]]
         variable_name = vc.name
         variable_unit = vc.unit
@@ -243,17 +241,16 @@ def plot(projection, x, y, z, args):
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
-
-    with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
-        bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
-
-    bathymetry = gaussian_filter(bathymetry, 0.5)
-
-    if (args.get('masked') == 1):
-        pass
-    else:
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
     
+    # Mask out any topography if we're below the vector-tile threshold
+    if z < 8:
+        with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
+            bathymetry = dataset["z"][ypx:(ypx + 256), xpx:(xpx + 256)]
+
+        bathymetry = gaussian_filter(bathymetry, 0.5)
+
+        data[np.where(bathymetry > -depthm)] = np.ma.masked
+
     
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
