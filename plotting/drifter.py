@@ -1,24 +1,27 @@
-from netCDF4 import Dataset, chartostring
+import datetime
+import time
+
 import cftime
+import dateutil.parser
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils as utils
 import pytz
-import dateutil.parser
 from flask import current_app
-from plotting.plotter import Plotter
 from flask_babel import gettext
-from data import open_dataset
-import time
-import datetime
+from netCDF4 import Dataset, chartostring
 from scipy.interpolate import interp1d
+
+import plotting.utils as utils
+from data import open_dataset
+from plotting.plotter import Plotter
+
 
 class DrifterPlotter(Plotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "drifter"
-        super(DrifterPlotter, self).__init__(dataset_name, query, format)
+        super(DrifterPlotter, self).__init__(dataset_name, query, **kwargs)
         self.size: str = '11x5'
 
     def parse_query(self, query):
@@ -133,8 +136,10 @@ class DrifterPlotter(Plotter):
                 len(dataset.timestamps) - 1
             )
 
-            model_times = [time.mktime(t.timetuple()) for t in dataset.timestamps[model_start:model_end + 1]]
-            output_times = [time.mktime(t.timetuple()) for t in self.times[self.start:self.end + 1]]
+            model_times = [time.mktime(
+                t.timetuple()) for t in dataset.timestamps[model_start:model_end + 1]]
+            output_times = [time.mktime(t.timetuple())
+                            for t in self.times[self.start:self.end + 1]]
             d = []
             for v in self.variables:
                 pts, dist, mt, md = dataset.get_path(
@@ -170,7 +175,8 @@ class DrifterPlotter(Plotter):
                 model_data[idx, :] = np.multiply(model_data[idx, :], sf)
 
             self.model_data = model_data
-            self.model_times = list(map(datetime.datetime.utcfromtimestamp, mt))
+            self.model_times = list(
+                map(datetime.datetime.utcfromtimestamp, mt))
             self.variable_names = variable_names
             self.variable_units = variable_units
 
@@ -268,7 +274,7 @@ class DrifterPlotter(Plotter):
         # latlon
         if self.latlon:
             for j, label in enumerate([gettext("Latitude (degrees)"),
-                                      gettext("Longitude (degrees)")]):
+                                       gettext("Longitude (degrees)")]):
                 plt.subplot(gs[subplot])
                 subplot += subplot_inc
 
