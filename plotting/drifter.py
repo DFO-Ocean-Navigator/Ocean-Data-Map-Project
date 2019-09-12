@@ -112,8 +112,8 @@ class DrifterPlotter(Plotter):
 
 
 
-        start = datetime_to_timestamp(self.starttime, self.dataset_config.time_dim_units)
-        end = datetime_to_timestamp(self.endtime, self.dataset_config.time_dim_units)
+        start = int(datetime_to_timestamp(self.starttime, self.dataset_config.time_dim_units))
+        end = int(datetime_to_timestamp(self.endtime, self.dataset_config.time_dim_units))
         with open_dataset(self.dataset_config, timestamp=start, endtime=end, variable=self.variables, nearest_timestamp=True) as dataset:
             depth = int(self.depth)
 
