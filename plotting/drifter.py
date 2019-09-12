@@ -92,13 +92,13 @@ class DrifterPlotter(Plotter):
         self.data_units = data_units
 
         if self.starttime is not None:
-            self.starttime = dateutil.parser.parse(self.starttime)
+            self.starttime = dateutil.parser.parse(self.starttime).replace(hour=0, minute=0, second=0, microsecond=0)
             self.start = np.where(self.times >= self.starttime)[0].min()
         else:
             self.start = -5
 
         if self.endtime is not None:
-            self.endtime = dateutil.parser.parse(self.endtime)
+            self.endtime = dateutil.parser.parse(self.endtime).replace(hour=0, minute=0, second=0, microsecond=0)
             self.end = np.where(self.times <= self.endtime)[0].max() + 1
         else:
             self.end = len(self.times) - 1
