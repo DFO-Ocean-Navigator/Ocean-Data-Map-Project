@@ -14,6 +14,7 @@ from scipy.interpolate import interp1d
 
 import plotting.utils as utils
 from data import open_dataset
+from data.utils import datetime_to_timestamp
 from plotting.plotter import Plotter
 
 
@@ -91,14 +92,14 @@ class DrifterPlotter(Plotter):
         self.data_units = data_units
 
         if self.starttime is not None:
-            d = dateutil.parser.parse(self.starttime)
-            self.start = np.where(self.times >= d)[0].min()
+            self.starttime = dateutil.parser.parse(self.starttime)
+            self.start = np.where(self.times >= self.starttime)[0].min()
         else:
-            self.start = 0
+            self.start = -5
 
         if self.endtime is not None:
-            d = dateutil.parser.parse(self.endtime)
-            self.end = np.where(self.times <= d)[0].max() + 1
+            self.endtime = dateutil.parser.parse(self.endtime)
+            self.end = np.where(self.times <= self.endtime)[0].max() + 1
         else:
             self.end = len(self.times) - 1
 
@@ -109,7 +110,11 @@ class DrifterPlotter(Plotter):
             self.end += len(self.times)
         self.end = np.clip(self.end, 0, len(self.times) - 1)
 
-        with open_dataset(self.dataset_config) as dataset:
+
+
+        start = datetime_to_timestamp(self.starttime, self.dataset_config.time_dim_units)
+        end = datetime_to_timestamp(self.endtime, self.dataset_config.time_dim_units)
+        with open_dataset(self.dataset_config, timestamp=start, endtime=end, variable=self.variables, nearest_timestamp=True) as dataset:
             depth = int(self.depth)
 
             try:

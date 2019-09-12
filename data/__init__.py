@@ -8,7 +8,7 @@ from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
 from data.sqlite_database import SQLiteDatabase
-from data.utils import roll_time
+from data.utils import find_le, roll_time
 
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
@@ -100,7 +100,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
                             set([v.key for v in db.get_data_variables()]))
 
         timestamp = __get_requested_timestamps(
-            db, variable[0], kwargs['timestamp'], kwargs.get('endtime'))
+            db, variable[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
 
         file_list = db.get_netcdf_files(
             timestamp, variable)
@@ -112,7 +112,20 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
         return file_list
 
 
-def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime):
+def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp):
+
+    # We assume timestamp and/or endtime have been converted
+    # to the same time units as the requested dataset. Otherwise
+    # this won't work.
+    if nearest_timestamp:
+        all_timestamps = db.get_timestamps(variable)
+
+        start = find_le(all_timestamps, timestamp)
+        if not endtime:
+            return [start]
+        
+        end = find_le(all_timestamps, endtime)
+        return db.get_timestamp_range(start, end, variable)
 
     if timestamp > 0 and endtime is None:
         # We've received a specific timestamp (e.g. 21100345)

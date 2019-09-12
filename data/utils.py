@@ -3,10 +3,49 @@
 import datetime
 import itertools
 import json
+from bisect import bisect_left, bisect_right
 
 import cftime
 import numpy as np
 import pytz
+
+
+def find_le(a, x):
+    """
+    Find right-most value in `a` that is <= x.
+
+    `a` MUST be sorted in ascending order for
+    this to perform optimally in O(log(n)).
+
+    If `x` is < all values in `a`, `a[0]` is returned.
+    """
+    i = bisect_right(a, x)
+    if i:
+        return a[i-1]
+    return a[0]
+
+
+def find_ge(a, x):
+    """
+    Find left-most value in `a` that is <= x.
+
+    `a` MUST be sorted in ascending order for
+    this to perform optimally in O(log(n)).
+
+    If `x` is > all values in `a`, `a[-1]` is returned.
+    """
+    i = bisect_left(a, x)
+    if i != len(a):
+        return a[i]
+    return a[-1]
+
+
+def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
+
+    t = cftime.utime(time_units)
+
+    datetime = datetime.replace(tzinfo=pytz.UTC)
+    return t.date2num(datetime)
 
 
 def time_index_to_datetime(timestamps, time_units: str):
@@ -28,6 +67,7 @@ def time_index_to_datetime(timestamps, time_units: str):
         return list(itertools.chain(*result))
 
     return result
+
 
 def roll_time(requested_index: int, len_timestamp_dim: int):
     if abs(requested_index) > len_timestamp_dim:

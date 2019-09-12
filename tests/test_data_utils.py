@@ -3,13 +3,23 @@
 import datetime
 import unittest
 
-import pytz
 import numpy as np
+import pytz
 
-from data.utils import roll_time, time_index_to_datetime
+from data.utils import (datetime_to_timestamp, find_ge, find_le, roll_time,
+                        time_index_to_datetime)
 
 
 class TestDataUtils(unittest.TestCase):
+
+    def setUp(self):
+        self.raw_timestamps = sorted(np.array([2144966400,
+                                               2145052800,
+                                               2145139200,
+                                               2145225600,
+                                               2145312000,
+                                               2145398400,
+                                               2145484800]))
 
     def test_roll_time(self):
         self.assertEqual(roll_time(2, 2), 2)
@@ -18,17 +28,10 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(roll_time(-5, 2), -1)
 
     def test_time_index_to_datetime(self):
-        raw_timestamps = sorted(np.array([2144966400,
-                                 2145052800,
-                                 2145139200,
-                                 2145225600,
-                                 2145312000,
-                                 2145398400,
-                                 2145484800]))
 
         time_units = 'seconds since 1950-01-01 00:00:00'
 
-        res = time_index_to_datetime(raw_timestamps, time_units)
+        res = time_index_to_datetime(self.raw_timestamps, time_units)
         self.assertEqual(len(res), 7)
         self.assertEqual(res[0], datetime.datetime(
             2017, 12, 21, 0, 0, tzinfo=pytz.UTC))
@@ -38,3 +41,27 @@ class TestDataUtils(unittest.TestCase):
 
         self.assertEqual(res_2[0], datetime.datetime(
             2017, 12, 21, 0, 0, tzinfo=pytz.UTC))
+
+    def test_datetime_to_timestamp(self):
+        time_units = 'seconds since 1950-01-01 00:00:00'
+        val = datetime.datetime(
+            2017, 12, 21, 0, 0, tzinfo=pytz.UTC)
+
+        res = datetime_to_timestamp(val, time_units)
+
+        self.assertEqual(res, 2144966400)
+
+    def test_find_le(self):
+
+        self.assertEqual(2144966400, find_le(self.raw_timestamps, 2144966400))
+        self.assertEqual(2144966400, find_le(self.raw_timestamps, 2145052700))
+        self.assertEqual(2145484800, find_le(self.raw_timestamps, 2222222222))
+        self.assertEqual(2144966400, find_le(self.raw_timestamps, 0))
+
+    def test_find_ge(self):
+
+        self.assertEqual(2144966400, find_ge(self.raw_timestamps, 2144966400))
+        self.assertEqual(2145052800, find_ge(self.raw_timestamps, 2145052700))
+        self.assertEqual(2145484800, find_ge(
+            self.raw_timestamps, 2222222222))
+        self.assertEqual(2144966400, find_ge(self.raw_timestamps, 0))
