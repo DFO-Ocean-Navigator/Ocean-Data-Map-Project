@@ -9,7 +9,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-export default class IceComboBox extends React.Component {
+export default class NewComboBox extends React.Component {
   constructor(props) {
     super(props);
 
@@ -17,8 +17,8 @@ export default class IceComboBox extends React.Component {
     let value_list = []
     
     for (let elem in this.props.data) {
-      if (elem['id'] === undefined || elem['value'] === undefined) {
-      } else if (this.props.envType != undefined) {
+      if (elem['name'] === undefined) {
+      } else if (this.props.envType !== undefined) {
         if (elem['envType'] === this.props.envType) {
           id_list.push(elem['id'])
           value_list.push(elem['value'])
@@ -56,17 +56,17 @@ export default class IceComboBox extends React.Component {
     let id_list = []
     let value_list = []
     for (let elem in this.props.data) {
-      elem = this.props.data[elem]
-      if (elem['id'] === undefined || elem['value'] === undefined) {
+      let elem_obj = this.props.data[elem]
+      if (elem === undefined) {
         console.error("Data empty or malformed")
       } else if (this.props.envType != undefined) {
-        if (elem['envType'] === this.props.envType) {
-          id_list.push(elem['id'])
-          value_list.push(elem['value'])
+        if (elem_obj['envtype'] === this.props.envType) {
+          id_list.push(elem)
+          value_list.push(elem['name'])
         }
       } else {
-        id_list.push(elem['id'])
-        value_list.push(elem['value'])
+        id_list.push(elem)
+        value_list.push(elem_obj['name'])
       }
     }
     let idx_list = new Array(value_list.length)
@@ -135,6 +135,7 @@ export default class IceComboBox extends React.Component {
       <div key='ice' className={div_class}>
         {title}
         <FormControl
+            key='form'
             componentClass="select"
             value={this.props.current}
             onChange={this.handleChange}
@@ -149,7 +150,7 @@ export default class IceComboBox extends React.Component {
 }
 
 //***********************************************************************
-IceComboBox.propTypes = {
+NewComboBox.propTypes = {
     data: PropTypes.object,
     current: PropTypes.string,
     localUpdate: PropTypes.string,

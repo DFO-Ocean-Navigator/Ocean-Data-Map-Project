@@ -41,9 +41,18 @@ export default class ContinousTimePicker extends React.Component {
     this.populate(this.props);
   }
 
+  /*
+  FUNCTION DEPRECATED
   componentWillReceiveProps(nextProps) {
     if (stringify(this.props) !== stringify(nextProps)) {
       this.populate(nextProps);
+    }
+  }
+  */
+
+  componentDidUpdate(prevProps, prevState) {
+    if (stringify(this.props) !== stringify(prevProps)) {
+      this.populate(this.props);
     }
   }
 

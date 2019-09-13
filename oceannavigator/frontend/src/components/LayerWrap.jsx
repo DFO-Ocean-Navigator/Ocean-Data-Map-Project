@@ -144,6 +144,7 @@ render() {
   let layers = []
   for (let idx in this.state.layers) {
     layers.push(<Layer
+      datasetconfig={this.props.datasetconfig}
       index={idx}
       key={idx}
       value={idx}

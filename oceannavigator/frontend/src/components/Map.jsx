@@ -471,7 +471,7 @@ export default class Map extends React.PureComponent {
     //this.mapView.on("change:resolution", this.constrainPan.bind(this));
     //this.mapView.on("change:center", this.constrainPan.bind(this));
     this.map.setView(this.mapView);
-
+    
     this.map.on("pointermove", function(e) {
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
@@ -509,7 +509,7 @@ export default class Map extends React.PureComponent {
         $(this.map.getTarget()).css("cursor", "");
       }
     }.bind(this));
-
+    
     /*
     // Info popup balloon
     this.map.on("singleclick", function (e) {
@@ -899,7 +899,6 @@ export default class Map extends React.PureComponent {
 
   toggleLayer(layer, state) {
     if (state === 'add') {
-
       this.map.addLayer(layer);
       let new_layers = this.map.getLayers();
 
@@ -1368,12 +1367,16 @@ export default class Map extends React.PureComponent {
   }
 
 
+
+
   render() {
     
     let layerRearrange = ''
+    let layers = this.map.getLayers().array_;
     if ('partner' in this.props) {
       layerRearrange = <div className='layerHierarchy_compare'>
         <LayerRearrange
+          layers={layers}
           change={this.state.change}
           map={this.map}
           state={this.props.state}
@@ -1384,6 +1387,7 @@ export default class Map extends React.PureComponent {
     } else {
       layerRearrange = <div className='layerHierarchy'>
         <LayerRearrange
+          layers={layers}
           change={this.state.change}
           map={this.map}
           state={this.props.state}
@@ -1398,6 +1402,7 @@ export default class Map extends React.PureComponent {
     if (this.props.mapIdx === 'left') {
       if ('partner' in this.props) {
         timeBar = <TimeBarContainer
+        layers={layers}
         compare={true}
         globalUpdate={this.props.updateState}
         timeSources={this.props.timeSources}
@@ -1406,6 +1411,7 @@ export default class Map extends React.PureComponent {
       } else {
         timeBar = <TimeBarContainer
         compare={false}
+        layers={layers}
         globalUpdate={this.props.updateState}
         timeSources={this.props.timeSources}
         allSources={this.props.allSources}

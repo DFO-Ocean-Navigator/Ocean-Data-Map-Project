@@ -37,9 +37,18 @@ export default class ComboBox extends React.Component {
     this._mounted = false;  //Component not mounted
   }
 
-  componentWillReceiveProps(nextProps) {
+  /*
+  // FUNCTION DEPRECATED
+  ReceiveProps(nextProps) {
     if (nextProps.url !== this.state.url || nextProps.data !== this.props.data) {
       this.populate(nextProps);
+    }
+  }
+  */
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.url !== this.state.url || this.props.data !== prevProps.data) {
+      this.populate(this.props);
     }
   }
 

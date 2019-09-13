@@ -103,6 +103,9 @@ def query_datasets_v1_0():
       return Response(status=422)
   return routes.routes_impl.query_datasets_impl(request.args)
 
+@bp_v1_0.route('/api/v1.0/datasetconfig/')
+def query_datasetconfig_v1_0():
+  return routes.routes_impl.dataset_config()
 
 #
 # Unchanged from v0.0

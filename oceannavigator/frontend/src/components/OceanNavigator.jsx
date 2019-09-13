@@ -37,7 +37,7 @@ export default class OceanNavigator extends React.Component {
       _firstLayer: true,
       _foundation: true,
       _environment: true,
-      _intelligence: false,
+      _intelligence: true,
       _derived: false,
       _planning: false,
 
@@ -45,10 +45,13 @@ export default class OceanNavigator extends React.Component {
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: false,
+        _intelligence: true,
         _derived: false,
         _planning: false,
       },
+
+      // To maintain the modular nature of my changes, but to also improve performance and reduce data usage, this variable holds any data that a particular layer would like to hold to use later, or to share with similar or duplicate layers.
+      dataStorage: {},
 
       // Variable which stores information about the data currently being displayed
       data: {},

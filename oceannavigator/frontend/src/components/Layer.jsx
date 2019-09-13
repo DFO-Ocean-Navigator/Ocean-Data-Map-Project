@@ -1,24 +1,23 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
-import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
+import { Panel, Button } from "react-bootstrap";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
-import moment from "moment-timezone";
+import * as olcontrol from "ol/control";
+import * as olsource from "ol/source";
+import * as ollayer from "ol/layer";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
+import NewComboBox from "./newComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
+const i18n = require("../i18n.js");
+
+// IMPORT IMAGES FOR ICONS
 import ice from '../images/ice_symbol.png';
 import met from '../images/cloud_symbol.png';
 import ocean from '../images/ocean_symbol.png'
 import wave from '../images/waves_symbol.png'
 import iceberg from '../images/iceberg_symbol.png'
-const i18n = require("../i18n.js");
 
 export default class Layer extends React.Component {
   constructor(props) {
@@ -58,7 +57,6 @@ export default class Layer extends React.Component {
       compare: false,
     };
 
-    this.changeDataset()
     this.range = undefined
 
     // Function bindings
@@ -81,6 +79,7 @@ export default class Layer extends React.Component {
     this.changeVariable = this.changeVariable.bind(this);
     this.changeDepth = this.changeDepth.bind(this);
     this.changeTimeSource = this.changeTimeSource.bind(this);
+    this.updateDates = this.updateDates.bind(this);
 
     //this.setCurrent = this.setCurrent.bind(this);
     this.dateToISO = this.dateToISO.bind(this);
@@ -89,8 +88,8 @@ export default class Layer extends React.Component {
   }
 
   singleClick(feature, pixel) {
-    
-    
+
+
     this.infoRequest = $.ajax({
       url: (
         `/api/v1.0/data/${dataset}` +
@@ -99,17 +98,17 @@ export default class Layer extends React.Component {
         `/${data[type][index][dataset][variable].depth}` +
         `/${location[1]},${location[0]}.json`
       ),
-      success: function(response) {
+      success: function (response) {
         for (let i = 0; i < response.name.length; ++i) {
           if (response.value[i] !== "nan") {
-            text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
+            text = <p><br />{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
             toRender.push(text)
             this.setState({
               toRender: toRender
             })
           }
         }
-        
+
       }.bind(this),
     })
     return
@@ -117,6 +116,7 @@ export default class Layer extends React.Component {
 
   componentDidMount() {
     this._mounted = true
+    this.changeDataset();
     this.createLayer();
   }
 
@@ -175,7 +175,7 @@ export default class Layer extends React.Component {
         if (this.props.value in data[this.props.layerType]) {
           if (data[this.props.layerType] !== undefined || data[this.props.layerType] !== {}) {
             data[this.props.layerType][this.props.value] = undefined
-            delete[this.props.layerType][this.props.value] 
+            delete [this.props.layerType][this.props.value]
           }
           data[this.props.layerType][this.props.value] = {
             [this.state.current_dataset]: {
@@ -228,13 +228,125 @@ export default class Layer extends React.Component {
     this.props.globalUpdate('data', new_data)
   }
 
+
   /*
+    
+  */
+ changeDataset(dataset) {
+
+    let old_dataset = this.state.current_dataset;
+    let old_variable = this.state.current_variable;
+    let update = undefined
+    
+    let new_dataset
+    let new_quantum
+    let new_variable
+    let new_scale
+    let new_depth_list
+
+    if (dataset !== null && dataset !== undefined) {
+      this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
+    }
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
+
+      // Check for giops_day
+      if ('giops_day' in this.props.datasetconfig && dataset === undefined || dataset === null) {
+
+        new_dataset = 'giops_day';
+        let giops_obj = this.props.datasetconfig['giops_day']
+        new_quantum = giops_obj.quantum
+
+        // Check for votemper
+        if ('votemper' in giops_obj.variables) {
+          new_variable = 'votemper';
+          new_scale = giops_obj.variables['votemper'].scale
+        } else {
+          for (let v in giops_obj.variables) {
+            new_variable = v;
+            new_scale = giops_obj.variables[new_variable].scale
+            break;
+          }
+        }
+
+      } else if (dataset !== undefined && dataset !== null) {
+        
+        new_dataset = dataset;
+        new_quantum = this.props.datasetconfig[dataset].quantum;
+        
+        for (let v in this.props.datasetconfig[new_dataset].variables) {
+          new_variable = v;
+          new_scale = this.props.datasetconfig[new_dataset].variables[new_variable].scale;
+          
+          break;
+        }
+        
+      } else {
+        for (let d in this.props.datasetconfig) {
+          new_dataset = d;
+          new_quantum = d;
+
+          for (let v in this.props.datasetconfig[d].variables) {
+            new_variable = v;
+            new_scale = this.props.datasetconfig[d].variables[v].scale;
+            
+            break;
+          }
+
+          break;
+        }
+      }
+
+
+      // Update State with new selections
+      this.setState({
+        current_dataset: new_dataset,
+        current_quantum: new_quantum,
+        current_variable: new_variable,
+        current_scale: new_scale,
+      }, () => {
+        this.updateDates();
+        this.changeTimeSource({
+          new_dataset: new_dataset,
+          new_quantum: new_quantum,
+          new_variable: new_variable,
+          old_dataset: old_dataset,
+          old_variable: old_variable,
+          new_map: this.state.current_map,
+          old_map: this.state.current_map
+        });
+      })
+
+
+      // Find depth
+      const depth_promise = $.ajax("/api/v1.0/depth/?dataset=" + new_dataset + "&variable=" + new_variable,)
+      $.when(depth_promise).done(function (depths) {
+
+        // Update state with depths
+        this.setState({
+          depths: depths
+        })
+
+        // Trigger data update using this.sendData('update')
+        this.sendData(update)
+        update = 'update'
+
+      }.bind(this));
+    } else {
+      console.error("Missing Data")
+      return null
+    }
+
+ }
+
+  /*
+    Replaced with function utilizing pre-loaded data
+
     This should be the only function called when a dataset change happens
     This includes changes to the available datasets
 
     If dataset is undefined - initialize
   */
-  changeDataset(dataset) {
+  changeDataset_deprecated(dataset) {
     let variable_promise = undefined;
     let old_dataset = this.state.current_dataset;
     let old_variable = this.state.current_variable;
@@ -249,7 +361,7 @@ export default class Layer extends React.Component {
     if (dataset === undefined) {
       const dataset_promise = $.ajax("/api/v1.0/datasets/?envType=" + this.props.layerType).promise();
       $.when(dataset_promise).done(function (datasets) {
-        
+
         if (this.props.state._firstLayer && datasets !== undefined) {
           for (let dataset in datasets) {
             if (datasets[dataset]['id'] === 'giops_day') {
@@ -260,9 +372,9 @@ export default class Layer extends React.Component {
           }
         } else if (datasets !== undefined) {
           new_dataset = datasets[0]['id']
-          new_quantum = datasets[0]['quantum']  
+          new_quantum = datasets[0]['quantum']
         }
-        
+
         dataset = new_dataset
         quantum = new_quantum
 
@@ -292,12 +404,12 @@ export default class Layer extends React.Component {
             current_variable: new_variable,
           }, () => {
             this.changeTimeSource({
-              new_dataset: dataset, 
-              new_quantum: quantum, 
-              new_variable: new_variable, 
-              old_dataset: old_dataset, 
-              old_variable: old_variable, 
-              new_map: this.state.current_map, 
+              new_dataset: dataset,
+              new_quantum: quantum,
+              new_variable: new_variable,
+              old_dataset: old_dataset,
+              old_variable: old_variable,
+              new_map: this.state.current_map,
               old_map: this.state.current_map
             })
           })
@@ -309,7 +421,7 @@ export default class Layer extends React.Component {
                 depths: depths,
                 current_depth: 0,
               }, () => {
-                this.sendData(); 
+                this.sendData();
               })
             }.bind(this),
             error: function () {
@@ -349,12 +461,12 @@ export default class Layer extends React.Component {
           current_variable: variable,
         }, () => {
           this.changeTimeSource({
-            new_dataset: dataset, 
-            new_quantum: quantum, 
-            new_variable: variable, 
-            old_dataset: old_dataset, 
-            old_variable: old_variable, 
-            new_map: this.state.current_map, 
+            new_dataset: dataset,
+            new_quantum: quantum,
+            new_variable: variable,
+            old_dataset: old_dataset,
+            old_variable: old_variable,
+            new_map: this.state.current_map,
             old_map: this.state.current_map
           })  // Update the timeSource to reflect the changes
         })
@@ -363,8 +475,8 @@ export default class Layer extends React.Component {
           this.setState({
             depths: depths,
             current_depth: 0,
-          }, () => { 
-            this.sendData('update'); 
+          }, () => {
+            this.sendData('update');
           })   // Update the data object
         }.bind(this))
       }.bind(this))
@@ -381,13 +493,13 @@ export default class Layer extends React.Component {
   changeVariable(variable) {
 
     // Change Time Source
-    this.changeTimeSource({ 
-      new_dataset: this.state.current_dataset, 
-      new_quantum: this.state.current_quantum, 
-      new_variable: variable, 
-      old_dataset: this.state.current_dataset, 
-      old_variable: this.state.current_variable, 
-      new_map: this.state.current_map, 
+    this.changeTimeSource({
+      new_dataset: this.state.current_dataset,
+      new_quantum: this.state.current_quantum,
+      new_variable: variable,
+      old_dataset: this.state.current_dataset,
+      old_variable: this.state.current_variable,
+      new_map: this.state.current_map,
       old_map: this.state.current_map
     })
 
@@ -419,88 +531,6 @@ export default class Layer extends React.Component {
     this.sendData();  // Sends the change to parent
   }
 
-  /*
-    Contains ajax calls to load the data
-  */
-  /*
-  getDataInfo() {
-
-    // DATASETS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    $.ajax({
-      url: `/api/v1.0/datasets/?envType=` + this.props.layerType,
-      success: function (response) {
-        this.setState({
-          datasets: response
-        })
-      }.bind(this),
-      error: function () {
-        console.error("Dataset Info Failed to Load")
-      }
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    }).done(() => {
-      this.changeTimeSource(this.state.datasets[0]['id'], this.state.datasets[0]['quantum'], undefined)
-      // VARIALBE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      let var_url = `/api/v1.0/variables/?dataset=` + this.state.datasets[0]['id'] + `&envType=` + this.props.layerType
-      $.ajax({
-        url: var_url,
-        success: function (response) {
-          this.setState({
-            variables: response
-          })
-        }.bind(this),
-        error: function () {
-          console.error("Variables Failed to Load")
-        }
-      }).done(() => {
-        // DEPTH ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        $.ajax({
-          url: `/api/v1.0/depth/?dataset=` + this.state.datasets[0]['id'] + '&variable=' + this.state.variables[0]['id'],
-          success: function (response) {
-            this.setState({
-              depths: response
-            })
-          }.bind(this),
-          error: function () {
-            console.error("Depth Values Failed to Load")
-          }
-        }).done(this.setCurrent())
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      })
-    })
-
-
-    // CODE TO RECEIVE ALL DATASETS // THIS IS TO ALLOW VARIABLE FIRST SELECTION
-    /*
-    $.ajax({
-      url: `/api/v1.0/variables/?dataset=all&env_type=` + this.props.layerType,
-      success: function(response) {
-        console.warn("RESPONSE: ", response)
-        this.setState({
-          'datainfo': response
-        })
-        let variables = this.getVariables();
-        if (variables == []) {
-          throw Error;
-        }
-        this.setState({
-          'variables': variables,
-          'current_variable': variables[0],
-        })
-      
-        let datasets = this.getDatasets(this.state.current_variable);
-        this.setState({
-          'datasets': datasets,
-          'current_dataset': datasets[0],
-        })toggleCompare
-        this._mounted = true;
-      }.bind(this),
-      error: function() {
-        console.error("Error getting data!");
-      }
-    });
-    
-
-}*/
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.show && this.props.mapComponent2 !== null) {
@@ -508,6 +538,10 @@ export default class Layer extends React.Component {
       this.setState({
         show: false,
       })
+    }
+
+    if (this.props.datasetconfig !== prevProps.datasetconfig) {
+      this.changeDataset(undefined)
     }
 
     if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
@@ -547,11 +581,11 @@ export default class Layer extends React.Component {
   */
   toggleCompare() {
     let show = false
-    if (this.props.layers.includes(this.state.ice_layer)) {
+    if (this.props.layers.includes(this.state.layer)) {
       this.toggleLayer()
       show = true
     }
-    
+
     let old_map = this.state.current_map
     this.props.removeData(old_map, this.state.current_dataset, this.state.current_variable, this.props.value)
 
@@ -563,13 +597,14 @@ export default class Layer extends React.Component {
     } else {
       current_map = 'left'
     }
+
     this.setState({
       compare: !this.state.compare,
       current_map: current_map,
-      
+
     }, () => {
       this.changeTimeSource({
-        new_dataset: this.state.current_dataset, 
+        new_dataset: this.state.current_dataset,
         new_quantum: this.state.current_quantum,
         new_variable: this.state.current_variable,
         new_map: this.state.current_map,
@@ -659,34 +694,6 @@ export default class Layer extends React.Component {
     this.props.globalUpdate('data', data)
   }
 
-  /*
-    Initializes a new OpenLayers Tile layer
-
-    ** This does not add the layer to the map **
-  */
-  createLayer() {
-
-    let layer_ice = new ol.layer.Tile(
-      {
-        name: 'data',
-        preload: Infinity,
-        opacity: this.state.opacity / 100,
-        source: new ol.source.XYZ({
-          attributions: [
-            new ol.Attribution({
-              html: "CONCEPTS",
-            })
-          ],
-        }),
-      });
-    layer_ice.set('name', this.props.layerType)
-
-    // Saves the new layer
-    this.setState({
-      ice_layer: layer_ice
-    })
-
-  }
 
   /*
     Converts a JS Date() Object to ISO8604 extended format
@@ -743,6 +750,64 @@ export default class Layer extends React.Component {
     return iso
   }
 
+  /*
+    Retrieve time information and add to layer
+  */
+  updateDates() {
+    console.warn("UPDATING DATES")
+    const time_promise = $.ajax("/api/v1.0/timestamps/?dataset=" + this.state.current_dataset);
+
+    // Finds depth for new variable (often the same)
+    $.when(time_promise).done(function (times) {
+      let time = {};
+      time.quantum = this.state.current_quantum;
+      time.available = times;
+      time.callback = () => {console.warn("CALLBACK FUNCTION")};
+      time.idx = this.state.current_map + this.props.layerType + this.props.index + this.state.current_dataset + this.state.current_variable;
+      time.icon = this.state.icons[this.props.layerType]
+      
+      let updated_layer = this.state.layer;
+      updated_layer.set('time', time);
+      
+    }.bind(this))
+  
+  }
+
+  /*
+    Initializes a new OpenLayers Tile layer
+
+    ** This does not add the layer to the map **
+  */
+  createLayer() {
+    let new_layer = new ollayer.Tile(
+      {
+        name: 'data',
+        preload: Infinity,
+        opacity: this.state.opacity / 100,
+        source: new olsource.XYZ({
+          attributions: [
+            new olcontrol.Attribution({
+              html: "CONCEPTS",
+            })
+          ],
+        }),
+      });
+    new_layer.set('name', this.props.layerType)
+
+    // Create Scale Bar and Add to Layer
+    let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
+      {this.state.icons[this.props.layerType]}
+      <div className='indexNum'>{}</div>
+      <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
+    </div>
+    new_layer.set('scaleBar', scaleBar)
+
+    // Saves the new layer
+    this.setState({
+      layer: new_layer
+    })
+
+  }
 
   /*
     Updates the already initialized layer with the data currently set
@@ -750,8 +815,9 @@ export default class Layer extends React.Component {
   */
   updateLayer() {
     //this.sendData('update')
-    let layer_ice = this.state.ice_layer;
-    let props = layer_ice.getSource().getProperties();
+    //this.updateDates();
+    let layer = this.state.layer;
+    let props = layer.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
     //let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
     if (this.props.state.timestamps[time_access] === undefined) {
@@ -779,20 +845,28 @@ export default class Layer extends React.Component {
 
     props.projection = this.props.state.projection;
     props.attributions = [
-      new ol.Attribution({
+      new olcontrol.Attribution({
         html: this.state.dataset_attribution,
       }),
     ];
-    const newSource = new ol.source.XYZ(props);
-
-    layer_ice.setSource(newSource)  // Apply the new Changes to the layer
-
+    const newSource = new olsource.XYZ(props);
+    
+    layer.setSource(newSource)  // Apply the new Changes to the layer
+    
+    // Create Scale Bar and Add to Layer
+    let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
+    {this.state.icons[this.props.layerType]}
+    <div className='indexNum'>{}</div>
+    <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
+    </div>
+    layer.set('scaleBar', scaleBar)
+    
     // Triggers the map to reload with new changes
-    if (this.state.current_map === 'left') {
+    /*if (this.state.current_map === 'left') {
       this.props.mapComponent.reloadLayer();
     } else {
       this.props.mapComponent2.reloadLayer();
-    }
+    }*/
   }
 
   /*
@@ -803,20 +877,20 @@ export default class Layer extends React.Component {
   toggleLayer() {
     let layers = this.props.layers
 
-    if (layers.includes(this.state.ice_layer)) {
+    if (layers.includes(this.state.layer)) {
       let new_layers = layers;
-      let ice_layer = this.state.ice_layer;
+      let layer = this.state.layer;
       this.setState({
         layerState: 'Add Layer'
       })
 
-      new_layers.splice(new_layers.indexOf(ice_layer), 1);
+      new_layers.splice(new_layers.indexOf(layer), 1);
 
       this.props.globalUpdate('layers', new_layers)
       if (this.state.current_map === 'left') {
-        this.props.mapComponent.toggleLayer(ice_layer, 'remove')
+        this.props.mapComponent.toggleLayer(layer, 'remove')
       } else {
-        this.props.mapComponent2.toggleLayer(ice_layer, 'remove')
+        this.props.mapComponent2.toggleLayer(layer, 'remove')
       }
     } else {
       this.updateLayer()
@@ -828,14 +902,14 @@ export default class Layer extends React.Component {
       let new_layers = this.props.layers
 
       new_layers.push(
-        this.state.ice_layer
+        this.state.layer
       )
 
       this.props.globalUpdate('layers', new_layers)
       if (this.state.current_map === 'left') {
-        this.props.mapComponent.toggleLayer(this.state.ice_layer, 'add')
+        this.props.mapComponent.toggleLayer(this.state.layer, 'add')
       } else {
-        this.props.mapComponent2.toggleLayer(this.state.ice_layer, 'add')
+        this.props.mapComponent2.toggleLayer(this.state.layer, 'add')
       }
     }
   }
@@ -844,14 +918,14 @@ export default class Layer extends React.Component {
 
   */
   removeOpenLayer() {
-    if (this.props.layers.includes(this.state.ice_layer)) {
+    if (this.props.layers.includes(this.state.layer)) {
       if (this.state.current_map === 'left') {
-        this.props.mapComponent.toggleLayer(this.state.ice_layer, 'remove')
+        this.props.mapComponent.toggleLayer(this.state.layer, 'remove')
       } else {
-        this.props.mapComponent2.toggleLayer(this.state.ice_layer, 'remove')
+        this.props.mapComponent2.toggleLayer(this.state.layer, 'remove')
       }
       let new_layers = this.props.layers
-      new_layers.splice(new_layers.indexOf(this.state.ice_layer), 1);
+      new_layers.splice(new_layers.indexOf(this.state.layer), 1);
       this.setState({
         layers: new_layers,
         layerState: 'Add Layer'
@@ -866,7 +940,7 @@ export default class Layer extends React.Component {
     this.setState({
       opacity: e.value
     })
-    this.state.ice_layer.setOpacity(e.value / 100)
+    this.state.layer.setOpacity(e.value / 100)
   }
 
   /*
@@ -877,8 +951,8 @@ export default class Layer extends React.Component {
     timeSources: Controls the available time bars which provides the layer specific times.
   */
   changeTimeSource(args) {
-    
-    if (!('new_dataset' in args) ||  !('new_variable' in args)) {
+
+    if (!('new_dataset' in args) || !('new_variable' in args)) {
       this.removeTime(args.old_map, args.old_dataset, args.old_variable)
     } else if (!('old_dataset' in args) || !('old_variable' in args)) {
       this.addTime(args.new_map, args.new_dataset, args.new_variable, args.new_quantum)
@@ -896,7 +970,7 @@ export default class Layer extends React.Component {
   removeTime(map, dataset, variable) {
     // Object complete empty (don't bother removing)
     let data = ''
-   
+
     if (this.props.state.timeSources === undefined) {
       return
     } else if (this.props.state.timeSources[map] === undefined) {
@@ -916,12 +990,12 @@ export default class Layer extends React.Component {
       delete data[map][this.props.layerType][this.props.value][dataset][variable]
       if (data[map][this.props.layerType][this.props.value][dataset] !== undefined) {
         delete data[map][this.props.layerType][this.props.value][dataset]
-        
+
       }
     } else {
       return
     }
-      
+
 
     this.props.globalUpdate('timeSources', jQuery.extend({}, data))
   }
@@ -999,7 +1073,6 @@ export default class Layer extends React.Component {
       let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
 
       let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
-
       this.range = <Range
         key='current_scale'
         id='current_scale'
@@ -1049,15 +1122,17 @@ export default class Layer extends React.Component {
 
     //Creates Main Map Panel
     let datasets = []
-    if (this.state.datasets.length > 1) {
-      datasets.push(<IceComboBox
-        data={this.state.datasets}
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
+    //if (this.state.datasets.length > 1) {
+      datasets.push(<NewComboBox
+        data={this.props.datasetconfig}
+        //data={this.state.datasets}
         current={this.state.current_dataset}
         localUpdate={this.localUpdate}
         key='dataset'
         name='current_dataset'
         title={_("Dataset")}
-      ></IceComboBox>)
+      ></NewComboBox>)
       //datasets.push(<Button 
       //  bsStyle="link"
       //  key='show_help'
@@ -1067,22 +1142,25 @@ export default class Layer extends React.Component {
       //  {_("Help")}
       //</Button>)
     }
-
-    let variables = <IceComboBox
-      data={this.state.variables}
-      current={this.state.current_variable}
-      localUpdate={this.localUpdate}
-      key='variable'
-      name='current_variable'
-      title={_("Variable")}
-    ></IceComboBox>
-
+    let variables = []
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null && this.state.current_variable !== undefined) {
+      variables.push(<NewComboBox
+        data={this.props.datasetconfig[this.state.current_dataset].variables}
+        //data={this.state.variables}
+        current={this.state.current_variable}
+        localUpdate={this.localUpdate}
+        key='variable'
+        name='current_variable'
+        title={_("Variable")}
+      ></NewComboBox>)
+    }
+    
     const inputs = [
       <Panel
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.layerName)}</div> }
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.layerName)}</div>}
         bsStyle='primary'
       >
         <Button
@@ -1226,7 +1304,6 @@ export default class Layer extends React.Component {
 //***********************************************************************
 Layer.propTypes = {
   key: PropTypes.number,
-  
   state: PropTypes.object,
   removeLayer: PropTypes.func,
   toggleLayer: PropTypes.func,
