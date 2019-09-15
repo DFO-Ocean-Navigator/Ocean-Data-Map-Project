@@ -3,6 +3,7 @@
 import itertools
 import re
 import sqlite3
+from typing import List
 
 from data.variable import Variable
 from data.variable_list import VariableList
@@ -34,10 +35,10 @@ class SQLiteDatabase:
     def __exit__(self, exc_type, exc_value, traceback):
         self.conn.close()
 
-    def __flatten_list(self, some_list: list):
+    def __flatten_list(self, some_list: list) -> list:
         return list(itertools.chain(*some_list))
 
-    def get_netcdf_files(self, timestamp: list, variable: list):
+    def get_netcdf_files(self, timestamp: list, variable: list) -> List[str]:
         """Retrieves the netCDF files that are mapped to the given timestamp(s) and variable.
 
         Arguments:
@@ -71,7 +72,7 @@ class SQLiteDatabase:
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
         return list(set(self.__flatten_list(file_list)))
 
-    def get_variable_dims(self, variable: str):
+    def get_variable_dims(self, variable: str) -> List[str]:
         """Retrieves the given variables dimensions.
 
         Arguments:
@@ -100,7 +101,7 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())
 
-    def get_variable_units(self, variable: str):
+    def get_variable_units(self, variable: str) -> List[str]:
         """Retrieves the units for a given variable name.
 
         Arguments:
@@ -132,7 +133,7 @@ class SQLiteDatabase:
 
         return result[0] if result else ""
 
-    def get_timestamps(self, variable: str):
+    def get_timestamps(self, variable: str) -> List[str]:
         """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
 
         Arguments:
@@ -164,14 +165,14 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())
 
-    def get_latest_timestamp(self, variable: str):
+    def get_latest_timestamp(self, variable: str) -> int:
         """Returns the latest raw timestamp value for a given variable.
 
         Arguments:
             variable {str} -- Key of the variable of interest (e.g. votemper)
 
         Returns:
-            [type] -- Most recent timestamp value.
+            int -- Most recent timestamp value.
         """
 
         if not variable:
@@ -192,14 +193,14 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())[0]
 
-    def get_earliest_timestamp(self, variable: str):
+    def get_earliest_timestamp(self, variable: str) -> int:
         """Returns the earliest raw timestamp value for a given variable.
 
         Arguments:
             variable {str} -- Key of the variable of interest (e.g. votemper)
 
         Returns:
-            [type] -- Earliest timestamp value.
+            int -- Earliest timestamp value.
         """
 
         if not variable:
@@ -220,7 +221,7 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())[0]
 
-    def get_timestamp_range(self, starttime: int, endtime: int, variable: str):
+    def get_timestamp_range(self, starttime: int, endtime: int, variable: str) -> List[int]:
         """Retrieves all raw timestamps in the interval [starttime, endtime] for a variable.
 
         Arguments:
@@ -250,7 +251,7 @@ class SQLiteDatabase:
 
         return self.__flatten_list(self.c.fetchall())
 
-    def get_all_variables(self):
+    def get_all_variables(self) -> VariableList:
         """Retrieves all variables from the open database (including depth, time, etc.)
 
         Returns:
@@ -266,7 +267,7 @@ class SQLiteDatabase:
 
         return VariableList(l)
 
-    def get_data_variables(self):
+    def get_data_variables(self) -> VariableList:
         """Retrieves all data variables from the open database (i.e. depth, time, etc. are filtered out).
 
         Returns:
@@ -281,7 +282,7 @@ class SQLiteDatabase:
 
         return VariableList(result)
 
-    def __build_variable_wrapper(self, var_result: list):
+    def __build_variable_wrapper(self, var_result: list) -> Variable:
         """Builds a Variable object from a given row list.
 
         Arguments:

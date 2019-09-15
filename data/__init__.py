@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re
+from typing import List
 
 from netCDF4 import Dataset
 
@@ -59,19 +60,19 @@ def open_dataset(dataset, **kwargs):
     raise TypeError("Dataset url is None.")
 
 
-def __is_datasetconfig_object(obj: object):
+def __is_datasetconfig_object(obj: object) -> bool:
     return hasattr(obj, "url")
 
 
-def __is_aggregated_or_raw_netcdf(url: str):
+def __is_aggregated_or_raw_netcdf(url: str) -> bool:
     return url.startswith("http") or url.endswith(".nc")
 
 
-def __is_sqlite_database(url: str):
+def __is_sqlite_database(url: str) -> bool:
     return url.endswith(".sqlite3")
 
 
-def __meta_only(**kwargs):
+def __meta_only(**kwargs) -> bool:
     return kwargs.get('meta_only', False)
 
 
@@ -84,7 +85,7 @@ def __check_kwargs(**kwargs):
             "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
 
 
-def __get_nc_file_list(url: str, datasetconfig, **kwargs):
+def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
 
     with SQLiteDatabase(url) as db:
 
@@ -112,7 +113,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs):
         return file_list
 
 
-def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp):
+def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp) -> List[int]:
 
     # We assume timestamp and/or endtime have been converted
     # to the same time units as the requested dataset. Otherwise
@@ -123,7 +124,7 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
         start = find_le(all_timestamps, timestamp)
         if not endtime:
             return [start]
-        
+
         end = find_le(all_timestamps, endtime)
         return db.get_timestamp_range(start, end, variable)
 
@@ -155,15 +156,15 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
         return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
 
 
-def __is_mercator(variable_list: list):
+def __is_mercator(variable_list: list) -> bool:
     return 'latitude_longitude' in variable_list or 'LatLon_Projection' in variable_list
 
 
-def __is_fvcom(variable_list: list):
+def __is_fvcom(variable_list: list) -> bool:
     return 'siglay' in variable_list
 
 
-def __get_variables(url: str):
+def __get_variables(url: str) -> List[str]:
 
     variable_list = []
 
