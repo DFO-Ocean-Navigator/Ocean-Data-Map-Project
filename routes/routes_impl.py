@@ -26,6 +26,7 @@ from flask import (Response, current_app, jsonify, request, send_file,
 from flask_babel import format_date, gettext
 from PIL import Image
 
+import data.class4 as class4
 import plotting.colormap
 import plotting.scale
 import plotting.tile
@@ -102,7 +103,7 @@ def query_impl(q: str):
     elif q == 'areas':
         data = utils.misc.list_kml_files('area')
     elif q == 'class4':
-        data = utils.misc.list_class4_files()
+        data = class4.list_class4_files()
     else:
         raise APIError(
             "Invalid API Query - Please review the API documentation for help.")
@@ -123,7 +124,7 @@ def query_id_impl(q: str, q_id: str):
     if q == 'areas':
         data = utils.misc.list_areas(q_id)
     elif q == 'class4':
-        data = utils.misc.list_class4(q_id)
+        data = class4.list_class4(q_id)
     elif q == 'drifters' and q_id == 'meta':
         data = utils.misc.drifter_meta()
     elif q == 'observation' and q_id == 'meta':
@@ -185,7 +186,7 @@ def query_file_impl(q: str, projection: str, resolution: int, extent: str, file_
         data = utils.misc.areas(
             file_id, projection, resolution, extent)
     elif q == 'class4':
-        data = utils.misc.class4(
+        data = class4.class4(
             file_id, projection, resolution, extent)
     elif q == 'drifters':
         data = utils.misc.drifters(
@@ -686,9 +687,9 @@ def class4_query_impl(q: str, class4_id: str, index: str):
         raise APIError("Please Specify an ID ")
 
     if q == 'forecasts':
-        pts = utils.misc.list_class4_forecasts(class4_id)
+        pts = class4.list_class4_forecasts(class4_id)
     elif q == 'models':
-        pts = utils.misc.list_class4_models(class4_id)
+        pts = class4.list_class4_models(class4_id)
     else:
         raise APIError(gettext(
             "Please specify either forecasts or models using /models/ or /forecasts/"))
