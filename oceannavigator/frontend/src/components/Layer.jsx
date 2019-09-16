@@ -754,7 +754,6 @@ export default class Layer extends React.Component {
     Retrieve time information and add to layer
   */
   updateDates() {
-    console.warn("UPDATING DATES")
     const time_promise = $.ajax("/api/v1.0/timestamps/?dataset=" + this.state.current_dataset);
 
     // Finds depth for new variable (often the same)

@@ -134,8 +134,7 @@ export default class TimeSelect extends React.Component {
         Format Times from API Response Format
     */
     formatDates(dates) {
-        console.warn("Format Times");
-
+        
         let response = dates
         let modified = {}
         let formatted = {}
@@ -198,9 +197,7 @@ export default class TimeSelect extends React.Component {
     }
 
     updateDates() {
-        console.warn("UPDATE DATES");
         let response = this.props.dates_available;
-        console.warn("RESPONSE IN UPDATE: ", response);
         let modified = {}
         let formatted = {}
 
@@ -220,7 +217,6 @@ export default class TimeSelect extends React.Component {
         Retrieves and formats the timestamps for a particular dataset
     */
     updateTimes() {
-        console.warn("updateTimes()");
         return
         $.ajax({
             url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset,
@@ -287,8 +283,6 @@ export default class TimeSelect extends React.Component {
                 */
 
                 formatted, modified = this.formatDates(response);
-                console.warn("Formatted: ", formatted);
-                console.warn("Modified: ", modified);
                 this.setState({
                     response: response,
                     times_available: modified,
@@ -345,7 +339,7 @@ export default class TimeSelect extends React.Component {
         let quantum = this.props.quantum
         let startTimeObj
         let endTimeObj
-        console.warn("RESPONSE: ", this.state.response)
+        
         // Initializing
         if (this.state.startTimeObj === undefined || this.state.endTimeObj === undefined) { // Initializing
             //endTimeObj = new Date(this.state.response[this.state.response.length - 1].value)
