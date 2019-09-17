@@ -1131,7 +1131,7 @@ export default class Map extends React.PureComponent {
         if (name !== undefined) {
           let props = lyr.getProperties()
           props.projection = this.props.state.projection
-          const newSource = new ol.source.XYZ(props);
+          const newSource = new olsource.XYZ(props);
           
           lyr.setSource(newSource)
         }
@@ -1286,7 +1286,7 @@ export default class Map extends React.PureComponent {
     switch (type) {
       case "point":
         for (let c of data) {
-          geom = new ol.geom.Point([c[1], c[0]]);
+          geom = new olgeom.Point([c[1], c[0]]);
           geom.transform("EPSG:4326", this.props.state.projection);
           feat = new ol.Feature({
             geometry: geom,

@@ -4,7 +4,7 @@ import MapToolbar from "./MapToolbar.jsx";
 import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
-import {Button, Modal} from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
@@ -21,14 +21,14 @@ function formatLatLon(latitude, longitude) {
   formatted += ", ";
   formatted += Math.abs(longitude).toFixed(4) + " ";
   formatted += (longitude >= 0) ? "E" : "W";
-  
+
   return formatted;
 }
 
 export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
-    
+
     ReactGA.ga("send", "pageview");
 
     this.state = {
@@ -69,10 +69,10 @@ export default class OceanNavigator extends React.Component {
           value: 'Wind Barbs (BETA)',
         }
       ],
-      
+
       dataset: "giops_day",
       variable: "votemper",
-      variable_scale: [-5,30], // Default variable range for left/Main Map
+      variable_scale: [-5, 30], // Default variable range for left/Main Map
       depth: 0,
 
       // New Global Times
@@ -105,7 +105,7 @@ export default class OceanNavigator extends React.Component {
         depth: 0,
         time: -1,
         starttime: -2,  // Start time for Right Map
-        variable_scale: [-5,30], // Default variable range for Right Map
+        variable_scale: [-5, 30], // Default variable range for Right Map
       },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
@@ -131,9 +131,13 @@ export default class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
+        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
         const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
         $.extend(this.state, querystate);
-      } catch(err) {
+        
+        console.warn("DATA: ", this.state.data)
+
+      } catch (err) {
         console.error(err);
       }
       let url = window.location.origin;
@@ -143,7 +147,7 @@ export default class OceanNavigator extends React.Component {
       window.history.replaceState(null, null, url);
     }
 
-    window.onpopstate = function(event) {
+    window.onpopstate = function (event) {
       if (event.state) {
         this.setState({
           showModal: false
@@ -166,7 +170,7 @@ export default class OceanNavigator extends React.Component {
     this.updateScale = this.updateScale.bind(this);
     this.multiPointAction = this.multiPointAction.bind(this);
   }
-  
+
   //Updates the page language upon user request
   updateLanguage() {
     this.forceUpdate();
@@ -174,27 +178,27 @@ export default class OceanNavigator extends React.Component {
 
   // Opens/closes the sidebar state
   toggleSidebar() {
-    this.setState({sidebarOpen: !this.state.sidebarOpen});
+    this.setState({ sidebarOpen: !this.state.sidebarOpen });
   }
 
   // Opens/closes the help modal for dataset comparison
   toggleCompareHelp() {
-    this.setState({showCompareHelp: !this.state.showCompareHelp,});
+    this.setState({ showCompareHelp: !this.state.showCompareHelp, });
   }
 
-  hideBugsModal(){
-    this.setState({showBugs: false,});
+  hideBugsModal() {
+    this.setState({ showBugs: false, });
   }
 
-  showBugsModal(){
-    this.setState({showBugs: true,});
+  showBugsModal() {
+    this.setState({ showBugs: true, });
   }
 
   // Swap all view-related state variables
   swapViews() {
     const newState = this.state;
     // "destructuring" from ES2015
-    [newState.dataset, newState.dataset_1.dataset] = [newState.dataset_1.dataset, newState.dataset];    
+    [newState.dataset, newState.dataset_1.dataset] = [newState.dataset_1.dataset, newState.dataset];
     [newState.variable, newState.dataset_1.variable] = [newState.dataset_1.variable, newState.variable];
     [newState.depth, newState.dataset_1.depth] = [newState.dataset_1.depth, newState.depth];
     [newState.time, newState.dataset_1.time] = [newState.dataset_1.time, newState.time];
@@ -222,14 +226,14 @@ export default class OceanNavigator extends React.Component {
     options.bathymetry = newOptions.bathymetry;
     options.topoShadedRelief = newOptions.topoShadedRelief;
 
-    this.setState({options});
+    this.setState({ options });
   }
 
-  
+
 
   // Updates global app state
   updateState(key, value) {
-    
+
     var newState = {};
 
     if (key === 'timeSources') {
@@ -243,13 +247,13 @@ export default class OceanNavigator extends React.Component {
       })
     }
     // Only updating one value
-    if (typeof(key) === "string") {
+    if (typeof (key) === "string") {
       if (this.state[key] === value) {
 
         // Value hasn't changed
         return;
       }
-      
+
       // Store the updated value
       newState[key] = value;
 
@@ -277,7 +281,7 @@ export default class OceanNavigator extends React.Component {
     }
     else {
       for (let i = 0; i < key.length; ++i) {
-        switch(key[i]) {
+        switch (key[i]) {
           case "time":
             if (value[i] !== undefined) {
               newState.time = value[i];
@@ -337,7 +341,7 @@ export default class OceanNavigator extends React.Component {
   }*/
 
   action(name, arg, arg2, arg3) {
-    switch(name) {
+    switch (name) {
       case "point":
 
         this.mapComponent.resetMap();
@@ -347,18 +351,18 @@ export default class OceanNavigator extends React.Component {
           action: 'click',
           label: 'PointPlot'
         });
-        
+
         /*
         this.mapComponent.resetMap();
         if (this.mapComponent2) {
           this.mapComponent2.resetMap();
         }
         */
-        if (typeof(arg) === "object") {
+        if (typeof (arg) === "object") {
           // The EnterPoint component correctly orders the coordinate
           // pair, so no need to swap it.
           if (arg2 === "enterPoint") {
-            
+
             this.setState({
               point: [[arg[0], arg[1]]],
               modal: "point",
@@ -391,16 +395,16 @@ export default class OceanNavigator extends React.Component {
           if (this.mapComponent2) {
             this.mapComponent2.point();
           }
-        } 
+        }
         break;
-      
+
       case "multi-point":
 
-        
+
         //Tracks Google Analytics Event
-        
+
         if (arg === undefined) {
-        
+
           this.mapComponent.resetMap();
 
           ReactGA.event({
@@ -409,22 +413,22 @@ export default class OceanNavigator extends React.Component {
             label: 'MultiPointPlot'
           })
           // Enable point selection in both maps
-          
-          this.mapComponent.multiPoint();  
-        
+
+          this.mapComponent.multiPoint();
+
         } else {
-         
+
           this.setState({
             point: arg,
             modal: "point",
             names: [],
           })
         }
-      
+
         break;
-        
+
       case "line":
-        if (typeof(arg) === "object") {
+        if (typeof (arg) === "object") {
           this.setState({
             line: arg,
             modal: "line",
@@ -448,8 +452,8 @@ export default class OceanNavigator extends React.Component {
           }
         }
         break;
-      case "area":        
-        if (typeof(arg) === "object") {
+      case "area":
+        if (typeof (arg) === "object") {
           // Disable area drawing on both maps
           this.setState({
             area: arg,
@@ -525,10 +529,10 @@ export default class OceanNavigator extends React.Component {
         }
         break;
       case "options":
-        this.setState({showOptions: true,});
+        this.setState({ showOptions: true, });
         break;
       case "help":
-        this.setState({ showHelp: true,});
+        this.setState({ showHelp: true, });
         break;
       default:
         console.error("Undefined", name, arg);
@@ -537,7 +541,7 @@ export default class OceanNavigator extends React.Component {
   }
 
   multiPointAction(key) {
-    switch(key) {
+    switch (key) {
 
       //Enables multiPoint and Enables Map Interaction
       case "enable":
@@ -572,7 +576,7 @@ export default class OceanNavigator extends React.Component {
       showModal: true
     });
   }
-  
+
   closeModal() {
     if (this.state.subquery) {
       this.setState({
@@ -629,7 +633,7 @@ export default class OceanNavigator extends React.Component {
     let modalContent = "";
     let modalTitle = "";
 
-    
+
     if (this.state.names && this.state.names.length > 0) {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
@@ -637,11 +641,11 @@ export default class OceanNavigator extends React.Component {
     _("Loading");
 
     const contentClassName = this.state.sidebarOpen ? "content open" : "content";
-    
+
     // Pick which map we need
     let map = null;
     if ('right' in this.state.data) {
-      
+
       const secondState = $.extend(true, {}, this.state);
       for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
         const keys = Object.keys(this.state.dataset_1);
@@ -675,7 +679,7 @@ export default class OceanNavigator extends React.Component {
           options={this.state.options}
         />
       </div>;
-    } 
+    }
     else {
       map = <Map
         ref={(m) => this.mapComponent = m}
@@ -692,39 +696,39 @@ export default class OceanNavigator extends React.Component {
       />;
     }
 
-    let layerSelect = null; 
-    
+    let layerSelect = null;
+
     if (this.mapComponent !== null) {
       if (this.mapComponent2 === null) {
         layerSelect = <LayerSelection
-        state={this.state}
-        swapViews={this.swapViews}
-        mapComponent={this.mapComponent}
-        mapComponent2={this.mapComponent2}
-        updateState={this.updateState}
-        showHelp={this.toggleCompareHelp}
-        options={this.state.options}
-        updateOptions={this.updateOptions}
-      />
+          state={this.state}
+          swapViews={this.swapViews}
+          mapComponent={this.mapComponent}
+          mapComponent2={this.mapComponent2}
+          updateState={this.updateState}
+          showHelp={this.toggleCompareHelp}
+          options={this.state.options}
+          updateOptions={this.updateOptions}
+        />
       } else {
         layerSelect = <LayerSelection
-        state={this.state}
-        swapViews={this.swapViews}
-        mapComponent={this.mapComponent}
-        mapComponent2={this.mapComponent2}
-        updateState={this.updateState}
-        showHelp={this.toggleCompareHelp}
-        options={this.state.options}
-        updateOptions={this.updateOptions}
-      />
+          state={this.state}
+          swapViews={this.swapViews}
+          mapComponent={this.mapComponent}
+          mapComponent2={this.mapComponent2}
+          updateState={this.updateState}
+          showHelp={this.toggleCompareHelp}
+          options={this.state.options}
+          updateOptions={this.updateOptions}
+        />
       }
-      
+
     }
-    
+
 
     return (
       <div className='OceanNavigator'>
-        
+
         {layerSelect}
         <div className={contentClassName}>
           <MapToolbar
@@ -742,7 +746,7 @@ export default class OceanNavigator extends React.Component {
           {/*<WarningBar
             showWarningInfo={this.showBugsModal}
           />*/}
-          
+
           {map}
         </div>
 
@@ -767,7 +771,7 @@ export default class OceanNavigator extends React.Component {
               showHelp={this.toggleCompareHelp}
               dataset_compare={this.state.dataset_compare}
               onUpdate={this.updateState}
-              init={this.state.subquery}  
+              init={this.state.subquery}
               class4={this.state.class4}
               action={this.action}
               swapViews={this.swapViews}
@@ -777,18 +781,18 @@ export default class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button
               onClick={this.closeModal}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+            ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
         <Modal
           show={this.state.showPermalink}
-          onHide={() => this.setState({showPermalink: false})}
+          onHide={() => this.setState({ showPermalink: false })}
           dialogClassName='permalink-modal'
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="link" alt={_("Share Link")}/> {_("Share Link")}</Modal.Title>
+            <Modal.Title><Icon icon="link" alt={_("Share Link")} /> {_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Permalink
@@ -797,44 +801,44 @@ export default class OceanNavigator extends React.Component {
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+              onClick={() => this.setState({ showPermalink: false })}
+            ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
         <Modal
           show={this.state.showOptions}
-          onHide={() => this.setState({showOptions: false})}
+          onHide={() => this.setState({ showOptions: false })}
           dialogClassName='permalink-modal'
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="gear" alt={_("Options")}/> {_("Options")}</Modal.Title>
+            <Modal.Title><Icon icon="gear" alt={_("Options")} /> {_("Options")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Options 
+            <Options
               options={this.state.options}
               updateOptions={this.updateOptions}
             />
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={() => this.setState({showOptions: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+              onClick={() => this.setState({ showOptions: false })}
+            ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
         <Modal
           show={this.state.showHelp}
-          onHide={() => this.setState({showHelp: false})}
+          onHide={() => this.setState({ showHelp: false })}
           dialogClassName='full-screen-modal'
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="question" alt={_("Help")}/> {_("Help")}</Modal.Title>
+            <Modal.Title><Icon icon="question" alt={_("Help")} /> {_("Help")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Iframe 
+            <Iframe
               url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
               height="768px"
               position="relative"
@@ -842,8 +846,8 @@ export default class OceanNavigator extends React.Component {
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={() => this.setState({showHelp: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+              onClick={() => this.setState({ showHelp: false })}
+            ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -858,10 +862,10 @@ export default class OceanNavigator extends React.Component {
             <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            
+
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+            <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
@@ -877,50 +881,50 @@ export default class OceanNavigator extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <p>
-              There is a known issue with how the direction of water velocity is rendered.<br/>
-              <br/>
+              There is a known issue with how the direction of water velocity is rendered.<br />
+              <br />
             </p>
             <p>
-              The "water x velocity" and "water y velocity" do not necessarily refer to water velocity 
-              in the East or North direction. Instead, they refer to the water velocity along the x or y axis 
-              of the grid used by the source data, which are often rotated.<br/>
-              <br/>
+              The "water x velocity" and "water y velocity" do not necessarily refer to water velocity
+              in the East or North direction. Instead, they refer to the water velocity along the x or y axis
+              of the grid used by the source data, which are often rotated.<br />
+              <br />
             </p>
             <p>
-              For data sources such as GIOPS daily and GIOPS monthly this means the data is on a tripolar grid and the 
-              angle of the x-axis changes, deviating further from the Latitude Longitude grid directions closer to the 
-              north pole.<br/>
-              <br/>
+              For data sources such as GIOPS daily and GIOPS monthly this means the data is on a tripolar grid and the
+              angle of the x-axis changes, deviating further from the Latitude Longitude grid directions closer to the
+              north pole.<br />
+              <br />
             </p>
-            <p> 
-              This issue is known to have an impact on:<br/>
-                * Water velocity (x,y and combined) for The Global, Arctic, and Antarctic projections for all dataset<br/>
-                * Model Water velocity for the Area, Point, and Line/Transect plots. for all datasets.<br/>
-                * Model Water velocity (x, y, and combined) for exported CSV's and ODE<br/>
-                * Model Water velocity for drifter plots.<br/>
-              <br/>
-              <br/>
-            </p>
-              Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered. 
-              Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of 
-              60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
-              a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
-              a clear and understandable fix released soon. <br/>
-            <br/>
             <p>
-              you would like more detailed information you can view our bug tracking this problem on 
+              This issue is known to have an impact on:<br />
+              * Water velocity (x,y and combined) for The Global, Arctic, and Antarctic projections for all dataset<br />
+              * Model Water velocity for the Area, Point, and Line/Transect plots. for all datasets.<br />
+              * Model Water velocity (x, y, and combined) for exported CSV's and ODE<br />
+              * Model Water velocity for drifter plots.<br />
+              <br />
+              <br />
+            </p>
+            Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered.
+            Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of
+            60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without
+            a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have
+              a clear and understandable fix released soon. <br />
+            <br />
+            <p>
+              you would like more detailed information you can view our bug tracking this problem on
               our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
-              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/213" target="_blank">"Bearing and vector representation"</a> <br/>
-              If you still need more information about the problem contact oceandatamap@gmail.com <br/>
-              <br/>
+              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/213" target="_blank">"Bearing and vector representation"</a> <br />
+              If you still need more information about the problem contact oceandatamap@gmail.com <br />
+              <br />
             </p>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 
-        <Modal 
+        <Modal
           show={this.state.busy}
           dialogClassName='busy-modal'
           backdrop

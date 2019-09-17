@@ -1,15 +1,24 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import IceDatasetSelector from "./IceDatasetSelector.jsx";
 import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
 import PropTypes from "prop-types";
-import DisplayType from "./DisplayType.jsx";
-import ol from "openlayers";
-import moment from "moment-timezone";
+
+import * as ol from "ol";
+import * as olproj from "ol/proj";
+import * as olproj4 from "ol/proj/proj4";
+import * as olcontrol from "ol/control";
+import * as olsource from "ol/source";
+import * as olloadingstrategy from "ol/loadingstrategy";
+import * as olformat from "ol/format";
+import * as oltilegrid from "ol/tilegrid";
+import * as ollayer from "ol/layer";
+import * as olstyle from "ol/style";
+import * as olinteraction from "ol/interaction";
+import * as olcondition from "ol/events/condition";
+import * as olgeom from "ol/geom";
+import * as olextent from "ol/extent";
+
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
@@ -155,6 +164,27 @@ export default class Layer extends React.Component {
     })
   }
   */
+
+  loadExisting(data) {
+    // Check if the data belongs to the layer
+    this.props.preload
+    if (this.props.preload.id === 'something') {
+      // Loads the data if it belongs
+
+      this.setState({
+        current_dataset: '',
+        current_variable: '',
+        current_depth: '',
+      })
+
+      // SendData
+
+      // Force layerUpdate()
+
+      // 
+
+    }
+  }
 
   /*
     Sends the data information back to OceanNavigator.jsx to be used by the modals
@@ -666,14 +696,14 @@ export default class Layer extends React.Component {
   */
   createLayer() {
 
-    let layer_ice = new ol.layer.Tile(
+    let layer_ice = new ollayer.Tile(
       {
         name: 'data',
         preload: Infinity,
         opacity: this.state.opacity / 100,
-        source: new ol.source.XYZ({
+        source: new olsource.XYZ({
           attributions: [
-            new ol.Attribution({
+            new olcontrol.Attribution({
               html: "CONCEPTS",
             })
           ],
@@ -779,11 +809,11 @@ export default class Layer extends React.Component {
 
     props.projection = this.props.state.projection;
     props.attributions = [
-      new ol.Attribution({
+      new olcontrol.Attribution({
         html: this.state.dataset_attribution,
       }),
     ];
-    const newSource = new ol.source.XYZ(props);
+    const newSource = new olsource.XYZ(props);
 
     layer_ice.setSource(newSource)  // Apply the new Changes to the layer
 
