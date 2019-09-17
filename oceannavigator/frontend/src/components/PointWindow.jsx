@@ -629,10 +629,15 @@ export default class PointWindow extends React.Component {
           onTimeUpdate={this.onTimeUpdate}
         />
       }
+
+      console.warn("TIME CAUSING ERROR: ", this.state.time)
+      console.warn("POTENTIAL TIME: ", this.state.starttime)
+      console.warn("THIS.STATE: ", this.state)
+      console.warn("THIS.PROPS: ", this.props)
       if (showTime) {
         time = <TimePicker
         range={false}
-        key={this.state.time.toISOString()}  
+        key={moment(this.state.starttime)}  
         dataset={this.state.dataset}
         quantum={this.state.dataset_quantum}
         startDate={starttimeObj}

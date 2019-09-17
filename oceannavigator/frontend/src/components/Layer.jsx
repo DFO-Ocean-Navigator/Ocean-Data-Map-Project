@@ -156,6 +156,27 @@ export default class Layer extends React.Component {
   }
   */
 
+  loadExisting(data) {
+    // Check if the data belongs to the layer
+    this.props.preload
+    if (this.props.preload.id === 'something') {
+      // Loads the data if it belongs
+
+      this.setState({
+        current_dataset: '',
+        current_variable: '',
+        current_depth: '',
+      })
+
+      // SendData
+
+      // Force layerUpdate()
+
+      // 
+
+    }
+  }
+
   /*
     Sends the data information back to OceanNavigator.jsx to be used by the modals
     
@@ -694,7 +715,6 @@ export default class Layer extends React.Component {
     this.props.globalUpdate('data', data)
   }
 
-
   /*
     Converts a JS Date() Object to ISO8604 extended format
 
@@ -859,7 +879,7 @@ export default class Layer extends React.Component {
     <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
     </div>
     layer.set('scaleBar', scaleBar)
-    
+
     // Triggers the map to reload with new changes
     /*if (this.state.current_map === 'left') {
       this.props.mapComponent.reloadLayer();
@@ -1065,7 +1085,8 @@ export default class Layer extends React.Component {
 
     _("Variable Range");
     _("Show Bathymetry Contours");
-
+    _("Remove Layer");
+    _("Use as Comparison");
 
     if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
 
@@ -1181,7 +1202,7 @@ export default class Layer extends React.Component {
           checked={this.state.compare}
         //style={this.props.style}
         >
-          Use as Comparison
+          {_("Use as Comparison")}
         </Checkbox>
         {/*
           <SelectBox
@@ -1238,7 +1259,7 @@ export default class Layer extends React.Component {
         />
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
-          {this.state.layerState}
+          {_(this.state.layerState)}
         </Button>
       </Panel>
     ];

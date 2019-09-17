@@ -121,7 +121,7 @@ export default class IceComboBox extends React.Component {
 
     let title = undefined;
     if (this.props.title !== undefined) {
-      title = <h1 className='comboBoxTitle'>{this.props.title}</h1>;
+      title = <h1 className='comboBoxTitle'>{_(this.props.title)}</h1>;
     }
 
     let div_class;
