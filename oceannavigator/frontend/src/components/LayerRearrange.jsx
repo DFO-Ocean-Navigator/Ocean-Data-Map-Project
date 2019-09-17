@@ -35,12 +35,21 @@ export default class LayerRearrange extends React.PureComponent {
     this.showLayers = this.showLayers.bind(this);
   }
 
-  //componentDidUpdate() {
-  //}
+  
+  /*
 
+  */
   remove(e) {
   }
 
+  addLayer(e) {
+
+  }
+
+  /*
+    Adjusts the z-index of the layer
+    Layer will move up one index
+  */
   moveUp(e) {
     let self = this;
 
@@ -51,6 +60,9 @@ export default class LayerRearrange extends React.PureComponent {
     })
   }
 
+  /*
+    Adjusts the z-index up 1 from it's current
+  */
   moveDown(e) {
   }
 
@@ -91,6 +103,9 @@ export default class LayerRearrange extends React.PureComponent {
     //      }
     //    })
     //}
+    
+    /*
+    OLD METHOD USING GLOBAL DATA
     let data = this.props.data
 
     for (let layer in data) {
@@ -109,15 +124,27 @@ export default class LayerRearrange extends React.PureComponent {
         }
       }
     }
+    */
+
+  /*
+    Displays all currently created layerDisplay components
+  */
+  for (let layer in this.props.layers) {
+    
+    if ( this.props.layers[layer].values_.scaleBar !== undefined ) {  
+      // Push the component
+      layers.push( this.props.layers[layer].values_.scaleBar )
+    }
+  }
   
 
   return(
         <div>
-  <Button
-    className='showLayers'
-    onClick={this.showLayers}
-  >{_("Layers")}</Button>
-{ layers }
+          <Button
+            className='showLayers'
+            onClick={this.showLayers}
+          >Layers</Button>
+          { layers }
         </div >
         
     );

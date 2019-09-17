@@ -89,8 +89,8 @@ export default class TimeSelect extends React.Component {
 
     componentDidMount() {
         //this.props.localUpdate(this.props.name, this.state.startTimeObj, this.state.endTimeObj)
-        let available_times;
-        let self = this;
+        
+        /*
         if ('dataset' in this.props && this.props.dataset != '' && this.props.dataset != undefined && this.props.dataset != 'all') {
             this.updateTimes()
         } else {
@@ -104,35 +104,129 @@ export default class TimeSelect extends React.Component {
                     //this.setState_start
                 }
             })
+        }*/
+
+        if (this.props.dates_available !== '' && this.props.dates_available !== undefined) {
+            this.updateDates();
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
+        if (this.props.dates_available !== prevProps.dates_available) {
+            this.updateDates();
+        }
+        /*
         if (this.props.dataset != prevProps.dataset) {
             this.updateTimes()
         }
-
+        */
     }
 
     /*
         Creates a date object from ISO8601 Extended String
     */
     parseDate(value) {
-        let  dateObj = moment.tz(value, 'GMT')
+        let dateObj = moment.tz(value, 'GMT')
         return dateObj
     }
+
+    /*
+        Format Times from API Response Format
+    */
+    formatDates(dates) {
+        
+        let response = dates
+        let modified = {}
+        let formatted = {}
+        for (let val in response) {
+
+            let date = this.parseDate(response[val]['value'])
+            formatted[date.format('YYYY/MM/DD[T]HH')] = moment.tz(date, 'GMT')
+            let year = date.get('year')
+            let month = date.format('MMM')
+            let day = date.get('date')
+            let hour = date.get('hour')
+            let minute = date.get('minute')
+            let second = date.get('second')
+            if (modified[year] === undefined) {
+                modified[year] = {
+                    [month]: {
+                        [day]: {
+                            [hour]: {
+                                [minute]: [second]
+                            }
+                        }
+                    }
+                }
+
+            } else {
+                if (modified[year][month] === undefined) {
+                    modified[year][month] = {
+                        [day]: {
+                            [hour]: {
+                                [minute]: [second]
+                            }
+                        }
+                    }
+                } else {
+                    if (modified[year][month][day] === undefined) {
+                        modified[year][month][day] = {
+                            [hour]: {
+                                [minute]: [second]
+                            }
+                        }
+                    } else {
+                        if (modified[year][month][day][hour] === undefined) {
+                            modified[year][month][day][hour] = {
+                                [minute]: [second]
+                            }
+                        } else {
+                            if (modified[year][month][day][hour][minute] === undefined) {
+                                modified[year][month][day][hour][minute] = [second]
+                            } else {
+                                modified[year][month][day][hour][minute].push(second)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return formatted, modified;
+
+    }
+
+    updateDates() {
+        let response = this.props.dates_available;
+        let modified = {}
+        let formatted = {}
+
+        formatted, modified = this.formatDates(response);
+
+        this.setState({
+            response: response,
+            times_available: modified,
+            formatted_dates: formatted,
+        }, () => {
+            this.updateDate()
+        });
+
+        }
 
     /*
         Retrieves and formats the timestamps for a particular dataset
     */
     updateTimes() {
+        return
         $.ajax({
             url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset,
             dataType: "json",
             success: function (response) {
 
+                
                 let modified = {}
                 let formatted = {}
+                /*
                 for (let val in response) {
 
                     let date = this.parseDate(response[val]['value'])
@@ -186,6 +280,9 @@ export default class TimeSelect extends React.Component {
                         }
                     }
                 }
+                */
+
+                formatted, modified = this.formatDates(response);
                 this.setState({
                     response: response,
                     times_available: modified,
@@ -223,18 +320,18 @@ export default class TimeSelect extends React.Component {
         if (date1 === undefined || date2 === undefined) {
             return -1
         }
-        if (typeof(date1) === 'number') {
+        if (typeof (date1) === 'number') {
             date1 = moment(date1)
         }
-        if (typeof(date2) === 'number') {
+        if (typeof (date2) === 'number') {
             date2 = moment(date2)
         }
-        
+
         let month1 = date1.get('month')
         let month2 = date2.get('month')
 
         let difference = month2 - month1
-        
+
         return difference
     }
 
@@ -242,7 +339,7 @@ export default class TimeSelect extends React.Component {
         let quantum = this.props.quantum
         let startTimeObj
         let endTimeObj
-
+        
         // Initializing
         if (this.state.startTimeObj === undefined || this.state.endTimeObj === undefined) { // Initializing
             //endTimeObj = new Date(this.state.response[this.state.response.length - 1].value)
@@ -266,11 +363,11 @@ export default class TimeSelect extends React.Component {
 
         // Truncates to required quantum
         // DO NOT USE TRUNCATING APPROACH - MONTHLY QUANTUM STILL HAS MIN AND HOUR
-        
+
         let startTime
         let endTime
-        switch(quantum) {
-            case 'month': 
+        switch (quantum) {
+            case 'month':
                 startTime = startTimeObj.format('YYYY/MM')
                 endTime = endTimeObj.format('YYYY/MM')
                 break;
@@ -285,7 +382,7 @@ export default class TimeSelect extends React.Component {
             case 'min':
                 startTime = startTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM')
                 endTime = endTimeObj.format('YYYY/MM/DD[ : ]HH[:]MM')
-            }
+        }
 
         this.setState({
             startTimeObj: startTimeObj,
@@ -299,7 +396,7 @@ export default class TimeSelect extends React.Component {
     }
 
     startChange(startDate, endDate) {
-        
+
         endDate.add(10, 'days')
 
         if (endDate.format('YYYY/MM/DD[T]HH') in this.state.formatted_dates) {
@@ -313,7 +410,7 @@ export default class TimeSelect extends React.Component {
             }
         }
 
-        
+
         var startString = startDate.format('YYYY/MM/DD')
         var endString = endDate.format('YYYY/MM/DD')
 
@@ -326,7 +423,7 @@ export default class TimeSelect extends React.Component {
         new_state.endTimeObj = endDate.valueOf()
         new_state.endTime = endString;
         this.setState(new_state)
-                    
+
 
         this.props.localUpdate(this.props.id, moment(startDate), moment(endDate))
     }
@@ -344,7 +441,7 @@ export default class TimeSelect extends React.Component {
                     break;
                 }
             }
-            
+
         }
 
         let startString = startDate.format('YYYY/MM/DD')
@@ -377,25 +474,25 @@ export default class TimeSelect extends React.Component {
     updateMonth(e) {
         if (this.state.select === 'month') {
             if (Object.keys(this.state.times_available[this.state.selected_year][e.target.name]).length === 1) {
-                
+
                 let start_month = this.state.month_tonum[e.target.name]
                 let end_month = start_month + 1
-                
+
                 let start_day = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]])[0]
                 let start_hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]][start_day])[0]
                 let start_min = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]][start_day][start_hour])[0]
                 let start_second = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[start_month]][start_day][start_hour][start_min])[0]
-                
+
                 let end_day = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[end_month]])[0]
                 let end_hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[end_month]][end_day])[0]
                 let end_min = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[end_month]][end_day][end_hour])[0]
                 let end_second = Object.keys(this.state.times_available[this.state.selected_year][this.state.num_tomonth[end_month]][end_day][end_hour][end_min])[0]
-                
-                
+
+
                 //let second = this.state.times_available[this.state.selected_year][e.target.name][day][hour][min]
                 let formatted_start = this.state.selected_year + '-' + start_month + '-' + start_day
                 let formatted_end = this.state.selected_year + '-' + end_month + '-' + start_day
-                
+
                 var startTimeObj = new moment(formatted_start)
                 startTimeObj.tz('GMT')
                 startTimeObj.set({
@@ -403,7 +500,7 @@ export default class TimeSelect extends React.Component {
                     minute: start_min,
                     second: start_second
                 })
-                
+
                 var endTimeObj = new moment(formatted_end)
                 endTimeObj.tz('GMT')
                 endTimeObj.set({
@@ -416,7 +513,7 @@ export default class TimeSelect extends React.Component {
                     let difference = this.monthsBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     if (difference > 10 || difference < 0) {
                         this.startChange(startTimeObj, endTimeObj)
-                    } else {    
+                    } else {
                         this.props.localUpdate(this.props.id, moment(startTimeObj), moment(this.state.endTimeObj))
                     }
 
@@ -425,7 +522,7 @@ export default class TimeSelect extends React.Component {
                         selected_day: e.target.name,
                     })
                     return
-                    
+
                 } else {
                     let difference = this.daysBetween(timeObj.valueOf(), this.state.startTimeObj)
                     if (difference > 10 && difference < 0) {
@@ -465,7 +562,7 @@ export default class TimeSelect extends React.Component {
                 let month = this.state.month_tonum[this.state.selected_month]
                 month = month - 1
                 let day = e.target.name
-               
+
                 console.warn("YEAR: ", year)
                 console.warn("MONTH: ", month)
                 console.warn("DAY: ", day)
@@ -474,12 +571,12 @@ export default class TimeSelect extends React.Component {
                 let hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name])[0]
                 let min = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour])[0]
                 let sec = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour][min])[0]
-                
+
                 console.warn("HOUR: ", hour);
                 console.warn("MINUTE: ", min);
                 console.warn("SECOND: ", sec);
 
-                var startTimeObj = new moment() 
+                var startTimeObj = new moment()
                 var endTimeObj = new moment()
                 startTimeObj.tz('GMT')
                 endTimeObj.tz('GMT')
@@ -509,7 +606,7 @@ export default class TimeSelect extends React.Component {
                     let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     if (difference > 10 || difference < 0) {
                         this.startChange(startTimeObj, endTimeObj)
-                    } else {    
+                    } else {
                         this.props.localUpdate(this.props.id, moment(startTimeObj), moment(this.state.endTimeObj))
                         this.setState({
                             startTimeObj: startTimeObj
@@ -521,11 +618,11 @@ export default class TimeSelect extends React.Component {
                         selected_day: e.target.name,
                     })
                     return
-                    
+
                 } else {
                     let difference = this.daysBetween(endTimeObj.valueOf(), this.state.startTimeObj)
                     if (difference > 10 || difference < -10) {
-                        
+
                         this.endChange(moment(startTimeObj), moment(endTimeObj))
                     } else {
                         this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(endTimeObj))
@@ -555,7 +652,7 @@ export default class TimeSelect extends React.Component {
         //this.props.localUpdate(this.props.id, startTimeObj, endTimeObj)
     }
 
-    
+
 
     updateHour(e) {
         let startTime
@@ -574,13 +671,13 @@ export default class TimeSelect extends React.Component {
         })
         if (this.state.selecting === 'startTime') {
             let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
-                    
+
             if (difference > 10 || difference < 0) {
-                this.startChange(startTimeObj, endTimeObj)        
+                this.startChange(startTimeObj, endTimeObj)
             } else {
-                this.props.localUpdate(this.props.id, moment(startTimeObj), moment(this.state.endTimeObj))    
+                this.props.localUpdate(this.props.id, moment(startTimeObj), moment(this.state.endTimeObj))
             }
-            
+
             this.setState({
                 select: '',
                 selected_hour: e.target.name,
@@ -589,11 +686,11 @@ export default class TimeSelect extends React.Component {
 
         } else {
             let difference = this.daysBetween(timeObj.valueOf(), this.state.startTimeObj)
-                    
+
             if (difference > 10 || difference < 0) {
                 this.endChange(moment(timeObj), moment(timeObj))
             } else {
-                this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(timeObj))    
+                this.props.localUpdate(this.props.id, moment(this.state.startTimeObj), moment(timeObj))
             }
 
             this.setState({
@@ -658,7 +755,7 @@ export default class TimeSelect extends React.Component {
             ]
             buttons = []
             for (let idx in this.state.times_available[this.state.selected_year]) {
-                
+
                 buttons.push(
                     <Button
                         onClick={self.updateMonth}

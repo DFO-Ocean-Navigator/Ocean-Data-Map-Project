@@ -472,20 +472,22 @@
 
     // Full-screen control
     .ol-full-screen {
-        left: 7.5em;
+        //left: 7.5em;
+        left: 0.5em;
         right: auto;
-        top: 10em;
+        top: 8em;
     }
 
     // Zoom controls
     .ol-zoom {
-        left: 7.5em;
-        top: 0.25em;
+        //left: 7.5em;
+        //top: 0.25em;
     }
 
     // Reset rotation button
     .ol-rotate {
-        left: 7.5em;;
+        left: 0.5em;
+        //left: 7.5em;;
         right: auto;
         top: 7em;
     }
@@ -493,12 +495,14 @@
     // Zoom control
     .ol-zoom-in, .ol-zoom-out {
         right: auto;
-        left: 7.5em;
+        left: 0.5em;
+        //left: 7.5em;
     }
 
     // Reset pan button
     .reset-pan {
-        left: 7.5em;
+        left: 0.5em;
+        //left: 7.5em;
         top: 5em;
     }
 

@@ -108,7 +108,7 @@ export default class TimeBarContainer extends React.Component {
     }
 
     animateConsecutive(min, max, quantum) {
-        
+
         let increment = 1440    // Default to quantum = day
         if (quantum === undefined) {
             quantum = this.findQuantum(this.props.timeSources)
@@ -121,7 +121,7 @@ export default class TimeBarContainer extends React.Component {
         } else if (quantum === 'min') {
             increment = 5       // Time increment in minutes
         }
-        
+
         if (min.valueOf() >= max.valueOf()) {
             this.setState({
                 animating: false,
@@ -133,7 +133,7 @@ export default class TimeBarContainer extends React.Component {
         let in_range = false;
         // Deep copy times object
         let times = jQuery.extend({}, this.state.times)
-        
+
         for (let dataset in times) {
             times[dataset] = moment(times[dataset])
         }
@@ -230,16 +230,16 @@ export default class TimeBarContainer extends React.Component {
 
 
     localUpdate(id, startTime, endTime) {
-        
+
         // This is updating to local time, therefore must get local time from object
         //startTime = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate(), startTime.getHours(), startTime.getMinutes())
         //endTime = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate(), endTime.getHours(), endTime.getMinutes())
-        
+
         let startTimes = this.state.startTimes;
         startTimes[id] = startTime;
         let endTimes = this.state.endTimes;
         endTimes[id] = endTime;
-        
+
         this.setState({
             times: jQuery.extend({}, startTimes),
             startTimes: startTimes,
@@ -270,11 +270,13 @@ export default class TimeBarContainer extends React.Component {
     }
 
     render() {
+
         self = this
-        let sources = this.props.timeSources
+        //let sources = this.props.timeSources
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
+        /*
         for (let map in sources) {
             for (let layer in sources[map]) {
                 //if (self.state.showLayer.includes(layer)) {
@@ -293,6 +295,7 @@ export default class TimeBarContainer extends React.Component {
                                         onClick={self.toggleLayer}
                                     >{this.state.icons[layer]}</Button>
                                     <TimeSelect
+                                        dates_available
                                         show={self.state.showLayer.includes(map + layer + idx + dataset + variable)}
                                         key={map + layer + idx + dataset + variable}
                                         id={map + layer + idx + dataset + variable}
@@ -309,6 +312,36 @@ export default class TimeBarContainer extends React.Component {
                 }
 
             }
+        }*/
+        let idx = 0
+        for (let layer in this.props.layers) {
+            layer = this.props.layers[layer];
+        
+            if (layer.values_.time !== undefined) {
+                idx = idx + 1;
+                quantums.push(layer.values_.time.quantum);
+                timeBars.push(
+                    <div key={layer.values_.time.idx} className='timeLayerContainer'>
+                        <Button
+                            id={layer.values_.time.idx}
+                            key={layer.values_.time.idx + '_button'}
+                            className='timeBarToggle'
+                            onClick={self.toggleLayer}
+                        >{this.state.icons[layer.values_.time.icon]}</Button>
+                        <TimeSelect
+                            dates_available={layer.values_.time.available}
+                            show={self.state.showLayer.includes(layer.values_.time.idx)}
+                            key={layer.values_.time.idx}
+                            id={layer.values_.time.idx}
+                            idx={layer.values_.time.idx}
+                            quantum={layer.values_.time.quantum}
+                            currentTime={this.state.times[layer.values_.time.idx]}
+                            localUpdate={self.localUpdate}
+                        ></TimeSelect>
+                    </div>
+                )
+            }
+            
         }
 
         /*

@@ -521,6 +521,15 @@ def all_vars_query_impl(args):
     return data
 
 
+def dataset_config():
+    """
+    Returns all the data located in the dataset config file as JSON
+    This does not perform any parsing in order to speed up the entire process.
+    """
+    datasetconfig = DatasetConfig._get_dataset_config()
+    data = jsonify(datasetconfig)
+    return data
+
 def all_time_query_impl(args):
     """
     API Format: /api/v1.0/all/timestamps/
