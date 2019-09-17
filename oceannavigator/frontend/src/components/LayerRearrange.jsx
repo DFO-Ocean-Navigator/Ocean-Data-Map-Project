@@ -11,6 +11,8 @@ import ocean from '../images/ocean_symbol.png'
 import wave from '../images/waves_symbol.png'
 import iceberg from '../images/iceberg_symbol.png'
 
+const i18n = require("../i18n.js");
+
 export default class LayerRearrange extends React.PureComponent {
 
   constructor(props) {
@@ -114,7 +116,7 @@ export default class LayerRearrange extends React.PureComponent {
   <Button
     className='showLayers'
     onClick={this.showLayers}
-  >Layers</Button>
+  >{_("Layers")}</Button>
 { layers }
         </div >
         

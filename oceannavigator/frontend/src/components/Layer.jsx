@@ -1022,7 +1022,8 @@ export default class Layer extends React.Component {
 
     _("Variable Range");
     _("Show Bathymetry Contours");
-
+    _("Remove Layer");
+    _("Use as Comparison");
 
     if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
 
@@ -1134,7 +1135,7 @@ export default class Layer extends React.Component {
           checked={this.state.compare}
         //style={this.props.style}
         >
-          Use as Comparison
+          {_("Use as Comparison")}
         </Checkbox>
         {/*
           <SelectBox
@@ -1191,7 +1192,7 @@ export default class Layer extends React.Component {
         />
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
-          {this.state.layerState}
+          {_(this.state.layerState)}
         </Button>
       </Panel>
     ];
