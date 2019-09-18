@@ -55,6 +55,11 @@ Run this one-shot-install script:
 ### SQLite3 backend
 Since we're now using a home-grown indexing solution, as such there is now no "server" to host the files through a URL (at the moment). You also need to install the dependencies for the [netcdf indexing tool](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper). Then, download a released binary for Linux systems [here](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper/releases). You should go through the README for basic setup and usage details.
 
+The workflow to import new datasets into the Navigator has also changed:
+1. Run the indexing tool linked above.
+2. Modify `datasetconfig.json` so that the `url` attribute points to the absolute path of the generated `.sqlite3` database.
+3. Restart web server.
+
 ### Running the webserver
 Assuming the above installation script succeeded, your PATH should be set to point towards `/opt/tools/miniconda3/bin`, and the `navigator` conda environment has been activated.
 * Debug server (single-threaded):
