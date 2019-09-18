@@ -1,25 +1,28 @@
-from netCDF4 import Dataset
+import numbers
+import re
+from textwrap import wrap
+
 import cftime
+import dateutil.parser
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils
-import plotting.point as plPoint
-from textwrap import wrap
 import pint
-from utils.errors import ClientError
-import re
-import dateutil.parser
 import pytz
-import numbers
-from flask_babel import gettext, format_datetime
-from data import open_dataset
 from flask import current_app
+from flask_babel import format_datetime, gettext
+from netCDF4 import Dataset
 
-class ObservationPlotter(plPoint.PointPlotter):
+from data import open_dataset
+from plotting.point import PointPlotter
+from plotting.utils import mathtext
+from utils.errors import ClientError
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+
+class ObservationPlotter(PointPlotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "observation"
-        super(ObservationPlotter, self).__init__(dataset_name, query, format)
+        super(ObservationPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
         if isinstance(self.observation[0], numbers.Number):
@@ -60,9 +63,10 @@ class ObservationPlotter(plPoint.PointPlotter):
                     observation['data'] = np.ma.array(data).transpose()
                     self.observation[idx] = observation
 
-                self.points = [[o['latitude'], o['longitude']] for o in self.observation]
+                self.points = [[o['latitude'], o['longitude']]
+                               for o in self.observation]
 
-        with open_dataset(self.dataset_config) as dataset:
+        with open_dataset(self.dataset_config, variable=self.variables) as dataset:
             ts = dataset.timestamps
 
             observation_times = []
@@ -86,8 +90,9 @@ class ObservationPlotter(plPoint.PointPlotter):
                 raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
                 Please select another variable.") + str(e))
-                
-            point_data, self.depths = self.get_data(dataset, self.variables, time)
+
+            point_data, self.depths = self.get_data(
+                dataset, self.variables, time)
             point_data = np.ma.array(point_data)
 
             point_data = self.apply_scale_factors(point_data)
@@ -101,11 +106,14 @@ class ObservationPlotter(plPoint.PointPlotter):
     def parse_query(self, query):
         super(ObservationPlotter, self).parse_query(query)
 
-        observation_variable = list(map(int, query.get("observation_variable")))
+        observation_variable = list(
+            map(int, query.get("observation_variable")))
         observation = query.get("observation")
         if not isinstance(observation[0], numbers.Number):
-            observation_variable_names = [re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
-            observation_variable_units = [re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
+            observation_variable_names = [
+                re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
+            observation_variable_units = [
+                re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
 
             self.parse_names_points(
                 [str(o.get('station')) for o in observation],
@@ -152,7 +160,7 @@ class ObservationPlotter(plPoint.PointPlotter):
             ax[ax_idx].xaxis.set_ticks_position('top')
             ax[ax_idx].set_xlabel("%s (%s)" % (
                 self.observation_variable_names[idx],
-                utils.mathtext(self.observation_variable_units[idx]),
+                mathtext(self.observation_variable_units[idx]),
             ))
             axis_map[self.observation_variable_names[idx]] = ax[ax_idx]
 
@@ -212,7 +220,7 @@ class ObservationPlotter(plPoint.PointPlotter):
                 axis.xaxis.set_ticks_position('top')
                 axis.set_xlabel("%s (%s)" % (
                     self.variable_names[idx],
-                    utils.mathtext(self.variable_units[idx]),
+                    mathtext(self.variable_units[idx]),
                 ))
             else:
                 l = []
@@ -239,8 +247,8 @@ class ObservationPlotter(plPoint.PointPlotter):
 
         ax[0].invert_yaxis()
         ax[0].set_ylabel(gettext("Depth (m)"))
-        
-        if self.plotTitle is None or self.plotTitle == "": 
+
+        if not self.plotTitle:
             if len(self.variables) > 0:
                 plt.suptitle("\n".join(
                     wrap(
@@ -259,8 +267,8 @@ class ObservationPlotter(plPoint.PointPlotter):
                             format_datetime(self.observation_time)
                         ), 80)
                 ))
-        else :
-            plt.suptitle(self.plotTitle,fontsize=15)
+        else:
+            plt.suptitle(self.plotTitle, fontsize=15)
 
         fig.tight_layout()
         fig.subplots_adjust(top=0.85)

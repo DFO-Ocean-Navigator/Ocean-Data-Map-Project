@@ -1,38 +1,44 @@
-from plotting.grid import bathymetry
-from netCDF4 import Dataset
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import re
+
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 import numpy as np
-import re
+from flask import current_app
+from flask_babel import gettext
+from geopy.distance import VincentyDistance
+from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from netCDF4 import Dataset
+from scipy.interpolate import interp1d
+
 import plotting.colormap as colormap
 import plotting.utils as utils
-from flask import current_app
-from geopy.distance import VincentyDistance
+from data import geo, open_dataset
 from oceannavigator import DatasetConfig
-import plotting.line as pl
-from flask_babel import gettext
-from scipy.interpolate import interp1d
-from data import open_dataset, geo
+from plotting.grid import bathymetry
+from plotting.line import LinePlotter
 
-class TransectPlotter(pl.LinePlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+class TransectPlotter(LinePlotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "transect"
-        super(TransectPlotter, self).__init__(dataset_name, query, format)
-        self.size: str = '11x5'
-        self.selected_velocity_plots = None  #Holds Velocity Plot Type [magnitude, parallel, perpendicular]
+        super(TransectPlotter, self).__init__(dataset_name, query, **kwargs)
+
+        # Holds Velocity Plot Type [magnitude, parallel, perpendicular]
+        self.selected_velocity_plots = None
 
     def parse_query(self, query):
         super(TransectPlotter, self).parse_query(query)
-        depth_limit = query.get("depth_limit")
+
+        depth_limit = query.get("depth_limit", None)
         if 'selectedPlots' in query:
-            self.selected_velocity_plots = list(map(int, query.get("selectedPlots").split(',')))
+            self.selected_velocity_plots = list(
+                map(int, query.get("selectedPlots").split(',')))
         else:
             self.selected_velocity_plots = list(map(int, "0, 1, 1".split(',')))
 
-        if depth_limit is None or depth_limit == '' or depth_limit is False:
+        if not depth_limit:
             self.depth_limit = None
         else:
             self.depth_limit = int(depth_limit)
@@ -47,10 +53,11 @@ class TransectPlotter(pl.LinePlotter):
                 break
 
     def load_data(self):
-        with open_dataset(self.dataset_config) as dataset:
-            if self.time < 0:
-                self.time += len(dataset.timestamps)
-            time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
+        vars_to_load = self.variables
+        if self.surface:
+            vars_to_load.append(self.surface)
+
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=vars_to_load) as dataset:
 
             for idx, v in enumerate(self.variables):
                 var = dataset.variables[v]
@@ -68,7 +75,8 @@ class TransectPlotter(pl.LinePlotter):
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
-            scale_factors = self.get_variable_scale_factors(dataset, self.variables)
+            scale_factors = self.get_variable_scale_factors(
+                dataset, self.variables)
 
             # Load data sent from primary/Left Map
             if len(self.variables) > 1:
@@ -81,9 +89,9 @@ class TransectPlotter(pl.LinePlotter):
                     self.points, 100
                 )
                 transect_pts, distance, x, dep = dataset.get_path_profile(
-                    self.points, time, self.variables[0], 100)
+                    self.points, self.time, self.variables[0], 100)
                 transect_pts, distance, y, dep = dataset.get_path_profile(
-                    self.points, time, self.variables[1], 100)
+                    self.points, self.time, self.variables[1], 100)
 
                 # Calculate vector components
                 x = np.multiply(x, scale_factors[0])
@@ -99,22 +107,22 @@ class TransectPlotter(pl.LinePlotter):
             else:
                 # Get data for one variable
                 transect_pts, distance, value, dep = dataset.get_path_profile(
-                    self.points, time, self.variables[0])
+                    self.points, self.time, self.variables[0])
 
                 value = np.multiply(value, scale_factors[0])
 
             if len(self.variables) == 2:
                 variable_names = [self.get_vector_variable_name(dataset,
-                    self.variables)]
+                                                                self.variables)]
                 variable_units = [self.get_vector_variable_unit(dataset,
-                    self.variables)]
+                                                                self.variables)]
 
             # If a colourmap has not been manually specified by the
             # Navigator...
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(variable_names[0])
 
-            self.timestamp = dataset.timestamps[int(time)]
+            self.iso_timestamp = dataset.timestamp_to_iso_8601(self.time)
 
             self.depth = dep
             self.depth_unit = "m"
@@ -130,12 +138,12 @@ class TransectPlotter(pl.LinePlotter):
                 "magnitude": magnitude,
             }
 
-            if self.surface is not None:
-                surface_pts, surface_dist, t, surface_value = \
+            if self.surface:
+                surface_pts, surface_dist, _, surface_value = \
                     dataset.get_path(
                         self.points,
                         0,
-                        time,
+                        self.time,
                         self.surface,
                     )
                 vc = self.dataset_config.variable[dataset.variables[self.surface]]
@@ -171,28 +179,31 @@ class TransectPlotter(pl.LinePlotter):
                 return np.ma.masked_invalid(output).transpose()
 
             self.compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(self.compare_config) as dataset:
-                # Get and format date
-                self.compare['date'] = np.clip(np.int64(self.compare['time']), 0, len(dataset.timestamps) - 1)
-                self.compare['date'] = dataset.timestamps[int(self.compare['date'])]
+            self.compare['time'] = int(self.compare['time'])
+            with open_dataset(self.compare_config, timestamp=self.compare['time'], variable=self.compare['variables']) as dataset:
+                self.compare['iso_timestamp'] = dataset.timestamp_to_iso_8601(
+                    self.compare['time'])
 
                 # 1 variable
                 if len(self.compare['variables']) == 1:
-                    
+
                     # Get and store the "nicely formatted" string for the variable name
-                    self.compare['name'] = self.get_variable_names(dataset, self.compare['variables'])[0]
-                    
+                    self.compare['name'] = self.get_variable_names(
+                        dataset, self.compare['variables'])[0]
+
                     # Find correct colourmap
                     if (self.compare['colormap'] == 'default'):
-                        self.compare['colormap'] = colormap.find_colormap(self.compare['name'])
+                        self.compare['colormap'] = colormap.find_colormap(
+                            self.compare['name'])
                     else:
-                        self.compare['colormap'] = colormap.find_colormap(self.compare['colormap'])
+                        self.compare['colormap'] = colormap.find_colormap(
+                            self.compare['colormap'])
 
                     climate_points, climate_distance, climate_data, cdep = \
                         dataset.get_path_profile(self.points,
                                                  self.compare['time'],
                                                  self.compare['variables'][0])
-                    
+
                     self.compare['unit'] = dataset.variables[self.compare['variables'][0]].unit
                     self.__fill_invalid_shift(climate_data)
 
@@ -211,12 +222,13 @@ class TransectPlotter(pl.LinePlotter):
                         self.transect_data['perpendicular'] -= climate_data
                     else:
                         self.transect_data['compare_data'] = climate_data
-                
+
                 # Velocity variables
                 else:
                     # Get and store the "nicely formatted" string for the variable name
-                    self.compare['name'] = self.get_vector_variable_name(dataset, self.compare['variables'])
-                    
+                    self.compare['name'] = self.get_vector_variable_name(
+                        dataset, self.compare['variables'])
+
                     climate_pts, climate_distance, climate_x, cdep = \
                         dataset.get_path_profile(
                             self.points,
@@ -280,7 +292,7 @@ class TransectPlotter(pl.LinePlotter):
     def csv(self):
         header = [
             ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp]
         ]
 
         columns = [
@@ -346,7 +358,7 @@ class TransectPlotter(pl.LinePlotter):
                              len(self.depth))
         longitude = np.repeat(self.transect_data['points'][1, :],
                               len(self.depth))
-        time = np.repeat(self.timestamp, len(station))
+        time = np.repeat(self.iso_timestamp, len(station))
         depth = self.depth
 
         if len(self.variables) > 1:
@@ -378,60 +390,58 @@ class TransectPlotter(pl.LinePlotter):
             data
         )
 
-    def gridSetup(self):
+    def __create_plot_grid(self):
         # velocity has 2 variable components (parallel, perpendicular)
         velocity = len(self.variables) == 2 or \
-                    self.compare and len(self.compare['variables']) == 2
+            self.compare and len(self.compare['variables']) == 2
 
-       
-        
         Col = 0
         Row = 0
         height_ratios = []
-        if self.compare:    #Compare
+        if self.compare:  # Compare
             Row = 3
-            if self.selected_velocity_plots[0]: #Magnitude
+            if self.selected_velocity_plots[0]:  # Magnitude
                 Col += 1
-            if self.selected_velocity_plots[1]: #Parallel
+            if self.selected_velocity_plots[1]:  # Parallel
                 Col += 1
-            if self.selected_velocity_plots[2]: #Perpendicular
+            if self.selected_velocity_plots[2]:  # Perpendicular
                 Col += 1    # 2 COLUMNS
-            if self.showmap: #Show Map Location
-                Col += 1   
-            else :
+            if self.showmap:  # Show Map Location
+                Col += 1
+            else:
                 Col = 2
 
-        else :  #No Comparison
-            if self.showmap:  #Show Map Location
+        else:  # No Comparison
+            if self.showmap:  # Show Map Location
                 Col = 2
-                
+
                 if velocity:
                     Row = 0
-                    if self.selected_velocity_plots[0] == 1: #Magnitude
+                    if self.selected_velocity_plots[0] == 1:  # Magnitude
                         Row += 1
                         height_ratios.append(1)
-                    if self.selected_velocity_plots[1] == 1: #Parallel
+                    if self.selected_velocity_plots[1] == 1:  # Parallel
                         Row += 1
                         height_ratios.append(1)
-                    if self.selected_velocity_plots[2] == 1: #Perpendicular
+                    if self.selected_velocity_plots[2] == 1:  # Perpendicular
                         Row += 1    # 2 COLUMNS
                         height_ratios.append(1)
 
-                else :
+                else:
                     Row = 1
 
-            else : #Not Showing Map Location
-                #Summing true values
+            else:  # Not Showing Map Location
+                # Summing true values
                 if velocity:
                     Row = 0
                     Col = 1
-                    if self.selected_velocity_plots[0] == 1: #Magnitude
+                    if self.selected_velocity_plots[0] == 1:  # Magnitude
                         Row += 1
                         height_ratios.append(1)
-                    if self.selected_velocity_plots[1] == 1: #Parallel
+                    if self.selected_velocity_plots[1] == 1:  # Parallel
                         Row += 1
                         height_ratios.append(1)
-                    if self.selected_velocity_plots[2] == 1: #Perpendicular
+                    if self.selected_velocity_plots[2] == 1:  # Perpendicular
                         Row += 1    # 2 COLUMNS
                         height_ratios.append(1)
                 else:
@@ -439,10 +449,10 @@ class TransectPlotter(pl.LinePlotter):
                     Col = 1
 
         # Setup grid
-        if self.showmap:    #Shows Map Location
+        if self.showmap:  # Shows Map Location
             width = 2
 
-            #Velocity Plot
+            # Velocity Plot
             if velocity:
                 if self.compare:
                     width = 3
@@ -451,87 +461,88 @@ class TransectPlotter(pl.LinePlotter):
                     width_ratios = [2, 7]
             else:
                 width_ratios = [2, 7]
-        else:               #Doesn't Show Map Location
+        else:  # Doesn't Show Map Location
             if velocity:
                 width = 2
                 width_ratios = [1]
                 if self.compare:
                     width_ratios = [1, 1]
             else:
-                width = 1 # 1 column
+                width = 1  # 1 column
                 width_ratios = [1]
 
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         figuresize = list(map(float, self.size.split("x")))
         if self.compare:
-            figuresize[1] *= len(self.variables) * 3 # Vertical scaling of figure
+            # Vertical scaling of figure
+            figuresize[1] *= len(self.variables) * 3
             if velocity:
-                figuresize[0] *= 1.25 # Horizontal scaling of figure
-                gs = gridspec.GridSpec(4, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1])
+                figuresize[0] *= 1.25  # Horizontal scaling of figure
+                gs = gridspec.GridSpec(
+                    4, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1])
             else:
-                gs = gridspec.GridSpec(3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+                gs = gridspec.GridSpec(
+                    3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
         else:
             figuresize[1] *= len(self.variables) * 1.5
             if velocity:
                 figuresize[0] *= 1.35
-            
-                gs = gridspec.GridSpec(Row, Col, width_ratios=width_ratios, height_ratios= height_ratios)
+
+                gs = gridspec.GridSpec(
+                    Row, Col, width_ratios=width_ratios, height_ratios=height_ratios)
             else:
                 gs = gridspec.GridSpec(Row, Col, width_ratios=width_ratios)
 
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
-
         return gs, fig, velocity
 
     def plot(self):
-        
 
-        gs, fig, velocity = self.gridSetup()
-
+        gs, fig, velocity = self.__create_plot_grid()
 
         # Plot the transect on a map
         if self.showmap:
-            plt.subplot(gs[0,0])
+            plt.subplot(gs[0, 0])
             utils.path_plot(self.transect_data['points'])
 
-        
-        # Args:
-        #    subplots: a GridSpec object (gs)
-        #    map_subplot: Row number (Note: don't use consecutive rows to allow
-        #                 for expanding figure height)
-        #    data: Data to be plotted
-        #    name: subplot title
-        #    cmapLabel: label for colourmap legend
-        #    vmin: minimum value for a variable (grabbed from the lowest value of some data)
-        #    vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
-        #    units: units for variable (PSU, Celsius, etc)
-        #    cmap: colormap for variable
-        #
         def do_plot(subplots, map_subplot, data, name, cmapLabel, vmin, vmax, units, cmap):
+            """
+            Args:
+                subplots: a GridSpec object (gs)
+                map_subplot: Row number (Note: don't use consecutive rows to allow for expanding figure height)
+                data: Data to be plotted
+                name: subplot title
+                cmapLabel: label for colourmap legend
+                vmin: minimum value for a variable (grabbed from the lowest value of some data)
+                vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
+                units: units for variable (PSU, Celsius, etc)
+                cmap: colormap for variable
+            """
 
-            
             plt.subplot(subplots[map_subplot[0], map_subplot[1]])
 
-            divider = self._transect_plot(data, self.depth, name, vmin, vmax, cmapLabel, units, cmap)
+            divider = self._transect_plot(
+                data, self.depth, name, vmin, vmax, cmapLabel, units, cmap)
 
             if self.surface:
-                self._surface_plot(divider)
+                self.__add_surface_plot(divider)
 
-        """
-        Finds and returns the correct min/max values for the variable scale
-        Args:
-            scale: scale for the left or Right Map (self.scale or self.compare['scale])
-            data: transect_data
-        Returns:
-            (min, max)
-        """
+        
         def find_minmax(scale, data):
+            """
+                Finds and returns the correct min/max values for the variable scale
+                Args:
+                    scale: scale for the left or Right Map (self.scale or self.compare['scale])
+                    data: transect_data
+                Returns:
+                    (min, max)
+            """
             if scale:
                 return (scale[0], scale[1])
             else:
                 return (np.amin(data), np.amax(data))
-        
+
         # Creates and places the plots
         def velocity_plot():
 
@@ -545,7 +556,8 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [Row, Col],
                     self.transect_data['magnitude'],
-                    gettext("Magnitude") + gettext(" for ") + self.date_formatter(self.timestamp),
+                    gettext("Magnitude") + gettext(" for ") +
+                    self.date_formatter(self.iso_timestamp),
                     gettext("Magnitude"),
                     vmin,
                     vmax,
@@ -557,7 +569,8 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [Row, Col],
                     self.transect_data['parallel'],
-                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(
+                        " for ") + self.date_formatter(self.iso_timestamp),
                     gettext("Parallel"),
                     vmin,
                     vmax,
@@ -570,7 +583,8 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [Row, Col],
                     self.transect_data['perpendicular'],
-                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(
+                        " for ") + self.date_formatter(self.iso_timestamp),
                     gettext("Perpendicular"),
                     vmin,
                     vmax,
@@ -578,13 +592,9 @@ class TransectPlotter(pl.LinePlotter):
                     self.cmap
                 )
 
-
-
         # Plot Transects
         # If in compare mode
-        
-        Type = ['magnitude', 'parallel', 'perpendicular']
-        
+
         if self.compare:
             # Velocity has 2 components
             if velocity:
@@ -598,7 +608,7 @@ class TransectPlotter(pl.LinePlotter):
                                np.amin(self.transect_data['perpendicular']))
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-            
+
                 # Get colormap for variable
                 if self.showmap:
                     Col = 1
@@ -608,7 +618,8 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [0, Col],
                     self.transect_data['parallel'],
-                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(
+                        " for ") + self.date_formatter(self.iso_timestamp),
                     gettext("Parallel"),
                     vmin,
                     vmax,
@@ -619,7 +630,8 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [0, Col],
                     self.transect_data['perpendicular'],
-                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(
+                        " for ") + self.date_formatter(self.iso_timestamp),
                     gettext("Perpendicular"),
                     vmin,
                     vmax,
@@ -633,12 +645,12 @@ class TransectPlotter(pl.LinePlotter):
                         vmax = self.compare['scale'][1]
                     else:
                         vmin = min(np.amin(self.compare['parallel']),
-                               np.amin(self.compare['perpendicular']))
+                                   np.amin(self.compare['perpendicular']))
                         vmax = max(np.amax(self.compare['parallel']),
-                               np.amin(self.compare['perpendicular']))
+                                   np.amin(self.compare['perpendicular']))
                         vmin = min(vmin, -vmax)
                         vmax = max(vmax, -vmin)
-                        
+
                     # Get colormap for variable
                     cmap = colormap.find_colormap(self.compare['colormap'])
                     if self.showmap:
@@ -648,7 +660,8 @@ class TransectPlotter(pl.LinePlotter):
                     do_plot(
                         gs, [1, Col],
                         self.compare['parallel'],
-                        self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(" for ") + self.date_formatter(self.compare['date']),
+                        self.transect_data['name'] + " (" + gettext("Parallel") + ")" + gettext(
+                            " for ") + self.date_formatter(self.compare['iso_timestamp']),
                         gettext("Parallel"),
                         vmin,
                         vmax,
@@ -659,7 +672,8 @@ class TransectPlotter(pl.LinePlotter):
                     do_plot(
                         gs, [1, Col],
                         self.compare['perpendicular'],
-                        self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(" for ") + self.date_formatter(self.compare['date']),
+                        self.transect_data['name'] + " (" + gettext("Perpendicular") + ")" + gettext(
+                            " for ") + self.date_formatter(self.compare['iso_timestamp']),
                         gettext("Perpendicular"),
                         vmin,
                         vmax,
@@ -669,7 +683,7 @@ class TransectPlotter(pl.LinePlotter):
 
             else:
                 vmin, vmax = utils.normalize_scale(self.transect_data['data'],
-                        self.dataset_config.variable[self.variables[0]])
+                                                   self.dataset_config.variable[self.variables[0]])
 
                 # Render primary/Left Map
                 if self.showmap:
@@ -677,10 +691,11 @@ class TransectPlotter(pl.LinePlotter):
                 else:
                     Col = 0
 
-                do_plot(                    
+                do_plot(
                     gs, [0, Col],
                     self.transect_data['data'],
-                    self.transect_data['name'] + gettext(" for ") + self.date_formatter(self.timestamp),
+                    self.transect_data['name'] +
+                    gettext(" for ") + self.date_formatter(self.iso_timestamp),
                     self.transect_data['name'],
                     vmin,
                     vmax,
@@ -690,8 +705,8 @@ class TransectPlotter(pl.LinePlotter):
 
                 # Render Right Map
                 vmin, vmax = utils.normalize_scale(
-                        self.transect_data['compare_data'],
-                        self.compare_config.variable[",".join(self.compare['variables'])])
+                    self.transect_data['compare_data'],
+                    self.compare_config.variable[",".join(self.compare['variables'])])
                 if self.showmap:
                     Col = 1
                 else:
@@ -700,24 +715,26 @@ class TransectPlotter(pl.LinePlotter):
                 do_plot(
                     gs, [1, Col],
                     self.transect_data['compare_data'],
-                    self.compare['name'] + gettext(" for ") + self.date_formatter(self.compare['date']),
+                    self.compare['name'] + gettext(" for ") +
+                    self.date_formatter(self.compare['iso_timestamp']),
                     self.compare['name'],
                     vmin,
                     vmax,
                     self.compare['unit'],
                     self.compare['colormap']
                 )
-            
+
                 # Show a difference plot if both variables and datasets are the same
                 if self.variables[0] == self.compare['variables'][0]:
                     self.transect_data['difference'] = self.transect_data['data'] - \
-                                                       self.transect_data['compare_data']
+                        self.transect_data['compare_data']
                     # Calculate variable range
                     if self.compare['scale_diff'] is not None:
                         vmin = self.compare['scale_diff'][0]
                         vmax = self.compare['scale_diff'][1]
                     else:
-                        vmin, vmax = find_minmax(self.compare['scale_diff'], self.transect_data['difference'])
+                        vmin, vmax = find_minmax(
+                            self.compare['scale_diff'], self.transect_data['difference'])
                         vmin = min(vmin, -vmax)
                         vmax = max(vmax, -vmin)
                     if self.showmap:
@@ -731,11 +748,11 @@ class TransectPlotter(pl.LinePlotter):
                         self.transect_data['name'],
                         vmin,
                         vmax,
-                        self.transect_data['unit'],  # Since both variables are the same doesn't matter which view we reference
-                        colormap.find_colormap(self.compare['colormap_diff']) # Colormap for difference graphs
+                        # Since both variables are the same doesn't matter which view we reference
+                        self.transect_data['unit'],
+                        # Colormap for difference graphs
+                        colormap.find_colormap(self.compare['colormap_diff'])
                     )
-        
-
 
         # Not comparing
         else:
@@ -753,11 +770,11 @@ class TransectPlotter(pl.LinePlotter):
                                np.amin(self.transect_data['perpendicular']))
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-            
+
                 Row = 0
-                
+
                 velocity_plot()
-                
+
             # All other variables have 1 component
             else:
                 if self.showmap:
@@ -769,35 +786,35 @@ class TransectPlotter(pl.LinePlotter):
                     vmax = self.scale[1]
                 else:
                     vmin, vmax = utils.normalize_scale(self.transect_data['data'],
-                            self.dataset_config.variable[self.variables[0]])
+                                                       self.dataset_config.variable[self.variables[0]])
 
                 do_plot(
                     gs, [0, Col],
                     self.transect_data['data'],
                     self.transect_data['name'] + " for " +
-                    self.date_formatter(self.timestamp),
+                    self.date_formatter(self.iso_timestamp),
                     self.transect_data['name'],
                     vmin,
                     vmax,
                     self.transect_data['unit'],
                     self.cmap
                 )
-            
+
         # Figure title
-        if self.plotTitle is None or self.plotTitle == "": 
+        if self.plotTitle is None or self.plotTitle == "":
             fig.suptitle("Transect Data for:\n%s" % (
                 self.name
             ), fontsize=15)
         else:
-            fig.suptitle(self.plotTitle,fontsize=15)
+            fig.suptitle(self.plotTitle, fontsize=15)
 
         # Subplot padding
         fig.tight_layout(pad=2, w_pad=2, h_pad=2)
-        fig.subplots_adjust(top = 0.90 if self.compare else 0.85)
+        fig.subplots_adjust(top=0.90 if self.compare else 0.85)
 
         return super(TransectPlotter, self).plot(fig)
 
-    def _surface_plot(self, axis_divider):
+    def __add_surface_plot(self, axis_divider):
         ax = axis_divider.append_axes("top", size="35%", pad=0.35)
         ax.plot(self.surface_data['distance'],
                 self.surface_data['data'], color='r')
@@ -811,7 +828,7 @@ class TransectPlotter(pl.LinePlotter):
         plt.setp(ax.get_yticklabels(), size='x-small')
         plt.xlim([0, self.surface_data['distance'][-1]])
         plt.ylim(utils.normalize_scale(self.surface_data['data'],
-            self.surface_data['config']))
+                                       self.surface_data['config']))
         ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
@@ -819,22 +836,22 @@ class TransectPlotter(pl.LinePlotter):
         self.__fill_invalid_shift(values)
 
         dist = np.tile(self.transect_data['distance'], (values.shape[0], 1))
-        
+
         # Plot the data
         c = plt.pcolormesh(dist, depths.transpose(), values,
                            cmap=cmap,
-                           shading='gouraud', # Smooth shading
+                           shading='gouraud',  # Smooth shading
                            vmin=vmin,
                            vmax=vmax)
         ax = plt.gca()
-        ax.set_title(plotTitle, fontsize=14) # Set title of subplot
+        ax.set_title(plotTitle, fontsize=14)  # Set title of subplot
         ax.invert_yaxis()
         if self.depth_limit is None or (
             self.depth_limit is not None and
             self.linearthresh < self.depth_limit
         ):
             plt.yscale('symlog', linthreshy=self.linearthresh)
-        
+
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         # Mask out the bottom

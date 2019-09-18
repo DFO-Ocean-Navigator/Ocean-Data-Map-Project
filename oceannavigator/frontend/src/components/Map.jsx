@@ -190,7 +190,7 @@ export default class Map extends React.PureComponent {
     });
 
     this.vectorTileGrid = new oltilegrid.createXYZ({
-      tileSize:512, 
+      tileSize:512,
       maxZoom: MAX_ZOOM[this.props.state.projection]
     }),
 
@@ -291,13 +291,13 @@ export default class Map extends React.PureComponent {
                 }),
               ];
             }
-            
+
             case "drifter": {
               const start = feat.getGeometry().getCoordinateAt(0);
               const end = feat.getGeometry().getCoordinateAt(1);
               let endImage;
               let color = drifter_color[feat.get("name")];
-              
+
               if (color === undefined) {
                 color = COLORS[Object.keys(drifter_color).length % COLORS.length];
                 drifter_color[feat.get("name")] = color;
@@ -358,7 +358,7 @@ export default class Map extends React.PureComponent {
             case "class4": {
               const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
               const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
-              
+
               return new olstyle.Style({
                 image: new olstyle.Circle({
                   radius: SmartPhone.isAny() ? 6 : 4,
@@ -412,7 +412,7 @@ export default class Map extends React.PureComponent {
           collapsed: false,
         })
       }).extend([
-        new app.ResetPanButton(), 
+        new app.ResetPanButton(),
         new olcontrol.FullScreen(),
         new olcontrol.MousePosition({
           projection: "EPSG:4326",
@@ -448,7 +448,7 @@ export default class Map extends React.PureComponent {
       zoom = this.props.state.zoom;
     }
     const projection = this.props.state.projection;
-        
+
     this.mapView = new ol.View({
       center: olproj.transform(center, "EPSG:4326", projection),
       projection: projection,
@@ -487,9 +487,9 @@ export default class Map extends React.PureComponent {
       if (this._drawing) { // Prevent conflict with drawing
         return;
       }
-      
+
       const coord = e.coordinate; // Click location
-      
+
       this.infoPopupContent.innerHTML = _("Loading...");
       if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
@@ -509,11 +509,11 @@ export default class Map extends React.PureComponent {
           `/${location[1]},${location[0]}.json`
         ),
         success: function(response) {
-          let text = "<p>" + 
+          let text = "<p>" +
                         "Location: " + response.location[0].toFixed(4) + ", " + response.location[1].toFixed(4);
           for (let i = 0; i < response.name.length; ++i) {
             if (response.value[i] != "nan") {
-              text += "<br />" + 
+              text += "<br />" +
                             response.name[i] + ": " + response.value[i] + " " + response.units[i];
             }
           }
@@ -626,7 +626,7 @@ export default class Map extends React.PureComponent {
         }
       }.bind(this));
 
-      
+
       this.props.updateState(t, content);
       this.props.updateState("modal", t);
       this.props.updateState("names", names);
@@ -661,6 +661,7 @@ export default class Map extends React.PureComponent {
       );
 
       pushSelection();
+      this.props.updateState("plotEnabled", true);
     }.bind(this));
 
     // clear selection when drawing a new box and when clicking on the map
@@ -927,16 +928,16 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
-    props.url = "/tiles/v0.1" + 
-                `/${this.props.options.interpType}` + 
+    props.url = "/api/v1.0/tiles" +
+                `/${this.props.options.interpType}` +
                 `/${this.props.options.interpRadius}` +
                 `/${this.props.options.interpNeighbours}` +
-                `/${this.props.state.projection}` + 
-                `/${this.props.state.dataset}` + 
-                `/${this.props.state.variable}` + 
-                `/${this.props.state.time}` + 
-                `/${this.props.state.depth}` + 
-                `/${this.props.scale}` + 
+                `/${this.props.state.projection}` +
+                `/${this.props.state.dataset}` +
+                `/${this.props.state.variable}` +
+                `/${this.props.state.time}` +
+                `/${this.props.state.depth}` +
+                `/${this.props.scale}` +
                 "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -957,7 +958,7 @@ export default class Map extends React.PureComponent {
     }
     this.scaleViewer = new app.ScaleViewer({
       image: (
-        `/scale/${this.props.state.dataset}` +
+        `/api/v1.0/scale/${this.props.state.dataset}` +
         `/${this.props.state.variable}` +
         `/${this.props.scale}.png`
       )
@@ -1096,7 +1097,7 @@ export default class Map extends React.PureComponent {
     }
   }
   */
-  
+
   show(type, key) {
     this.resetMap();
     this.props.updateState(["vectorid", "vectortype"], [key, type]);
@@ -1132,7 +1133,7 @@ export default class Map extends React.PureComponent {
         geom = new olgeom.LineString(data.map(function (c) {
           return [c[1], c[0]];
         }));
-        
+
         geom.transform("EPSG:4326", this.props.state.projection);
         feat = new ol.Feature({
           geometry: geom,
@@ -1201,8 +1202,8 @@ export default class Map extends React.PureComponent {
           </div>
           <div className={"balloonLaunch"}>
             <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
-          </div>      
-        
+          </div>
+
           <div ref={(c) => this.infoPopupContent = c}></div>
         </div>
       </div>

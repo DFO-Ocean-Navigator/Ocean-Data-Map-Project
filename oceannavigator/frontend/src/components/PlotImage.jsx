@@ -102,7 +102,7 @@ export default class PlotImage extends React.PureComponent {
       });
 
       const promise = $.ajax({
-        url: "/plot/",
+        url: "/api/v1.0/plot/",
         cache: true,
         data: paramString,
         dataType: "json",
@@ -215,8 +215,8 @@ export default class PlotImage extends React.PureComponent {
         if (q.compare_to) {
           query.compare_to = {
             variable: q.compare_to.variable,
-            starttime: q.compare_to.starttime,
-            endtime: q.compare_to.time,
+            starttime: q.starttime,
+            endtime: q.endtime,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             depth: q.compare_to.depth,
@@ -295,7 +295,7 @@ export default class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    return "/plot/?query=" + encodeURIComponent(stringify(query));
+    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {

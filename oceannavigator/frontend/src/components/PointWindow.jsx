@@ -106,7 +106,7 @@ export default class PointWindow extends React.Component {
 
   populateVariables(dataset) {
     $.ajax({
-      url: "/api/variables/?dataset=" + dataset,
+      url: "/api/v1.0/variables/?dataset=" + dataset,
       dataType: "json",
       cache: true,
   
@@ -231,7 +231,7 @@ export default class PointWindow extends React.Component {
         id='dataset'
         state={this.props.dataset}
         def=''
-        url='/api/datasets/'
+        url='/api/v1.0/datasets/'
         title={_("Dataset")}
         onUpdate={this.props.onUpdate}
       />
@@ -281,7 +281,7 @@ export default class PointWindow extends React.Component {
       state={this.props.time}
       def=''
       quantum={this.props.quantum}
-      url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
+      url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
       title={_("Time")}
       onUpdate={this.props.onUpdate}
     /> : null;
@@ -296,7 +296,7 @@ export default class PointWindow extends React.Component {
         state={this.state.starttime}
         def=''
         quantum={this.props.quantum}
-        url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum}
+        url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
         title={_("Start Time")}
         onUpdate={this.onLocalUpdate}
         max={this.props.time}
@@ -307,7 +307,8 @@ export default class PointWindow extends React.Component {
         state={this.props.time}
         def=''
         quantum={this.props.quantum}
-        url={"/api/timestamps/?dataset=" + this.props.dataset + "&quantum=" + this.props.quantum} title={_("End Time")}
+        url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
+        title={_("End Time")}
         onUpdate={this.props.onUpdate}
         min={this.state.starttime}
       /> </div> : null;
@@ -321,7 +322,7 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
+        url={"/api/v1.0/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
         title={_("Depth")}></ComboBox>
       
       <ComboBox
@@ -330,7 +331,7 @@ export default class PointWindow extends React.Component {
         state={this.props.variable}
         def=''
         onUpdate={this.props.onUpdate}
-        url={"/api/variables/?vectors&dataset="+this.props.dataset}
+        url={"/api/v1.0/variables/?vectors&dataset="+this.props.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -352,7 +353,7 @@ export default class PointWindow extends React.Component {
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/variables/?vectors_only&dataset="+this.props.dataset}
+        url={"/api/v1.0/variables/?vectors_only&dataset="+this.props.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox
@@ -362,7 +363,7 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
+        url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
         title={_("Depth")}></ComboBox> 
     </div> : null;
   
@@ -377,7 +378,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?3d_only&dataset="+this.props.dataset}
+      url={"/api/v1.0/variables/?3d_only&dataset="+this.props.dataset}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];
@@ -496,7 +497,7 @@ export default class PointWindow extends React.Component {
               state={this.state.colormap}
               def='default'
               onUpdate={this.onLocalUpdate}
-              url='/api/colormaps/'
+              url='/api/v1.0/colormaps/'
               title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
             </ComboBox>);
         }
@@ -548,12 +549,14 @@ export default class PointWindow extends React.Component {
             eventKey={TabEnum.SOUND}
             disabled={!hasTempSalinity}>{_("Sound Speed Profile")}</NavItem>
           <NavItem
+            disabled
             eventKey={TabEnum.STICK}>{_("Stick Plot")}</NavItem>
           <NavItem
             eventKey={TabEnum.OBSERVATION}
             disabled={this.props.point[0][2] === undefined}
           >{_("Observation")}</NavItem>
           <NavItem
+            disabled
             eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
         </Nav>
         <Row>

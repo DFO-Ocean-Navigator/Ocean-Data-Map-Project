@@ -1,17 +1,68 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils as utils
-import plotting.point as plPoint
 from flask_babel import gettext
 from matplotlib.dates import date2num
+
+from plotting.point import PointPlotter
+import plotting.utils as utils
 from data import open_dataset
 
-class StickPlotter(plPoint.PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+class StickPlotter(PointPlotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
-        super(StickPlotter, self).__init__(dataset_name, query, format)
-        self.size: str = '11x5'
+
+        super(StickPlotter, self).__init__(dataset_name, query, **kwargs)
+
+    def load_data(self):
+        if not isinstance(self.depth, list):
+            self.depth = [self.depth]
+
+        self.depth = sorted(self.depth)
+
+        with open_dataset(self.dataset_config, timestamp=self.starttime, endtime=self.endtime, variable=self.variables) as dataset:
+
+            self.load_misc(dataset, self.variables)
+            self.variable_name = self.get_vector_variable_name(dataset,
+                                                               self.variables)
+
+            point_data = []
+            point_depth = []
+            for p in self.points:
+                data = []
+                depth = []
+                for v in self.variables:
+                    dd = []
+                    jj = []
+                    for d in self.depth:
+                        da, dp = dataset.get_timeseries_point(
+                            float(p[0]),
+                            float(p[1]),
+                            d,
+                            self.starttime,
+                            self.endtime,
+                            v,
+                            return_depth=True
+                        )
+                        dd.append(da)
+                        jj.append(dp)
+                    data.append(np.ma.array(dd))
+                    depth.append(np.ma.array(jj))
+                point_data.append(np.ma.array(data))
+                point_depth.append(np.ma.array(depth))
+
+            point_data = np.ma.array(point_data)
+            point_depth = np.ma.array(point_depth)
+
+            for idx, factor in enumerate(self.scale_factors):
+                if factor != 1.0:
+                    point_data[:, idx] = np.multiply(
+                        point_data[:, idx], factor)
+
+        self.data = self.subtract_other(point_data)
+        self.data_depth = point_depth
+        self.timestamp = timestamp
 
     def csv(self):
         header = [
@@ -21,7 +72,7 @@ class StickPlotter(plPoint.PointPlotter):
         columns = [
             "Latitude",
             "Longitude",
-            "Depth (m)", 
+            "Depth (m)",
             "Time",
         ]
         columns.extend([
@@ -38,15 +89,15 @@ class StickPlotter(plPoint.PointPlotter):
         bearing = np.pi / 2.0 - bearing
         bearing[bearing < 0] += 2 * np.pi
         bearing *= 180.0 / np.pi
-        # Deal with undefined angles (where velocity is 0 or very very close) 
+        # Deal with undefined angles (where velocity is 0 or very very close)
         # np.arctan2 doesn't return nan if x,y are both zero...
-        inds=np.where(
+        inds = np.where(
             np.logical_and(
                 np.abs(self.data[:, 0, :, :]) < 10e-6,
                 np.abs(self.data[:, 1, :, :]) < 10e-6
-                )
             )
-        bearing[inds]=np.nan
+        )
+        bearing[inds] = np.nan
 
         # For each point
         for p in range(0, self.data.shape[0]):
@@ -139,72 +190,16 @@ class StickPlotter(plPoint.PointPlotter):
                         depth = "%d m" % np.round(self.data_depth[
                             idx, 0, idx2, 0
                         ])
-                    if self.plotTitle is None or self.plotTitle == "":  
+                    if self.plotTitle is None or self.plotTitle == "":
                         a.set_title(gettext("%s at (%s)\n%s") % (
                             self.variable_name,
                             self.names[idx],
                             depth
                         ), fontsize=15)
-                    else :
-                        a.set_title(self.plotTitle,fontsize=15)
+                    else:
+                        a.set_title(self.plotTitle, fontsize=15)
 
         plt.setp(plt.gca().get_xticklabels(), rotation=30)
         fig.tight_layout()
 
         return super(StickPlotter, self).plot(fig)
-
-    def load_data(self):
-        if not isinstance(self.depth, list):
-            self.depth = [self.depth]
-
-        self.depth = sorted(self.depth)
-
-        with open_dataset(self.dataset_config) as dataset:
-            if self.starttime < 0:
-                self.starttime += len(dataset.timestamps)
-            if self.endtime < 0:
-                self.endtime += len(dataset.timestamps)
-            start = np.clip(self.starttime, 0, len(dataset.timestamps) - 1)
-            end = np.clip(self.endtime, 0, len(dataset.timestamps) - 1)
-
-            timestamp = dataset.timestamps[start:end + 1]
-
-            self.load_misc(dataset, self.variables)
-            self.variable_name = self.get_vector_variable_name(dataset,
-                    self.variables)
-
-            point_data = []
-            point_depth = []
-            for p in self.points:
-                data = []
-                depth = []
-                for v in self.variables:
-                    dd = []
-                    jj = []
-                    for d in self.depth:
-                        da, dp = dataset.get_timeseries_point(
-                            float(p[0]),
-                            float(p[1]),
-                            d,
-                            start,
-                            end,
-                            v,
-                            return_depth=True
-                        )
-                        dd.append(da)
-                        jj.append(dp)
-                    data.append(np.ma.array(dd))
-                    depth.append(np.ma.array(jj))
-                point_data.append(np.ma.array(data))
-                point_depth.append(np.ma.array(depth))
-
-            point_data = np.ma.array(point_data)
-            point_depth = np.ma.array(point_depth)
-
-            for idx, factor in enumerate(self.scale_factors):
-                if factor != 1.0:
-                    point_data[:, idx] = np.multiply(point_data[:, idx], factor)
-
-        self.data = self.subtract_other(point_data)
-        self.data_depth = point_depth
-        self.timestamp = timestamp

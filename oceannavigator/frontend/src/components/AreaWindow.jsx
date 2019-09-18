@@ -218,7 +218,7 @@ export default class AreaWindow extends React.Component {
   subsetArea() {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
     
-    window.location.href = "/subset/?" +
+    window.location.href = "/api/v1.0/subset/?" +
        "&output_format=" + this.state.output_format +
        "&dataset_name=" + this.state.dataset_0.dataset +
        "&variables=" + this.state.output_variables.join() +
@@ -325,7 +325,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.colormap_diff} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
-          url='/api/colormaps/' 
+          url='/api/v1.0/colormaps/' 
           title={_("Diff. Colourmap")}
         >
           {_("colourmap_help")}
@@ -413,7 +413,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.output_variables}
           def={"defaults.dataset"}
           onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
-          url={"/api/variables/?vectors&dataset=" + this.state.dataset_0.dataset
+          url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
           }
           title={_("Variables")}
         />
@@ -432,14 +432,13 @@ export default class AreaWindow extends React.Component {
           state={this.state.output_starttime}
           def=''
           quantum={this.state.dataset_0.dataset_quantum}
-          url={"/api/timestamps/?dataset=" +
+          url={"/api/v1.0/timestamps/?dataset=" +
                 this.state.dataset_0.dataset +
-                "&quantum=" +
-                this.state.dataset_0.dataset_quantum}
+                "&variable=" +
+                this.state.dataset_0.variable}
           title={this.state.output_timerange ? _("Start Time") : _("Time")}
           onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
           max={this.state.dataset_0.time + 1}
-          updateDate={this.updateDate}
         />
 
         <div style={{display: this.state.output_timerange ? "block" : "none",}}>
@@ -449,10 +448,10 @@ export default class AreaWindow extends React.Component {
             state={this.state.output_endtime}
             def=''
             quantum={this.state.dataset_0.dataset_quantum}
-            url={"/api/timestamps/?dataset=" +
+            url={"/api/v1.0/timestamps/?dataset=" +
                 this.state.dataset_0.dataset +
-                "&quantum=" +
-                this.state.dataset_0.dataset_quantum}
+                "&variable=" +
+                this.state.dataset_0.variable}
             title={_("End Time")}
             onUpdate={(key, value) => { this.setState({output_endtime: value,}); }}
             min={this.state.dataset_0.time}
@@ -570,7 +569,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.leftColormap} 
           def='default' 
           onUpdate={this.onLocalUpdate} 
-          url='/api/colormaps/' 
+          url='/api/v1,0/colormaps/' 
           title={_("Colourmap")}
         >
           {_("colourmap_help")}
@@ -612,7 +611,7 @@ export default class AreaWindow extends React.Component {
             state={this.state.rightColormap} 
             def='default' 
             onUpdate={this.onLocalUpdate} 
-            url='/api/colormaps/' 
+            url='/api/v1.0/colormaps/' 
             title={_("Colourmap")}
           >
             {_("colourmap_help")}

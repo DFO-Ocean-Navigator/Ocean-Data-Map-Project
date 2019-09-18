@@ -1,6 +1,8 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 from oceannavigator import DatasetConfig, create_app
+
 
 class TestUtil(unittest.TestCase):
 
@@ -18,6 +20,8 @@ class TestUtil(unittest.TestCase):
                 "name": "my_name",
                 "help": "my_help",
                 "quantum": "my_quantum",
+                "type": "my_type",
+                "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
                 "variables": {
@@ -36,6 +40,8 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(result.name, "my_name")
         self.assertEqual(result.help, "my_help")
         self.assertEqual(result.quantum, "my_quantum")
+        self.assertEqual(result.type, "my_type")
+        self.assertEqual(result.time_dim_units, "my_time_units")
         self.assertEqual(result.attribution, "my_attribution")
         self.assertEqual(result.cache, 123)
 

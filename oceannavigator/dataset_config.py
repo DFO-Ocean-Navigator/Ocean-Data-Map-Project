@@ -1,7 +1,7 @@
+import json
 import os
-import json
 import re
-import json
+
 from flask import current_app
 
 
@@ -42,6 +42,17 @@ class DatasetConfig():
         return self._get_attribute("url")
 
     @property
+    def type(self) -> str:
+        """
+        Returns the dataset type string: "historical" or "forecast"
+        """
+        return self._get_attribute("type")
+
+    @property
+    def time_dim_units(self) -> str:
+        return self._get_attribute("time_dim_units")
+
+    @property
     def climatology(self) -> str:
         """
         Returns the THREDDS climatology URL for a dataset
@@ -63,11 +74,22 @@ class DatasetConfig():
         return self._get_attribute("help")
 
     @property
+    def grid_angle_file_url(self):
+        #return self._get_attribute("grid_angle_file_url")
+        return ""
+
+    @property
     def quantum(self) -> str:
         """
         Returns the "quantum" (aka "time scale") of a dataset
         """
-        return self._get_attribute("quantum")
+
+        try:
+            quantum = self._get_attribute("quantum")
+        except KeyError:
+            quantum = None
+
+        return quantum
 
     @property
     def attribution(self) -> str:
@@ -207,6 +229,22 @@ class VariableConfig():
             return str(self._key).title()
 
     @property
+    def quantum(self) -> str:
+        """
+        Returns the quantum (time scale) for the variable as defined in dataset config file
+        
+        Returns:
+            str -- variable quantum
+        """
+        try:
+            quantum = self.__get_attribute("quantum")
+        except KeyError:
+            quantum = None
+
+        return quantum
+
+    
+    @property
     def unit(self) -> str:
         """
         Returns the units for a given variable as defined in dataset config file
@@ -287,4 +325,3 @@ class VariableConfig():
             return from_config in ['true', 'True'] or from_config == True
         except KeyError:
             return False
-

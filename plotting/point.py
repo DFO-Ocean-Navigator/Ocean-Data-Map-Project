@@ -11,12 +11,13 @@ class PointPlotter(pl.Plotter):
     def parse_query(self, query):
         super(PointPlotter, self).parse_query(query)
 
+        self.points: list = []
         self.parse_names_points(query.get('names'), query.get('station'))
 
     def setup_subplots(self, numplots):
         fig, ax = plt.subplots(
             1, numplots, sharey=True,
-            figsize=self.figuresize(),
+            figsize=self.figuresize,
             dpi=self.dpi
         )
 
@@ -57,7 +58,7 @@ class PointPlotter(pl.Plotter):
                 )
                 data.append(prof)
                 depths.append(d)
-            
+
             point_data.append(np.ma.array(data))
             point_depths.append(np.ma.array(depths))
 
@@ -73,37 +74,11 @@ class PointPlotter(pl.Plotter):
                     dataset, self.compare['variables'], self.compare['time']
                 )
 
-            for idx, v in enumerate(self.variables):
+            for idx, _ in enumerate(self.variables):
                 data[:, idx, :] = \
                     data[:, idx, :] - cli[:, idx, :]
 
         return data
-
-    def load_temp_sal(self, dataset, time):
-        temp_var = None
-        if "votemper" in dataset.variables:
-            temp_var = "votemper"
-        elif "temp" in dataset.variables:
-            temp_var = "temp"
-
-        sal_var = None
-        if "vosaline" in dataset.variables:
-            sal_var = "vosaline"
-        elif "salinity" in dataset.variables:
-            sal_var = "salinity"
-
-        self.variables = [temp_var, sal_var]
-
-        data, depths = self.get_data(dataset, [temp_var, sal_var], time)
-        self.temperature = data[:, 0, :].view(np.ma.MaskedArray)
-        self.salinity = data[:, 1, :].view(np.ma.MaskedArray)
-        self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
-        self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
-        self.load_misc(dataset, [temp_var, sal_var])
-
-        for idx, factor in enumerate(self.scale_factors):
-            if factor != 1.0:
-                data[:, idx, :] = np.multiply(data[:, idx, :], factor)
 
     def apply_scale_factors(self, data):
         for idx, factor in enumerate(self.scale_factors):
@@ -112,6 +87,7 @@ class PointPlotter(pl.Plotter):
 
         return data
 
+    @property
     def figuresize(self):
         figuresize = list(map(float, self.size.split("x")))
         if len(self.points) > 10:

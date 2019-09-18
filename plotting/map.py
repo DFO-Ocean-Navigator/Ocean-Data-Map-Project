@@ -1,39 +1,42 @@
+import copy
+import os
+import tempfile
+from textwrap import wrap
+
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+import numpy as np
+import osr
+import pyresample.utils
+from flask_babel import gettext
+from geopy.distance import VincentyDistance
+from matplotlib.bezier import concatenate_paths
 from matplotlib.colors import LogNorm
+from matplotlib.patches import PathPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
-import matplotlib.colors as mcolors
-import numpy as np
-import plotting.colormap as colormap
+from osgeo import gdal
+from shapely.geometry import LinearRing, MultiPolygon, Point
+from shapely.geometry import Polygon as Poly
+from shapely.ops import cascaded_union
+
 import plotting.basemap as basemap
+import plotting.colormap as colormap
 import plotting.overlays as overlays
 import plotting.utils as utils
-import plotting.plotter as pl
-from osgeo import gdal
-import osr
-import tempfile
-import os
-from oceannavigator import DatasetConfig
-from shapely.geometry import LinearRing, MultiPolygon, Polygon as Poly, Point
-from shapely.ops import cascaded_union
-from matplotlib.patches import Polygon
-from matplotlib.bezier import concatenate_paths
-from matplotlib.patches import PathPatch
-from textwrap import wrap
-from utils.misc import list_areas
-import pyresample.utils
-from geopy.distance import VincentyDistance
 from data import open_dataset
-import copy
+from oceannavigator import DatasetConfig
+from plotting.plotter import Plotter
 from utils.errors import ClientError, ServerError
-from flask_babel import gettext
+from utils.misc import list_areas
 
-class MapPlotter(pl.Plotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+class MapPlotter(Plotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = 'map'
-        
-        super(MapPlotter, self).__init__(dataset_name, query, format)
+
+        super(MapPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
         super(MapPlotter, self).parse_query(query)
@@ -59,7 +62,7 @@ class MapPlotter(pl.Plotter):
             else:
                 self.points = copy.deepcopy(np.array(a['polygons']))
                 a['polygons'] = self.points.tolist()
-                a['name'] = " "              
+                a['name'] = " "
 
             rings = [LinearRing(po) for po in a['polygons']]
             if len(rings) > 1:
@@ -95,78 +98,83 @@ class MapPlotter(pl.Plotter):
         self.contour = query.get('contour')
 
     def load_data(self):
-        distance = VincentyDistance()        
+        distance = VincentyDistance()
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
             (self.bounds[2], self.centroid[1])
-        ) * 1000 * 1.25       
+        ) * 1000 * 1.25
         width = distance.measure(
             (self.centroid[0], self.bounds[1]),
             (self.centroid[0], self.bounds[3])
-            ) * 1000 * 1.25
-        
+        ) * 1000 * 1.25
+
         if self.projection == 'EPSG:32661':             # north pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
-            
+
             if self.centroid[0] > 80 or near_pole or covers_pole:
-                self.basemap = basemap.load_map('npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
+                self.basemap = basemap.load_map(
+                    'npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
             else:
-                self.basemap = basemap.load_map('lcc', self.centroid, height, width)
+                self.basemap = basemap.load_map(
+                    'lcc', self.centroid, height, width)
         elif self.projection == 'EPSG:3031':            # south pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
-            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole) or near_pole: # is centerered close to the south pole
-                self.basemap = basemap.load_map('spstere', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))
+            # is centerered close to the south pole
+            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole) or near_pole:
+                self.basemap = basemap.load_map(
+                    'spstere', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))
             else:
-                self.basemap = basemap.load_map('lcc', self.centroid, height, width)       
+                self.basemap = basemap.load_map(
+                    'lcc', self.centroid, height, width)
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
-            height_bounds= [self.bounds[0], self.bounds[2]] 
-            width_bounds= [self.bounds[1], self.bounds[3]] 
-            height_buffer=(abs(height_bounds[1]-height_bounds[0]))*0.1
-            width_buffer=(abs(width_bounds[0]-width_bounds[1]))*0.1   
+            height_bounds = [self.bounds[0], self.bounds[2]]
+            width_bounds = [self.bounds[1], self.bounds[3]]
+            height_buffer = (abs(height_bounds[1]-height_bounds[0]))*0.1
+            width_buffer = (abs(width_bounds[0]-width_bounds[1]))*0.1
 
-            if abs(width_bounds[1]- width_bounds[0]) > 360:
+            if abs(width_bounds[1] - width_bounds[0]) > 360:
                 raise ClientError(gettext("You have requested an area that exceeds the width of the world. \
-                                        Thinking big is good but plots need to be less than 360 deg wide." ))
+                                        Thinking big is good but plots need to be less than 360 deg wide."))
 
             if height_bounds[1] < 0:
-                height_bounds[1]=height_bounds[1]+height_buffer
+                height_bounds[1] = height_bounds[1]+height_buffer
             else:
-                height_bounds[1]=height_bounds[1]+height_buffer
+                height_bounds[1] = height_bounds[1]+height_buffer
             if height_bounds[0] < 0:
-                height_bounds[0]=height_bounds[0]-height_buffer
+                height_bounds[0] = height_bounds[0]-height_buffer
             else:
-                height_bounds[0]=height_bounds[0]-height_buffer
+                height_bounds[0] = height_bounds[0]-height_buffer
 
-            
             new_width_bounds = []
             new_width_bounds.append(width_bounds[0]-width_buffer)
 
             new_width_bounds.append(width_bounds[1]+width_buffer)
 
             if abs(new_width_bounds[1] - new_width_bounds[0]) > 360:
-                width_buffer = np.floor((360-abs(width_bounds[1] - width_bounds[0]))/2)
+                width_buffer = np.floor(
+                    (360-abs(width_bounds[1] - width_bounds[0]))/2)
                 new_width_bounds[0] = width_bounds[0]-width_buffer
                 new_width_bounds[1] = width_bounds[1]+width_buffer
-            
+
             if new_width_bounds[0] < -360:
                 new_width_bounds[0] = -360
             if new_width_bounds[1] > 720:
                 new_width_bounds[1] = 720
-            
+
             self.basemap = basemap.load_map(
-                'merc', self.centroid, 
+                'merc', self.centroid,
                 (height_bounds[0], height_bounds[1]),
                 (new_width_bounds[0], new_width_bounds[1])
             )
-        else:  
+        else:
             self.basemap = basemap.load_map(
                 'lcc', self.centroid, height, width
-           )
+            )
 
         if self.basemap.aspect < 1:
             gridx = 500
@@ -177,10 +185,7 @@ class MapPlotter(pl.Plotter):
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
-        with open_dataset(self.dataset_config) as dataset:
-            if self.time < 0:
-                self.time += len(dataset.timestamps)
-            self.time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
+        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
 
             if len(self.variables) > 1:
                 self.variable_unit = self.get_vector_variable_unit(
@@ -335,7 +340,7 @@ class MapPlotter(pl.Plotter):
 
             self.contour_data = contour_data
 
-            self.timestamp = dataset.timestamps[self.time]
+            self.timestamp = dataset.timestamp_to_iso_8601(self.time)
 
         if self.compare:
             self.variable_name += " Difference"
@@ -375,13 +380,15 @@ class MapPlotter(pl.Plotter):
                 quiver_bathymetry = overlays.bathymetry(
                     self.basemap, quiver_lat, quiver_lon)
 
-            self.data[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
+            self.data[np.where(
+                self.bathymetry < depth_value_map)] = np.ma.masked
             for d in self.quiver_data:
                 d[np.where(quiver_bathymetry < depth_value)] = np.ma.masked
             for d in self.contour_data:
                 d[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
         else:
-            mask = maskoceans(self.longitude, self.latitude, self.data, True, 'h', 1.25).mask
+            mask = maskoceans(self.longitude, self.latitude,
+                              self.data, True, 'h', 1.25).mask
             self.data[~mask] = np.ma.masked
             for d in self.quiver_data:
                 mask = maskoceans(
@@ -513,22 +520,21 @@ class MapPlotter(pl.Plotter):
         return super(MapPlotter, self).csv(header, columns, data)
 
     def pole_proximity(self, points):
-        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False    
+        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False
         for p in points:
             if abs(p[0]) > 80:
-                near_pole=True                    
-            if -180<=p[1]<=-90:
-                quad1=True
-            elif -90<=p[1]<=0:
-                quad2=True
-            elif 0<=p[1]<=90:
-                quad3=True
-            elif 90<=p[1]<=180:
-                quad4=True
+                near_pole = True
+            if -180 <= p[1] <= -90:
+                quad1 = True
+            elif -90 <= p[1] <= 0:
+                quad2 = True
+            elif 0 <= p[1] <= 90:
+                quad3 = True
+            elif 90 <= p[1] <= 180:
+                quad4 = True
             if quad1 and quad2 and quad3 and quad4:
                 covers_pole = True
-            
-                
+
         return near_pole, covers_pole
 
     def plot(self):
@@ -577,14 +583,14 @@ class MapPlotter(pl.Plotter):
             vmax = self.scale[1]
         else:
             vmin, vmax = utils.normalize_scale(self.data,
-                    self.dataset_config.variable[",".join(self.variables)])
+                                               self.dataset_config.variable[",".join(self.variables)])
 
         c = self.basemap.imshow(
             self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)
 
         if len(self.quiver_data) == 2:
             qx, qy = self.quiver_data
-            qx, qy ,x ,y = self.basemap.rotate_vector(qx, qy,
+            qx, qy, x, y = self.basemap.rotate_vector(qx, qy,
                                                       self.quiver_longitude,
                                                       self.quiver_latitude,
                                                       returnxy=True)
@@ -838,7 +844,7 @@ class MapPlotter(pl.Plotter):
 
         title = self.plotTitle
 
-        if self.plotTitle is None or self.plotTitle == "":  
+        if self.plotTitle is None or self.plotTitle == "":
             area_title = "\n".join(
                 wrap(", ".join(self.names), 60)
             ) + "\n"

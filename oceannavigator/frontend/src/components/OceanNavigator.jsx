@@ -38,6 +38,7 @@ export default class OceanNavigator extends React.Component {
     this.state = {
       dataset: "giops_day",
       variable: "votemper",
+      quantum: "day",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
       time: -1,
@@ -52,7 +53,6 @@ export default class OceanNavigator extends React.Component {
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
       showHelp: false,
-      showBugs: false,
       showCompareHelp: false,
       extent: [],
       setDefaultScale: false,
@@ -110,8 +110,6 @@ export default class OceanNavigator extends React.Component {
     // Function bindings (performance optimization)
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.toggleCompareHelp = this.toggleCompareHelp.bind(this);
-    this.showBugsModal = this.showBugsModal.bind(this);
-    this.hideBugsModal = this.hideBugsModal.bind(this);
     this.swapViews = this.swapViews.bind(this);
     this.updateState = this.updateState.bind(this);
     this.action = this.action.bind(this);
@@ -120,6 +118,8 @@ export default class OceanNavigator extends React.Component {
     this.updateOptions = this.updateOptions.bind(this);
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
+    this.get_variables_promise = this.get_variables_promise.bind(this);
+    this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
   }
   
   //Updates the page language upon user request
@@ -135,14 +135,6 @@ export default class OceanNavigator extends React.Component {
   // Opens/closes the help modal for dataset comparison
   toggleCompareHelp() {
     this.setState({showCompareHelp: !this.state.showCompareHelp,});
-  }
-
-  hideBugsModal(){
-    this.setState({showBugs: false,});
-  }
-
-  showBugsModal(){
-    this.setState({showBugs: true,});
   }
 
   // Swap all view-related state variables
@@ -239,6 +231,20 @@ export default class OceanNavigator extends React.Component {
     });
   }
 
+  get_variables_promise(dataset) {
+    return $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
+  }
+
+  get_timestamp_promise(dataset, variable) {
+
+    return $.ajax(
+      "/api/v1.0/timestamps/?dataset=" +
+      dataset +
+      "&variable=" +
+      variable
+    ).promise();
+  }
+
   changeDataset(dataset, state) {
     // Busy modal
     this.setState({
@@ -246,7 +252,35 @@ export default class OceanNavigator extends React.Component {
     });
 
     // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
+    const var_promise = this.get_variables_promise(dataset);
+    $.when(var_promise).done(function(variable_result) {
+
+      let newVariable = this.state.variable;
+      if ($.inArray(this.state.variable, variable_result.map(function(e)
+      { return e.id; })) == -1) {
+        newVariable = variable_result[0].id;
+      }
+
+
+      let newTime = 0;
+      const time_promise = this.get_timestamp_promise(dataset, newVariable);
+      $.when(time_promise).done(function(time) {
+        newTime = time[time.length-1].id;
+
+        if (state === undefined) {
+          state = {};
+        }
+        state.dataset = dataset;
+        state.variable = newVariable;
+        state.time = newTime;
+        state.busy = false;
+
+        this.setState(state);
+      }.bind(this));
+
+    }.bind(this));
+
+/*
     const time_promise = $.ajax(
       "/api/timestamp/" +
       this.state.dataset + "/" +
@@ -275,6 +309,7 @@ export default class OceanNavigator extends React.Component {
 
       this.setState(state);
     }.bind(this));
+   */
   }
 
   action(name, arg, arg2, arg3) {
@@ -518,7 +553,6 @@ export default class OceanNavigator extends React.Component {
             variable={this.state.variable}
             depth={this.state.depth}
             time={this.state.time}
-            starttime={this.state.starttime}
             scale={this.state.scale}
             scale_1={this.state.scale_1}
             colormap={this.state.colormap}
@@ -763,61 +797,6 @@ export default class OceanNavigator extends React.Component {
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showBugs}
-          onHide={this.hideBugsModal}
-          bsSize="large"
-          dialogClassName="bugsdialog"
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Water Velocity Issue")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>
-              There is a known issue with how the direction of water velocity is rendered.<br/>
-              <br/>
-            </p>
-            <p>
-              The "water x velocity" and "water y velocity" do not necessarily refer to water velocity 
-              in the East or North direction. Instead, they refer to the water velocity along the x or y axis 
-              of the grid used by the source data, which are often rotated.<br/>
-              <br/>
-            </p>
-            <p>
-              For data sources such as GIOPS daily and GIOPS monthly this means the data is on a tripolar grid and the 
-              angle of the x-axis changes, deviating further from the Latitude Longitude grid directions closer to the 
-              north pole.<br/>
-              <br/>
-            </p>
-            <p> 
-              This issue is known to have an impact on:<br/>
-                * Water velocity (x,y and combined) for The Global, Arctic, and Antarctic projections for all dataset<br/>
-                * Model Water velocity for the Area, Point, and Line/Transect plots. for all datasets.<br/>
-                * Model Water velocity (x, y, and combined) for exported CSV's and ODE<br/>
-                * Model Water velocity for drifter plots.<br/>
-              <br/>
-              <br/>
-            </p>
-              Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered. 
-              Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of 
-              60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without 
-              a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have 
-              a clear and understandable fix released soon. <br/>
-            <br/>
-            <p>
-              you would like more detailed information you can view our bug tracking this problem on 
-              our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
-              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/213" target="_blank">"Bearing and vector representation"</a> <br/>
-              If you still need more information about the problem contact oceandatamap@gmail.com <br/>
-              <br/>
-            </p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
         </Modal>
 

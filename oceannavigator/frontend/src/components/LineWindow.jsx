@@ -43,7 +43,7 @@ export default class LineWindow extends React.Component {
       dpi: 144,
       depth_limit: false,
       plotTitles: Array(2).fill(""),
-      selectedPlots: [0, 1, 1],
+      selectedPlots: [0, 1, 1]
     };
 
     if (props.init !== null) {
@@ -262,7 +262,7 @@ export default class LineWindow extends React.Component {
         state={this.state.surfacevariable}
         onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
-        url={"/api/variables/?dataset=" + this.props.dataset_0.dataset}
+        url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
       >{_("surfacevariable_help")}</ComboBox>
 
       <NumberBox
@@ -289,7 +289,7 @@ export default class LineWindow extends React.Component {
           state={this.state.colormap_diff}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </div>
@@ -333,7 +333,7 @@ export default class LineWindow extends React.Component {
         state={this.state.colormap}
         def='default'
         onUpdate={this.onLocalUpdate}
-        url='/api/colormaps/'
+        url='/api/v1.0/colormaps/'
         title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
     </Panel>;
@@ -373,7 +373,7 @@ export default class LineWindow extends React.Component {
           state={this.state.colormap_right}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </Panel>
@@ -420,7 +420,7 @@ export default class LineWindow extends React.Component {
       case 2:
         plot_query.type = "hovmoller";
         plot_query.endtime = this.props.time;
-        plot_query.starttime = this.props.starttime;
+        plot_query.starttime = this.props.dataset_0.starttime;
         plot_query.depth = this.props.depth;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
@@ -478,9 +478,7 @@ LineWindow.propTypes = {
   scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   scale_1: PropTypes.string,
   init: PropTypes.object,
-  starttime: PropTypes.number,
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
-  starttime_1: PropTypes.number,
 };

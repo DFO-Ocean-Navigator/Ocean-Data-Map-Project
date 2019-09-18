@@ -94,7 +94,7 @@ export default class DrifterWindow extends React.Component {
       id='dataset'
       state={this.props.dataset}
       def=''
-      url='/api/datasets/'
+      url='/api/v1.0/datasets/'
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
@@ -105,7 +105,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.buoyvariable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/drifters/vars/" + this.props.drifter}
+      url={"/api/v1.0/drifters/vars/" + this.props.drifter}
       title={_("Buoy Variable")}
     ><h1>Buoy Variable</h1></ComboBox>;
     var variable = <ComboBox
@@ -115,7 +115,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/variables/?dataset="+this.props.dataset}
+      url={"/api/v1.0/variables/?dataset="+this.props.dataset}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
     var showmap = <SelectBox
@@ -163,7 +163,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={"/api/depth/?variable=" +
+      url={"/api/v1.0/depth/?variable=" +
         this.state.variable +
         "&dataset=" +
         this.props.dataset
