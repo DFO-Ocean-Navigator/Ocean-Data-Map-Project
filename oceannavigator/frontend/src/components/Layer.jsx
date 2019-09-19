@@ -9,15 +9,18 @@ import * as ollayer from "ol/layer";
 import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import NewComboBox from "./newComboBox.jsx";
-import { Checkbox } from 'react-bootstrap'
+import { Checkbox } from 'react-bootstrap';
+
 const i18n = require("../i18n.js");
+//import * as i18n from 'i18next';
+
 
 // IMPORT IMAGES FOR ICONS
 import ice from '../images/ice_symbol.png';
 import met from '../images/cloud_symbol.png';
-import ocean from '../images/ocean_symbol.png'
-import wave from '../images/waves_symbol.png'
-import iceberg from '../images/iceberg_symbol.png'
+import ocean from '../images/ocean_symbol.png';
+import wave from '../images/waves_symbol.png';
+import iceberg from '../images/iceberg_symbol.png';
 
 export default class Layer extends React.Component {
   constructor(props) {
@@ -80,6 +83,8 @@ export default class Layer extends React.Component {
     this.changeDepth = this.changeDepth.bind(this);
     this.changeTimeSource = this.changeTimeSource.bind(this);
     this.updateDates = this.updateDates.bind(this);
+    this.singleClick = this.singleClick.bind(this);
+    this.testClick = this.testClick.bind(this);
 
     //this.setCurrent = this.setCurrent.bind(this);
     this.dateToISO = this.dateToISO.bind(this);
@@ -119,42 +124,6 @@ export default class Layer extends React.Component {
     this.changeDataset();
     this.createLayer();
   }
-
-  /*
-  setCurrent() {
-    let dataset = ''
-    let quantum
-    if (this.props.defaultDataset != undefined) {
-      for (dataset in this.state.datasets) {
-        if (this.state.datasets[dataset] === this.props.defaultDataset) {
-          quantum = this.state.datasets[dataset]['quantum']
-        }
-      }
-      dataset = this.props.defaultDataset
-    } else {
-      dataset = this.state.datasets[0]['id']
-      quantum = this.state.datasets[0]['quantum']
-    }
-
-    let variable = ''
-    if (this.props.defaultVariable != undefined) {
-      variable = this.props.defaultVariable
-
-    } else {
-      variable = this.state.variables[0]['id']
-    }
-
-
-    let depth = 0
-    this.setState({
-      current_dataset: dataset,
-      current_variable: variable,
-      current_scale: this.state.variables[0]['scale'],
-      current_depth: depth,
-      current_quantum: quantum,
-    })
-  }
-  */
 
   loadExisting(data) {
     // Check if the data belongs to the layer
@@ -325,7 +294,7 @@ export default class Layer extends React.Component {
         current_variable: new_variable,
         current_scale: new_scale,
       }, () => {
-        this.updateDates();
+        console.warn("CALLING UPDATE DATES: ", this.state.current_dataset)
         this.changeTimeSource({
           new_dataset: new_dataset,
           new_quantum: new_quantum,
@@ -565,7 +534,10 @@ export default class Layer extends React.Component {
       this.changeDataset(undefined)
     }
 
-    if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
+    if (true /*this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined*/) {
+      console.warn("COMPONENT DID UPDATE")
+        console.warn("UPDATING DATES")
+        this.updateDates();
       if (this.props.state.timestamps !== prevProps.state.timestamps || this.state.current_dataset !== prevState.current_dataset || this.state.current_variable !== prevState.current_variable || this.props.state.projection !== prevProps.state.projection) {
         this.updateLayer();
         this.sendData();
@@ -586,8 +558,8 @@ export default class Layer extends React.Component {
     Code to be displayed when map is single clicked
      - Passed into the data layer
   */
-  singleClick(feature) {
-
+  testClick(feature) {
+    return feature;
   }
 
   /*
@@ -774,6 +746,7 @@ export default class Layer extends React.Component {
     Retrieve time information and add to layer
   */
   updateDates() {
+    
     const time_promise = $.ajax("/api/v1.0/timestamps/?dataset=" + this.state.current_dataset);
 
     // Finds depth for new variable (often the same)
@@ -825,7 +798,7 @@ export default class Layer extends React.Component {
     this.setState({
       layer: new_layer
     })
-
+    this.updateDates();
   }
 
   /*
@@ -872,6 +845,8 @@ export default class Layer extends React.Component {
     
     layer.setSource(newSource)  // Apply the new Changes to the layer
     
+    this.updateDates();
+
     // Create Scale Bar and Add to Layer
     let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
     {this.state.icons[this.props.layerType]}
@@ -1083,11 +1058,11 @@ export default class Layer extends React.Component {
 
   render() {
 
-    _("Variable Range");
+    /*_("Variable Range");
     _("Show Bathymetry Contours");
     _("Remove Layer");
     _("Use as Comparison");
-
+    */
     if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
 
       let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable

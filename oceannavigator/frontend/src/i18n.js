@@ -1,10 +1,10 @@
 import LngDetector from "i18next-browser-languagedetector"; 
 //import { changeLanguage } from "i18next/dist/commonjs";
-import i18n from "i18next";
-//var i18next = require("i18next"); //.default;
+//import * as i18next from "i18next";
+var i18next = require("i18next"); //.default;
 
 
-i18n
+i18next
   .init({
     lng: "en",
     nsSeparator: false,
@@ -22,4 +22,4 @@ i18n
   });
 
 
-module.exports = i18n;
+module.exports = i18next;
