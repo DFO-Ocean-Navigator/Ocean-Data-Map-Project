@@ -475,7 +475,7 @@
         //left: 7.5em;
         left: 0.5em;
         right: auto;
-        top: 8em;
+        top: 19.5em;
     }
 
     // Zoom controls
@@ -489,7 +489,7 @@
         left: 0.5em;
         //left: 7.5em;;
         right: auto;
-        top: 7em;
+        top: 17.5em;
     }
 
     // Zoom control
@@ -499,11 +499,21 @@
         //left: 7.5em;
     }
 
+    .ol-zoom .ol-zoom-out {
+        margin-top: 212px;
+    }
+
+    .ol-zoomslider {
+        top: 2.5em;
+        height: 204px;
+        background-color: transparent;
+    }
+
     // Reset pan button
     .reset-pan {
         left: 0.5em;
         //left: 7.5em;
-        top: 5em;
+        top: 17.5em;
     }
 
     // Mouse coordinates
