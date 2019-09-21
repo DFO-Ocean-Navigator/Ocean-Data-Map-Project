@@ -6,7 +6,8 @@ import unittest
 import numpy as np
 import pytz
 
-from data.utils import (datetime_to_timestamp, find_ge, find_le, roll_time,
+from data.utils import (datetime_to_timestamp, find_ge, find_le,
+                        get_data_vars_from_equation, roll_time,
                         time_index_to_datetime)
 
 
@@ -65,3 +66,11 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(2145484800, find_ge(
             self.raw_timestamps, 2222222222))
         self.assertEqual(2144966400, find_ge(self.raw_timestamps, 0))
+
+    def test_get_data_vars_from_equation(self):
+        expected = sorted(["vosaline", "votemper"])
+
+        result = sorted(get_data_vars_from_equation(
+            "sspeed(depth, nav_lat, vosaline, votemper - 273.15)", ["vosaline", "votemper", "vozocrtx", "vomecrty"]))
+
+        self.assertEqual(expected, result)

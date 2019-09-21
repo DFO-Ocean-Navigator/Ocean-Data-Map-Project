@@ -3,7 +3,9 @@
 import datetime
 import itertools
 import json
+import re
 from bisect import bisect_left, bisect_right
+from typing import List
 
 import cftime
 import numpy as np
@@ -38,6 +40,15 @@ def find_ge(a, x):
     if i != len(a):
         return a[i]
     return a[-1]
+
+
+def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> List[str]:
+    regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
+
+    variables = set(re.findall(regex, equation))
+    data_vars = set(data_variables)
+
+    return list(variables & data_vars)
 
 
 def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):

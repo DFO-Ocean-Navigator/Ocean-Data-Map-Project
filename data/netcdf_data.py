@@ -596,7 +596,11 @@ class NetCDFData(Data):
     @property
     def timestamps(self):
         """
-        Loads, caches, and returns the time dimension from a dataset.
+            Loads, caches, and returns the values of the
+            time dimension for the open netcdf files.
+
+            Note: to get all timestamp values from a dataset,
+            you must query the SQLiteDatabase.
         """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:

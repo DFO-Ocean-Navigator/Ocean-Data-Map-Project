@@ -29,7 +29,7 @@ class TestAPIv1(unittest.TestCase):
                 "help": "help",
                 "attribution": "attrib",
                 "variables": {
-                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins"},
+                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins", "equation": "votemper - 273.15"},
                 }
             }
         }
@@ -92,11 +92,13 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res_data[0]['value'], 'Bottom')
 
     @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     @patch('data.sqlite_database.SQLiteDatabase.get_timestamps')
-    def test_timestamps_endpoint(self, patch_get_all_timestamps, patch_get_dataset_config):
+    def test_timestamps_endpoint(self, patch_get_all_timestamps, patch_get_data_variables, patch_get_dataset_config):
 
         patch_get_all_timestamps.return_value = sorted(
             [2031436800, 2034072000])
+        patch_get_data_variables.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         res = self.app.get(
