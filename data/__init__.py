@@ -9,7 +9,7 @@ from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
 from data.sqlite_database import SQLiteDatabase
-from data.utils import find_le, roll_time
+from data.utils import find_le, roll_time, get_data_vars_from_equation
 
 # We cannot cache by URL anymore since with the sqlite approach it points to a database
 # and the original cache system wasn't aware which individual NC files were opened.
@@ -95,10 +95,10 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
 
         calculated_variables = datasetconfig.calculated_variables
         if variable[0] in calculated_variables:
-            regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
             equation = calculated_variables[variable[0]]['equation']
-            variable = list(set(re.findall(regex, equation)) &
-                            set([v.key for v in db.get_data_variables()]))
+            
+            variable = get_data_vars_from_equation(
+                equation, [v.key for v in db.get_data_variables()])
 
         timestamp = __get_requested_timestamps(
             db, variable[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))

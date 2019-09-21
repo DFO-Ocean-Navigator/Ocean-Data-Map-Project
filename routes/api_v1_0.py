@@ -10,7 +10,8 @@ from flask_babel import gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import DateTimeEncoder, time_index_to_datetime
+from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
+                        time_index_to_datetime)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
@@ -81,7 +82,7 @@ def quantum_query_v1_0():
     config = DatasetConfig(dataset)
 
     quantum = config.quantum
-    
+
     return jsonify(quantum)
 
 
@@ -374,7 +375,12 @@ def timestamps():
 
     vals = []
     with SQLiteDatabase(config.url) as db:
-        vals = db.get_timestamps(variable)
+        if variable in config.calculated_variables:
+            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'], 
+                                                    [v.key for v in db.get_data_variables()])
+            vals = db.get_timestamps(data_vars[0])
+        else:
+            vals = db.get_timestamps(variable)
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
