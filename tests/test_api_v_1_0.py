@@ -24,12 +24,12 @@ class TestAPIv1(unittest.TestCase):
                 "enabled": True,
                 "url": "tests/testdata/nemo_test.nc",
                 "time_dim_units": "seconds since 1950-01-01 00:00:00",
-                "quantum": "split",
+                "quantum": "day",
                 "name": "GIOPS",
                 "help": "help",
                 "attribution": "attrib",
                 "variables": {
-                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins", "quantum": "day"},
+                    "votemper": {"name": "Temperature", "scale": [-5, 30], "units": "Kelvins"},
                 }
             }
         }
@@ -151,15 +151,12 @@ class TestAPIv1(unittest.TestCase):
     def test_quantum_query(self, patch_get_dataset_config):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        res = self.app.get('/api/v1.0/quantum/?dataset=giops&variable=votemper')
+        res = self.app.get('/api/v1.0/quantum/?dataset=giops')
 
         self.assertEqual(res.status_code, 200)
 
         res_data = self.__get_response_data(res)
         self.assertEqual(res_data, "day")
-
-        with self.assertRaises(APIError):
-            _ = self.app.get('/api/v1.0/quantum/?dataset=giops')
 
 
 if __name__ == '__main__':
