@@ -81,15 +81,8 @@ def quantum_query_v1_0():
     config = DatasetConfig(dataset)
 
     quantum = config.quantum
-    if quantum != 'split':
-        return jsonify(quantum)
-
-    if 'variable' not in args:
-        raise APIError(
-            "This dataset has multiple quantums, please specify a variable using &variable='...'")
-
-    variable = args.get('variable')
-    return jsonify(config.variable[variable].quantum)
+    
+    return jsonify(quantum)
 
 
 @bp_v1_0.route('/api/v1.0/variables/')
