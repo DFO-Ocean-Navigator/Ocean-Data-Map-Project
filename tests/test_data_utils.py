@@ -8,7 +8,7 @@ import pytz
 
 from data.utils import (datetime_to_timestamp, find_ge, find_le,
                         get_data_vars_from_equation, roll_time,
-                        time_index_to_datetime)
+                        string_to_datetime, timestamp_to_datetime)
 
 
 class TestDataUtils(unittest.TestCase):
@@ -32,13 +32,13 @@ class TestDataUtils(unittest.TestCase):
 
         time_units = 'seconds since 1950-01-01 00:00:00'
 
-        res = time_index_to_datetime(self.raw_timestamps, time_units)
+        res = timestamp_to_datetime(self.raw_timestamps, time_units)
         self.assertEqual(len(res), 7)
         self.assertEqual(res[0], datetime.datetime(
             2017, 12, 21, 0, 0, tzinfo=pytz.UTC))
 
         raw_timestamp_not_list = 2144966400
-        res_2 = time_index_to_datetime(raw_timestamp_not_list, time_units)
+        res_2 = timestamp_to_datetime(raw_timestamp_not_list, time_units)
 
         self.assertEqual(res_2[0], datetime.datetime(
             2017, 12, 21, 0, 0, tzinfo=pytz.UTC))
@@ -74,3 +74,7 @@ class TestDataUtils(unittest.TestCase):
             "sspeed(depth, nav_lat, vosaline, votemper - 273.15)", ["vosaline", "votemper", "vozocrtx", "vomecrty"]))
 
         self.assertEqual(expected, result)
+
+    def test_string_to_datetime(self):
+        self.assertEqual(string_to_datetime("Tue, 07 Feb 1984 12:00:00 NDT"), datetime.datetime(
+            1984, 2, 7, 12, 0, 0, tzinfo=pytz.UTC))

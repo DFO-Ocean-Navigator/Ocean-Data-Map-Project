@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import datetime
 import hashlib
 import json
@@ -10,17 +12,14 @@ from flask_babel import gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
-                        time_index_to_datetime)
+from data.utils import (DateTimeEncoder, datetime_to_timestamp,
+                        get_data_vars_from_equation, string_to_datetime,
+                        timestamp_to_datetime)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# API INTERFACE V1.0
-# ~~~~~~~~~~~~~~~~~~~~~~~
 
 
 @bp_v1_0.errorhandler(ErrorBase)
@@ -206,7 +205,7 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
     API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
 
     <string:dataset>  : Dataset to extract data
-    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <string:variable> : Type of data to retrieve - found using /api/v1.0/variables/?dataset='...'
     <string:scale>    : Desired scale
 
     Returns a scale bar
@@ -215,18 +214,24 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
     return routes.routes_impl.scale_impl(dataset, variable, scale)
 
 
-@bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json')
-def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: int):
-    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
+@bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
+def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
+
+    config = DatasetConfig(dataset)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, timestamp)
 
 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
 def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+
     config = DatasetConfig(dataset)
-    with open_dataset(config) as ds:
-        date = ds.convert_to_timestamp(time)
-        # print(date)
-        return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.get_data_impl(dataset, variable, timestamp, depth, location)
 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
@@ -271,6 +276,10 @@ def subset_query_v1_0():
 
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
+    time_range[0] = datetime_to_timestamp(
+        string_to_datetime(time_range[0]), config.time_dim_units)
+    time_range[1] = datetime_to_timestamp(
+        string_to_datetime(time_range[1]), config.time_dim_units)
     variables = args['variables'].split(',')
     with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
         working_dir, subset_filename = dataset.subset(args)
@@ -376,23 +385,23 @@ def timestamps():
     vals = []
     with SQLiteDatabase(config.url) as db:
         if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'], 
+            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                     [v.key for v in db.get_data_variables()])
             vals = db.get_timestamps(data_vars[0])
         else:
             vals = db.get_timestamps(variable)
-    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
+    converted_vals = timestamp_to_datetime(vals, config.time_dim_units)
 
     result = []
-    for idx, date in enumerate(converted_vals):
-        if config.quantum == 'month' or config.variable[variable].quantum == 'month':
+    for date in converted_vals:
+        if config.quantum == 'month':
             date = datetime.datetime(
                 date.year,
                 date.month,
                 15
             )
-        result.append({'id': vals[idx], 'value': date})
-    result = sorted(result, key=lambda k: k['id'])
+        result.append(date)
+    result = sorted(result)
 
     js = json.dumps(result, cls=DateTimeEncoder)
 
@@ -402,12 +411,18 @@ def timestamps():
 
 @bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
+    # TODO: migrate to new time interpolation method
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, zoom: int, x: int, y: int):
+
+    config = DatasetConfig(dataset)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, timestamp, depth, scale, zoom, x, y)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')

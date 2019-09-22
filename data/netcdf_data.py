@@ -21,7 +21,7 @@ import data.calculated
 from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
 from data.sqlite_database import SQLiteDatabase
-from data.utils import time_index_to_datetime
+from data.utils import timestamp_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
 from utils.errors import ServerError
@@ -99,7 +99,7 @@ class NetCDFData(Data):
 
         time_var = self.time_variable
 
-        result = time_index_to_datetime(timestamp, time_var.attrs['units'])
+        result = timestamp_to_datetime(timestamp, time_var.attrs['units'])
 
         return result if len(result) > 1 else result[0]
 
@@ -608,7 +608,7 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            time_list = time_index_to_datetime(var.values, var.attrs['units'])
+            time_list = timestamp_to_datetime(var.values, var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps

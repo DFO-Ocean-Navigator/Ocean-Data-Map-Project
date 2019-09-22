@@ -81,8 +81,7 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
 
 
 def info_impl():
-    raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+    return jsonify("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
 
 def query_impl(q: str):
@@ -791,7 +790,7 @@ def plot_impl(query: dict, args):
         plotter = StickPlotter(dataset, query, **options)
     else:
         raise APIError(
-            "You Have Not Selected a Plot Type - Please Review your Query")
+            "You have not provided a supported plottype argument - please review your query")
 
     filename = 'png'
 
