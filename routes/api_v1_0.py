@@ -393,15 +393,15 @@ def timestamps():
     converted_vals = timestamp_to_datetime(vals, config.time_dim_units)
 
     result = []
-    for date in converted_vals:
+    for idx, date in enumerate(converted_vals): #TODO: dump the enumerate once the front-end is off the indexes.
         if config.quantum == 'month':
             date = datetime.datetime(
                 date.year,
                 date.month,
                 15
             )
-        result.append(date)
-    result = sorted(result)
+        result.append({'id': vals[idx], 'value': date})
+    result = sorted(result, key=lambda k: k['id'])
 
     js = json.dumps(result, cls=DateTimeEncoder)
 
