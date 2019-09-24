@@ -9,6 +9,7 @@ import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import ModalContainer from "./ModalContainer.jsx"
+import PlotContainer from "./plotting/PlotContainer.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -134,11 +135,8 @@ export default class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
-        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
         const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
         $.extend(this.state, querystate);
-        
-        console.warn("DATA: ", this.state.data)
 
       } catch (err) {
         console.error(err);
@@ -751,7 +749,13 @@ export default class OceanNavigator extends React.Component {
           />*/}
 
           {map}
+          <PlotContainer
+            map_left={this.mapComponent}
+            map_right={this.mapComponent2}
+          ></PlotContainer>
         </div>
+
+        
 
         <Modal
           show={this.state.showModal}

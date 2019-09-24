@@ -230,7 +230,6 @@ export default class TimeBarContainer extends React.Component {
 
 
     localUpdate(id, startTime, endTime) {
-
         // This is updating to local time, therefore must get local time from object
         //startTime = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate(), startTime.getHours(), startTime.getMinutes())
         //endTime = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate(), endTime.getHours(), endTime.getMinutes())
@@ -246,6 +245,7 @@ export default class TimeBarContainer extends React.Component {
             endTimes: endTimes,
         });
         this.setTime(startTimes);
+
     }
 
     toggleLayer(e) {
@@ -276,48 +276,11 @@ export default class TimeBarContainer extends React.Component {
         //layers = {'global': ['all']}
         let timeBars = []
         let quantums = []
-        /*
-        for (let map in sources) {
-            for (let layer in sources[map]) {
-                //if (self.state.showLayer.includes(layer)) {
-                let new_layer = sources[map][layer]//new Set(this.props.timeSources[layer])
-                for (let idx in new_layer) {
-                    for (let dataset in new_layer[idx]) {
-                        for (let variable in new_layer[idx][dataset]) {
-
-                            quantums.push(new_layer[idx][dataset][variable].quantum)
-                            timeBars.push(
-                                <div key={map + layer + idx + dataset + variable} className='timeLayerContainer'>
-                                    <Button
-                                        id={map + layer + idx + dataset + variable}
-                                        key={map + layer + idx + dataset + variable + '_button'}
-                                        className='timeBarToggle'
-                                        onClick={self.toggleLayer}
-                                    >{this.state.icons[layer]}</Button>
-                                    <TimeSelect
-                                        dates_available
-                                        show={self.state.showLayer.includes(map + layer + idx + dataset + variable)}
-                                        key={map + layer + idx + dataset + variable}
-                                        id={map + layer + idx + dataset + variable}
-                                        idx={idx}
-                                        name={layer}
-                                        dataset={dataset}
-                                        quantum={new_layer[idx][dataset][variable].quantum}
-                                        currentTime={this.state.times[map + layer + idx + dataset + variable]}
-                                        localUpdate={self.localUpdate}
-                                    ></TimeSelect>
-                                </div>)
-                        }
-                    }
-                }
-
-            }
-        }*/
         let idx = 0
         for (let layer in this.props.layers) {
             layer = this.props.layers[layer];
-        
             if (layer.values_.time !== undefined) {
+                
                 idx = idx + 1;
                 quantums.push(layer.values_.time.quantum);
                 timeBars.push(

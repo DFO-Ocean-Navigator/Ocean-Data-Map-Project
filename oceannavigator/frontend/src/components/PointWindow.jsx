@@ -602,7 +602,6 @@ export default class PointWindow extends React.Component {
       </div>
     
 
-    
     let line1 = <hr key='1' className='line' />
     let line2 = <hr key='2' className='line' />
     let line3 = <hr key='3' className='line' />
@@ -630,14 +629,10 @@ export default class PointWindow extends React.Component {
         />
       }
 
-      console.warn("TIME CAUSING ERROR: ", this.state.time)
-      console.warn("POTENTIAL TIME: ", this.state.starttime)
-      console.warn("THIS.STATE: ", this.state)
-      console.warn("THIS.PROPS: ", this.props)
       if (showTime) {
         time = <TimePicker
         range={false}
-        key={moment(this.state.starttime)}  
+        key={this.state.starttime.toISOString()}  
         dataset={this.state.dataset}
         quantum={this.state.dataset_quantum}
         startDate={starttimeObj}

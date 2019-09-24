@@ -10,6 +10,7 @@ import ReactSimpleRange from "react-simple-range";
 import IceComboBox from "./IceComboBox.jsx";
 import NewComboBox from "./newComboBox.jsx";
 import { Checkbox } from 'react-bootstrap';
+import _ from 'lodash';
 
 const i18n = require("../i18n.js");
 //import * as i18n from 'i18next';
@@ -294,7 +295,6 @@ export default class Layer extends React.Component {
         current_variable: new_variable,
         current_scale: new_scale,
       }, () => {
-        console.warn("CALLING UPDATE DATES: ", this.state.current_dataset)
         this.changeTimeSource({
           new_dataset: new_dataset,
           new_quantum: new_quantum,
@@ -535,9 +535,7 @@ export default class Layer extends React.Component {
     }
 
     if (true /*this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined*/) {
-      console.warn("COMPONENT DID UPDATE")
-        console.warn("UPDATING DATES")
-        this.updateDates();
+      this.updateDates();
       if (this.props.state.timestamps !== prevProps.state.timestamps || this.state.current_dataset !== prevState.current_dataset || this.state.current_variable !== prevState.current_variable || this.props.state.projection !== prevProps.state.projection) {
         this.updateLayer();
         this.sendData();
@@ -1155,7 +1153,7 @@ export default class Layer extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.layerName)}</div>}
+        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {this.props.layerName}</div>}
         bsStyle='primary'
       >
         <Button

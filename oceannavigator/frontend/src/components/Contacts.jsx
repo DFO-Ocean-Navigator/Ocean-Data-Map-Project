@@ -8,7 +8,8 @@ import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import ContactButton from "./ContactButton.jsx";
-import ol from "openlayers";
+import * as ol from 'ol'
+import * as olcontrol from 'ol/control'
 import ShipOptions from "./ShipOptions.jsx";
 
 
@@ -76,13 +77,13 @@ export default class Contacts extends React.Component {
         this.props.mapComponent.removeMapInteractions('Circle')
 
         //CREATE A VECTOR SOURCE
-        let vectorSource = new ol.source.Vector({
+        let vectorSource = new olsource.Vector({
           wrapX: false,
           crossOrigin: 'anonymous'
         })
 
 
-        var draw = new ol.interaction.Draw({
+        var draw = new olcontrol.interaction.Draw({
           source: vectorSource,
           type: 'Circle',
           stopClick: true

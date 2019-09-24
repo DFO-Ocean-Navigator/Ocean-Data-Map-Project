@@ -8,7 +8,7 @@ import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import ContactButton from "./ContactButton.jsx";
-import ol from "openlayers";
+import * as ol from 'ol';
 
 
 

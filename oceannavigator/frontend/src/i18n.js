@@ -1,7 +1,7 @@
 import LngDetector from "i18next-browser-languagedetector"; 
 //import { changeLanguage } from "i18next/dist/commonjs";
-//import * as i18next from "i18next";
-var i18next = require("i18next"); //.default;
+import * as i18next from "i18next";
+//var i18next = require("i18next"); //.default;
 
 
 i18next
