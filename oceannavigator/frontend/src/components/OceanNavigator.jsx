@@ -161,8 +161,6 @@ export default class OceanNavigator extends React.Component {
     // Function bindings (performance optimization)
     this.toggleSidebar = this.toggleSidebar.bind(this);
     this.toggleCompareHelp = this.toggleCompareHelp.bind(this);
-    this.showBugsModal = this.showBugsModal.bind(this);
-    this.hideBugsModal = this.hideBugsModal.bind(this);
     this.swapViews = this.swapViews.bind(this);
     this.updateState = this.updateState.bind(this);
     this.action = this.action.bind(this);
@@ -872,62 +870,7 @@ export default class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal
-          show={this.state.showBugs}
-          onHide={this.hideBugsModal}
-          bsSize="large"
-          dialogClassName="bugsdialog"
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Water Velocity Issue")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>
-              There is a known issue with how the direction of water velocity is rendered.<br />
-              <br />
-            </p>
-            <p>
-              The "water x velocity" and "water y velocity" do not necessarily refer to water velocity
-              in the East or North direction. Instead, they refer to the water velocity along the x or y axis
-              of the grid used by the source data, which are often rotated.<br />
-              <br />
-            </p>
-            <p>
-              For data sources such as GIOPS daily and GIOPS monthly this means the data is on a tripolar grid and the
-              angle of the x-axis changes, deviating further from the Latitude Longitude grid directions closer to the
-              north pole.<br />
-              <br />
-            </p>
-            <p>
-              This issue is known to have an impact on:<br />
-              * Water velocity (x,y and combined) for The Global, Arctic, and Antarctic projections for all dataset<br />
-              * Model Water velocity for the Area, Point, and Line/Transect plots. for all datasets.<br />
-              * Model Water velocity (x, y, and combined) for exported CSV's and ODE<br />
-              * Model Water velocity for drifter plots.<br />
-              <br />
-              <br />
-            </p>
-            Please note that the magnitude of the velocity is correct, it is only the direction of the velocity that is misrendered.
-            Also, note that for GIOPS and GLORYS this issue only has a minor effect on data that is south of
-            60deg Latitude, however, data above that Latitude could be represented in ways that are confusing without
-            a detailed knowledge of the original datasets. Again are working on resolving this issue and hope to have
-              a clear and understandable fix released soon. <br />
-            <br />
-            <p>
-              you would like more detailed information you can view our bug tracking this problem on
-              our <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project" target="_blank">github</a> page and look for issue
-              <a href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/213" target="_blank">"Bearing and vector representation"</a> <br />
-              If you still need more information about the problem contact oceandatamap@gmail.com <br />
-              <br />
-            </p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.hideBugsModal}><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
+        <Modal 
           show={this.state.busy}
           dialogClassName='busy-modal'
           backdrop

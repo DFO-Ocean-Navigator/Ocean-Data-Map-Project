@@ -449,16 +449,16 @@ export default class AreaWindow extends React.Component {
 
   subsetArea() {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-
-    window.location.href = "/subset/?" +
-      "&output_format=" + this.state.output_format +
-      "&dataset_name=" + this.state.data.dataset +
-      "&variables=" + this.state.output_variables.join() +
-      "&min_range=" + [AABB[0], AABB[2]].join() +
-      "&max_range=" + [AABB[1], AABB[3]].join() +
-      "&time=" + [this.state.output_starttime.toISOString(), this.state.output_endtime.toISOString()].join() +
-      "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
-      "&should_zip=" + (this.state.zip ? 1 : 0);
+    
+    window.location.href = "/api/v1.0/subset/?" +
+       "&output_format=" + this.state.output_format +
+       "&dataset_name=" + this.state.data.dataset +
+       "&variables=" + this.state.output_variables.join() +
+       "&min_range=" + [AABB[0], AABB[2]].join() +
+       "&max_range=" + [AABB[1], AABB[3]].join() +
+       "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
+       "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
   saveScript(key) {
@@ -652,13 +652,13 @@ export default class AreaWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Diff. Variable Range")}
         />
-        <ComboBox
-          key='colormap_diff'
-          id='colormap_diff'
-          state={this.state.colormap_diff}
-          def='default'
-          onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+        <ComboBox 
+          key='colormap_diff' 
+          id='colormap_diff' 
+          state={this.state.colormap_diff} 
+          def='default' 
+          onUpdate={this.onLocalUpdate} 
+          url='/api/v1.0/colormaps/' 
           title={_("Diff. Colourmap")}
         >
           {_("colourmap_help")}
@@ -733,6 +733,7 @@ export default class AreaWindow extends React.Component {
       {applyChanges2}
     </Panel>);
 
+<<<<<<< HEAD
 
     let time = "";
     let timeObj = this.state.output_endtime//new Date(this.props.state.time);
@@ -759,6 +760,50 @@ export default class AreaWindow extends React.Component {
             }
             title={_("Variables")}
           />
+=======
+    const subsetPanel = (<Panel
+      key='subset'
+      collapsible
+      defaultExpanded
+      header={_("Subset")}
+      bsStyle='primary'
+    >
+      <form>
+        <ComboBox
+          id='variable'
+          key='variable'
+          multiple={true}
+          state={this.state.output_variables}
+          def={"defaults.dataset"}
+          onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
+          url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
+          }
+          title={_("Variables")}
+        />
+
+        <SelectBox
+          id='time_range'
+          key='time_range'
+          state={this.state.output_timerange}
+          onUpdate={(key, value) => {this.setState({output_timerange: value,});}}
+          title={_("Select Time Range")}
+        />
+
+        <TimePicker
+          id='starttime'
+          key='starttime'
+          state={this.state.output_starttime}
+          def=''
+          quantum={this.state.dataset_0.dataset_quantum}
+          url={"/api/v1.0/timestamps/?dataset=" +
+                this.state.dataset_0.dataset +
+                "&variable=" +
+                this.state.dataset_0.variable}
+          title={this.state.output_timerange ? _("Start Time") : _("Time")}
+          onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
+          max={this.state.dataset_0.time + 1}
+        />
+>>>>>>> migrate-api-inputs-to-iso-8601
 
           <SelectBox
             id='time_range'
@@ -823,68 +868,65 @@ export default class AreaWindow extends React.Component {
           </div>
           */}
 
+        <FormGroup controlId="output_format">
+          <ControlLabel>{_("Output Format")}</ControlLabel>
+          <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
+            <option value="NETCDF4">{_("NetCDF-4")}</option>
+            <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
+            <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            <option value="NETCDF3_NC" disabled={
+              this.state.dataset_0.dataset.indexOf("giops") === -1 &&
+              this.state.dataset_0.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
+            }>
+              {_("NetCDF-3 NC")}
+            </option>
+            <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
+          </FormControl>
+        </FormGroup>
 
-          <FormGroup controlId="output_format">
-            <ControlLabel>{_("Output Format")}</ControlLabel>
-            <FormControl componentClass="select" onChange={e => { this.setState({ output_format: e.target.value, }); }}>
-              <option value="NETCDF4">{_("NetCDF-4")}</option>
-              <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
-              <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
-              <option value="NETCDF3_NC" disabled={
-                this.state.data.dataset.indexOf("giops") === -1 &&
-                this.state.data.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
-              }>
-                {_("NetCDF-3 NC")}
-              </option>
-              <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
-            </FormControl>
-          </FormGroup>
+        {/*
+        <SelectBox
+          id='convertToUserGrid'
+          key='convertToUserGrid'
+          state={this.state.convertToUserGrid}
+          onUpdate={this.onLocalUpdate}
+          title={_("Convert to User Grid")}
+        />
+*/}        
+        <SelectBox 
+          id='zip'
+          key='zip'
+          state={this.state.zip} 
+          onUpdate={this.onLocalUpdate} 
+          title={_("Compress as *.zip")}
+        />
 
-          {/*
-          <SelectBox
-            id='convertToUserGrid'
-            key='convertToUserGrid'
-            state={this.state.convertToUserGrid}
-            onUpdate={this.onLocalUpdate}
-            title={_("Convert to User Grid")}
-          />
-  */}
-          <SelectBox
-            id='zip'
-            key='zip'
-            state={this.state.zip}
-            onUpdate={this.onLocalUpdate}
-            title={_("Compress as *.zip")}
-          />
-
-          <Button
-            bsStyle="default"
-            key='save'
-            id='save'
-            onClick={this.subsetArea}
-            disabled={this.state.output_variables == ""}
-          ><Icon icon="save" /> {_("Save")}</Button>
-
-          <DropdownButton
-            id="script"
-            title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
-            bsStyle={"default"}
-            disabled={this.state.output_variables == ""}
-            onSelect={this.saveScript}
-            dropup
-          >
-            <MenuItem
-              eventKey="python"
-            ><Icon icon="code" /> {_("Python 3")}</MenuItem>
-            <MenuItem
-              eventKey="r"
-            ><Icon icon="code" /> {_("R")}</MenuItem>
-          </DropdownButton>
-        </form>
-      </Panel>
-      );
-
-    }
+        <Button 
+          bsStyle="default" 
+          key='save'
+          id='save'
+          onClick={this.subsetArea}
+          disabled={this.state.output_variables == ""}
+        ><Icon icon="save" /> {_("Save")}</Button>
+        
+        <DropdownButton
+          id="script"
+          title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
+          bsStyle={"default"}
+          disabled={this.state.output_variables == ""}
+          onSelect={this.saveScript}
+          dropup
+        >
+          <MenuItem
+            eventKey="python"
+          ><Icon icon="code" /> {_("Python 3")}</MenuItem>
+          <MenuItem
+            eventKey="r"
+          ><Icon icon="code" /> {_("R")}</MenuItem>
+        </DropdownButton>
+      </form>
+    </Panel>
+    );
 
     const globalSettings = (<Panel
       collapsible
@@ -951,7 +993,6 @@ export default class AreaWindow extends React.Component {
         {applyChanges1}
       </Panel>);
 
-    }
 
     let applyChanges_compare = <Button
       key='compare'
@@ -984,13 +1025,13 @@ export default class AreaWindow extends React.Component {
             title={_("Variable Range")}
           />
 
-          <ComboBox
-            key='rightColormap'
-            id='rightColormap'
-            state={this.state.rightColormap}
-            def='default'
-            onUpdate={this.onLocalUpdate}
-            url='/api/colormaps/'
+          <ComboBox 
+            key='rightColormap' 
+            id='rightColormap' 
+            state={this.state.rightColormap} 
+            def='default' 
+            onUpdate={this.onLocalUpdate} 
+            url='/api/v1.0/colormaps/' 
             title={_("Colourmap")}
           >
             {_("colourmap_help")}

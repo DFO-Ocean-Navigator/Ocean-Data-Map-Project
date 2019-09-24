@@ -133,7 +133,7 @@ export default class DatasetSelector extends React.Component {
             state={this.props.state.dataset}
             def={"defaults.dataset"}
             onUpdate={this.onUpdate}
-            url='/api/datasets/'
+            url='/api/v1.0/datasets/'
             title={_("Dataset")}>
           </ComboBox>
         }
@@ -159,7 +159,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.depth}
           def={0}
           onUpdate={this.onUpdate}
-          url={"/api/depth/?variable=" +
+          url={"/api/v1.0/depth/?variable=" +
             this.props.state.variable +
             "&dataset=" +
             this.props.state.dataset

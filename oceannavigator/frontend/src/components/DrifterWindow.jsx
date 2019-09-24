@@ -224,7 +224,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.buoyvariable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/drifters/vars/" + this.props.drifter}
+      url={"/api/v1.0/drifters/vars/" + this.props.drifter}
       title={_("Buoy Variable")}
     ><h1>Buoy Variable</h1></ComboBox>;
     var variable = <ComboBox
@@ -297,7 +297,7 @@ export default class DrifterWindow extends React.Component {
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={"/api/depth/?variable=" +
+      url={"/api/v1.0/depth/?variable=" +
         this.state.variable +
         "&dataset=" +
         this.state.dataset

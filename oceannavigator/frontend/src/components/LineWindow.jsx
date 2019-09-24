@@ -48,7 +48,7 @@ export default class LineWindow extends React.Component {
       dpi: 144,
       depth_limit: false,
       plotTitles: Array(2).fill(""),
-      selectedPlots: [0, 1, 1],
+      selectedPlots: [0, 1, 1]
     };
 
     if (props.init !== null) {
@@ -527,7 +527,7 @@ export default class LineWindow extends React.Component {
           state={this.state.colormap_diff}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </div>
@@ -579,7 +579,7 @@ export default class LineWindow extends React.Component {
         state={this.state.data.colourmap}
         def='default'
         onUpdate={this.onLocalUpdate}
-        url='/api/colormaps/'
+        url='/api/v1.0/colormaps/'
         title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
       {applyChanges3}
@@ -710,9 +710,7 @@ LineWindow.propTypes = {
   scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   scale_1: PropTypes.string,
   init: PropTypes.object,
-  starttime: PropTypes.number,
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
-  starttime_1: PropTypes.number,
 };

@@ -1,26 +1,53 @@
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
-import matplotlib.gridspec as gridspec
 import numpy as np
-import seawater
 import pint
-import plotting.utils as utils
-import plotting.ts as plTS
+import seawater
 from flask_babel import gettext
 
-class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
+import plotting.utils as utils
+from plotting.ts import TemperatureSalinityPlotter
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+
+class SoundSpeedPlotter(TemperatureSalinityPlotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "sound"
+
         super(
-            plTS.TemperatureSalinityPlotter, self).__init__(dataset_name, query,
-                                                          format)
-        #self.size = '4x8'
+            SoundSpeedPlotter, self).__init__(dataset_name, query,
+                                              **kwargs)
+
+    def load_data(self):
+        super(SoundSpeedPlotter, self).load_data()
+
+        self.pressure = [seawater.pres(self.temperature_depths[idx], ll[0])
+                         for idx, ll in enumerate(self.points)]
+
+        ureg = pint.UnitRegistry()
+        try:
+            u = ureg.parse_units(self.variable_units[0].lower())
+        except:
+            u = ureg.dimensionless
+
+        if u == ureg.boltzmann_constant:
+            u = ureg.kelvin
+
+        if u == ureg.kelvin:
+            temperature_c = ureg.Quantity(
+                self.temperature, u).to(ureg.celsius).magnitude
+        else:
+            temperature_c = self.temperature
+
+        self.sspeed = seawater.svel(
+            self.salinity, temperature_c, self.pressure
+        )
 
     def plot(self):
         
         # Create base figure
-        fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
+        fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
 
         # Setup figure layout
         width = 2 if self.showmap else 1
@@ -33,9 +60,8 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         # Render point location
         if self.showmap:
             plt.subplot(gs[0, 0])
-            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
-                                        [x[1] for x in self.points]])) # Longitudes
-
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]))  # Longitudes
 
         # Plot Sound Speed profile
         plt.subplot(gs[:, 1 if self.showmap else 0])
@@ -75,14 +101,14 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
 
-        if self.plotTitle is None or self.plotTitle == "":  
+        if not self.plotTitle:
             ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-                ", ".join(self.names), self.date_formatter(self.timestamp)
+                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
             ), fontsize=15)
-        else :
-            ax.set_title(self.plotTitle,fontsize=15)
-        
-        ax.title.set_position([.5, 1.10])
+        else:
+            ax.set_title(self.plotTitle, fontsize=15)
+
+        ax.title.set_position([0.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)
 
@@ -94,12 +120,14 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        return super(plTS.TemperatureSalinityPlotter, self).plot(fig)
+        # This is a little strange where we want to skip calling the TSP.plot and go straigh
+        # to Point.plot
+        return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
         header = [
             ["Dataset", self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp]
         ]
 
         columns = [
@@ -129,31 +157,6 @@ class SoundSpeedPlotter(plTS.TemperatureSalinityPlotter):
                     "%0.1f" % self.sspeed[idx][idx2]
                 ])
 
-        return super(plTS.TemperatureSalinityPlotter, self).csv(
+        return super(TemperatureSalinityPlotter, self).csv(
             header, columns, data
-        )
-
-    def load_data(self):
-        super(SoundSpeedPlotter, self).load_data()
-
-        self.pressure = [seawater.pres(self.temperature_depths[idx], ll[0])
-                         for idx, ll in enumerate(self.points)]
-
-        ureg = pint.UnitRegistry()
-        try:
-            u = ureg.parse_units(self.variable_units[0].lower())
-        except:
-            u = ureg.dimensionless
-
-        if u == ureg.boltzmann_constant:
-            u = ureg.kelvin
-
-        if u == ureg.kelvin:
-            unit = "Celsius"
-            temperature_c = ureg.Quantity(self.temperature, u).to(ureg.celsius).magnitude
-        else:
-            temperature_c = self.temperature
-
-        self.sspeed = seawater.svel(
-            self.salinity, temperature_c, self.pressure
         )

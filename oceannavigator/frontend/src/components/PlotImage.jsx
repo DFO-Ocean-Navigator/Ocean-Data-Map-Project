@@ -364,11 +364,7 @@ export default class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    if (q.type === 'drifter' || q.type === 'class4') {
-      return "/plot/?query=" + encodeURIComponent(stringify(query))
-    } else {
-      return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
-    }
+    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {

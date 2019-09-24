@@ -1,35 +1,43 @@
-from pykdtree.kdtree import KDTree
-import pyresample
-import numpy as np
+import re
 import warnings
-from data.calculated import CalculatedData
-from netCDF4 import Dataset, chartostring
-from data.data import Variable, VariableList
+
+import dateutil.parser
+import netCDF4 as netcdf
+import numpy as np
+import pyresample
 import pytz
 from cachetools import TTLCache
-import dateutil.parser
+from pykdtree.kdtree import KDTree
+
+from data.calculated import CalculatedData
+from data.variable import Variable
+from data.variable_list import VariableList
 from utils.errors import ServerError
-import re
 
 RAD_FACTOR = np.pi / 180.0
 EARTH_RADIUS = 6378137.0
 
-"""
-    FVCOM datasets have a non-uniform grid,
-    so xArray can't handle it/
 
-"""
 class Fvcom(CalculatedData):
+
+    """
+        FVCOM datasets have a non-uniform grid,
+        so xArray can't handle it/
+    """
+
     __depths = None
 
     def __init__(self, url: str, **kwargs):
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        
+
         super(Fvcom, self).__init__(url, **kwargs)
-    
+
     def __enter__(self):
-        self._dataset = Dataset(self.url, 'r')
+        if self._nc_files:
+            self._dataset = netcdf.MFDataset(self._nc_files)
+        else:
+            self._dataset = netcdf.Dataset(self.url, 'r')
 
         return self
 
@@ -41,16 +49,32 @@ class Fvcom(CalculatedData):
         return ['siglev', 'siglay']
 
     def subset(self, query):
-        raise ServerError("Subsetting FVCOM datasets is currently not supported.")
+        raise ServerError(
+            "Subsetting FVCOM datasets is currently not supported.")
 
-    """
-        Supposedly FVCOM is surface only?
-    """
+    def timestamp_to_time_index(self, timestamp: int):
+        """Converts a given timestamp (e.g. 2031436800) into the corresponding
+        time index for the time dimension. Overloaded for Fvcom to handle
+        floating-point time indices.
+
+        Arguments:
+            timestamp {int} -- Raw timestamp.
+
+        Returns:
+            [int] -- Time index.
+        """
+
+        time_var = self.time_variable
+
+        # https: // stackoverflow.com/a/41022847/2231969
+        # We use 1.e-7 since the default 1.e-5 doesn't provide enough precision
+        return next(i for i, _ in enumerate(time_var) if np.isclose(_, timestamp, 1.e-7))
+
     @property
     def depths(self):
         if self.__depths is None:
             self.__depths = np.array([0])
-            self.__depths.setflags(write=False) # Make immutable
+            self.__depths.setflags(write=False)  # Make immutable
 
         return self.__depths
 
@@ -67,59 +91,15 @@ class Fvcom(CalculatedData):
 
             tz = pytz.timezone(var.time_zone)
             time_list = list(map(
-                lambda dateStr: 
+                lambda dateStr:
                 dateutil.parser.parse(dateStr).replace(tzinfo=tz),
-                chartostring(var[:])
+                netcdf.chartostring(var[:])
             ))
             timestamps = np.array(time_list)
-            timestamps.setflags(write=False) # Make immutable
+            timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
-
-    """
-        Returns a list of all data variables and their 
-        attributes in the dataset.
-    """
-    @property
-    def variables(self):
-        # Check if variable list has been created yet.
-        # This saves approx 3 lookups per tile, and
-        # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
-            l = []
-            for name in self._dataset.variables:
-                var = self.get_dataset_variable(name)
-                
-                if 'coordinates' not in var.ncattrs():
-                    continue
-
-                if 'long_name' in var.ncattrs():
-                    long_name = var.long_name
-                else:
-                    long_name = name
-
-                if 'units' in var.ncattrs():
-                    units = var.units
-                else:
-                    units = None
-
-                if 'valid_min' in var.ncattrs():
-                    valid_min = float(re.sub(r"[^0-9\.\+,eE]", "",
-                                             str(var.valid_min)))
-                    valid_max = float(re.sub(r"[^0-9\,\+,eE]", "",
-                                             str(var.valid_max)))
-                else:
-                    valid_min = None
-                    valid_max = None
-
-                # Add to our "Variable" wrapper
-                l.append(Variable(name, long_name, units, var.dimensions,
-                                  valid_min, valid_max))
-
-            self._variable_list = VariableList(l) # Cache for later
-        
-        return self._variable_list
 
     def __find_var(self, candidates):
         for c in candidates:
@@ -217,7 +197,7 @@ class Fvcom(CalculatedData):
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1. / r #** 2
+            return 1. / r  # ** 2
 
         data = np.squeeze(var[:])
 
@@ -270,7 +250,7 @@ class Fvcom(CalculatedData):
 
         return np.squeeze(output)
 
-    def get_raw_point(self, latitude, longitude, depth, time, variable):
+    def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude, False, 10)
 
@@ -279,6 +259,7 @@ class Fvcom(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+        time = self.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
         if depth == 'bottom':
@@ -295,9 +276,10 @@ class Fvcom(CalculatedData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable,
+    def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
         var = self.get_dataset_variable(variable)
+        time = self.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
         min_i, max_i, radius = self.__bounding_box(
@@ -346,8 +328,9 @@ class Fvcom(CalculatedData):
         else:
             return res
 
-    def __get_depths(self, variable, time, min_i, max_i):
+    def __get_depths(self, variable, timestamp, min_i, max_i):
         var = self.get_dataset_variable(variable)
+        time = self.timestamp_to_time_index(timestamp)
 
         if 'nele' in var.dimensions:
             # First, find indicies to cover the nodes
@@ -411,8 +394,9 @@ class Fvcom(CalculatedData):
             z = -1 * (sigma * (bath + surf) + surf)
             return z
 
-    def get_profile(self, latitude, longitude, time, variable):
+    def get_profile(self, latitude, longitude, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
+        time = self.timestamp_to_time_index(timestamp)
 
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude,

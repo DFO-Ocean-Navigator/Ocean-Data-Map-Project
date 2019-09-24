@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import re
 import json
 from flask import current_app
@@ -42,6 +42,17 @@ class DatasetConfig():
         return self._get_attribute("url")
 
     @property
+    def type(self) -> str:
+        """
+        Returns the dataset type string: "historical" or "forecast"
+        """
+        return self._get_attribute("type")
+
+    @property
+    def time_dim_units(self) -> str:
+        return self._get_attribute("time_dim_units")
+
+    @property
     def climatology(self) -> str:
         """
         Returns the THREDDS climatology URL for a dataset
@@ -56,19 +67,16 @@ class DatasetConfig():
         return self._get_attribute("name")
 
     @property
-    def envtype(self) -> list:
-        """
-        Returns a list of all the envtypes for variables in the dataset
-        """
-        print("ENVTYPE: ", self._get_attribute("envtype"))
-        return self._get_attribute("envtype")
-
-    @property
     def help(self) -> str:
         """
         Returns the help text for a given dataset
         """
         return self._get_attribute("help")
+
+    @property
+    def grid_angle_file_url(self):
+        # return self._get_attribute("grid_angle_file_url")
+        return ""
 
     @property
     def quantum(self) -> str:
@@ -110,12 +118,12 @@ class DatasetConfig():
             not hidden in dataset config file
         """
         variables = []
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
             is_vector = ',' in key
 
-            if (is_hidden is False or \
-                    is_hidden is None or \
+            if (is_hidden is False or
+                    is_hidden is None or
                     is_hidden in ['false', 'False']) and \
                     not is_vector:
                 variables.append(key)
@@ -124,12 +132,12 @@ class DatasetConfig():
     @property
     def vector_variables(self) -> dict:
         variables = {}
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
             is_vector = ',' in key
 
-            if (is_hidden is False or \
-                    is_hidden is None or \
+            if (is_hidden is False or
+                    is_hidden is None or
                     is_hidden in ['false', 'False']) and \
                     is_vector:
                 variables[key] = data
@@ -141,7 +149,7 @@ class DatasetConfig():
             Returns a dict of the calculated variables for the specified dataset
         """
         variables = {}
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             if "equation" in data.keys():
                 variables[key] = data
         return variables
@@ -161,6 +169,7 @@ class DatasetConfig():
 
         def __getitem__(self, key):
             return VariableConfig(self._config, key)
+
 
 class VariableConfig():
     """
@@ -182,8 +191,9 @@ class VariableConfig():
             # will return None for any attribute. It extends a dict in case any
             # future code is added that will need any attributes populated.
             self._key = variable
+
             class attrdict(dict):
-                #def __init__(self, *args, **kwargs):
+                # def __init__(self, *args, **kwargs):
                 #    dict.__init__(self, *args, **kwargs)
                 #    self.__dict__ = self
                 def __getattr__(self, key):
@@ -255,7 +265,7 @@ class VariableConfig():
         """
         Returns variable scale factor from dataset config file
         """
-        
+
         try:
             scale_factor = self.__get_attribute("scale_factor")
         except KeyError:

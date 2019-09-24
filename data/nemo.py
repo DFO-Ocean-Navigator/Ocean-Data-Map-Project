@@ -1,9 +1,13 @@
-from pykdtree.kdtree import KDTree
-import pyresample
+#!/usr/bin/env python
+
 import numpy as np
-from data.calculated import CalculatedData
+import pyresample
 from pint import UnitRegistry
+from pykdtree.kdtree import KDTree
+
+from data.calculated import CalculatedData
 from data.nearest_grid_point import find_nearest_grid_point
+
 
 class Nemo(CalculatedData):
     __depths = None
@@ -21,7 +25,7 @@ class Nemo(CalculatedData):
         Finds, caches, and returns the valid depths for the dataset.
     """
     @property
-    def depths(self) -> np.ndarray:
+    def depths(self):
         if self.__depths is None:
             var = None
             # Look through possible dimension names
@@ -168,7 +172,7 @@ class Nemo(CalculatedData):
 
         raise LookupError("Cannot find latitude & longitude variables")
 
-    def get_raw_point(self, latitude, longitude, depth, time, variable):
+    def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
@@ -178,6 +182,8 @@ class Nemo(CalculatedData):
             longitude = np.array([longitude])
 
         var = self.get_dataset_variable(variable)
+        
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -218,7 +224,7 @@ class Nemo(CalculatedData):
             data
         )
 
-    def get_point(self, latitude, longitude, depth, time, variable,
+    def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
         latvar, lonvar = self.__latlon_vars(variable)
         
@@ -231,6 +237,9 @@ class Nemo(CalculatedData):
 
         # Get xarray.Variable
         var = self.get_dataset_variable(variable)
+
+        time = self.timestamp_to_time_index(timestamp)
+        
 
         if depth == 'bottom':
             
@@ -308,7 +317,7 @@ class Nemo(CalculatedData):
         else:
             return res
 
-    def get_profile(self, latitude, longitude, time, variable):
+    def get_profile(self, latitude, longitude, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
         
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -320,11 +329,13 @@ class Nemo(CalculatedData):
 
         var = self.get_dataset_variable(variable)
 
+        time_index = self.timestamp_to_time_index(timestamp)
+
         res = self.__resample(
             latvar[miny:maxy, minx:maxx],
             lonvar[miny:maxy, minx:maxx],
             [latitude], [longitude],
-            var[time, :, miny:maxy, minx:maxx].values,
+            var[time_index, :, miny:maxy, minx:maxx].values,
         )
 
         return res, np.squeeze([self.depths] * len(latitude))

@@ -14,11 +14,12 @@ def config_blueprints(app):
     app.register_blueprint(bp_v0_0)
     app.register_blueprint(bp_v1_0)
 
-def create_app():
+def create_app(testing = False):
     app = Flask(__name__, static_url_path='', static_folder='frontend')
     app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
+    app.testing = testing
 
     datasetConfig = argv[-1]
     if '.json' in datasetConfig:

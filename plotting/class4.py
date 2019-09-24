@@ -1,18 +1,21 @@
-from netCDF4 import Dataset, chartostring
+from textwrap import wrap
+
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils as utils
-import plotting.plotter as pl
-import matplotlib.gridspec as gridspec
-from textwrap import wrap
-from flask_babel import gettext
 from flask import current_app
+from flask_babel import gettext
+from netCDF4 import Dataset, chartostring
 
-class Class4Plotter(pl.Plotter):
+from plotting.plotter import Plotter
+import plotting.utils as utils
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+
+class Class4Plotter(Plotter):
+
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "class4"
-        super(Class4Plotter, self).__init__('giops_day', query, format)
+        super(Class4Plotter, self).__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
         super(Class4Plotter, self).parse_query(query)
@@ -40,7 +43,8 @@ class Class4Plotter(pl.Plotter):
             self.longitude = ds['longitude'][indices]
             self.ids = list(map(str.strip, chartostring(ds['id'][indices])))
 
-            self.variables = list(map(str.strip, chartostring(ds['varname'][:])))
+            self.variables = list(
+                map(str.strip, chartostring(ds['varname'][:])))
             self.variable_units = list(map(
                 str.strip, chartostring(ds['unitname'][:])))
 
@@ -135,7 +139,7 @@ class Class4Plotter(pl.Plotter):
         width = len(self.variables)
 
         if self.showmap:
-            width += 1 # Shift graphs to the right
+            width += 1  # Shift graphs to the right
 
         gs = gridspec.GridSpec(2, width)
 
@@ -249,7 +253,8 @@ class Class4Plotter(pl.Plotter):
             plt.xlabel("%s (%s)" %
                        (v, utils.mathtext(self.variable_units[idx])), fontsize=14)
             plt.gca().invert_yaxis()
-            plt.ylabel(gettext("Depth (%s)") % utils.mathtext(self.depth_unit), fontsize=14)
+            plt.ylabel(gettext("Depth (%s)") %
+                       utils.mathtext(self.depth_unit), fontsize=14)
             plt.grid(True)
 
         leg = fig.legend(
@@ -259,8 +264,8 @@ class Class4Plotter(pl.Plotter):
             legobj.set_linewidth(4.0)
 
         names = ["%s (%0.2f, %0.2f)" % x for x in zip(self.ids,
-                                                           self.latitude,
-                                                           self.longitude)]
+                                                      self.latitude,
+                                                      self.longitude)]
 
         plt.suptitle("%s\n%s" % (
             "\n".join(wrap(", ".join(names), 60)),

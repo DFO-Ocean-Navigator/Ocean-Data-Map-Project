@@ -437,7 +437,6 @@ export default class Map extends React.PureComponent {
         })
       }).extend([
         new app.ResetPanButton(),
-        //new app.ScaleViewer(),
         new olcontrol.FullScreen(),
         new olcontrol.MousePosition({
           projection: "EPSG:4326",
@@ -759,6 +758,7 @@ export default class Map extends React.PureComponent {
       );
 
       pushSelection();
+      this.props.updateState("plotEnabled", true);
     }.bind(this));
 
     // clear selection when drawing a new box and when clicking on the map

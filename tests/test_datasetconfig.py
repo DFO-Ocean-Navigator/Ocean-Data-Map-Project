@@ -17,7 +17,7 @@ class TestDatasetConfig(unittest.TestCase):
         expected_datasets = ["giops_month", "giops_day", "giops_forecast", "riops_daily",
                              "riops", "riops_monthly", "riops_forecast", "glorys3", "glorys4", "glorys4_climatology",
                              "glorys_climatology", "levitus98_phc21", "biomer", "biomer_climatology", "fvcom_demo",
-                             "gem", "gulf", "gulf_daily", "gulf_monthly"]
+                             "gem", "gulf", "gulf_daily", "gulf_monthly", "SJAP100", "BayOfFundy"]
         
         actual_datasets = self.datasetConfig.keys()
 
@@ -25,7 +25,7 @@ class TestDatasetConfig(unittest.TestCase):
             self.assertTrue(ds in actual_datasets)
 
     def test_all_datasets_have_required_attributes(self):
-        expected_attributes = ["url", "name", "enabled", "quantum", "attribution", "climatology", "variables", "help"]
+        expected_attributes = ["url", "name", "enabled", "quantum", "attribution", "climatology", "variables", "help", "type"]
 
         for ds in self.datasetConfig:
             actual_attribs = self.datasetConfig[ds].keys()

@@ -209,7 +209,7 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             fig.autofmt_xdate()
         else:
             # Create base figure
-            figure_size = self.figuresize()
+            figure_size = self.figuresize
             figure_size[0] *= 1.5 if self.showmap else 1.0
             fig = plt.figure(figsize=figure_size, dpi=self.dpi)
 
@@ -242,7 +242,7 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             plt.ylim(vmin, vmax)
 
             # Title
-            if self.plotTitle is None or self.plotTitle == "": 
+            if self.plotTitle is None or self.plotTitle == "":
                 wrapped_title = wrap(
                     "%s%s at %s" % (
                         self.variable_name.title(),

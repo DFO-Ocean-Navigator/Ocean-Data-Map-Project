@@ -1,13 +1,22 @@
 import datetime
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pytz
 
 from data.mercator import Mercator
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class TestMercator(unittest.TestCase):
+
+    def setUp(self):
+        self.variable_list_mock = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
 
     def test_init(self):
         Mercator(None)
@@ -16,7 +25,10 @@ class TestMercator(unittest.TestCase):
         with Mercator('tests/testdata/mercator_test.nc'):
             pass
 
-    def test_variables(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_variables(self, mock_query_func):
+        mock_query_func.return_value = self.variable_list_mock
+
         with Mercator('tests/testdata/mercator_test.nc') as n:
             variables = n.variables
 
@@ -25,6 +37,20 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(variables['votemper'].name,
                              'Sea water potential temperature')
             self.assertEqual(variables['votemper'].unit, 'Kelvin')
+            self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
+                ['time', 'depth', 'latitude', 'longitude']))
+
+    def test_timestamp_to_time_index(self):
+        with Mercator('tests/testdata/mercator_test.nc') as n:
+            idx = n.timestamp_to_time_index(2119651200)
+
+            self.assertEqual(idx, 0)
+
+    def test_timestamp_to_time_index(self):
+        with Mercator('tests/testdata/mercator_test.nc') as n:
+            idx = n.timestamp_to_time_index(2119651200)
+
+            self.assertEqual(idx, 0)
 
     def test_time_variable(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
@@ -46,22 +72,23 @@ class TestMercator(unittest.TestCase):
     def test_get_point(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             self.assertAlmostEqual(
-                n.get_point(13.0, -149.0, 0, 0, 'votemper'),
+                n.get_point(13.0, -149.0, 0, 2119651200, 'votemper'),
                 298.426, places=3
             )
             self.assertAlmostEqual(
-                n.get_point(47.0, -47.0, 0, 0, 'votemper'),
+                n.get_point(47.0, -47.0, 0, 2119651200, 'votemper'),
                 273.66, places=2
             )
 
-            p = n.get_point([13.0, 47.0], [-149.0, -47.0], 0, 0, 'votemper')
+            p = n.get_point([13.0, 47.0], [-149.0, -47.0], 0,
+                            2119651200, 'votemper')
             self.assertAlmostEqual(p[0], 298.426, places=3)
             self.assertAlmostEqual(p[1], 273.66, places=2)
 
     def test_get_raw_point(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             lat, lon, data = n.get_raw_point(
-                13.0, -149.0, 0, 0, 'votemper'
+                13.0, -149.0, 0, 2119651200, 'votemper'
             )
 
         self.assertEqual(len(lat.ravel()), 156)
@@ -71,7 +98,7 @@ class TestMercator(unittest.TestCase):
 
     def test_get_profile(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
-            p, d = n.get_profile(13.0, -149.0, 0, 'votemper')
+            p, d = n.get_profile(13.0, -149.0, 2119651200, 'votemper')
             self.assertAlmostEqual(p[0], 298.426, places=3)
             self.assertAlmostEqual(p[10], 298.426, places=3)
             self.assertTrue(np.ma.is_masked(p[49]))
@@ -80,7 +107,7 @@ class TestMercator(unittest.TestCase):
     def test_bottom_point(self):
         with Mercator('tests/testdata/mercator_test.nc') as n:
             self.assertAlmostEqual(
-                n.get_point(13.01, -149.0, 'bottom', 0, 'votemper'),
+                n.get_point(13.01, -149.0, 'bottom', 2119651200, 'votemper'),
                 273.95, places=2
             )
 

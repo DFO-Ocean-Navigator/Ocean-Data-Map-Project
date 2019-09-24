@@ -1,19 +1,23 @@
 import abc
+
 import numpy as np
-import data.geo as geo
 from scipy.interpolate import interp1d
+
+import data.geo as geo
 
 __author__ = 'Geoff Holden'
 
 """
     Abstract base class for data access
 """
+
+
 class Data(object, metaclass=abc.ABCMeta):
 
     def __init__(self, url: str):
         self.url: str = url
         self.interp: str = "gaussian"
-        self.radius: int = 25000 # radius in meters
+        self.radius: int = 25000  # radius in meters
         self.neighbours: int = 10
 
     @abc.abstractmethod
@@ -31,6 +35,10 @@ class Data(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_profile(self, latitude, longitude, time, variable):
+        pass
+
+    @abc.abstractmethod
+    def timestamp_to_iso_8601(self, timestamp):
         pass
 
     @abc.abstractproperty
@@ -84,7 +92,7 @@ class Data(object, metaclass=abc.ABCMeta):
                  return_depth=False):
         if times is None:
             if hasattr(time, "__len__"):
-                times = self.timestamps[time]
+                times = self.timestamp_to_iso_8601(time)
             else:
                 times = None
         distances, times, lat, lon, bearings = \
@@ -136,78 +144,3 @@ class Data(object, metaclass=abc.ABCMeta):
         return self.get_profile(latitude, longitude,
                                 list(range(starttime, endtime + 1)),
                                 variable)
-
-"""
-    Wrapper around a netCDF variable.
-    Provides a common interface between dataset types (xarray vs netCDF4)
-"""
-class Variable(object):
-
-    def __init__(self, key, name, unit, dimensions, valid_min=None,
-                 valid_max=None):
-        self._key: str = key
-        self._name: str = name
-        self._unit: str = unit
-        self._dimensions: tuple = dimensions
-        self._valid_min: [int, float] = valid_min
-        self._valid_max: [int, float] = valid_max
-
-    @property
-    def key(self):
-        return self._key
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def unit(self):
-        return self._unit
-
-    @property
-    def dimensions(self):
-        return self._dimensions
-
-    @property
-    def valid_min(self):
-        return self._valid_min
-
-    @property
-    def valid_max(self):
-        return self._valid_max
-
-    def __str__(self):
-        return self._key
-
-    def __repr__(self):
-        return "Variable(%s, %s, %s, %s, %s, %s)" % (
-            self._key,
-            self._name,
-            self._unit,
-            self._dimensions,
-            self._valid_min,
-            self._valid_max,
-        )
-
-
-class VariableList(list):
-
-    def __getitem__(self, pos) -> Variable:
-        if isinstance(pos, str):
-            for v in self:
-                if v.key == pos:
-                    return v
-            raise IndexError("%s not found in variable list" % pos)
-        elif isinstance(pos, Variable):
-            return self[pos.key]
-        else:
-            return super(VariableList, self).__getitem__(pos)
-
-    def __contains__(self, key):
-        if isinstance(key, str):
-            for v in self:
-                if v.key == key:
-                    return True
-            return False
-        else:
-            return super(VariableList, self).__contains__(key)

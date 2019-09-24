@@ -84,10 +84,12 @@ def _map_plot(points, path=True, quiver=True):
     maxlon = np.max(points[1, :])
     lat_d = max(maxlat - minlat, 20)
     lon_d = max(maxlon - minlon, 20)
-    minlat -= lat_d / 3
-    minlon -= lon_d / 3
-    maxlat += lat_d / 3
-    maxlon += lon_d / 3
+    lat_d /= 10
+    lon_d /= 10
+    minlat -= lat_d
+    minlon -= lon_d
+    maxlat += lat_d
+    maxlon += lon_d
     if minlat < -90:
         minlat = -90
     if maxlat > 90:
@@ -100,9 +102,9 @@ def _map_plot(points, path=True, quiver=True):
         urcrnrlat=maxlat,
         lat_0=np.mean(points[0, :]),
         lon_0=np.mean(points[1, :]),
-        resolution='c', projection='merc',
+        resolution='i', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
-    )    
+    )
 
     if path:
         marker = ''
@@ -131,7 +133,7 @@ def _map_plot(points, path=True, quiver=True):
     # Draw a realistic background "blue marble"
     try:
         m.bluemarble()
-    
+
         m.drawparallels(
             np.arange(
                 round(minlat),

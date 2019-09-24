@@ -13,17 +13,13 @@
 
 Ocean Navigator is a Data Visualization tool that enables users to discover and view 3D ocean model output quickly and easily.
 
-The ocean model output is stored in [NetCDF](https://en.wikipedia.org/wiki/NetCDF) files. These files are self-describing and contain the 2D or 3D model output for one or more timesteps and one or more variables.
+The model outputs are stored as [NetCDF4](https://en.wikipedia.org/wiki/NetCDF) files. Our file management is now handled by an SQLite3 process that incrementally scans the files for a dataset, and updates a corresponding table so that the Python layer can only open the exact files required to perform computations; as opposed to the THREDDS aggregation approach which serves all the files in a dataset as a single netcdf file. The THREDDS approach was unable to scale to the sheer size of the datasets we deal with.
 
-To facilitate reading all these files, we make use of a server called [THREDDS Data Server](http://www.unidata.ucar.edu/software/thredds/current/tds/). THREDDS aggregates all the NetCDF files and allows users to query subsets of the files.
-
-The server-side component of the Ocean Navigator is written in Python, using the Flask web API. Conceptually, it is broken down into three components:
+The server-side component of the Ocean Navigator is written in Python 3, using the Flask web API. Conceptually, it is broken down into three components:
 
 -	Query Server
 
 	This portion returns metadata about the selected dataset in JSON format. These queries include things like the list of variables in the dataset, the times covered, the list of depths for that dataset, etc.
-
-	These queries are generally fast as this data is cached in the THREDDS server, avoiding the need to scan through the NetCDF files.
 
 	The other queries include things such as predefined areas (NAFO divisions, EBSAs, etc), and ocean drifter paths. The drifter paths are loaded from NetCDF files, but all the other queries are loaded from KML files.
 
@@ -54,7 +50,15 @@ Run this one-shot-install script:
 * While altering Javascript code, it can be actively transpiled using:
 	* `cd oceannavigator/frontend`
 	* `yarn run dev`
-* There's also a linter available:`yarn run lint`.
+* There's also a linter available: `yarn run lint`.
+
+### SQLite3 backend
+Since we're now using a home-grown indexing solution, as such there is now no "server" to host the files through a URL (at the moment). You also need to install the dependencies for the [netcdf indexing tool](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper). Then, download a released binary for Linux systems [here](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper/releases). You should go through the README for basic setup and usage details.
+
+The workflow to import new datasets into the Navigator has also changed:
+1. Run the indexing tool linked above.
+2. Modify `datasetconfig.json` so that the `url` attribute points to the absolute path of the generated `.sqlite3` database.
+3. Restart web server.
 
 ### Running the webserver
 Assuming the above installation script succeeded, your PATH should be set to point towards `/opt/tools/miniconda3/bin`, and the `navigator` conda environment has been activated.

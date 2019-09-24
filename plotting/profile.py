@@ -1,41 +1,41 @@
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
 import numpy as np
-import plotting.utils as utils
-import plotting.point as plPoint
-from textwrap import wrap
-from utils.errors import ClientError
 from flask_babel import gettext
+
+import plotting.utils as utils
 from data import open_dataset
+from data.sqlite_database import SQLiteDatabase
+from plotting.point import PointPlotter
+from utils.errors import ClientError
+from oceannavigator.dataset_config import DatasetConfig
 
 
-class ProfilePlotter(plPoint.PointPlotter):
+class ProfilePlotter(PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
-        super(ProfilePlotter, self).__init__(dataset_name, query, format)
+        super(ProfilePlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
-        with open_dataset(self.dataset_config) as d:
-            if self.time < 0:
-                self.time += len(d.timestamps)
-            time = np.clip(self.time, 0, len(d.timestamps) - 1)
-            timestamp = d.timestamps[time]
+
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=self.variables) as ds:
 
             try:
-                self.load_misc(d, self.variables)
+                self.load_misc(ds, self.variables)
             except IndexError as e:
                 raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
                 Please select another variable. ") + str(e))
 
-            point_data, point_depths = self.get_data(d, self.variables, time)
+            point_data, point_depths = self.get_data(
+                ds, self.variables, self.time)
             point_data = self.apply_scale_factors(point_data)
+
+            self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
 
         self.data = self.subtract_other(point_data)
         self.depths = point_depths
-        self.timestamp = timestamp
-
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.1f" % x)
@@ -45,7 +45,7 @@ class ProfilePlotter(plPoint.PointPlotter):
         points = np.array(self.points)
         latitude = np.repeat(points[:, 0], len(self.depths))
         longitude = np.repeat(points[:, 1], len(self.depths))
-        time = np.repeat(self.timestamp, data.shape[0])
+        time = np.repeat(self.iso_timestamp, data.shape[0])
         depth = self.depths[:, 0, :]
 
         return super(ProfilePlotter, self).odv_ascii(
@@ -63,7 +63,7 @@ class ProfilePlotter(plPoint.PointPlotter):
     def csv(self):
         header = [
             ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp.isoformat()]
         ]
 
         columns = [
@@ -90,8 +90,8 @@ class ProfilePlotter(plPoint.PointPlotter):
 
     def plot(self):
         # Create base figure
-        fig = plt.figure(figsize = self.figuresize(), dpi = self.dpi)
-        
+        fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
+
         # Setup figure layout
         width = len(self.variables)
         if self.showmap:
@@ -111,8 +111,8 @@ class ProfilePlotter(plPoint.PointPlotter):
         if self.showmap:
             plt.subplot(gs[0, subplot])
             subplot += 1
-            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
-                                        [x[1] for x in self.points]])) # Longitudes
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]))  # Longitudes
 
         is_y_label_plotted = False
         
@@ -120,7 +120,7 @@ class ProfilePlotter(plPoint.PointPlotter):
 
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
-        for idx, v in enumerate(self.variables):
+        for idx, _ in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
             
 
@@ -134,16 +134,9 @@ class ProfilePlotter(plPoint.PointPlotter):
             current_axis.xaxis.set_ticks_position('top')
             current_axis.invert_yaxis()
             current_axis.grid(True)
-
-            
-            
-
-            if 'xlabel' in self.query:
-                current_axis.set_xlabel(self.query['xlabel'], fontsize=14)
-            else:
-                current_axis.set_xlabel("%s (%s)" %
-                               (self.variable_names[idx],
-                                utils.mathtext(self.variable_units[idx])), fontsize=14)
+            current_axis.set_xlabel("%s (%s)" %
+                                    (self.variable_names[idx],
+                                     utils.mathtext(self.variable_units[idx])), fontsize=14)
 
             # Put y-axis label on left-most graph (but after the point location)
             #if 'ylabel' in self.
@@ -154,8 +147,6 @@ class ProfilePlotter(plPoint.PointPlotter):
             elif not is_y_label_plotted and (subplot == 0 or subplot == 1):
                 current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
-            
-            
 
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
@@ -179,15 +170,15 @@ class ProfilePlotter(plPoint.PointPlotter):
             max = float(self.query['yscale'][1])
             plt.ylim(min, max)
 
-        if self.plotTitle is None or self.plotTitle == "":  
-            plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "), \
-                                            ", ".join(self.names), \
-                                            ", ".join(self.variable_names), \
-                                            self.date_formatter(self.timestamp)), \
-                        fontsize=15)
+        if not self.plotTitle:
+            plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
+                                             ", ".join(self.names),
+                                             ", ".join(self.variable_names),
+                                             self.date_formatter(self.iso_timestamp)),
+                         fontsize=15)
         else:
-            plt.suptitle(self.plotTitle,fontsize=15)
-        
+            plt.suptitle(self.plotTitle, fontsize=15)
+
         fig.tight_layout()
         fig.subplots_adjust(top=(0.8))
 

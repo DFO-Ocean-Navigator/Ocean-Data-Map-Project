@@ -1,26 +1,30 @@
-from netCDF4 import Dataset
-import matplotlib.pyplot as plt
+import contextlib
+import math
+import os
+import re
+from io import BytesIO
+
 import matplotlib.cm
 import matplotlib.colors
+import matplotlib.pyplot as plt
+import numpy as np
+import pyproj
+from flask import current_app
+from flask_babel import gettext
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
-import numpy as np
-import re
+from netCDF4 import Dataset
+from PIL import Image
+from pyproj import Proj
+from scipy.ndimage.filters import gaussian_filter
+from skimage import measure
+
 import plotting.colormap as colormap
 import plotting.utils as utils
-from io import BytesIO
-import os
-import math
-from oceannavigator import DatasetConfig
-from pyproj import Proj
-import pyproj
-from scipy.ndimage.filters import gaussian_filter
-from PIL import Image
-from flask_babel import gettext
-from skimage import measure
-import contextlib
 from data import open_dataset
-from flask import current_app
+from data.sqlite_database import SQLiteDatabase
+from oceannavigator import DatasetConfig
+
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -101,11 +105,13 @@ def get_latlon_coords(projection, x, y, z):
 
     return lat, lon
 
-"""
+
+def scale(args):
+    """
     Draws the variable scale that is placed over the map.
     Returns a BytesIO object.
-"""
-def scale(args):
+    """
+
     dataset_name = args.get('dataset')
     config = DatasetConfig(dataset_name)
     scale = args.get('scale')
@@ -160,7 +166,7 @@ def scale(args):
                 bbox_inches='tight', pad_inches=0.05)
     plt.close(fig)
 
-    buf.seek(0) # Move buffer back to beginning
+    buf.seek(0)  # Move buffer back to beginning
     return buf
 
 
@@ -181,23 +187,11 @@ def plot(projection, x, y, z, args):
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
 
+    time = args.get('time')
+
     data = []
-    with open_dataset(config) as dataset:
-        if args.get('time') is None or (type(args.get('time')) == str and
-                                        len(args.get('time')) == 0):
-            time = -1
-        else:
-            time = int(args.get('time'))
+    with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
-        t_len = len(dataset.timestamps)
-        while time >= t_len:
-            time -= t_len
-
-        while time < 0:
-            time += len(dataset.timestamps)
-
-        timestamp = dataset.timestamps[time]
-        
         for v in variable:
             data.append(dataset.get_area(
                 np.array([lat, lon]),
@@ -237,11 +231,11 @@ def plot(projection, x, y, z, args):
     if len(data) == 2:
         data = np.sqrt(data[0] ** 2 + data[1] ** 2)
         cmap = colormap.colormaps.get('speed')
-    
+
     data = data.transpose()
     xpx = x * 256
     ypx = y * 256
-    
+
     # Mask out any topography if we're below the vector-tile threshold
     if z < 8:
         with Dataset(current_app.config['ETOPO_FILE'] % (projection, z), 'r') as dataset:
@@ -251,10 +245,9 @@ def plot(projection, x, y, z, args):
 
         data[np.where(bathymetry > -depthm)] = np.ma.masked
 
-    
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap)
-    
+
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
     
@@ -666,7 +659,6 @@ def topo(projection, x, y, z, shaded_relief):
         shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
         shade[:, :, 3] = 0
 
-
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.SymLogNorm(linthresh=0.1,
                                      vmin=scale[0],
@@ -680,7 +672,7 @@ def topo(projection, x, y, z, shaded_relief):
     im = Image.fromarray((img * 255.0).astype(np.uint8))
     buf = BytesIO()
     im.save(buf, format='PNG', optimize=True)
-    
+
     return buf
 
 

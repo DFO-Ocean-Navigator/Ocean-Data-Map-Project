@@ -1,24 +1,58 @@
+import re
+
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import seawater
-import plotting.point as plPoint
-import matplotlib.gridspec as gridspec
-import plotting.utils as utils
 from flask_babel import gettext
+
+import plotting.utils as utils
 from data import open_dataset
+from plotting.point import PointPlotter
+
 
 # Temperature/Salinity Diagram for a Point
-class TemperatureSalinityPlotter(plPoint.PointPlotter):
+class TemperatureSalinityPlotter(PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "ts"
+
         super(TemperatureSalinityPlotter, self).__init__(dataset_name, query,
-                                                         format)
+                                                         **kwargs)
+
+    def __find_var_key(self, variable_list: list, regex_pattern: str):
+        regex = re.compile(regex_pattern)
+        return list(filter(regex.match, variable_list))[0]
+
+    def __load_temp_sal(self, dataset, time: int, temp_var: str, sal_var: str):
+
+        data, depths = self.get_data(dataset, [temp_var, sal_var], time)
+        self.temperature = data[:, 0, :].view(np.ma.MaskedArray)
+        self.salinity = data[:, 1, :].view(np.ma.MaskedArray)
+        self.temperature_depths = depths[:, 0, :].view(np.ma.MaskedArray)
+        self.salinity_depths = depths[:, 1, :].view(np.ma.MaskedArray)
+        self.load_misc(dataset, [temp_var, sal_var])
+        self.data = data
+
+        for idx, factor in enumerate(self.scale_factors):
+            if factor != 1.0:
+                data[:, idx, :] = np.multiply(data[:, idx, :], factor)
+
+    def load_data(self):
+        variables = self.dataset_config.variables
+        temp_var_key = self.__find_var_key(variables, r'^(.*temp.*|thetao.*)$')
+        sal_var_key = self.__find_var_key(variables, r'^(.*sal.*|so)$')
+
+        with open_dataset(self.dataset_config, timestamp=self.time, variable=[temp_var_key, sal_var_key]) as ds:
+
+            self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
+
+            self.__load_temp_sal(ds, self.time, temp_var_key, sal_var_key)
 
     def csv(self):
         header = [
             ["Dataset", self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
+            ["Timestamp", self.iso_timestamp]
         ]
 
         columns = [
@@ -49,7 +83,7 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
 
     def plot(self):
         # Create base figure
-        fig = plt.figure(figsize=self.figuresize(), dpi=self.dpi)
+        fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
 
         # Setup figure layout
         width = 2 if self.showmap else 1
@@ -62,10 +96,9 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
         # Render point location
         if self.showmap:
             plt.subplot(gs[0, 0])
-            utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
-                                        [x[1] for x in self.points]])) # Longitudes
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]))  # Longitudes
 
-        
         # Plot TS Diagram
         plt.subplot(gs[:, 1 if self.showmap else 0])
 
@@ -138,26 +171,15 @@ class TemperatureSalinityPlotter(plPoint.PointPlotter):
                             arrowprops=dict(arrowstyle='->')  # , shrinkA=0)
                         )
 
-
         self.plot_legend(fig, self.names)
 
-        if self.plotTitle is None or self.plotTitle == "":  
+        if not self.plotTitle:
             plt.title(gettext("T/S Diagram for (%s)\n%s") % (
                 ", ".join(self.names),
-                self.date_formatter(self.timestamp)),
+                self.date_formatter(self.iso_timestamp)),
                 fontsize=15
-                )
-        else :
-            plt.title(self.plotTitle,fontsize=15)
+            )
+        else:
+            plt.title(self.plotTitle, fontsize=15)
 
         return super(TemperatureSalinityPlotter, self).plot(fig)
-
-    def load_data(self):
-        with open_dataset(self.dataset_config) as dataset:
-            if self.time < 0:
-                self.time += len(dataset.timestamps)
-            time = np.clip(self.time, 0, len(dataset.timestamps) - 1)
-
-            self.timestamp = dataset.timestamps[time]
-
-            self.load_temp_sal(dataset, time)

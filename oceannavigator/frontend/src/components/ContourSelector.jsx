@@ -89,4 +89,3 @@ ContourSelector.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
 };
-

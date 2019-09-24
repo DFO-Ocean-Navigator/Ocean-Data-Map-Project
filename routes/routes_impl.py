@@ -7,43 +7,45 @@ Handles API Queries
 This module handles all API Queries
 """
 
-from flask import Response, Blueprint, request, redirect, send_file, send_from_directory, jsonify, current_app
-from flask_babel import gettext, format_date
-import json
-import datetime
-from io import BytesIO
-from PIL import Image
-import io
-
-from oceannavigator import DatasetConfig
-from utils.errors import ErrorBase, ClientError, APIError
-import utils.misc
-
-from plotting.transect import TransectPlotter
-from plotting.drifter import DrifterPlotter
-from plotting.map import MapPlotter
-from plotting.timeseries import TimeseriesPlotter
-from plotting.ts import TemperatureSalinityPlotter
-from plotting.sound import SoundSpeedPlotter
-from plotting.profile import ProfilePlotter
-from plotting.hovmoller import HovmollerPlotter
-from plotting.observation import ObservationPlotter
-from plotting.class4 import Class4Plotter
-from plotting.stick import StickPlotter
-from plotting.stats import stats as areastats
-import plotting.colormap
-import plotting.tile
-import plotting.scale
-import numpy as np
-import re
-import os
-import netCDF4
 import base64
-import pytz
+import datetime
 import gzip
+import io
+import json
+import os
+import re
 import shutil
 import sqlite3
+from io import BytesIO
+
+import netCDF4
+import numpy as np
+import pytz
+from flask import (Response, current_app, jsonify, request, send_file,
+                   send_from_directory)
+from flask_babel import format_date, gettext
+from PIL import Image
+
+import data.class4 as class4
+import plotting.colormap
+import plotting.scale
+import plotting.tile
+import utils.misc
 from data import open_dataset
+from oceannavigator import DatasetConfig
+from plotting.class4 import Class4Plotter
+from plotting.drifter import DrifterPlotter
+from plotting.hovmoller import HovmollerPlotter
+from plotting.map import MapPlotter
+from plotting.observation import ObservationPlotter
+from plotting.profile import ProfilePlotter
+from plotting.sound import SoundSpeedPlotter
+from plotting.stats import stats as areastats
+from plotting.stick import StickPlotter
+from plotting.timeseries import TimeseriesPlotter
+from plotting.transect import TransectPlotter
+from plotting.ts import TemperatureSalinityPlotter
+from utils.errors import APIError, ClientError
 
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
@@ -52,6 +54,8 @@ FAILURE = ClientError("Bad API usage")
 """
     Error handler
 """
+
+
 def handle_error_impl(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
@@ -61,6 +65,8 @@ def handle_error_impl(error):
 """
     Range Query V0.1
 """
+
+
 def range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time):
     extent = list(map(float, extent.split(",")))
 
@@ -75,7 +81,8 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
 
 
 def info_impl():
-    raise APIError("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+    return jsonify("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+
 
 def query_impl(q: str):
     """
@@ -87,7 +94,7 @@ def query_impl(q: str):
     """
 
     data = []
-    
+
     if q == 'points':
         data = utils.misc.list_kml_files('point')
     elif q == 'lines':
@@ -95,9 +102,10 @@ def query_impl(q: str):
     elif q == 'areas':
         data = utils.misc.list_kml_files('area')
     elif q == 'class4':
-        data = utils.misc.list_class4_files()
+        data = class4.list_class4_files()
     else:
-        raise APIError("Invalid API Query - Please review the API documentation for help.")
+        raise APIError(
+            "Invalid API Query - Please review the API documentation for help.")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -115,13 +123,14 @@ def query_id_impl(q: str, q_id: str):
     if q == 'areas':
         data = utils.misc.list_areas(q_id)
     elif q == 'class4':
-        data = utils.misc.list_class4(q_id)
+        data = class4.list_class4(q_id)
     elif q == 'drifters' and q_id == 'meta':
         data = utils.misc.drifter_meta()
     elif q == 'observation' and q_id == 'meta':
         data = utils.misc.observation_meta()
     else:
-        raise APIError("The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
+        raise APIError(
+            "The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -137,7 +146,7 @@ def get_data_impl(dataset: str, variable: str, time: int, depth: str, location: 
     <int:time>        : Time retrieved data was gathered/modeled
     <string:depth>    : Water Depth - found using /api/depth/?dataset='...'
     <string:location> : Location of the data you want to retrieve (Lat, Long)
-    
+
     **All Components Must be Included**
     """
     data = utils.misc.get_point_data(
@@ -176,7 +185,7 @@ def query_file_impl(q: str, projection: str, resolution: int, extent: str, file_
         data = utils.misc.areas(
             file_id, projection, resolution, extent)
     elif q == 'class4':
-        data = utils.misc.class4(
+        data = class4.class4(
             file_id, projection, resolution, extent)
     elif q == 'drifters':
         data = utils.misc.drifters(
@@ -260,7 +269,7 @@ def colors_impl(args):
         data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
     if args.get('none'):
         data.insert(0, {'id': 'none', 'value': gettext('None')})
-    
+
     resp = jsonify(data)
     return resp
 
@@ -308,19 +317,20 @@ def depth_impl(args):
     Returns all depths available for that variable in the dataset
     """
 
-    #Checking for valid Query
+    # Checking for valid Query
     if 'variable' not in args or ('dataset' not in args):
         if 'dataset' in args:
             raise APIError("Please Specify a variable using &variable='...' ")
         if 'variable' in args:
             raise APIError("Please Specify a Dataset using &dataset='...' ")
-        raise APIError("Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
+        raise APIError(
+            "Please Specify a Dataset and Variable using ?dataset='...'&variable='...' ")
 
     var = args.get('variable')
     variables = var.split(',')
 
     data = []
-   
+
     dataset = args['dataset']
     config = DatasetConfig(dataset)
 
@@ -331,8 +341,8 @@ def depth_impl(args):
                     set(ds.depth_dimensions) & \
                set(ds.variables[variable].dimensions):
                 if str(args.get('all')).lower() in ['true',
-                                                            'yes',
-                                                            'on']:
+                                                    'yes',
+                                                    'on']:
                     data.append(
                         {'id': 'all', 'value': gettext('All Depths')})
 
@@ -380,146 +390,56 @@ def vars_query_impl(args):
     vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean: True / False**
-    """ 
+    """
 
-    if 'dataset' not in args.keys():
-        raise APIError("Please Specify a Dataset Using ?dataset='...' ")
+    if 'dataset' not in args:
+        raise APIError("Please Specify a dataset Using ?dataset='...' ")
 
-    if args['dataset'] == 'all':
-        resp = all_vars_query_impl(args)
-        
-        return resp
-    
-    else:
-        datasets = [args['dataset']]   #Dataset Specified in query
-    
-    data = []       #Initializes empty data list
-    
-    for dataset in datasets:
+    data = []
+    dataset = args['dataset']
+    config = DatasetConfig(dataset)
 
-        config = DatasetConfig(dataset)
-        with open_dataset(config) as ds:
-            if 'vectors_only' not in args:      #Vectors_only -> Magnitude Only
-                v = []
-                v.append(ds.variables)
-                #//variables.append(config.vector_variables)
-                #print("Variables: ", variables)
-                # 'v' is a Variable in the Dataset
-                #  v Contains:  dimensions, key, name, unit, valid_min, valid_max
-                for v in ds.variables:  #Iterates through all the variables in the dataset
-                    #If a time period and at least one other unit type is specified
-                    if ('time_counter' in v.dimensions or   
-                        'time' in v.dimensions or 'time1' in v.dimensions or 'time2' in v.dimensions) \
-                            and ('y' in v.dimensions or
-                                 'yc' in v.dimensions or
-                                 'node' in v.dimensions or
-                                 'nele' in v.dimensions or
-                                 'latitude' in v.dimensions or
-                                 'lat' in v.dimensions):
-                        if ('3d_only' in args) and not (
-                            set(ds.depth_dimensions) & set(v.dimensions)
-                        ):
-                            continue
-                        else:
-                            if not config.variable[v].is_hidden:
-                                if 'envType' in args or 'envtype' in args:
-                                    if 'envType' in args:
-                                        envType = args.get('envType')
-                                    else:
-                                        envType = args.get('envtype')
+    with open_dataset(config) as ds:
+        if 'vectors_only' not in args:  # Vectors_only -> Magnitude Only
 
-                                    if config.variable[v].envtype == envType:
-                                        data.append({
-                                            'id': v.key,
-                                            'value': config.variable[v].name,
-                                            'scale': config.variable[v].scale,
-                                        }) 
+            for v in ds.variables:
 
-                                else:
-                                    data.append({
-                                        'id': v.key,
-                                        'value': config.variable[v].name,
-                                        'scale': config.variable[v].scale,
-                                    })
+                # If a time period and at least one other unit type is specified
+                if ('time_counter' in v.dimensions or
+                    'time' in v.dimensions) \
+                        and ('y' in v.dimensions or
+                             'yc' in v.dimensions or
+                             'node' in v.dimensions or
+                             'nele' in v.dimensions or
+                             'latitude' in v.dimensions or
+                             'lat' in v.dimensions):
+                    if ('3d_only' in args) and not (
+                        set(ds.depth_dimensions) & set(v.dimensions)
+                    ):
+                        continue
+                    else:
+                        if not config.variable[v].is_hidden:
 
-                            else:
-                                data.append({
-                                    'id': v.key,
-                                    'value': config.variable[v].name,
-                                    'scale': config.variable[v].scale,
-                                })
-        
-        if 'envType' in args or 'envtype' in args:
-            if 'envType' in args:
-                envType = args.get('envType')
-            else:
-                envType = args.get('envtype')
-            
-            for variable in config.vector_variables:
-                if (config.variable[variable].envtype == envType):
-                    data.append({
-                        'id': variable,
-                        'value': config.variable[variable].name,
-                        'scale': config.variable[variable].scale,
-                    })
-        else:
-            for variable in config.vector_variables:
-            
-                data.append({
-                    'id': variable,
-                    'value': config.variable[variable].name,
-                    'scale': config.variable[variable].scale,
-                })
+                            data.append({
+                                'id': v.key,
+                                'value': config.variable[v].name,
+                                'scale': config.variable[v].scale
+                            })
 
-    # END OF DATASET LOOP
-        
-    data = sorted(data, key=lambda k: k['value'])      #Sorts data alphabetically using the value
-    
-    #Data is set of scale, id, value objects
-    
+    # If Vectors are needed
+    if 'vectors' in args or 'vectors_only' in args:
+        for variable in config.vector_variables:
+            data.append({
+                'id': variable,
+                'value': config.variable[variable].name,
+                'scale': config.variable[variable].scale,
+            })
+
+    # Sorts data alphabetically using the value
+    data = sorted(data, key=lambda k: k['value'])
+
     resp = jsonify(data)
     return resp
-
-def all_vars_query_impl(args):
-    
-    variables = dict()
-    for dataset in DatasetConfig.get_datasets():
-        config = DatasetConfig(dataset)
-        with open_dataset(config) as ds:
-            for v in ds.variables:
-                if not config.variable[v].is_hidden:
-                    var_name = config.variable[v].name
-                    if var_name not in variables:
-                        var_type = config.variable[v].envtype
-        
-                        if not ('env_type' in args and var_type not in args['env_type']):
-                            variables[var_name] = {
-                                'id': var_name,
-                                'datasets': [dataset],
-                                'env_type': var_type,
-                                'info': {
-                                    dataset: {
-                                        'id': v.key,
-                                        'scale': config.variable[v].scale,
-                                    }
-                                }    
-                            }
-                    else:
-                        variables[var_name]['datasets'].append(dataset)
-
-                        variables[var_name]['info'][dataset] = {
-                           'id': v.key,
-                           'scale': config.variable[v].scale,
-                        }
-                        
-    
-    #data = dict()
-    #data = sorted(variables.items())
-    data = variables
-    data = jsonify(data)
-    
-    return data
-
 
 def dataset_config():
     """
@@ -529,6 +449,7 @@ def dataset_config():
     datasetconfig = DatasetConfig._get_dataset_config()
     data = jsonify(datasetconfig)
     return data
+
 
 def all_time_query_impl(args):
     """
@@ -593,7 +514,7 @@ def time_query_impl(args):
     dataset = args['dataset']
     config = DatasetConfig(dataset)
     quantum = args.get('quantum')
-    
+
     with open_dataset(config) as ds:
         for idx, date in enumerate(ds.timestamps):
             if quantum == 'month':
@@ -608,20 +529,18 @@ def time_query_impl(args):
     data = sorted(data, key=lambda k: k['id'])
 
     class DateTimeEncoder(json.JSONEncoder):
-    
+
         def default(self, o):
             if isinstance(o, datetime.datetime):
                 return o.isoformat()
 
             return json.JSONEncoder.default(self, o)
     js = json.dumps(data, cls=DateTimeEncoder)
-    
+
     resp = Response(js, status=200, mimetype='application/json')
     return resp
-    
 
 
-    
 def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     """
     API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
@@ -645,7 +564,7 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     idx = np.where(diffs <= 0)[0]
     res = 0
     if len(idx) > 0:
-        res = idx.max().item() # https://stackoverflow.com/a/11389998/2231969
+        res = idx.max().item()  # https://stackoverflow.com/a/11389998/2231969
 
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
@@ -670,8 +589,9 @@ def scale_impl(dataset: str, variable: str, scale: str, colourmap: str, orientat
         'transparency': transparency,
         'label': label
     })
-    
+
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
+
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
@@ -688,20 +608,19 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     dataIO = BytesIO(bytesIOBuff.read())
     im = Image.open(dataIO)
-    im.save(f, format='PNG', optimize=True) # For cache
+    im.save(f, format='PNG', optimize=True)  # For cache
 
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
     """
-        Produces the data tiles
+        Produces the map data tiles
     """
 
-    
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
-    
+
     # Check if the tile/image is cached and send it
     #if _is_cache_valid(dataset, f):
     #    return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
@@ -756,6 +675,7 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
             return
     return _cache_and_send_img(img, f)
 
+
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
     """
         Generates topographical tiles
@@ -767,12 +687,12 @@ def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
 
     cache_dir = current_app.config['CACHE_DIR']
     f = os.path.join(cache_dir, request.path[1:])
-    
+
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
         bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, shaded_relief)
-        
+
         return _cache_and_send_img(bytesIOBuff, f)
 
 
@@ -795,41 +715,44 @@ def bathymetry_impl(projection: str, zoom: int, x: int, y: int):
         img = plotting.tile.bathymetry(projection, x, y, zoom, {})
         return _cache_and_send_img(img, f)
 
+
 def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
-  """
-       Serves mbt files
-  """
-  cache_dir = current_app.config['CACHE_DIR']
-  shape_file_dir = current_app.config['SHAPE_FILE_DIR']
-  requestf = str(os.path.join(cache_dir, request.path[1:]))
-  basedir = requestf.rsplit("/", 1)[0]
+    """
+         Serves mbt files
+    """
+    cache_dir = current_app.config['CACHE_DIR']
+    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+    requestf = str(os.path.join(cache_dir, request.path[1:]))
+    basedir = requestf.rsplit("/", 1)[0]
 
-  # Send blank tile if conditions aren't met
-  if (zoom < 7) or (projection != "EPSG:3857"):
-    return send_file(shape_file_dir + "/blank.mbt")
-
-# Send file if cached or select data in SQLite file
-  if os.path.isfile(requestf):
-    return send_file(requestf)
-  else:
-    y = (2**zoom-1) - y
-    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(zoom, x, y)
-    selector.execute(sqlite)
-    tile = selector.fetchone()
-    if tile == None:
+    # Send blank tile if conditions aren't met
+    if (zoom < 7) or (projection != "EPSG:3857"):
         return send_file(shape_file_dir + "/blank.mbt")
 
-    # Write tile to cache and send file
-    if not os.path.isdir(basedir):
-      os.makedirs(basedir)
-    with open(requestf + ".pbf", 'wb') as f:
-      f.write(tile[0])
-    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
-      with open(requestf, 'wb') as tileout:
-        shutil.copyfileobj(gzipped, tileout)
-    return send_file(requestf)
+# Send file if cached or select data in SQLite file
+    if os.path.isfile(requestf):
+        return send_file(requestf)
+    else:
+        y = (2**zoom-1) - y
+        connection = sqlite3.connect(
+            shape_file_dir + "/{}.mbtiles".format(tiletype))
+        selector = connection.cursor()
+        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(
+            zoom, x, y)
+        selector.execute(sqlite)
+        tile = selector.fetchone()
+        if tile == None:
+            return send_file(shape_file_dir + "/blank.mbt")
+
+        # Write tile to cache and send file
+        if not os.path.isdir(basedir):
+            os.makedirs(basedir)
+        with open(requestf + ".pbf", 'wb') as f:
+            f.write(tile[0])
+        with gzip.open(requestf + ".pbf", 'rb') as gzipped:
+            with open(requestf, 'wb') as tileout:
+                shutil.copyfileobj(gzipped, tileout)
+        return send_file(requestf)
 
 
 def drifter_query_impl(q: str, drifter_id: str):
@@ -843,7 +766,7 @@ def drifter_query_impl(q: str, drifter_id: str):
     Time - Returns the max and min time of the specified drifter
     }
     """
-    
+
     if q == 'vars':
         pts = utils.misc.drifters_vars(drifter_id)
     elif q == 'time':
@@ -868,36 +791,26 @@ def class4_query_impl(q: str, class4_id: str, index: str):
 
     if class4_id == None:
         raise APIError("Please Specify an ID ")
-    
+
     if q == 'forecasts':
-        pts = utils.misc.list_class4_forecasts(class4_id)
+        pts = class4.list_class4_forecasts(class4_id)
     elif q == 'models':
-        pts = utils.misc.list_class4_models(class4_id)
+        pts = class4.list_class4_models(class4_id)
     else:
-        raise APIError(gettext("Please specify either forecasts or models using /models/ or /forecasts/"))
+        raise APIError(gettext(
+            "Please specify either forecasts or models using /models/ or /forecasts/"))
 
     resp = jsonify(pts)
     resp.cache_control.max_age = 86400
     return resp
-    
+
+
 def subset_query_impl(args):
-    """
-    API Format: /subset/?query='...'
-    
-    **Query must be written in JSON and converted to encodedURI**
-    **Not all components of query are required
-    """
-
-    working_dir = None
-    subset_filename = None
-    config = DatasetConfig(args.get('dataset_name'))
-    with open_dataset(config) as dataset:
-        working_dir, subset_filename = dataset.subset(args)
-            
-    return send_from_directory(working_dir, subset_filename, as_attachment=True)
+    raise APIError(
+        gettext("This endpoint is deprecated. Use /api/v1.0/subset/... instead."))
 
 
-def plot_impl(args, query = None):
+def plot_impl(query: dict, args):
     """
     API Format: /plot/?query='...'&format
 
@@ -916,14 +829,8 @@ def plot_impl(args, query = None):
     **Not all components of query are required
     """
 
-    #Checks if query has already been extracted from args
-    if query == None:
-        if 'query' not in args:
-            raise APIError("Please Specify a Query - This should be written in JSON and converted to an encodedURI")
-        query = json.loads(args.get('query'))
-    
-    if ("format" in args and args.get("format") == "json"):
-        # Generates a Base64 encoded string
+    fmt = args.get('format')
+    if fmt == 'json':
         def make_response(data, mime):
             b64 = base64.encodebytes(data).decode()
 
@@ -936,13 +843,9 @@ def plot_impl(args, query = None):
             return Response(data, status=200, mimetype=mime)
 
     dataset = query.get('dataset')
-    
-    opts = {
-        'dpi': 72,
-        'query': query,
-    }
     plottype = query.get('type')
 
+    """
     if 'station' in query:
         station = query.get('station')
 
@@ -962,61 +865,49 @@ def plot_impl(args, query = None):
                 station[index][1] = wrapdeg(station[index][1])
             else:
                 station[index][1] = wrapdeg(station[index][1])
+    """
 
-    size = None
-    if 'save' in args:
-        if 'size' in args:
-            size = args.get('size')
-        if 'dpi' in args:
-            opts['dpi'] = args.get('dpi')
-
-    if 'format' in args:
-        opts['format'] = args.get('format')
-
-
-    if size is None:
-        opts['size'] = '11x9'
-    else:
-        opts['size'] = size
-
-    filename = 'png'
-    img = ""
-
+    options = {}
+    options['format'] = fmt
+    options['size'] = args.get('size', '15x9')
+    options['dpi'] = args.get('dpi', 72)
 
     # Determine which plotter we need.
     if plottype == 'map':
-        plotter = MapPlotter(dataset, query, args.get('format'))
+        plotter = MapPlotter(dataset, query, **options)
     elif plottype == 'transect':
-        plotter = TransectPlotter(dataset, query, args.get('format'))
+        plotter = TransectPlotter(dataset, query, **options)
     elif plottype == 'timeseries':
-        plotter = TimeseriesPlotter(dataset, query, args.get('format'))
+        plotter = TimeseriesPlotter(dataset, query, **options)
     elif plottype == 'ts':
-        plotter = TemperatureSalinityPlotter(dataset, query, args.get('format'))
+        plotter = TemperatureSalinityPlotter(dataset, query, **options)
     elif plottype == 'sound':
-        plotter = SoundSpeedPlotter(dataset, query, args.get('format'))
+        plotter = SoundSpeedPlotter(dataset, query, **options)
     elif plottype == 'profile':
-        plotter = ProfilePlotter(dataset, query, args.get('format'))
+        plotter = ProfilePlotter(dataset, query, **options)
     elif plottype == 'hovmoller':
-        plotter = HovmollerPlotter(dataset, query, args.get('format'))
+        plotter = HovmollerPlotter(dataset, query, **options)
     elif plottype == 'observation':
-        plotter = ObservationPlotter(dataset, query, args.get('format'))
+        plotter = ObservationPlotter(dataset, query, **options)
     elif plottype == 'drifter':
-        plotter = DrifterPlotter(dataset, query, args.get('format'))
+        plotter = DrifterPlotter(dataset, query, **options)
     elif plottype == 'class4':
-        plotter = Class4Plotter(dataset, query, args.get('format'))
+        plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
-        plotter = StickPlotter(dataset, query, args.get('format'))
+        plotter = StickPlotter(dataset, query, **options)
     else:
-        raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
+        raise APIError(
+            "You have not provided a supported plottype argument - please review your query")
 
-    # Get the data from the selected plotter.
+    filename = 'png'
+
     if 'data' in request.args:
-        data = plotter.prepare_plot(size=size, dpi=args.get('dpi'))
-        return data   
-    
-    img, mime, filename = plotter.run(size=size, dpi=args.get('dpi'))
-    
-    if img != "":
+        data = plotter.prepare_plot()
+        return data
+
+    img, mime, filename = plotter.run()
+
+    if img:
         response = make_response(img, mime)
     else:
         raise FAILURE
@@ -1030,7 +921,7 @@ def plot_impl(args, query = None):
     return response
 
 
-def stats_impl(args, query = None):
+def stats_impl(args, query=None):
     """
     API Format: /stats/?query='...'
 
@@ -1045,13 +936,14 @@ def stats_impl(args, query = None):
     **Not all components of query are required
     """
     if query == None:
-        #Invalid API Check
-        if 'query' not in args: #Invalid API Check
-            raise APIError("A Query must be specified in the form /stats/?query='...' ")
-        #Retrieves Query as JSON based on Request Method
+        # Invalid API Check
+        if 'query' not in args:  # Invalid API Check
+            raise APIError(
+                "A Query must be specified in the form /stats/?query='...' ")
+        # Retrieves Query as JSON based on Request Method
         query = json.loads(args.get('query'))
 
-    dataset = query.get('dataset')  #Retrieves dataset from query
+    dataset = query.get('dataset')  # Retrieves dataset from query
 
     data = areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')

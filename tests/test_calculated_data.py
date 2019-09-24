@@ -1,19 +1,42 @@
+#!/usr/bin/env python
+
 import unittest
-from data.calculated import CalculatedData, CalculatedArray
+from unittest.mock import patch
+
 import numpy as np
 import xarray as xr
+
+from data.calculated import CalculatedArray, CalculatedData
+from data.variable import Variable
+from data.variable_list import VariableList
 
 
 class TestCalculatedData(unittest.TestCase):
 
-    def test_nothing(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_nothing(self, mock_query_func):
+        mock_query_func.return_value = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
+
         with CalculatedImpl('tests/testdata/mercator_test.nc') as data:
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
             self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875)
 
-    def test_new_variable(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.sqlite_database.SQLiteDatabase.get_variable_dims')
+    def test_new_variable(self, mock_get_var_dims, mock_query_func):
+        mock_get_var_dims.return_value = [
+            'time', 'depth', 'latitude', 'longitude']
+
+        mock_query_func.return_value = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
+
         calculated = {
             'votemper_new': {
                 'equation': 'votemper * 2',
@@ -25,7 +48,7 @@ class TestCalculatedData(unittest.TestCase):
             }
         }
         with CalculatedImpl('tests/testdata/mercator_test.nc',
-                calculated=calculated) as data:
+                            calculated=calculated) as data:
 
             self.assertEqual(len(data.variables), 2)
 
@@ -34,7 +57,13 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(v.attrs.long_name, "Temperature")
             self.assertEqual(v.shape, (1, 50, 850, 1800))
 
-    def test_override(self):
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_override(self, mock_query_func):
+        mock_query_func.return_value = VariableList([
+            Variable('votemper', 'Sea water potential temperature',
+                     'Kelvin', sorted(['time', 'depth', 'latitude', 'longitude']))
+        ])
+
         calculated = {
             'votemper': {
                 'equation': 'votemper -273.15',
@@ -42,15 +71,17 @@ class TestCalculatedData(unittest.TestCase):
             }
         }
         with CalculatedImpl('tests/testdata/mercator_test.nc',
-                calculated=calculated) as data:
+                            calculated=calculated) as data:
 
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
             self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875 -
-                    273.15)
-            self.assertEqual(v.attrs.long_name, "Sea water potential temperature")
+                                   273.15)
+            self.assertEqual(v.attrs.long_name,
+                             "Sea water potential temperature")
             self.assertEqual(v.shape, (1, 50, 850, 1800))
+
 
 class CalculatedImpl(CalculatedData):
     def __init__(self, url: str, **kwargs):
@@ -68,6 +99,7 @@ class CalculatedImpl(CalculatedData):
     def depths(self):
         pass
 
+
 class TestCalculatedArray(unittest.TestCase):
 
     def test_static(self):
@@ -76,14 +108,14 @@ class TestCalculatedArray(unittest.TestCase):
         self.assertEqual(array[0], 15)
 
     def test_passthrough(self):
-        dataset = xr.Dataset({'var': ('x', [1,2,3,4,5])})
+        dataset = xr.Dataset({'var': ('x', [1, 2, 3, 4, 5])})
         array = CalculatedArray(dataset, "var")
         self.assertEqual(array[0], 1)
         self.assertEqual(array[2], 3)
         self.assertEqual(array[4], 5)
-        
+
     def test_single_expression(self):
-        dataset = xr.Dataset({'var': ('x', [1,2,3,4,5])})
+        dataset = xr.Dataset({'var': ('x', [1, 2, 3, 4, 5])})
         array = CalculatedArray(dataset, "var * 5")
         self.assertEqual(array[0], 5)
         self.assertEqual(array[2], 15)
@@ -91,8 +123,8 @@ class TestCalculatedArray(unittest.TestCase):
 
     def test_multiple_expression(self):
         dataset = xr.Dataset({
-            'var': ('x', [1,2,3,4,5]),
-            'var2': ('x', [5,4,3,2,1]),
+            'var': ('x', [1, 2, 3, 4, 5]),
+            'var2': ('x', [5, 4, 3, 2, 1]),
         })
         array = CalculatedArray(dataset, "var + var2")
         self.assertEqual(array[0], 6)
@@ -101,10 +133,10 @@ class TestCalculatedArray(unittest.TestCase):
 
     def test_different_dimensions(self):
         dataset = xr.Dataset({
-            'var': ('x', [1,2]),
-            'var2': ('y', [3,4]),
-            'var3': (('x', 'y'), [[5,6],[7,8]]),
-            'var4': (('y', 'x'), [[9,10],[11,12]]),
+            'var': ('x', [1, 2]),
+            'var2': ('y', [3, 4]),
+            'var3': (('x', 'y'), [[5, 6], [7, 8]]),
+            'var4': (('y', 'x'), [[9, 10], [11, 12]]),
         })
         array = CalculatedArray(dataset, "var + var2")
         self.assertIsNan(array[0])

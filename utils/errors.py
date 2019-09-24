@@ -31,12 +31,15 @@ class ClientError(ErrorBase):
         super(ClientError, self).__init__(message, status_code=400)
 
 """
-    Error class for server related stuff
+    Error class for server-related stuff
 """
 class ServerError(ErrorBase):
     def __init__(self, message: str):
         super(ServerError, self).__init__(message, status_code=500)
 
+"""
+    Error class for API-related stuff
+"""
 class APIError(ErrorBase):
     def __init__(self, message: str):
-        super(APIError, self).__init__(message, status_code=400, link = "documentation")
+        super(APIError, self).__init__(message, status_code=400, link = "https://dfo-ocean-navigator.github.io/Ocean-Navigator-API-Tool/")
