@@ -380,11 +380,6 @@ def colormaps_v1_0():
     return routes.routes_impl.colormaps_impl()
 
 
-@bp_v1_0.route('/api/v1.0/colormaps.png')
-def colormap_image_v1_0():
-    return routes.routes_impl.colormap_image_impl()
-
-
 @bp_v1_0.route('/api/v1.0/')
 def info_v1_0():
     return routes.routes_impl.info_impl()
