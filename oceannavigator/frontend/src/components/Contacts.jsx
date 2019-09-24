@@ -8,7 +8,13 @@ import Icon from "./Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 import ContactButton from "./ContactButton.jsx";
-import ol from "openlayers";
+
+import * as ol from "ol";
+import * as olsource from "ol/source";
+import * as olcontrol from "ol/control";
+import * as olformat from "ol/format";
+import * as olstyle from "ol/style";
+
 import ShipOptions from "./ShipOptions.jsx";
 
 
@@ -76,13 +82,13 @@ export default class Contacts extends React.Component {
         this.props.mapComponent.removeMapInteractions('Circle')
 
         //CREATE A VECTOR SOURCE
-        let vectorSource = new ol.source.Vector({
+        let vectorSource = new olsource.Vector({
           wrapX: false,
           crossOrigin: 'anonymous'
         })
 
 
-        var draw = new ol.interaction.Draw({
+        var draw = new olcontrol.interaction.Draw({
           source: vectorSource,
           type: 'Circle',
           stopClick: true
@@ -120,9 +126,9 @@ export default class Contacts extends React.Component {
           const localUrl = "/api/v1.0/contacts/?query=" + url
           
           // Add proxy to Layer
-          new_vectorSource = new ol.source.Vector({
+          new_vectorSource = new olsource.Vector({
             url: localUrl,   
-            format: new ol.format.GeoJSON(),
+            format: new olformat.GeoJSON(),
             
           })
 
