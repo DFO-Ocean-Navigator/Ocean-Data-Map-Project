@@ -150,7 +150,7 @@ def obs_vars_query_v1():
 #
 # Unchanged from v0.0
 #
-@bp_v1_0.route('/api/v1.0/timestamps/')
+@bp_v1_0.route('/api/v1.0/timestamps/old/')
 def time_query_v1_0():
   if request.args['dataset'] == 'all':
     return routes.routes_impl.all_time_query_impl(request.args)
