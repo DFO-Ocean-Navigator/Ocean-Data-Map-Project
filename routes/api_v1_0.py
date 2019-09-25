@@ -462,9 +462,9 @@ def timestamps():
 def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
     # TODO: migrate to new time interpolation method
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
-    
 
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<string:masked>/<int:display>/<int:zoom>/<int:x>/<int:y>.png')
+
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
 
     config = DatasetConfig(dataset)
