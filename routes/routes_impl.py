@@ -500,20 +500,16 @@ def all_time_query_impl(args):
 def time_query_impl(args):
     """
     API Format: /api/timestamps/?dataset=' '
-
     dataset : Dataset to extract data - Can be found using /api/datasets
-
     Finds all data timestamps available for a specific dataset
     """
 
-    if 'dataset' not in args and 'all' not in args:
+    if 'dataset' not in args:
         raise APIError("Please Specify a Dataset Using ?dataset='...' ")
-
 
     data = []
     dataset = args['dataset']
     config = DatasetConfig(dataset)
-    print("CONFIG: ", config)
     quantum = args.get('quantum')
 
     with open_dataset(config) as ds:
@@ -540,6 +536,7 @@ def time_query_impl(args):
 
     resp = Response(js, status=200, mimetype='application/json')
     return resp
+
 
 
 def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
