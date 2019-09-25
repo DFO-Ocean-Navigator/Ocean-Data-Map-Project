@@ -513,6 +513,7 @@ def time_query_impl(args):
     data = []
     dataset = args['dataset']
     config = DatasetConfig(dataset)
+    print("CONFIG: ", config)
     quantum = args.get('quantum')
 
     with open_dataset(config) as ds:
