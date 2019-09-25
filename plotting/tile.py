@@ -272,23 +272,18 @@ def contour(projection, x, y, z, args):
         lat, lon = np.meshgrid(lat, lon)
 
     dataset_name = args.get('dataset')
+    config = DatasetConfig(dataset_name)
+    
     variable = args.get('variable')
-
-    if variable.endswith('_anom'):
-        variable = variable[0:-5]
-        anom = True
-    else:
-        anom = False
-
     variable = variable.split(',')
     depth = args.get('depth')
     scale = args.get('scale')
     scale = [float(component) for component in scale.split(',')]
+    time= args.get('time')
 
     contour_data = []
     
-    config = DatasetConfig(dataset_name)
-    with open_dataset(config) as dataset:
+    with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
         if args.get('time') is None or (type(args.get('time')) == str and
                                         len(args.get('time')) == 0):
