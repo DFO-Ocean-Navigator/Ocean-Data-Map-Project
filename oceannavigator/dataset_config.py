@@ -1,7 +1,7 @@
 import json
 import os
 import re
-import json
+
 from flask import current_app
 
 
@@ -305,18 +305,3 @@ class VariableConfig():
             return from_config in ['true', 'True'] or from_config == True
         except KeyError:
             return False
-
-    @property
-    def envtype(self) -> str:
-        try:
-            envtype = self.__get_attribute("envtype")
-            if (type(envtype) == str):
-                envtype.lower()
-                return envtype
-            #else:
-            #    return ""
-            
-            
-        except KeyError:
-            return KeyError
-
