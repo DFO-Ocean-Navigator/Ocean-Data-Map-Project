@@ -774,7 +774,7 @@ export default class Layer extends React.Component {
     Retrieve time information and add to layer
   */
   updateDates() {
-    const time_promise = $.ajax("/api/v1.0/timestamps/?dataset=" + this.state.current_dataset);
+    const time_promise = $.ajax("/api/v1.0/timestamps/?dataset=" + this.state.current_dataset + '&variable=' + this.state.current_variable);
 
     // Finds depth for new variable (often the same)
     $.when(time_promise).done(function (times) {
