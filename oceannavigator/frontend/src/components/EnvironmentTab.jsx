@@ -98,7 +98,7 @@ export default class EnvironmentTab extends React.Component {
         </Tab>
         <Tab eventKey={3} title={<span className='envTabName'>{_("Ice")}</span>}>
           <LayerWrap
-              datasetconfig={this.state.datsetconfig}
+              datasetconfig={this.state.datasetconfig}
               state={this.props.state}
               swapViews={this.props.swapViews}
               mapComponent={this.props.mapComponent}
