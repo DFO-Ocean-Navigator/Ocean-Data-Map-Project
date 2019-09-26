@@ -534,8 +534,8 @@ export default class Layer extends React.Component {
         current_variable: variable,
         depths: depths,
         current_depth: 0,
-      });
-      this.sendData('update')
+      }, () => this.sendData('update'));
+      
     }.bind(this))
   }
 
@@ -776,7 +776,7 @@ export default class Layer extends React.Component {
   updateDates() {
     let url = "/api/v1.0/timestamps/?dataset=" + this.state.current_dataset + "&variable=" + this.state.current_variable;
     const time_promise = $.ajax(url);
-
+    console.warn("UPDATE DATES")
     // Finds depth for new variable (often the same)
     $.when(time_promise).done(function (times) {
       let time = {};
