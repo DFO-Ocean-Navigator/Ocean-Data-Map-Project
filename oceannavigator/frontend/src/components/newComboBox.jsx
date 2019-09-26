@@ -19,7 +19,7 @@ export default class NewComboBox extends React.Component {
     for (let elem in this.props.data) {
       if (elem['name'] === undefined) {
       } else if (this.props.envType !== undefined) {
-        if (elem['envType'] === this.props.envType) {
+        if (elem['envtype'] === this.props.envType) {
           id_list.push(elem['id'])
           value_list.push(elem['value'])
         }
@@ -101,7 +101,8 @@ export default class NewComboBox extends React.Component {
   }
 
   handleChange(e) {
-      this.props.localUpdate(this.props.name, e.target.value)
+    console.warn("HANDLE CHANGE: ", e, e.target.value);
+    this.props.localUpdate(this.props.name, e.target.value)
   }
 
   render() {
