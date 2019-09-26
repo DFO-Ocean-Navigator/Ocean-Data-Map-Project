@@ -830,8 +830,8 @@ export default class AreaWindow extends React.Component {
               <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
               <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
               <option value="NETCDF3_NC" disabled={
-                this.state.dataset_0.dataset.indexOf("giops") === -1 &&
-                this.state.dataset_0.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
+                this.state.data.dataset.indexOf("giops") === -1 &&
+                this.state.data.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
               }>
                 {_("NetCDF-3 NC")}
               </option>
