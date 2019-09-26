@@ -254,7 +254,7 @@ def depth_query_v1_0():
     return jsonify(data)
 
 
-@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale><string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
+@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>/<string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
 def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label: str):
     """
     API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png

@@ -567,7 +567,7 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
-def scale_impl(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label:str):
+def scale_impl(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label: str):
     """
     API Format: /scale/<string:dataset>/<string:variable>/<string:scale>.png
 
