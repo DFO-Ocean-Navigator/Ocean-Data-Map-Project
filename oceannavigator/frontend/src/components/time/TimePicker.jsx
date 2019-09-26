@@ -68,7 +68,7 @@ export default class TimePicker extends React.Component {
   
   fetchDates(update) {
     $.ajax({
-      url: '/api/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum,
+      url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum + '&variable=' + this.props.variable,
       format: 'json',
       cache: true,
       success: function (response) {

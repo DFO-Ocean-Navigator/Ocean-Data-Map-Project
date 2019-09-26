@@ -104,6 +104,7 @@ export default class DatasetSelector extends React.Component {
             key='starttime'
             dataset={this.props.state.dataset}
             quantum={this.props.state.dataset_quantum}
+            variable={this.props.state.variable}
             startDate={starttimeObj}
             date={timeObj}
             onTimeUpdate={this.onTimeUpdate}
