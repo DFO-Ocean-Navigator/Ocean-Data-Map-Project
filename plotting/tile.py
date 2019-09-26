@@ -120,24 +120,22 @@ def scale(args):
     variable = args.get('variable')
     variable = variable.split(',')
 
-    with open_dataset(config) as dataset:
-        if len(variable) > 1:
-            variable_unit = config.variable[",".join(variable)].unit
-            variable_name = config.variable[",".join(variable)].name
-        else:
-            variable_unit = config.variable[dataset.variables[variable[0]]].unit
-            variable_name = config.variable[dataset.variables[variable[0]]].name
-        
-        if 'colourmap' in args:
-            if args.get('colourmap') == 'default':
-                cmap = colormap.find_colormap(variable[0])
-            else:
-                cmap = colormap.colormaps[args.get('colourmap')]
-        else:
-            cmap = colormap.find_colormap(variable_name)
+    if len(variable) > 1:
+        variable_unit = config.variable[",".join(variable)].unit
+        variable_name = config.variable[",".join(variable)].name
+    else:
+        variable_unit = config.variable[variable[0]].unit
+        variable_name = config.variable[variable[0]].name
     
-        #cmap = colormap.find_colormap(variable_name)
+    if 'colourmap' in args:
+        if args.get('colourmap') == 'default':
+            cmap = colormap.find_colormap(variable[0])
+        else:
+            cmap = colormap.colormaps[args.get('colourmap')]
+    else:
+        cmap = colormap.find_colormap(variable_name)
 
+    
     if len(variable) == 2:
         cmap = colormap.colormaps.get('speed')
 

@@ -118,7 +118,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30.png')
+        res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30/default/horizontal/True/False.png')
 
         self.assertEqual(res.status_code, 200)
 
