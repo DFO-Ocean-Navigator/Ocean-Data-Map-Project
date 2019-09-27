@@ -623,6 +623,7 @@ export default class PointWindow extends React.Component {
           range={true}
           key={this.state.time.toISOString()}
           dataset={this.state.dataset}
+          variable={this.state.variable}
           quantum={this.state.dataset_quantum}
           startDate={starttimeObj}
           date={timeObj}
@@ -637,7 +638,7 @@ export default class PointWindow extends React.Component {
       if (showTime) {
         time = <TimePicker
         range={false}
-        variable={this.state.data.variable}
+        variable={this.state.variable}
         key={moment(this.state.starttime)}  
         dataset={this.state.dataset}
         quantum={this.state.dataset_quantum}
