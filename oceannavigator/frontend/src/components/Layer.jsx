@@ -543,7 +543,7 @@ export default class Layer extends React.Component {
         current_variable: variable,
         depths: depths,
         current_depth: 0,
-      }, () => this.sendData('update'));
+      }, () => {this.sendData('update'); this.updateDates()});
       
     }.bind(this))
   }
