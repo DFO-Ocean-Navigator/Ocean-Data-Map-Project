@@ -182,7 +182,7 @@ export default class Layer extends React.Component {
     
   */
   sendData(update) {
-
+    console.warn("SEND DATA")
     let data
     if (this.state.current_map in this.props.state.data) {
       data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
@@ -197,7 +197,7 @@ export default class Layer extends React.Component {
     } catch (err) {
       console.warn("No Time Available")
     }
-
+    
     if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && time !== undefined) {
       if (this.props.layerType in data) {
         if (this.props.value in data[this.props.layerType]) {
@@ -361,6 +361,8 @@ export default class Layer extends React.Component {
       }.bind(this));
     } else {
       console.error("Missing Data")
+      // Update Anyway to prevent future errors
+      this.sendData(update)
       return null
     }
 
