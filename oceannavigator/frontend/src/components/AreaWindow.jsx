@@ -774,6 +774,7 @@ export default class AreaWindow extends React.Component {
             key='output_starttime'
             id='output_endtime'
             dataset={this.state.data.dataset}
+            variable={this.state.data.variable}
             quantum={this.state.data.dataset_quantum}
             startDate={starttimeObj}
             date={timeObj}
