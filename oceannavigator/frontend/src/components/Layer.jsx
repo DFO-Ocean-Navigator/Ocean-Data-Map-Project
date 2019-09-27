@@ -190,8 +190,15 @@ export default class Layer extends React.Component {
       data = {}
     }
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
+    let time = undefined
+    
+    try {
+      time = this.props.state.timestamps[time_access];
+    } catch (err) {
+      console.warn("No Time Available")
+    }
 
-    if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && this.props.state.timestamps[time_access] !== undefined) {
+    if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && time !== undefined) {
       if (this.props.layerType in data) {
         if (this.props.value in data[this.props.layerType]) {
           if (data[this.props.layerType] !== undefined || data[this.props.layerType] !== {}) {
@@ -203,7 +210,7 @@ export default class Layer extends React.Component {
               [this.state.current_variable]: {
                 frequency: 1,
                 quantum: this.state.current_quantum,
-                time: this.props.state.timestamps[time_access],
+                time: time,
                 scale: this.state.current_scale,
                 display: this.state.current_display,
                 colourmap: this.state.current_colourmap,
@@ -217,7 +224,7 @@ export default class Layer extends React.Component {
               [this.state.current_variable]: {
                 frequency: 1,
                 quantum: this.state.current_quantum,
-                time: this.props.state.timestamps[time_access],
+                time: time,
                 scale: this.state.current_scale,
                 display: this.state.current_display,
                 colourmap: this.state.current_colourmap,
@@ -233,7 +240,7 @@ export default class Layer extends React.Component {
               [this.state.current_variable]: {
                 frequency: 1,
                 quantum: this.state.current_quantum,
-                time: this.props.state.timestamps[time_access],
+                time: time,
                 scale: this.state.current_scale,
                 display: this.state.current_display,
                 colourmap: this.state.current_colourmap,
