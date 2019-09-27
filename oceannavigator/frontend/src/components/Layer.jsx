@@ -797,6 +797,10 @@ export default class Layer extends React.Component {
       
       let updated_layer = this.state.layer;
       updated_layer.set('time', time);
+
+      this.setState({
+        layer: updated_layer
+      }, this.props.mapComponent.reloadLayer())
       
     }.bind(this))
   

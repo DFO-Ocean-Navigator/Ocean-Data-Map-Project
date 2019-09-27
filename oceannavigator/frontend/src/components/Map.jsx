@@ -925,7 +925,7 @@ export default class Map extends React.PureComponent {
   }
 
   reloadLayer() {
-    return//this.map.render();
+    this.map.render();
   }
 
 
