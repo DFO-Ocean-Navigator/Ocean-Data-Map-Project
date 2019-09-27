@@ -154,5 +154,5 @@ export default class NewComboBox extends React.Component {
 NewComboBox.propTypes = {
     data: PropTypes.object,
     current: PropTypes.string,
-    localUpdate: PropTypes.string,
+    localUpdate: PropTypes.func,
 }

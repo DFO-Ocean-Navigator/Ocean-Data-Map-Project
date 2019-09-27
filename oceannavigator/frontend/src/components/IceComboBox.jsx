@@ -150,7 +150,7 @@ export default class IceComboBox extends React.Component {
 
 //***********************************************************************
 IceComboBox.propTypes = {
-    data: PropTypes.object,
+    data: PropTypes.array,
     current: PropTypes.string,
-    localUpdate: PropTypes.string,
+    localUpdate: PropTypes.func,
 }
