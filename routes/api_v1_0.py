@@ -331,10 +331,6 @@ def subset_query_v1_0():
 
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
-    time_range[0] = datetime_to_timestamp(
-        string_to_datetime(time_range[0]), config.time_dim_units)
-    time_range[1] = datetime_to_timestamp(
-        string_to_datetime(time_range[1]), config.time_dim_units)
     variables = args['variables'].split(',')
     with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
         working_dir, subset_filename = dataset.subset(args)
