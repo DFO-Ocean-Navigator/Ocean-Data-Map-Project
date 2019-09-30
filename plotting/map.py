@@ -345,7 +345,7 @@ class MapPlotter(Plotter):
         if self.compare:
             self.variable_name += " Difference"
             compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config) as dataset:
+            with open_dataset(compare_config, variable=self.compare['variables'], timestamp=self.compare['time']) as dataset:
                 data = []
                 for v in self.compare['variables']:
                     var = dataset.variables[v]
