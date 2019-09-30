@@ -435,7 +435,7 @@ def timestamps():
             vals = db.get_timestamps(data_vars[0])
         else:
             vals = db.get_timestamps(variable)
-    converted_vals = timestamp_to_datetime(vals, config.time_dim_units)
+    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
     for idx, date in enumerate(converted_vals): #TODO: dump the enumerate once the front-end is off the indexes.
