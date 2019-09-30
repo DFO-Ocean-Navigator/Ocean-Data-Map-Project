@@ -13,7 +13,7 @@ import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
-                        time_index_to_datetime)
+                        time_index_to_datetime, datetime_to_timestamp)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
@@ -462,7 +462,10 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
 
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, masked, display, zoom, x, y)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, timestamp, depth, scale, masked, display, zoom, x, y)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
