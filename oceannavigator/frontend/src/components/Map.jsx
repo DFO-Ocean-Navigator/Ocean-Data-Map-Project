@@ -523,7 +523,7 @@ export default class Map extends React.PureComponent {
       }
     }.bind(this));
 
-    /*
+    
     // Info popup balloon
     this.map.on("singleclick", function (e) {
       let toRender = this.state.toRender
@@ -619,7 +619,7 @@ export default class Map extends React.PureComponent {
         }
       }
     }.bind(this));
-    */
+    
 
     var select = new olinteraction.Select({
       style: function (feat, res) {
