@@ -327,7 +327,7 @@ export default class TimeBarContainer extends React.Component {
                             key={layer.values_.time.idx + '_button'}
                             className='timeBarToggle'
                             onClick={self.toggleLayer}
-                        >{this.state.icons[layer.values_.time.icon]}</Button>
+                        >{layer.values_.time.icon}</Button>
                         <TimeSelect
                             dates_available={layer.values_.time.available}
                             show={self.state.showLayer.includes(layer.values_.time.idx)}
