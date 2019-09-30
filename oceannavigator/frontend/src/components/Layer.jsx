@@ -794,7 +794,7 @@ export default class Layer extends React.Component {
       time.callback = () => {console.warn("CALLBACK FUNCTION")};
       time.idx = this.state.current_map + this.props.layerType + this.props.index + this.state.current_dataset + this.state.current_variable;
       time.icon = this.state.icons[this.props.layerType]
-      
+      console.warn("time.icon: ", time.icon, this.props.layerType, this.state.icons);
       let updated_layer = this.state.layer;
       updated_layer.set('time', time);
 
