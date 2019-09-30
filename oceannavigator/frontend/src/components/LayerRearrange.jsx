@@ -4,12 +4,6 @@ import { Button } from "react-bootstrap";
 import FontAwesome from "react-fontawesome";
 
 
-// IMPORT IMAGES FOR ICONS
-import ice from '../images/ice_symbol.png';
-import met from '../images/cloud_symbol.png';
-import ocean from '../images/ocean_symbol.png'
-import wave from '../images/waves_symbol.png'
-import iceberg from '../images/iceberg_symbol.png'
 
 const i18n = require("../i18n.js");
 
@@ -20,13 +14,6 @@ export default class LayerRearrange extends React.PureComponent {
 
     this.state = {
       showLayers: true,
-      icons: {
-        'ocean': <img src={ocean} alt="Ocean" className='timeIcon'></img>,
-        'met': <img src={met} alt="Met" className='timeIcon'></img>,
-        'ice': <img src={ice} alt="Ice" className='timeIcon'></img>,
-        'wave': <img src={wave} alt="Waves" className='timeIcon'></img>,
-        'iceberg': <img src={iceberg} alt="IceBerg" className='timeIcon'></img>,
-      }
     }
 
     this.remove = this.remove.bind(this);
