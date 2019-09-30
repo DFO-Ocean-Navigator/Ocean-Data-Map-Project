@@ -75,7 +75,7 @@ class DatasetConfig():
 
     @property
     def grid_angle_file_url(self):
-        # return self._get_attribute("grid_angle_file_url")
+        #return self._get_attribute("grid_angle_file_url")
         return ""
 
     @property
@@ -83,7 +83,13 @@ class DatasetConfig():
         """
         Returns the "quantum" (aka "time scale") of a dataset
         """
-        return self._get_attribute("quantum")
+
+        try:
+            quantum = self._get_attribute("quantum")
+        except KeyError:
+            quantum = None
+
+        return quantum
 
     @property
     def attribution(self) -> str:
@@ -118,12 +124,12 @@ class DatasetConfig():
             not hidden in dataset config file
         """
         variables = []
-        for key, data in self._get_attribute("variables").items():
+        for key,data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
             is_vector = ',' in key
 
-            if (is_hidden is False or
-                    is_hidden is None or
+            if (is_hidden is False or \
+                    is_hidden is None or \
                     is_hidden in ['false', 'False']) and \
                     not is_vector:
                 variables.append(key)
@@ -132,12 +138,12 @@ class DatasetConfig():
     @property
     def vector_variables(self) -> dict:
         variables = {}
-        for key, data in self._get_attribute("variables").items():
+        for key,data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
             is_vector = ',' in key
 
-            if (is_hidden is False or
-                    is_hidden is None or
+            if (is_hidden is False or \
+                    is_hidden is None or \
                     is_hidden in ['false', 'False']) and \
                     is_vector:
                 variables[key] = data
@@ -149,7 +155,7 @@ class DatasetConfig():
             Returns a dict of the calculated variables for the specified dataset
         """
         variables = {}
-        for key, data in self._get_attribute("variables").items():
+        for key,data in self._get_attribute("variables").items():
             if "equation" in data.keys():
                 variables[key] = data
         return variables
@@ -169,7 +175,6 @@ class DatasetConfig():
 
         def __getitem__(self, key):
             return VariableConfig(self._config, key)
-
 
 class VariableConfig():
     """
@@ -191,9 +196,8 @@ class VariableConfig():
             # will return None for any attribute. It extends a dict in case any
             # future code is added that will need any attributes populated.
             self._key = variable
-
             class attrdict(dict):
-                # def __init__(self, *args, **kwargs):
+                #def __init__(self, *args, **kwargs):
                 #    dict.__init__(self, *args, **kwargs)
                 #    self.__dict__ = self
                 def __getattr__(self, key):
@@ -224,6 +228,22 @@ class VariableConfig():
         else:
             return str(self._key).title()
 
+    @property
+    def quantum(self) -> str:
+        """
+        Returns the quantum (time scale) for the variable as defined in dataset config file
+        
+        Returns:
+            str -- variable quantum
+        """
+        try:
+            quantum = self.__get_attribute("quantum")
+        except KeyError:
+            quantum = None
+
+        return quantum
+
+    
     @property
     def unit(self) -> str:
         """
@@ -265,7 +285,7 @@ class VariableConfig():
         """
         Returns variable scale factor from dataset config file
         """
-
+        
         try:
             scale_factor = self.__get_attribute("scale_factor")
         except KeyError:
