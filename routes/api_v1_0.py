@@ -12,9 +12,8 @@ from flask_babel import gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import (DateTimeEncoder, datetime_to_timestamp,
-                        get_data_vars_from_equation, string_to_datetime,
-                        timestamp_to_datetime)
+from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
+                        time_index_to_datetime)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
