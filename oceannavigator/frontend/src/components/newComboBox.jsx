@@ -108,6 +108,7 @@ export default class NewComboBox extends React.Component {
   render() {
     
     let self = this;
+    console.warn("IDX LIST: ", this.state.idx_list)
     const options = this.state.idx_list.map(function(o) {
       var opts = {
         key: self.state.id_list[o],
