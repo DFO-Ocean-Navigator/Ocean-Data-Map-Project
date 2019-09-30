@@ -49,6 +49,7 @@ def open_dataset(dataset, **kwargs):
                 __check_kwargs(**kwargs)
                 # Get required NC files from database and add to args
                 args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
+                args['grid_angle_file_url'] = __get_grid_angle_file_url(dataset)
 
         if __is_mercator(variable_list):
             return Mercator(url, **args)
@@ -106,12 +107,10 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
         file_list = db.get_netcdf_files(
             timestamp, variable)
 
-        angle_file_url = datasetconfig.grid_angle_file_url
-        if angle_file_url:
-            file_list.append(angle_file_url)
-
         return file_list
 
+def __get_grid_angle_file_url(datasetconfig) -> str:
+    return datasetconfig.grid_angle_file_url
 
 def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp) -> List[int]:
 

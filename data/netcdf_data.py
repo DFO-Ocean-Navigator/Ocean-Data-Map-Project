@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import datetime
 import os
 import re
@@ -33,7 +35,8 @@ class NetCDFData(Data):
         self._dataset: [xr.core.dataset.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._nc_files: list = kwargs.get('nc_files', None)
+        self._nc_files: list = kwargs.get('nc_files')
+        self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url')
         self._time_variable: xr.IndexVariable = None
         self._meta_only: bool = kwargs.get('meta_only', False)
         self._dataset_open: bool = False
@@ -42,12 +45,21 @@ class NetCDFData(Data):
 
     def __enter__(self):
         if not self._meta_only:
+            # Don't decode times since we do it anyways.
+            decode_times = False
+            
             if self._nc_files:
                 self._dataset = xr.open_mfdataset(
-                    self._nc_files, decode_times=False)
+                    self._nc_files, decode_times=decode_times)
             else:
-                # Don't decode times since we do it anyways.
-                self._dataset = xr.open_dataset(self.url, decode_times=False)
+                self._dataset = xr.open_dataset(
+                    self.url, decode_times=decode_times)
+            
+            if self._grid_angle_file_url:
+                angle_file = xr.open_mfdataset(
+                    self._grid_angle_file_url, drop_variables=['nav_lat', 'nav_lon'])
+                self._dataset.merge(angle_file)
+                angle_file.close()
 
             self._dataset_open = True
 

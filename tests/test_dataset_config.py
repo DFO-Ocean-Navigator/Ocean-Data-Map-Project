@@ -21,6 +21,7 @@ class TestUtil(unittest.TestCase):
                 "help": "my_help",
                 "quantum": "my_quantum",
                 "type": "my_type",
+                "grid_angle_file_url": "my_url",
                 "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
@@ -40,6 +41,7 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(result.name, "my_name")
         self.assertEqual(result.help, "my_help")
         self.assertEqual(result.quantum, "my_quantum")
+        self.assertEqual(result.grid_angle_file_url, "my_url")
         self.assertEqual(result.type, "my_type")
         self.assertEqual(result.time_dim_units, "my_time_units")
         self.assertEqual(result.attribution, "my_attribution")
