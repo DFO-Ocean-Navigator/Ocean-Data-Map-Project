@@ -37,7 +37,7 @@ export default class OceanNavigator extends React.Component {
       _firstLayer: true,
       _foundation: true,
       _environment: true,
-      _intelligence: true,
+      _intelligence: false,
       _derived: false,
       _planning: false,
 
@@ -45,7 +45,7 @@ export default class OceanNavigator extends React.Component {
       allowedTabs: {
         _foundation: true,
         _environment: true,
-        _intelligence: true,
+        _intelligence: false,
         _derived: false,
         _planning: false,
       },
@@ -63,14 +63,14 @@ export default class OceanNavigator extends React.Component {
           id: 'colour',
           value: 'Colour',
         },
-        {
+        /*{
           id: 'contours',
           value: 'Contours',
         },
         {
           id: 'windbarbs',
           value: 'Wind Barbs (BETA)',
-        }
+        }*/
       ],
 
       dataset: "giops_day",
