@@ -443,7 +443,7 @@ def wind_barbs(projection, x, y, z, args):
     config = DatasetConfig(dataset_name)
     with open_dataset(config) as dataset:
         #print(dataset.variables[variable[0]].dimensions)
-        if args.get('time') is None or (type(args.get('time')) == str and
+        if args.get('time') is None or (isinstance(args.get('time'), str) and
                                         len(args.get('time')) == 0):
             time = -1
         else:
