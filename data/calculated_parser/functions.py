@@ -282,3 +282,43 @@ def gradient_y(d, lat, lon):
     lon -- an array of longitudes, the shape must match that of d
     """
     return _metpy(metpy.calc.gradient, d, lat, lon, 'y')
+
+
+def sound_channel_excess(sspeed, depth, lat, lon):
+    """
+    Calculates the sound channel excess of a sound speed profile
+
+    Parameters:
+    sspeed -- Speed of Sound
+    lat -- an array of latitudes
+    lon -- an array of longitudes
+    """    
+    return 0
+
+
+def critical_depth(mld, sspeed, depth, lat, lon):
+    """
+    Calculates the critical depth of a sound speed profile
+
+    Parameters:
+    mld -- Ocean Mixed Layer Depth
+    sspeed -- Speed of Sound
+    depth -- the depth(s) in meters
+    lat -- an array of latitudes
+    lon -- an array of longitudes
+    """
+    return 0
+ 
+
+def depth_excess(critical_depth, depth, lat, lon):
+    """
+    Calculates the depth excess of a sound speed profile
+
+    Parameters:
+    critical_depth -- Critical depth of a sound speed profile
+    depth -- the depth(s) in meters
+    lat -- an array of latitudes
+    lon -- an array of longitudes
+    """
+
+    return 0
