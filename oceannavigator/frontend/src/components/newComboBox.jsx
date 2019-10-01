@@ -62,6 +62,7 @@ export default class NewComboBox extends React.Component {
       if (elem_obj === undefined) {
         console.error("Data empty or malformed")
       } else if (this.props.envType !== undefined) {
+        console.warn("ENABLED: ", elem_obj['enabled'])
         console.warn("ELEM TYPE DEFINED")
         console.warn(elem_obj['envtype'])
         console.warn("CONDITION: ", this.props.envType === elem_obj['envtype'])
