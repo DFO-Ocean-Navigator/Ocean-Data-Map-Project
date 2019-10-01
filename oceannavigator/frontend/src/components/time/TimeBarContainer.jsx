@@ -337,6 +337,7 @@ export default class TimeBarContainer extends React.Component {
                             quantum={layer.values_.time.quantum}
                             currentTime={this.state.times[layer.values_.time.idx]}
                             localUpdate={self.localUpdate}
+                            toggle={self.toggleLayer}
                         ></TimeSelect>
                     </div>
                 )
