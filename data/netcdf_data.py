@@ -155,7 +155,7 @@ class NetCDFData(Data):
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
 
-            """
+            
             quantum = query.get('quantum')
             if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
@@ -176,8 +176,8 @@ class NetCDFData(Data):
             time_range = [dateutil.parser.parse(
                 x) for x in query.get('time').split(',')]
             time_range = [find_time_index(x) for x in time_range]
-            """
-            raise ServerError("Not implemented.")
+            
+            #raise ServerError("Not implemented.")
 
         apply_time_range = False
         if time_range[0] != time_range[1]:
