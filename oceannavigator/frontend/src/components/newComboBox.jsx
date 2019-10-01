@@ -66,7 +66,7 @@ export default class NewComboBox extends React.Component {
         console.warn(elem_obj['envtype'])
         console.warn("CONDITION: ", this.props.envType === elem_obj['envtype'])
         if (this.props.envType === elem_obj['envtype']) {
-          console.warn("Adding Variable")
+          console.warn("Adding Variable: ", elem, elem['name'])
           id_list.push(elem)
           value_list.push(elem['name'])
         } else if ( this.props.envType.includes(elem_obj['envtype'] )) {
