@@ -41,6 +41,7 @@ export default class TimeBarContainer extends React.Component {
         this.animateConsecutive = this.animateConsecutive.bind(this);
         this.findMax = this.findMax.bind(this);
         this.findMin = this.findMin.bind(this);
+        this.init = this.init.bind(this);
     }
 
     // Sends time back to the OceanNavigator component
@@ -269,6 +270,14 @@ export default class TimeBarContainer extends React.Component {
         return
     }
 
+    init(id) {
+        let newShowLayer = this.state.showLayer;
+        newShowLayer.push(id);
+        this.setState({
+            showLayer: newShowLayer
+        })
+    } 
+
     render() {
 
         self = this
@@ -337,7 +346,7 @@ export default class TimeBarContainer extends React.Component {
                             quantum={layer.values_.time.quantum}
                             currentTime={this.state.times[layer.values_.time.idx]}
                             localUpdate={self.localUpdate}
-                            toggle={self.toggleLayer}
+                            toggle={self.init}
                         ></TimeSelect>
                     </div>
                 )

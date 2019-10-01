@@ -89,7 +89,7 @@ export default class TimeSelect extends React.Component {
 
     componentDidMount() {
         //this.props.localUpdate(this.props.name, this.state.startTimeObj, this.state.endTimeObj)
-        this.props.toggle()
+        this.props.toggle(this.props.id)
         /*
         if ('dataset' in this.props && this.props.dataset != '' && this.props.dataset != undefined && this.props.dataset != 'all') {
             this.updateTimes()
