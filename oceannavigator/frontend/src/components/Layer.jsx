@@ -1160,6 +1160,7 @@ export default class Layer extends React.Component {
     //if (this.state.datasets.length > 1) {
       datasets.push(<NewComboBox
         data={this.props.datasetconfig}
+        envType={this.props.layerType}
         //data={this.state.datasets}
         current={this.state.current_dataset}
         localUpdate={this.localUpdate}
