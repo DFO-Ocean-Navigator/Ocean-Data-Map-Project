@@ -57,23 +57,15 @@ export default class NewComboBox extends React.Component {
     let value_list = []
     for (let elem in this.props.data) {
       let elem_obj = this.props.data[elem]
-      console.warn("ELEM OBJ: ", elem_obj);
-      console.warn("ENVTYPE: ", this.props.envType)
       if (elem_obj === undefined) {
         console.error("Data empty or malformed")
       } else if (this.props.envType !== undefined) {
-        console.warn("ENABLED: ", elem_obj['enabled'])
-        console.warn("ELEM TYPE DEFINED")
-        console.warn(elem_obj['envtype'])
-        console.warn("CONDITION: ", this.props.envType === elem_obj['envtype'])
         if (this.props.envType === elem_obj['envtype']) {
           if (elem_obj['hide'] === undefined || !elem_obj['hide']) {
-            console.warn("Adding Variable: ", elem, elem['name'])
             id_list.push(elem)
             value_list.push(elem_obj['name'])  
           }
         } else if ( this.props.envType.includes(elem_obj['envtype']) && elem_obj['enabled']) {
-          console.warn("Adding Datase")
           id_list.push(elem)
           value_list.push(elem_obj['name'])
         }
@@ -114,14 +106,12 @@ export default class NewComboBox extends React.Component {
   }
 
   handleChange(e) {
-    console.warn("HANDLE CHANGE: ", e, e.target.value);
     this.props.localUpdate(this.props.name, e.target.value)
   }
 
   render() {
     
     let self = this;
-    console.warn("IDX LIST: ", this.state.idx_list)
     const options = this.state.idx_list.map(function(o) {
       var opts = {
         key: self.state.id_list[o],
