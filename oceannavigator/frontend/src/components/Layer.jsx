@@ -1184,6 +1184,7 @@ export default class Layer extends React.Component {
         //data={this.state.variables}
         current={this.state.current_variable}
         localUpdate={this.localUpdate}
+        envType={this.props.layerType}
         key='variable'
         name='current_variable'
         title={_("Variable")}
