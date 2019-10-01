@@ -8,6 +8,7 @@ from bisect import bisect_left, bisect_right
 from typing import List
 
 import cftime
+import dateutil.parser
 import numpy as np
 import pytz
 
@@ -46,6 +47,8 @@ def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> Lis
 
     return list(variables & data_vars)
 
+def string_to_datetime(string: str) -> datetime.datetime:
+    return dateutil.parser.parse(string).replace(tzinfo=pytz.UTC)
 
 def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
 
@@ -55,7 +58,7 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     return t.date2num(datetime)
 
 
-def time_index_to_datetime(timestamps, time_units: str):
+def timestamp_to_datetime(timestamps, time_units: str):
 
     if isinstance(timestamps, np.ndarray):
         timestamps = timestamps.tolist()

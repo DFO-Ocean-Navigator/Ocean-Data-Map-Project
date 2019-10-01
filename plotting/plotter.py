@@ -9,7 +9,7 @@ import numpy as np
 import pint
 from flask_babel import format_date, format_datetime
 from PIL import Image
-
+from data.utils import datetime_to_timestamp, string_to_datetime
 import plotting.colormap as colormap
 import plotting.utils as utils
 from oceannavigator import DatasetConfig
@@ -163,14 +163,18 @@ class Plotter(metaclass=ABCMeta):
 
         return [v for v in variables if v != '']
 
-    def __get_time(self, param: str):
-        if param is None or len(str(param)) == 0:
+    def __get_time(self, param: str) -> int:
+        if not param:
             return -1
-        else:
-            try:
-                return int(param)
-            except ValueError:
-                return param
+        time = None
+        try:
+            time = datetime_to_timestamp(
+                string_to_datetime(param), self.dataset_config.time_dim_units)
+
+        except:
+            time = int(param)
+
+        return time
 
     def __get_colormap(self, cmap: str):
         if cmap is not None:
