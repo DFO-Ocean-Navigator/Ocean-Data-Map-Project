@@ -66,10 +66,12 @@ export default class NewComboBox extends React.Component {
         console.warn(elem_obj['envtype'])
         console.warn("CONDITION: ", this.props.envType === elem_obj['envtype'])
         if (this.props.envType === elem_obj['envtype']) {
-          console.warn("Adding Variable: ", elem, elem['name'])
-          id_list.push(elem)
-          value_list.push(elem_obj['name'])
-        } else if ( this.props.envType.includes(elem_obj['envtype'] )) {
+          if (elem_obj['hide'] === undefined || !elem_obj['hide']) {
+            console.warn("Adding Variable: ", elem, elem['name'])
+            id_list.push(elem)
+            value_list.push(elem_obj['name'])  
+          }
+        } else if ( this.props.envType.includes(elem_obj['envtype'] && elem_obj['enabled'])) {
           console.warn("Adding Datase")
           id_list.push(elem)
           value_list.push(elem_obj['name'])
