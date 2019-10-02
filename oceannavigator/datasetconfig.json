@@ -172,7 +172,7 @@
                 "scale": [1400, 1600],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "equation": "sspeed(depth, nav_lat, vosaline, votemper - 273.15)"
+                "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)"
             },
             "temp_gradientx": {
                 "hide": "true",
@@ -264,7 +264,7 @@
             "divergence": { "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true"},
             "vozocrte": { "name": "Water East Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true", "hide": true },
             "vomecrtn": { "name": "Water North Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true", "hide": true },
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, vosaline, votemper - 273.15)" },
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)" },
             "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
@@ -327,7 +327,7 @@
             "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true },
             "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius"},
             "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU"},
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, thetao, so)" }
         }
     },
     "riops_reanalysis_surface": {
@@ -359,7 +359,7 @@
             "uo": { "name": "Water X Velocity", "scale": [-1, 1], "unit": "m/s", "zero_centered": true },
             "thetao": { "name": "Temperature", "scale": [-5, 30], "unit": "Celsius"},
             "so": { "name": "Salinity", "scale": [30, 40], "unit": "PSU"},
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, thetao, so)" }
         }
     },
     "riops_daily_surface": {
@@ -601,7 +601,7 @@
                 "unit": "PSU",
                 "scale": [30, 40]
             },
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
         }
     },
     "riops_hourly_surface": {
@@ -736,7 +736,7 @@
                 "unit": "PSU",
                 "scale": [30, 40]
             },
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
         }
     },
     "riops_monthly_surface": {
@@ -1368,7 +1368,7 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "equation": "sspeed(deptht, nav_lat, vosaline, votemper - 273.15)"
+                "equation": "sspeed(deptht, nav_lat, votemper - 273.15, vosaline)"
             }
         }
     },
@@ -1400,7 +1400,7 @@
                 "iiceveln": { "name": "Sea Ice North Velocity", "scale": [-1, 1], "scale_factor": 1, "unit": "m/s", "zero_centered": "true", "equation": "iicevelu * sin_alpha + iicevelv * cos_alpha" },
                 "vozocrte": { "name": "Water East Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true" },
                 "vomecrtn": { "name": "Water North Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true" },
-                "sspeed": { "hide:": "true", "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, vosaline, votemper - 273.15)" },
+                "sspeed": { "hide:": "true", "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, votemper - 273.15, vosaline)" },
                 "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
@@ -1864,7 +1864,7 @@
             "saltc": { "name": "Salt Content (Vertically Integrated)", "unit": "1e-3*kg/m2", "scale": [0, 3734855]},
             "ssh_ib": { "name": "Inverse Barometer Sea Surface Height", "scale": [-3, 3], "unit": "m", "zero_centered": "true"},
             "zos": { "name": "Sea Surface Height", "units": "m", "scale": [-3, 3], "zero_centered": "true"},
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)"},
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, thetao, so)"},
             "ubar": { "name": "Ocean Baroptropic East Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"},
             "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true"},
             "tauuo": { "name": "Wind Stress East",  "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true"},
@@ -1895,7 +1895,7 @@
             "vo": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
             "tauvo": { "name": "Wind Stress North", "unit": "N/m2", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
             "vbar": { "name": "Ocean Baroptropic North Current", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day"},
-            "sspeed": { "name": "Speed of Sound", "hide":"true", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, so, thetao)", "quantum": "day" },
+            "sspeed": { "name": "Speed of Sound", "hide":"true", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(deptht, nav_lat, thetao, so)", "quantum": "day" },
             "uo,vo": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "scale_factor": 1, "quantum": "day"},
             "vorticity": { "name": "Water Vorticity", "hide":"true", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(uo, vo, nav_lat, nav_lon)", "zero_centered": "true", "quantum": "day" },
             "divergence": { "name": "Water Divergence", "hide":"true", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(uo, vo, nav_lat, nav_lon)", "zero_centered": "true", "quantum": "day"}
