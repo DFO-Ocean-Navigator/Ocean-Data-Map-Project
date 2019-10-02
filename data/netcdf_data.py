@@ -58,7 +58,7 @@ class NetCDFData(Data):
             if self._grid_angle_file_url:
                 angle_file = xr.open_mfdataset(
                     self._grid_angle_file_url, drop_variables=['nav_lat', 'nav_lon'])
-                self._dataset.merge(angle_file)
+                self._dataset = self._dataset.merge(angle_file)
                 angle_file.close()
 
             self._dataset_open = True
