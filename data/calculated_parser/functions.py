@@ -284,7 +284,35 @@ def gradient_y(d, lat, lon):
     return _metpy(metpy.calc.gradient, d, lat, lon, 'y')
 
 
-def sound_channel_excess(sspeed, depth, lat, lon):
+def test(h, lat, lon):
+
+    if isinstance(lat, xr.Variable):
+        lat = lat.values
+
+    if hasattr(h, "dims"):
+        dims = h.dims
+    else:
+        dims = h.dimensions
+
+    dim_order = "".join([d for d in dims if d in 'yx'])
+
+    def f(heights, **kwargs):
+        c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
+        if dim_order == "yx":
+            dy, dx = kwargs['deltas']
+        else:
+            dx, dy = kwgard['deltas']
+        print("HEIGHTS: ", heights)
+        print("dy: ", dy)
+        print("dx: ", dx)
+        print("c: ", c)
+        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
+                dim_order=kwargs['dim_order'])
+
+    return _metpy(f, h, lat, lon, dim_order[0])
+    
+
+def sound_channel_axis(sspeed, depth, lat, lon):
     """
     Calculates the sound channel excess of a sound speed profile
 
@@ -292,7 +320,8 @@ def sound_channel_excess(sspeed, depth, lat, lon):
     sspeed -- Speed of Sound
     lat -- an array of latitudes
     lon -- an array of longitudes
-    """    
+    """ 
+
     return 0
 
 

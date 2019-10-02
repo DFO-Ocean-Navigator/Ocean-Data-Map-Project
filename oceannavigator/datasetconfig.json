@@ -820,6 +820,13 @@
                 "scale_factor": 1,
                 "unit": "m/s",
                 "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)"
+            },
+            "test": {
+                "envtype": "ocean",
+                "name": "TEST",
+                "unit": "m",
+                "scale": [0,2000],
+                "equation": "test(sspeed, latitude, longitude)"
             }
         }
     },

@@ -209,6 +209,7 @@ export default class TimePicker extends React.Component {
       date.set({
         hour: 0,
       })
+      console.warn("TIME PICKER SINGLE UPDATE: ", date)
       this.props.onTimeUpdate(date);
     } else {
       this.props.onTimeUpdate(date);
