@@ -287,6 +287,13 @@ def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
 def class4_query_v1_0(q: str, class4_id: str):
+    
+    time_range[0] = datetime_to_timestamp(
+        string_to_datetime(time_range[0]), config.time_dim_unit
+    )
+    time_range[1] = datetime_to_timestamp(
+        string_to_datetime(time_range[1]), config.time_dim_units
+    )
     return routes.routes_impl.class4_query_impl(q, class4_id, 0)
 
 
