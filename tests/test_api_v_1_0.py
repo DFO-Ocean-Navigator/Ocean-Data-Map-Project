@@ -23,6 +23,7 @@ class TestAPIv1(unittest.TestCase):
             "giops": {
                 "enabled": True,
                 "url": "tests/testdata/nemo_test.nc",
+                "grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc",
                 "time_dim_units": "seconds since 1950-01-01 00:00:00",
                 "quantum": "day",
                 "name": "GIOPS",
