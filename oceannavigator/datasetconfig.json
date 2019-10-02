@@ -7,7 +7,7 @@
         "name": "GIOPS Monthly",
         "quantum": "month",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "grid_angle_file_url": "/data/grids/giops/grid_angle_modified.nc",
+        "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Monthly.sqlite3",
         "variables": {
