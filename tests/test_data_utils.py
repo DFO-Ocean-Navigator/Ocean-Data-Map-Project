@@ -71,7 +71,7 @@ class TestDataUtils(unittest.TestCase):
         expected = sorted(["vosaline", "votemper"])
 
         result = sorted(get_data_vars_from_equation(
-            "sspeed(depth, nav_lat, vosaline, votemper - 273.15)", ["vosaline", "votemper", "vozocrtx", "vomecrty"]))
+            "sspeed(depth, nav_lat, votemper - 273.15, vosaline)", ["vosaline", "votemper", "vozocrtx", "vomecrty"]))
 
         self.assertEqual(expected, result)
 

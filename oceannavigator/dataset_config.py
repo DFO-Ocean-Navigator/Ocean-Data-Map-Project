@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 import os
 import re
@@ -75,8 +77,7 @@ class DatasetConfig():
 
     @property
     def grid_angle_file_url(self):
-        #return self._get_attribute("grid_angle_file_url")
-        return ""
+        return self._get_attribute("grid_angle_file_url")
 
     @property
     def quantum(self) -> str:

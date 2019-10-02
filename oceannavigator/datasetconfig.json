@@ -153,7 +153,8 @@
                     3
                 ],
                 "scale_factor": 1,
-                "unit": "m/s"
+                "unit": "m/s",
+                "zero_centered": "true"
             },
             "divergence": {
                 "envtype": "ocean",
@@ -188,7 +189,7 @@
                 "scale": [1400, 1600],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "equation": "sspeed(depth, nav_lat, vosaline, votemper - 273.15)"
+                "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)"
             },
             "temp_gradientx": {
                 "envtype": "ocean",
@@ -657,7 +658,7 @@
                 "unit": "PSU",
                 "scale": [30, 40]
             },
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
         }
     },
     "riops_hourly_surface": {
@@ -1529,7 +1530,7 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "equation": "sspeed(deptht, nav_lat, vosaline, votemper - 273.15)"
+                "equation": "sspeed(deptht, nav_lat, votemper - 273.15, vosaline)"
             }
         }
     },
