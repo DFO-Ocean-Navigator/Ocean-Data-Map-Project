@@ -52,7 +52,7 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
-def sspeedmax(sspeed, latitue):
+def sspeedmax(depth, latitude, temperature, salinity):
     """
     Finds the local maxima of the speed of sound
 
@@ -60,6 +60,8 @@ def sspeedmax(sspeed, latitue):
     sspeed: Speed of Sound
     latitude: The latitude(s) in degrees North
     """
+
+    sspeed = sspeed(depth, latitude, temperature, salinity)
 
     return sspeed
 
