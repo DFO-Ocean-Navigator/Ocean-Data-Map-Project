@@ -52,7 +52,7 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
-def sspeedmax(depth, latitude, temperature, salinity):
+def sspeedmax(depth, lat, lon, temperature, salinity):
     """
     Finds the local maxima of the speed of sound
 
@@ -61,8 +61,23 @@ def sspeedmax(depth, latitude, temperature, salinity):
     latitude: The latitude(s) in degrees North
     """
 
-    sspeed_var = sspeed(depth, latitude, temperature, salinity)
+    sspeed_var = sspeed(depth, lat, temperature, salinity)
 
+    if hasattr(sspeed_var, "dims"):
+        dims = sspeed_var.dims
+    else:
+        dims = sspeed_var.dimensions
+
+    dx, dy = metpy.calc.lat_lon_grid_deltas(np.array(lon), np.array(lat))
+    dim_order = "".join([d for d in dims if d in 'yx'])
+
+    if dim_order == "yx":
+        deltas = [dy, dx]
+    else:
+        deltas = [dx, dy]
+
+    print("DELTAS: ", deltas)
+    
     return sspeed_var
 
 
