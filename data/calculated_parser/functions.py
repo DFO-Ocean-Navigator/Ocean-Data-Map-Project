@@ -61,9 +61,9 @@ def sspeedmax(depth, latitude, temperature, salinity):
     latitude: The latitude(s) in degrees North
     """
 
-    sspeed = sspeed(depth, latitude, temperature, salinity)
+    sspeed_var = sspeed(depth, latitude, temperature, salinity)
 
-    return sspeed
+    return sspeed_var
 
 
 def _metpy(func, data, lat, lon, dim):
