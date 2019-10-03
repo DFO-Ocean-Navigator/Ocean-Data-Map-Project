@@ -640,7 +640,7 @@ export default class PointWindow extends React.Component {
         time = <TimePicker
         range={false}
         variable={this.state.variable}
-        key={this.state.starttime.toISOString()}  
+        key={this.state.time.toISOString()}  
         dataset={this.state.dataset}
         quantum={this.state.dataset_quantum}
         startDate={starttimeObj}
