@@ -56,13 +56,15 @@ export default class TimePicker extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.warn("PROPS BEFORE UPDATE: ", prevProps, this.props);
     if (prevProps.dataset !== this.props.dataset) {
       if (prevProps.dataset === undefined) {
         this.fetchDates(false)    
       } else {
         this.fetchDates(true)
       }
-      }
+    }
+    console.warn("PROPS AFTER UPDATE: ", prevProps, this.props);
   }
 
   

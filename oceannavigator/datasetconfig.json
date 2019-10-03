@@ -294,7 +294,7 @@
     },
     "giops_forecast": {
         "envtype": ["ocean", "ice"],
-        "url": "http://localhost:8080/thredds/dodsC/giops/forecast/aggregated.ncml",
+        "url": "/home/buildadm/ocean-nav/db/GIOPS-Forecast.sqlite3",
         "name": "GIOPS 10-day Forecast",
         "quantum": "split",
         "type": "forecast",
