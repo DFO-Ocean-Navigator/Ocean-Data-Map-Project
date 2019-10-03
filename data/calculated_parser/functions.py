@@ -51,6 +51,19 @@ def sspeed(depth, latitude, temperature, salinity):
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
 
+
+def sspeedmax(sspeed, latitue):
+    """
+    Finds the local maxima of the speed of sound
+
+    Parameters:
+    sspeed: Speed of Sound
+    latitude: The latitude(s) in degrees North
+    """
+
+    return sspeed
+
+
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
 
