@@ -174,7 +174,7 @@ export default class PointWindow extends React.Component {
   }
 
   onTimeUpdate(key, value) {
-    
+    console.warn("UPDATING TIME: ", key, value);
     if (typeof(key) === typeof('string')) {
       this.setState({
         [key]: value
@@ -189,6 +189,7 @@ export default class PointWindow extends React.Component {
   }
 
   updateData(selected) {
+    console.warn("UPDATE DATE IN POINT: ", selected);
     selected = selected.split(',')
     let data = this.props.data
 
@@ -227,6 +228,8 @@ export default class PointWindow extends React.Component {
       time: time,
     }, () => {
       this.updatePlot()
+
+      // Why are we populating variables for a new date?
       this.populateVariables(dataset)
     })
   }
@@ -631,10 +634,8 @@ export default class PointWindow extends React.Component {
         />
       }
 
-      console.warn("TIME CAUSING ERROR: ", this.state.time)
-      console.warn("POTENTIAL TIME: ", this.state.starttime)
-      console.warn("THIS.STATE: ", this.state)
-      console.warn("THIS.PROPS: ", this.props)
+      console.warn(timeObj);
+      console.warn(starttimeObj);
       if (showTime) {
         time = <TimePicker
         range={false}
