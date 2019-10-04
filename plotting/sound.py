@@ -72,8 +72,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         maxspeed = np.amax(self.sspeed)
 
         minpos = np.where(self.sspeed[0] == minspeed)
-        print(something) # Induce Error for debugging
-        minpos = self.temperature_depths[minpos[0]]
+        minpos = self.temperature_depths.data[0][minpos][0]
         maxpos = np.where(self.sspeed[0] == maxspeed)
 
         plt.axvline(x=minspeed, ymin=(minpos - minpos*0.1), ymax=(minpos + minpos*0.1))
