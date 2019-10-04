@@ -61,24 +61,15 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     latitude: The latitude(s) in degrees North
     """
 
-    sspeed_var = sspeed(depth, lat, temperature, salinity)
+    # Calculate sspeed ourselves so it is not an ndarray
+    try:
+        press = [seawater.pres(d, latitude) for d in depth]
+    except TypeError:
+        press = seawater.pres(depth, latitude)
 
-    if hasattr(sspeed_var, "dims"):
-        dims = sspeed_var.dims
-    else:
-        dims = sspeed_var.dimensions
-
-    dx, dy = metpy.calc.lat_lon_grid_deltas(np.array(lon), np.array(lat))
-    dim_order = "".join([d for d in dims if d in 'yx'])
-
-    if dim_order == "yx":
-        deltas = [dy, dx]
-    else:
-        deltas = [dx, dy]
-
-    print("DELTAS: ", deltas)
-    
-    return sspeed_var
+    sspeed = seawater.svel(salinity, temperature, press)
+     
+    return sspeed
 
 
 def _metpy(func, data, lat, lon, dim):
