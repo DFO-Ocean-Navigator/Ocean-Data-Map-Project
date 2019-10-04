@@ -43,7 +43,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         self.sspeed = seawater.svel(
             self.salinity, temperature_c, self.pressure
         )
-        print(something)
 
     def plot(self):
         # Create base figure
@@ -71,6 +70,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
+
+        minpos = np.where(self.sspeed[0] == minspeed)
+        maxpos = np.where(self.sspeed[0] == maxspeed)
+
+        plt.axvline(x=minspeed)
 
         ax.set_xlim([
             np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
