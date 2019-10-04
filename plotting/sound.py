@@ -68,17 +68,19 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
 
+        # SOUND SPEED MINIMA
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
 
         minpos = np.where(self.sspeed[0] == minspeed)
         
-        # Determine the sonic layer depth
+        # SONIC LAYER DEPTH
+
+        # Calculate
         soniclayerdepth_value = self.sspeed[0][0:int(minpos[0])].max()
         soniclayerdepth_idx = np.where(self.sspeed[0] == soniclayerdepth_value)
         soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
 
-        # Sonic Layer Depth
         # Plot and label
         plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
         xytext=(0,10), ha='center')
@@ -112,6 +114,13 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         
         # ~~~~~~~~~~~~~~
 
+        # DEPTH EXCESS
+
+        depthexcess = np.amax(self.sspeed) + (maxspeed - minspeed) - criticaldepth_true
+
+        plt.text( soniclayerdepth_value - 10, criticaldepth_true - (depthexcess / 2), str(depthexcess))
+        # ~~~~~~~~~~~~
+        
 
         minpos = self.temperature_depths.data[0][minpos][0]
         maxpos = np.where(self.sspeed[0] == maxspeed)
@@ -127,13 +136,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Sound Speed Minima
         plt.text(minspeed + 2, minpos, str(minspeed))
         ax.scatter(minspeed, minpos, s=200, marker='_')
-        # ~~~~~~~~~~~~~~~~~~
-
+        # ~~~~~~~~~~~~~~~~~
         
-        
-        # Depth Excess
-        
-
 
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
