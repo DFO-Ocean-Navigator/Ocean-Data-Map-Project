@@ -118,7 +118,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         depthexcess = np.amax(self.sspeed) + (maxspeed - minspeed) - criticaldepth_true
 
-        plt.text( soniclayerdepth_value - 10, criticaldepth_true - (depthexcess / 2), str(depthexcess))
+        plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)), str(depthexcess))
         # ~~~~~~~~~~~~
         
 
