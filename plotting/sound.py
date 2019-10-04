@@ -43,6 +43,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         self.sspeed = seawater.svel(
             self.salinity, temperature_c, self.pressure
         )
+        print(something)
 
     def plot(self):
         # Create base figure
