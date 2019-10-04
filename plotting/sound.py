@@ -72,24 +72,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         maxspeed = np.amax(self.sspeed)
 
         minpos = np.where(self.sspeed[0] == minspeed)
-        minpos = self.temperature_depths.data[0][minpos][0]
-        maxpos = np.where(self.sspeed[0] == maxspeed)
-
-        # Sound Speed Minima
-        plt.text(minspeed + 2, minpos, str(minspeed))
-        ax.scatter(minspeed, minpos, s=200, marker='_')
         
-
         # Determine the sonic layer depth
         soniclayerdepth_value = self.sspeed[0][0:int(minpos[0])].max()
         soniclayerdepth_idx = np.where(self.sspeed[0] == soniclayerdepth_value)
         soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
-
-        # Plotting
-        plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
-        xytext=(0,10), ha='center')
-        ax.axvline(x=soniclayerdepth_value, linestyle='--')
-
 
         # Critical Depth
         
@@ -106,17 +93,15 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx - 1) + int(minpos[0])]
             criticaldepth_true = criticaldepth_sec + (soniclayerdepth_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
         
-            # Critical Depth
-            ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
-            plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
-
         else:
         # Must also consider the next value
             pass
 
         
 
-        
+        minpos = self.temperature_depths.data[0][minpos][0]
+        maxpos = np.where(self.sspeed[0] == maxspeed)
+
         #plt.axvline(x=minspeed, ymin=0.5, ymax=1)
         #plt.axhline(y=minpos)
         
@@ -125,11 +110,20 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         ])
 
+        # Sound Speed Minima
+        plt.text(minspeed + 2, minpos, str(minspeed))
+        ax.scatter(minspeed, minpos, s=200, marker='_')
         
-        
-        
-        # Depth Excess
+        # Sonic Layer Depth
+        plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
+        xytext=(0,10), ha='center')
+        ax.axvline(x=soniclayerdepth_value, linestyle='--')
 
+        # Critical Depth
+        ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
+        plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
+        
+        
 
 
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
