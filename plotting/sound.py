@@ -82,7 +82,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
             np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         ])
-        plt.text(minspeed, minpos, str(minspeed))
+        plt.text(minspeed + 200, minpos, str(minspeed))
         ax.scatter(minspeed, minpos, s=200, marker='_')
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
