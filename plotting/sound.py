@@ -90,7 +90,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         if (criticaldepth_value > soniclayerdepth_value):
         # Must also consider the previous value 
             criticaldepth_sec_value = subset[criticaldepth_idx - 1]
-            criticaldepth_sec self.temperature_depths.data[0][int(criticaldepth_idx - 1) + int(minpos[0])]
+            criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx - 1) + int(minpos[0])]
             criticaldepth_true = criticaldepth_sec + (soniclayerdepth_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
         
         else:
