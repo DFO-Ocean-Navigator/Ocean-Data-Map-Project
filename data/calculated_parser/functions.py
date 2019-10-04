@@ -69,8 +69,6 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
 
     sspeed = seawater.svel(salinity, temperature, press)
 
-    
-    print(something)
     return np.ravel(sspeed).max()
 
 
