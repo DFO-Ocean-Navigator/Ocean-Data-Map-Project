@@ -63,12 +63,12 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
 
     # Calculate sspeed ourselves so it is not an ndarray
     try:
-        press = [seawater.pres(d, latitude) for d in depth]
+        press = [seawater.pres(d, lat) for d in depth]
     except TypeError:
-        press = seawater.pres(depth, latitude)
+        press = seawater.pres(depth, lat)
 
     sspeed = seawater.svel(salinity, temperature, press)
-     
+    print(something)
     return sspeed
 
 
