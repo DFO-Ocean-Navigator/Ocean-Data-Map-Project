@@ -121,8 +121,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         # Critical Depth
         ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
-        plt.annotate(criticaldepth_true, (soniclayerdepth_value,criticaldepth_true), textcoords="offset points",
-        xytext=(0,20), ha='center')
+        plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
+        
+        #plt.annotate(criticaldepth_true, (soniclayerdepth_value,criticaldepth_true), textcoords="offset points",
+        #xytext=(0,20), ha='center')
         
 
 
