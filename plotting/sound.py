@@ -72,6 +72,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         maxspeed = np.amax(self.sspeed)
 
         minpos = np.where(self.sspeed[0] == minspeed)
+        minpos = self.temperature_depths.data[0][minpos][0]
+        maxpos = np.where(self.sspeed[0] == maxspeed)
 
         # Sound Speed Minima
         plt.text(minspeed + 2, minpos, str(minspeed))
@@ -107,16 +109,14 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # Critical Depth
             ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
             plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
-            
+
         else:
         # Must also consider the next value
             pass
 
         
 
-        minpos = self.temperature_depths.data[0][minpos][0]
-        maxpos = np.where(self.sspeed[0] == maxspeed)
-
+        
         #plt.axvline(x=minspeed, ymin=0.5, ymax=1)
         #plt.axhline(y=minpos)
         
