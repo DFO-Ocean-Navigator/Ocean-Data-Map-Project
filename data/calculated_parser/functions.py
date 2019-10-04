@@ -68,8 +68,10 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
         press = seawater.pres(depth, lat)
 
     sspeed = seawater.svel(salinity, temperature, press)
+
+    
     print(something)
-    return sspeed
+    return np.ravel(sspeed).max()
 
 
 def _metpy(func, data, lat, lon, dim):
