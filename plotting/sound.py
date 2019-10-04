@@ -96,7 +96,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Sonic Layer Depth
         plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
         xytext=(0,10), ha='center')
-        ax.axvline(x=soniclayerdepth_value, linestyle='- - ')
+        ax.axvline(x=soniclayerdepth_value, linestyle='-')
 
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
