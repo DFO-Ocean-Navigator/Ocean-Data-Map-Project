@@ -79,8 +79,13 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
 
         # Critical Depth
-        criticaldepth_idx = np.where(self.sspeed[0][int(minpos[0]):] == soniclayerdepth_value)
+        
+        subset = self.sspeed[0][int(minpos[0]):]
+        criticaldepth_idx = (np.abs(subset - soniclayerdepth_value)).argmin()
+        #criticaldepth_idx = np.where(subset == soniclayerdepth_value)
         criticaldepth = self.temperature_depths.data[0][criticaldepth_idx][0]
+
+        
 
         minpos = self.temperature_depths.data[0][minpos][0]
         maxpos = np.where(self.sspeed[0] == maxspeed)
