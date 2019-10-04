@@ -95,9 +95,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         
         else:
         # Must also consider the next value
-            pass
+            criticaldepth_sec_value = subset[criticaldepth_idx + 1]
+            criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx + 1) + int(minpos[0])]
+            criticaldepth_true = criticaldepth + (soniclayerdepth_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
 
-        
 
         minpos = self.temperature_depths.data[0][minpos][0]
         maxpos = np.where(self.sspeed[0] == maxspeed)
