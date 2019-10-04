@@ -72,8 +72,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         maxspeed = np.amax(self.sspeed)
 
         minpos = np.where(self.sspeed[0] == minspeed)
-        print(something)
-        subset = np.ndArray[0:minpos]
+        
+        # Determine the sonic layer depth
+        soniclayerdepth_value = self.sspeed[0][0:int(minpos[0])].max()
+        soniclayerdepth_idx = np.where(self.sspeed == soniclayerdepth_value)
+        soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
 
         minpos = self.temperature_depths.data[0][minpos][0]
         maxpos = np.where(self.sspeed[0] == maxspeed)
@@ -85,8 +88,15 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
             np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         ])
+
+        # Sound Speed Minima
         plt.text(minspeed + 2, minpos, str(minspeed))
         ax.scatter(minspeed, minpos, s=200, marker='_')
+        
+        # Sonic Layer Depth
+        plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
+        xytext=(0,10), ha='center')
+
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         ax.invert_yaxis()
