@@ -121,8 +121,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         # Critical Depth
         ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
-        ax.vlines(x=soniclayerdepth_value-10, ymax=(np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1), ymin=soniclayerdepth)
+        plt.annotate(criticaldepth_true, (soniclayerdepth_value,criticaldepth_true), textcoords="offset points",
+        xytext=(0,20), ha='center')
         
+
+
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         ax.invert_yaxis()
