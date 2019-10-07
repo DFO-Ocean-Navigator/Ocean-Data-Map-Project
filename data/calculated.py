@@ -226,5 +226,5 @@ class CalculatedArray():
         key = []
         for d in self.dims:
             key.append(keys[d])
-
+        print(Something)
         return self[tuple(key)]
