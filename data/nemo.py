@@ -281,7 +281,7 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data,
             )
-
+            print(something)
             if return_depth:
                 d = self.depths[depths]
                 d = np.zeros(data.shape)
@@ -295,6 +295,7 @@ class Nemo(CalculatedData):
                 )
 
         else:
+            # At this point, data is already horizontally sliced
             if len(var.shape) == 4:
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
