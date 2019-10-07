@@ -246,7 +246,7 @@ class Nemo(CalculatedData):
                 d = var[time[0], :, miny:maxy, minx:maxx]
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
-            print(something else after)
+            print(somethingafter)
             reshaped = np.ma.masked_invalid(d.values.reshape([d.shape[0], -1]))
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
