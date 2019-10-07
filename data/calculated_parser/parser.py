@@ -37,7 +37,6 @@ class Parser:
 
         Returns a numpy array of data.
         """
-        print(something)
         self.data = data
         self.result = np.nan
         self.key = key
@@ -134,7 +133,7 @@ class Parser:
         'expression : TILDA ID LPAREN arguments RPAREN'
         
         print("USING NEW PARSER")
-        
+        print(something)
         fname = t[2]
         arg_list = t[4]
         if fname in dir(functions):
