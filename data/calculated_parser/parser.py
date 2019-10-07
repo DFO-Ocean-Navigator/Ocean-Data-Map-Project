@@ -85,7 +85,7 @@ class Parser:
     def p_expression_variable_all(self, t):
         'expression : TILDA ID | TIMES ID'
 
-        if t[1] = '*':
+        if t[1] == '*':
             print("USING TIMES ID")
             t[0] = self.data.variables[t[2]][
                 self.get_key_for_variable(
