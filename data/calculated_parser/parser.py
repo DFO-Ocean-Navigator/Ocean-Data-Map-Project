@@ -96,10 +96,9 @@ class Parser:
                 ]
         elif t[1] == '~':
             print("USING TILDA ID")
-            t[0] = t[2]
-            #t[0] = self.data.variables[t[2]]
+            t[0] = self.data.variables[t[2]]
         else:
-            print('else original ID')
+            print('else original id')
             t[0] = self.data.variables[t[1]][
                 self.get_key_for_variable(
                     self.data.variables[t[1]]
