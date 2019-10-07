@@ -128,6 +128,16 @@ class Parser:
         else:
             raise SyntaxError
 
+    def p_expression_alldepths(self, t):
+        'expression: TIMES TIMES expression'
+        print(something)
+        fname= t[1]
+        arg_list = t[3]
+        if fname in dir(functions):
+            t[0] = getattr(functions, fname)(*arg_list)
+        else:
+            raise SyntaxError
+
     def p_arguments(self, t):
         'arguments : argument'
         t[0] = [t[1]]
