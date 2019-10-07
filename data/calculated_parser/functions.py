@@ -61,6 +61,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     latitude: The latitude(s) in degrees North
     """
     print("HERE IN SSPEEDMAX")
+    print(something)
     # Calculate sspeed ourselves so it is not an ndarray
     
     speed = sspeed(depth, lat, temperature, salinity)

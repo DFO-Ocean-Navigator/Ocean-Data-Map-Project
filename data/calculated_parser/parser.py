@@ -84,7 +84,7 @@ class Parser:
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
-        print(something)
+        print("USING TILDA ID")
         t[0] = t[2][
                 self.get_key_for_variable(
                     self.data.variables[t[1]]
@@ -127,21 +127,10 @@ class Parser:
         t[0] = t[1]
 
     def p_expression_function(self, t):
-        'expression : ID LPAREN arguments RPAREN'
+        'expression : expression LPAREN arguments RPAREN'
         print("ALSO USING OLD PARSER")
         fname = t[1]
         arg_list = t[3]
-        if fname in dir(functions):
-            t[0] = getattr(functions, fname)(*arg_list)
-        else:
-            raise SyntaxError
-
-    def p_expression_alldepths(self, t):
-        'expression : TILDA ID LPAREN arguments RPAREN'
-        
-        print("USING NEW PARSER")
-        fname = t[2]
-        arg_list = t[4]
         if fname in dir(functions):
             t[0] = getattr(functions, fname)(*arg_list)
         else:
