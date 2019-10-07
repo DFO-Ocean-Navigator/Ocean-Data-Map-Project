@@ -121,6 +121,7 @@ class Parser:
 
     def p_expression_function(self, t):
         'expression : ID LPAREN arguments RPAREN'
+        print("ALSO USING OLD PARSER")
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
