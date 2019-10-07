@@ -87,7 +87,7 @@ class Parser:
         print("USING TILDA ID")
         t[0] = t[2][
                 self.get_key_for_variable(
-                    self.data.variables[t[1]]
+                    self.data.variables[t[2]]
                     )
                 ]
 
