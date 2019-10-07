@@ -129,7 +129,7 @@ class Parser:
             raise SyntaxError
 
     def p_expression_alldepths(self, t):
-        'expression: TIMES TIMES expression'
+        'expression : TIMES TIMES expression'
         
         fname= t[1]
         arg_list = t[3]
