@@ -217,12 +217,8 @@ class CalculatedArray():
         """
         keys = {}
         shape = self.shape
-        print(self.dims)
-        print(something)
-        for idx, d in enumerate(self.dims):
-            
-            print(something)
-            keys[d] = slice(0, shape[idx])
+        for idx, d in enumerate(self.dims):    
+            keys[d] = shape[idx]#slice(0, shape[idx])
 
         for k, v in kwargs.items():
             keys[k] = v
