@@ -134,10 +134,10 @@ class Parser:
         print(something)
         fname= t[1]
         arg_list = t[3]
-        if fname in dir(functions):
-            t[0] = getattr(functions, fname)(*arg_list)
-        else:
-            raise SyntaxError
+        #if fname in dir(functions):
+            #t[0] = getattr(functions, fname)(*arg_list)
+        #else:
+        #    raise SyntaxError
 
     def p_arguments(self, t):
         'arguments : argument'
