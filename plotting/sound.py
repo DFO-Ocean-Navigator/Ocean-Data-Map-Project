@@ -67,6 +67,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax = plt.gca()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
+            print("ENUMERATING: ", i)
 
         # SOUND SPEED MINIMA
         minspeed = np.amin(self.sspeed)
@@ -116,6 +117,9 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # ~~~~~~~~~~~~~~
 
             # DEPTH EXCESS
+
+            # First we have to find the last depth index with data
+
 
             depthexcess = self.temperature_depths.data[0][-1] #- criticaldepth_true
 
