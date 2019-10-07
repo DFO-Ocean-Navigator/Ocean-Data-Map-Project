@@ -295,11 +295,11 @@ class Nemo(CalculatedData):
                 )
 
         else:
-            #if len(var.shape) == 4:
-            #    data = var[time, int(depth), miny:maxy, minx:maxx]
-            #else:
+            if len(var.shape) == 4:
+                data = var[time, int(depth), miny:maxy, minx:maxx]
+            else:
             data = var[time, miny:maxy, minx:maxx]
-
+            print(something)
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],
