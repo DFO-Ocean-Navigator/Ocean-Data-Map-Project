@@ -62,13 +62,9 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     """
     print("HERE IN SSPEEDMAX")
     # Calculate sspeed ourselves so it is not an ndarray
-    try:
-        press = [seawater.pres(d, lat) for d in depth]
-    except TypeError:
-        press = seawater.pres(depth, lat)
+    
 
-    sspeed = seawater.svel(salinity, temperature, press)
-    return np.array(sspeed)
+    return np.array(sspeed(depth, lat, temperature, salinity))
 
 
 def _metpy(func, data, lat, lon, dim):
