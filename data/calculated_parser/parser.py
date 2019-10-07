@@ -134,8 +134,8 @@ class Parser:
         
         print("USING NEW PARSER")
         
-        fname = t[1]
-        arg_list = t[3]
+        fname = t[2]
+        arg_list = t[4]
         if fname in dir(functions):
             t[0] = getattr(functions, fname)(*arg_list)
         else:
