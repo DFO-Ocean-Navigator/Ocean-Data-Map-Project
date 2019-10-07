@@ -1,10 +1,13 @@
-import numpy as np
-import seawater
-import metpy.calc
-from metpy.units import units
+#!/usr/bin/env python
+
 import functools
+
+import metpy.calc
+import numpy as np
 import numpy.ma
+import seawater
 import xarray as xr
+from metpy.units import units
 from pint import UnitRegistry
 
 _ureg = UnitRegistry()
@@ -27,11 +30,30 @@ log2 = np.log2
 
 abs = np.abs
 
+
 def max(arg):
     return np.ravel(arg).max()
 
+
 def min(arg):
     return np.ravel(arg).min()
+
+
+def magnitude(a, b):
+    """
+    Calculates the magnitude of a and b using the following:
+    sqrt(a.dot(a) + b.dot(b))
+
+    Paramters:
+    a: ndarray
+    b: ndarray
+
+    
+    Returns:
+        ndarray -- magnitude of a and b
+    """
+    return np.sqrt(a.dot(a) + b.dot(b))
+
 
 def sspeed(depth, latitude, temperature, salinity):
     """
@@ -50,6 +72,7 @@ def sspeed(depth, latitude, temperature, salinity):
 
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
+
 
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
@@ -83,28 +106,28 @@ def _metpy(func, data, lat, lon, dim):
             new_dims += [new_dims.pop(new_dims.index('y'))]
             new_axes += [new_axes.pop(new_dims.index('x'))]
             new_dims += [new_dims.pop(new_dims.index('x'))]
-            restore_axes = [x for _,x in sorted(zip(new_axes, range(0,
-                len(dims))))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
+                                                                     len(dims))))]
         else:
             new_axes += [new_axes.pop(new_dims.index('x'))]
             new_dims += [new_dims.pop(new_dims.index('x'))]
             new_axes += [new_axes.pop(new_dims.index('y'))]
             new_dims += [new_dims.pop(new_dims.index('y'))]
-            restore_axes = [x for _,x in sorted(zip(new_axes, range(0,
-                len(dims))))]
-
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
+                                                                     len(dims))))]
 
         data = np.transpose(np.array(data), new_axes)
 
         oshape = data.shape
         extra_axes = data.shape[:-2]
         data = np.reshape(data, (functools.reduce(np.multiply, extra_axes),
-            *data.shape[-2:]))
+                                 *data.shape[-2:]))
 
         result = []
         for j in range(0, len(data)):
             result.append(
-                func(np.array(data[j]), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
+                func(np.array(data[j]), deltas=deltas, dim_order=dim_order)[
+                    dim_order.index(dim)].magnitude
             )
 
         result = np.array(result)
@@ -115,6 +138,7 @@ def _metpy(func, data, lat, lon, dim):
         return result
     else:
         return func(np.array(data), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
+
 
 def _metpy_uv(func, u, v, lat, lon):
     """Wrapper for MetPy vector functions
@@ -143,23 +167,25 @@ def _metpy_uv(func, u, v, lat, lon):
             new_dims += [new_dims.pop(new_dims.index('y'))]
             new_axes += [new_axes.pop(new_dims.index('x'))]
             new_dims += [new_dims.pop(new_dims.index('x'))]
-            restore_axes = [x for _,x in sorted(zip(new_axes, range(0,
-                len(dims))))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
+                                                                     len(dims))))]
         else:
             new_axes += [new_axes.pop(new_dims.index('x'))]
             new_dims += [new_dims.pop(new_dims.index('x'))]
             new_axes += [new_axes.pop(new_dims.index('y'))]
             new_dims += [new_dims.pop(new_dims.index('y'))]
-            restore_axes = [x for _,x in sorted(zip(new_axes, range(0,
-                len(dims))))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
+                                                                     len(dims))))]
 
         u = np.transpose(np.array(u), new_axes)
         v = np.transpose(np.array(v), new_axes)
 
         oshape = u.shape
         extra_axes = u.shape[:-2]
-        u = np.reshape(u, (functools.reduce(np.multiply, extra_axes), *u.shape[-2:]))
-        v = np.reshape(v, (functools.reduce(np.multiply, extra_axes), *v.shape[-2:]))
+        u = np.reshape(u, (functools.reduce(
+            np.multiply, extra_axes), *u.shape[-2:]))
+        v = np.reshape(v, (functools.reduce(
+            np.multiply, extra_axes), *v.shape[-2:]))
 
         result = []
         for j in range(0, len(u)):
@@ -180,6 +206,7 @@ def _metpy_uv(func, u, v, lat, lon):
         u = np.array(u) * units.meter / units.second
         v = np.array(v) * units.meter / units.second
         return func(u, v, dx, dy, dim_order=dim_order).magnitude
+
 
 def geostrophic_x(h, lat, lon):
     """Calculates the X component of geostrophic currents
@@ -207,9 +234,10 @@ def geostrophic_x(h, lat, lon):
             dx, dy = kwgard['deltas']
 
         return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
-                dim_order=kwargs['dim_order'])
+                                           dim_order=kwargs['dim_order'])
 
     return _metpy(f, h, lat, lon, dim_order[0])
+
 
 def geostrophic_y(h, lat, lon):
     """Calculates the Y component of geostrophic currents
@@ -237,9 +265,10 @@ def geostrophic_y(h, lat, lon):
             dx, dy = kwgard['deltas']
 
         return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
-                dim_order=kwargs['dim_order'])
+                                           dim_order=kwargs['dim_order'])
 
     return _metpy(f, h, lat, lon, dim_order[1])
+
 
 def vorticity(u, v, lat, lon):
     """Calculates the vorticity
@@ -252,6 +281,7 @@ def vorticity(u, v, lat, lon):
     """
     return _metpy_uv(metpy.calc.vorticity, u, v, lat, lon)
 
+
 def divergence(u, v, lat, lon):
     """Calculates the divergence
 
@@ -263,6 +293,7 @@ def divergence(u, v, lat, lon):
     """
     return _metpy_uv(metpy.calc.divergence, u, v, lat, lon)
 
+
 def gradient_x(d, lat, lon):
     """Calculates the X component of the gradient of a variable
 
@@ -272,6 +303,7 @@ def gradient_x(d, lat, lon):
     lon -- an array of longitudes, the shape must match that of d
     """
     return _metpy(metpy.calc.gradient, d, lat, lon, 'x')
+
 
 def gradient_y(d, lat, lon):
     """Calculates the Y component of the gradient of a variable
