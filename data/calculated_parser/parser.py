@@ -37,6 +37,7 @@ class Parser:
 
         Returns a numpy array of data.
         """
+        print(something)
         self.data = data
         self.result = np.nan
         self.key = key
