@@ -239,7 +239,7 @@ class Nemo(CalculatedData):
         # Get xarray.Variable
         var = self.get_dataset_variable(variable)
         time = self.timestamp_to_time_index(timestamp)
-        
+        print(something)
 
         if depth == 'bottom':
             
@@ -281,7 +281,6 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data,
             )
-            print(something)
             if return_depth:
                 d = self.depths[depths]
                 d = np.zeros(data.shape)
