@@ -37,7 +37,6 @@ class Parser:
 
         Returns a numpy array of data.
         """
-        print(something)
         self.data = data
         self.result = np.nan
         self.key = key
@@ -86,6 +85,7 @@ class Parser:
                     self.data.variables[t[1]]
                     )
                 ]
+        print(something)
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
