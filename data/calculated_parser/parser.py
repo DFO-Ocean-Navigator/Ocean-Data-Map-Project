@@ -130,7 +130,7 @@ class Parser:
 
     def p_expression_alldepths(self, t):
         'expression: TIMES TIMES expression'
-        print(something)
+        
         fname= t[1]
         arg_list = t[3]
         if fname in dir(functions):
