@@ -41,18 +41,18 @@ def min(arg):
 
 def magnitude(a, b):
     """
-    Calculates the magnitude of a and b using the following:
-    sqrt(a.dot(a) + b.dot(b))
+    Calculates the element-wise magnitude of a and b:
+    np.sqrt(a ** 2 + b ** 2). See:
+    https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
 
     Paramters:
     a: ndarray
     b: ndarray
 
-    
     Returns:
         ndarray -- magnitude of a and b
     """
-    return np.sqrt(a.dot(a) + b.dot(b))
+    return np.sqrt(a ** 2 + b ** 2)
 
 
 def sspeed(depth, latitude, temperature, salinity):
