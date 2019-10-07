@@ -60,7 +60,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     sspeed: Speed of Sound
     latitude: The latitude(s) in degrees North
     """
-
+    print("HERE IN SSPEEDMAX")
     # Calculate sspeed ourselves so it is not an ndarray
     try:
         press = [seawater.pres(d, lat) for d in depth]
