@@ -82,6 +82,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         soniclayerdepth_idx = np.where(self.sspeed[0] == soniclayerdepth_value)
         soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
 
+        soniclayerdepth_value = float("{0:.2f}".format(soniclayerdepth_value))
+
         # Plot and label
         plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
         xytext=(0,10), ha='center')
@@ -110,8 +112,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx + 1) + int(minpos[0])]
                 criticaldepth_true = criticaldepth + (soniclayerdepth_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
 
-        
             ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
+            criticaldepth_true = float("{0:.2f}".format(criticaldepth_true))
             plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
         
             # ~~~~~~~~~~~~~~
@@ -123,6 +125,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
             max_depth = self.temperature_depths.data[0][ss.count() - 1] #- criticaldepth_true
             depthexcess = max_depth - criticaldepth_true
+            depthexcess = float("{0:.2f}".format(depthexcess))
             plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)), str(depthexcess))
             # ~~~~~~~~~~~~
 
