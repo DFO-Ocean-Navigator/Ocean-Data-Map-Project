@@ -133,6 +133,7 @@ class CalculatedArray():
             elif len(d) == len(key_dims):
                 if d != key_dims:
                     return np.nan
+        
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
         return xr.DataArray(data)
