@@ -238,7 +238,6 @@ class Nemo(CalculatedData):
 
         # Get xarray.Variable
         var = self.get_dataset_variable(variable)
-        print(something)
         time = self.timestamp_to_time_index(timestamp)
         
 
