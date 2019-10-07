@@ -134,12 +134,13 @@ class Parser:
         
         print("USING NEW PARSER")
         
-        fname= t[1]
+        fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
             t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError
+
 
     def p_arguments(self, t):
         'arguments : argument'
