@@ -83,7 +83,7 @@ class Parser:
 
 
     def p_expression_variable_all(self, t):
-        'expression : TILDA ID | TIMES ID'
+        '''expression : TILDA ID | TIMES ID'''
 
         if t[1] == '*':
             print("USING TIMES ID")
