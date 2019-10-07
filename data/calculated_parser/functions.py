@@ -49,6 +49,7 @@ def sspeed(depth, latitude, temperature, salinity):
         press = seawater.pres(depth, latitude)
 
     speed = seawater.svel(salinity, temperature, press)
+    print(something)
     return np.array(speed)
 
 
