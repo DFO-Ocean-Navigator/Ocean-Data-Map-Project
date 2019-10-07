@@ -121,7 +121,6 @@ class CalculatedArray():
         of all the underlying variables used in the calculation, this is then
         passed along to the parser where the calculation is performed.
         """
-        print(something)
         key_dims = ()
         for v in self._parser.lexer.variables:
             if v not in self._parent.variables:
@@ -137,6 +136,8 @@ class CalculatedArray():
         
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
+        print(something)
+        
         return xr.DataArray(data)
 
     @property
