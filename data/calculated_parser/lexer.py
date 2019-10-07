@@ -21,7 +21,6 @@ class Lexer:
                 'LPAREN',
                 'RPAREN',
                 'ID',
-                'IDD'
                 'COMMA',
                 'CONST'
                 ]
