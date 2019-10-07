@@ -217,7 +217,10 @@ class CalculatedArray():
         """
         keys = {}
         shape = self.shape
+        print(self.dims)
+        print(something)
         for idx, d in enumerate(self.dims):
+            
             print(something)
             keys[d] = slice(0, shape[idx])
 
