@@ -79,6 +79,7 @@ class Parser:
 
     def p_expression_variable(self, t):
         'expression : ID'
+        print(something)
         t[0] = self.data.variables[t[1]]
 
 
