@@ -136,7 +136,6 @@ class CalculatedArray():
         
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
-        print(something)
         
         return xr.DataArray(data)
 
