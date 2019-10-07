@@ -130,14 +130,15 @@ class Parser:
 
     def p_expression_alldepths(self, t):
         'expression : TIMES TIMES ID LPAREN arguments RPAREN'
+        
         print("USING NEW PARSER")
-        print(something)
+        
         fname= t[1]
         arg_list = t[3]
-        #if fname in dir(functions):
-            #t[0] = getattr(functions, fname)(*arg_list)
-        #else:
-        #    raise SyntaxError
+        if fname in dir(functions):
+            t[0] = getattr(functions, fname)(*arg_list)
+        else:
+            raise SyntaxError
 
     def p_arguments(self, t):
         'arguments : argument'
