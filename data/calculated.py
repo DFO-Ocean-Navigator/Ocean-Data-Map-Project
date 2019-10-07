@@ -123,7 +123,6 @@ class CalculatedArray():
         """
         key_dims = ()
         for v in self._parser.lexer.variables:
-            print(something)
             if v not in self._parent.variables:
                 continue
 
@@ -218,6 +217,7 @@ class CalculatedArray():
         keys = {}
         shape = self.shape
         for idx, d in enumerate(self.dims):
+            print(something)
             keys[d] = slice(0, shape[idx])
 
         for k, v in kwargs.items():
