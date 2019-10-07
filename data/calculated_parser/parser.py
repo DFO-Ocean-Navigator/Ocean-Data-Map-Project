@@ -136,7 +136,7 @@ class Parser:
         fname = t[2]
         arg_list = t[4]
         if fname in dir(functions):
-            for (arg in arg_list):
+            for arg in arg_list:
                 getattr(functions,fname)(arg)
             t[0] = getattr(functions, fname)(*arg_list)
         else:
