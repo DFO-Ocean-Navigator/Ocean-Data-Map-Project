@@ -86,12 +86,17 @@ class Parser:
         '''expression : TILDA ID
                     | ID'''
 
+        
         if t[1] == '~':
             print("USING TILDA ID")
             t[0] = t[2]
         else:
             print('else original ID')
-            t[0] = t[1]
+            t[0] = self.data.variables[t[1]][
+                self.get_key_for_variable(
+                    self.data.variables[t[1]]
+                    )
+                ]
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
