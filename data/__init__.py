@@ -43,6 +43,7 @@ def open_dataset(dataset, **kwargs):
         args = {}
         args['calculated'] = calculated
         args['meta_only'] = __meta_only(**kwargs)
+        args['dataset_key'] = dataset.key
 
         if not args['meta_only']:
             if __is_sqlite_database(url):
