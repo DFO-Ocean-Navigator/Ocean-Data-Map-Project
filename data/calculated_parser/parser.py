@@ -133,10 +133,11 @@ class Parser:
         'expression : TILDA ID LPAREN arguments RPAREN'
         
         print("USING NEW PARSER")
-        print(something)
         fname = t[2]
         arg_list = t[4]
         if fname in dir(functions):
+            for (arg in arg_list):
+                getattr(functions,fname)(arg)
             t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError

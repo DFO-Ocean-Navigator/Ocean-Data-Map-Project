@@ -123,6 +123,7 @@ class CalculatedArray():
         """
         key_dims = ()
         for v in self._parser.lexer.variables:
+            print(something)
             if v not in self._parent.variables:
                 continue
 
