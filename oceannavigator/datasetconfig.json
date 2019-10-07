@@ -373,27 +373,55 @@
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "variables": {
-            "east_vel": {
+            "vomecrtn": {
+                "hide": "false",
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                "zero_centered": "true"
+            },
+            "vozocrte": {
+                "hide": "false",
                 "name": "Water East Velocity",
-                "scale": [-3, 3],
+                "scale": [
+                    -3,
+                    3
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                "zero_centered": "true"
             },
-            "ice_east_vel": {
+            "iicevele": {
                 "name": "Sea Ice East Velocity",
-                "scale": [-1, 1],
+                "scale": [
+                    -1,
+                    1
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "zero_centered": "true",
+                "equation": "itzocrtx * cos_alpha - itmecrty * sin_alpha",
+                "hide": "false"
             },
-            "ice_north_vel": {
+            "iiceveln": {
                 "name": "Sea Ice North Velocity",
-                "scale": [-1, 1],
+                "scale": [
+                    -1,
+                    1
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "zero_centered": "true",
+                "equation": "itzocrtx * sin_alpha + itmecrty * cos_alpha",
+                "hide": "false"
             },
             "iiceconc": {
                 "name": "Ice Concentration",
@@ -474,16 +502,6 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s"
-            },
-            "north_vel": {
-                "name": "Water North Velocity",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "hide": "true"
             },
             "sokaraml": {
                 "name": "Ocean Mixed Layer Depth (Density)",
@@ -572,6 +590,7 @@
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-3D.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "variables": {
             "vozocrtx": {
                 "name": "Water X Velocity",
@@ -589,6 +608,30 @@
                 "name": "Water Velocity",
                 "unit": "m/s",
                 "scale": [0, 3]
+            },
+            "vomecrtn": {
+                "hide": "false",
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                "zero_centered": "true"
+            },
+            "vozocrte": {
+                "hide": "false",
+                "name": "Water East Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                "zero_centered": "true"
             },
             "votemper": {
                 "name": "Temperature",
@@ -742,6 +785,7 @@
     },
     "riops_monthly_surface": {
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-Surface.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "name": "RIOPS Monthly Average (Surface)",
         "quantum": "month",
         "type": "historical",
@@ -768,6 +812,54 @@
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3]
+                },
+                "vomecrtn": {
+                    "hide": "false",
+                    "name": "Water North Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                    "zero_centered": "true"
+                },
+                "vozocrte": {
+                    "hide": "false",
+                    "name": "Water East Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                    "zero_centered": "true"
+                },
+                "iicevele": {
+                    "name": "Sea Ice East Velocity",
+                    "scale": [
+                        -1,
+                        1
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "zero_centered": "true",
+                    "equation": "itzocrtx * cos_alpha - itmecrty * sin_alpha",
+                    "hide": "false"
+                },
+                "iiceveln": {
+                    "name": "Sea Ice North Velocity",
+                    "scale": [
+                        -1,
+                        1
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "zero_centered": "true",
+                    "equation": "itzocrtx * sin_alpha + itmecrty * cos_alpha",
+                    "hide": "false"
                 },
                 "votemper": {
                     "name": "Temperature",
@@ -850,6 +942,7 @@
     },
     "riops_monthly_3d": {
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-3D.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "name": "RIOPS Monthly Average (3D)",
         "quantum": "month",
         "type": "historical",
@@ -876,6 +969,30 @@
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3]
+                },
+                "vomecrtn": {
+                    "hide": "false",
+                    "name": "Water North Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                    "zero_centered": "true"
+                },
+                "vozocrte": {
+                    "hide": "false",
+                    "name": "Water East Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                    "zero_centered": "true"
                 },
                 "votemper": {
                     "name": "Temperature",
