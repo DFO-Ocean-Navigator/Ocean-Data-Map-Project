@@ -66,7 +66,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     
 
-    return np.array(speed))
+    return np.array(speed)
 
 
 def _metpy(func, data, lat, lon, dim):
