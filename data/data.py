@@ -124,16 +124,12 @@ class Data(object, metaclass=abc.ABCMeta):
         self.neighbours = neighbours
 
         if return_depth:
-            #a, d = self.get_point(latitude, longitude, depth, time, variable,
-            #                      return_depth=return_depth)
-            a, d = self.get_profile(latitude, longitude, time, variable)
-
+            a, d = self.get_point(latitude, longitude, depth, time, variable,
+                                  return_depth=return_depth)
             return np.reshape(a, area.shape[1:]), np.reshape(d, area.shape[1:])
         else:
-            #a = self.get_point(latitude, longitude, depth, time, variable,
-            #                   return_depth=return_depth)
-            a = self.get_profile(latitude, longitude, time, variable)
-
+            a = self.get_point(latitude, longitude, depth, time, variable,
+                               return_depth=return_depth)
             return np.reshape(a, area.shape[1:])
 
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
