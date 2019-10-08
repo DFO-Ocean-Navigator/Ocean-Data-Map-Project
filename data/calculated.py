@@ -99,6 +99,7 @@ class CalculatedArray():
         expression -- the equation to parse
         attrs -- optional, any attributes that the CalculatedArray should have
         """
+        print(something)
         self._parent = parent
         self._expression = expression
         self._parser = data.calculated_parser.parser.Parser()
@@ -121,6 +122,7 @@ class CalculatedArray():
         of all the underlying variables used in the calculation, this is then
         passed along to the parser where the calculation is performed.
         """
+        
         key_dims = ()
         for v in self._parser.lexer.variables:
             if v not in self._parent.variables:
@@ -133,7 +135,7 @@ class CalculatedArray():
             elif len(d) == len(key_dims):
                 if d != key_dims:
                     return np.nan
-        
+        print(something)
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
         
