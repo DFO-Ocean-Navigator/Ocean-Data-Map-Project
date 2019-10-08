@@ -84,6 +84,7 @@ class Parser:
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
+        print(something)
         t[0] = t[2]
 
     def p_expression_uop(self, t):
