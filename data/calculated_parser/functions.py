@@ -49,7 +49,6 @@ def sspeed(depth, latitude, temperature, salinity):
         press = seawater.pres(depth, latitude)
 
     speed = seawater.svel(salinity, temperature, press)
-    print(something)
     return np.array(speed)
 
 
@@ -63,7 +62,6 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     """
     print("HERE IN SSPEEDMAX")
     print(something)
-    # Calculate sspeed ourselves so it is not an ndarray
     
     speed = sspeed(depth, lat, temperature, salinity)
     
