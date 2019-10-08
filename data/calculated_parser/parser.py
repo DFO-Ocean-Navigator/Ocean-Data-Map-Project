@@ -69,6 +69,27 @@ class Parser:
 
         return tuple(key)
 
+    def get_key_for_var_all(self, variable):
+
+        key = self.key
+        if not isinstance(key, tuple):
+            key = (key,)
+
+        d = dict(zip(self.dims, key))
+        try:
+            if hasattr(variable, "dims"):
+                # xarray calls it dims
+                key = [d[k] for k in variable.dims]
+            else:
+                key = [d[k] for k in variable.dimensions]
+        except KeyError:
+            raise SyntaxError
+        print(something)
+        return tuple(key)
+        # Loop through key change
+
+        
+
     # Similar to the Lexer, these p_*, methods cannot have proper python
     # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
@@ -85,7 +106,12 @@ class Parser:
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
-        t[0] = self.data.variables[t[2]]
+
+        t[0] = self.data.variables[t[2]][
+            self.get_key_for_variable(
+                self.data.variables[t[2]]
+            )
+        ]
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''

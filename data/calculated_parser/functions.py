@@ -28,29 +28,6 @@ log2 = np.log2
 abs = np.abs
 
 
-def get_key_for_variable(self, variable):
-        """Using self.key and self.dims, determine the key for the particular
-        variable.
-        Params:
-        variable -- the xarray or netcdf variable
-        Returns a tuple of integers and/or slices
-        """
-        key = self.key
-        if not isinstance(key, tuple):
-            key = (key,)
-
-        d = dict(zip(self.dims, key))
-        try:
-            if hasattr(variable, "dims"):
-                # xarray calls it dims
-                key = [d[k] for k in variable.dims]
-            else:
-                key = [d[k] for k in variable.dimensions]
-        except KeyError:
-            raise SyntaxError
-
-        return tuple(key)
-        
 def max(arg):
     return np.ravel(arg).max()
 
