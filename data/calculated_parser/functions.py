@@ -61,8 +61,6 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     sspeed: Speed of Sound
     latitude: The latitude(s) in degrees North
     """
-    print("HERE IN SSPEEDMAX")
-    print(something)
     
     speed = sspeed(depth, lat, temperature, salinity)
     
