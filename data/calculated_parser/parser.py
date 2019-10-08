@@ -128,16 +128,16 @@ class Parser:
             t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError
+    
+    #def p_expression_function(self, t):
+    #    'expression : expression LPAREN arguments RPAREN'
 
-    def p_expression_function(self, t):
-        'expression : expression LPAREN arguments RPAREN'
-
-        fname = t[1]
-        arg_list = t[3]
-        if fname in dir(functions):
-            t[0] = getattr(functions, fname)(*arg_list)
-        else:
-            raise SyntaxError
+    #    fname = t[1]
+    #    arg_list = t[3]
+    #    if fname in dir(functions):
+    #        t[0] = getattr(functions, fname)(*arg_list)
+    #    else:
+    #        raise SyntaxError
 
     def p_arguments(self, t):
         'arguments : argument'
