@@ -65,10 +65,9 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
     
-    for x in speed:
-        for y in x:
-            y = np.nanmin(y)
-
+    for x in range(speed):
+        for y in range(speed[x]):
+            print(something)
     print(something)
     speed = speed[0]
 
