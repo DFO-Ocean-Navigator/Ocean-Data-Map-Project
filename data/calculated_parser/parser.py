@@ -127,8 +127,8 @@ class Parser:
     def p_expression_function(self, t):
         'expression : TILDA ID LPAREN arguments RPAREN'
 
-        fname = t[1]
-        arg_list = t[3]
+        fname = t[2]
+        arg_list = t[4]
         if fname in dir(functions):
             t[0] = getattr(functions, fname)(*arg_list)
         else:
