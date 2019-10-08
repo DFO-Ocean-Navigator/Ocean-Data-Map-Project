@@ -35,6 +35,7 @@ class Parser:
         dims -- the dimensions that correspond to the key, a list of strings
         Returns a numpy array of data.
         """
+        print(something)
         self.data = data
         self.result = np.nan
         self.key = key
