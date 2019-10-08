@@ -113,7 +113,7 @@ class Parser:
 
         tmp = self.data.variables[t[2]][
             self.get_key_for_var_all(
-                self.data.variables[t[1]]
+                self.data.variables[t[2]]
             )
         ]
         t[0] = tmp
