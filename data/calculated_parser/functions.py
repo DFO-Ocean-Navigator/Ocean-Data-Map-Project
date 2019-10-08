@@ -67,7 +67,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     
     for x in np.ndenumerate(speed):
         
-        
+        print(something)
         for y in range(speed[x]):
             print(something)
     print(something)
