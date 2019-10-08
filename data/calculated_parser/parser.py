@@ -69,13 +69,12 @@ class Parser:
         return tuple(key)
 
     def get_key_for_var_all(self, variable):
-
+        key = self.key
         new_slice = slice(0,49)
         key = list(key)
         key[1] = new_slice
         key = tuple(key)
-        print(something)
-
+        
         if not isinstance(key, tuple):
             key = (key,)
 
