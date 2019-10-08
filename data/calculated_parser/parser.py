@@ -72,6 +72,9 @@ class Parser:
     def get_key_for_var_all(self, variable):
 
         key = self.key
+
+        for idx in range(0,50):
+            key[1] = idx
         if not isinstance(key, tuple):
             key = (key,)
 
@@ -98,11 +101,13 @@ class Parser:
 
     def p_expression_variable(self, t):
         'expression : ID'
-        t[0] = self.data.variables[t[1]][
+        tmp = self.data.variables[t[1]][
                 self.get_key_for_variable(
                     self.data.variables[t[1]]
                     )
                 ]
+        print(something)
+        t[0] = tmp
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
