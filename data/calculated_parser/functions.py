@@ -71,7 +71,6 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
             idx = np.where(speed[x][y] == min_val)
             if idx[0].shape[0] > 1:
                 idx = idx[0][0]
-            print(something)
                 speed[x][y] = depth.values[idx]
             else:
                 speed[x][y] = depth.values[idx]
