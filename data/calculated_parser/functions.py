@@ -47,7 +47,7 @@ def sspeed(depth, latitude, temperature, salinity):
         press = [seawater.pres(d, latitude) for d in depth]
     except TypeError:
         press = seawater.pres(depth, latitude)
-
+    print(something)
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
 
