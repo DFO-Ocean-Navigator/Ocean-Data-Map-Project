@@ -35,7 +35,7 @@ class Parser:
         dims -- the dimensions that correspond to the key, a list of strings
         Returns a numpy array of data.
         """
-        print(something)
+        
         self.data = data
         self.result = np.nan
         self.key = key
@@ -85,7 +85,7 @@ class Parser:
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
-        t[0] = self.data.variables[t[2]]
+        t[0] = [self.data.variables[t[2]], self.key, self.dims]
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
