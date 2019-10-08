@@ -27,14 +27,12 @@ class Parser:
 
     def parse(self, expression, data, key, dims):
         """Parse the expression and return the result
-
         Parameters:
         expression -- the string expression to parse
         data -- the xarray or netcdf dataset to pull data from
         key -- the key passed along from the __getitem__ call, a tuple of
                integers and/or slices
         dims -- the dimensions that correspond to the key, a list of strings
-
         Returns a numpy array of data.
         """
         self.data = data
@@ -50,10 +48,8 @@ class Parser:
     def get_key_for_variable(self, variable):
         """Using self.key and self.dims, determine the key for the particular
         variable.
-
         Params:
         variable -- the xarray or netcdf variable
-
         Returns a tuple of integers and/or slices
         """
         key = self.key
@@ -69,6 +65,7 @@ class Parser:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
             raise SyntaxError
+
         return tuple(key)
 
     # Similar to the Lexer, these p_*, methods cannot have proper python
@@ -77,29 +74,17 @@ class Parser:
         'statement : expression'
         self.result = t[1]
 
-    #def p_expression_variable(self, t):
-    #    'expression : ID'
-    #    t[0] = self.data.variables[t[1]]
-
-
     def p_expression_variable(self, t):
         'expression : ID'
-        
         t[0] = self.data.variables[t[1]][
                 self.get_key_for_variable(
                     self.data.variables[t[1]]
                     )
                 ]
 
-    def p_expression_variable_all(self, t):
-        'expression : TILDA ID'
-
-        t[0] = self.data.variables[t[1]]
-
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
         t[0] = -t[2]
-
 
     def p_expression_binop(self, t):
         '''expression : expression PLUS expression
@@ -131,8 +116,7 @@ class Parser:
         t[0] = t[1]
 
     def p_expression_function(self, t):
-        'expression : expression LPAREN arguments RPAREN'
-
+        'expression : ID LPAREN arguments RPAREN'
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
