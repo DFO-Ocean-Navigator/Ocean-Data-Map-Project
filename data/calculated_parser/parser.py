@@ -66,7 +66,6 @@ class Parser:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
             raise SyntaxError
-
         return tuple(key)
 
     def get_key_for_var_all(self, variable):
@@ -87,7 +86,6 @@ class Parser:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
             raise SyntaxError
-        print(something)
         return tuple(key)
         # Loop through key change
 
@@ -158,6 +156,7 @@ class Parser:
         arg_list = t[3]
         if fname in dir(functions):
             t[0] = [getattr(functions, fname)(*arg_list), self.dims, self.key]
+            print(something)
         else:
             raise SyntaxError
     
