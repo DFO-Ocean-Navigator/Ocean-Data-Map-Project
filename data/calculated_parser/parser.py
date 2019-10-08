@@ -84,7 +84,7 @@ class Parser:
 
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
-        t[0] = self.data.variables[t[2]]
+        t[0] = t[2]
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
@@ -120,7 +120,17 @@ class Parser:
         t[0] = t[1]
 
     def p_expression_function(self, t):
+        'expression : ID LPAREN arguments RPAREN'
+        fname = t[1]
+        arg_list = t[3]
+        if fname in dir(functions):
+            t[0] = getattr(functions, fname)(*arg_list)
+        else:
+            raise SyntaxError
+
+    def p_expression_function(self, t):
         'expression : expression LPAREN arguments RPAREN'
+
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
