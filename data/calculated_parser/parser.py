@@ -129,7 +129,9 @@ class Parser:
 
         fname = t[2]
         arg_list = t[4]
+        
         if fname in dir(functions):
+            print(something)
             t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError
