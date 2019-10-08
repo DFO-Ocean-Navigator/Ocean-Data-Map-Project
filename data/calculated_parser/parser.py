@@ -54,7 +54,6 @@ class Parser:
         Returns a tuple of integers and/or slices
         """
         key = self.key
-        print(something)
         if not isinstance(key, tuple):
             key = (key,)
 
@@ -110,11 +109,7 @@ class Parser:
     def p_expression_variable_all(self, t):
         'expression : TILDA ID'
 
-        tmp = self.data.variables[t[2]][
-            self.get_key_for_variable(
-                self.data.variables[t[2]]
-            )
-        ]
+        tmp = self.data.variables[t[2]]
         t[0] = tmp
 
     def p_expression_uop(self, t):
