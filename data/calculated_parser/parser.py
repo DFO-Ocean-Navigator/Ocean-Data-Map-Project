@@ -116,7 +116,7 @@ class Parser:
                 self.data.variables[t[2]]
             )
         ]
-
+        print(something)
         t[0] = tmp
 
     def p_expression_uop(self, t):
