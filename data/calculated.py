@@ -99,7 +99,6 @@ class CalculatedArray():
         expression -- the equation to parse
         attrs -- optional, any attributes that the CalculatedArray should have
         """
-        print(something)
         self._parent = parent
         self._expression = expression
         self._parser = data.calculated_parser.parser.Parser()
