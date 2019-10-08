@@ -63,6 +63,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
+    print(something)
     speed = speed[0]
 
     return np.array(speed)
