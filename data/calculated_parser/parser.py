@@ -54,6 +54,7 @@ class Parser:
         Returns a tuple of integers and/or slices
         """
         key = self.key
+        print(something)
         if not isinstance(key, tuple):
             key = (key,)
 
@@ -114,7 +115,6 @@ class Parser:
                 self.data.variables[t[2]]
             )
         ]
-        print(something)
         t[0] = tmp
 
     def p_expression_uop(self, t):
