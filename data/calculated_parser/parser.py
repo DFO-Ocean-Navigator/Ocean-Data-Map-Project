@@ -155,7 +155,7 @@ class Parser:
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
-            t[0] = [getattr(functions, fname)(*arg_list), self.dims, self.key]
+            t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError
     
