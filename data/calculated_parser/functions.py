@@ -63,7 +63,7 @@ def sspeedmax(depth, lat, lon, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
-    
+    print(something)
 
     return speed
 
