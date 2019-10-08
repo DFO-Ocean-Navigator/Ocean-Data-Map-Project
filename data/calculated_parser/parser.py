@@ -120,7 +120,7 @@ class Parser:
         t[0] = t[1]
 
     def p_expression_function(self, t):
-        'expression : ID LPAREN arguments RPAREN'
+        'expression : expression LPAREN arguments RPAREN'
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
