@@ -67,8 +67,11 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
     
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
+            print(something)
             speed[x][y] = np.nanmin(speed[x][y])
+    
     speed = speed.transpose()
+
     speed = speed[0]
 
     return np.array(speed)
