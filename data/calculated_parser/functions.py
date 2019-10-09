@@ -96,6 +96,7 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
     
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
+    print(something)
     sld = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
@@ -139,7 +140,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             sca_idx = np.where(speed[x][y] == sca_value)
             
             if (np.isnan(sca_value)):
-                speed[x][y] = 0
+                pass
             else:
                 sca_idx = sca_idx[0][0]
 
