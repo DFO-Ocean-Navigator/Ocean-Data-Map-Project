@@ -150,7 +150,6 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     pass
                 else:
                     lower_subset = speed[x][y][int(sca_idx) + 1:]
-                    print(something)
                     if lower_subset.max() >= sld_value and not(sld_value == sca_value):
                         criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
                         criticaldepth = depth.values[int(criticaldepth_idx) + int(sca_idx)]
@@ -168,7 +167,8 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                             criticaldepth_sec_value = lower_subset[criticaldepth_idx + 1]
                             criticaldepth_sec = depth.values[0][int(criticaldepth_idx + 1) + int(sca_idx[0])]
                             criticaldepth_true = criticaldepth + (sld_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
-
+                        print(something)
+                    
                         
 
 
