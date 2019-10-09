@@ -205,7 +205,6 @@ def depthexcess(depth, lat, lon, temperature, salinity):
             if (np.isnan(sca_value)):
                 speed[x][y] = 0
             else:
-                max_depth_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))
                 sca_idx = np.where(speed[x][y] == sca_value)
                 sca_idx = sca_idx[0][0]
 
@@ -241,8 +240,14 @@ def depthexcess(depth, lat, lon, temperature, salinity):
 
                         # Perform Linear Interpolation Calculation
                         cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
+
+                        # Find sea floor depth at this point
+                        max_depth_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))
+                        max_depth = depth.values[max_depth_idx - 1]
+                        depthexcess = max_depth - cd_final
+                        speed[x][y] = depthexcess
                         #speed[x][y] = cd_final
-                    
+
                         print(something)
 
                     else:
