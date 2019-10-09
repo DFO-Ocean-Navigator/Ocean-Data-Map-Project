@@ -134,33 +134,39 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
     sld = 0
+    sca = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
             sca_value = np.nanmin(speed[x][y])
             sca_idx = np.where(speed[x][y] == sca_value)
             
+            
             if (np.isnan(sca_value)):
-                pass
+                break
             elif sca_idx[0].shape[0] > 1:
                 sca_idx = sca_idx[0][0]
 
                 # Set the SCA
-                speed[x][y] = depth.values[sca_idx]
+                sca = depth.values[sca_idx]
             else:
 
                 # Set the SCA
-                speed[x][y] = depth.values[sca_idx]
+                sca = depth.values[sca_idx]
+            
+            if (np.isnan(sca_value)):
+                pass
+            else:
                 
-                #subset = speed[x][y][0:int(sca_idx) + 1]
-                #sld_value = subset.max()
+                subset = speed[x][y][0:int(sca_idx) + 1]
+                sld_value = subset.max()
 
-                #if (np.isnan(sld_value)):
-                #    pass
-                #else:
-                    #speed[x][y] = depth.values[sca_idx]
-                    #sld_idx = np.where(subset == sld_value)[0][0]
-                    #sld = depth.values[sld_idx]
-                    #speed[x][y] = sld
+                if (np.isnan(sld_value)):
+                    pass
+                else:
+                    speed[x][y] = depth.values[sca_idx]
+                    sld_idx = np.where(subset == sld_value)[0][0]
+                    sld = depth.values[sld_idx]
+                    speed[x][y] = sca - sld
                 
                 
                 #if (np.isnan(sld_value)):
