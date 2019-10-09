@@ -110,8 +110,7 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
             subset = speed[x][y][0:int(sca_idx) + 1]
             sld_value = subset.max()
             sld_idx = np.where(subset == sld_value)[0][0]
-            sld = depth.values(sld_idx)
-            print(something)
+            sld = depth.values[sld_idx]
             
     speed = speed.transpose()
 
