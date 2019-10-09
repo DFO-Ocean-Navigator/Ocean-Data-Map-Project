@@ -184,7 +184,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     speed = speed[0]
     return np.array(speed)
 
-def criticaldepth(depth, lat, lon, temperature, salinity):
+def depthexcess(depth, lat, lon, temperature, salinity):
     """
     Finds the next location of the sonic layer depth.
 
