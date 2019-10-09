@@ -85,6 +85,38 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
 
     return np.array(speed)
 
+def soniclayerdepth(depth, lat, lon, temperature, salinity):
+    """
+    Finds the local maxima of the speed of sound
+
+    Parameters:
+    sspeed: Speed of Sound
+    latitude: The latitude(s) in degrees North
+    """
+    
+    speed = sspeed(depth, lat, temperature, salinity)
+    speed = speed.transpose()
+    
+    for x in range(speed.shape[0]):
+        for y in range(speed.shape[1]):
+            sca_value = np.nanmin(speed[x][y])
+            sca_idx = np.where(speed[x][y] == min_val)
+            
+            if (np.isnan(min_val)):
+                pass
+            elif idx[0].shape[0] > 1:
+                idx = idx[0][0]
+
+            sld_value = speed[x][y][0:int(sca_idx)].max()
+            print(something)
+            speed[x][y] = depth.values[idx]
+            
+    speed = speed.transpose()
+
+    speed = speed[0]
+
+    return np.array(speed)
+
 
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
