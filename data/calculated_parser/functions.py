@@ -177,6 +177,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                         speed[x][y] = cd_final
                     
                     else:
+                        print(something)
                         speed[x][y] = 0
 
     speed = speed.transpose()
