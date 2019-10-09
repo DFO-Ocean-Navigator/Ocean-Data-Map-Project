@@ -153,7 +153,27 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     criticaldepth_idx = 0
                     if lower_subset.max() >= sld_value and (sld_value != sca_value):
                         criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
-                        cd_idx = criticaldepth_idx + int(sca_idx) + 1
+                        
+                        # Initialize IDX variables
+                        depth_idx_1 = 0
+                        depth_idx_2 = 0
+
+                        # Decide on the order of points for linear interpolation
+                        if lower_subset[criticaldepth_idx] < sld_value:
+                            depth_idx_1 = criticaldepth_idx + int(sca_idx) + 1
+                            depth_idx_2 = depth_idx_1 + 1
+                        else:
+                            depth_idx_2 = criticaldepth_idx + int(sca_idx) + 1
+                            depth_idx_1 = depth_idx_2 - 1
+                        
+                        # Organize values for linear interpolation
+                        depth_value_1 = depth.values[depth_idx_1]
+                        depth_value_2 = depth.values[depth_idx_2]
+                        cd_value_1 = speed[x][y][depth_idx_1]
+                        cd_value_2 = speed[x][y][depth_idx_2]
+
+                        # Perform Linear Interpolation Calculation
+                        cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
                         print(something)
 
     speed = speed.transpose()
