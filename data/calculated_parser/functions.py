@@ -149,10 +149,10 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 if (np.isnan(sld_value)):
                     pass
                 else:
-                    lower_subset = speed[x][y][int(sca_idx):]
-                    if lower_subset.max() >= sld_value:
+                    lower_subset = speed[x][y][int(sca_idx) + 1:]
+                    if lower_subset.max() >= sld_value and sld_value !== sca_value:
                         criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
-                        criticaldepth = depth.values[0][int(criticaldepth_idx) + int(sca_idx[0])]
+                        criticaldepth = depth.values[int(criticaldepth_idx) + int(sca_idx)]
                         criticaldepth_value = subset[criticaldepth_idx]
                     
                         # Perform linear interpolation to get more accurate depth
