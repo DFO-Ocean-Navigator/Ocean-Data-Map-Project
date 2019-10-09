@@ -96,7 +96,7 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
     
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
-    
+    sld = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
             sca_value = np.nanmin(speed[x][y])
@@ -104,13 +104,20 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
             
             if (np.isnan(sca_value)):
                 pass
-            
-            sca_idx = sca_idx[0][0]
+            else:
+                sca_idx = sca_idx[0][0]
 
-            subset = speed[x][y][0:int(sca_idx) + 1]
-            sld_value = subset.max()
-            sld_idx = np.where(subset == sld_value)[0][0]
-            sld = depth.values[sld_idx]
+                subset = speed[x][y][0:int(sca_idx) + 1]
+                sld_value = subset.max()
+                
+                if (np.isnan(sld_value)):
+                    pass
+                else:
+                    sld_idx = np.where(subset == sld_value)
+                    sld = depth.values[sld_idx]
+                    speed[x][y] = sld
+
+
             
     speed = speed.transpose()
 
