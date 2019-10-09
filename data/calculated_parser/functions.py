@@ -130,7 +130,6 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     latitude: The latitude(s) in degrees North
     """
 
-    print(something)
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
     sld = 0
