@@ -175,8 +175,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                         # Perform Linear Interpolation Calculation
                         cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
                         speed[x][y] = cd_final
-                        print(something)
-
+                        
     speed = speed.transpose()
     speed = speed[0]
     return np.array(speed)
