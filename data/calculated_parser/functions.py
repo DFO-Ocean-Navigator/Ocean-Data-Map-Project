@@ -113,7 +113,7 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
                 if (np.isnan(sld_value)):
                     pass
                 else:
-                    sld_idx = np.where(subset == sld_value)
+                    sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
                     speed[x][y] = sld
 
