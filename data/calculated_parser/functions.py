@@ -198,6 +198,9 @@ def depthexcess(depth, lat, lon, temperature, salinity):
     sld = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
+            
+            print(something)
+
             sca_value = np.nanmin(speed[x][y])
             sca_idx = np.where(speed[x][y] == sca_value)
             
