@@ -100,9 +100,9 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
             sca_value = np.nanmin(speed[x][y])
-            sca_idx = np.where(speed[x][y] == min_val)
+            sca_idx = np.where(speed[x][y] == sca_value)
             
-            if (np.isnan(min_val)):
+            if (np.isnan(sca_value)):
                 pass
             elif idx[0].shape[0] > 1:
                 idx = idx[0][0]
