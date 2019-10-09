@@ -149,28 +149,11 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 if (np.isnan(sld_value)):
                     pass
                 else:
-                    lower_subset = speed[x][y][int(sca_idx) + 1:]
-                    if lower_subset.max() >= sld_value and not(sld_value == sca_value):
+                    lower_subset = speed[x][y][int(sca_idx):]
+                    criticaldepth_idx = 0
+                    if lower_subset.max() >= sld_value and (sld_value != sca_value):
                         criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
-                        criticaldepth = depth.values[int(criticaldepth_idx) + int(sca_idx)]
-                        criticaldepth_value = subset[criticaldepth_idx]
-                    
-                        # Perform linear interpolation to get more accurate depth
-                        if (criticaldepth_value > sld_value):
-                        # Must also consider the previous value 
-                            criticaldepth_sec_value = lower_subset[criticaldepth_idx - 1]
-                            criticaldepth_sec = depth.values[0][int(criticaldepth_idx - 1) + int(sca_idx[0])]
-                            criticaldepth_true = criticaldepth_sec + (sld_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
-                        
-                        else:
-                        # Must also consider the next value
-                            criticaldepth_sec_value = lower_subset[criticaldepth_idx + 1]
-                            criticaldepth_sec = depth.values[0][int(criticaldepth_idx + 1) + int(sca_idx[0])]
-                            criticaldepth_true = criticaldepth + (sld_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
-                        print(something)
-                    
-                        
-
+                    print(something)
 
     speed = speed.transpose()
     speed = speed[0]
