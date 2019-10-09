@@ -139,7 +139,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             sca_idx = np.where(speed[x][y] == sca_value)
             
             if (np.isnan(sca_value)):
-                pass
+                speed[x][y] = 0
             else:
                 sca_idx = sca_idx[0][0]
 
@@ -147,7 +147,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 sld_value = subset.max()
                 
                 if (np.isnan(sld_value)):
-                    pass
+                    speed[x][y] = 0
                 else:
                     lower_subset = speed[x][y][int(sca_idx) + 1:]
                     criticaldepth_idx = 0
@@ -175,7 +175,10 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                         # Perform Linear Interpolation Calculation
                         cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
                         speed[x][y] = cd_final
-                        
+                    
+                    else:
+                        speed[x][y] = 0
+
     speed = speed.transpose()
     speed = speed[0]
     return np.array(speed)
