@@ -121,8 +121,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # DEPTH EXCESS
 
             # First we have to find the last depth index with data
-
-
             max_depth = self.temperature_depths.data[0][ss.count() - 1] #- criticaldepth_true
             depthexcess = max_depth - criticaldepth_true
             depthexcess = float("{0:.2f}".format(depthexcess))

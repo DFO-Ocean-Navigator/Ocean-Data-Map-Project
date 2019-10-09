@@ -184,6 +184,70 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     speed = speed[0]
     return np.array(speed)
 
+def criticaldepth(depth, lat, lon, temperature, salinity):
+    """
+    Finds the next location of the sonic layer depth.
+
+    Parameters:
+    sspeed: Speed of Sound
+    latitude: The latitude(s) in degrees North
+    """
+
+    speed = sspeed(depth, lat, temperature, salinity)
+    speed = speed.transpose()
+    sld = 0
+    for x in range(speed.shape[0]):
+        for y in range(speed.shape[1]):
+            sca_value = np.nanmin(speed[x][y])
+            sca_idx = np.where(speed[x][y] == sca_value)
+            
+            if (np.isnan(sca_value)):
+                speed[x][y] = 0
+            else:
+                sca_idx = sca_idx[0][0]
+
+                subset = speed[x][y][0:int(sca_idx) + 1]
+                sld_value = subset.max()
+                
+                
+                if (np.isnan(sld_value)):
+                    speed[x][y] = 0
+                else:
+                    lower_subset = speed[x][y][int(sca_idx) + 1:]
+                    criticaldepth_idx = 0
+                    if lower_subset.max() >= sld_value and (sld_value != sca_value):
+                        criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
+                        
+                        # Initialize IDX variables
+                        depth_idx_1 = 0
+                        depth_idx_2 = 0
+
+                        # Decide on the order of points for linear interpolation
+                        if lower_subset[criticaldepth_idx] < sld_value:
+                            depth_idx_1 = criticaldepth_idx + int(sca_idx) + 1
+                            depth_idx_2 = depth_idx_1 + 1
+                        else:
+                            depth_idx_2 = criticaldepth_idx + int(sca_idx) + 1
+                            depth_idx_1 = depth_idx_2 - 1
+                        
+                        # Organize values for linear interpolation
+                        depth_value_1 = depth.values[depth_idx_1]
+                        depth_value_2 = depth.values[depth_idx_2]
+                        cd_value_1 = speed[x][y][depth_idx_1]
+                        cd_value_2 = speed[x][y][depth_idx_2]
+
+                        # Perform Linear Interpolation Calculation
+                        cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
+                        speed[x][y] = cd_final
+                    
+                        print(something)
+
+                    else:
+                        speed[x][y] = 0
+
+    speed = speed.transpose()
+    speed = speed[0]
+    return np.array(speed)
 
 
 def _metpy(func, data, lat, lon, dim):
