@@ -104,12 +104,12 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
             
             if (np.isnan(sca_value)):
                 pass
-            elif idx[0].shape[0] > 1:
-                idx = idx[0][0]
+            elif sca_idx[0].shape[0] > 1:
+                sca_idx = sca_idx[0][0]
 
             sld_value = speed[x][y][0:int(sca_idx)].max()
             print(something)
-            speed[x][y] = depth.values[idx]
+            speed[x][y] = depth.values[sca_idx]
             
     speed = speed.transpose()
 
