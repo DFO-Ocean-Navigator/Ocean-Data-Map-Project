@@ -206,6 +206,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
                 speed[x][y] = 0
             else:
                 max_depth_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))
+                tmp = speed[x][y]
                 sca_idx = np.where(speed[x][y] == sca_value)
                 sca_idx = sca_idx[0][0]
 
