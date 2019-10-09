@@ -246,10 +246,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
                         max_depth = depth.values[max_depth_idx - 1]
                         depthexcess = max_depth - cd_final
                         speed[x][y] = depthexcess
-                        #speed[x][y] = cd_final
-
-                        print(something)
-
+                        
                     else:
                         speed[x][y] = 0
 
