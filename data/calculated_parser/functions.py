@@ -55,7 +55,7 @@ def sspeed(depth, latitude, temperature, salinity):
 
 def sspeedmin(depth, lat, lon, temperature, salinity):
     """
-    Finds the local maxima of the speed of sound
+    Finds the global minimum of the speed of sound
 
     Parameters:
     sspeed: Speed of Sound
@@ -117,13 +117,62 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
                     sld = depth.values[sld_idx]
                     speed[x][y] = sld
 
-
-            
     speed = speed.transpose()
-
     speed = speed[0]
-
     return np.array(speed)
+
+def criticaldepth(depth, lat, lon, temperature, salinity):
+    """
+    Finds the next location of the sonic layer depth.
+
+    Parameters:
+    sspeed: Speed of Sound
+    latitude: The latitude(s) in degrees North
+    """
+
+    speed = sspeed(depth, lat, temperature, salinity)
+    speed = speed.transpose()
+    sld = 0
+    for x in range(speed.shape[0]):
+        for y in range(speed.shape[1]):
+            sca_value = np.nanmin(speed[x][y])
+            sca_idx = np.where(speed[x][y] == sca_value)
+            
+            if (np.isnan(sca_value)):
+                pass
+            else:
+                sca_idx = sca_idx[0][0]
+
+                subset = speed[x][y][0:int(sca_idx) + 1]
+                sld_value = subset.max()
+                
+                if (np.isnan(sld_value)):
+                    pass
+                else:
+                    lower_subset = speed[x][y][int(sca_idx):]
+                    if lower_subset.max() >= sld_value:
+                        criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
+                        criticaldepth = depth.values[0][int(criticaldepth_idx) + int(sca_idx[0])]
+                        criticaldepth_value = subset[criticaldepth_idx]
+                    
+                        # Perform linear interpolation to get more accurate depth
+                        if (criticaldepth_value > soniclayerdepth_value):
+                        # Must also consider the previous value 
+                            criticaldepth_sec_value = lower_subset[criticaldepth_idx - 1]
+                            criticaldepth_sec = depth.values[0][int(criticaldepth_idx - 1) + int(sca_idx[0])]
+                            criticaldepth_true = criticaldepth_sec + (sld_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
+                        
+                        else:
+                        # Must also consider the next value
+                            criticaldepth_sec_value = lower_subset[criticaldepth_idx + 1]
+                            criticaldepth_sec = depth.values[0][int(criticaldepth_idx + 1) + int(sca_idx[0])]
+                            criticaldepth_true = criticaldepth + (soniclayerdepth_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
+
+
+    speed = speed.transpose()
+    speed = speed[0]
+    return np.array(speed)
+
 
 
 def _metpy(func, data, lat, lon, dim):
