@@ -168,6 +168,8 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                             criticaldepth_sec = depth.values[0][int(criticaldepth_idx + 1) + int(sca_idx[0])]
                             criticaldepth_true = criticaldepth + (sld_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
 
+                        print(something)
+
 
     speed = speed.transpose()
     speed = speed[0]
