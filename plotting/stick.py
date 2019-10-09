@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+
 import matplotlib.pyplot as plt
 import numpy as np
 from flask_babel import gettext
 from matplotlib.dates import date2num
 
-from plotting.point import PointPlotter
 import plotting.utils as utils
 from data import open_dataset
+from plotting.point import PointPlotter
 
 
 class StickPlotter(PointPlotter):

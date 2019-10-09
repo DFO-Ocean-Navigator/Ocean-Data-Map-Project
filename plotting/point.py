@@ -1,12 +1,15 @@
+#!/usr/bin/env python
+
 import matplotlib.pyplot as plt
 import numpy as np
-import plotting.plotter as pl
-from netCDF4 import Dataset
-from oceannavigator import DatasetConfig
 import pint
+from netCDF4 import Dataset
+
+from plotting.plotter import Plotter
+from oceannavigator import DatasetConfig
 
 
-class PointPlotter(pl.Plotter):
+class PointPlotter(Plotter):
 
     def parse_query(self, query):
         super(PointPlotter, self).parse_query(query)
