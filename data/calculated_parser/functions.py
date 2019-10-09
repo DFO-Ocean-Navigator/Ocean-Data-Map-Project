@@ -149,10 +149,11 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 if (np.isnan(sld_value)):
                     pass
                 else:
-                    lower_subset = speed[x][y][int(sca_idx):]
+                    lower_subset = speed[x][y][int(sca_idx) + 1:]
                     criticaldepth_idx = 0
                     if lower_subset.max() >= sld_value and (sld_value != sca_value):
                         criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
+                        cd_idx = criticaldepth_idx + int(sca_idx) + 1
                         print(something)
 
     speed = speed.transpose()
