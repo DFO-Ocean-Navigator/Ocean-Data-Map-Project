@@ -157,42 +157,44 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
                     subset = speed[x][y][0:int(sca_idx) + 1]
                     lower_subset = speed[x][y][int(sca_idx) +1: last_idx]
-
-                    sld_value = subset.max()
-
-                    lower_subset_max = np.nanmax(lower_subset)
-
-                    if lower_subset_max < sld_value:
+                    if lower_subset.size == 0:
                         speed[x][y] = np.nan
                     else:
-                        cd_idx = np.abs(lower_subset - sld_value).argmin()
-                        cd_idx = last_idx - lower_subset.size - 1 - cd_idx
-
-                        cd_value = speed[x][y][cd_idx]
-
-                        if cd_value > sld_value:
-                            # Find previous point
-                            cd_idx_1 = cd_idx - 1
-                            cd_idx_2 = cd_idx
-                            
-                            cd_value_1 = speed[x][y][cd_idx_1]
-                            cd_value_2 = speed[x][y][cd_idx_2]
-
-                            cd_depth_1 = depth.values[cd_idx_1]
-                            cd_depth_2 = depth.values[cd_idx_2]
-                            print(something)
-
-                        elif cd_value < sld_value:
-                            # Find next point
-                            cd_idx_1 = cd_idx
-                            cd_idx_2 = cd_idx + 1
-
-                            cd_value_1 = speed[x][y][cd_idx_1]
-                            cd_value_2 = speed[x][y][cd_idx_2]
-
-                            cd_depth_1 = depth.values[cd_idx_1]
-                            cd_depth_2 = depth.values[cd_idx_2]
-                            print(something)                    
+                        sld_value = subset.max()
+    
+                        lower_subset_max = np.nanmax(lower_subset)
+    
+                        if lower_subset_max < sld_value:
+                            speed[x][y] = np.nan
+                        else:
+                            cd_idx = np.abs(lower_subset - sld_value).argmin()
+                            cd_idx = last_idx - lower_subset.size - 1 - cd_idx
+    
+                            cd_value = speed[x][y][cd_idx]
+    
+                            if cd_value > sld_value:
+                                # Find previous point
+                                cd_idx_1 = cd_idx - 1
+                                cd_idx_2 = cd_idx
+                                
+                                cd_value_1 = speed[x][y][cd_idx_1]
+                                cd_value_2 = speed[x][y][cd_idx_2]
+    
+                                cd_depth_1 = depth.values[cd_idx_1]
+                                cd_depth_2 = depth.values[cd_idx_2]
+                                print(something)
+    
+                            elif cd_value < sld_value:
+                                # Find next point
+                                cd_idx_1 = cd_idx
+                                cd_idx_2 = cd_idx + 1
+    
+                                cd_value_1 = speed[x][y][cd_idx_1]
+                                cd_value_2 = speed[x][y][cd_idx_2]
+    
+                                cd_depth_1 = depth.values[cd_idx_1]
+                                cd_depth_2 = depth.values[cd_idx_2]
+                                print(something)                    
                     
                     
                     #if (np.isnan(sld_value)):
