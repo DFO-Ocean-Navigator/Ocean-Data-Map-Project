@@ -149,10 +149,6 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 
                 # Set the Sound Channel Axis (SCA)
                 sca = depth.values[sca_idx]
-            
-            if (np.isnan(sca_value)):
-                pass
-            else:
                 
                 subset = speed[x][y][0:int(sca_idx) + 1]
                 sld_value = subset.max()
@@ -170,7 +166,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     #cd_value = speed[x][y][cd_idx]
                     #cd = depth.values[cd_idx]
                     #print(something)
-                    speed[x][y] = sca - sld
+                    speed[x][y] = sca
                 
                 
                 #if (np.isnan(sld_value)):
