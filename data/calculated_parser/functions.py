@@ -184,7 +184,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
 
                     # Perform linear interpolation to improve accuracy
-                    if cd_idx == last_idx:
+                    if cd_idx == last_idx and cd_value < sld_value:
                         cd = 0
                     #elif cd_value < sld_value:
                     #    cd_idx_1 = cd_idx
