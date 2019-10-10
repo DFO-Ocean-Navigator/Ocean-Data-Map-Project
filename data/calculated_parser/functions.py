@@ -164,8 +164,11 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                         #speed[x][y] = depth.values[sca_idx]
                         sld_idx = np.where(subset == sld_value)[0][0]
                         sld = depth.values[sld_idx]
+                        
+                        # Count non nan values
+                        last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
 
-                        lower_subset = speed[x][y][int(sca_idx) + 1:]
+                        lower_subset = speed[x][y][int(sca_idx) + 1:last_idx + 1]
                         cd_lower_idx = (np.abs(lower_subset - sld_value)).argmin()
                         cd_idx = cd_lower_idx + int(sca_idx)
                         cd = depth.values[cd_idx]
@@ -181,9 +184,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                             return y
 
-                        # Count non nan values
-                        last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
-
+                        
                         # Perform linear interpolation to improve accuracy
                         if cd_idx == last_idx and cd_value < sld_value:
                             cd = np.nan
