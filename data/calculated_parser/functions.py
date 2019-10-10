@@ -180,8 +180,13 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                         return y
 
+                    # Count non nan values
+                    non_nan_num = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))
+
                     # Perform linear interpolation to improve accuracy
-                    if cd_value < sld_value:
+                    if cd_idx == non_nan_num:
+                        cd = 0
+                    elif cd_value < sld_value:
                         cd_idx_1 = cd_idx
                         cd_idx_2 = cd_idx + 1
 
