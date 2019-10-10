@@ -164,12 +164,13 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                         lower_subset_max = np.nanmax(lower_subset)
 
-                        if lower_subset_max < sld_value:
+                        if lower_subset_max < sld_value and sld_value != sca_value:
                             speed[x][y] = np.nan
                         else:
                             cd_idx = np.abs(lower_subset - sld_value).argmin()
                             cd_idx = last_idx - lower_subset.size - 1 - cd_idx
                             print(something)
+                            
                             cd_value = speed[x][y][cd_idx]
 
                             if cd_value > sld_value:
