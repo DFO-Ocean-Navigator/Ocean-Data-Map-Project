@@ -168,6 +168,44 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     cd_lower_idx = (np.abs(lower_subset - sld_value)).argmin()
                     cd_idx = cd_lower_idx + int(sca_idx)
                     cd = depth.values[cd_idx]
+                    cd_value = speed[x][y][cd_idx]
+
+
+                    
+                    def linearInterp(x1, y1, x2, y2, x):
+                        """
+                        Finds the linear interpolation given 2 points
+                        """    
+                        y = y1 + (x - x1) * ((y2 - y1) / (x2 - x1))
+
+                        return y
+
+                    # Perform linear interpolation to improve accuracy
+                    if cd_value < sld_value:
+                        cd_idx_1 = cd_idx
+                        cd_idx_2 = cd_idx + 1
+
+                        cd_value_1 = cd_value
+                        cd_value_2 = speed[x][y][cd_idx_2]
+
+                        cd_depth_1 = depth.values[cd_idx_1]
+                        cd_depth_2 = depth.values[cd_idx_2]
+
+                        cd = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+                    elif cd_value > sld_value:
+                        cd_idx_1 = cd_idx + 1
+                        cd_idx_2 = cd_idx
+
+                        cd_value_1 = speed[x][y][cd_idx_1]
+                        cd_value_2 = cd_value
+
+                        cd_depth_1 = depth.values[cd_idx_1]
+                        cd_depth_2 = depth.values[cd_idx_2]
+
+                        cd = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+                    
                     speed[x][y] = cd
             
                 
