@@ -170,7 +170,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                         lower_subset = speed[x][y][int(sca_idx) + 1:last_idx + 1]
                         if lower_subset.size != 0:
-                            cd_lower_idx = (np.abs(lower_subset - sld_value)).argmin()
+                            cd_lower_idx = (np.abs(lower_subset - sld_value)).argmin() + 1
                             cd_idx = cd_lower_idx + int(sca_idx)
                             cd = depth.values[cd_idx]
                             cd_value = speed[x][y][cd_idx]
