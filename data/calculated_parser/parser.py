@@ -70,7 +70,7 @@ class Parser:
 
     def get_key_for_var_all(self, variable):
         key = self.key
-        new_slice = slice(0,49)
+        new_slice = slice(0,50)
         key = list(key)
         key[1] = new_slice
         key = tuple(key)
