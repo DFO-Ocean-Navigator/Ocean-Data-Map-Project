@@ -208,7 +208,8 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                             cd_depth_2 = depth.values[cd_idx_2]
                             cd = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
 
-
+                        if cd < 0:
+                            print(something)
                         speed[x][y] = cd
             
                 
