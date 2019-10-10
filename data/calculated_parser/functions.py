@@ -147,7 +147,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             else:
                 sca_idx = sca_idx[0][0]
                 
-                # Set the SCA
+                # Set the Sound Channel Axis (SCA)
                 sca = depth.values[sca_idx]
             
             if (np.isnan(sca_value)):
@@ -163,7 +163,12 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     #speed[x][y] = depth.values[sca_idx]
                     sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
-                    speed[x][y] = sca - sld
+
+                    # Find the nearest value to the critical depth
+                    lower_subset = speed[x][y][int(sca_idx) + 1:]
+                    cd_idx = (np.abs(lower_subset - sld_value)).argmin()
+                    cd_value = speed[x][y][cd_idx]
+                    speed[x][y] = cd_value#sca - sld
                 
                 
                 #if (np.isnan(sld_value)):
