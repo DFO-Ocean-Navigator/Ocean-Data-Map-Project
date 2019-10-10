@@ -180,6 +180,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                             cd_depth_1 = depth.values[cd_idx_1]
                             cd_depth_2 = depth.values[cd_idx_2]
+                            print(something)
 
                         elif cd_value < sld_value:
                             # Find next point
@@ -191,7 +192,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
 
                             cd_depth_1 = depth.values[cd_idx_1]
                             cd_depth_2 = depth.values[cd_idx_2]
-                        print(something)                    
+                            print(something)                    
                     
                     
                     #if (np.isnan(sld_value)):
