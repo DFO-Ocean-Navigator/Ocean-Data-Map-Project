@@ -143,13 +143,10 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             
             if (np.isnan(sca_value)):
                 break
-            elif sca_idx[0].shape[0] > 1:
-                sca_idx = sca_idx[0][0]
-
-                # Set the SCA
-                sca = depth.values[sca_idx]
+            
             else:
-
+                sca_idx = sca_idx[0][0]
+                
                 # Set the SCA
                 sca = depth.values[sca_idx]
             
