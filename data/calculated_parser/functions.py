@@ -142,7 +142,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             
             
             if (np.isnan(sca_value)):
-                pass
+                speed[x][y] = 0
             else:
                 sca_idx = sca_idx[0][0]
                 
@@ -150,13 +150,14 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 sca = depth.values[sca_idx]
             
             if (np.isnan(sca_value)):
-                pass
+                speed[x][y] = 0
             else:
                 
                 subset = speed[x][y][0:int(sca_idx) + 1]
                 sld_value = subset.max()
 
                 if (np.isnan(sld_value)):
+                    speed[x][y] = 0
                     pass
                 else:
                     #speed[x][y] = depth.values[sca_idx]
