@@ -160,7 +160,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 if (np.isnan(sld_value)):
                     pass
                 else:
-                    speed[x][y] = depth.values[sca_idx]
+                    #speed[x][y] = depth.values[sca_idx]
                     sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
                     speed[x][y] = sca - sld
