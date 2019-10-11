@@ -215,7 +215,8 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
     sld_value = speed_point[sld_idx]
     cd_value = speed_point[cd_idx]
-
+    cd_depth = depth.values[cd_idx]
+    
     if cd_value < sld_value:
         
         # Find 2 Points
