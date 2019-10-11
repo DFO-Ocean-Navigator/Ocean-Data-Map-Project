@@ -216,7 +216,7 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     sld_value = speed_point[sld_idx]
     cd_value = speed_point[cd_idx]
     cd_depth = depth.values[cd_idx]
-    
+
     if cd_value < sld_value:
         
         # Find 2 Points
@@ -298,10 +298,37 @@ def depthexcess(depth, lat, lon, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
     sld = 0
+    sca = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
-            pass
+            if (speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))) != 0:
+                speed_point = speed[x][y]
+                sca_idx = find_sca_idx(speed_point)
+                if not np.isnan(sca_idx):
+                
+                    sld_idx = find_sld_idx(sca_idx, speed_point)
 
+                    if not np.isnan(sld_idx):
+                        cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
+                        if not np.isnan(cd_idx):
+                            #cd_value = speed_point[cd_idx]
+                            #cd_depth = depth.values[cd_idx]
+
+                            # Now that we have the nearest critical depth idx we must perform linear interpolation
+                            cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
+                            total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
+                            max_depth = depth.values[total_idx]
+                            print(something)
+
+                        else:
+                            depth_excess = np.nan
+                    else:
+                        depth_excess = np.nan
+            else:
+                depth_excess = np.nan
+
+            speed[x][y] = depth_excess
+                
 
     speed = speed.transpose()
     speed = speed[0]
