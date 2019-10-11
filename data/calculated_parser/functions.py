@@ -181,6 +181,9 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     # Create Layer Subset
     lower_subset = speed[sca_idx + 1: total_idx + 1]
 
+    if lower_subset.size == 0:
+        return np.nan
+        
     # Find min and max value of subset
     min_value = np.nanmin(lower_subset)
     max_value = np.nanmax(lower_subset)
