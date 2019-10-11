@@ -9,6 +9,7 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
+import time
 
 _ureg = UnitRegistry()
 
@@ -88,8 +89,12 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
     
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
+            time = time.time()
             min_val = np.nanmin(speed[x,y])
+            print("TIME: ", time.time() - time)
+            time = time.time()
             idx = np.where(speed[x,y] == min_val)
+            print("TIME: ", time.time() - time)
             if (np.isnan(min_val)):
                 speed[x,y] = np.nan
             elif idx[0].shape[0] > 1:
