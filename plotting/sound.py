@@ -69,7 +69,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
 
-        if self.annotate:
+        if self.query.annotate:
             # SOUND SPEED MINIMA
             minspeed = np.amin(self.sspeed)
             maxspeed = np.amax(self.sspeed)
