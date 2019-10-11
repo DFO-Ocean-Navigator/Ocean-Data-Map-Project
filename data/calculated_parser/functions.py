@@ -130,7 +130,7 @@ def find_sca_idx(speed):
     Parameters:
     speed: np.ndarray as point profile
     """
-
+    print(something)
     sca_value = np.nanmin(speed)
     idx = np.where(speed == sca_value)
 
@@ -218,7 +218,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
             print(something)
-            if (speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1) != 0:
+            if (speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))) != 0:
                 speed_point = speed[x][y]
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
