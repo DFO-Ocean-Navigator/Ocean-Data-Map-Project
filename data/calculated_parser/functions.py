@@ -154,8 +154,6 @@ def find_sld_idx(sca_idx, speed):
     
     # No shifting, idx in subset is same as idx in full array
     sld_idx = np.where(subset == sld_value)[0][0]
-	
-    print(something)
 
     return int(sld_idx)
 
@@ -170,6 +168,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     speed: np.array of data values in a single point profile
     """
 
+    print(something)
     # Find Sound Layer Depth
     sld_value = speed[sld_idx]
 
