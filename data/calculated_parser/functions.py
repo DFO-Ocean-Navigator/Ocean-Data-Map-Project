@@ -124,12 +124,12 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
 
 
 def find_sca_idx(speed):
-	"""
-	
+    """
+    
 
-	Parameters:
-	speed: np.ndarray as point profile
-	"""
+    Parameters:
+    speed: np.ndarray as point profile
+    """
 
     sca_value = np.nanmin(speed)
     idx = np.where(speed == min_val)
