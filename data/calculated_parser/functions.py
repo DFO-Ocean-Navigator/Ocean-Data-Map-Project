@@ -86,19 +86,19 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     speed = speed.transpose()
     
-    #for x in range(speed.shape[0]):
-    #    for y in range(speed.shape[1]):
-    for xy in np.ndindex(speed.shape[:2]):
-        min_val = np.nanmin(speed[xy])
-        idx = np.where(speed[xy] == min_val)
-        if (np.isnan(min_val)):
-            speed[xy] = np.nan
-        elif idx[0].shape[0] > 1:
-            idx = idx[0][0]
-            speed[xy] = depth.values[idx]
-        else:
-            speed[xy] = depth.values[idx]
-        #speed[x][y] = depth[np.where(speed[x][y] == np.nanmin(speed[x][y]))]  #np.nanmin(speed[x][y])
+    for x in range(speed.shape[0]):
+        for y in range(speed.shape[1]):
+            min_val = np.nanmin(speed[x,y])
+            idx = np.where(speed[x,y] == min_val)
+            if (np.isnan(min_val)):
+                speed[x,y] = np.nan
+            elif idx[0].shape[0] > 1:
+                idx = idx[0][0]
+
+                speed[x,y] = depth.values[idx]
+            else:
+                speed[x,y] = depth.values[idx]
+            #speed[x][y] = depth[np.where(speed[x][y] == np.nanmin(speed[x][y]))]  #np.nanmin(speed[x][y])
     
     speed = speed.transpose()
 
