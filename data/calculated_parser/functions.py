@@ -299,7 +299,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
     sld = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
-            
+            pass
 
 
     speed = speed.transpose()
