@@ -121,15 +121,15 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
     sld = np.nan
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
-            sca_value = np.nanmin(speed[x][y])
-            sca_idx = np.where(speed[x][y] == sca_value)
+            sca_value = np.nanmin(speed[x,y])
+            sca_idx = np.where(speed[x,y] == sca_value)
             
             if (np.isnan(sca_value)):
                 pass
             else:
                 sca_idx = sca_idx[0][0]
 
-                subset = speed[x][y][0:int(sca_idx) + 1]
+                subset = speed[x,y][0:int(sca_idx) + 1]
                 sld_value = subset.max()
                 
                 if (np.isnan(sld_value)):
@@ -137,7 +137,7 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
                 else:
                     sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
-                    speed[x][y] = sld
+                    speed[x,y] = sld
 
     speed = speed.transpose()
     speed = speed[0]
@@ -277,8 +277,8 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     sca = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
-            if (speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))) != 0:
-                speed_point = speed[x][y]
+            if (speed[x,y].size - np.count_nonzero(np.isnan(speed[x,y]))) != 0:
+                speed_point = speed[x,y]
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
                 
@@ -300,7 +300,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
             else:
                 cd_depth = np.nan
 
-            speed[x][y] = cd_depth
+            speed[x,y] = cd_depth
                 
 
     speed = speed.transpose()
@@ -322,8 +322,8 @@ def depthexcess(depth, lat, lon, temperature, salinity):
     sca = 0
     for x in range(speed.shape[0]):
         for y in range(speed.shape[1]):
-            if (speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))) != 0:
-                speed_point = speed[x][y]
+            if (speed[x,y].size - np.count_nonzero(np.isnan(speed[x,y]))) != 0:
+                speed_point = speed[x,y]
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
                 
@@ -349,7 +349,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
             else:
                 depth_excess = np.nan
 
-            speed[x][y] = depth_excess
+            speed[x,y] = depth_excess
                 
 
     speed = speed.transpose()
