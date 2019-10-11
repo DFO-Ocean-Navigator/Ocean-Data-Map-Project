@@ -70,6 +70,7 @@ class Parser:
 
     def get_key_for_var_all(self, variable):
         key = self.key
+        print(something)
         new_slice = slice(0,50)
         key = list(key)
         key[1] = new_slice
@@ -174,4 +175,3 @@ class Parser:
 
     def p_error(self, t):
         t[0] = None
-        
