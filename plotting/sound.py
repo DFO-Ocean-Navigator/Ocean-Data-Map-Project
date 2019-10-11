@@ -143,6 +143,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         if self.query.get('annotate'):
             # Sound Speed Minima
+            minspeed = float("{0:.2f}".format(minspeed))
             plt.text(minspeed + 2, minpos, str(minspeed))
             ax.scatter(minspeed, minpos, s=200, marker='_')
             # ~~~~~~~~~~~~~~~~~
