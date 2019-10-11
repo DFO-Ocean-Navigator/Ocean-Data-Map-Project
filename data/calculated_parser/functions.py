@@ -203,6 +203,42 @@ def find_cd_idx(sca_idx, sld_idx, speed):
 
     return cd_idx
 
+def cd_interpolation(cd_idx, sld_idx, speed_point):
+
+    # Now that we have the nearest critical depth idx we must perform linear interpolation
+    def linearInterp(x1, y1, x2, y2, x):
+        """
+        Finds the linear interpolation given 2 points
+        """    
+        y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
+        return y
+
+    sld_value = speed_point[sld_idx]
+    cd_value = speed_point[cd_idx]
+
+    if cd_value < sld_value:
+        
+        # Find 2 Points
+        cd_value_1 = cd_value
+        cd_value_2 = speed_point[cd_idx + 1]
+
+        cd_depth_1 = depth.values[cd_idx]
+        cd_depth_2 = depth.values[cd_idx + 1]
+
+        cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+    elif cd_value > sld_value:
+        
+        # Find 2 Points
+        cd_value_1 = speed_point[cd_idx - 1]
+        cd_value_2 = cd_value
+
+        cd_depth_1 = depth.values[cd_idx - 1]
+        cd_depth_2 = depth.values[cd_idx]
+
+        cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+    return cd_value
 
 def criticaldepth(depth, lat, lon, temperature, salinity):
     """
@@ -229,40 +265,11 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     if not np.isnan(sld_idx):
                         cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
                         if not np.isnan(cd_idx):
-                            cd_value = speed_point[cd_idx]
-                            cd_depth = depth.values[cd_idx]
+                            #cd_value = speed_point[cd_idx]
+                            #cd_depth = depth.values[cd_idx]
 
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
-                            def linearInterp(x1, y1, x2, y2, x):
-                                """
-                                Finds the linear interpolation given 2 points
-                                """    
-                                y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
-                                return y
-
-                            sld_value = speed_point[sld_idx]
-
-                            if cd_value < sld_value:
-                                
-                                # Find 2 Points
-                                cd_value_1 = cd_value
-                                cd_value_2 = speed_point[cd_idx + 1]
-
-                                cd_depth_1 = depth.values[cd_idx]
-                                cd_depth_2 = depth.values[cd_idx + 1]
-
-                                cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
-
-                            elif cd_value > sld_value:
-                                
-                                # Find 2 Points
-                                cd_value_1 = speed_point[cd_idx - 1]
-                                cd_value_2 = cd_value
-
-                                cd_depth_1 = depth.values[cd_idx - 1]
-                                cd_depth_2 = depth.values[cd_idx]
-
-                                cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+                            cd_value = cd_interpolation(cd_idx, sld_idx, speed_point)
 
                         else:
                             cd_depth = np.nan
@@ -272,147 +279,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                 cd_depth = np.nan
 
             speed[x][y] = cd_depth
-                #sca_value = np.nanmin(speed[x][y])
-                #sca_idx = np.where(speed[x][y] == sca_value)
-
-
-                #if (np.isnan(sca_value)):
-                #    speed[x][y] = np.nan
-                #else:
-                #    sca_idx = sca_idx[0][0]
-
-                    # Set the SCA
-                #    sca = depth.values[sca_idx]
-
-                #if (np.isnan(sca_value)):
-                #    speed[x][y] = np.nan
-                #else:
-
-                #    last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
-                #    subset = speed[x][y][0:int(sca_idx) + 1]
-                #    lower_subset = speed[x][y][int(sca_idx) +1: last_idx + 1]
-                #    if lower_subset.size == 0:
-                #        speed[x][y] = np.nan
-                #    else:
-                #        sld_value = subset.max()
-
-                #        lower_subset_max = np.nanmax(lower_subset)
-
-                #        if lower_subset_max < sld_value and sld_value != sca_value:
-                #            speed[x][y] = np.nan
-                #        else:
-                #            cd_idx = np.abs(lower_subset - sld_value).argmin()
-                #            cd_idx = last_idx - lower_subset.size - 1 - cd_idx
-                #            print(something)
-                            
-                #            cd_value = speed[x][y][cd_idx]
-
-                #            if cd_value > sld_value:
-                #                # Find previous point
-                #                cd_idx_1 = cd_idx - 1
-                #                cd_idx_2 = cd_idx
-
-                #                cd_value_1 = speed[x][y][cd_idx_1]
-                #                cd_value_2 = speed[x][y][cd_idx_2]
-
-                #                cd_depth_1 = depth.values[cd_idx_1]
-                #                cd_depth_2 = depth.values[cd_idx_2]
-                #                print(something)
-
-                #            elif cd_value < sld_value:
-                                # Find next point
-                #                cd_idx_1 = cd_idx
-                #                cd_idx_2 = cd_idx + 1
-
-                #                cd_value_1 = speed[x][y][cd_idx_1]
-                #                cd_value_2 = speed[x][y][cd_idx_2]
-
-                #                cd_depth_1 = depth.values[cd_idx_1]
-                #                cd_depth_2 = depth.values[cd_idx_2]
-                #                print(something)                    
-                    
-                    
-                    #if (np.isnan(sld_value)):
-                    #    speed[x][y] = np.nan
-                    #    pass
-                    #else:
-                    #    #speed[x][y] = depth.values[sca_idx]
-                    #    sld_idx = np.where(subset == sld_value)[0][0]
-                    #    sld = depth.values[sld_idx]
-                        
-                        # Count non nan values
-                    #    last_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y])) - 1
-                    #    lower_subset = speed[x][y][int(sca_idx) + 1:last_idx + 1]
-                    #    if lower_subset.size != 0:
-                    #        cd_lower_idx = (np.abs(lower_subset - sld_value)).argmin() + 1
-                            
-                    #        cd_idx = cd_lower_idx + int(sca_idx)
-                            
-                    #        cd = depth.values[cd_idx]
-                    #        cd_value = speed[x][y][cd_idx]
-                    #        def linearInterp(x1, y1, x2, y2, x):
-                    #            """
-                    #            Finds the linear interpolation given 2 points
-                    #            """    
-                    #            y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
-                    #            return y
-                            # Perform linear interpolation to improve accuracy
-                    #        if cd_idx == last_idx and cd_value < sld_value:
-                    #            cd = np.nan
-                    #        elif cd_value < sld_value:
-                    #            cd_idx_1 = cd_idx
-                    #            cd_idx_2 = cd_idx + 1
-                    #            cd_value_1 = cd_value
-                    #            cd_value_2 = speed[x][y][cd_idx_2]
-                    #            cd_depth_1 = depth.values[cd_idx_1]
-                    #            cd_depth_2 = depth.values[cd_idx_2]
-                    #            cd = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
-                    #        elif cd_value > sld_value:
-                    #            cd_idx_1 = cd_idx - 1
-                    #            cd_idx_2 = cd_idx
-                    #            cd_value_1 = speed[x][y][cd_idx_1]
-                    #            cd_value_2 = cd_value
-                    #            cd_depth_1 = depth.values[cd_idx_1]
-                    ###            cd_depth_2 = depth.values[cd_idx_2]
-                    #            cd = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
-                    #        if cd >10000 or cd < 0:
-                    #            print(something)
-                    #        speed[x][y] = cd
-                    #    """
                 
-                #if (np.isnan(sld_value)):
-                #    speed[x][y] = 0
-                #else:
-                #    lower_subset = speed[x][y][int(sca_idx) + 1:]
-                #    criticaldepth_idx = 0
-                    #print(something)
-                #    if True: #lower_subset.max() >= sld_value and (sld_value != sca_value):
-                #        criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
-                        
-                        # Initialize IDX variables
-                #        depth_idx_1 = 0
-                #        depth_idx_2 = 0
-
-                        # Decide on the order of points for linear interpolation
-                #        if lower_subset[criticaldepth_idx] < sld_value:
-                #            depth_idx_1 = criticaldepth_idx + int(sca_idx) + 1
-                #            depth_idx_2 = depth_idx_1 + 1
-                #        else:
-                #            depth_idx_2 = criticaldepth_idx + int(sca_idx) + 1
-                #            depth_idx_1 = depth_idx_2 - 1
-                        
-                        # Organize values for linear interpolation
-                #        depth_value_1 = depth.values[depth_idx_1]
-                #        depth_value_2 = depth.values[depth_idx_2]
-                #        cd_value_1 = speed[x][y][depth_idx_1]
-                #        cd_value_2 = speed[x][y][depth_idx_2]
-
-                        # Perform Linear Interpolation Calculation
-                #        cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
-                #        speed[x][y] = cd_final
-                    
-                #    else:
-                #        speed[x][y] = 0
 
     speed = speed.transpose()
     speed = speed[0]
@@ -434,55 +301,6 @@ def depthexcess(depth, lat, lon, temperature, salinity):
         for y in range(speed.shape[1]):
             
 
-            sca_value = np.nanmin(speed[x][y])
-            
-            if (np.isnan(sca_value)):
-                speed[x][y] = 0
-            else:
-                sca_idx = np.where(speed[x][y] == sca_value)
-                sca_idx = sca_idx[0][0]
-
-                subset = speed[x][y][0:int(sca_idx) + 1]
-                sld_value = subset.max()
-                
-                
-                if (np.isnan(sld_value)):
-                    speed[x][y] = 0
-                else:
-                    lower_subset = speed[x][y][int(sca_idx) + 1:]
-                    criticaldepth_idx = 0
-                    if lower_subset.max() >= sld_value and (sld_value != sca_value):
-                        criticaldepth_idx = (np.abs(lower_subset - sld_value)).argmin()
-                        
-                        # Initialize IDX variables
-                        depth_idx_1 = 0
-                        depth_idx_2 = 0
-
-                        # Decide on the order of points for linear interpolation
-                        if lower_subset[criticaldepth_idx] < sld_value:
-                            depth_idx_1 = criticaldepth_idx + int(sca_idx) + 1
-                            depth_idx_2 = depth_idx_1 + 1
-                        else:
-                            depth_idx_2 = criticaldepth_idx + int(sca_idx) + 1
-                            depth_idx_1 = depth_idx_2 - 1
-                        
-                        # Organize values for linear interpolation
-                        depth_value_1 = depth.values[depth_idx_1]
-                        depth_value_2 = depth.values[depth_idx_2]
-                        cd_value_1 = speed[x][y][depth_idx_1]
-                        cd_value_2 = speed[x][y][depth_idx_2]
-
-                        # Perform Linear Interpolation Calculation
-                        cd_final = depth_value_1 + (sld_value - cd_value_1) * ((depth_value_2 - depth_value_1) / (cd_value_2 - cd_value_1))
-
-                        # Find sea floor depth at this point
-                        max_depth_idx = speed[x][y].size - np.count_nonzero(np.isnan(speed[x][y]))
-                        max_depth = depth.values[max_depth_idx - 1]
-                        depthexcess = max_depth - cd_final
-                        speed[x][y] = depthexcess
-                        
-                    else:
-                        speed[x][y] = 0
 
     speed = speed.transpose()
     speed = speed[0]
