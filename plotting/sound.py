@@ -128,8 +128,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 max_depth = self.temperature_depths.data[0][ss.count() - 1] #- criticaldepth_true
                 depthexcess = max_depth - criticaldepth_true
                 depthexcess = float("{0:.2f}".format(depthexcess))
-                plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2) + 5), "Depth Excess")
-                plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)), str(depthexcess) + 'm')
+                plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)- 15), "Depth Excess")
+                plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2) + 15), str(depthexcess) + 'm')
                 # ~~~~~~~~~~~~
 
             minpos = self.temperature_depths.data[0][minpos][0]
