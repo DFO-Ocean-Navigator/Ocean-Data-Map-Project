@@ -118,7 +118,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
                 ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
                 criticaldepth_true = float("{0:.2f}".format(criticaldepth_true))
-                plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true) + 'm')
+                plt.text(soniclayerdepth_value + 4, criticaldepth_true, "Critical Depth: " + str(criticaldepth_true) + 'm')
 
                 # ~~~~~~~~~~~~~~
 
@@ -145,7 +145,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         if self.query.get('annotate'):
             # Sound Speed Minima
             minspeed = float("{0:.2f}".format(minspeed))
-            plt.text(minspeed + 2, minpos, str(minspeed) + 'm')
+            plt.text(minspeed + 2, minpos, "Sound Channel Axis: " + str(minspeed) + 'm')
             ax.scatter(minspeed, minpos, s=200, marker='_')
             # ~~~~~~~~~~~~~~~~~
         
