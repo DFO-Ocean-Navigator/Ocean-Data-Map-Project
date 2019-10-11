@@ -70,9 +70,12 @@ class Parser:
 
     def get_key_for_var_all(self, variable):
         key = self.key
-        if (variable.shape[0] != 50):
-            print(something)
-        new_slice = slice(0,50)
+        depth = 0
+        if len(variable.shape) == 4:
+            depth = variable.shape[1]
+        else:
+            depth = variable.shape[0]
+        new_slice = slice(0,depth)
         key = list(key)
         key[1] = new_slice
         key = tuple(key)
