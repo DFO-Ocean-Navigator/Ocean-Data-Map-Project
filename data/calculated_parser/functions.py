@@ -226,7 +226,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                     if not np.isnan(sld_idx):
                         cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
                         if not np.isnan(cd_idx):
-                            cd_value = speed[cd_idx]
+                            cd_value = speed_point[cd_idx]
                         else:
                             cd_value = np.nan
                     else:
