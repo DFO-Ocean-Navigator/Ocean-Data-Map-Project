@@ -319,7 +319,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
                             total_idx = speed_point.size - np.count_nonzero(np.isnan(speed_point)) - 1
                             max_depth = depth.values[total_idx]
                             depth_excess = max_depth - cd_depth
-
+                            
                         else:
                             depth_excess = np.nan
                     else:
