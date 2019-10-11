@@ -88,8 +88,8 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             soniclayerdepth_value = float("{0:.2f}".format(soniclayerdepth_value))
 
             # Plot and label
-            plt.annotate('Sonic Layer Depth', (soniclayerdepth_value, soniclayerdepth), textcoords="offset points")
-            plt.annotate(str(soniclayerdepth) + 'm', (soniclayerdepth_value + 4,soniclayerdepth + 1), textcoords="offset points",
+            plt.annotate('Sonic Layer Depth', (soniclayerdepth_value, soniclayerdepth))
+            plt.annotate(str(soniclayerdepth) + 'm', (soniclayerdepth_value + 4,soniclayerdepth + 2), textcoords="offset points",
             xytext=(0,10), ha='center')
             ax.axvline(x=soniclayerdepth_value, linestyle='--')
             # ~~~~~~~~~~~~~~~~~
