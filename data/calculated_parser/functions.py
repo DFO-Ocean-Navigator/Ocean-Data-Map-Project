@@ -131,9 +131,9 @@ def find_sca_idx(speed):
 	speed: np.ndarray as point profile
 	"""
 
-	sca_value = np.nanmin(speed)
+    sca_value = np.nanmin(speed)
     idx = np.where(speed == min_val)
-    
+
     if np.isnan(min_val):
         return np.nan
     
@@ -141,13 +141,13 @@ def find_sca_idx(speed):
 
     print(something)
 
-	return idx
+    return idx
 
 
 def find_sld_idx(sca_idx, speed):
-	"""
-	Returns the index of the sound layer depth
-	"""
+    """
+    Returns the index of the sound layer depth
+    """
 
     subset = speed[0:int(sca_idx) + 1]
     sld_value = subset.max()
@@ -159,17 +159,17 @@ def find_sld_idx(sca_idx, speed):
 	
     print(something)
 
-	return sld_idx
+    return sld_idx
 
 
 def find_cd_idx(sca_idx, sld_idx, speed):
-	"""
+    """
     Finds the index in speed[x][y] of the Critical Depth
 
     Parameters:
     sca_idx: integer indicating location of value in speed[x][y]
     sld_idx: integer indicating location of vlaue in speed[x][y]
-	speed: np.array of data values in a single point profile
+    speed: np.array of data values in a single point profile
     """
 
     # Find Sound Layer Depth
@@ -199,7 +199,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
 
     print(something)
 
-	return cd_idx
+    return cd_idx
 
 
 def criticaldepth(depth, lat, lon, temperature, salinity):
