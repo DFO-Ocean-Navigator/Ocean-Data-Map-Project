@@ -168,7 +168,6 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     speed: np.array of data values in a single point profile
     """
 
-    print(something)
     # Find Sound Layer Depth
     sld_value = speed[sld_idx]
 
@@ -176,15 +175,18 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
     
     # Create Layer Subset
-    lower_subset = speed[sca_idx: total_idx + 1]
+    lower_subset = speed[sca_idx + 1: total_idx + 1]
 
-    # Find max value of subset
+    # Find min and max value of subset
+    min_value = np.nanmin(lower_subset)
     max_value = np.nanmax(lower_subset)
 
     # Determine if Critical Depth exists
-    if max_value < sld_value:
+    if max_value < sld_value or min_value > sld_value:
         return np.nan
     
+    print(something)
+
     # Find closest idx to sld_value
     idx = np.abs(lower_subset - sld_value).argmin()
 
