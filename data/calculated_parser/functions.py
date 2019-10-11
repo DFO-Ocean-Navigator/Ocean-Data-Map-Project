@@ -146,7 +146,7 @@ def find_sld_idx(sca_idx, speed):
     """
     Returns the index of the sound layer depth
     """
-    print(something)
+    
     subset = speed[0:int(sca_idx) + 1]
     sld_value = subset.max()
     if np.isnan(sld_value):
