@@ -76,6 +76,7 @@ class Parser:
         else:
             depth = variable.shape[0]
         new_slice = slice(0,depth)
+        print(something)
         key = list(key)
         key[1] = new_slice
         key = tuple(key)
