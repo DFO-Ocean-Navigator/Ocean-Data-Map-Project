@@ -657,7 +657,7 @@
                 "scale": [30, 40]
             },
             "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" },
-            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, latitue, longitude, ~votemper - 273.15, ~vosaline)"},
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"}        
