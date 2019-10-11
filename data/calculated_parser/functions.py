@@ -316,7 +316,7 @@ def depthexcess(depth, lat, lon, temperature, salinity):
 
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
                             cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
-                            total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
+                            total_idx = speed_point.size - np.count_nonzero(np.isnan(speed_point)) - 1
                             max_depth = depth.values[total_idx]
                             print(something)
 
