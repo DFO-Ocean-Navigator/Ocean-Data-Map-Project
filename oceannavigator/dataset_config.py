@@ -13,6 +13,7 @@ class DatasetConfig():
 
     def __init__(self, dataset: str):
         self._config = DatasetConfig._get_dataset_config()[dataset]
+        self._dataset_key: str = dataset
 
     @staticmethod
     def get_datasets() -> list:
@@ -42,6 +43,10 @@ class DatasetConfig():
         Returns the THREDDS url to the given dataset
         """
         return self._get_attribute("url")
+
+    @property
+    def key(self) -> str:
+        return self._dataset_key
 
     @property
     def type(self) -> str:
@@ -78,6 +83,14 @@ class DatasetConfig():
     @property
     def grid_angle_file_url(self):
         return self._get_attribute("grid_angle_file_url")
+
+    @property
+    def lat_var_key(self):
+        return self._get_attribute("lat_var_key")
+
+    @property
+    def lon_var_key(self):
+        return self._get_attribute("lon_var_key")
 
     @property
     def quantum(self) -> str:
