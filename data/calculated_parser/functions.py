@@ -231,6 +231,39 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                         if not np.isnan(cd_idx):
                             cd_value = speed_point[cd_idx]
                             cd_depth = depth.values[cd_idx]
+
+                            # Now that we have the nearest critical depth idx we must perform linear interpolation
+                            def linearInterp(x1, y1, x2, y2, x):
+                                """
+                                Finds the linear interpolation given 2 points
+                                """    
+                                y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
+                                return y
+
+                            sld_value = speed_point[sld_idx]
+
+                            if cd_value < sld_value:
+                                
+                                # Find 2 Points
+                                cd_value_1 = cd_value
+                                cd_value_2 = speed_point[cd_idx + 1]
+
+                                cd_depth_1 = depth.values[cd_idx]
+                                cd_depth_2 = depth.values[cd_idx + 1]
+
+                                cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+                            elif cd_value > sld_value:
+                                
+                                # Find 2 Points
+                                cd_value_1 = speed_point[cd_idx - 1]
+                                cd_value_2 = cd_value
+
+                                cd_depth_1 = depth.values[cd_idx - 1]
+                                cd_depth_2 = depth.values[cd_idx]
+
+                                cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
                         else:
                             cd_depth = np.nan
                     else:
