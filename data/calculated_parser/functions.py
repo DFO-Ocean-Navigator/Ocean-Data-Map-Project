@@ -236,9 +236,9 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
         cd_depth_1 = depth.values[cd_idx - 1]
         cd_depth_2 = depth.values[cd_idx]
 
-        cd_value = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+        cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
 
-    return cd_value
+    return cd_depth
 
 def criticaldepth(depth, lat, lon, temperature, salinity):
     """
@@ -269,7 +269,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
                             #cd_depth = depth.values[cd_idx]
 
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
-                            cd_value = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
+                            cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
 
                         else:
                             cd_depth = np.nan
