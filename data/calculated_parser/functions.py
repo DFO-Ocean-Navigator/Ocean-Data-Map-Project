@@ -122,6 +122,33 @@ def soniclayerdepth(depth, lat, lon, temperature, salinity):
     speed = speed[0]
     return np.array(speed)
 
+
+def sca_idx(speed):
+	"""
+	
+
+	Parameters:
+	speed: np.ndarray as point profile
+	"""
+
+	sca_value = np.nanmin(speed[x][y]
+
+	return sca_idx
+
+def sld_idx(sca_idx, speed):
+	"""
+	Returns the index of the sound layer depth
+	"""
+
+	
+	return sld_idx
+
+def cd_idx(sca_idx, sld_idx, speed):
+	"""
+
+	"""
+	return 0
+
 def criticaldepth(depth, lat, lon, temperature, salinity):
     """
     Finds the next location of the sonic layer depth.
