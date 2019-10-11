@@ -69,66 +69,67 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
 
-        # SOUND SPEED MINIMA
-        minspeed = np.amin(self.sspeed)
-        maxspeed = np.amax(self.sspeed)
+        if self.annotate:
+            # SOUND SPEED MINIMA
+            minspeed = np.amin(self.sspeed)
+            maxspeed = np.amax(self.sspeed)
 
-        minpos = np.where(self.sspeed[0] == minspeed)
-        
-        # SONIC LAYER DEPTH
+            minpos = np.where(self.sspeed[0] == minspeed)
 
-        # Calculate
-        soniclayerdepth_value = self.sspeed[0][0:int(minpos[0])].max()
-        soniclayerdepth_idx = np.where(self.sspeed[0] == soniclayerdepth_value)
-        soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
+            # SONIC LAYER DEPTH
 
-        soniclayerdepth_value = float("{0:.2f}".format(soniclayerdepth_value))
+            # Calculate
+            soniclayerdepth_value = self.sspeed[0][0:int(minpos[0])].max()
+            soniclayerdepth_idx = np.where(self.sspeed[0] == soniclayerdepth_value)
+            soniclayerdepth = self.temperature_depths.data[0][soniclayerdepth_idx][0]
 
-        # Plot and label
-        plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
-        xytext=(0,10), ha='center')
-        ax.axvline(x=soniclayerdepth_value, linestyle='--')
-        # ~~~~~~~~~~~~~~~~~
+            soniclayerdepth_value = float("{0:.2f}".format(soniclayerdepth_value))
 
-        
-        # CRITICAL DEPTH
+            # Plot and label
+            plt.annotate(soniclayerdepth, (soniclayerdepth_value,soniclayerdepth), textcoords="offset points",
+            xytext=(0,10), ha='center')
+            ax.axvline(x=soniclayerdepth_value, linestyle='--')
+            # ~~~~~~~~~~~~~~~~~
 
-        subset = self.sspeed[0][int(minpos[0]):]
-        if subset.max() >= soniclayerdepth_value:
-            criticaldepth_idx = (np.abs(subset - soniclayerdepth_value)).argmin()
-            criticaldepth = self.temperature_depths.data[0][int(criticaldepth_idx) + int(minpos[0])]
-            criticaldepth_value = subset[criticaldepth_idx]
-        
-            # Perform linear interpolation to get more accurate depth
-            if (criticaldepth_value > soniclayerdepth_value):
-            # Must also consider the previous value 
-                criticaldepth_sec_value = subset[criticaldepth_idx - 1]
-                criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx - 1) + int(minpos[0])]
-                criticaldepth_true = criticaldepth_sec + (soniclayerdepth_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
-            
-            else:
-            # Must also consider the next value
-                criticaldepth_sec_value = subset[criticaldepth_idx + 1]
-                criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx + 1) + int(minpos[0])]
-                criticaldepth_true = criticaldepth + (soniclayerdepth_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
 
-            ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
-            criticaldepth_true = float("{0:.2f}".format(criticaldepth_true))
-            plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
-        
-            # ~~~~~~~~~~~~~~
+            # CRITICAL DEPTH
 
-            # DEPTH EXCESS
+            subset = self.sspeed[0][int(minpos[0]):]
+            if subset.max() >= soniclayerdepth_value:
+                criticaldepth_idx = (np.abs(subset - soniclayerdepth_value)).argmin()
+                criticaldepth = self.temperature_depths.data[0][int(criticaldepth_idx) + int(minpos[0])]
+                criticaldepth_value = subset[criticaldepth_idx]
 
-            # First we have to find the last depth index with data
-            max_depth = self.temperature_depths.data[0][ss.count() - 1] #- criticaldepth_true
-            depthexcess = max_depth - criticaldepth_true
-            depthexcess = float("{0:.2f}".format(depthexcess))
-            plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)), str(depthexcess))
-            # ~~~~~~~~~~~~
+                # Perform linear interpolation to get more accurate depth
+                if (criticaldepth_value > soniclayerdepth_value):
+                # Must also consider the previous value 
+                    criticaldepth_sec_value = subset[criticaldepth_idx - 1]
+                    criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx - 1) + int(minpos[0])]
+                    criticaldepth_true = criticaldepth_sec + (soniclayerdepth_value - criticaldepth_sec_value) * (criticaldepth - criticaldepth_sec) / (criticaldepth_value - criticaldepth_sec_value)
 
-        minpos = self.temperature_depths.data[0][minpos][0]
-        maxpos = np.where(self.sspeed[0] == maxspeed)
+                else:
+                # Must also consider the next value
+                    criticaldepth_sec_value = subset[criticaldepth_idx + 1]
+                    criticaldepth_sec = self.temperature_depths.data[0][int(criticaldepth_idx + 1) + int(minpos[0])]
+                    criticaldepth_true = criticaldepth + (soniclayerdepth_value - criticaldepth_value) * (criticaldepth_sec - criticaldepth) / (criticaldepth_sec_value - criticaldepth_value)
+
+                ax.hlines(y=criticaldepth_true,xmin=soniclayerdepth_value -12, xmax=soniclayerdepth_value + 3)
+                criticaldepth_true = float("{0:.2f}".format(criticaldepth_true))
+                plt.text(soniclayerdepth_value + 4, criticaldepth_true, str(criticaldepth_true))
+
+                # ~~~~~~~~~~~~~~
+
+                # DEPTH EXCESS
+
+                # First we have to find the last depth index with data
+                max_depth = self.temperature_depths.data[0][ss.count() - 1] #- criticaldepth_true
+                depthexcess = max_depth - criticaldepth_true
+                depthexcess = float("{0:.2f}".format(depthexcess))
+                plt.text( soniclayerdepth_value - 10, (criticaldepth_true + (depthexcess / 2)), str(depthexcess))
+                # ~~~~~~~~~~~~
+
+            minpos = self.temperature_depths.data[0][minpos][0]
+            maxpos = np.where(self.sspeed[0] == maxspeed)
 
             #plt.axvline(x=minspeed, ymin=0.5, ymax=1)
             #plt.axhline(y=minpos)
@@ -138,10 +139,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         ])
 
-        # Sound Speed Minima
-        plt.text(minspeed + 2, minpos, str(minspeed))
-        ax.scatter(minspeed, minpos, s=200, marker='_')
-        # ~~~~~~~~~~~~~~~~~
+        if self.annotate:
+            # Sound Speed Minima
+            plt.text(minspeed + 2, minpos, str(minspeed))
+            ax.scatter(minspeed, minpos, s=200, marker='_')
+            # ~~~~~~~~~~~~~~~~~
         
 
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
