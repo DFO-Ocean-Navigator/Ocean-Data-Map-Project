@@ -69,11 +69,13 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
 
+        minspeed = np.amin(self.sspeed)
+        maxspeed = np.amax(self.sspeed)
+
+
         if self.query.get('annotate'):
             # SOUND SPEED MINIMA
-            minspeed = np.amin(self.sspeed)
-            maxspeed = np.amax(self.sspeed)
-
+            
             minpos = np.where(self.sspeed[0] == minspeed)
 
             # SONIC LAYER DEPTH
