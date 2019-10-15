@@ -477,15 +477,9 @@ export default class PointWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Show Location")}>{_("showmap_help")}
       </SelectBox>
-
-      <SelectBox
-        key='annotate'
-        id='annotate'
-        state={this.state.annotate}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Annotations")}>
-      </SelectBox>
-      
+    }
+    const location = 
+    <div> 
       <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
         <LocationInput
           key='point'
@@ -502,7 +496,14 @@ export default class PointWindow extends React.Component {
           title={_("Show Location")}>{_("showmap_help")}
         </SelectBox>
       </div>
-
+      <SelectBox
+        key='annotate'
+        id='annotate'
+        state={this.state.annotate}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Annotations")}>
+      </SelectBox>
+    </div>
     const dataset = <ComboBox
       key='dataset'
       id='dataset'
