@@ -132,9 +132,10 @@ class CalculatedArray():
             elif len(d) == len(key_dims):
                 if d != key_dims:
                     return np.nan
-
+        
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
+        
         return xr.DataArray(data)
 
     @property
@@ -216,8 +217,8 @@ class CalculatedArray():
         """
         keys = {}
         shape = self.shape
-        for idx, d in enumerate(self.dims):
-            keys[d] = slice(0, shape[idx])
+        for idx, d in enumerate(self.dims):    
+            keys[d] = shape[idx]#slice(0, shape[idx])
 
         for k, v in kwargs.items():
             keys[k] = v
@@ -225,5 +226,4 @@ class CalculatedArray():
         key = []
         for d in self.dims:
             key.append(keys[d])
-
         return self[tuple(key)]

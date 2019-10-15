@@ -51,6 +51,7 @@ export default class PointWindow extends React.Component {
       colormap: "default",
       //starttime: Math.max(props.time - 24, 0),
       variables: [],
+      annotate: false,
       variable: [props.variable],
       observation_variable: [7],
       size: "10x7",
@@ -476,18 +477,23 @@ export default class PointWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         title={_("Show Location")}>{_("showmap_help")}
       </SelectBox>
-    }
-    const location =
-      <div>
-        <div style={{ display: this.props.point.length == 1 ? "block" : "none", }}>
-          <LocationInput
-            key='point'
-            id='point'
-            state={this.props.point}
-            title={_("Location")}
-            onUpdate={this.onLocalUpdate}
-          />
-        </div>
+
+      <SelectBox
+        key='annotate'
+        id='annotate'
+        state={this.state.annotate}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Annotations")}>
+      </SelectBox>
+      
+      <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
+        <LocationInput
+          key='point'
+          id='point'
+          state={this.props.point}
+          title={_("Location")}
+          onUpdate={this.onLocalUpdate}
+        />
         <SelectBox
           key='showmap'
           id='showmap'

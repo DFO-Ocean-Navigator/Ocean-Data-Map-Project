@@ -25,6 +25,8 @@ class TestUtil(unittest.TestCase):
                 "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
+                "lat_var_key": "my_lat",
+                "lon_var_key": "my_lon",
                 "variables": {
                     "var": {
                         "name": "my_variable",
@@ -37,6 +39,7 @@ class TestUtil(unittest.TestCase):
 
         result = DatasetConfig("key")
         self.assertEqual(result.url, "my_url")
+        self.assertEqual(result.key, "key")
         self.assertEqual(result.climatology, "my_climatology")
         self.assertEqual(result.name, "my_name")
         self.assertEqual(result.help, "my_help")
@@ -44,6 +47,8 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(result.grid_angle_file_url, "my_url")
         self.assertEqual(result.type, "my_type")
         self.assertEqual(result.time_dim_units, "my_time_units")
+        self.assertEqual(result.lat_var_key, "my_lat")
+        self.assertEqual(result.lon_var_key, "my_lon")
         self.assertEqual(result.attribution, "my_attribution")
         self.assertEqual(result.cache, 123)
 

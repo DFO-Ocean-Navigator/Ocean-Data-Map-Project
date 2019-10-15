@@ -11,6 +11,8 @@
         "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Monthly.sqlite3",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
         "variables": {
             "aice": {
                 "envtype": "ice",
@@ -144,18 +146,7 @@
                 "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
                 "zero_centered": "true"
             },
-            "vozocrte,vomecrtn": {
-                "envtype": "ocean",
-                "hide": "true",
-                "name": "Water Velocity",
-                "scale": [
-                    0,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "zero_centered": "true"
-            },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
             "divergence": {
                 "envtype": "ocean",
                 "hide": "false",
@@ -191,6 +182,10 @@
                 "unit": "m/s",
                 "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)"
             },
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},    
             "temp_gradientx": {
                 "envtype": "ocean",
                 "hide": "true",
@@ -275,21 +270,27 @@
         "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "GIOPS Daily Values from CONCEPTS",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",
         "variables": {
-            "vozocrtx": { "envtype": "ocean", "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "vomecrty": { "envtype": "ocean", "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "vozocrte,vomecrtn": { "envtype": "ocean", "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "scale_factor": 1, "hide": true },
-            "votemper": { "envtype": "ocean", "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
-            "vosaline": { "envtype": "ocean", "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
-            "sossheig": { "envtype": "ocean", "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
-            "aice": { "envtype": "ice", "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1] },
-            "vice": { "envtype": "ice", "name": "Ice Volume",        "unit": "m", "scale": [0, 10] },
-            "divergence": { "envtype": "ocean", "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true"},
-            "vozocrte": { "envtype": "ocean", "name": "Water East Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true", "hide": true },
-            "vomecrtn": { "envtype": "ocean", "name": "Water North Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true", "hide": true },
-            "sspeed": { "envtype": "ocean", "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, vosaline, votemper - 273.15)" },
-            "vorticity": { "envtype": "ocean", "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
+            "vozocrtx": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vomecrty": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
+            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
+            "aice": { "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "vice": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10] },
+            "divergence": { "name": "Water Divergence", "unit": "1/10^6 s", "scale": [-50, 50], "scale_factor": 1e6, "equation": "divergence(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true"},
+            "vozocrte": { "name": "Water East Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true" },
+            "vomecrtn": { "name": "Water North Velocity", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true" },
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)" },
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
     "giops_forecast": {
@@ -306,23 +307,28 @@
         "help": "Global Ice Ocean Prediction System         <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Available as monthly averages (May 2014&ndash;April 2015)</li>             <li>Variables Available:                 <ul>                     <li>Ice Concentration</li>                     <li>Ice Volume</li>                     <li>Meridional Wind</li>                     <li>Salinity</li>                     <li>Sea Surface Height (Free Surface)</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                     <ul>                       <li>water velocity along model x grid lines</li>                     </ul>                     <li>Sea Water Y Velocity</li>                      <ul>                       <li>water velocity along model y grid lines</li>                     </ul>                     <li>Water Temperature</li>                     <li>Wind</li>                     <li>Zonal Wind</li>                 </ul>             </li>         </ul>",
 
         "variables": {
-            "vozocrtx": { "envtype": "ocean", "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "vomecrty": { "envtype": "ocean", "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
-            "vozocrtx,vomecrty": { "envtype": "ocean", "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "quantum": "day" },
-            "votemper": { "envtype": "ocean", "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "quantum": "day" },
-            "vosaline": { "envtype": "ocean", "name": "Salinity", "unit": "PSU", "scale": [30, 40], "quantum": "day" },
-            "sossheig": { "envtype": "ocean", "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true", "quantum": "hour" },
-            "iiceconc": { "envtype": "ice", "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1], "quantum": "hour" },
-            "iicevol": { "envtype": "ice", "name": "Ice Volume",        "unit": "m", "scale": [0, 10], "quantum": "hour" },
-            "sokaraml": { "envtype": "ocean", "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 4000], "quantum": "hour" },
-            "somixhgt": { "envtype": "ocean", "name": "Turbocline Depth", "unit": "m", "scale": [0, 4000], "quantum": "hour" },
-            "iicesurftemp": { "envtype": "ice", "name": "Surface Temp Over Sea Ice", "unit": "Celsius", "scale": [-5, 30], "equation": "iicesurftemp - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "quantum": "hour" },
-            "isnowvol": { "envtype": "ice", "name": "Snow Volume", "unit": "cm", "scale": [0, 10], "quantum": "hour"},
-            "itmecrty": { "envtype": "ice", "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
-            "itzocrtx": { "envtype": "ice", "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
-            "itzocrtx,itmecrty": { "envtype": "ice", "name": "Sea Ice Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
-            "iicestrength": { "envtype": "ice", "name": "Compressive Ice Strength", "unit": "Nm-1", "scale": [-1, 1], "quantum": "hour" },
-            "iicepressure": { "envtype": "ice", "name": "Internal Ice Pressure", "unit": "Nm-1", "scale": [-1, 1], "quantum": "hour" }
+            "vozocrtx": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
+            "vomecrty": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true", "quantum": "day" },
+            "vozocrtx,vomecrty": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "quantum": "day" },
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "quantum": "day" },
+            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40], "quantum": "day" },
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)" },
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},
+            "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, nav_lon, ~votemper - 273.15, ~vosaline)"},       
+            "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true", "quantum": "hour" },
+            "iiceconc": { "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1], "quantum": "hour" },
+            "iicevol": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10], "quantum": "hour" },
+            "sokaraml": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 4000], "quantum": "hour" },
+            "somixhgt": { "name": "Turbocline Depth", "unit": "m", "scale": [0, 4000], "quantum": "hour" },
+            "iicesurftemp": { "name": "Surface Temp Over Sea Ice", "unit": "Celsius", "scale": [-5, 30], "equation": "iicesurftemp - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "quantum": "hour" },
+            "isnowvol": { "name": "Snow Volume", "unit": "cm", "scale": [0, 10], "quantum": "hour"},
+            "itmecrty": { "name": "Sea Ice Y Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
+            "itzocrtx": { "name": "Sea Ice X Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
+            "itzocrtx,itmecrty": { "name": "Sea Ice Velocity", "unit": "m/s", "scale": [-1, 1], "quantum": "hour" },
+            "iicestrength": { "name": "Compressive Ice Strength", "unit": "Nm-1", "scale": [-1, 1], "quantum": "hour" },
+            "iicepressure": { "name": "Internal Ice Pressure", "unit": "Nm-1", "scale": [-1, 1], "quantum": "hour" }
         }
     },
     "giops_reanalysis_surface": {
@@ -402,30 +408,57 @@
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-Surface.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "variables": {
-            "east_vel": {
-                "envtype": "ocean",
+            "vomecrtn": {
+                "hide": "false",
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                "zero_centered": "true"
+            },
+            "vozocrte": {
+                "hide": "false",
                 "name": "Water East Velocity",
-                "scale": [-3, 3],
+                "scale": [
+                    -3,
+                    3
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                "zero_centered": "true"
             },
-            "ice_east_vel": {
-                "envtype": "ice",
+            "iicevele": {
                 "name": "Sea Ice East Velocity",
-                "scale": [-1, 1],
+                "scale": [
+                    -1,
+                    1
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "zero_centered": "true",
+                "equation": "itzocrtx * cos_alpha - itmecrty * sin_alpha",
+                "hide": "false"
             },
-            "ice_north_vel": {
-                "envtype": "ice",
+            "iiceveln": {
                 "name": "Sea Ice North Velocity",
-                "scale": [-1, 1],
+                "scale": [
+                    -1,
+                    1
+                ],
                 "scale_factor": 1,
                 "unit": "m/s",
-                "hide": "true"
+                "zero_centered": "true",
+                "equation": "itzocrtx * sin_alpha + itmecrty * cos_alpha",
+                "hide": "false"
             },
             "iiceconc": {
                 "envtype": "ice",
@@ -515,17 +548,6 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m/s"
-            },
-            "north_vel": {
-                "envtype": "ocean",
-                "name": "Water North Velocity",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "hide": "true"
             },
             "sokaraml": {
                 "envtype": "ocean",
@@ -623,6 +645,9 @@
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Daily-3D.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "variables": {
             "vozocrtx": {
                 "envtype": "ocean",
@@ -644,6 +669,30 @@
                 "unit": "m/s",
                 "scale": [0, 3]
             },
+            "vomecrtn": {
+                "hide": "false",
+                "name": "Water North Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                "zero_centered": "true"
+            },
+            "vozocrte": {
+                "hide": "false",
+                "name": "Water East Velocity",
+                "scale": [
+                    -3,
+                    3
+                ],
+                "scale_factor": 1,
+                "unit": "m/s",
+                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                "zero_centered": "true"
+            },
             "votemper": {
                 "envtype": "ocean",
                 "name": "Temperature",
@@ -658,7 +707,11 @@
                 "unit": "PSU",
                 "scale": [30, 40]
             },
-            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" },
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"}        
         }
     },
     "riops_hourly_surface": {
@@ -670,6 +723,8 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "enabled": true,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "attribution": "RIOPS Values from CONCEPTS",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "variables": {
@@ -784,6 +839,8 @@
         "enabled": true,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Values from CONCEPTS",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
         "variables": {
             "vozocrtx": {
@@ -814,18 +871,16 @@
                 "unit": "PSU",
                 "scale": [30, 40]
             },
-            "sspeed": { 
-                "envtype": "ocean",
-                "name": "Speed of Sound", 
-                "scale": [1400, 1600],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "equation": "sspeed(depth, latitude, vosaline, votemper - 273.15)"
+            "sspeed": { "name": "Speed of Sound", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" },
+            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "sspeedmin(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "criticaldepth": {"name": "Critical Depth (BETA)", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"},
+            "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, longitude, ~votemper - 273.15, ~vosaline)"}            
             }
-        }
     },
     "riops_monthly_surface": {
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-Surface.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "name": "RIOPS Monthly Average (Surface)",
         "envtype": ["ocean", "ice"],
         "quantum": "month",
@@ -834,8 +889,9 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Daily Averages from CONCEPTS",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
-
         "variables": {
                 "vozocrtx": {
                     "envtype": "ocean",
@@ -856,6 +912,54 @@
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3]
+                },
+                "vomecrtn": {
+                    "hide": "false",
+                    "name": "Water North Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                    "zero_centered": "true"
+                },
+                "vozocrte": {
+                    "hide": "false",
+                    "name": "Water East Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                    "zero_centered": "true"
+                },
+                "iicevele": {
+                    "name": "Sea Ice East Velocity",
+                    "scale": [
+                        -1,
+                        1
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "zero_centered": "true",
+                    "equation": "itzocrtx * cos_alpha - itmecrty * sin_alpha",
+                    "hide": "false"
+                },
+                "iiceveln": {
+                    "name": "Sea Ice North Velocity",
+                    "scale": [
+                        -1,
+                        1
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "zero_centered": "true",
+                    "equation": "itzocrtx * sin_alpha + itmecrty * cos_alpha",
+                    "hide": "false"
                 },
                 "votemper": {
                     "envtype": "ocean",
@@ -953,6 +1057,7 @@
     "riops_monthly_3d": {
         "envtype": ["ocean"],
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-3D.sqlite3",
+        "grid_angle_file_url": "/data/grids/riops/grid_angle.nc",
         "name": "RIOPS Monthly Average (3D)",
         "quantum": "month",
         "type": "historical",
@@ -960,8 +1065,9 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Daily Averages from CONCEPTS",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "help": "Regional Ice Ocean Prediction System         <ul>             <li>North Atlantic and Arctic</li>             <li>Tri-polar ORCA grid 1/12° resolution</li>             <li>50 vertical z-levels</li>             <li>Available as daily values on 3 hr intervals from 00:00 (May 28, 2016 to present)</li>             <li>Variables Available:                 <ul>                     <li>Depth-Integrated Sea Ice Strength</li>                     <li>Depth-Integrated Internal Sea Ice Pressure</li>                     <li>Ocean Mixed Layer Depth Based on Density Criterion</li>                     <li>Sea Ice Area Fraction</li>                     <li>Sea Ice Volume Per Unit Grid Cell Area</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Ice East Velocity</li>                     <li>Sea Ice North Velocity</li>                     <li>Sea Ice X Velocity</li>                       <ul>                                                                              <li>ice velocity along model x grid lines</li>                       </ul>                     <li>Sea Ice Y Velocity</li>                       <ul>                           <li>ice velocity along model y grid lines</li>                       </ul>                     <li>Sea Surface Height Above Geoid</li>                     <li>Sea Water Potential Temperature</li>                     <li>Sea Water Salinity</li>                     <li>Sea Water Velocity</li>                     <li>Sea Water East Velocity</li>                     <li>Sea Water North Velocity</li>                     <li>Sea Water X Velocity</li>                       <ul>                          <li>water velocity along model x grid lines</li>                       </ul>                     <li>Sea Water Y Velocity</li>                       <ul>                          <li>water velocity along model y grid lines</li>                       </ul>                     <li>Surface Temperature Of Snow Over Sea Ice Or Bare Sea Ice</li>                     <li>Turbocline Depth</li>                     <li>Volume Of Snow On Sea Ice Per Unit Grid Cell Area</li>                 </ul>             </li>         </ul>",
-
         "variables": {
                 "vozocrtx": {
                     "envtype": "ocean",
@@ -982,6 +1088,30 @@
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3]
+                },
+                "vomecrtn": {
+                    "hide": "false",
+                    "name": "Water North Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
+                    "zero_centered": "true"
+                },
+                "vozocrte": {
+                    "hide": "false",
+                    "name": "Water East Velocity",
+                    "scale": [
+                        -3,
+                        3
+                    ],
+                    "scale_factor": 1,
+                    "unit": "m/s",
+                    "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
+                    "zero_centered": "true"
                 },
                 "votemper": {
                     "envtype": "ocean",

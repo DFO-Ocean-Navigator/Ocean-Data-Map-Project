@@ -28,6 +28,7 @@ from data.sqlite_database import SQLiteDatabase
 from data.utils import timestamp_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
+from oceannavigator.dataset_config import DatasetConfig
 from utils.errors import ServerError
 
 
@@ -42,6 +43,9 @@ class NetCDFData(Data):
         self._time_variable: xr.IndexVariable = None
         self._meta_only: bool = kwargs.get('meta_only', False)
         self._dataset_open: bool = False
+        self._dataset_key: str = kwargs.get('dataset_key')
+        self._dataset_config: DatasetConfig = DatasetConfig(
+            self._dataset_key)
 
         super(NetCDFData, self).__init__(url)
 
@@ -49,17 +53,17 @@ class NetCDFData(Data):
         if not self._meta_only:
             # Don't decode times since we do it anyways.
             decode_times = False
-            
+
             if self._nc_files:
                 self._dataset = xr.open_mfdataset(
                     self._nc_files, decode_times=decode_times)
             else:
                 self._dataset = xr.open_dataset(
                     self.url, decode_times=decode_times)
-            
+
             if self._grid_angle_file_url:
                 angle_file = xr.open_mfdataset(
-                    self._grid_angle_file_url, drop_variables=['nav_lat', 'nav_lon'])
+                    self._grid_angle_file_url, drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key])
                 self._dataset = self._dataset.merge(angle_file)
                 angle_file.close()
 
