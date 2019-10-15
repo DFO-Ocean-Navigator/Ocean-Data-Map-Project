@@ -146,7 +146,7 @@
                 "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
                 "zero_centered": "true"
             },
-            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
+            "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
             "divergence": {
                 "envtype": "ocean",
                 "hide": "false",
@@ -276,7 +276,7 @@
         "variables": {
             "vozocrtx": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "vomecrty": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
+            "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "scale_factor": 1, "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)" },
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
             "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
