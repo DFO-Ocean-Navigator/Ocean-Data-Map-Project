@@ -27,7 +27,7 @@ export default class SelectMapLayer extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         if (prevProps !== this.props) {
             this.setState({
-                layers: this.props.map.getLayers()
+                layers: this.props.map.map.getLayers()
             })
         }
     }
@@ -37,9 +37,9 @@ export default class SelectMapLayer extends React.Component {
         let buttons = undefined;
 
 
-        console.warn("MAP: ", this.props.map)
-        if (this.props.map !== undefined) {
-            console.warn("MAP 2: ", this.props.map)
+        console.warn("MAP: ", this.props.map.map)
+        if (this.props.map.map !== undefined) {
+            console.warn("MAP 2: ", this.props.map.map)
             //let layers = this.props.map.getLayers();
             let layers = this.state.layers
             console.warn("LAYERS: ", layers)
