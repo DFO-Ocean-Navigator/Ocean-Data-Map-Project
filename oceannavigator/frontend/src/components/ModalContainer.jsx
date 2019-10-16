@@ -158,6 +158,7 @@ export default class ModalContainer extends React.Component {
         case "class4":
           modalContent = (
             <Class4Window
+              dataset={this.state.data.dataset}
               class4id={this.props.class4}
               init={this.props.init}
               action={this.props.action}

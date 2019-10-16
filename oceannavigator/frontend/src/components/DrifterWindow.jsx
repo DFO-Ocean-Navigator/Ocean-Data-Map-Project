@@ -57,6 +57,13 @@ export default class DrifterWindow extends React.Component {
         console.error(xhr.url, status, err.toString());
       }.bind(this)
     });
+    this.updateData(this.props.data);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.data !== this.props.data) {
+      this.updateData(this.props.data)
+    }
   }
 
   populateVariables(dataset) {
@@ -97,38 +104,20 @@ export default class DrifterWindow extends React.Component {
     });
   }
 
-  updateData(selected) {
-    selected = selected.split(',')
-    let data = this.props.data
-
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
-
-    if (selected.length > 4) {
-      for (let v = 3; v < selected.length; v=v+1) {
-        if (variable === '') {
-          variable = selected[v]
-        } else {
-          variable = variable + ',' + selected[v]  
-        }
-      }
-    } else {
-      variable = [selected[3]]
-    }
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
+  updateData(data) {
+    
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
     //let time = data[layer][index][dataset][variable].time
     //console.warn("TIME: ", time)
     //time = moment.tz(time, 'GMT')
     //console.warn("MOMENT: ", time)
     //time.setUTCMonth(time.getUTCMonth() - 1)
     this.setState({
-      layer: layer,
-      index: index,
       dataset: dataset,
       variable: variable,
 
