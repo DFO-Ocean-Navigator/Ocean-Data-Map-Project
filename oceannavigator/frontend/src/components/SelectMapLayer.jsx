@@ -22,7 +22,7 @@ export default class SelectMapLayer extends React.Component {
 
     render () {
 
-        let buttons = undefined;
+        let buttons = [];
 
 
         console.warn("MAP: ", this.props.map.map)
