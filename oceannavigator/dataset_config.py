@@ -12,7 +12,6 @@ class DatasetConfig():
     __config = None
 
     def __init__(self, dataset: str):
-        print("DATASET: ", dataset)
         self._config = DatasetConfig._get_dataset_config()[dataset]
         self._dataset_key: str = dataset
 
