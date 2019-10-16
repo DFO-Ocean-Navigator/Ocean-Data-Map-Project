@@ -20,14 +20,14 @@ export default class SelectMapLayer extends React.Component {
 
 
         this.state = {
-            layers: this.props.map.map.getLayers()
+            layers: this.props.map.map.getLayers().getArray()
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps !== this.props) {
             this.setState({
-                layers: this.props.map.map.getLayers()
+                layers: this.props.map.map.getLayers().getArray()
             })
         }
     }
