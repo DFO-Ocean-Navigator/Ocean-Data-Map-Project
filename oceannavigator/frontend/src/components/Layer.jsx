@@ -182,6 +182,7 @@ export default class Layer extends React.Component {
     
   */
   sendData(update) {
+    return
     console.warn("SEND DATA")
     let data
     if (this.state.current_map in this.props.state.data) {

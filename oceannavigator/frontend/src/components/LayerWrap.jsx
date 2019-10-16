@@ -61,7 +61,7 @@ export default class LayerWrap extends React.Component {
     //     }
     //   }
     // }
-    
+    return
     let new_timeSources = jQuery.extend({}, this.props.state.timeSources)
 
     if (new_timeSources !== undefined && new_timeSources[map] !== undefined && new_timeSources[map][this.props.layerType] !== undefined) {
@@ -97,7 +97,7 @@ removeData(map, dataset, variable, idx) {
   //     }
   //   }
   // }
-
+  return
   if (map === undefined || dataset === undefined || variable === undefined || idx === undefined) {
     return
   }
