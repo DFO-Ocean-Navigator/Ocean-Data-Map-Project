@@ -18,18 +18,6 @@ export default class SelectMapLayer extends React.Component {
     constructor (props) {
         super (props)
 
-
-        this.state = {
-            layers: this.props.map.map.getLayers().getArray()
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps !== this.props) {
-            this.setState({
-                layers: this.props.map.map.getLayers().getArray()
-            })
-        }
     }
 
     render () {
@@ -40,9 +28,9 @@ export default class SelectMapLayer extends React.Component {
         console.warn("MAP: ", this.props.map.map)
         if (this.props.map.map !== undefined) {
             console.warn("MAP 2: ", this.props.map.map)
-            //let layers = this.props.map.getLayers();
-            let layers = this.state.layers
+            let layers = this.props.map.map.getLayers().getArray();
             for (let x in layers) {
+                console.warn("LAYER: ", layers[x])
                 let layer = layers[x]._values
                 if ('data' in layer) {
                     console.warn("LAYER: ", layer)
