@@ -82,7 +82,7 @@ export default class ModalContainer extends React.Component {
         case "line":
           modalContent = (
             <LineWindow
-              data={data}   // Non compare data
+              data={this.state.data}   // Non compare data
               data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
               //dataset_0={this.state.dataset}
               //quantum={this.state.quantum}
@@ -112,7 +112,7 @@ export default class ModalContainer extends React.Component {
         case "area":
           modalContent = (
             <AreaWindow
-              data={data}
+              data={this.state.data}
               data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
               //dataset_0={this.state}
               area={this.props.area}
@@ -139,7 +139,7 @@ export default class ModalContainer extends React.Component {
         case "drifter":
           modalContent = (
             <DrifterWindow
-              data={data}
+              data={this.state.data}
               //dataset={this.state.dataset}
               //quantum={this.state.dataset_quantum}
               drifter={this.props.drifter}

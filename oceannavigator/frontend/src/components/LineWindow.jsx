@@ -67,7 +67,15 @@ export default class LineWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
+    this.updateData(this.props.data)
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props) {
+      this.updateData(this.props.data)
+    }
+  }
+
 
   componentWillUnmount() {
     this._mounted = false;
@@ -88,34 +96,17 @@ export default class LineWindow extends React.Component {
   /*
     
   */
-  updateData(selected) {
-    selected = selected.split(',')
-    let data = this.props.data
-
-    // Initialize non compare data
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
-
-    if (selected.length > 4) {
-      for (let v = 3; v < selected.length; v = v + 1) {
-        if (variable === '') {
-          variable = selected[v]
-        } else {
-          variable = variable + ',' + selected[v]
-        }
-      }
-    } else {
-      variable = [selected[3]]
-    }
+  updateData(data) {
     
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
+    let time = data.time
     let compare_time = moment(time.valueOf())
+    
     compare_time.tz('GMT')
     time = moment(time.valueOf())
     time.tz('GMT')
@@ -143,13 +134,13 @@ export default class LineWindow extends React.Component {
         })
     } else {
 
-      let compare_display = data[layer][index][dataset][variable].display
-      let compare_colourmap = data[layer][index][dataset][variable].colourmap
-      let compare_quantum = data[layer][index][dataset][variable].quantum
-      let compare_scale = data[layer][index][dataset][variable].scale
-      compare_time = data[layer][index][dataset][variable].time
+      let compare_display = data.display
+      let compare_colourmap = data.colourmap
+      let compare_quantum = data.quantum
+      let compare_scale = data.scale
+      compare_time = data.time
       
-      let depth = data[layer][index][dataset][variable].depth
+      let depth = data.depth
       
       let data_compare = {
         layer: layer,
@@ -388,10 +379,6 @@ export default class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
-    let dataSelection = <DataSelection
-      data={this.props.data}
-      localUpdate={this.updateData}
-    ></DataSelection>
     let applyChanges1 = <Button
         key='1'
         onClick={this.updatePlot}
@@ -669,16 +656,6 @@ export default class LineWindow extends React.Component {
         <Row>
           
           <Col lg={2}>
-          <Panel
-              key='data_selection'
-              id='data_selection'
-              collapsible
-              defaultExpanded
-              header={_("Layer")}
-              bsStyle='primary'
-            >
-              {dataSelection}
-            </Panel>
             {leftInputs}
           </Col>
           <Col lg={8}>
