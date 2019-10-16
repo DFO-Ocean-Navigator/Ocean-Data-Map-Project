@@ -1,5 +1,5 @@
 import React from 'react';
-
+import * as ol from "ol";
 
 export default class SelectMapLayer extends React.Component {
     constructor (props) {
