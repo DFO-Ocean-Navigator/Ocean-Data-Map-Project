@@ -18,7 +18,6 @@ import {Button} from 'react-bootstrap';
 export default class SelectMapLayer extends React.Component {
     constructor (props) {
         super (props)
-
     }
 
     render () {

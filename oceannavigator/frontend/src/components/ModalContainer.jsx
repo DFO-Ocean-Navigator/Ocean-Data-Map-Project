@@ -28,6 +28,8 @@ export default class ModalContainer extends React.Component {
     this.state = {
       selected: false
     }
+
+    this.selectLayer = this.selectLayer.bind(this);
   }
 
   selectLayer(data) {
