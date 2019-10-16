@@ -13,6 +13,7 @@ import * as olinteraction from "ol/interaction";
 import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olextent from "ol/extent";
+import {Button} from 'react-bootstrap';
 
 export default class SelectMapLayer extends React.Component {
     constructor (props) {
