@@ -87,18 +87,15 @@ export default class PointWindow extends React.Component {
     this._mounted = true;
     // If an observation point has been picked, default to the
     // Observation tab.
-    if (this.props.point[0][2] !== undefined) {
-      this.setState({
-        selected: TabEnum.OBSERVATION,
-      });
+    
+    this.updateData(this.props.data);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.data !== this.props.data) {
+      this.updateData(this.props.data)
     }
-
   }
-
-  componentWillUpdate(prevProps, prevState) {
-    return
-  }
-
   componentWillUnmount() {
     this._mounted = false;
   }
@@ -189,36 +186,17 @@ export default class PointWindow extends React.Component {
     }
   }
 
-  updateData(selected) {
-    console.warn("UPDATE DATE IN POINT: ", selected);
-    selected = selected.split(',')
-    let data = this.props.data
+  updateData(data) {
 
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    let variable = ''
-
-    if (selected.length > 4) {
-      for (let v = 3; v < selected.length; v=v+1) {
-        if (variable === '') {
-          variable = selected[v]
-        } else {
-          variable = variable + ',' + selected[v]  
-        }
-      }
-    } else {
-      variable = [selected[3]]
-    }
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
+    let time = data.time
     
     this.setState({
-      layer: layer,
-      index: index,
       dataset: dataset,
       variable: variable,
 

@@ -34,6 +34,7 @@ export default class ModalContainer extends React.Component {
 
   selectLayer(data) {
     this.setState({
+      data: data,
       selected: true
     })
   }
@@ -43,7 +44,7 @@ export default class ModalContainer extends React.Component {
     let layer = Object.keys(this.props.data)[0]
     let modalTitle = ''
     let modalContent = ''
-    let data = this.props.data['left']
+    //let data = this.props.data['left']
 
 
     if (this.state.selected) {
@@ -52,7 +53,7 @@ export default class ModalContainer extends React.Component {
         case "point":
           modalContent = (
             <PointWindow
-              data={data}  // Non compare data
+              data={this.state.data}  // Non compare data
               data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
               //dataset={this.props.data[layer]['dataset']}
               //quantum={this.props.data[layer]['quantum']}

@@ -893,7 +893,9 @@ export default class Layer extends React.Component {
       time: this.props.state.timestamps[time_access],
       quantum: this.state.current_quantum,
       scale: this.state.current_scale,
-      depth: this.state.current_depth
+      depth: this.state.current_depth,
+      display: this.state.current_display,
+      colourmap: this.state.current_colourmap
     }
     layer.set('data', data)
 
