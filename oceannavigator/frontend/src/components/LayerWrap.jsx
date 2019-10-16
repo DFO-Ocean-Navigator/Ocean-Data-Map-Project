@@ -104,7 +104,7 @@ removeData(map, dataset, variable, idx) {
 
   let data = this.props.state.data[map][this.props.layerType][idx]
   let full_data
-  if (jQuery.isEmptyObject(data[dataset])) {
+  if (! data.includes(dataset) || jQuery.isEmptyObject(data[dataset])) {
     return
   } else {
     data[dataset] = undefined
