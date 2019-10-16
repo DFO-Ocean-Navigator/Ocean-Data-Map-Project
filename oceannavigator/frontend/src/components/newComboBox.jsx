@@ -63,7 +63,7 @@ export default class NewComboBox extends React.Component {
       } else if (this.props.envType !== undefined) {
         if (this.props.envType === elem_obj['envtype']) {
           if (elem_obj['hide'] === undefined || !elem_obj['hide']) {
-
+            console.warn("ELEM OBJ ONE: ", elem_obj)
             id_list.push(elem)
             value_list.push(elem_obj['name'])  
           }
