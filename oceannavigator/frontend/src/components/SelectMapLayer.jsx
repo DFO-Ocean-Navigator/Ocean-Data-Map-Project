@@ -10,7 +10,9 @@ export default class SelectMapLayer extends React.Component {
 
         let buttons = undefined;
 
-        
+        for (let x in this.props.map) {
+            console.warn("X: ", x);
+        }
 
         return (
             <div>
