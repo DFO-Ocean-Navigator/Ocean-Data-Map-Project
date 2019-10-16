@@ -57,20 +57,19 @@ export default class NewComboBox extends React.Component {
     let value_list = []
     for (let elem in this.props.data) {
       let elem_obj = this.props.data[elem]
-      console.warn("ELEM_OBJ: ", elem_obj);
       if (elem_obj === undefined) {
         console.error("Data empty or malformed")
       } else if (this.props.envType !== undefined) {
         if (this.props.envType === elem_obj['envtype']) {
           if (elem_obj['hide'] === undefined || !elem_obj['hide']) {
-            console.warn("ELEM OBJ ONE: ", elem_obj)
             id_list.push(elem)
             value_list.push(elem_obj['name'])  
           }
         } else if ( this.props.envType.includes(elem_obj['envtype']) && elem_obj['enabled']) {
-          console.warn("ELEM OBJ TWO: ", elem_obj)
           id_list.push(elem)
           value_list.push(elem_obj['name'])
+        } else {
+          console.warn("ELEM OBJ TEST: ", elem_obj)
         }
       } else {
         id_list.push(elem)
