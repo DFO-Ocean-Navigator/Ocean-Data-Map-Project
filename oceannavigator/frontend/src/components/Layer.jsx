@@ -887,6 +887,16 @@ export default class Layer extends React.Component {
     
     layer.setSource(newSource)  // Apply the new Changes to the layer
     
+    let data = {
+      dataset: this.state.current_dataset,
+      variable: this.state.current_variable,
+      time: this.props.state.timestamps[time_access],
+      quantum: this.state.current_quantum,
+      scale: this.state.current_scale,
+      depth: this.state.current_depth
+    }
+    layer.set('data', data)
+
     // Create Scale Bar and Add to Layer
     let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
     {this.state.icons[this.props.layerType]}
