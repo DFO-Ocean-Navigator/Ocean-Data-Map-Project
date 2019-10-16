@@ -110,7 +110,13 @@ export default class AreaWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    //this.updatePlot();
+    this.updateData(this.props.data)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.data !== this.props.data) {
+      this.updateData(this.props.data);
+    }
   }
 
   componentWillUnmount() {
@@ -158,46 +164,25 @@ export default class AreaWindow extends React.Component {
   /*
     If selected_right is null, empty, or undefined, will only load left map data
   */
-  updateData(selected_left, selected_right) {
-    let selected = selected_left.split(',')
-    let data = this.props.data
-
-    // Initialize non compare data
-    let layer = selected[0]
-    let index = selected[1]
-    let dataset = selected[2]
-    //let variable = [selected[3]]
-    let variable = ''
-
-    if (selected.length > 4) {
-      for (let v = 3; v < selected.length; v = v + 1) {
-        if (variable === '') {
-          variable = selected[v]
-        } else {
-          variable = variable + ',' + selected[v]
-        }
-      }
-    } else {
-      variable = [selected[3]]
-    }
-
-    let display = data[layer][index][dataset][variable].display
-    let colourmap = data[layer][index][dataset][variable].colourmap
-    let quantum = data[layer][index][dataset][variable].quantum
-    let scale = data[layer][index][dataset][variable].scale
-    let time = data[layer][index][dataset][variable].time
+  updateData(data) {
+  
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
+    let time = data.time
     let compare_time = moment(time.valueOf())
     compare_time.tz('GMT')
     time = moment(time.valueOf())
     time.tz('GMT')
     let output_starttime = moment(time.valueOf())
     let output_endtime = moment(time.valueOf())
-    let depth = data[layer][index][dataset][variable].depth
+    let depth = data.depth
 
     if (jQuery.isEmptyObject(this.props.data_compare)) {
       let data_compare = {
-        layer: layer,
-        index: index,
         dataset: dataset,
         variable: variable,
         display: display,
@@ -213,15 +198,13 @@ export default class AreaWindow extends React.Component {
         output_endtime: output_endtime,
       })
     } else {
-      let compare_display = data[layer][index][dataset][variable].display
-      let compare_colourmap = data[layer][index][dataset][variable].colourmap
-      let compare_quantum = data[layer][index][dataset][variable].quantum
-      let compare_scale = data[layer][index][dataset][variable].scale
-      compare_time = data[layer][index][dataset][variable].time
-      let depth = data[layer][index][dataset][variable].depth
+      let compare_display = data.display
+      let compare_colourmap = data.colourmap
+      let compare_quantum = data.quantum
+      let compare_scale = data.scale
+      compare_time = data.time
+      let depth = data.depth
       let data_compare = {
-        layer: layer,
-        index: index,
         dataset: dataset,
         depth: depth,
         variable: variable,
@@ -241,8 +224,6 @@ export default class AreaWindow extends React.Component {
 
     this.setState({
       data: {
-        layer: layer,
-        index: index,
         dataset: dataset,
         variable: variable,
 
@@ -577,11 +558,7 @@ export default class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
-    let dataSelection = <DataSelection
-      data={this.props.data}
-      localUpdate={this.updateData}
-    ></DataSelection>
-
+    
     let contour_label = undefined;
     if (this.state.contour.variable != '') {
       contour_label = <Checkbox
@@ -1055,16 +1032,6 @@ export default class AreaWindow extends React.Component {
           </Nav>
           <Row>
             <Col lg={3}>
-              <Panel
-                key='data_selection'
-                id='data_selection'
-                collapsible
-                defaultExpanded
-                header={_("Layer")}
-                bsStyle='primary'
-              >
-                {dataSelection}
-              </Panel>
               {leftInputs}
             </Col>
             <Col lg={6}>
