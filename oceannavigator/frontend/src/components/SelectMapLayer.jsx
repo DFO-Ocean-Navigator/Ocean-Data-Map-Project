@@ -20,7 +20,7 @@ export default class SelectMapLayer extends React.Component {
 
 
         this.state = {
-            layers: this.props.map.getLayers()
+            layers: this.props.map.map.getLayers()
         }
     }
 
