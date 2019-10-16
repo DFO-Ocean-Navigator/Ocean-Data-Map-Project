@@ -17,6 +17,19 @@ import * as olextent from "ol/extent";
 export default class SelectMapLayer extends React.Component {
     constructor (props) {
         super (props)
+
+
+        this.state = {
+            layers: this.props.map.getLayers()
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps !== this.props) {
+            this.setState({
+                layers: this.props.map.getLayers()
+            })
+        }
     }
 
     render () {
@@ -27,7 +40,8 @@ export default class SelectMapLayer extends React.Component {
         console.warn("MAP: ", this.props.map)
         if (this.props.map !== undefined) {
             console.warn("MAP 2: ", this.props.map)
-            let layers = this.props.map.getLayers();
+            //let layers = this.props.map.getLayers();
+            let layers = this.state.layers
             console.warn("LAYERS: ", layers)
             for (let x in layers) {
                 console.warn("X: ", x);
