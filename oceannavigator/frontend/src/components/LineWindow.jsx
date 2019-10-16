@@ -115,8 +115,6 @@ export default class LineWindow extends React.Component {
     
     if (jQuery.isEmptyObject(this.props.data_compare)) {
         let data_compare = {
-          layer: layer,
-          index: index,
           dataset: dataset,
           variable: variable,
     
@@ -143,8 +141,6 @@ export default class LineWindow extends React.Component {
       let depth = data.depth
       
       let data_compare = {
-        layer: layer,
-        index: index,
         dataset: dataset,
         depth: depth,
         variable: variable,
@@ -164,8 +160,6 @@ export default class LineWindow extends React.Component {
     
     this.setState({
       data: {
-        layer: layer,
-        index: index,
         dataset: dataset,
         variable: variable,
   
