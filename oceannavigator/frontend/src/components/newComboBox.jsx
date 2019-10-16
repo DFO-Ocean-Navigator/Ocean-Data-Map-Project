@@ -62,12 +62,18 @@ export default class NewComboBox extends React.Component {
       } else if (this.props.envType !== undefined) {
         if (this.props.envType === elem_obj['envtype']) {
           if (elem_obj['hide'] === undefined || !elem_obj['hide']) {
+            console.warn("ELEM OBJ ONE: ", elem_obj)
             id_list.push(elem)
             value_list.push(elem_obj['name'])  
+          } else {
+            console.warn("ELEM OBJ FOUR: ", elem_obj)
           }
         } else if ( elem_obj['envtype'].includes(this.props.envType) && elem_obj['enabled']) {
+          console.warn("ELEM OBJ TWO: ", elem_obj)
           id_list.push(elem)
           value_list.push(elem_obj['name'])
+        } else {
+          console.warn("ELEM OBJ THREE: ", elem_obj)
         }
       } else {
         id_list.push(elem)
