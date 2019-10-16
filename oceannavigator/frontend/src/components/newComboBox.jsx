@@ -65,7 +65,7 @@ export default class NewComboBox extends React.Component {
             id_list.push(elem)
             value_list.push(elem_obj['name'])  
           }
-        } else if ( this.props.envType.includes(elem_obj['envtype']) && elem_obj['enabled']) {
+        } else if ( elem_obj['envtype'].includes(this.props.envType) && elem_obj['enabled']) {
           id_list.push(elem)
           value_list.push(elem_obj['name'])
         } else {
