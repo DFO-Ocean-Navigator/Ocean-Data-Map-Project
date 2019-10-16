@@ -446,10 +446,10 @@ export default class PointWindow extends React.Component {
     _("Saved Image Size");
 
 
-    let dataSelection = <DataSelection
+    /*let dataSelection = <DataSelection
       data={this.props.data}
       localUpdate={this.updateData}
-    ></DataSelection>
+    ></DataSelection>*/
 
     // Rendered across all tabs
     if (this.props.point.length === 1) {

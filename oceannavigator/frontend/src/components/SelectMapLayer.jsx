@@ -37,7 +37,7 @@ export default class SelectMapLayer extends React.Component {
                     console.warn("LAYER: ", layer)
                     buttons.push(
                     <Button
-                        onClick={() => console.warn("BUTTON CLICKED")}
+                        onClick={() => this.props.select(layer.data)}
                     >
                         {layer.data.variable}
                     </Button>)

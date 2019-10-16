@@ -30,8 +30,10 @@ export default class ModalContainer extends React.Component {
     }
   }
 
-  selectLayer(layers) {
-
+  selectLayer(data) {
+    this.setState({
+      selected: true
+    })
   }
 
   render() {
@@ -165,6 +167,7 @@ export default class ModalContainer extends React.Component {
     } else {
       modalContent = <SelectMapLayer
         map={this.props.map}
+        select={this.selectLayer}
       ></SelectMapLayer>
     }
 
