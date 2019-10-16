@@ -413,6 +413,7 @@
         "lon_var_key": "longitude",
         "variables": {
             "vomecrtn": {
+                "envtype": "ocean",
                 "hide": "false",
                 "name": "Water North Velocity",
                 "scale": [
@@ -425,6 +426,7 @@
                 "zero_centered": "true"
             },
             "vozocrte": {
+                "envtype": "ocean",
                 "hide": "false",
                 "name": "Water East Velocity",
                 "scale": [
@@ -437,6 +439,7 @@
                 "zero_centered": "true"
             },
             "iicevele": {
+                "envtype": "ocean",
                 "name": "Sea Ice East Velocity",
                 "scale": [
                     -1,
@@ -449,6 +452,7 @@
                 "hide": "false"
             },
             "iiceveln": {
+                "envtype": "ocean",
                 "name": "Sea Ice North Velocity",
                 "scale": [
                     -1,
@@ -670,6 +674,7 @@
                 "scale": [0, 3]
             },
             "vomecrtn": {
+                "envtype": "ocean",
                 "hide": "false",
                 "name": "Water North Velocity",
                 "scale": [
@@ -682,6 +687,7 @@
                 "zero_centered": "true"
             },
             "vozocrte": {
+                "envtype": "ocean",
                 "hide": "false",
                 "name": "Water East Velocity",
                 "scale": [
