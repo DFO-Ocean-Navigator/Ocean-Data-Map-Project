@@ -39,7 +39,7 @@ export default class SelectMapLayer extends React.Component {
                     <Button
                         onClick={() => console.warn("BUTTON CLICKED")}
                     >
-                        {data.variable}
+                        {layer.data.variable}
                     </Button>)
                 }
                 console.warn("X: ", x);
