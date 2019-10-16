@@ -10,12 +10,16 @@ export default class SelectMapLayer extends React.Component {
 
         let buttons = undefined;
 
+
         console.warn("MAP: ", this.props.map)
-        let layers = this.props.map.getLayers();
-        console.warn("LAYERS: ", layers)
-        for (let x in layers) {
-            console.warn("X: ", x);
+        if (this.props.map !== undefined) {
+            let layers = this.props.map.getLayers();
+            console.warn("LAYERS: ", layers)
+            for (let x in layers) {
+                console.warn("X: ", x);
+            }
         }
+        
 
         return (
             <div>
