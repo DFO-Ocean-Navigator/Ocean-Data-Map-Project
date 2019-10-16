@@ -853,16 +853,6 @@ export default class PointWindow extends React.Component {
         </Nav>
         <Row>
           <Col lg={3}>
-          <Panel
-              key='data_selection'
-              id='data_selection'
-              collapsible
-              defaultExpanded
-              header={_("Layer")}
-              bsStyle='primary'
-            >
-              {dataSelection}
-            </Panel>
             <Panel
               key='global_settings'
               id='global_settings'
