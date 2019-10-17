@@ -166,10 +166,10 @@ export default class OceanNavigator extends React.Component {
       } catch (err) {
         console.error(err);
       }
-      let url = window.location.origin;
-      if (window.location.path != undefined) {
-        url += window.location.path;
-      }
+      //let url = window.location.origin;
+      //if (window.location.path != undefined) {
+      //  url += window.location.path;
+      //}
       //window.history.replaceState(null, null, url);
     }
 
