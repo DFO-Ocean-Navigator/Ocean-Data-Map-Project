@@ -755,6 +755,7 @@ export default class OceanNavigator extends React.Component {
     }
 
     let modelcontainer = [];
+    console.warn("MAP COMPONENT: ", this.mapComponent)
     if (this.mapComponent !== undefined || this.mapComponent !== null) {
       modelcontainer = <ModalContainer
         modal={this.state.modal}
