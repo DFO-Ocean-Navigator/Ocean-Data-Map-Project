@@ -934,7 +934,7 @@ export default class Map extends React.PureComponent {
         let compare = false
         for (layer in layers) {
           console.warn("LAYER: ", layer)
-          if ('data' in layer.value_) {
+          if ('data' in layers[layer].value_) {
             console.warn("COMPARE LAYER EXISTS")
             compare = true;
             break
