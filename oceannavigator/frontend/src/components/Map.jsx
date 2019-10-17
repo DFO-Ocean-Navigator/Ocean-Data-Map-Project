@@ -157,11 +157,15 @@ export default class Map extends React.PureComponent {
     this.multiPoint = this.multiPoint.bind(this);
     this.drawing = false;
 
+    style = {}
+    if (this.props.mapIdx === 'right') {
+      style = { display: "none" }
+    }
     this.state = {
       location: [0, 90],
       contactInfo: false,
       contact: null,
-      style: {}
+      style: style
     };
 
 
@@ -524,7 +528,7 @@ export default class Map extends React.PureComponent {
       }
     }.bind(this));
 
-    
+
     // Info popup balloon
     this.map.on("singleclick", function (e) {
       let toRender = this.state.toRender
@@ -538,17 +542,17 @@ export default class Map extends React.PureComponent {
       toRender = []
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
-        function(feature, layer) {
+        function (feature, layer) {
 
           //if (feature.get('identity_name') !== undefined) {
           let click_function = layer.get('singleClick')
           let html = click_function(feature, e.originalEvent)
           if (html !== undefined) {
-            toRender.push(html);  
+            toRender.push(html);
           }
         }
       );
-      const coord = e.coordinate; 
+      const coord = e.coordinate;
 
       if (toRender.length !== 0) {
         this.setState({
@@ -558,8 +562,8 @@ export default class Map extends React.PureComponent {
         this.contactInfo = true
       }
 
-        //} 
-      
+      //} 
+
       if (this.infoRequest !== undefined) {
         this.infoRequest.abort();
       }
@@ -572,7 +576,7 @@ export default class Map extends React.PureComponent {
       }
       //self.toRender.push(<div>"Loading..."</div>)
       //this.infoPopupContent.innerHTML = _("Loading...");
-      
+
       this.infoOverlay.setPosition(coord); // Set balloon position
       let component = []
       let text = "Location: " + location[0].toFixed(4) + ", " + location[1].toFixed(4);
@@ -596,31 +600,31 @@ export default class Map extends React.PureComponent {
                   `/${data[type][index][dataset][variable].depth}` +
                   `/${location[1]},${location[0]}.json`
                 ),
-                success: function(response) {
+                success: function (response) {
                   for (let i = 0; i < response.name.length; ++i) {
                     if (response.value[i] !== "nan") {
-                      text = <p><br/>{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
+                      text = <p><br />{response.name[i] + ": " + response.value[i] + " " + response.units[i]}</p>;
                       toRender.push(text)
                       this.setState({
                         toRender: toRender
                       })
                     }
                   }
-                  
+
                 }.bind(this),
               }).done(
                 () => {
                   //components.push("</p>");
                   //toRender.push(components)
-                  
+
                 }
-              );        
+              );
             }
           }
         }
       }
     }.bind(this));
-    
+
 
     var select = new olinteraction.Select({
       style: function (feat, res) {
@@ -924,21 +928,23 @@ export default class Map extends React.PureComponent {
     } else if (state === 'remove') {
       this.map.removeLayer(layer);
 
-      // Find out if other layers exist
-      layers = this.map.getLayers().getArray();
-      let compare = false
-      for (layer in layers) {
-        console.warn("LAYER: ", layer)
-        if ('data' in layer.value_) {
-          console.warn("COMPARE LAYER EXISTS")
-          compare = true;
-          break
+      if (this.props.mapIdx === 'right') {
+        // Find out if other layers exist
+        layers = this.map.getLayers().getArray();
+        let compare = false
+        for (layer in layers) {
+          console.warn("LAYER: ", layer)
+          if ('data' in layer.value_) {
+            console.warn("COMPARE LAYER EXISTS")
+            compare = true;
+            break
+          }
         }
-      }
-      if (!compare) {
-        this.setState({
-          style: {display: "none"}
-        })
+        if (!compare) {
+          this.setState({
+            style: { display: "none" }
+          })
+        }
       }
     }
     this.setState({
@@ -1410,7 +1416,7 @@ export default class Map extends React.PureComponent {
 
     let timeBar = ''
     let layers = this.map.getLayers().array_;
-  
+
     let layerRearrange = ''
     if ('partner' in this.props) {
       layerRearrange = <div className='layerHierarchy_compare'>
@@ -1457,7 +1463,7 @@ export default class Map extends React.PureComponent {
 
     //this.infoPopupConten = this.toRender
 
-    
+
     return (
       <div className='Map' style={this.state.style}>
         <div ref={(c) => {
