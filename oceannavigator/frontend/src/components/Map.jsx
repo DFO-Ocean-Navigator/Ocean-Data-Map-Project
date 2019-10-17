@@ -157,7 +157,7 @@ export default class Map extends React.PureComponent {
     this.multiPoint = this.multiPoint.bind(this);
     this.drawing = false;
 
-    style = {}
+    let style = {}
     if (this.props.mapIdx === 'right') {
       style = { display: "none" }
     }
