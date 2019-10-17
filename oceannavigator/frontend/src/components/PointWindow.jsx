@@ -87,12 +87,13 @@ export default class PointWindow extends React.Component {
     this._mounted = true;
     // If an observation point has been picked, default to the
     // Observation tab.
-    
-    this.updateData(this.props.data);
+    if (this.props.init === undefined) {
+      this.updateData(this.props.data);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.data !== this.props.data) {
+    if (prevProps.data !== this.props.data && this.props.init === undefined) {
       this.updateData(this.props.data)
     }
   }
