@@ -41,7 +41,6 @@ export default class ModalContainer extends React.Component {
 
   render() {
 
-    let layer = Object.keys(this.props.data)[0]
     let modalTitle = ''
     let modalContent = ''
     //let data = this.props.data['left']
