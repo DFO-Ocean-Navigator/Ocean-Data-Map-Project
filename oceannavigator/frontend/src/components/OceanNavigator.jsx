@@ -137,8 +137,9 @@ export default class OceanNavigator extends React.Component {
       try {
         console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
         const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
-        //$.extend(this.state, querystate);
+        $.extend(this.state, querystate);
 
+        /*
         console.warn("QUERY STATE: ", querystate)
 
         this.state.urlData = {
@@ -160,14 +161,14 @@ export default class OceanNavigator extends React.Component {
         this.state.zoom = querystate.zoom,
         this.state.vectorid = querystate.vectorid,
         this.state.vectortype = querystate.vectortype
-
+        */
       } catch (err) {
         console.error(err);
       }
       let url = window.location.origin;
-      //if (window.location.path != undefined) {
-      //  url += window.location.path;
-      //}
+      if (window.location.path != undefined) {
+        url += window.location.path;
+      }
       window.history.replaceState(null, null, url);
     }
 
