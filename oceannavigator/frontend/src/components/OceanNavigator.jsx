@@ -52,7 +52,7 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
-      data = {},
+      data: {},
       // THIS NEEDS TO BE MOVED
       // Different methods of visualizing the data that have been implemented in python
       // This is for the tiles, not for plotting
