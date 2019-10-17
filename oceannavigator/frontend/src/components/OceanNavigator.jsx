@@ -147,7 +147,7 @@ export default class OceanNavigator extends React.Component {
       if (window.location.path != undefined) {
         url += window.location.path;
       }
-      window.history.replaceState(null, null, url);
+      //window.history.replaceState(null, null, url);
     }
 
     window.onpopstate = function (event) {
