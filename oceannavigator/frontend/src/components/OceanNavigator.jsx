@@ -673,21 +673,22 @@ export default class OceanNavigator extends React.Component {
 
     // Pick which map we need
     let map = null;
-    if ('right' in this.state.data) {
+    if (true){//'right' in this.state.data) {
 
-      const secondState = $.extend(true, {}, this.state);
-      for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
-        const keys = Object.keys(this.state.dataset_1);
-        secondState[keys[i]] = this.state.dataset_1[keys[i]];
-      }
+      //const secondState = $.extend(true, {}, this.state);
+      //for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
+      //  const keys = Object.keys(this.state.dataset_1);
+      //  secondState[keys[i]] = this.state.dataset_1[keys[i]];
+      //}
       map = <div className='multimap'>
         <Map
           ref={(m) => this.mapComponent = m}
           mapIdx='left'
           data={this.state.data['left']}
           timeSources={this.state.timeSources}
+          allSources={this.state.timeSources}
           state={this.state}
-          layers={this.state.layers['left']}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
@@ -699,8 +700,8 @@ export default class OceanNavigator extends React.Component {
           mapIdx='right'
           data={this.state.data['right']}
           timeSources={this.state.timeSources}
-          state={secondState}
-          layers={this.state.layers['right']}
+          state={this.state}
+          layers={this.state.layers}
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
@@ -708,8 +709,7 @@ export default class OceanNavigator extends React.Component {
           options={this.state.options}
         />
       </div>;
-    }
-    else {
+    } else {
       map = <Map
         ref={(m) => this.mapComponent = m}
         mapIdx='left'
