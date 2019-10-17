@@ -752,30 +752,7 @@ export default class OceanNavigator extends React.Component {
 
     }
 
-    let modelcontainer = [];
-    console.warn("MAP COMPONENT: ", this.mapComponent)
-    if (this.mapComponent !== undefined || this.mapComponent !== null) {
-      modelcontainer = <ModalContainer
-        modal={this.state.modal}
-        map={this.mapComponent}
-        urlData={this.state.urlData}
-        //data={this.state.data}
-        data={this.mapComponent}
-        area={this.state.area}
-        names={this.state.names}
-        point={this.state.point}
-        line={this.state.line}
-        drifter={this.state.drifter}
-        showHelp={this.toggleCompareHelp}
-        dataset_compare={this.state.dataset_compare}
-        onUpdate={this.updateState}
-        init={this.state.subquery}
-        class4={this.state.class4}
-        action={this.action}
-        swapViews={this.swapViews}
-        options={this.state.options}
-      ></ModalContainer>
-    }
+    
 
     return (
       <div className='OceanNavigator'>
@@ -811,7 +788,26 @@ export default class OceanNavigator extends React.Component {
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {modelcontainer}
+            <ModalContainer
+              modal={this.state.modal}
+              map={this.mapComponent}
+              urlData={this.state.urlData}
+              //data={this.state.data}
+              data={this.mapComponent}
+              area={this.state.area}
+              names={this.state.names}
+              point={this.state.point}
+              line={this.state.line}
+              drifter={this.state.drifter}
+              showHelp={this.toggleCompareHelp}
+              dataset_compare={this.state.dataset_compare}
+              onUpdate={this.updateState}
+              init={this.state.subquery}
+              class4={this.state.class4}
+              action={this.action}
+              swapViews={this.swapViews}
+              options={this.state.options}
+            ></ModalContainer>
           </Modal.Body>
           <Modal.Footer>
             <Button
@@ -904,7 +900,7 @@ export default class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal 
+        <Modal
           show={this.state.busy}
           dialogClassName='busy-modal'
           backdrop
