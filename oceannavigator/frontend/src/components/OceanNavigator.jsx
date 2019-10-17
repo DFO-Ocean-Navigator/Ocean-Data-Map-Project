@@ -95,7 +95,6 @@ export default class OceanNavigator extends React.Component {
       vectorid: null,
       busy: false, // Controls if the busyModal is visible
       basemap: "topo",
-      urlData: undefined,
       showHelp: false,
       showBugs: false,
       showCompareHelp: false,
