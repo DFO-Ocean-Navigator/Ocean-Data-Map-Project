@@ -137,7 +137,8 @@ export default class OceanNavigator extends React.Component {
       try {
         console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
         const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
-        querystate.subquery.time = moment(querystate.subquery.time)
+        querystate.subquery.time = moment(querystate.subquery.time);
+        querystate.subquery.starttime = moment(querystate.subquery.starttime);
         $.extend(this.state, querystate);
 
         /*
