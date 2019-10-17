@@ -160,7 +160,8 @@ export default class Map extends React.PureComponent {
     this.state = {
       location: [0, 90],
       contactInfo: false,
-      contact: null
+      contact: null,
+      style: {display: "none"}
     };
 
 
@@ -915,9 +916,30 @@ export default class Map extends React.PureComponent {
     if (state === 'add') {
       this.map.addLayer(layer);
       let new_layers = this.map.getLayers();
-
+      if (this.props.mapIdx === "right") {
+        this.setState({
+          style: {}
+        })
+      }
     } else if (state === 'remove') {
       this.map.removeLayer(layer);
+
+      // Find out if other layers exist
+      layers = this.map.getLayers().getArray();
+      let compare = false
+      for (layer in layers) {
+        console.warn("LAYER: ", layer)
+        if ('data' in layer.value_) {
+          console.warn("COMPARE LAYER EXISTS")
+          compare = true;
+          break
+        }
+      }
+      if (!compare) {
+        this.setState({
+          style: {display: "none"}
+        })
+      }
     }
     this.setState({
       change: !this.state.change,
@@ -1435,15 +1457,9 @@ export default class Map extends React.PureComponent {
 
     //this.infoPopupConten = this.toRender
 
-    let style = {}
-    if (this.props.mapIdx === "right") {
-      style = {
-        display: "none",
-      }
-    }
     
     return (
-      <div className='Map' style={style}>
+      <div className='Map' style={this.state.style}>
         <div ref={(c) => {
           this.map.setTarget(c)
         }} />
