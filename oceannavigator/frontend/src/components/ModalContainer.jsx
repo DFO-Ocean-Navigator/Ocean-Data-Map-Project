@@ -32,7 +32,8 @@ export default class ModalContainer extends React.Component {
       }
     } else {
       this.state = {
-        selected: false
+        selected: false,
+        data: undefined
       }
     }
 
@@ -174,7 +175,7 @@ export default class ModalContainer extends React.Component {
           break;
       }
 
-    } else {
+    } else if (this.props.map !== null) {
       modalContent = <SelectMapLayer
         map={this.props.map}
         select={this.selectLayer}
