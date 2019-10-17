@@ -930,7 +930,7 @@ export default class Map extends React.PureComponent {
 
       if (this.props.mapIdx === 'right') {
         // Find out if other layers exist
-        layers = this.map.getLayers().getArray();
+        let layers = this.map.getLayers().getArray();
         let compare = false
         for (layer in layers) {
           console.warn("LAYER: ", layer)
