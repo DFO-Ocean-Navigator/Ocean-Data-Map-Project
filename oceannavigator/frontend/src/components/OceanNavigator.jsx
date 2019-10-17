@@ -30,6 +30,48 @@ export default class OceanNavigator extends React.Component {
     super(props);
 
     ReactGA.ga("send", "pageview");
+    
+    let state_ = undefined
+    if (window.location.search.length > 0) {
+      try {
+        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
+        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
+        //$.extend(this.state, querystate);
+
+        console.warn("QUERY STATE: ", querystate)
+
+        let data = {
+          dataset: querystate.dataset,
+          variable: querystate.variable,
+          depth: querystate.depth,
+          colourmap: querystate.subquery.colormap,
+          scale: querystate.subquery.scale,
+          time: querystate.subquery.time,
+          starttime: querystate.subquery.starttime
+        }
+
+        state_ = {
+          urlData: data,
+          center: querystate.center,
+          modal: querystate.modal,
+          names: querystate.names,
+          point: querystate.point,
+          projection: querystate.projection,
+          showModal: querystate.showModal,
+          zoom: querystate.zoom,
+          vectorid: querystate.vectorid,
+          vectortype: querystate.vectortype
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
+      //let url = window.location.origin;
+      //if (window.location.path != undefined) {
+      //  url += window.location.path;
+      //}
+      //window.history.replaceState(null, null, url);
+    }
 
     this.state = {
 
@@ -50,12 +92,7 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
-      // To maintain the modular nature of my changes, but to also improve performance and reduce data usage, this variable holds any data that a particular layer would like to hold to use later, or to share with similar or duplicate layers.
-      dataStorage: {},
-
-      // Variable which stores information about the data currently being displayed
-      data: {},
-
+      // THIS NEEDS TO BE MOVED
       // Different methods of visualizing the data that have been implemented in python
       // This is for the tiles, not for plotting
       display: [
@@ -73,20 +110,12 @@ export default class OceanNavigator extends React.Component {
         }*/
       ],
 
-      dataset: "giops_day",
-      variable: "votemper",
-      variable_scale: [-5, 30], // Default variable range for left/Main Map
-      depth: 0,
-
+      
       // New Global Times
       timeSources: {},    // Time bar layers to create
       timestamps: {},                     // Holds the id and time for each timebar
       // ~~~~~~~~~~~~~~~~
 
-      time: -1,
-      starttime: -2, // Start time for Left Map
-      scale: "-5,30", // Variable scale for left/Main Map
-      scale_1: "-5,30", // Variable scale for Right Map
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
@@ -102,14 +131,6 @@ export default class OceanNavigator extends React.Component {
       extent: [],
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
-      dataset_1: {
-        dataset: "giops_day",
-        variable: "votemper",
-        depth: 0,
-        time: -1,
-        starttime: -2,  // Start time for Right Map
-        variable_scale: [-5, 30], // Default variable range for Right Map
-      },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
       options: {
@@ -132,46 +153,7 @@ export default class OceanNavigator extends React.Component {
     const preload = new Image();
     preload.src = LOADING_IMAGE;
 
-    if (window.location.search.length > 0) {
-      try {
-        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
-        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
-        //$.extend(this.state, querystate);
-
-        console.warn("QUERY STATE: ", querystate)
-
-        let data = {
-          dataset: querystate.dataset,
-          variable: querystate.variable,
-          depth: querystate.depth,
-          colourmap: querystate.subquery.colormap,
-          scale: querystate.subquery.scale,
-          time: querystate.subquery.time,
-          starttime: querystate.subquery.starttime
-        }
-
-        this.setState({
-          urlData: data,
-          center: querystate.center,
-          modal: querystate.modal,
-          names: querystate.names,
-          point: querystate.point,
-          projection: querystate.projection,
-          showModal: querystate.showModal,
-          zoom: querystate.zoom,
-          vectorid: querystate.vectorid,
-          vectortype: querystate.vectortype
-        })
-
-      } catch (err) {
-        console.error(err);
-      }
-      //let url = window.location.origin;
-      //if (window.location.path != undefined) {
-      //  url += window.location.path;
-      //}
-      //window.history.replaceState(null, null, url);
-    }
+    
 
     window.onpopstate = function (event) {
       if (event.state) {
