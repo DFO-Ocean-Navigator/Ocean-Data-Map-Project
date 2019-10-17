@@ -1435,8 +1435,15 @@ export default class Map extends React.PureComponent {
 
     //this.infoPopupConten = this.toRender
 
+    let style = {}
+    if (this.props.mapIdx === "right") {
+      style = {
+        display: "none",
+      }
+    }
+    
     return (
-      <div className='Map' style={{display: "none"}}>
+      <div className='Map' style={style}>
         <div ref={(c) => {
           this.map.setTarget(c)
         }} />
