@@ -97,6 +97,8 @@ export default class PointWindow extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.data !== this.props.data && this.props.init === undefined) {
       this.updateData(this.props.data)
+    } else if (prevProps.data !== this.props.data) {
+      this.updatePlot();
     }
   }
   componentWillUnmount() {
