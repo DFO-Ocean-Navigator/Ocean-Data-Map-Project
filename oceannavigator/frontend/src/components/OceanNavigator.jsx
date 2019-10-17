@@ -7,6 +7,7 @@ import Options from "./Options.jsx";
 import { Button, Modal } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
+import moment from "moment-timezone";
 import ReactGA from "react-ga";
 import ModalContainer from "./ModalContainer.jsx"
 
@@ -146,10 +147,10 @@ export default class OceanNavigator extends React.Component {
           depth: querystate.depth,
           colourmap: querystate.subquery.colormap,
           scale: querystate.subquery.scale,
-          time: querystate.subquery.time,
+          time: moment(querystate.subquery.time),
           starttime: querystate.subquery.starttime
         }
-        
+
         this.state.center = querystate.center,
         this.state.modal = querystate.modal,
         this.state.names = querystate.names,
