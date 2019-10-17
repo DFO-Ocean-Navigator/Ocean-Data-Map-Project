@@ -26,10 +26,9 @@ export default class ModalContainer extends React.Component {
     super(props);
 
     console.warn("INIT: ", this.props.init)
-    if (this.props.urlData !== undefined) {
+    if (init !== undefined) {
       this.state = {
         selected: true,
-        data: this.props.urlData
       }
     } else {
       this.state = {
