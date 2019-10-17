@@ -751,8 +751,11 @@ export default class PointWindow extends React.Component {
       selected: this.state.selected,
       scale: this.state.scale,
       depth: this.state.depth,
+      dataset: this.state.dataset,
+      variable: this.state.variable,
       colormap: this.state.colormap,
       starttime: this.state.starttime,
+      time: this.state.time
     };
     let inputs = [];
     switch (this.state.selected) {

@@ -625,6 +625,8 @@ export default class OceanNavigator extends React.Component {
       if (permalinkSettings[setting] === true) {
         console.warn("SETTING IN PERMALINK: ", setting)
         query[setting] = this.state[setting];
+      } else if (permalinkSettings[setting] !== false) {
+        query[setting] = permalinkSettings[setting];
       }
     }
 

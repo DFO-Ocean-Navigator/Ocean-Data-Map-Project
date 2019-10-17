@@ -23,7 +23,7 @@ export default class Permalink extends React.Component {
       depth: true,
       vectortype: true,
       vectorid: true,
-      time: true,
+      time: this.props.time,
     };
 
     // Function bindings
