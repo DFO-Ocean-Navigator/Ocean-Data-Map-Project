@@ -31,8 +31,6 @@ export default class OceanNavigator extends React.Component {
 
     ReactGA.ga("send", "pageview");
 
-
-
     this.state = {
 
       // Tabs that are enabled by default
@@ -52,8 +50,12 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
+      // To maintain the modular nature of my changes, but to also improve performance and reduce data usage, this variable holds any data that a particular layer would like to hold to use later, or to share with similar or duplicate layers.
+      dataStorage: {},
+
+      // Variable which stores information about the data currently being displayed
       data: {},
-      // THIS NEEDS TO BE MOVED
+
       // Different methods of visualizing the data that have been implemented in python
       // This is for the tiles, not for plotting
       display: [
@@ -122,7 +124,14 @@ export default class OceanNavigator extends React.Component {
       },
     };
 
-    let data = {}
+
+
+    this.mapComponent = null;
+    this.mapComponent2 = null;
+
+    const preload = new Image();
+    preload.src = LOADING_IMAGE;
+
     if (window.location.search.length > 0) {
       try {
         console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
@@ -142,6 +151,7 @@ export default class OceanNavigator extends React.Component {
         }
 
         
+        this.state.urlData = data,
         this.state.center = querystate.center,
         this.state.modal = querystate.modal,
         this.state.names = querystate.names,
@@ -151,7 +161,6 @@ export default class OceanNavigator extends React.Component {
         this.state.zoom = querystate.zoom,
         this.state.vectorid = querystate.vectorid,
         this.state.vectortype = querystate.vectortype
-        
 
       } catch (err) {
         console.error(err);
@@ -162,14 +171,6 @@ export default class OceanNavigator extends React.Component {
       //}
       //window.history.replaceState(null, null, url);
     }
-
-    this.mapComponent = null;
-    this.mapComponent2 = null;
-
-    const preload = new Image();
-    preload.src = LOADING_IMAGE;
-
-
 
     window.onpopstate = function (event) {
       if (event.state) {
@@ -903,7 +904,7 @@ export default class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal
+        <Modal 
           show={this.state.busy}
           dialogClassName='busy-modal'
           backdrop
