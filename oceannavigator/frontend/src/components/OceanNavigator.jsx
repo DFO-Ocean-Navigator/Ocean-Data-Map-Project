@@ -140,6 +140,29 @@ export default class OceanNavigator extends React.Component {
 
         console.warn("QUERY STATE: ", querystate)
 
+        let data = {
+          dataset: querystate.dataset,
+          variable: querystate.variable,
+          depth: querystate.depth,
+          colourmap: querystate.subquery.colormap,
+          scale: querystate.subquery.scale,
+          time: querystate.subquery.time,
+          starttime: querystate.subquery.starttime
+        }
+
+        this.setState({
+          urlData: data,
+          center: querystate.center,
+          modal: querystate.modal,
+          names: querystate.names,
+          point: querystate.point,
+          projection: querystate.projection,
+          showModal: querystate.showModal,
+          zoom: querystate.zoom,
+          vectorid: querystate.vectorid,
+          vectortype: querystate.vectortype
+        })
+
       } catch (err) {
         console.error(err);
       }
@@ -768,6 +791,7 @@ export default class OceanNavigator extends React.Component {
             <ModalContainer
               modal={this.state.modal}
               map={this.mapComponent}
+              urlData={this.props.urlData}
               //data={this.state.data}
               data={this.mapComponent}
               area={this.state.area}
