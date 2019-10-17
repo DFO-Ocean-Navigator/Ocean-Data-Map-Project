@@ -40,6 +40,17 @@ export default class ModalContainer extends React.Component {
     this.selectLayer = this.selectLayer.bind(this);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.urlData !== prevProps.urlData) {
+      if (this.props.urlData !== undefined) {
+        this.setState({
+          selected: true,
+          data: this.props.urlData
+        })
+      }
+    }
+  }
+
   selectLayer(data) {
     this.setState({
       data: data,
