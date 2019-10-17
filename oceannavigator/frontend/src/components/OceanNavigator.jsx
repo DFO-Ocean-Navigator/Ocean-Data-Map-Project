@@ -110,12 +110,20 @@ export default class OceanNavigator extends React.Component {
         }*/
       ],
 
-      
+      dataset: "giops_day",
+      variable: "votemper",
+      variable_scale: [-5, 30], // Default variable range for left/Main Map
+      depth: 0,
+
       // New Global Times
       timeSources: {},    // Time bar layers to create
       timestamps: {},                     // Holds the id and time for each timebar
       // ~~~~~~~~~~~~~~~~
 
+      time: -1,
+      starttime: -2, // Start time for Left Map
+      scale: "-5,30", // Variable scale for left/Main Map
+      scale_1: "-5,30", // Variable scale for Right Map
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
@@ -131,6 +139,14 @@ export default class OceanNavigator extends React.Component {
       extent: [],
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
+      dataset_1: {
+        dataset: "giops_day",
+        variable: "votemper",
+        depth: 0,
+        time: -1,
+        starttime: -2,  // Start time for Right Map
+        variable_scale: [-5, 30], // Default variable range for Right Map
+      },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
       options: {
