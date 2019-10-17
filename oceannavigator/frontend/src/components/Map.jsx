@@ -1436,7 +1436,7 @@ export default class Map extends React.PureComponent {
     //this.infoPopupConten = this.toRender
 
     return (
-      <div className='Map'>
+      <div className='Map' style={{display: "none"}}>
         <div ref={(c) => {
           this.map.setTarget(c)
         }} />
