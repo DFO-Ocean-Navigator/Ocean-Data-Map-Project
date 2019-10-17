@@ -603,6 +603,7 @@ export default class OceanNavigator extends React.Component {
   */
 
   generatePermLink(subquery, permalinkSettings) {
+    console.warn("generatePermLink: ", permalinkSettings)
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
     if (this.state.subquery !== undefined) {
