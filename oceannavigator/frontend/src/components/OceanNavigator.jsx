@@ -30,48 +30,8 @@ export default class OceanNavigator extends React.Component {
     super(props);
 
     ReactGA.ga("send", "pageview");
-    
-    let state_ = undefined
-    if (window.location.search.length > 0) {
-      try {
-        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
-        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
-        //$.extend(this.state, querystate);
 
-        console.warn("QUERY STATE: ", querystate)
 
-        let data = {
-          dataset: querystate.dataset,
-          variable: querystate.variable,
-          depth: querystate.depth,
-          colourmap: querystate.subquery.colormap,
-          scale: querystate.subquery.scale,
-          time: querystate.subquery.time,
-          starttime: querystate.subquery.starttime
-        }
-
-        state_ = {
-          urlData: data,
-          center: querystate.center,
-          modal: querystate.modal,
-          names: querystate.names,
-          point: querystate.point,
-          projection: querystate.projection,
-          showModal: querystate.showModal,
-          zoom: querystate.zoom,
-          vectorid: querystate.vectorid,
-          vectortype: querystate.vectortype
-        }
-
-      } catch (err) {
-        console.error(err);
-      }
-      //let url = window.location.origin;
-      //if (window.location.path != undefined) {
-      //  url += window.location.path;
-      //}
-      //window.history.replaceState(null, null, url);
-    }
 
     this.state = {
 
@@ -92,6 +52,7 @@ export default class OceanNavigator extends React.Component {
         _planning: false,
       },
 
+      data = {},
       // THIS NEEDS TO BE MOVED
       // Different methods of visualizing the data that have been implemented in python
       // This is for the tiles, not for plotting
@@ -161,7 +122,46 @@ export default class OceanNavigator extends React.Component {
       },
     };
 
+    let data = {}
+    if (window.location.search.length > 0) {
+      try {
+        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
+        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
+        //$.extend(this.state, querystate);
 
+        console.warn("QUERY STATE: ", querystate)
+
+        this.state.data = {
+          dataset: querystate.dataset,
+          variable: querystate.variable,
+          depth: querystate.depth,
+          colourmap: querystate.subquery.colormap,
+          scale: querystate.subquery.scale,
+          time: querystate.subquery.time,
+          starttime: querystate.subquery.starttime
+        }
+
+        
+        this.state.center = querystate.center,
+        this.state.modal = querystate.modal,
+        this.state.names = querystate.names,
+        this.state.point = querystate.point,
+        this.state.projection = querystate.projection,
+        this.state.showModal = querystate.showModal,
+        this.state.zoom = querystate.zoom,
+        this.state.vectorid = querystate.vectorid,
+        this.state.vectortype = querystate.vectortype
+        
+
+      } catch (err) {
+        console.error(err);
+      }
+      //let url = window.location.origin;
+      //if (window.location.path != undefined) {
+      //  url += window.location.path;
+      //}
+      //window.history.replaceState(null, null, url);
+    }
 
     this.mapComponent = null;
     this.mapComponent2 = null;
@@ -169,7 +169,7 @@ export default class OceanNavigator extends React.Component {
     const preload = new Image();
     preload.src = LOADING_IMAGE;
 
-    
+
 
     window.onpopstate = function (event) {
       if (event.state) {
@@ -903,7 +903,7 @@ export default class OceanNavigator extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal 
+        <Modal
           show={this.state.busy}
           dialogClassName='busy-modal'
           backdrop
