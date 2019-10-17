@@ -161,7 +161,7 @@ export default class Map extends React.PureComponent {
       location: [0, 90],
       contactInfo: false,
       contact: null,
-      style: {display: "none"}
+      style: {}
     };
 
 
