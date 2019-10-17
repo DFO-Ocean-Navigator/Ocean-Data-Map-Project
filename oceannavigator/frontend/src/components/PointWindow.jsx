@@ -89,6 +89,8 @@ export default class PointWindow extends React.Component {
     // Observation tab.
     if (this.props.init === undefined) {
       this.updateData(this.props.data);
+    } else {
+      this.updatePlot()
     }
   }
 
