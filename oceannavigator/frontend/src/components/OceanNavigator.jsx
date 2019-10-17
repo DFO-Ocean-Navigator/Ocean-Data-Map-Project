@@ -623,6 +623,7 @@ export default class OceanNavigator extends React.Component {
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
+        console.warn("SETTING IN PERMALINK: ", setting)
         query[setting] = this.state[setting];
       }
     }
