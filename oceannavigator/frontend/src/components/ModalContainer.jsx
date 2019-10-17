@@ -72,7 +72,7 @@ export default class ModalContainer extends React.Component {
           modalContent = (
             <PointWindow
               data={this.state.data}  // Non compare data
-              data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
+              //data_compare={'right' in this.props.data ? this.props.data['right'] : {}}
               //dataset={this.props.data[layer]['dataset']}
               //quantum={this.props.data[layer]['quantum']}
               point={this.props.point}
