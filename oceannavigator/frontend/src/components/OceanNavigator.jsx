@@ -140,7 +140,7 @@ export default class OceanNavigator extends React.Component {
 
         console.warn("QUERY STATE: ", querystate)
 
-        this.state.data = {
+        this.state.urlData = {
           dataset: querystate.dataset,
           variable: querystate.variable,
           depth: querystate.depth,
@@ -149,9 +149,7 @@ export default class OceanNavigator extends React.Component {
           time: querystate.subquery.time,
           starttime: querystate.subquery.starttime
         }
-
         
-        this.state.urlData = data,
         this.state.center = querystate.center,
         this.state.modal = querystate.modal,
         this.state.names = querystate.names,
