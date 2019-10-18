@@ -33,7 +33,8 @@ export default class ModalContainer extends React.Component {
     } else {
       this.state = {
         selected: false,
-        data: undefined
+        data: {},
+        data_compare: {}
       }
     }
 
