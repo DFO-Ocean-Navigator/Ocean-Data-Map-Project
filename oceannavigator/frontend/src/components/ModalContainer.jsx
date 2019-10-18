@@ -68,7 +68,7 @@ export default class ModalContainer extends React.Component {
   }
 
   apply() {
-    if (Object.keys(this.state.data) === 0) {
+    if (Object.keys(this.state.data).length === 0) {
       this.setState({
         data: this.state.data_compare,
       }, () => {

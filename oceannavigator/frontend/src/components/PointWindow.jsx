@@ -622,8 +622,8 @@ export default class PointWindow extends React.Component {
         />
       }
 
-      console.warn(timeObj);
-      console.warn(starttimeObj);
+    
+    
       if (showTime) {
         time = <TimePicker
         range={false}

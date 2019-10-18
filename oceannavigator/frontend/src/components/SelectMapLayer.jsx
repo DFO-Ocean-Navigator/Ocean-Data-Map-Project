@@ -26,13 +26,10 @@ export default class SelectMapLayer extends React.Component {
 
 
         if (this.props.map.map !== undefined) {
-            console.warn("MAP 2: ", this.props.map.map)
             let layers = this.props.map.map.getLayers().getArray();
             for (let x in layers) {
-                console.warn("LAYER: ", layers[x])
                 let layer = layers[x].values_
                 if ('data' in layer) {
-                    console.warn("LAYER: ", layer)
                     buttons.push(
                     <Button
                         onClick={() => this.props.select(layer.data)}
@@ -40,7 +37,6 @@ export default class SelectMapLayer extends React.Component {
                         {layer.data.variable}
                     </Button>)
                 }
-                console.warn("X: ", x);
             }
         }
         
