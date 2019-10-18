@@ -47,6 +47,7 @@ export default class SelectMapLayer extends React.Component {
 
         return (
             <div>
+                <h1>{this.props.name}</h1>
                 {buttons}
             </div>
         )
