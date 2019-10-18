@@ -67,9 +67,16 @@ export default class ModalContainer extends React.Component {
   }
 
   apply() {
-    this.setState({
-      selected: true
-    })
+    if (Object.keys(this.state.data) === 0) {
+      this.setState({
+        data: this.state.data_compare,
+        selected: true
+      })
+    } else {
+      this.setState({
+        selected: true
+      })
+    }
   }
 
   render() {
@@ -184,9 +191,15 @@ export default class ModalContainer extends React.Component {
         ></SelectMapLayer>
       )
 
+      let dataAvailable = false;
+      if (Object.keys(this.state.data) !== 0 || Object.keys(this.state.data_compare) !== 0) {
+        dataAvailable = true;
+      }
+
       modalContent.push(
         <Button
           onClick={this.apply}
+          disabled={dataAvailable}
         >PLOT</Button>
       )
 
