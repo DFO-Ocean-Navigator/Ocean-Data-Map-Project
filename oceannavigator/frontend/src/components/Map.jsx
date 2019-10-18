@@ -1425,8 +1425,6 @@ export default class Map extends React.PureComponent {
 
   render() {
 
-
-
     let timeBar = ''
     let layers = this.map.getLayers().array_;
 

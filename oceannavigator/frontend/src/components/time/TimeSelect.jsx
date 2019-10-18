@@ -905,7 +905,7 @@ export default class TimeSelect extends React.Component {
                         startTime={moment(this.state.startTimeObj)}
                         endTime={moment(this.state.endTimeObj)}
                         currentTime={this.props.currentTime}
-                        length={665}
+                        length={500}
                         offset={0}
                         time_inc={'1-day'}
                     ></Timeline>
