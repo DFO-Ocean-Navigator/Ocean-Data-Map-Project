@@ -1454,7 +1454,7 @@ export default class Map extends React.PureComponent {
         ></LayerRearrange>
       </div>
     }
-    //if (this.props.mapIdx === 'left') {
+    if (this.props.mapIdx === 'left') {
       if ('partner' in this.props && this.props.partner !== null && this.props.partner.compare()) {
         timeBar = <TimeBarContainer
           layers={layers}
@@ -1472,7 +1472,7 @@ export default class Map extends React.PureComponent {
           allSources={this.props.allSources}
         ></TimeBarContainer>
       }
-    //}
+    }
 
     //this.infoPopupConten = this.toRender
 
