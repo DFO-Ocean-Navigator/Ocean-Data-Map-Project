@@ -1442,25 +1442,15 @@ export default class Map extends React.PureComponent {
         ></LayerRearrange>
       </div>
     }
-    if (this.props.mapIdx === 'left') {
-      if ('partner' in this.props) {
-        timeBar = <TimeBarContainer
-          layers={layers}
-          compare={true}
-          globalUpdate={this.props.updateState}
-          timeSources={this.props.timeSources}
-          allSources={this.props.allSources}
-        ></TimeBarContainer>
-      } else {
-        timeBar = <TimeBarContainer
-          compare={false}
-          layers={layers}
-          globalUpdate={this.props.updateState}
-          timeSources={this.props.timeSources}
-          allSources={this.props.allSources}
-        ></TimeBarContainer>
-      }
-    }
+    timeBar = <TimeBarContainer
+      layers={layers}
+      compare={false}
+      globalUpdate={this.props.updateState}
+      timeSources={this.props.timeSources}
+      allSources={this.props.allSources}
+    ></TimeBarContainer>
+      
+    
 
     //this.infoPopupConten = this.toRender
 
