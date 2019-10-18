@@ -1431,7 +1431,7 @@ export default class Map extends React.PureComponent {
     let layers = this.map.getLayers().array_;
 
     let layerRearrange = ''
-    if ('partner' in this.props && this.props.partner.compare()) {
+    if ('partner' in this.props && this.props.partner !== null && this.props.partner.compare()) {
       layerRearrange = <div className='layerHierarchy_compare'>
         <LayerRearrange
           layers={layers}
@@ -1455,7 +1455,7 @@ export default class Map extends React.PureComponent {
       </div>
     }
     //if (this.props.mapIdx === 'left') {
-      if ('partner' in this.props && this.props.partner.compare()) {
+      if ('partner' in this.props && this.props.partner !== null && this.props.partner.compare()) {
         timeBar = <TimeBarContainer
           layers={layers}
           compare={true}
