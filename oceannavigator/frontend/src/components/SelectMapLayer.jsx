@@ -44,10 +44,14 @@ export default class SelectMapLayer extends React.Component {
             }
         }
         
+        let header = []
+        if (buttons !== []) {
+            header.push(<h1>{this.props.name}</h1>)
+        }
 
         return (
             <div>
-                <h1>{this.props.name}</h1>
+                {header}
                 {buttons}
             </div>
         )
