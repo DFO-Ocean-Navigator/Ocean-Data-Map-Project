@@ -1463,7 +1463,7 @@ export default class Map extends React.PureComponent {
         ></TimeBarContainer>
       } else {
         timeBar = <TimeBarContainer
-          compare={false}
+          compare={true}
           layers={layers}
           globalUpdate={this.props.updateState}
           timeSources={this.props.timeSources}
