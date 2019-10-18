@@ -47,8 +47,6 @@ export default class SelectMapLayer extends React.Component {
 
         return (
             <div>
-                Unfortunately multi-layer plotting is not currently available.
-                Please select a layer before continuing:
                 {buttons}
             </div>
         )
