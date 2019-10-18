@@ -71,7 +71,10 @@ export default class ModalContainer extends React.Component {
     if (Object.keys(this.state.data) === 0) {
       this.setState({
         data: this.state.data_compare,
-        selected: true
+      }, () => {
+        this.setState({
+          selected: true
+        })
       })
     } else {
       this.setState({
@@ -193,6 +196,7 @@ export default class ModalContainer extends React.Component {
       )
 
       let dataAvailable = true;
+      console.warn("DATA KEYS: ", Object.keys(this.state.data), Object.keys(this.state.data_compare))
       if (Object.keys(this.state.data) !== 0 || Object.keys(this.state.data_compare) !== 0) {
         dataAvailable = false;
       }
