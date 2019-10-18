@@ -165,7 +165,8 @@ export default class Map extends React.PureComponent {
       location: [0, 90],
       contactInfo: false,
       contact: null,
-      style: style
+      style: style,
+      compare: false,
     };
 
 
@@ -775,6 +776,15 @@ export default class Map extends React.PureComponent {
     this.toggleLayer = this.toggleLayer.bind(this);
     this.reloadLayer = this.reloadLayer.bind(this);
     this.toggleDrawing = this.toggleDrawing.bind(this);
+    this.compare = this.compare.bind(this);
+  }
+
+  compare() {
+    if (this.props.mapIdx === 'right' && this.state.compare) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   getBasemap(source, projection, attribution) {
@@ -922,7 +932,8 @@ export default class Map extends React.PureComponent {
       let new_layers = this.map.getLayers();
       if (this.props.mapIdx === "right") {
         this.setState({
-          style: {}
+          style: {},
+          compare: true,
         })
       }
     } else if (state === 'remove') {
@@ -943,7 +954,8 @@ export default class Map extends React.PureComponent {
         }
         if (!compare) {
           this.setState({
-            style: { display: "none" }
+            style: { display: "none" },
+            compare: false
           })
         }
       }
@@ -1419,7 +1431,7 @@ export default class Map extends React.PureComponent {
     let layers = this.map.getLayers().array_;
 
     let layerRearrange = ''
-    if ('partner' in this.props) {
+    if ('partner' in this.props && this.props.partner.compare()) {
       layerRearrange = <div className='layerHierarchy_compare'>
         <LayerRearrange
           layers={layers}
@@ -1443,7 +1455,7 @@ export default class Map extends React.PureComponent {
       </div>
     }
     //if (this.props.mapIdx === 'left') {
-      if ('partner' in this.props) {
+      if ('partner' in this.props && this.props.partner.compare()) {
         timeBar = <TimeBarContainer
           layers={layers}
           compare={true}
