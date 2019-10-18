@@ -192,9 +192,9 @@ export default class ModalContainer extends React.Component {
         ></SelectMapLayer>
       )
 
-      let dataAvailable = false;
+      let dataAvailable = true;
       if (Object.keys(this.state.data) !== 0 || Object.keys(this.state.data_compare) !== 0) {
-        dataAvailable = true;
+        dataAvailable = false;
       }
 
       modalContent.push(
