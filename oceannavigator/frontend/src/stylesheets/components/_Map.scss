@@ -207,14 +207,13 @@
 
     .time_container_compare {
         height: fit-content;
-        width: 60px;
-        position: absolute!important;
-        bottom: 10px;
+        width: 100%;
+        top: calc(100% - 60px);
         left: 1%;
         border-radius: 25px;
 
         .timeLayerContainer {
-            width: 100%;
+            width: 80%;
             height: 60px;
 
             .timeIcon {
@@ -274,12 +273,11 @@
 
     .timeBarContainer {
         height: 37px;
-        width: 955px;
+        width: 100%;
         margin-left: 50px;
         padding: 3px;
         position: relative;
         top: 2.5px;
-        //border: 4px solid #006687;
         border-radius: 25px 25px 25px 25px;
         background-color: rgba(255,255,255,0.5);
         animation: slide-open 0.5s ease;
