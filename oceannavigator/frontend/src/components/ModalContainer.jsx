@@ -197,7 +197,7 @@ export default class ModalContainer extends React.Component {
 
       let dataAvailable = true;
       console.warn("DATA KEYS: ", Object.keys(this.state.data), Object.keys(this.state.data_compare))
-      if (Object.keys(this.state.data) !== 0 || Object.keys(this.state.data_compare) !== 0) {
+      if (Object.keys(this.state.data).length !== 0 || Object.keys(this.state.data_compare).length !== 0) {
         dataAvailable = false;
       }
 
