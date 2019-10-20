@@ -79,8 +79,10 @@ def sspeedmin(depth, lat, temperature, salinity):
     Finds the global minimum of the speed of sound
 
     Parameters:
-    sspeed: Speed of Sound
-    latitude: The latitude(s) in degrees North
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
@@ -108,11 +110,13 @@ def sspeedmin(depth, lat, temperature, salinity):
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
-    Finds the local maxima of the speed of sound
+    Finds the local maxima of the speed of sound (local maxima is before the sound channel axis)
 
     Parameters:
-    sspeed: Speed of Sound
-    latitude: The latitude(s) in degrees North
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
@@ -145,10 +149,10 @@ def soniclayerdepth(depth, lat, temperature, salinity):
 
 def find_sca_idx(speed):
     """
-
+    Finds the idx (depth layer) of the Sound Channel Axis
 
     Parameters:
-    speed: np.ndarray as point profile
+    speed: np.array of sound speed values in a single point profile
     """
     
     sca_value = np.nanmin(speed)
@@ -164,7 +168,11 @@ def find_sca_idx(speed):
 
 def find_sld_idx(sca_idx, speed):
     """
-    Returns the index of the sound layer depth
+    Returns the idx (depth layer) of the Sonic Layer Depth
+
+    Parameters:
+    sca_idx: integer indicating location of value inn speed[x][y]
+    speed: np.array of sound speed values in a single point profile
     """
     
     subset = speed[0:int(sca_idx) + 1]
@@ -229,7 +237,12 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     def linearInterp(x1, y1, x2, y2, x):
         """
         Finds the linear interpolation given 2 points
-        """    
+
+        x1: X value (sspeed) of the first point
+        y1: Y value (depth) of the first point
+        x2: X value (sspeed) of the second point
+        y2: Y value (depth) of the seconnd point
+        """
         y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
         return y
 
@@ -263,11 +276,13 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
-    Finds the next location of the sonic layer depth.
+    Finds the next occurence (after the sound channel axis) of the sound speed associated with the sonic layer depth
 
     Parameters:
-    sspeed: Speed of Sound
-    latitude: The latitude(s) in degrees North
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
@@ -308,11 +323,13 @@ def criticaldepth(depth, lat, temperature, salinity):
 
 def depthexcess(depth, lat, temperature, salinity):
     """
-    Finds the next location of the sonic layer depth.
+    Finds difference between the maximum depth and the critical depth for every point in a given area
 
     Parameters:
-    sspeed: Speed of Sound
-    latitude: The latitude(s) in degrees North
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
