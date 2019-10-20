@@ -9,7 +9,6 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-import time
 
 _ureg = UnitRegistry()
 
