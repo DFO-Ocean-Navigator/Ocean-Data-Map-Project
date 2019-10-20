@@ -75,7 +75,7 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
-def sspeedmin(depth, lat, lon, temperature, salinity):
+def sspeedmin(depth, lat, temperature, salinity):
     """
     Finds the global minimum of the speed of sound
 
@@ -107,7 +107,7 @@ def sspeedmin(depth, lat, lon, temperature, salinity):
 
     return np.array(speed)
 
-def soniclayerdepth(depth, lat, lon, temperature, salinity):
+def soniclayerdepth(depth, lat, temperature, salinity):
     """
     Finds the local maxima of the speed of sound
 
@@ -262,7 +262,7 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
     return cd_depth
 
-def criticaldepth(depth, lat, lon, temperature, salinity):
+def criticaldepth(depth, lat, temperature, salinity):
     """
     Finds the next location of the sonic layer depth.
 
@@ -307,7 +307,7 @@ def criticaldepth(depth, lat, lon, temperature, salinity):
     speed = speed[0]
     return np.array(speed)
 
-def depthexcess(depth, lat, lon, temperature, salinity):
+def depthexcess(depth, lat, temperature, salinity):
     """
     Finds the next location of the sonic layer depth.
 
