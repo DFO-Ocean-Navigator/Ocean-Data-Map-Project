@@ -91,7 +91,7 @@ def sspeedmin(depth, lat, temperature, salinity):
     #for x in range(speed.shape[0]):
     #    for y in range(speed.shape[1]):
     for x in range(speed.shape[-1]):
-        for y in range(speed.shape[-2])
+        for y in range(speed.shape[-2]):
             min_val = np.nanmin(speed[:,y,x])
             idx = np.where(speed[:,y,x] == min_val)
             if (np.isnan(min_val)):
