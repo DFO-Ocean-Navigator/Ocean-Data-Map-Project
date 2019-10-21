@@ -108,7 +108,7 @@ def sspeedmin(depth, lat, temperature, salinity):
 
     speed = speed[0]
 
-    return np.array(speed)
+    return speed
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
@@ -119,6 +119,10 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     lat: The latitude(s) in degrees North
     temperature: The temperatures(s) (at all depths) in celsius
     salinity: The salinity (at all depths) (unitless)
+
+    Note:
+    sld is the critical depth (the DEPTH at which the sspeed local maxima occurs)
+    sld_value, is the value of the sound speed at the critical depth
     """
     
     # Find speed of sound
@@ -233,6 +237,16 @@ def find_cd_idx(sca_idx, sld_idx, speed):
 
 def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
+    """
+    Finds the Critical Depth using linear interpolation
+
+    Parameters:
+    cd_idx: Index of the nearest value to critical depth
+    sld_idx: Index of the Sound Layer Depth
+    speed_point: np.array of sound speed for a water column
+    depth: np.array of available depths
+    """
+
     # Now that we have the nearest critical depth idx we must perform linear interpolation
     def linearInterp(x1, y1, x2, y2, x):
         """
@@ -301,9 +315,7 @@ def criticaldepth(depth, lat, temperature, salinity):
                     if not np.isnan(sld_idx):
                         cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
                         if not np.isnan(cd_idx):
-                            #cd_value = speed_point[cd_idx]
-                            #cd_depth = depth.values[cd_idx]
-
+                            
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
                             cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
 
