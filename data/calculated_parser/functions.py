@@ -287,13 +287,11 @@ def criticaldepth(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
-    speed = speed.transpose()
-    sld = 0
-    sca = 0
-    for x in range(speed.shape[0]):
-        for y in range(speed.shape[1]):
-            if (speed[x,y].size - np.count_nonzero(np.isnan(speed[x,y]))) != 0:
-                speed_point = speed[x,y]
+    #speed = speed.transpose()
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+                speed_point = speed[:,y,x]
                 sca_idx = find_sca_idx(speed_point)
 
                 # Sound Channel Axis Exists
@@ -316,12 +314,12 @@ def criticaldepth(depth, lat, temperature, salinity):
             else:
                 cd_depth = np.nan
 
-            speed[x,y] = cd_depth
+            speed[:,y,x] = cd_depth
                 
 
-    speed = speed.transpose()
-    speed = speed[0]
-    return np.array(speed)
+    #speed = speed.transpose()
+    #speed = speed[0]
+    return speed[0]
 
 def depthexcess(depth, lat, temperature, salinity):
     """
