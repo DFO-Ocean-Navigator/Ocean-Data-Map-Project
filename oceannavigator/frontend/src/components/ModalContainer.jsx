@@ -63,7 +63,8 @@ export default class ModalContainer extends React.Component {
 
   selectCompare(data) {
     this.setState({
-      data_compare: data
+      data_compare: data,
+      dataset_compare: true,
     })
   }
 
@@ -71,6 +72,7 @@ export default class ModalContainer extends React.Component {
     if (Object.keys(this.state.data).length === 0) {
       this.setState({
         data: this.state.data_compare,
+        dataset_compare: false,
       }, () => {
         this.setState({
           selected: true
@@ -98,6 +100,7 @@ export default class ModalContainer extends React.Component {
             <PointWindow
               data={this.state.data}  // Non compare data
               data_compare={this.state.data_compare !== undefined ? this.state.data_compare : {}}
+              dataset_compare={this.state.dataset_compare}
               point={this.props.point}
               names={this.props.names}
               onUpdate={this.props.onUpdate}
