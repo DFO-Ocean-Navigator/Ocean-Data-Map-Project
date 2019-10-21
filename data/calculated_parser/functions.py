@@ -229,33 +229,15 @@ def sspeedmin(depth, lat, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
-    #speed = speed.transpose()
-    
-    #for x in range(speed.shape[0]):
-    #    for y in range(speed.shape[1]):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            #min_val = np.nanmin(speed[:,y,x])
-            #idx = np.where(speed[:,y,x] == min_val)
-            
-            #if (np.isnan(min_val)):
-            #    speed[:,y,x] = np.nan
-            #elif idx[0].shape[0] > 1:
-            #    idx = idx[0][0]
-            #    speed[:,y,x] = depth.values[idx]
-            # Find sca idx
             idx = find_sca_idx(speed[:,y,x])
             if np.isnan(idx):
                 speed[:,y,x] = idx
             else:
                 speed[:,y,x] = depth.values[idx]
-            #speed[x][y] = depth[np.where(speed[x][y] == np.nanmin(speed[x][y]))]  #np.nanmin(speed[x][y])
     
-    #speed = speed.transpose()
-
-    speed = speed[0]
-
-    return speed
+    return speed[0]
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
@@ -278,21 +260,24 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     sld = np.nan
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            sca_value = np.nanmin(speed[:,y,x])
-            sca_idx = np.where(speed[:,y,x] == sca_value)
+            #sca_value = np.nanmin(speed[:,y,x])
+            #sca_idx = np.where(speed[:,y,x] == sca_value)
             
-            if (np.isnan(sca_value)):
-                pass
-            else:
-                sca_idx = sca_idx[0][0]
+            sca_idx = find_sca_idx(speed[:,y,x])
 
-                subset = speed[:,y,x][0:int(sca_idx) + 1]
-                sld_value = subset.max()
-                
-                if (np.isnan(sld_value)):
-                    pass
+            if (np.isnan(sca_idx)):
+                speed[:,y,x] = sca_value
+            else:
+                #sca_idx = sca_idx[0][0]
+
+                #subset = speed[:,y,x][0:int(sca_idx) + 1]
+                #sld_value = subset.max()
+                sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
+
+                if (np.isnan(sld_idx)):
+                    speed[:,y,x] = sld_idx
                 else:
-                    sld_idx = np.where(subset == sld_value)[0][0]
+                    #sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
                     speed[:, y, x] = sld
 
