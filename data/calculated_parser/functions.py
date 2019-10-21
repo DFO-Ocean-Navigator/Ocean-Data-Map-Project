@@ -119,13 +119,9 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     salinity: The salinity (at all depths) (unitless)
     """
     
+    # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
-    #speed = speed.transpose()
-    #sld = np.nan
-    #for x in range(speed.shape[0]):
-    #    for y in range(speed.shape[1]):
-    # TESTING
-    #sld_array = np.nan((speed.shape[-2], speed.shape[-1]))
+    
     sld = np.nan
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
@@ -147,10 +143,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
                     sld = depth.values[sld_idx]
                     speed[:, y, x] = sld
 
-    #speed = speed.transpose()
-    #speed = speed[0]
-    #eturn np.array(speed)
-    return speed[0]
+    return speed[0] # Only return one horizontal slice
 
 def find_sca_idx(speed):
     """
