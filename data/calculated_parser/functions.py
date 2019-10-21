@@ -83,6 +83,8 @@ def find_sca_idx(speed):
 
     Parameters:
     speed: np.array of sound speed values in a single point profile
+
+    note: sca - Sound Channel Axis
     """
     
     sca_value = np.nanmin(speed)
@@ -104,6 +106,8 @@ def find_sld_idx(sca_idx, speed):
     Parameters:
     sca_idx: integer indicating location of value inn speed[x][y]
     speed: np.array of sound speed values in a single point profile
+
+    note: sld - Sonic Layer Depth
     """
     
     subset = speed[0:int(sca_idx) + 1]
@@ -126,6 +130,8 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     sca_idx: integer indicating location of value in speed[x][y]
     sld_idx: integer indicating location of vlaue in speed[x][y]
     speed: np.array of data values in a single point profile
+
+    note: cd - Critical Depth
     """
 
     # No critical depth exists
