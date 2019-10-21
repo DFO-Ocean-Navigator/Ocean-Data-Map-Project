@@ -120,7 +120,7 @@ class Parser:
         
 
     def p_expression_variable_all(self, t):
-        'expression : TILDA ID'
+        'expression : TILDE ID'
 
         tmp = self.data.variables[t[2]][
             self.get_key_for_var_all(
