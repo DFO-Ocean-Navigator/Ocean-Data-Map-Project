@@ -150,7 +150,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     #speed = speed.transpose()
     #speed = speed[0]
     #eturn np.array(speed)
-    return speed
+    return speed[0]
 
 def find_sca_idx(speed):
     """
