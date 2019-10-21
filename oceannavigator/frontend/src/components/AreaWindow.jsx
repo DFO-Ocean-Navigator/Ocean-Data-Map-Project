@@ -191,7 +191,7 @@ export default class AreaWindow extends React.Component {
         dataset_quantum: quantum,
         scale: scale + ',auto',
         depth: depth,
-        time: compare_time
+        time: time
       }
       this.setState({
         data_compare: data_compare,
@@ -213,7 +213,7 @@ export default class AreaWindow extends React.Component {
         colourmap: compare_colourmap,
         quantum: compare_quantum,
         scale: compare_scale + ',auto',
-        time: moment(compare_data.time.valueOf()),
+        time: compare_time,
       }
 
       this.setState({
