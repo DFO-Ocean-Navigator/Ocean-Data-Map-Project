@@ -257,27 +257,19 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
     
-    sld = np.nan
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            #sca_value = np.nanmin(speed[:,y,x])
-            #sca_idx = np.where(speed[:,y,x] == sca_value)
             
             sca_idx = find_sca_idx(speed[:,y,x])
 
             if (np.isnan(sca_idx)):
                 speed[:,y,x] = sca_idx
             else:
-                #sca_idx = sca_idx[0][0]
-
-                #subset = speed[:,y,x][0:int(sca_idx) + 1]
-                #sld_value = subset.max()
                 sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
 
                 if (np.isnan(sld_idx)):
                     speed[:,y,x] = sld_idx
                 else:
-                    #sld_idx = np.where(subset == sld_value)[0][0]
                     sld = depth.values[sld_idx]
                     speed[:, y, x] = sld
 
@@ -303,14 +295,17 @@ def criticaldepth(depth, lat, temperature, salinity):
             if (speed[x,y].size - np.count_nonzero(np.isnan(speed[x,y]))) != 0:
                 speed_point = speed[x,y]
                 sca_idx = find_sca_idx(speed_point)
+
+                # Sound Channel Axis Exists
                 if not np.isnan(sca_idx):
-                
                     sld_idx = find_sld_idx(sca_idx, speed_point)
 
+                    # Sound Layer Depth Exists
                     if not np.isnan(sld_idx):
                         cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
+                        
+                        # Critical Depth Exists
                         if not np.isnan(cd_idx):
-                            
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
                             cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
 
@@ -340,13 +335,13 @@ def depthexcess(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
-    speed = speed.transpose()
-    sld = 0
-    sca = 0
-    for x in range(speed.shape[0]):
-        for y in range(speed.shape[1]):
-            if (speed[x,y].size - np.count_nonzero(np.isnan(speed[x,y]))) != 0:
-                speed_point = speed[x,y]
+    #speed = speed.transpose()
+    
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            # Check for all nan slice
+            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+                speed_point = speed[:,y,x]
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
                 
@@ -355,9 +350,7 @@ def depthexcess(depth, lat, temperature, salinity):
                     if not np.isnan(sld_idx):
                         cd_idx = find_cd_idx(sca_idx, sld_idx, speed_point)
                         if not np.isnan(cd_idx):
-                            #cd_value = speed_point[cd_idx]
-                            #cd_depth = depth.values[cd_idx]
-
+                            
                             # Now that we have the nearest critical depth idx we must perform linear interpolation
                             cd_depth = cd_interpolation(cd_idx, sld_idx, speed_point, depth)
                             total_idx = speed_point.size - np.count_nonzero(np.isnan(speed_point)) - 1
@@ -372,12 +365,12 @@ def depthexcess(depth, lat, temperature, salinity):
             else:
                 depth_excess = np.nan
 
-            speed[x,y] = depth_excess
+            speed[:,y,x] = depth_excess
                 
 
-    speed = speed.transpose()
-    speed = speed[0]
-    return np.array(speed)
+    #speed = speed.transpose()
+    #speed = speed[0]
+    return speed[0]
 
 
 def _metpy(func, data, lat, lon, dim):
