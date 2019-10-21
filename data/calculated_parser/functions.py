@@ -120,7 +120,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
-    speed = speed.transpose()
+    #speed = speed.transpose()
     #sld = np.nan
     #for x in range(speed.shape[0]):
     #    for y in range(speed.shape[1]):
