@@ -67,12 +67,12 @@ export default class LineWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    this.updateData(this.props.data)
+    this.updateData(this.props.data, this.props.data_compare)
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props) {
-      this.updateData(this.props.data)
+      this.updateData(this.props.data, this.props.data_compare)
     }
   }
 
@@ -96,7 +96,7 @@ export default class LineWindow extends React.Component {
   /*
     
   */
-  updateData(data) {
+  updateData(data, compare_data) {
     
     let dataset = data.dataset
     let variable = data.variable
