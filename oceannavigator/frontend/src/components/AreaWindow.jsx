@@ -204,6 +204,8 @@ export default class AreaWindow extends React.Component {
       let compare_quantum = compare_data.quantum
       let compare_scale = compare_data.scale
       compare_time = compare_data.time
+      compare_time = moment(compare_time.valueOf())
+      compare_time.tz('GMT')
       let depth = compare_data.depth
       let data_compare = {
         dataset: compare_dataset,
