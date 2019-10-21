@@ -74,6 +74,149 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
+
+
+def find_sca_idx(speed):
+    """
+    (Helper Function)
+    Finds the idx (depth layer) of the Sound Channel Axis
+
+    Parameters:
+    speed: np.array of sound speed values in a single point profile
+    """
+    
+    sca_value = np.nanmin(speed)
+    idx = np.where(speed == sca_value)
+
+    if np.isnan(sca_value):
+        return np.nan
+
+    idx = idx[0][0]
+
+    return int(idx)
+
+
+def find_sld_idx(sca_idx, speed):
+    """
+    (Helper Function)
+    Returns the idx (depth layer) of the Sonic Layer Depth
+
+    Parameters:
+    sca_idx: integer indicating location of value inn speed[x][y]
+    speed: np.array of sound speed values in a single point profile
+    """
+    
+    subset = speed[0:int(sca_idx) + 1]
+    sld_value = subset.max()
+    if np.isnan(sld_value):
+        return np.nan
+    
+    # No shifting, idx in subset is same as idx in full array
+    sld_idx = np.where(subset == sld_value)[0][0]
+
+    return int(sld_idx)
+
+
+def find_cd_idx(sca_idx, sld_idx, speed):
+    """
+    (Helper Function)
+    Finds the index in speed[x][y] of the Critical Depth
+
+    Parameters:
+    sca_idx: integer indicating location of value in speed[x][y]
+    sld_idx: integer indicating location of vlaue in speed[x][y]
+    speed: np.array of data values in a single point profile
+    """
+
+    # No critical depth exists
+    if sca_idx == sld_idx:
+        return np.nan
+
+    # Find Sound Layer Depth
+    sld_value = speed[sld_idx]
+
+    # Find total_idx
+    total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
+    
+    # Create Layer Subset
+    lower_subset = speed[sca_idx + 1: total_idx + 1]
+
+    if lower_subset.size == 0:
+        return np.nan
+
+    # Find min and max value of subset
+    min_value = np.nanmin(lower_subset)
+    max_value = np.nanmax(lower_subset)
+
+    # Determine if Critical Depth exists
+    if max_value < sld_value:
+        return np.nan
+
+    # Find closest idx to sld_value
+    idx = np.abs(lower_subset - sld_value).argmin()
+
+    # Find size of lower subset
+    subset_size = lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
+
+    # Shift to get index for non subset
+    cd_idx = total_idx - (subset_size - idx)
+
+    return cd_idx
+
+def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
+
+    """
+    (Helper Function)
+    Finds the Critical Depth using linear interpolation
+
+    Parameters:
+    cd_idx: Index of the nearest value to critical depth
+    sld_idx: Index of the Sound Layer Depth
+    speed_point: np.array of sound speed for a water column
+    depth: np.array of available depths
+    """
+
+    # Now that we have the nearest critical depth idx we must perform linear interpolation
+    def linearInterp(x1, y1, x2, y2, x):
+        """
+        Finds the linear interpolation given 2 points
+
+        x1: X value (sspeed) of the first point
+        y1: Y value (depth) of the first point
+        x2: X value (sspeed) of the second point
+        y2: Y value (depth) of the seconnd point
+        """
+        y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
+        return y
+
+    sld_value = speed_point[sld_idx]
+    cd_value = speed_point[cd_idx]
+    cd_depth = depth.values[cd_idx]
+
+    if cd_value < sld_value:
+        
+        # Find 2 Points
+        cd_value_1 = cd_value
+        cd_value_2 = speed_point[cd_idx + 1]
+
+        cd_depth_1 = depth.values[cd_idx]
+        cd_depth_2 = depth.values[cd_idx + 1]
+
+        cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+    elif cd_value > sld_value:
+        
+        # Find 2 Points
+        cd_value_1 = speed_point[cd_idx - 1]
+        cd_value_2 = cd_value
+
+        cd_depth_1 = depth.values[cd_idx - 1]
+        cd_depth_2 = depth.values[cd_idx]
+
+        cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
+
+    return cd_depth
+
 def sspeedmin(depth, lat, temperature, salinity):
     """
     Finds the global minimum of the speed of sound
@@ -92,14 +235,18 @@ def sspeedmin(depth, lat, temperature, salinity):
     #    for y in range(speed.shape[1]):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            min_val = np.nanmin(speed[:,y,x])
-            idx = np.where(speed[:,y,x] == min_val)
-            if (np.isnan(min_val)):
-                speed[:,y,x] = np.nan
-            elif idx[0].shape[0] > 1:
-                idx = idx[0][0]
-
-                speed[:,y,x] = depth.values[idx]
+            #min_val = np.nanmin(speed[:,y,x])
+            #idx = np.where(speed[:,y,x] == min_val)
+            
+            #if (np.isnan(min_val)):
+            #    speed[:,y,x] = np.nan
+            #elif idx[0].shape[0] > 1:
+            #    idx = idx[0][0]
+            #    speed[:,y,x] = depth.values[idx]
+            # Find sca idx
+            idx = find_sca_idx(speed[:,y,x])
+            if np.isnan(idx):
+                speed[:,y,x] = idx
             else:
                 speed[:,y,x] = depth.values[idx]
             #speed[x][y] = depth[np.where(speed[x][y] == np.nanmin(speed[x][y]))]  #np.nanmin(speed[x][y])
@@ -150,143 +297,6 @@ def soniclayerdepth(depth, lat, temperature, salinity):
                     speed[:, y, x] = sld
 
     return speed[0] # Only return one horizontal slice
-
-def find_sca_idx(speed):
-    """
-    Finds the idx (depth layer) of the Sound Channel Axis
-
-    Parameters:
-    speed: np.array of sound speed values in a single point profile
-    """
-    
-    sca_value = np.nanmin(speed)
-    idx = np.where(speed == sca_value)
-
-    if np.isnan(sca_value):
-        return np.nan
-
-    idx = idx[0][0]
-
-    return int(idx)
-
-
-def find_sld_idx(sca_idx, speed):
-    """
-    Returns the idx (depth layer) of the Sonic Layer Depth
-
-    Parameters:
-    sca_idx: integer indicating location of value inn speed[x][y]
-    speed: np.array of sound speed values in a single point profile
-    """
-    
-    subset = speed[0:int(sca_idx) + 1]
-    sld_value = subset.max()
-    if np.isnan(sld_value):
-        return np.nan
-    
-    # No shifting, idx in subset is same as idx in full array
-    sld_idx = np.where(subset == sld_value)[0][0]
-
-    return int(sld_idx)
-
-
-def find_cd_idx(sca_idx, sld_idx, speed):
-    """
-    Finds the index in speed[x][y] of the Critical Depth
-
-    Parameters:
-    sca_idx: integer indicating location of value in speed[x][y]
-    sld_idx: integer indicating location of vlaue in speed[x][y]
-    speed: np.array of data values in a single point profile
-    """
-
-    # No critical depth exists
-    if sca_idx == sld_idx:
-        return np.nan
-
-    # Find Sound Layer Depth
-    sld_value = speed[sld_idx]
-
-    # Find total_idx
-    total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
-    
-    # Create Layer Subset
-    lower_subset = speed[sca_idx + 1: total_idx + 1]
-
-    if lower_subset.size == 0:
-        return np.nan
-
-    # Find min and max value of subset
-    min_value = np.nanmin(lower_subset)
-    max_value = np.nanmax(lower_subset)
-
-    # Determine if Critical Depth exists
-    if max_value < sld_value:
-        return np.nan
-
-    # Find closest idx to sld_value
-    idx = np.abs(lower_subset - sld_value).argmin()
-
-    # Find size of lower subset
-    subset_size = lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
-
-    # Shift to get index for non subset
-    cd_idx = total_idx - (subset_size - idx)
-
-    return cd_idx
-
-def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
-
-    """
-    Finds the Critical Depth using linear interpolation
-
-    Parameters:
-    cd_idx: Index of the nearest value to critical depth
-    sld_idx: Index of the Sound Layer Depth
-    speed_point: np.array of sound speed for a water column
-    depth: np.array of available depths
-    """
-
-    # Now that we have the nearest critical depth idx we must perform linear interpolation
-    def linearInterp(x1, y1, x2, y2, x):
-        """
-        Finds the linear interpolation given 2 points
-
-        x1: X value (sspeed) of the first point
-        y1: Y value (depth) of the first point
-        x2: X value (sspeed) of the second point
-        y2: Y value (depth) of the seconnd point
-        """
-        y = y1 + ((x - x1) * ((y2 - y1) / (x2 - x1)))
-        return y
-
-    sld_value = speed_point[sld_idx]
-    cd_value = speed_point[cd_idx]
-    cd_depth = depth.values[cd_idx]
-
-    if cd_value < sld_value:
-        
-        # Find 2 Points
-        cd_value_1 = cd_value
-        cd_value_2 = speed_point[cd_idx + 1]
-
-        cd_depth_1 = depth.values[cd_idx]
-        cd_depth_2 = depth.values[cd_idx + 1]
-
-        cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
-
-    elif cd_value > sld_value:
-        
-        # Find 2 Points
-        cd_value_1 = speed_point[cd_idx - 1]
-        cd_value_2 = cd_value
-
-        cd_depth_1 = depth.values[cd_idx - 1]
-        cd_depth_2 = depth.values[cd_idx]
-
-        cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
-
-    return cd_depth
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
