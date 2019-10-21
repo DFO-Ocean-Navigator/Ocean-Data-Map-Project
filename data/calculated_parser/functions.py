@@ -287,7 +287,6 @@ def criticaldepth(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
-    #speed = speed.transpose()
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
@@ -317,8 +316,6 @@ def criticaldepth(depth, lat, temperature, salinity):
             speed[:,y,x] = cd_depth
                 
 
-    #speed = speed.transpose()
-    #speed = speed[0]
     return speed[0]
 
 def depthexcess(depth, lat, temperature, salinity):
@@ -333,8 +330,6 @@ def depthexcess(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
-    #speed = speed.transpose()
-    
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             # Check for all nan slice
@@ -366,8 +361,6 @@ def depthexcess(depth, lat, temperature, salinity):
             speed[:,y,x] = depth_excess
                 
 
-    #speed = speed.transpose()
-    #speed = speed[0]
     return speed[0]
 
 
