@@ -266,7 +266,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
             sca_idx = find_sca_idx(speed[:,y,x])
 
             if (np.isnan(sca_idx)):
-                speed[:,y,x] = sca_value
+                speed[:,y,x] = sca_idx
             else:
                 #sca_idx = sca_idx[0][0]
 
