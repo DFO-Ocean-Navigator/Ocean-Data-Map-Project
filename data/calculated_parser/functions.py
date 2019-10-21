@@ -217,7 +217,7 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
     return cd_depth
 
-def sspeedmin(depth, lat, temperature, salinity):
+def soundchannelaxis(depth, lat, temperature, salinity):
     """
     Finds the global minimum of the speed of sound
 
