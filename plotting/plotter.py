@@ -91,7 +91,7 @@ class Plotter(metaclass=ABCMeta):
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
             self.compare['variables'] = self.compare['variable'].split(',')
-
+            self.compare['time'] = self.__get_time(self.compare['time'])
             if self.compare.get('colormap_diff') == 'default':
                 self.compare['colormap_diff'] = 'anomaly'
 
