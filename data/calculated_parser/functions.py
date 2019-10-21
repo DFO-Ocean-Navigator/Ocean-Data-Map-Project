@@ -237,12 +237,15 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            idx = find_sca_idx(speed[:,y,x])
-            if np.isnan(idx):
-                speed[:,y,x] = idx
+            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+                idx = find_sca_idx(speed[:,y,x])
+                if np.isnan(idx):
+                    speed[:,y,x] = idx
+                else:
+                    speed[:,y,x] = depth.values[idx]
             else:
-                speed[:,y,x] = depth.values[idx]
-    
+                speed[:,y,x] = np.nan
+                
     return speed[0]
 
 def soniclayerdepth(depth, lat, temperature, salinity):
@@ -265,19 +268,22 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
+            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
             
-            sca_idx = find_sca_idx(speed[:,y,x])
+                sca_idx = find_sca_idx(speed[:,y,x])
 
-            if (np.isnan(sca_idx)):
-                speed[:,y,x] = sca_idx
-            else:
-                sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
-
-                if (np.isnan(sld_idx)):
-                    speed[:,y,x] = sld_idx
+                if (np.isnan(sca_idx)):
+                    speed[:,y,x] = sca_idx
                 else:
-                    sld = depth.values[sld_idx]
-                    speed[:, y, x] = sld
+                    sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
+
+                    if (np.isnan(sld_idx)):
+                        speed[:,y,x] = sld_idx
+                    else:
+                        sld = depth.values[sld_idx]
+                        speed[:, y, x] = sld
+            else:
+                speed[:,y,x] = np.nan
 
     return speed[0] # Only return one horizontal slice
 
