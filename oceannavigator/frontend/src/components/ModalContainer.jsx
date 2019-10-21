@@ -120,6 +120,7 @@ export default class ModalContainer extends React.Component {
             <LineWindow
               data={this.state.data}   // Non compare data
               data_compare={this.state.data_compare !== undefined ? this.state.data_compare : {}}
+              dataset_compare={this.state.dataset_compare}
               line={this.props.line}
               names={this.props.names}
               onUpdate={this.props.updateState}
@@ -144,7 +145,7 @@ export default class ModalContainer extends React.Component {
               projection={this.props.projection}
               onUpdate={this.props.updateState}
               init={this.props.init}
-              dataset_compare={this.props.dataset_compare}
+              dataset_compare={this.state.dataset_compare}
               showHelp={this.props.showHelp}
               action={this.props.action}
               swapViews={this.props.swapViews}
