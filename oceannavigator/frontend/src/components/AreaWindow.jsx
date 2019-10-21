@@ -173,8 +173,8 @@ export default class AreaWindow extends React.Component {
     let quantum = data.quantum
     let scale = data.scale
     let time = data.time
-    let compare_time = moment(time.valueOf())
-    compare_time.tz('GMT')
+    //let compare_time = moment(time.valueOf())
+    //compare_time.tz('GMT')
     time = moment(time.valueOf())
     time.tz('GMT')
     let output_starttime = moment(time.valueOf())
@@ -935,8 +935,8 @@ export default class AreaWindow extends React.Component {
         key='compare'
         onClick={this.updatePlot}
       >Apply Changes</Button>
-
-      const compare_dataset = <div key='compare_dataset'>
+      if (this.state.data_compare.scale !== undefined) {
+        const compare_dataset = <div key='compare_dataset'>
         <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
           <Panel
             key='right_map'
@@ -978,8 +978,9 @@ export default class AreaWindow extends React.Component {
             {applyChanges_compare}
           </Panel>
         </div>
-      </div>;
-
+      </div>
+      }
+      
       let leftInputs = [];
       let rightInputs = [];
 
