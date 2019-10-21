@@ -935,8 +935,9 @@ export default class AreaWindow extends React.Component {
         key='compare'
         onClick={this.updatePlot}
       >Apply Changes</Button>
+      let compare_dataset = []
       if (this.state.data_compare.scale !== undefined) {
-        const compare_dataset = <div key='compare_dataset'>
+        compare_dataset = <div key='compare_dataset'>
         <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
           <Panel
             key='right_map'
