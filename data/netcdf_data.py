@@ -43,7 +43,7 @@ class NetCDFData(Data):
         self._dataset_open: bool = False
         self._dataset_key: str = kwargs.get('dataset_key')
         self._dataset_config: DatasetConfig = DatasetConfig(
-            self._dataset_key)
+            self._dataset_key) if self._dataset_key else None
 
         super(NetCDFData, self).__init__(url)
 
