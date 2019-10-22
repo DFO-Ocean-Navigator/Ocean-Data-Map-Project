@@ -205,6 +205,7 @@ def plot(projection, x, y, z, args):
         variable_name = vc.name
         variable_unit = vc.unit
         scale_factor = vc.scale_factor
+        print(something)
         if 'display' in args:
             if args.get('display') == 'default':
                 cmap = colormap.find_colormap(variable[0])
