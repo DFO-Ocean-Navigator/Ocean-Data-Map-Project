@@ -241,7 +241,7 @@ def sscp(sspeed):
     Ensures:
     Returns either np.nan or 1
     """
-    subset = 
+    
     for d in range(sspeed.shape[0]):
         if d is not 1 and d is not sspeed.shape[0]:
 
