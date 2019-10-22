@@ -285,7 +285,7 @@
             "vozocrte": { "name": "Water East Velocity", "envtype": "ocean", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha", "zero_centered": "true" },
             "vomecrtn": { "name": "Water North Velocity", "envtype": "ocean", "scale": [-3, 3], "scale_factor": 1, "unit": "m/s", "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha", "zero_centered": "true" },
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)" },
-            "sspeedmin": {"name": "Sound Channel Axis (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
+            "soundchannelaxis": {"name": "Sound Channel Axis (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "sscp": {"name": "Secondary Sound Channel Potential (above 1000m)", "envtype": "ocea", "scale": [0,1], "scale_factor": 1, "unit":"m", "equation": "secsoundspeedpotential(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
