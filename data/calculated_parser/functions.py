@@ -94,8 +94,8 @@ def find_sca_idx(speed):
         return np.nan
 
     idx = int(idx[0][0])
-    if idx == 1:
-        idx = np.nan
+    if idx is 0:
+        return np.nan
     return idx
 
 
@@ -241,7 +241,7 @@ def sscp(sspeed):
     Ensures:
     Returns either np.nan or 1
     """
-    
+
     for d in range(sspeed.shape[0]):
         if d is not 1 and d is not sspeed.shape[0]:
 
