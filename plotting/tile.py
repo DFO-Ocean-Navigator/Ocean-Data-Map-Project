@@ -130,7 +130,6 @@ def scale(args):
     if 'colourmap' in args:
         if args.get('colourmap') == 'default':
             cmap = colormap.find_colormap(variable[0])
-            print(something)
         else:
             cmap = colormap.colormaps[args.get('colourmap')]
     else:
