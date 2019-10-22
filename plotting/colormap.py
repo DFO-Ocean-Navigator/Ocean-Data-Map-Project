@@ -57,6 +57,10 @@ colormaps = {
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
     'iron': cmocean.cm.amp,
+    'sspeedmin': cmocean.cm.matter,
+    'soniclayerdepth': cmocean.cm.matter,
+    'depthexcess': cmocean.cm.matter,
+    'soundproducts': cmocean.cm.matter,
     'oxygen': cmocean.cm.oxy,
     'phosphate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
@@ -157,6 +161,7 @@ gettext('Ice')
 gettext('Iron')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
+gettext('Sound Products')
 gettext('Nitrate')
 gettext('Oxygen')
 gettext('Phosphate')
@@ -185,6 +190,7 @@ colormap_names = {
     'iron': 'Iron',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
+    'soundproducts': 'Sound Products',
     'nitrate': 'Nitrate',
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
