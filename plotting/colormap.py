@@ -160,6 +160,7 @@ gettext('Ice')
 gettext('Iron')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
+gettext('Matter')
 gettext('Nitrate')
 gettext('Oxygen')
 gettext('Phosphate')
@@ -188,7 +189,7 @@ colormap_names = {
     'iron': 'Iron',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
-    'matter': 'Matter',
+    'matter': 'Sound Products',
     'nitrate': 'Nitrate',
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
