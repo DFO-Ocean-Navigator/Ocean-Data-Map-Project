@@ -67,12 +67,12 @@ export default class LineWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    this.updateData(this.props.data)
+    this.updateData(this.props.data, this.props.data_compare)
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props) {
-      this.updateData(this.props.data)
+      this.updateData(this.props.data, this.props.data_compare)
     }
   }
 
@@ -96,7 +96,7 @@ export default class LineWindow extends React.Component {
   /*
     
   */
-  updateData(data) {
+  updateData(data, compare_data) {
     
     let dataset = data.dataset
     let variable = data.variable
@@ -132,22 +132,16 @@ export default class LineWindow extends React.Component {
         })
     } else {
 
-      let compare_display = data.display
-      let compare_colourmap = data.colourmap
-      let compare_quantum = data.quantum
-      let compare_scale = data.scale
-      compare_time = data.time
-      
-      let depth = data.depth
+      compare_time = compare_data.time
       
       let data_compare = {
-        dataset: dataset,
-        depth: depth,
-        variable: variable,
-        display: compare_display,
-        colourmap: compare_colourmap,
-        quantum: compare_quantum,
-        scale: compare_scale + ',auto',
+        dataset: compare_data.dataset,
+        depth: compare_data.depth,
+        variable: compare_data.variable,
+        display: compare_data.display,
+        colourmap: compare_data.colourmap,
+        quantum: compare_data.quantum,
+        scale: compare_data.scale + ',auto',
         time: moment(compare_time.valueOf()),
       }
       
@@ -155,6 +149,7 @@ export default class LineWindow extends React.Component {
         data_compare: data_compare,
         output_starttime: output_starttime,
         output_endtime: output_endtime,
+        dataset_compare: true
       })
     }
     

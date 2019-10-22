@@ -110,12 +110,12 @@ export default class AreaWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-    this.updateData(this.props.data)
+    this.updateData(this.props.data, this.props.data_compare)
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.data !== this.props.data) {
-      this.updateData(this.props.data);
+      this.updateData(this.props.data, this.props.data_compare);
     }
   }
 
@@ -164,7 +164,7 @@ export default class AreaWindow extends React.Component {
   /*
     If selected_right is null, empty, or undefined, will only load left map data
   */
-  updateData(data) {
+  updateData(data, compare_data) {
   
     let dataset = data.dataset
     let variable = data.variable
@@ -173,15 +173,16 @@ export default class AreaWindow extends React.Component {
     let quantum = data.quantum
     let scale = data.scale
     let time = data.time
-    let compare_time = moment(time.valueOf())
-    compare_time.tz('GMT')
+    //let compare_time = moment(time.valueOf())
+    //compare_time.tz('GMT')
     time = moment(time.valueOf())
     time.tz('GMT')
     let output_starttime = moment(time.valueOf())
     let output_endtime = moment(time.valueOf())
     let depth = data.depth
 
-    if (jQuery.isEmptyObject(this.props.data_compare)) {
+    //if (jQuery.isEmptyObject(this.props.data_compare)) {
+    if (jQuery.isEmptyObject(compare_data)) { 
       let data_compare = {
         dataset: dataset,
         variable: variable,
@@ -190,7 +191,7 @@ export default class AreaWindow extends React.Component {
         dataset_quantum: quantum,
         scale: scale + ',auto',
         depth: depth,
-        time: compare_time
+        time: time
       }
       this.setState({
         data_compare: data_compare,
@@ -198,21 +199,18 @@ export default class AreaWindow extends React.Component {
         output_endtime: output_endtime,
       })
     } else {
-      let compare_display = data.display
-      let compare_colourmap = data.colourmap
-      let compare_quantum = data.quantum
-      let compare_scale = data.scale
-      compare_time = data.time
-      let depth = data.depth
+      let compare_time = compare_data.time
+      compare_time = moment(compare_time.valueOf())
+      compare_time.tz('GMT')
       let data_compare = {
-        dataset: dataset,
-        depth: depth,
-        variable: variable,
-        display: compare_display,
-        colourmap: compare_colourmap,
-        quantum: compare_quantum,
-        scale: compare_scale + ',auto',
-        time: moment(compare_time.valueOf()),
+        dataset: compare_data.dataset,
+        depth: compare_data.depth,
+        variable: compare_data.variable,
+        display: compare_data.display,
+        colourmap: compare_data.colourmap,
+        quantum: compare_data.quantum,
+        scale: compare_data.scale + ',auto',
+        time: compare_time,
       }
 
       this.setState({
@@ -508,7 +506,7 @@ export default class AreaWindow extends React.Component {
         plotQuery.neighbours = this.props.options.interpNeighbours;
         plotQuery.plotTitle = this.state.plotTitle;
         plotQuery.random = Math.random()
-        if (this.state.dataset_compare) {
+        if (this.props.dataset_compare) {
           let compare = jQuery.extend({}, plotQuery.compare_to)
           compare = this.state.data_compare
           let time = moment(this.state.data_compare.time.valueOf())
@@ -587,7 +585,7 @@ export default class AreaWindow extends React.Component {
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
-            state={this.state.dataset_compare}
+            state={this.props.dataset_compare}
             onUpdate={this.onLocalUpdate}
             title={_("Compare Datasets")}
           />
@@ -616,7 +614,7 @@ export default class AreaWindow extends React.Component {
 
       <div
         style={{
-          display: this.state.dataset_compare &&
+          display: this.props.dataset_compare &&
             this.state.data.variable == this.state.data_compare.variable ? "block" : "none"
         }}
       >
@@ -890,7 +888,7 @@ export default class AreaWindow extends React.Component {
           id='left_map'
           collapsible
           defaultExpanded
-          header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+          header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
           bsStyle='primary'
         >
           {<DatasetSelector
@@ -932,9 +930,10 @@ export default class AreaWindow extends React.Component {
         key='compare'
         onClick={this.updatePlot}
       >Apply Changes</Button>
-
-      const compare_dataset = <div key='compare_dataset'>
-        <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>
+      let compare_dataset = []
+      if (this.state.data_compare.scale !== undefined) {
+        compare_dataset = <div key='compare_dataset'>
+        <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
           <Panel
             key='right_map'
             id='right_map'
@@ -975,8 +974,9 @@ export default class AreaWindow extends React.Component {
             {applyChanges_compare}
           </Panel>
         </div>
-      </div>;
-
+      </div>
+      }
+      
       let leftInputs = [];
       let rightInputs = [];
 
@@ -987,7 +987,7 @@ export default class AreaWindow extends React.Component {
         case 1:
           leftInputs = [/*globalSettings*/mapSettings, subsetPanel];
 
-          if (this.state.dataset_compare) {
+          if (this.props.dataset_compare) {
             rightInputs = [dataset, compare_dataset]
           } else {
             rightInputs = [dataset];
