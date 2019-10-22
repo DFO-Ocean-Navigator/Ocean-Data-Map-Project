@@ -188,6 +188,7 @@ colormap_names = {
     'iron': 'Iron',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
+    'matter': 'Matter'
     'nitrate': 'Nitrate',
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
