@@ -57,6 +57,9 @@ colormaps = {
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
     'iron': cmocean.cm.amp,
+    'soundchannelaxis': cmocean.cm.matter,
+    'soniclayerdepth': cmocean.cm.matter,
+    'depthexcess': cmocean.cm.matter,
     'oxygen': cmocean.cm.oxy,
     'phosphate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
