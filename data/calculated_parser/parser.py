@@ -69,6 +69,13 @@ class Parser:
         return tuple(key)
 
     def get_key_for_var_all(self, variable):
+        """
+        This is the same as get_key_for_variable, 
+        except it will return all depths for the variable, rather than slicing it
+
+        Same parameters as get_key_for_variable as well
+        """
+
         key = self.key
         depth = 0
         if len(variable.shape) == 4:
@@ -113,7 +120,7 @@ class Parser:
         
 
     def p_expression_variable_all(self, t):
-        'expression : TILDA ID'
+        'expression : TILDE ID'
 
         tmp = self.data.variables[t[2]][
             self.get_key_for_var_all(
