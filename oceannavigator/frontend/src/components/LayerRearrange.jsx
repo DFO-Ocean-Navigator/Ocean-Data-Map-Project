@@ -35,7 +35,7 @@ export default class LayerRearrange extends React.PureComponent {
 
   componentDidUpdate(prevProps, prevState) {
     for (let layer in this.props.layers) {
-      if (this.props.layers[layer] !== prevProps.layers[layer]) {
+      if (this.props.layers[layer].values_.scaleBar !== prevProps.layers[layer].values_.scaleBar) {
         this.forceUpdate();
       }
     }
