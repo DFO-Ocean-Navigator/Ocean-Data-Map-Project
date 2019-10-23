@@ -308,7 +308,7 @@ def criticaldepth(depth, lat, temperature, salinity):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
-            if (count_numerical_vals(speed_point))
+            if (count_numerical_vals(speed_point)):
             #if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
                 sca_idx = find_sca_idx(speed_point)
 
