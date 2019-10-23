@@ -130,7 +130,6 @@ def scale(args):
     if 'colourmap' in args:
         if args.get('colourmap') == 'default':
             cmap = colormap.find_colormap(variable[0])
-            print(something)
         else:
             cmap = colormap.colormaps[args.get('colourmap')]
     else:
@@ -212,7 +211,7 @@ def plot(projection, x, y, z, args):
             else:
                 cmap = colormap.colormaps[args.get('display')]
         else:
-            cmap = colormap.find_colormap(variable_name)
+            cmap = colormap.find_colormap(variable[0])
 
 
         if depth != 'bottom':

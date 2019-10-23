@@ -57,7 +57,7 @@ colormaps = {
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
     'iron': cmocean.cm.amp,
-    'sspeedmin': cmocean.cm.matter,
+    'soundchannelaxis': cmocean.cm.matter,
     'soniclayerdepth': cmocean.cm.matter,
     'depthexcess': cmocean.cm.matter,
     'soundproducts': cmocean.cm.matter,
