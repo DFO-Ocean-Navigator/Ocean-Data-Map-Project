@@ -269,7 +269,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
-    result = numpy.empty(speed.shape[-1], speed.shape[-2])
+    result = np.empty((speed.shape[-1], speed.shape[-2]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
