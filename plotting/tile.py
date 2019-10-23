@@ -127,7 +127,7 @@ def scale(args):
         variable_unit = config.variable[variable[0]].unit
         variable_name = config.variable[variable[0]].name
 
-    cmap = colormap.find_colormap(variable_name)
+    cmap = colormap.find_colormap(variable[0])
 
     if len(variable) == 2:
         cmap = colormap.colormaps.get('speed')
