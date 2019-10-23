@@ -88,14 +88,16 @@ def find_sca_idx(speed):
     """
     
     sca_value = np.nanmin(speed)
-    idx = np.where(speed == sca_value)
-
     if np.isnan(sca_value):
         return np.nan
 
-    idx = idx[0][0]
+    idx = np.where(speed == sca_value)    
+    idx = int(idx[0][0])
 
-    return int(idx)
+    if idx is 0:
+        return np.nan
+    
+    return idx
 
 
 def find_sld_idx(sca_idx, speed):
