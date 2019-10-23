@@ -133,7 +133,7 @@ def scale(args):
         else:
             cmap = colormap.colormaps[args.get('colourmap')]
     else:
-        cmap = colormap.find_colormap(variable_name)
+        cmap = colormap.find_colormap(variable[0])
 
     
     if len(variable) == 2:

@@ -829,12 +829,12 @@ export default class Layer extends React.Component {
     new_layer.set('name', this.props.layerType)
 
     // Create Scale Bar and Add to Layer
-    let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
-      {this.state.icons[this.props.layerType]}
-      <div className='indexNum'>{}</div>
-      <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
-    </div>
-    new_layer.set('scaleBar', scaleBar)
+    //let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
+    //  {this.state.icons[this.props.layerType]}
+    //  <div className='indexNum'>{}</div>
+    //  <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
+    //</div>
+    //new_layer.set('scaleBar', scaleBar)
 
     // Saves the new layer
     this.setState({
@@ -900,6 +900,7 @@ export default class Layer extends React.Component {
     layer.set('data', data)
 
     // Create Scale Bar and Add to Layer
+    
     let scaleBar = <div key={this.state.current_dataset + this.state.current_variable + this.props.layerType}>
     {this.state.icons[this.props.layerType]}
     <div className='indexNum'>{}</div>
