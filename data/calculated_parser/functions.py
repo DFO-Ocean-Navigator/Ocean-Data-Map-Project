@@ -74,7 +74,8 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
-
+def count_numerical_vals(array):
+    return array.size - np.count_nonzero(np.isnan(array))
 
 def find_sca_idx(speed):
     """
@@ -144,7 +145,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     sld_value = speed[sld_idx]
 
     # Find total_idx
-    total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
+    total_idx = count_numerical_vals(speed) - 1  #speed.size - np.count_nonzero(np.isnan(speed)) - 1
     
     # Create Layer Subset
     lower_subset = speed[sca_idx + 1: total_idx + 1]
@@ -164,7 +165,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     idx = np.abs(lower_subset - sld_value).argmin()
 
     # Find size of lower subset
-    subset_size = lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
+    subset_size = count_numerical_vals(lower_subset) - 1 #lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
 
     # Shift to get index for non subset
     cd_idx = total_idx - (subset_size - idx)
@@ -239,7 +240,8 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+            if count_numerical_vals(speed[:,y,x]) != 0:
+            #if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
                 idx = find_sca_idx(speed[:,y,x])
                 if np.isnan(idx):
                     speed[:,y,x] = idx
@@ -267,27 +269,29 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
-    
+    result = numpy.empty(speed.shape[-1], speed.shape[-2])
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+            speed_point = speed[:,y,x]
+            if (count_numerical_vals(speed_point) != 0):
+            #if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
             
-                sca_idx = find_sca_idx(speed[:,y,x])
+                sca_idx = find_sca_idx(speed_point)
 
                 if (np.isnan(sca_idx)):
-                    speed[:,y,x] = sca_idx
+                    result[x,y] = sca_idx
                 else:
-                    sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
+                    sld_idx = find_sld_idx(sca_idx, speed_point)
 
                     if (np.isnan(sld_idx)):
-                        speed[:,y,x] = sld_idx
+                        result[x,y] = sld_idx
                     else:
                         sld = depth.values[sld_idx]
-                        speed[:, y, x] = sld
+                        result[x,y] = sld
             else:
-                speed[:,y,x] = np.nan
+                result[x,y] = np.nan
 
-    return speed[0] # Only return one horizontal slice
+    return result # Only return one horizontal slice
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
@@ -303,8 +307,9 @@ def criticaldepth(depth, lat, temperature, salinity):
     speed = sspeed(depth, lat, temperature, salinity)
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                speed_point = speed[:,y,x]
+            speed_point = speed[:,y,x]
+            if (count_numerical_vals(speed_point))
+            #if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
                 sca_idx = find_sca_idx(speed_point)
 
                 # Sound Channel Axis Exists
@@ -347,8 +352,9 @@ def depthexcess(depth, lat, temperature, salinity):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             # Check for all nan slice
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                speed_point = speed[:,y,x]
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point):
+            #if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
                 
