@@ -857,8 +857,9 @@ export default class Layer extends React.Component {
     <div className='indexNum'>{}</div>
     <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
     </div>
-    layer.set('scaleBar', scaleBar)
-    
+
+    layer.set('scaleBar', jQuery.extend({}, scaleBar))
+
     let props = layer.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
     //let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
