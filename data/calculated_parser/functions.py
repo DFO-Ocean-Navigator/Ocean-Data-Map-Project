@@ -246,7 +246,6 @@ def sscp_point(sspeed):
     """
 
     for d in range(sspeed.shape[0]):
-        print(something)
         if d is not 1 and d is not sspeed.shape[0]:
             
             print(something)
