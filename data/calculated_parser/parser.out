@@ -15,31 +15,30 @@ Rule 9     expression -> LPAREN expression RPAREN
 Rule 10    expression -> NUMBER
 Rule 11    expression -> CONST
 Rule 12    expression -> ID LPAREN arguments RPAREN
-Rule 13    expression -> TIMES TIMES ID LPAREN arguments RPAREN
-Rule 14    arguments -> argument
-Rule 15    arguments -> arguments COMMA argument
-Rule 16    argument -> expression
+Rule 13    arguments -> argument
+Rule 14    arguments -> arguments COMMA argument
+Rule 15    argument -> expression
 
 Terminals, with rules where they appear
 
-COMMA                : 15
+COMMA                : 14
 CONST                : 11
 DIVIDE               : 7
-ID                   : 2 12 13
-LPAREN               : 9 12 13
+ID                   : 2 12
+LPAREN               : 9 12
 MINUS                : 3 5
 NUMBER               : 8 10
 PLUS                 : 4
 POWER                : 8
-RPAREN               : 9 12 13
-TIMES                : 6 13 13
+RPAREN               : 9 12
+TIMES                : 6
 error                : 
 
 Nonterminals, with rules where they appear
 
-argument             : 14 15
-arguments            : 12 13 15
-expression           : 1 3 4 4 5 5 6 6 7 7 8 9 16
+argument             : 13 14
+arguments            : 12 14
+expression           : 1 3 4 4 5 5 6 6 7 7 8 9 15
 statement            : 0
 
 Parsing method: LALR
@@ -59,14 +58,12 @@ state 0
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
     statement                      shift and go to state 1
     expression                     shift and go to state 2
@@ -87,11 +84,11 @@ state 2
     (8) expression -> expression . POWER NUMBER
 
     $end            reduce using rule 1 (statement -> expression .)
-    PLUS            shift and go to state 9
-    MINUS           shift and go to state 10
-    TIMES           shift and go to state 11
-    DIVIDE          shift and go to state 12
-    POWER           shift and go to state 13
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
 
 
 state 3
@@ -107,7 +104,7 @@ state 3
     $end            reduce using rule 2 (expression -> ID .)
     RPAREN          reduce using rule 2 (expression -> ID .)
     COMMA           reduce using rule 2 (expression -> ID .)
-    LPAREN          shift and go to state 14
+    LPAREN          shift and go to state 13
 
 
 state 4
@@ -124,25 +121,16 @@ state 4
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 15
+    expression                     shift and go to state 14
 
 state 5
-
-    (13) expression -> TIMES . TIMES ID LPAREN arguments RPAREN
-
-    TIMES           shift and go to state 16
-
-
-state 6
 
     (10) expression -> NUMBER .
 
@@ -156,7 +144,7 @@ state 6
     COMMA           reduce using rule 10 (expression -> NUMBER .)
 
 
-state 7
+state 6
 
     (9) expression -> LPAREN . expression RPAREN
     (2) expression -> . ID
@@ -170,18 +158,16 @@ state 7
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 17
+    expression                     shift and go to state 15
 
-state 8
+state 7
 
     (11) expression -> CONST .
 
@@ -195,7 +181,7 @@ state 8
     COMMA           reduce using rule 11 (expression -> CONST .)
 
 
-state 9
+state 8
 
     (4) expression -> expression PLUS . expression
     (2) expression -> . ID
@@ -209,18 +195,16 @@ state 9
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 18
+    expression                     shift and go to state 16
 
-state 10
+state 9
 
     (5) expression -> expression MINUS . expression
     (2) expression -> . ID
@@ -234,18 +218,16 @@ state 10
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 19
+    expression                     shift and go to state 17
 
-state 11
+state 10
 
     (6) expression -> expression TIMES . expression
     (2) expression -> . ID
@@ -259,18 +241,16 @@ state 11
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 20
+    expression                     shift and go to state 18
 
-state 12
+state 11
 
     (7) expression -> expression DIVIDE . expression
     (2) expression -> . ID
@@ -284,30 +264,28 @@ state 12
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    expression                     shift and go to state 21
+    expression                     shift and go to state 19
 
-state 13
+state 12
 
     (8) expression -> expression POWER . NUMBER
 
-    NUMBER          shift and go to state 22
+    NUMBER          shift and go to state 20
 
 
-state 14
+state 13
 
     (12) expression -> ID LPAREN . arguments RPAREN
-    (14) arguments -> . argument
-    (15) arguments -> . arguments COMMA argument
-    (16) argument -> . expression
+    (13) arguments -> . argument
+    (14) arguments -> . arguments COMMA argument
+    (15) argument -> . expression
     (2) expression -> . ID
     (3) expression -> . MINUS expression
     (4) expression -> . expression PLUS expression
@@ -319,20 +297,18 @@ state 14
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    arguments                      shift and go to state 23
-    argument                       shift and go to state 24
-    expression                     shift and go to state 25
+    arguments                      shift and go to state 21
+    argument                       shift and go to state 22
+    expression                     shift and go to state 23
 
-state 15
+state 14
 
     (3) expression -> MINUS expression .
     (4) expression -> expression . PLUS expression
@@ -350,21 +326,14 @@ state 15
     RPAREN          reduce using rule 3 (expression -> MINUS expression .)
     COMMA           reduce using rule 3 (expression -> MINUS expression .)
 
-  ! PLUS            [ shift and go to state 9 ]
-  ! MINUS           [ shift and go to state 10 ]
-  ! TIMES           [ shift and go to state 11 ]
-  ! DIVIDE          [ shift and go to state 12 ]
-  ! POWER           [ shift and go to state 13 ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
+  ! POWER           [ shift and go to state 12 ]
 
 
-state 16
-
-    (13) expression -> TIMES TIMES . ID LPAREN arguments RPAREN
-
-    ID              shift and go to state 26
-
-
-state 17
+state 15
 
     (9) expression -> LPAREN expression . RPAREN
     (4) expression -> expression . PLUS expression
@@ -373,15 +342,15 @@ state 17
     (7) expression -> expression . DIVIDE expression
     (8) expression -> expression . POWER NUMBER
 
-    RPAREN          shift and go to state 27
-    PLUS            shift and go to state 9
-    MINUS           shift and go to state 10
-    TIMES           shift and go to state 11
-    DIVIDE          shift and go to state 12
-    POWER           shift and go to state 13
+    RPAREN          shift and go to state 24
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
 
 
-state 18
+state 16
 
     (4) expression -> expression PLUS expression .
     (4) expression -> expression . PLUS expression
@@ -395,18 +364,18 @@ state 18
     $end            reduce using rule 4 (expression -> expression PLUS expression .)
     RPAREN          reduce using rule 4 (expression -> expression PLUS expression .)
     COMMA           reduce using rule 4 (expression -> expression PLUS expression .)
-    TIMES           shift and go to state 11
-    DIVIDE          shift and go to state 12
-    POWER           shift and go to state 13
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
 
   ! TIMES           [ reduce using rule 4 (expression -> expression PLUS expression .) ]
   ! DIVIDE          [ reduce using rule 4 (expression -> expression PLUS expression .) ]
   ! POWER           [ reduce using rule 4 (expression -> expression PLUS expression .) ]
-  ! PLUS            [ shift and go to state 9 ]
-  ! MINUS           [ shift and go to state 10 ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
 
 
-state 19
+state 17
 
     (5) expression -> expression MINUS expression .
     (4) expression -> expression . PLUS expression
@@ -420,18 +389,18 @@ state 19
     $end            reduce using rule 5 (expression -> expression MINUS expression .)
     RPAREN          reduce using rule 5 (expression -> expression MINUS expression .)
     COMMA           reduce using rule 5 (expression -> expression MINUS expression .)
-    TIMES           shift and go to state 11
-    DIVIDE          shift and go to state 12
-    POWER           shift and go to state 13
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
 
   ! TIMES           [ reduce using rule 5 (expression -> expression MINUS expression .) ]
   ! DIVIDE          [ reduce using rule 5 (expression -> expression MINUS expression .) ]
   ! POWER           [ reduce using rule 5 (expression -> expression MINUS expression .) ]
-  ! PLUS            [ shift and go to state 9 ]
-  ! MINUS           [ shift and go to state 10 ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
 
 
-state 20
+state 18
 
     (6) expression -> expression TIMES expression .
     (4) expression -> expression . PLUS expression
@@ -447,16 +416,16 @@ state 20
     $end            reduce using rule 6 (expression -> expression TIMES expression .)
     RPAREN          reduce using rule 6 (expression -> expression TIMES expression .)
     COMMA           reduce using rule 6 (expression -> expression TIMES expression .)
-    POWER           shift and go to state 13
+    POWER           shift and go to state 12
 
   ! POWER           [ reduce using rule 6 (expression -> expression TIMES expression .) ]
-  ! PLUS            [ shift and go to state 9 ]
-  ! MINUS           [ shift and go to state 10 ]
-  ! TIMES           [ shift and go to state 11 ]
-  ! DIVIDE          [ shift and go to state 12 ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
 
 
-state 21
+state 19
 
     (7) expression -> expression DIVIDE expression .
     (4) expression -> expression . PLUS expression
@@ -472,16 +441,16 @@ state 21
     $end            reduce using rule 7 (expression -> expression DIVIDE expression .)
     RPAREN          reduce using rule 7 (expression -> expression DIVIDE expression .)
     COMMA           reduce using rule 7 (expression -> expression DIVIDE expression .)
-    POWER           shift and go to state 13
+    POWER           shift and go to state 12
 
   ! POWER           [ reduce using rule 7 (expression -> expression DIVIDE expression .) ]
-  ! PLUS            [ shift and go to state 9 ]
-  ! MINUS           [ shift and go to state 10 ]
-  ! TIMES           [ shift and go to state 11 ]
-  ! DIVIDE          [ shift and go to state 12 ]
+  ! PLUS            [ shift and go to state 8 ]
+  ! MINUS           [ shift and go to state 9 ]
+  ! TIMES           [ shift and go to state 10 ]
+  ! DIVIDE          [ shift and go to state 11 ]
 
 
-state 22
+state 20
 
     (8) expression -> expression POWER NUMBER .
 
@@ -495,49 +464,42 @@ state 22
     COMMA           reduce using rule 8 (expression -> expression POWER NUMBER .)
 
 
-state 23
+state 21
 
     (12) expression -> ID LPAREN arguments . RPAREN
-    (15) arguments -> arguments . COMMA argument
+    (14) arguments -> arguments . COMMA argument
 
-    RPAREN          shift and go to state 28
-    COMMA           shift and go to state 29
-
-
-state 24
-
-    (14) arguments -> argument .
-
-    RPAREN          reduce using rule 14 (arguments -> argument .)
-    COMMA           reduce using rule 14 (arguments -> argument .)
+    RPAREN          shift and go to state 25
+    COMMA           shift and go to state 26
 
 
-state 25
+state 22
 
-    (16) argument -> expression .
+    (13) arguments -> argument .
+
+    RPAREN          reduce using rule 13 (arguments -> argument .)
+    COMMA           reduce using rule 13 (arguments -> argument .)
+
+
+state 23
+
+    (15) argument -> expression .
     (4) expression -> expression . PLUS expression
     (5) expression -> expression . MINUS expression
     (6) expression -> expression . TIMES expression
     (7) expression -> expression . DIVIDE expression
     (8) expression -> expression . POWER NUMBER
 
-    RPAREN          reduce using rule 16 (argument -> expression .)
-    COMMA           reduce using rule 16 (argument -> expression .)
-    PLUS            shift and go to state 9
-    MINUS           shift and go to state 10
-    TIMES           shift and go to state 11
-    DIVIDE          shift and go to state 12
-    POWER           shift and go to state 13
+    RPAREN          reduce using rule 15 (argument -> expression .)
+    COMMA           reduce using rule 15 (argument -> expression .)
+    PLUS            shift and go to state 8
+    MINUS           shift and go to state 9
+    TIMES           shift and go to state 10
+    DIVIDE          shift and go to state 11
+    POWER           shift and go to state 12
 
 
-state 26
-
-    (13) expression -> TIMES TIMES ID . LPAREN arguments RPAREN
-
-    LPAREN          shift and go to state 30
-
-
-state 27
+state 24
 
     (9) expression -> LPAREN expression RPAREN .
 
@@ -551,7 +513,7 @@ state 27
     COMMA           reduce using rule 9 (expression -> LPAREN expression RPAREN .)
 
 
-state 28
+state 25
 
     (12) expression -> ID LPAREN arguments RPAREN .
 
@@ -565,10 +527,10 @@ state 28
     COMMA           reduce using rule 12 (expression -> ID LPAREN arguments RPAREN .)
 
 
-state 29
+state 26
 
-    (15) arguments -> arguments COMMA . argument
-    (16) argument -> . expression
+    (14) arguments -> arguments COMMA . argument
+    (15) argument -> . expression
     (2) expression -> . ID
     (3) expression -> . MINUS expression
     (4) expression -> . expression PLUS expression
@@ -580,75 +542,20 @@ state 29
     (10) expression -> . NUMBER
     (11) expression -> . CONST
     (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
 
     ID              shift and go to state 3
     MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
+    LPAREN          shift and go to state 6
+    NUMBER          shift and go to state 5
+    CONST           shift and go to state 7
 
-    argument                       shift and go to state 31
-    expression                     shift and go to state 25
+    argument                       shift and go to state 27
+    expression                     shift and go to state 23
 
-state 30
+state 27
 
-    (13) expression -> TIMES TIMES ID LPAREN . arguments RPAREN
-    (14) arguments -> . argument
-    (15) arguments -> . arguments COMMA argument
-    (16) argument -> . expression
-    (2) expression -> . ID
-    (3) expression -> . MINUS expression
-    (4) expression -> . expression PLUS expression
-    (5) expression -> . expression MINUS expression
-    (6) expression -> . expression TIMES expression
-    (7) expression -> . expression DIVIDE expression
-    (8) expression -> . expression POWER NUMBER
-    (9) expression -> . LPAREN expression RPAREN
-    (10) expression -> . NUMBER
-    (11) expression -> . CONST
-    (12) expression -> . ID LPAREN arguments RPAREN
-    (13) expression -> . TIMES TIMES ID LPAREN arguments RPAREN
+    (14) arguments -> arguments COMMA argument .
 
-    ID              shift and go to state 3
-    MINUS           shift and go to state 4
-    LPAREN          shift and go to state 7
-    NUMBER          shift and go to state 6
-    CONST           shift and go to state 8
-    TIMES           shift and go to state 5
-
-    arguments                      shift and go to state 32
-    argument                       shift and go to state 24
-    expression                     shift and go to state 25
-
-state 31
-
-    (15) arguments -> arguments COMMA argument .
-
-    RPAREN          reduce using rule 15 (arguments -> arguments COMMA argument .)
-    COMMA           reduce using rule 15 (arguments -> arguments COMMA argument .)
-
-
-state 32
-
-    (13) expression -> TIMES TIMES ID LPAREN arguments . RPAREN
-    (15) arguments -> arguments . COMMA argument
-
-    RPAREN          shift and go to state 33
-    COMMA           shift and go to state 29
-
-
-state 33
-
-    (13) expression -> TIMES TIMES ID LPAREN arguments RPAREN .
-
-    PLUS            reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    MINUS           reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    TIMES           reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    DIVIDE          reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    POWER           reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    $end            reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    RPAREN          reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
-    COMMA           reduce using rule 13 (expression -> TIMES TIMES ID LPAREN arguments RPAREN .)
+    RPAREN          reduce using rule 14 (arguments -> arguments COMMA argument .)
+    COMMA           reduce using rule 14 (arguments -> arguments COMMA argument .)
 
