@@ -248,9 +248,10 @@ def sscp_point(sspeed, max_idx):
     
     mins = argrelextrema(sspeed, np.less)
     if len(mins) > 1:
+        print(something)
         return 1
     else:
-        return np.nan
+        return 0
 
             
 def sscp(depth, lat, temperature,salinity):
@@ -282,7 +283,7 @@ def sscp(depth, lat, temperature,salinity):
                 speed_point = speed_point[:num]
                 result[y,x] = sscp_point(speed_point, max_depth)
             else:
-                result[y,x] = np.nan
+                result[y,x] = 0
 
     return result
                 
