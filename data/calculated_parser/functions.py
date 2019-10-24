@@ -266,7 +266,9 @@ def sscp(depth, lat, temperature,salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
-    max_depth = np.abs(depth - 1000).argmin()
+    max_depth = np.abs(depth.values - 1000).argmin()
+    if depth.values[max_depth] > 1000:
+        max_depth = max_depth - 1
     temp_subset = speed[:max_depth]
     salinity_subset = salinity[:max_depth]
     speed = sspeed(depth, lat, temp_subset, salinity_subset)
