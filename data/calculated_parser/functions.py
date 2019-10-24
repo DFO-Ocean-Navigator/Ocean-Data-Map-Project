@@ -246,7 +246,7 @@ def sscp_point(sspeed):
     """
 
     for d in range(sspeed.shape[0]):
-        if d is not 1 and d is not sspeed.shape[0]:
+        if d is not 0 and d is not sspeed.shape[0]:
             
             print(something)
             return __is_max(sspeed[d-1], sspeed[d], sspeed[d+1])
