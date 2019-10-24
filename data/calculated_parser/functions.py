@@ -248,7 +248,8 @@ def sscp_point(sspeed):
     for d in range(sspeed.shape[0]):
         if d is not 0 and d is not sspeed.shape[0]:
             
-            print(something)
+            if not np.isnan(__is_max(sspeed[d-1], sspeed[d], sspeed[d+1])):
+                print(something)
             return __is_max(sspeed[d-1], sspeed[d], sspeed[d+1])
         
 def sscp(depth, lat, temperature,salinity):
