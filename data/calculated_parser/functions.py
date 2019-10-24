@@ -246,7 +246,11 @@ def sscp_point(sspeed, max_idx):
     Returns either np.nan or 1
     """
     
-    print(something)
+    mins = argrelextrema(sspeed, np.less)
+    if len(mins) > 1:
+        return 1
+    else:
+        return np.nan
 
             
 def sscp(depth, lat, temperature,salinity):
