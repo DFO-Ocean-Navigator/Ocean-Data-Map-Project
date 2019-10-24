@@ -544,7 +544,7 @@ export default class Layer extends React.Component {
         current_variable: variable,
         current_scale: 0,
         //depths: this.props.datasetconfig[],
-        test: this.props.datasetconfig[this.state.current_dataset],
+        test: this.props.datasetconfig[this.state.current_dataset][variable].scale,
         current_depth: 0,
       }, () => {this.sendData('update'); this.updateDates()});
       
