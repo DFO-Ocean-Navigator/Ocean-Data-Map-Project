@@ -236,16 +236,19 @@ class Nemo(CalculatedData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        # Get xarray.Variable - This is where the calculating occurs
+        # Get xarray.Variable
         var = self.get_dataset_variable(variable)
+
         time = self.timestamp_to_time_index(timestamp)
         
+
         if depth == 'bottom':
             
             if hasattr(time, "__len__"):
                 d = var[time[0], :, miny:maxy, minx:maxx]
             else:
                 d = var[time, :, miny:maxy, minx:maxx]
+
             reshaped = np.ma.masked_invalid(d.values.reshape([d.shape[0], -1]))
 
             edges = np.array(np.ma.notmasked_edges(reshaped, axis=0))
@@ -279,6 +282,7 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data,
             )
+
             if return_depth:
                 d = self.depths[depths]
                 d = np.zeros(data.shape)
@@ -296,6 +300,7 @@ class Nemo(CalculatedData):
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
+
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
                 lonvar[miny:maxy, minx:maxx],

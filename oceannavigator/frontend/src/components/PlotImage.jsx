@@ -155,7 +155,6 @@ export default class PlotImage extends React.PureComponent {
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
-        query.annotate = q.annotate;
         query.time = q.time;
         if (q.compare_to) {
           query.compare_to = {

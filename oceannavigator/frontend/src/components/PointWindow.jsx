@@ -46,7 +46,6 @@ export default class PointWindow extends React.Component {
       colormap: "default",
       starttime: Math.max(props.time - 24, 0),
       variables: [],
-      annotate: false,
       variable: [props.variable],
       observation_variable: [7],
       size: "10x7",
@@ -242,14 +241,6 @@ export default class PointWindow extends React.Component {
         state={this.state.showmap}
         onUpdate={this.onLocalUpdate}
         title={_("Show Location")}>{_("showmap_help")}
-      </SelectBox>
-
-      <SelectBox
-        key='annotate'
-        id='annotate'
-        state={this.state.annotate}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Annotations")}>
       </SelectBox>
       
       <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
@@ -474,7 +465,6 @@ export default class PointWindow extends React.Component {
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
-        plot_query.annotate = this.state.annotate
         inputs = [global, time];
         break;
       case TabEnum.OBSERVATION:
