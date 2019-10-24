@@ -1282,15 +1282,19 @@ export default class Layer extends React.Component {
           url='/api/v1.0/colormaps/'
           title={_("Colour Map")}></ComboBox>
 
-        <ReactSimpleRange
-          className='iceSlider'
-          value={this.state.opacity}
-          min={0}
-          max={100}
-          step={1}
-          label={true}
-          onChange={this.updateTransparency}
-        />
+        <div className='ComboBox input'>
+          Transparency
+          <ReactSimpleRange
+            className='iceSlider'
+            value={this.state.opacity}
+            min={0}
+            max={100}
+            step={1}
+            label={true}
+            onChange={this.updateTransparency}
+          />
+        </div>
+        
 
         <Button className='addIceButton' onClick={this.toggleLayer}>
           {_(this.state.layerState)}
