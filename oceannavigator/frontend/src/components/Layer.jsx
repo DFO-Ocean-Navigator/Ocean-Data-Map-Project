@@ -1147,7 +1147,7 @@ export default class Layer extends React.Component {
           this.state.current_depth + "/" +
           timeString + ".json"
         }
-        default_scale={this.state.current_scale}
+        default_scale={this.state.default_scale}
       ></Range>
     }
 
