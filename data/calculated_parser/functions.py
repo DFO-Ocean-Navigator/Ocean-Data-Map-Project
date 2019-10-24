@@ -266,18 +266,22 @@ def sscp(depth, lat, temperature,salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
+
+    # Find last index before 1000m
     max_depth = np.abs(depth.values - 1000).argmin()
     if depth.values[max_depth] > 1000:
         max_depth = max_depth - 1
-    #temp_subset = temperature[:max_depth]
-    #salinity_subset = salinity[:max_depth]
-    #speed = sspeed(depth, lat, temp_subset, salinity_subset)
-    speed = speed[:max_depth]
     
+    speed = speed[:max_depth] # Don't need anything beyond 1000m
+
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                speed[:,y,x] = sscp(speed[:,y,x])
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point) != 0:
+                result[y,x] = sscp_point(speed_point)
+            else:
+                result[y,x] = np.nan
 
                 
 def soundchannelaxis(depth, lat, temperature, salinity):
