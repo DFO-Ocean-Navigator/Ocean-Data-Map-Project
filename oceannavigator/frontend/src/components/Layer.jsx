@@ -1283,7 +1283,7 @@ export default class Layer extends React.Component {
           title={_("Colour Map")}></ComboBox>
 
         <div className='ComboBox input'>
-          Transparency
+          <h1>Transparency</h1>
           <ReactSimpleRange
             className='iceSlider'
             value={this.state.opacity}
