@@ -244,7 +244,9 @@ def sscp_point(sspeed, max_idx):
     Ensures:
     Returns either np.nan or 1
     """
-    channels = []
+    
+    print(something)
+
     for d in range(sspeed.shape[0]):
         if d is not 0 and d is not sspeed.shape[0] -1:
             idx = __is_min(sspeed[d-1], sspeed[d], sspeed[d+1])
