@@ -275,6 +275,8 @@ def sscp(depth, lat, temperature,salinity):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
+            num = count_numerical_vals(speed_point)
+            speed_point = speed_point[:num]
             if count_numerical_vals(speed_point) != 0:
                 result[y,x] = sscp_point(speed_point)
             else:
