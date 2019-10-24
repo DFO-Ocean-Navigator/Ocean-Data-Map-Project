@@ -248,19 +248,6 @@ def sscp_point(sspeed, max_idx):
     
     print(something)
 
-    for d in range(sspeed.shape[0]):
-        if d is not 0 and d is not sspeed.shape[0] -1:
-            idx = __is_min(sspeed[d-1], sspeed[d], sspeed[d+1])
-            if not np.isnan(idx):
-                channels.append(idx)
-                if len(channels) > 1:
-                    break
-
-    if len(channels) > 1:
-        if channels[0] < max_idx:
-            return 1
-
-    return np.nan
             
 def sscp(depth, lat, temperature,salinity):
     """
