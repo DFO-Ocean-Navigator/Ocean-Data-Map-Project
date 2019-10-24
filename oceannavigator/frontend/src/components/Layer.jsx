@@ -332,6 +332,7 @@ export default class Layer extends React.Component {
         current_quantum: new_quantum,
         current_variable: new_variable,
         current_scale: new_scale,
+        default_scale: new_scale,
       }, () => {
         this.updateDates();
         this.changeTimeSource({
@@ -544,7 +545,7 @@ export default class Layer extends React.Component {
         current_variable: variable,
         current_scale: 0,
         depths: depths, //this.props.datasetconfig[],
-        current_scale: this.props.datasetconfig[this.state.current_dataset][variable].scale,
+        default_scale: this.props.datasetconfig[this.state.current_dataset][variable].scale,
         current_depth: 0,
       }, () => {this.sendData('update'); this.updateDates()});
       
