@@ -887,9 +887,8 @@
             },
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" },
             "sspeedmin": {"name": "Sound Channel Axis (BETA)", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "depthexcess": {"name": "Depth Excess (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, ~votemper - 273.15, ~vosaline)"}            
-            }
+            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,100], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"}
+        }
     },
     "riops_monthly_surface": {
         "url": "/home/buildadm/ocean-nav/db/RIOPS-Monthly-Surface.sqlite3",
