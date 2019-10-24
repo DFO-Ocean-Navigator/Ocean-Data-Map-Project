@@ -316,7 +316,7 @@ def contour(projection, x, y, z, args):
 
     contour_data = []
     
-    time = self.__get_time(config, time)
+    time = __get_time(config, time)
             
 
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
