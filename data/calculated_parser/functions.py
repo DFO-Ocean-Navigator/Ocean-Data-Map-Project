@@ -226,6 +226,54 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
 
     return cd_depth
 
+
+def __is_max(p1, p2, p3):
+    if p2 > p1 and p2 > p3:
+        return 1
+    else:
+        return np.nan
+
+def sscp_point(sspeed):
+    """
+    sscp - Secondary Sound Channel Potential (above 1000m)
+    This function determines if a secondary sound channel could exist in a water column
+
+    Parameters:
+    sspeed: np.array of sound speeds for a single water column
+    
+    Ensures:
+    Returns either np.nan or 1
+    """
+
+    for d in range(sspeed.shape[0]):
+        if d is not 1 and d is not sspeed.shape[0]:
+
+            print(something)
+            return __is_max(sspeed[d-1], sspeed[d], sspeed[d+1])
+        else:
+            return np.nan
+
+def sscp(depth, lat, temperature,salinity):
+    """
+    Determines if a Secondary Sound Channel could exist (above 1000m)
+
+    Parameters:
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
+    """
+    max_depth = np.abs(depth - 1000).argmin()
+    temp_subset = speed[:max_depth]
+    salinity_subset = salinity[:max_depth]
+    speed = sspeed(depth, lat, temp_subset, salinity_subset)
+
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
+                speed[:,y,x] = sscp(speed[:,y,x])
+
+                
 def soundchannelaxis(depth, lat, temperature, salinity):
     """
     Finds the global minimum of the speed of sound
