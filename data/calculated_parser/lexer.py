@@ -17,6 +17,7 @@ class Lexer:
                 'TIMES',
                 'DIVIDE',
                 'POWER',
+                'TILDE',
                 'LPAREN',
                 'RPAREN',
                 'ID',
@@ -30,6 +31,7 @@ class Lexer:
         self.t_TIMES = '\\*'
         self.t_DIVIDE = '/'
         self.t_POWER = '\\^'
+        self.t_TILDE = '~'
         self.t_LPAREN = '\\('
         self.t_RPAREN = '\\)'
         self.t_COMMA = ','
