@@ -264,6 +264,8 @@ def sscp(depth, lat, temperature,salinity):
     temperature: The temperatures(s) (at all depths) in celsius
     salinity: The salinity (at all depths) (unitless)
     """
+
+    speed = sspeed(depth, lat, temperature, salinity)
     max_depth = np.abs(depth - 1000).argmin()
     temp_subset = speed[:max_depth]
     salinity_subset = salinity[:max_depth]
