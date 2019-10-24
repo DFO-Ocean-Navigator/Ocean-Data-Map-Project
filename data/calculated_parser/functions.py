@@ -250,7 +250,7 @@ def sscp_point(sspeed, max_idx):
             idx = __is_min(sspeed[d-1], sspeed[d], sspeed[d+1])
             if not np.isnan(idx):
                 channels.append(idx)
-                if len(channels > 1):
+                if len(channels) > 1:
                     break
 
     if len(channels) > 1:
