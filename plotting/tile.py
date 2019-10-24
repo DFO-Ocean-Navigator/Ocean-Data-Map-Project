@@ -43,7 +43,7 @@ def num2deg(xtile, ytile, zoom):
     lat_deg = math.degrees(lat_rad)
     return (lat_deg, lon_deg)
 
-def __get_time(self,config, param: str) -> int:
+def __get_time(self, config, param: str) -> int:
         if not param:
             return -1
         time = None
@@ -316,20 +316,20 @@ def contour(projection, x, y, z, args):
 
     contour_data = []
     
-    time = __get_time(config, time)
+    #time = __get_time(config, time)
             
 
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
         
-        t_len = len(dataset.timestamps)
-        while time >= t_len:
-            time -= t_len
+        #t_len = len(dataset.timestamps)
+        #while time >= t_len:
+        #    time -= t_len
 
-        while time < 0:
-            time += len(dataset.timestamps)
+        #while time < 0:
+        #    time += len(dataset.timestamps)
 
-        timestamp = dataset.timestamps[time]
+        #timestamp = dataset.timestamps[time]
 
         contour_data = []
 
