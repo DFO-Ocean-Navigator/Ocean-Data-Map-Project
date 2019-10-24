@@ -227,13 +227,13 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     return cd_depth
 
 
-def __is_max(p1, p2, p3):
-    if p2 > p1 and p2 > p3:
-        return 1
+def __is_min(p1, p2, p3):
+    if p2 < p1 and p2 < p3:
+        return p2
     else:
         return np.nan
 
-def sscp_point(sspeed):
+def sscp_point(sspeed, max_idx):
     """
     sscp - Secondary Sound Channel Potential (above 1000m)
     This function determines if a secondary sound channel could exist in a water column
@@ -244,14 +244,21 @@ def sscp_point(sspeed):
     Ensures:
     Returns either np.nan or 1
     """
-
+    channels = []
     for d in range(sspeed.shape[0]):
         if d is not 0 and d is not sspeed.shape[0]:
+            idx = __is_min(sspeed[d-1], sspeed[d], sspeed[d+1])
+            if not np.isnan(idx):
+                channels.append(idx)
+                if len(channels > 1):
+                    break
+
+    if len(channels) > 1:
+        if channels[0] < max_idx:
+            return 1
+
+    return np.nan
             
-            if not np.isnan(__is_max(sspeed[d-1], sspeed[d], sspeed[d+1])):
-                print(something)
-            return __is_max(sspeed[d-1], sspeed[d], sspeed[d+1])
-        
 def sscp(depth, lat, temperature,salinity):
     """
     Determines if a Secondary Sound Channel could exist (above 1000m)
@@ -270,16 +277,16 @@ def sscp(depth, lat, temperature,salinity):
     if depth.values[max_depth] > 1000:
         max_depth = max_depth - 1
     
-    speed = speed[:max_depth] # Don't need anything beyond 1000m
+    #speed = speed[:max_depth] # Don't need anything beyond 1000m
 
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
             num = count_numerical_vals(speed_point)
-            speed_point = speed_point[:num]
-            if count_numerical_vals(speed_point) != 0:
-                result[y,x] = sscp_point(speed_point)
+            if num != 0:
+                speed_point = speed_point[:num]
+                result[y,x] = sscp_point(speed_point, max_depth)
             else:
                 result[y,x] = np.nan
 
