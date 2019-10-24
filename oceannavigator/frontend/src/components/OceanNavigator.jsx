@@ -64,10 +64,10 @@ export default class OceanNavigator extends React.Component {
           id: 'colour',
           value: 'Colour',
         },
-        /*{
+        {
           id: 'contours',
           value: 'Contours',
-        },
+        }/*,
         {
           id: 'windbarbs',
           value: 'Wind Barbs (BETA)',
