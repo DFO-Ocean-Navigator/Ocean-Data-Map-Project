@@ -18,6 +18,7 @@ from PIL import Image
 from pyproj import Proj
 from scipy.ndimage.filters import gaussian_filter
 from skimage import measure
+from data.utils import datetime_to_timestamp, string_to_datetime
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -42,6 +43,18 @@ def num2deg(xtile, ytile, zoom):
     lat_deg = math.degrees(lat_rad)
     return (lat_deg, lon_deg)
 
+def __get_time(self,config, param: str) -> int:
+        if not param:
+            return -1
+        time = None
+        try:
+            time = datetime_to_timestamp(
+                string_to_datetime(param), config.time_dim_units)
+
+        except:
+            time = int(param)
+
+        return time
 
 def get_m_coords(projection, x, y, z):
     if projection == 'EPSG:3857':
@@ -169,7 +182,18 @@ def scale(args):
 
 
 def plot(projection, x, y, z, args):
-    
+    """
+    Returns a tile which displays specified data in colour
+
+    Parameters:
+    projections: The map projection
+    x: x coordinate for tile slicing
+    y: y coordinate for tile slicing
+    z: depth
+    args: Other plotting settings
+
+    """
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -264,6 +288,17 @@ def plot(projection, x, y, z, args):
     return buf
 
 def contour(projection, x, y, z, args):
+    """
+
+    Parameters:
+    projections: The map projection
+    x: x coordinate for tile slicing
+    y: y coordinate for tile slicing
+    z: depth
+    args: Other plotting settings
+
+    """
+
     lat, lon = get_latlon_coords(projection, x, y, z)
 
     if len(lat.shape) == 1:
@@ -281,14 +316,12 @@ def contour(projection, x, y, z, args):
 
     contour_data = []
     
+    time = self.__get_time(config, time)
+            
+
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
-        if args.get('time') is None or (type(args.get('time')) == str and
-                                        len(args.get('time')) == 0):
-            time = -1
-        else:
-            time = int(args.get('time'))
-
+        
         t_len = len(dataset.timestamps)
         while time >= t_len:
             time -= t_len
