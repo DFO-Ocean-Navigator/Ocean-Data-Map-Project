@@ -290,6 +290,7 @@ def sscp(depth, lat, temperature,salinity):
             else:
                 result[y,x] = np.nan
 
+    return result
                 
 def soundchannelaxis(depth, lat, temperature, salinity):
     """
