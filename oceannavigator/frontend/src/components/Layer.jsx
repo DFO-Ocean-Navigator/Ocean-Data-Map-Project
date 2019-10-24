@@ -542,7 +542,9 @@ export default class Layer extends React.Component {
     $.when(depths_promise).done(function (depths) {
       this.setState({
         current_variable: variable,
-        depths: depths,
+        current_scale: 0,
+        //depths: this.props.datasetconfig[],
+        test: this.props.datasetconfig[this.state.current_dataset],
         current_depth: 0,
       }, () => {this.sendData('update'); this.updateDates()});
       
