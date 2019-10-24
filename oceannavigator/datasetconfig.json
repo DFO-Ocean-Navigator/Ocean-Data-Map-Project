@@ -14,64 +14,6 @@
         "lat_var_key": "nav_lat",
         "lon_var_key": "nav_lon",
         "variables": {
-            "aice": {
-                "envtype": "ice",
-                "hide": "false",
-                "name": "Ice Concentration",
-                "scale": [
-                    0,
-                    1
-                ],
-                "scale_factor": 1,
-                "unit": "fraction"
-            },
-            "sossheig": {
-                "envtype": "ocean",
-                "hide": "false",
-                "name": "Sea Surface Height",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m",
-                "zero_centered": "true"
-            },
-            "u_wind": {
-                "envtype": "met",
-                "hide": "false",
-                "name": "Zonal Wind",
-                "scale": [
-                    -20,
-                    20
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "zero_centered": "true"
-            },
-            "v_wind": {
-                "envtype": "met",
-                "hide": "false",
-                "name": "Meridional Wind",
-                "scale": [
-                    -20,
-                    20
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "zero_centered": "true"
-            },
-            "vice": {
-                "envtype": "ice",
-                "hide": "false",
-                "name": "Ice Volume",
-                "scale": [
-                    0,
-                    10
-                ],
-                "scale_factor": 1,
-                "unit": "m"
-            },
             "vomecrty": {
                 "envtype": "ocean",
                 "hide": "false",
@@ -212,49 +154,6 @@
                 "equation": "gradient_y(votemper - 273.15, nav_lat, nav_lon)",
                 "dims": ["time_counter", "depth", "y", "x"],
                 "zero_centered": "True"
-            },
-            "temp_gradientx,temp_gradienty": {
-                "envtype": "ocean",
-                "name": "Temperature Gradient",
-                "unit": "degree Celsius/km",
-                "scale_factor": 1000,
-                "scale": [0, 0.5],
-                "hide": "true"
-            },
-            "geo_x": {
-                "envtype": "ocean",
-                "hide": "false",
-                "name": "Geostrophic X",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "equation": "geostrophic_x(sossheig, nav_lat, nav_lon)",
-                "dims": ["time_counter", "y", "x"],
-                "zero_centered": "True"
-            },
-            "geo_y": {
-                "envtype": "ocean",
-                "hide": "false",
-                "name": "Geostrophic Y",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "equation": "geostrophic_y(sossheig, nav_lat, nav_lon)",
-                "dims": ["time_counter", "y", "x"],
-                "zero_centered": "True"
-            },
-            "geo_x,geo_y": {
-                "envtype": "ocean",
-                "name": "Geostrophic Current",
-                "unit": "m/s",
-                "scale_factor": 1,
-                "scale": [0, 3]
             }
         }
     },
