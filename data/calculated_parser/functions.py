@@ -310,7 +310,9 @@ def slopeofsomething_point(sspeed, depth):
         # Determine breaking condition
         if previous_slope - new_slope < 0:
             return previous_slope
-
+        elif temp_sspeed.shape[0] = 2:
+            return np.nan
+        
         previous_slope = new_slope
 
     return np.nan
