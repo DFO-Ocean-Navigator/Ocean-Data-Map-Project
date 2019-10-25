@@ -337,6 +337,7 @@ def slopeofsomething(depth, lat, temperature, salinity):
             speed_point = speed[:,y,x]
             num = count_numerical_vals(speed_point)
             if num != 0:
+                print(something)
                 sca_idx = find_sca_idx(speed_point)
                 sld_idx = find_sld_idx(sca_idx, speed_point)
                 speed_point = speed_point[sld_idx:sca_idx]
