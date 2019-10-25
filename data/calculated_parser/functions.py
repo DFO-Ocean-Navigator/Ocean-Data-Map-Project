@@ -309,9 +309,11 @@ def slopeofsomething_point(sspeed, depth):
 
         # Determine breaking condition
         if previous_slope - new_slope < 0:
-            break
+            return previous_slope
 
         previous_slope = new_slope
+
+    return np.nan
 
 def slopeofsomething(depth, lat, temperature, salinity):
     """
@@ -331,8 +333,10 @@ def slopeofsomething(depth, lat, temperature, salinity):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
             if count_numerical_vals(speed_point) != 0:
-                # Do stuff here
-                pass
+                slope = slopeofsomething_point(sspeed, depth)
+                result[y,x] = slope
+
+    return result
 
 def soundchannelaxis(depth, lat, temperature, salinity):
     """
