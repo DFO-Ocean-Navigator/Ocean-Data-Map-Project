@@ -339,15 +339,15 @@ def slopeofsomething(depth, lat, temperature, salinity):
                 sca_idx = find_sca_idx(speed_point)
                 if np.isnan(sca_idx):
                     result[y,x] = np.nan
-                
-                sld_idx = find_sld_idx(sca_idx, speed_point)
-                if np.isnan(sld_idx):
-                    result[y,x] = np.nan
-                
-                speed_point = speed_point[sld_idx:sca_idx]
-                num = count_numerical_vals(speed_point)
-                slope = slopeofsomething_point(speed_point[:num], depth[:num])
-                result[y,x] = slope
+                else:
+                    sld_idx = find_sld_idx(sca_idx, speed_point)
+                    if np.isnan(sld_idx):
+                        result[y,x] = np.nan
+                    else:
+                        speed_point = speed_point[sld_idx:sca_idx]
+                        num = count_numerical_vals(speed_point)
+                        slope = slopeofsomething_point(speed_point[:num], depth[:num])
+                        result[y,x] = slope
 
     print(something)
     return result
