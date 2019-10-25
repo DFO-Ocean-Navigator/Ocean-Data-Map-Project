@@ -9,7 +9,7 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-from scipy.signal import argrelextrema
+from scipy.signal import argrelextrema, lineregress
 
 _ureg = UnitRegistry()
 
@@ -285,7 +285,55 @@ def sscp(depth, lat, temperature,salinity):
                 result[y,x] = 0
 
     return result
-                
+
+def slopeofsomething_point(sspeed, depth):
+    """
+    Finds the slope of the subset before the change in slope becomes too positvie
+    => Threshold must still be determined
+
+    Parameters:
+    sspeed: Speed of sound subsetted from Sonic Layer Depth to Sound Channel Axis of a sound channel
+    depth: Depth layers subsetted using the criteria as sspeed
+    """
+
+    temp_sspeed = sspeed
+    temp_depth = depth
+    previous_slope, intercept, r_value, p_value, std_err = linregress(x, y)
+
+    while True:
+
+        temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
+        temp_depth = temp_sspeed[:temp_depth.shape[0]-1]
+
+        new_slope, intercept, r_value, p_value, std_err = linregress(x, y)
+
+        # Determine breaking condition
+        if previous_slope - new_slope < 0:
+            break
+
+        previous_slope = new_slope
+
+def slopeofsomething(depth, lat, temperature, salinity):
+    """
+    Find the slope of the change in sound speed after the sonic layer depth
+
+    Parameters:
+    depth: The depth(s) in meters
+    lat: The latitudes(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
+    """
+
+    speed = sspeed(depth, lat, temperature, salinity)
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
+
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point) != 0:
+                # Do stuff here
+                pass
+
 def soundchannelaxis(depth, lat, temperature, salinity):
     """
     Finds the global minimum of the speed of sound
