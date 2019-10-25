@@ -335,12 +335,12 @@ def slopeofsomething(depth, lat, temperature, salinity):
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             speed_point = speed[:,y,x]
-            
-            sca_idx = find_sca_idx(speed_point)
-            sld_idx = find_sld_idx(sca_idx, speed_point)
-            speed_point = speed_point[sld_idx:sca_idx]
             num = count_numerical_vals(speed_point)
             if num != 0:
+                sca_idx = find_sca_idx(speed_point)
+                sld_idx = find_sld_idx(sca_idx, speed_point)
+                speed_point = speed_point[sld_idx:sca_idx]
+                num = count_numerical_vals(speed_point)
                 slope = slopeofsomething_point(speed_point[:num], depth[:num])
                 result[y,x] = slope
 
