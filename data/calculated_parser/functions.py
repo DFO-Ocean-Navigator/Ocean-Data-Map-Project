@@ -296,13 +296,14 @@ def slopeofsomething_point(sspeed, depth):
     depth: Depth layers subsetted using the criteria as sspeed
     """
 
+
     temp_sspeed = sspeed
     temp_depth = depth
     previous_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
     if temp_sspeed.shape[0] == 2:
         return np.nan
 
-    while True:
+    while sspeed.shape[0] >= 2:
 
         temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
         temp_depth = temp_depth[:temp_depth.shape[0]-1]
@@ -310,8 +311,8 @@ def slopeofsomething_point(sspeed, depth):
         # Determine breaking condition
         if previous_slope - new_slope > -0.1:
             return previous_slope
-        elif temp_sspeed.shape[0] == 2:
-            return np.nan
+        #elif temp_sspeed.shape[0] == 2:
+        #    return np.nan
         
         previous_slope = new_slope
 
