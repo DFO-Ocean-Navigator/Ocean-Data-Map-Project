@@ -350,7 +350,6 @@ def slopeofsomething(depth, lat, temperature, salinity):
                         slope = slopeofsomething_point(speed_point[:num], depth[:num])
                         result[y,x] = slope
 
-    print(something)
     return result
 
 def soundchannelaxis(depth, lat, temperature, salinity):
