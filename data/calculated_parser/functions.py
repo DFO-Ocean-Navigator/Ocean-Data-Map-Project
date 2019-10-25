@@ -301,13 +301,13 @@ def slopeofsomething_point(sspeed, depth):
     previous_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
     if temp_sspeed.shape[0] == 2:
         return np.nan
-        
+
     while True:
 
         temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
         temp_depth = temp_sspeed[:temp_depth.shape[0]-1]
         new_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
-
+        print(something)
         # Determine breaking condition
         if previous_slope - new_slope < 0.5:
             return previous_slope
