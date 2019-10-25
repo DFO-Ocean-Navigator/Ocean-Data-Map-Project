@@ -303,7 +303,7 @@ def slopeofsomething_point(sspeed, depth):
     if temp_sspeed.shape[0] == 2:
         return np.nan
 
-    while sspeed.shape[0] >= 2:
+    while temp_sspeed.shape[0] >= 2:
 
         temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
         temp_depth = temp_depth[:temp_depth.shape[0]-1]
