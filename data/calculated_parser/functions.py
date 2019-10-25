@@ -9,7 +9,7 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-from scipy.signal import argrelextrema, lineregress
+from scipy.signal import argrelextrema, linregress
 
 _ureg = UnitRegistry()
 
