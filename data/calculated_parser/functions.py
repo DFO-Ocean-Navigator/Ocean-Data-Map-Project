@@ -338,17 +338,18 @@ def slopeofsomething(depth, lat, temperature, salinity):
             if num != 0:
                 sca_idx = find_sca_idx(speed_point)
                 if np.isnan(sca_idx):
-                    return sca_idx
+                    return np.nan
                 
                 sld_idx = find_sld_idx(sca_idx, speed_point)
                 if np.isnan(sld_idx):
-                    return sld_idx
+                    return np.nan
                 
                 speed_point = speed_point[sld_idx:sca_idx]
                 num = count_numerical_vals(speed_point)
                 slope = slopeofsomething_point(speed_point[:num], depth[:num])
                 result[y,x] = slope
 
+    print(something)
     return result
 
 def soundchannelaxis(depth, lat, temperature, salinity):
