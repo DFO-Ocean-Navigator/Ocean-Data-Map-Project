@@ -27,16 +27,15 @@ class Parser:
 
     def parse(self, expression, data, key, dims):
         """Parse the expression and return the result
-
         Parameters:
         expression -- the string expression to parse
         data -- the xarray or netcdf dataset to pull data from
         key -- the key passed along from the __getitem__ call, a tuple of
                integers and/or slices
         dims -- the dimensions that correspond to the key, a list of strings
-
         Returns a numpy array of data.
         """
+        
         self.data = data
         self.result = np.nan
         self.key = key
@@ -50,10 +49,8 @@ class Parser:
     def get_key_for_variable(self, variable):
         """Using self.key and self.dims, determine the key for the particular
         variable.
-
         Params:
         variable -- the xarray or netcdf variable
-
         Returns a tuple of integers and/or slices
         """
         key = self.key
@@ -69,8 +66,43 @@ class Parser:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
             raise SyntaxError
-
         return tuple(key)
+
+    def get_key_for_var_all(self, variable):
+        """
+        This is the same as get_key_for_variable, 
+        except it will return all depths for the variable, rather than slicing it
+
+        Same parameters as get_key_for_variable as well
+        """
+
+        key = self.key
+        depth = 0
+        if len(variable.shape) == 4:
+            depth = variable.shape[1]
+        else:
+            depth = variable.shape[0]
+        new_slice = slice(0,depth)
+        key = list(key)
+        key[1] = new_slice
+        key = tuple(key)
+        
+        if not isinstance(key, tuple):
+            key = (key,)
+
+        d = dict(zip(self.dims, key))
+        try:
+            if hasattr(variable, "dims"):
+                # xarray calls it dims
+                key = [d[k] for k in variable.dims]
+            else:
+                key = [d[k] for k in variable.dimensions]
+        except KeyError:
+            raise SyntaxError
+        return tuple(key)
+        # Loop through key change
+
+        
 
     # Similar to the Lexer, these p_*, methods cannot have proper python
     # docstrings, because it's used for the parsing specification.
@@ -85,6 +117,17 @@ class Parser:
                     self.data.variables[t[1]]
                     )
                 ]
+        
+
+    def p_expression_variable_all(self, t):
+        'expression : TILDE ID'
+
+        tmp = self.data.variables[t[2]][
+            self.get_key_for_var_all(
+                self.data.variables[t[2]]
+            )
+        ]
+        t[0] = tmp
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
@@ -127,7 +170,7 @@ class Parser:
             t[0] = getattr(functions, fname)(*arg_list)
         else:
             raise SyntaxError
-
+    
     def p_arguments(self, t):
         'arguments : argument'
         t[0] = [t[1]]

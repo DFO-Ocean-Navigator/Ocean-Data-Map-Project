@@ -47,6 +47,9 @@ colormaps = {
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
+    'soundchannelaxis': cmocean.cm.matter,
+    'soniclayerdepth': cmocean.cm.matter,
+    'depthexcess': cmocean.cm.matter,
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
@@ -56,6 +59,7 @@ colormaps = {
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
     'iron': cmocean.cm.amp,
+    'matter': cmocean.cm.matter,
     'oxygen': cmocean.cm.oxy,
     'phosphate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
@@ -152,6 +156,7 @@ gettext('Sea Surface Height (Free Surface)')
 gettext('Greyscale')
 gettext('Ice')
 gettext('Iron')
+gettext('Sound Products')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
 gettext('Nitrate')
@@ -179,6 +184,7 @@ colormap_names = {
     'grey': 'Greyscale',
     'ice': 'Ice',
     'iron': 'Iron',
+    'matter': 'Sound Products',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
     'nitrate': 'Nitrate',
