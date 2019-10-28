@@ -185,7 +185,7 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     speed_point: np.array of sound speed for a water column
     depth: np.array of available depths
     """
-
+    print("DEPTH: ", depth)
     # Now that we have the nearest critical depth idx we must perform linear interpolation
     def linearInterp(x1, y1, x2, y2, x):
         """
