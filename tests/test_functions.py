@@ -1,4 +1,3 @@
-from data.calculated_parser/functions.py import *
 import numpy as np
 
 class TestFunctions(unittest.TestCase):
