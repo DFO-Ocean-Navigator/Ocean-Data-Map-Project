@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
+from data/calculated_parser/function.py import *
 
 
 class TestFunctions(unittest.TestCase):
