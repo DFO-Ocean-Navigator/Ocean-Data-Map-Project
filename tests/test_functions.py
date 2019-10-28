@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+
 import numpy as np
+
 
 class TestFunctions(unittest.TestCase):
 
-    def test_sspeed(self):
+    #def test_sspeed(self):
         
     
     def test_sscp_point(self):
