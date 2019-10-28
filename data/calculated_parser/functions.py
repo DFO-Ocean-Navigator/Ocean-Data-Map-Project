@@ -296,7 +296,6 @@ def slopeofsomething_point(sspeed, depth):
     depth: Depth layers subsetted using the criteria as sspeed
     """
 
-
     temp_sspeed = sspeed
     temp_depth = depth
     previous_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
