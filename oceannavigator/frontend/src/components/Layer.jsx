@@ -261,7 +261,7 @@ export default class Layer extends React.Component {
         // Check to see if the current variable also exists in the new dataset.
         // If so, use it
         if ('votemper' in this.props.datasetconfig[new_dataset].variables) {
-          new_varable = v;
+          new_varable = 'votemper';
           new_scale = this.props.datasetconfig[new_dataset].variables[new_variable].scale;
         } else {
           for (let v in this.props.datasetconfig[new_dataset].variables) {
