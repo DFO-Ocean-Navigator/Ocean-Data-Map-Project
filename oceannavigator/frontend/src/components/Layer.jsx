@@ -120,42 +120,7 @@ export default class Layer extends React.Component {
     this.createLayer();
   }
 
-  /*
-  setCurrent() {
-    let dataset = ''
-    let quantum
-    if (this.props.defaultDataset != undefined) {
-      for (dataset in this.state.datasets) {
-        if (this.state.datasets[dataset] === this.props.defaultDataset) {
-          quantum = this.state.datasets[dataset]['quantum']
-        }
-      }
-      dataset = this.props.defaultDataset
-    } else {
-      dataset = this.state.datasets[0]['id']
-      quantum = this.state.datasets[0]['quantum']
-    }
-
-    let variable = ''
-    if (this.props.defaultVariable != undefined) {
-      variable = this.props.defaultVariable
-
-    } else {
-      variable = this.state.variables[0]['id']
-    }
-
-
-    let depth = 0
-    this.setState({
-      current_dataset: dataset,
-      current_variable: variable,
-      current_scale: this.state.variables[0]['scale'],
-      current_depth: depth,
-      current_quantum: quantum,
-    })
-  }
-  */
-
+  
   loadExisting(data) {
     // Check if the data belongs to the layer
     this.props.preload
@@ -167,13 +132,6 @@ export default class Layer extends React.Component {
         current_variable: '',
         current_depth: '',
       })
-
-      // SendData
-
-      // Force layerUpdate()
-
-      // 
-
     }
   }
 
@@ -181,9 +139,9 @@ export default class Layer extends React.Component {
     Sends the data information back to OceanNavigator.jsx to be used by the modals
     
   */
+ /*
   sendData(update) {
     return
-    console.warn("SEND DATA")
     let data
     if (this.state.current_map in this.props.state.data) {
       data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
@@ -256,7 +214,7 @@ export default class Layer extends React.Component {
     new_data[this.state.current_map] = data
     this.props.globalUpdate('data', new_data)
   }
-
+*/
 
   /*
     
@@ -273,19 +231,23 @@ export default class Layer extends React.Component {
     let new_scale
     let new_depth_list
 
+    // Not null, we need to remove old data before adding new
+    // This MIGHT be DEPRECATED
     if (dataset !== null && dataset !== undefined) {
       this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
     }
+
+    // Ensures we have the required data to continue
     if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
 
-      // Check for giops_day
+      // Check for giops_day (Tries to load as default dataset)
       if ('giops_day' in this.props.datasetconfig && dataset === undefined || dataset === null) {
 
         new_dataset = 'giops_day';
         let giops_obj = this.props.datasetconfig['giops_day']
         new_quantum = giops_obj.quantum
 
-        // Check for votemper
+        // Check for votemper (Tries to load as default variable)
         if ('votemper' in giops_obj.variables) {
           new_variable = 'votemper';
           new_scale = giops_obj.variables['votemper'].scale
@@ -297,17 +259,26 @@ export default class Layer extends React.Component {
           }
         }
 
+      // Trying to set a specific dataset
       } else if (dataset !== undefined && dataset !== null) {
         
         new_dataset = dataset;
         new_quantum = this.props.datasetconfig[dataset].quantum;
         
-        for (let v in this.props.datasetconfig[new_dataset].variables) {
-          new_variable = v;
+        // Check to see if the current variable also exists in the new dataset.
+        // If so, use it
+        if ('votemper' in this.props.datasetconfig[new_dataset].variables) {
+          new_varable = v;
           new_scale = this.props.datasetconfig[new_dataset].variables[new_variable].scale;
-          
-          break;
+        } else {
+          for (let v in this.props.datasetconfig[new_dataset].variables) {
+            new_variable = v;
+            new_scale = this.props.datasetconfig[new_dataset].variables[new_variable].scale;
+            
+            break;
+          }
         }
+        
         
       } else {
         for (let d in this.props.datasetconfig) {
@@ -538,15 +509,18 @@ export default class Layer extends React.Component {
     const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + this.state.current_dataset + '&variable=' + variable)
 
     this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    let scale = this.props.datasetconfig[this.state.current_dataset].variables[variables].scale;
+    this.setState({
+      current_variable: variable,
+      current_scale: scale,
+      default_scale: scale,
+      current_depth: 0,
+    })
 
     // Finds depth for new variable (often the same)
     $.when(depths_promise).done(function (depths) {
       this.setState({
-        current_variable: variable,
-        current_scale: 0,
         depths: depths, //this.props.datasetconfig[],
-        default_scale: this.props.datasetconfig[this.state.current_dataset].variables[variable].scale,
-        current_depth: 0,
       }, () => {this.sendData('update'); this.updateDates()});
       
     }.bind(this))
@@ -789,7 +763,6 @@ export default class Layer extends React.Component {
   updateDates() {
     let url = "/api/v1.0/timestamps/?dataset=" + this.state.current_dataset + "&variable=" + this.state.current_variable;
     const time_promise = $.ajax(url);
-    console.warn("UPDATE DATES")
     // Finds depth for new variable (often the same)
     $.when(time_promise).done(function (times) {
       let time = {};
@@ -798,7 +771,6 @@ export default class Layer extends React.Component {
       time.callback = () => {console.warn("CALLBACK FUNCTION")};
       time.idx = this.state.current_map + this.props.layerType + this.props.index + this.state.current_dataset + this.state.current_variable;
       time.icon = this.state.icons[this.props.layerType]
-      console.warn("time.icon: ", time.icon, this.props.layerType, this.state.icons);
       let updated_layer = this.state.layer;
       updated_layer.set('time', time);
 

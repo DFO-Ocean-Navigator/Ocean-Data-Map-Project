@@ -25,8 +25,7 @@ export default class ModalContainer extends React.Component {
   constructor(props) {
     super(props);
 
-    console.warn("INIT: ", this.props.init)
-    if (this.props.init !== undefined) {
+    \if (this.props.init !== undefined) {
       this.state = {
         selected: true,
       }
@@ -200,7 +199,6 @@ export default class ModalContainer extends React.Component {
       )
 
       let dataAvailable = true;
-      console.warn("DATA KEYS: ", Object.keys(this.state.data), Object.keys(this.state.data_compare))
       if (Object.keys(this.state.data).length !== 0 || Object.keys(this.state.data_compare).length !== 0) {
         dataAvailable = false;
       }

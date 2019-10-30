@@ -175,7 +175,6 @@ export default class PointWindow extends React.Component {
   }
 
   onTimeUpdate(key, value) {
-    console.warn("UPDATING TIME: ", key, value);
     if (typeof(key) === typeof('string')) {
       this.setState({
         [key]: value

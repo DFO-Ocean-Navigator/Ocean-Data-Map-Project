@@ -555,7 +555,6 @@ export default class TimeSelect extends React.Component {
         let startTime
         let endTime
         if (this.state.select === 'day') {
-            console.warn("SETTING TIME")
             // If quantum === 'day'
             if (Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name]).length === 1) {
                 let year = this.state.selected_year
@@ -563,18 +562,11 @@ export default class TimeSelect extends React.Component {
                 month = month - 1
                 let day = e.target.name
 
-                console.warn("YEAR: ", year)
-                console.warn("MONTH: ", month)
-                console.warn("DAY: ", day)
-
+                
                 // Fetch correct hour, min, sec from available times
                 let hour = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name])[0]
                 let min = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour])[0]
                 let sec = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][e.target.name][hour][min])[0]
-
-                console.warn("HOUR: ", hour);
-                console.warn("MINUTE: ", min);
-                console.warn("SECOND: ", sec);
 
                 var startTimeObj = new moment()
                 var endTimeObj = new moment()
@@ -590,7 +582,6 @@ export default class TimeSelect extends React.Component {
                     second: sec,
                     milliseconds: 0,
                 })
-                console.warn("START TIME: ", startTimeObj.format('YYYY-MM-DD'))
                 endTimeObj.set({
                     year: year,
                     month: month,
@@ -600,8 +591,7 @@ export default class TimeSelect extends React.Component {
                     second: sec,
                     milliseconds: 0,
                 })
-                console.warn("END TIME: ", endTimeObj.format("YYYY-MM-DD"))
-
+            
                 if (this.state.selecting === 'startTime') {
                     let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
                     if (difference > 10 || difference < 0) {
