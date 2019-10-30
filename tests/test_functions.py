@@ -107,7 +107,7 @@ class TestFunctions(unittest.TestCase):
         sca_idx = 6
         sld_idx = 3
 
-        test_result = find_cd_idx(sca_idx, sld_idx, sspeed_3)
+        test_result = find_cd_idx(sca_idx, sld_idx, sspeed_4)
         self.assertEqual(test_result, 10)
         
 
