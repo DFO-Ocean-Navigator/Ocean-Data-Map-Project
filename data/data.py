@@ -135,11 +135,11 @@ class Data(object, metaclass=abc.ABCMeta):
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
                              endtime, variable, return_depth=False):
         return self.get_point(latitude, longitude, depth,
-                              list(range(starttime, endtime + 1)),
+                              [starttime, endtime],
                               variable, return_depth=return_depth)
 
     def get_timeseries_profile(self, latitude, longitude, starttime,
                                endtime, variable):
         return self.get_profile(latitude, longitude,
-                                list(range(starttime, endtime + 1)),
+                                [starttime, endtime],
                                 variable)
