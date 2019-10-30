@@ -111,16 +111,16 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(test_result, 10)
         
 
-    def test_cd_interpolation(self):
+    #def test_cd_interpolation(self):
     
         # Testing Typical sspeed profile
-        sspeed_1 = np.array([1434.08, 1435.48, 1436.10, 1435.16, 1433.01, 1432.80, 1432.54, 1432.75, 1433.20, 1434.92, 1435.81, 1436.80, 1437.91])
-        cd_idx = 10
-        sld_idx = 2
-        depth = np.array([0, 10, 30, 60, 100, 150, 210, 280, 360, 460, 560, 670, 790])
+        #sspeed_1 = np.array([1434.08, 1435.48, 1436.10, 1435.16, 1433.01, 1432.80, 1432.54, 1432.75, 1433.20, 1434.92, 1435.81, 1436.80, 1437.91])
+        #cd_idx = 10
+        #sld_idx = 2
+        #depth = np.array([0, 10, 30, 60, 100, 150, 210, 280, 360, 460, 560, 670, 790])
         
-        test_result = cd_interpolation(cd_idx, sld_idx, sspeed_1, depth)
-        self.assertEqual(test_result, 10)
+        #test_result = cd_interpolation(cd_idx, sld_idx, sspeed_1, depth)
+        #self.assertEqual(test_result, 10)
     
         # Testing immediately declining sspeed profile
         #sspeed_2 = np.array([1436.17, 1435.52, 1434.81, 1433.56, 1433.90, 1434.18, 1434.75, 1435.00, 1435.63, 1435.99, 1436.28, 1436.61, 1437.12])
