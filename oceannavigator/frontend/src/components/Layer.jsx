@@ -502,7 +502,7 @@ export default class Layer extends React.Component {
     const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + this.state.current_dataset + '&variable=' + variable)
 
     this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
-    let scale = this.props.datasetconfig[this.state.current_dataset].variables[variables].scale;
+    let scale = this.props.datasetconfig[this.state.current_dataset].variables[variable].scale;
     this.setState({
       current_variable: variable,
       current_scale: scale,
