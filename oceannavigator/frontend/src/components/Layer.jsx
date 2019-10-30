@@ -65,14 +65,9 @@ export default class Layer extends React.Component {
     this.toggleLayer = this.toggleLayer.bind(this);
     this.localUpdate = this.localUpdate.bind(this);
     this.updateLayer = this.updateLayer.bind(this);
-    this.sendData = this.sendData.bind(this);
+    //this.sendData = this.sendData.bind(this);
 
-    //Getting metadata
-    //this.getVariables = this.getVariables.bind(this);
-    //this.getDatasets = this.getDatasets.bind(this);
     this.updateTransparency = this.updateTransparency.bind(this);
-    //this.getDataInfo = this.getDataInfo.bind(this);
-    //this.addData = this.addData.bind(this);
     this.removeData = this.removeData.bind(this);
     this.removeOpenLayer = this.removeOpenLayer.bind(this);
     this.changeDataset = this.changeDataset.bind(this)
@@ -81,9 +76,7 @@ export default class Layer extends React.Component {
     this.changeTimeSource = this.changeTimeSource.bind(this);
     this.updateDates = this.updateDates.bind(this);
 
-    //this.setCurrent = this.setCurrent.bind(this);
     this.dateToISO = this.dateToISO.bind(this);
-    //this.fetchVariables = this.fetchVariables.bind(this);
     this.toggleCompare = this.toggleCompare.bind(this);
   }
 
