@@ -42,7 +42,7 @@ class TestFunctions(unittest.TestCase):
         # Testing 2 sound channels, 2 critical depths
         sspeed_4 = np.array([1435.76, 1434.12, 1434.98, 1436.27, 1434.51, 1433.97, 1433.49, 1433.67, 1435.09, 1435.98, 1436.12, 1437.41, 1438.19])
         
-        test_result = find_sca_idx(sspeed_3)
+        test_result = find_sca_idx(sspeed_4)
         self.assertEqual(test_result, 6)
 
     def test_find_sld_idx(self):
@@ -72,7 +72,7 @@ class TestFunctions(unittest.TestCase):
         sspeed_4 = np.array([1435.76, 1434.12, 1434.98, 1436.27, 1434.51, 1433.97, 1433.49, 1433.67, 1435.09, 1435.98, 1436.12, 1437.41, 1438.19])
         sca_idx = 6
 
-        test_result = find_sld_idx(sca_idx, sspeed_3)
+        test_result = find_sld_idx(sca_idx, sspeed_4)
         self.assertEqual(test_result, 3)
 
 
