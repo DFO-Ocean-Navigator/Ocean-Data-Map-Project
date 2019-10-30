@@ -140,7 +140,7 @@ class TestFunctions(unittest.TestCase):
 
     def test_soundchannelaxis(self):
         depth = np.array([0, 10, 30, 60, 100, 150, 210, 280, 360, 460, 560, 670, 790])
-        lat = 
+        lat = np.array([])
         temperature = np.array([])
         salinity = np.array([])
 
