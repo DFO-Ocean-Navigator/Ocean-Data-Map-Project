@@ -321,14 +321,14 @@ export default class Layer extends React.Component {
         })
 
         // Trigger data update using this.sendData('update')
-        this.sendData(update)
+        //this.sendData(update)
         update = 'update'
 
       }.bind(this));
     } else {
       console.error("Missing Data")
       // Update Anyway to prevent future errors
-      this.sendData(update)
+      //this.sendData(update)
       return null
     }
 
@@ -417,7 +417,7 @@ export default class Layer extends React.Component {
                 depths: depths,
                 current_depth: 0,
               }, () => {
-                this.sendData();
+                //this.sendData();
               })
             }.bind(this),
             error: function () {
@@ -472,7 +472,7 @@ export default class Layer extends React.Component {
             depths: depths,
             current_depth: 0,
           }, () => {
-            this.sendData('update');
+            //this.sendData('update');
           })   // Update the data object
         }.bind(this))
       }.bind(this))
@@ -514,7 +514,7 @@ export default class Layer extends React.Component {
     $.when(depths_promise).done(function (depths) {
       this.setState({
         depths: depths, //this.props.datasetconfig[],
-      }, () => {this.sendData('update'); this.updateDates()});
+      }, () => {/*this.sendData('update');*/ this.updateDates()});
       
     }.bind(this))
   }
@@ -529,7 +529,7 @@ export default class Layer extends React.Component {
     this.setState({
       current_depth: depth
     })
-    this.sendData();  // Sends the change to parent
+    //this.sendData();  // Sends the change to parent
   }
 
 
@@ -548,7 +548,7 @@ export default class Layer extends React.Component {
     if (this.state.datasets != [] && this.state.variables != [] && this.props.state.timestamps !== {} && this.props.state.timestamps !== undefined) {
       if (this.props.state.timestamps !== prevProps.state.timestamps || this.state.current_dataset !== prevState.current_dataset || this.state.current_variable !== prevState.current_variable || this.props.state.projection !== prevProps.state.projection) {
         this.updateLayer();
-        this.sendData();
+        //this.sendData();
         if (this.props.state._firstLayer && this.state.current_dataset !== undefined && this.state.current_variable !== undefined) {
           this.toggleLayer()
 
@@ -616,7 +616,7 @@ export default class Layer extends React.Component {
       this.setState({
         show: show
       })
-      this.sendData()
+      //this.sendData()
     })
   }
 
@@ -665,7 +665,7 @@ export default class Layer extends React.Component {
       this.setState({
         [key]: value,
       }, () => {
-        this.sendData('update');
+        //this.sendData('update');
         this.updateLayer();
       })
     }
