@@ -138,15 +138,6 @@ class TestFunctions(unittest.TestCase):
         #sspeed_4 = np.array([1435.76, 1434.12, 1434.98, 1436.27, 1434.51, 1433.97, 1433.49, 1433.67, 1435.09, 1435.98, 1436.12, 1437.41, 1438.19])
         
 
-    def test_soundchannelaxis(self):
-        depth = np.array([0, 10, 30, 60, 100, 150, 210, 280, 360, 460, 560, 670, 790])
-        lat = np.array([])
-        temperature = np.array([])
-        salinity = np.array([])
-
-        test_result = soundchannelaxis(depth, lat, temperature, salinity)
-        self.assertEqual()
-
     #def test_soniclayerdepth(self):
 
 
