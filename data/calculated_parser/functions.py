@@ -247,7 +247,7 @@ def sscp_point(sspeed, max_idx):
     """
     
     mins = argrelextrema(sspeed, np.less)
-    if len(mins[0]) > 2:
+    if len(mins[0]) >= 2:
         return 1
     else:
         return 0
