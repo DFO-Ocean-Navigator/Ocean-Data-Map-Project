@@ -246,6 +246,7 @@ def sscp_point(sspeed, max_idx):
     Returns either np.nan or 1
     """
     
+    # Finds all local minima in sspeed
     mins = argrelextrema(sspeed, np.less)
     if len(mins[0]) >= 2:
         return 1
