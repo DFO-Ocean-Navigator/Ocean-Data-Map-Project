@@ -56,7 +56,6 @@ export default class TimePicker extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.warn("PROPS BEFORE UPDATE: ", prevProps, this.props);
     if (prevProps.dataset !== this.props.dataset) {
       if (prevProps.dataset === undefined) {
         this.fetchDates(false)    
@@ -64,12 +63,10 @@ export default class TimePicker extends React.Component {
         this.fetchDates(true)
       }
     }
-    console.warn("PROPS AFTER UPDATE: ", prevProps, this.props);
   }
 
   
   fetchDates(update) {
-    console.warn("FETCHING DATES: ", update);
     $.ajax({
       url: '/api/v1.0/timestamps/?dataset=' + this.props.dataset + '&quantum=' + this.props.quantum + '&variable=' + this.props.variable,
       format: 'json',
@@ -167,7 +164,6 @@ export default class TimePicker extends React.Component {
   }
 
   rangeUpdate(dates) {
-    console.warn("RANGE UPDATE: ", dates);
     let startDate = dates.startDate; //new Date(dates.startDate);
     let endDate = dates.endDate;//new Date(dates.endDate);
     
@@ -205,7 +201,6 @@ export default class TimePicker extends React.Component {
   }
 
   singleUpdate(date) {
-    console.warn("SINGLE UPDATE: ", date);
     if (this.props.quantum === 'day' || this.props.quantum === 'month') {
       //date = new Date(date);
       //date.setHours(0);
@@ -213,7 +208,6 @@ export default class TimePicker extends React.Component {
       date.set({
         hour: 0,
       })
-      console.warn("TIME PICKER SINGLE UPDATE: ", date)
       this.props.onTimeUpdate(date);
     } else {
       this.props.onTimeUpdate(date);
@@ -222,7 +216,6 @@ export default class TimePicker extends React.Component {
   }
 
   singleHourUpdate(key, value) {
-    console.warn("SINGLE HOUR UPDATE: ", key, value);
     let int_value = parseInt(value.substring(0, value.length - 1))
     let date;
 
@@ -279,7 +272,6 @@ export default class TimePicker extends React.Component {
   }
 
   findHours(date) {
-    console.warn("FIND HOURS: ", date);
     if (this.state.dates_dict === undefined) {
       return
     }
@@ -308,7 +300,6 @@ export default class TimePicker extends React.Component {
   }
 
   render() {
-    console.warn("RE-RENDERING")    
     var picker = null;
     
     if (this.props.range && this.props.startDate !== null) {
@@ -346,7 +337,6 @@ export default class TimePicker extends React.Component {
         </div>  )
       }
     } else {
-      console.warn("this.props.date: ", this.props.date);
       picker = [<SingleDatePicker
         key='singlePicker'
         date={this.props.date}

@@ -135,15 +135,13 @@ export default class OceanNavigator extends React.Component {
 
     if (window.location.search.length > 0) {
       try {
-        console.warn("WINDOW.LOCATION.SEARCH: ", window.location.search)
         const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
         querystate.subquery.time = moment(querystate.subquery.time);
         querystate.subquery.starttime = moment(querystate.subquery.starttime);
         $.extend(this.state, querystate);
 
         /*
-        console.warn("QUERY STATE: ", querystate)
-
+        
         this.state.urlData = {
           dataset: querystate.dataset,
           variable: querystate.variable,
@@ -627,7 +625,6 @@ export default class OceanNavigator extends React.Component {
   */
 
   generatePermLink(subquery, permalinkSettings) {
-    console.warn("generatePermLink: ", permalinkSettings)
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
     if (this.state.subquery !== undefined) {
@@ -647,7 +644,6 @@ export default class OceanNavigator extends React.Component {
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
-        console.warn("SETTING IN PERMALINK: ", setting)
         query[setting] = this.state[setting];
       } else if (permalinkSettings[setting] !== false) {
         query[setting] = permalinkSettings[setting];
