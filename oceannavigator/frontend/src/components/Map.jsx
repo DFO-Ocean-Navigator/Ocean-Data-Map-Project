@@ -266,6 +266,7 @@ export default class Map extends React.PureComponent {
             color: 'white'
           })
         }),
+        zIndex: 1000,
         source: new olsource.VectorTile({
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
