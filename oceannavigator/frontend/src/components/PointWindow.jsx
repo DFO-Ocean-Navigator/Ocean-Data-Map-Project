@@ -566,7 +566,6 @@ export default class PointWindow extends React.Component {
             disabled={this.props.point[0][2] === undefined}
           >{_("Observation")}</NavItem>
           <NavItem
-            disabled
             eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
         </Nav>
         <Row>
