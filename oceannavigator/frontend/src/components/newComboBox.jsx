@@ -60,6 +60,8 @@ export default class NewComboBox extends React.Component {
       if (elem_obj === undefined) {
         console.error("Data empty or malformed")
       } else if (this.props.envType !== undefined) {
+        console.warn("ELEM: ", elem);
+        console.warn("ELEM_OBJ: ", elem_obj)
         if (this.props.envType === elem_obj['envtype']) {
           if (elem_obj['hide'] === undefined || elem_obj['hide'] === false || elem_obj['hide'] === "false") {
             id_list.push(elem)
