@@ -647,18 +647,52 @@ export default class TimeSelect extends React.Component {
     updateHour(e) {
         let startTime
         let endTime
+        
+        let year = this.state.selected_year;
+        let month = this.state.month_tonum[this.state.selected_month] - 1
+        let day = this.state.selected_day;
+        let hour = e.target.name;
+        let min = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][this.state.selected_day][e.target.name])[0]
+        let sec = Object.keys(this.state.times_available[this.state.selected_year][this.state.selected_month][this.state.selected_day][e.target.name][min])[0]
 
-        var startTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
-        var endTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        var startTimeObj = new moment()
+        var endTimeObj = new moment()
         startTimeObj.tz('GMT')
         endTimeObj.tz('GMT')
 
+        startTimeObj.set({
+            year: year,
+            month: month,
+            date: day,
+            hour: hour,
+            minute: min,
+            second: sec,
+            milliseconds: 0,
+        })
+        endTimeObj.set({
+            year: year,
+            month: month,
+            date: day,
+            hour: hour,
+            minute: min,
+            second: sec,
+            milliseconds: 0,
+        })
+        
+        // BAD WAY OF SETTING TIME
+        //var startTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        //var endTimeObj = new moment(this.state.selected_year + '-' + this.state.month_tonum[this.state.selected_month] + '-' + this.state.selected_day)
+        //startTimeObj.tz('GMT')
+        //endTimeObj.tz('GMT')
+        /*
         startTimeObj.set({
             hour: e.target.value,
         })
         endTimeObj.set({
             hour: e.target.value,
         })
+        */
+
         if (this.state.selecting === 'startTime') {
             let difference = this.daysBetween(startTimeObj.valueOf(), this.state.endTimeObj);
 
