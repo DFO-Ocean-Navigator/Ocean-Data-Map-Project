@@ -9,7 +9,8 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-
+from scipy.signal import argrelextrema
+from scipy.stats import linregress
 _ureg = UnitRegistry()
 
 # All functions in this file (that do not start with an underscore) will be
@@ -184,7 +185,7 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     speed_point: np.array of sound speed for a water column
     depth: np.array of available depths
     """
-
+    
     # Now that we have the nearest critical depth idx we must perform linear interpolation
     def linearInterp(x1, y1, x2, y2, x):
         """
@@ -225,6 +226,131 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
         cd_depth = linearInterp(cd_value_1, cd_depth_1, cd_value_2, cd_depth_2, sld_value)
 
     return cd_depth
+
+
+def __is_min(p1, p2, p3):
+    if p2 < p1 and p2 < p3:
+        return p2
+    else:
+        return np.nan
+
+def sscp_point(sspeed, max_idx):
+    """
+    sscp - Secondary Sound Channel Potential (above 1000m)
+    This function determines if a secondary sound channel could exist in a water column
+
+    Parameters:
+    sspeed: np.array of sound speeds for a single water column
+    
+    Ensures:
+    Returns either np.nan or 1
+    """
+    
+    # Finds all local minima in sspeed
+    mins = argrelextrema(sspeed, np.less)
+    if len(mins[0]) >= 2:
+        return 1
+    else:
+        return 0
+
+            
+def sscp(depth, lat, temperature,salinity):
+    """
+    Determines if a Secondary Sound Channel could exist (above 1000m)
+
+    Parameters:
+    depth: The depth(s) in meters
+    lat: The latitude(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
+    """
+
+    speed = sspeed(depth, lat, temperature, salinity)
+
+    # Find last index before 1000m
+    max_depth = np.abs(depth.values - 1000).argmin()
+    if depth.values[max_depth] > 1000:
+        max_depth = max_depth - 1
+    
+    #speed = speed[:max_depth] # Don't need anything beyond 1000m
+
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            speed_point = speed[:,y,x]
+            num = count_numerical_vals(speed_point)
+            if num != 0:
+                speed_point = speed_point[:num]
+                result[y,x] = sscp_point(speed_point, max_depth)
+            else:
+                result[y,x] = 0
+
+    return result
+
+def slopeofsomething_point(sspeed, depth):
+    """
+    Finds the slope of the subset before the change in slope becomes too positvie
+    => Threshold must still be determined
+
+    Parameters:
+    sspeed: Speed of sound subsetted from Sonic Layer Depth to Sound Channel Axis of a sound channel
+    depth: Depth layers subsetted using the criteria as sspeed
+    """
+
+    temp_sspeed = sspeed
+    temp_depth = depth
+    previous_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
+    if temp_sspeed.shape[0] == 2:
+        return np.nan
+
+    while temp_sspeed.shape[0] >= 2:
+
+        temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
+        temp_depth = temp_depth[:temp_depth.shape[0]-1]
+        new_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
+        # Determine breaking condition
+        if previous_slope - new_slope > -0.1:
+            return previous_slope
+        #elif temp_sspeed.shape[0] == 2:
+        #    return np.nan
+        
+        previous_slope = new_slope
+
+    return np.nan
+
+def slopeofsomething(depth, lat, temperature, salinity):
+    """
+    Find the slope of the change in sound speed after the sonic layer depth
+
+    Parameters:
+    depth: The depth(s) in meters
+    lat: The latitudes(s) in degrees North
+    temperature: The temperatures(s) (at all depths) in celsius
+    salinity: The salinity (at all depths) (unitless)
+    """
+
+    speed = sspeed(depth, lat, temperature, salinity)
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
+
+    for x in range(speed.shape[-1]):
+        for y in range(speed.shape[-2]):
+            speed_point = speed[:,y,x]
+            num = count_numerical_vals(speed_point)
+            if num != 0:
+                sca_idx = find_sca_idx(speed_point)
+                if np.isnan(sca_idx):
+                    result[y,x] = np.nan
+                else:
+                    sld_idx = find_sld_idx(sca_idx, speed_point)
+                    if np.isnan(sld_idx):
+                        result[y,x] = np.nan
+                    else:
+                        speed_point = speed_point[sld_idx:sca_idx]
+                        num = count_numerical_vals(speed_point)
+                        slope = slopeofsomething_point(speed_point[:num], depth[:num])
+                        result[y,x] = slope
+
+    return result
 
 def soundchannelaxis(depth, lat, temperature, salinity):
     """
