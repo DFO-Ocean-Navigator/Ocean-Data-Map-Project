@@ -1,26 +1,138 @@
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.ticker import ScalarFormatter
-import matplotlib
-import numpy as np
+import datetime
 import re
 from textwrap import wrap
+
+import matplotlib
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.ticker import ScalarFormatter
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 import plotting.colormap as colormap
 import plotting.utils as utils
-import plotting.point as plPoint
-import datetime
 from data import open_dataset
+from plotting.point import PointPlotter
 
 LINEAR = 200
 
 
-class TimeseriesPlotter(plPoint.PointPlotter):
+class TimeseriesPlotter(PointPlotter):
 
-    def __init__(self, dataset_name: str, query: str, format: str):
+    def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "timeseries"
-        super(TimeseriesPlotter, self).__init__(dataset_name, query, format)
+        super(TimeseriesPlotter, self).__init__(dataset_name, query, **kwargs)
         self.size: str = '11x5'
+
+    def parse_query(self, query):
+        super(TimeseriesPlotter, self).parse_query(query)
+
+        depth = 0
+        qdepth = query.get('depth')
+        if isinstance(qdepth, list):
+            qdepth = qdepth[0]
+
+        if qdepth and hasattr(qdepth, "__len__") and len(qdepth) > 0:
+            if qdepth == 'all':
+                depth = 'all'
+            elif qdepth == 'bottom':
+                depth = 'bottom'
+            else:
+                depth = int(qdepth)
+
+        self.depth = depth
+
+    def load_data(self):
+        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.starttime, endtime=self.endtime) as dataset:
+            self.load_misc(dataset, self.variables)
+            #self.fix_startend_times(dataset, self.starttime, self.endtime)
+
+            if len(self.variables) == 1:
+                self.variable_unit = self.dataset_config.variable[
+                    dataset.variables[self.variables[0]]
+                ].unit
+                self.variable_name = self.dataset_config.variable[
+                    dataset.variables[self.variables[0]]
+                ].name
+            else:
+                self.variable_name = self.get_vector_variable_name(dataset,
+                                                                   self.variables)
+                self.variable_unit = self.get_vector_variable_unit(dataset,
+                                                                   self.variables)
+            var = self.variables[0]
+            if self.depth != 'all' and self.depth != 'bottom' and \
+                (set(dataset.variables[var].dimensions) &
+                    set(dataset.depth_dimensions)):
+                self.depth_label = " at %d m" % (
+                    np.round(dataset.depths[self.depth])
+                )
+
+            elif self.depth == 'bottom':
+                self.depth_label = ' at Bottom'
+            else:
+                self.depth_label = ''
+
+            if not (set(dataset.variables[var].dimensions) &
+                    set(dataset.depth_dimensions)):
+                self.depth = 0
+
+            times = None
+            point_data = []
+            raise IOError
+            for p in self.points:
+                data = []
+                for v in self.variables:
+                    if self.depth == 'all':
+                        d, dep = dataset.get_timeseries_profile(
+                            float(p[0]),
+                            float(p[1]),
+                            self.starttime,
+                            self.endtime,
+                            v
+                        )
+                    else:
+                        d, dep = dataset.get_timeseries_point(
+                            float(p[0]),
+                            float(p[1]),
+                            self.depth,
+                            self.starttime,
+                            self.endtime,
+                            v,
+                            return_depth=True
+                        )
+
+                    data.append(d)
+
+                point_data.append(np.ma.array(data))
+
+            point_data = np.ma.array(point_data)
+            for idx, factor in enumerate(self.scale_factors):
+                if factor != 1.0:
+                    point_data[idx] = np.multiply(point_data[idx], factor)
+
+            times = dataset.timestamps[self.starttime:self.endtime + 1]
+            if self.query.get('dataset_quantum') == 'month':
+                times = [datetime.date(x.year, x.month, 1) for x in times]
+
+            # depths = dataset.depths
+            depths = dep
+
+        if point_data.shape[1] == 2:
+            # Under the current API this indicates that velocity data is being
+            # loaded. Save each velocity component (X and Y) for possible CSV
+            # export later.
+            self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
+
+            point_data = np.ma.expand_dims(
+                np.sqrt(
+                    point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
+                ), 1
+            )
+
+        self.times = times
+        self.data = point_data
+        self.depths = depths
+        self.depth_unit = "m"
 
     def csv(self):
         header = [
@@ -94,13 +206,13 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
             # Deal with undefined angles (where velocity is 0 or very close)
-            inds=np.where(
+            inds = np.where(
                 np.logical_and(
-                    np.abs(self.quiver_data[1])<10e-6,
-                    np.abs(self.quiver_data[0])<10e-6
-                    )
-                 )
-            bearing[inds]=np.nan
+                    np.abs(self.quiver_data[1]) < 10e-6,
+                    np.abs(self.quiver_data[0]) < 10e-6
+                )
+            )
+            bearing[inds] = np.nan
 
         data = []
 
@@ -114,11 +226,15 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                     self.times[t].isoformat(),
                 ]
                 if self.depth == 'all':
-                    entry.extend(["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
+                    entry.extend(
+                        ["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
                     if have_quiver:
-                        entry.extend(["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
-                        entry.extend(["%0.3f" % f for f in self.quiver_data[1][p, t, :max_dep_idx + 1]])
-                        entry.extend(["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
+                        entry.extend(
+                            ["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
+                        entry.extend(
+                            ["%0.3f" % f for f in self.quiver_data[1][p, t, :max_dep_idx + 1]])
+                        entry.extend(
+                            ["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
                     if have_quiver:
@@ -151,7 +267,7 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                 vmax = self.scale[1]
             else:
                 vmin, vmax = utils.normalize_scale(self.data,
-                    self.dataset_config.variable[self.variables[0]])
+                                                   self.dataset_config.variable[self.variables[0]])
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
@@ -231,8 +347,8 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             if self.showmap:
                 plt.subplot(gs[0, 0])
                 subplot += 1
-                utils.point_plot(np.array([ [x[0] for x in self.points], # Latitudes
-                                            [x[1] for x in self.points]])) # Longitudes
+                utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                           [x[1] for x in self.points]]))  # Longitudes
 
             plt.subplot(gs[:, subplot])
             plt.plot_date(
@@ -250,8 +366,8 @@ class TimeseriesPlotter(plPoint.PointPlotter):
                         ", ".join(self.names)
                     ), 80)
                 plt.title("\n".join(wrapped_title), fontsize=15)
-            else :
-                plt.title(self.plotTitle,fontsize=15)
+            else:
+                plt.title(self.plotTitle, fontsize=15)
 
             plt.gca().grid(True)
 
@@ -260,112 +376,3 @@ class TimeseriesPlotter(plPoint.PointPlotter):
             self.plot_legend(fig, self.names)
 
         return super(TimeseriesPlotter, self).plot(fig)
-
-    def parse_query(self, query):
-        super(TimeseriesPlotter, self).parse_query(query)
-
-        depth = 0
-        qdepth = query.get('depth')
-        if isinstance(qdepth, list):
-            qdepth = qdepth[0]
-
-        if qdepth and hasattr(qdepth, "__len__") and len(qdepth) > 0:
-            if qdepth == 'all':
-                depth = 'all'
-            elif qdepth == 'bottom':
-                depth = 'bottom'
-            else:
-                depth = int(qdepth)
-
-        self.depth = depth
-
-    def load_data(self):
-        with open_dataset(self.dataset_config) as dataset:
-            self.load_misc(dataset, self.variables)
-            self.fix_startend_times(dataset, self.starttime, self.endtime)
-
-            if len(self.variables) == 1:
-                self.variable_unit = self.dataset_config.variable[
-                    dataset.variables[self.variables[0]]
-                ].unit
-                self.variable_name = self.dataset_config.variable[
-                    dataset.variables[self.variables[0]]
-                ].name
-            else:
-                self.variable_name = self.get_vector_variable_name(dataset,
-                        self.variables)
-                self.variable_unit = self.get_vector_variable_unit(dataset,
-                        self.variables)
-            var = self.variables[0]
-            if self.depth != 'all' and self.depth != 'bottom' and \
-                (set(dataset.variables[var].dimensions) &
-                    set(dataset.depth_dimensions)):
-                self.depth_label = " at %d m" % (
-                    np.round(dataset.depths[self.depth])
-                )
-
-            elif self.depth == 'bottom':
-                self.depth_label = ' at Bottom'
-            else:
-                self.depth_label = ''
-
-            if not (set(dataset.variables[var].dimensions) &
-                    set(dataset.depth_dimensions)):
-                self.depth = 0
-
-            times = None
-            point_data = []
-            for p in self.points:
-                data = []
-                for v in self.variables:
-                    if self.depth == 'all':
-                        d, dep = dataset.get_timeseries_profile(
-                            float(p[0]),
-                            float(p[1]),
-                            self.starttime,
-                            self.endtime,
-                            v
-                        )
-                    else:
-                        d, dep = dataset.get_timeseries_point(
-                            float(p[0]),
-                            float(p[1]),
-                            self.depth,
-                            self.starttime,
-                            self.endtime,
-                            v,
-                            return_depth=True
-                        )
-
-                    data.append(d)
-
-                point_data.append(np.ma.array(data))
-
-            point_data = np.ma.array(point_data)
-            for idx, factor in enumerate(self.scale_factors):
-                if factor != 1.0:
-                    point_data[idx] = np.multiply(point_data[idx], factor)
-
-            times = dataset.timestamps[self.starttime:self.endtime + 1]
-            if self.query.get('dataset_quantum') == 'month':
-                times = [datetime.date(x.year, x.month, 1) for x in times]
-
-            # depths = dataset.depths
-            depths = dep
-
-        if point_data.shape[1] == 2:
-            # Under the current API this indicates that velocity data is being
-            # loaded. Save each velocity component (X and Y) for possible CSV
-            # export later.
-            self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
-
-            point_data = np.ma.expand_dims(
-                np.sqrt(
-                    point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
-                ), 1
-            )
-
-        self.times = times
-        self.data = point_data
-        self.depths = depths
-        self.depth_unit = "m"
