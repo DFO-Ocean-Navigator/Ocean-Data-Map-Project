@@ -74,12 +74,6 @@
         top: 10em;
     }
 
-    // Zoom controls
-    .ol-zoom {
-        left: 7.5em;
-        top: 0.25em;
-    }
-
     // Reset rotation button
     .ol-rotate {
         left: 7.5em;;
@@ -87,10 +81,30 @@
         top: 7em;
     }
 
-    // Zoom control
-    .ol-zoom-in, .ol-zoom-out {
+    // Zoom controls
+    .ol-zoom {
+        left: 7.5em;
+        top: 0.25em;
+        margin-top:204px;
+    }
+
+    // Zoom Slider Control
+    .ol-zoomslider {
+        background-color: transparent;
+        top: 2.3em;
+    }
+
+    // Zoom In Control
+    .ol-zoom-in {
         right: auto;
         left: 7.5em;
+    }
+
+    // Zoom Out Control
+    .ol-zoom-out {
+        right: auto;
+        left: 7.5em;
+        margin-top: 204px;
     }
 
     // Reset pan button
