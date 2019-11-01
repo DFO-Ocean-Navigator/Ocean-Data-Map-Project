@@ -284,7 +284,7 @@ def sscp(depth, lat, temperature,salinity):
                 result[y,x] = sscp_point(speed_point, max_depth)
             else:
                 result[y,x] = 0
-
+    print(somtehit)
     return result
 
 def slopeofsomething_point(sspeed, depth):
