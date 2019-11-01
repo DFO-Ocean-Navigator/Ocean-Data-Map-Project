@@ -249,6 +249,10 @@ def sscp_point(sspeed, max_idx):
     # Finds all local minima in sspeed
     mins = argrelextrema(sspeed, np.less)
     if len(mins[0]) >= 2:
+
+        # Check if it's a big enough difference
+        print(something)
+
         return 1
     else:
         return 0
