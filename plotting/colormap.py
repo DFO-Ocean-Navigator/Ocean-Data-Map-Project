@@ -159,6 +159,7 @@ gettext('Sea Surface Height (Free Surface)')
 gettext('Greyscale')
 gettext('Ice')
 gettext('Iron')
+gettext('Sound Products')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
 gettext('Sound Products')
@@ -188,6 +189,7 @@ colormap_names = {
     'grey': 'Greyscale',
     'ice': 'Ice',
     'iron': 'Iron',
+    'matter': 'Sound Products',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
     'soundproducts': 'Sound Products',

@@ -74,7 +74,8 @@ def sspeed(depth, latitude, temperature, salinity):
     return np.array(speed)
 
 
-
+def count_numerical_vals(array):
+    return array.size - np.count_nonzero(np.isnan(array))
 
 def find_sca_idx(speed):
     """
@@ -88,14 +89,15 @@ def find_sca_idx(speed):
     """
     
     sca_value = np.nanmin(speed)
-    idx = np.where(speed == sca_value)
-
     if np.isnan(sca_value):
         return np.nan
 
+    idx = np.where(speed == sca_value)    
     idx = int(idx[0][0])
+
     if idx is 0:
         return np.nan
+    
     return idx
 
 
@@ -143,7 +145,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     sld_value = speed[sld_idx]
 
     # Find total_idx
-    total_idx = speed.size - np.count_nonzero(np.isnan(speed)) - 1
+    total_idx = count_numerical_vals(speed) - 1  #speed.size - np.count_nonzero(np.isnan(speed)) - 1
     
     # Create Layer Subset
     lower_subset = speed[sca_idx + 1: total_idx + 1]
@@ -163,7 +165,7 @@ def find_cd_idx(sca_idx, sld_idx, speed):
     idx = np.abs(lower_subset - sld_value).argmin()
 
     # Find size of lower subset
-    subset_size = lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
+    subset_size = count_numerical_vals(lower_subset) - 1 #lower_subset.size - np.count_nonzero(np.isnan(lower_subset)) - 1
 
     # Shift to get index for non subset
     cd_idx = total_idx - (subset_size - idx)
@@ -236,18 +238,20 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                idx = find_sca_idx(speed[:,y,x])
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point) != 0:
+                idx = find_sca_idx(speed_point)
                 if np.isnan(idx):
-                    speed[:,y,x] = idx
+                    result[y,x] = idx
                 else:
-                    speed[:,y,x] = depth.values[idx]
+                    result[y,x] = depth.values[idx]
             else:
-                speed[:,y,x] = np.nan
+                result[y,x] = np.nan
                 
-    return speed[0]
+    return result
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
@@ -266,27 +270,27 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
-    
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-            
-                sca_idx = find_sca_idx(speed[:,y,x])
-
+            speed_point = speed[:,y,x]
+            if (count_numerical_vals(speed_point) != 0):
+                
+                sca_idx = find_sca_idx(speed_point)
                 if (np.isnan(sca_idx)):
-                    speed[:,y,x] = sca_idx
+                    result[y,x] = sca_idx
                 else:
-                    sld_idx = find_sld_idx(sca_idx, speed[:,y,x])
+                    sld_idx = find_sld_idx(sca_idx, speed_point)
 
                     if (np.isnan(sld_idx)):
-                        speed[:,y,x] = sld_idx
+                        result[y,x] = sld_idx
                     else:
                         sld = depth.values[sld_idx]
-                        speed[:, y, x] = sld
+                        result[y,x] = sld
             else:
-                speed[:,y,x] = np.nan
+                result[y,x] = np.nan
 
-    return speed[0] # Only return one horizontal slice
+    return result # Only return one horizontal slice
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
@@ -300,10 +304,12 @@ def criticaldepth(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                speed_point = speed[:,y,x]
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point):
+            
                 sca_idx = find_sca_idx(speed_point)
 
                 # Sound Channel Axis Exists
@@ -326,10 +332,10 @@ def criticaldepth(depth, lat, temperature, salinity):
             else:
                 cd_depth = np.nan
 
-            speed[:,y,x] = cd_depth
+            result[y,x] = cd_depth
                 
 
-    return speed[0]
+    return result
 
 def depthexcess(depth, lat, temperature, salinity):
     """
@@ -343,11 +349,12 @@ def depthexcess(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
+    result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
             # Check for all nan slice
-            if (speed[:,y,x].size - np.count_nonzero(np.isnan(speed[:,y,x]))) != 0:
-                speed_point = speed[:,y,x]
+            speed_point = speed[:,y,x]
+            if count_numerical_vals(speed_point):
                 sca_idx = find_sca_idx(speed_point)
                 if not np.isnan(sca_idx):
                 
@@ -371,10 +378,10 @@ def depthexcess(depth, lat, temperature, salinity):
             else:
                 depth_excess = np.nan
 
-            speed[:,y,x] = depth_excess
+            result[y,x] = depth_excess
                 
 
-    return speed[0]
+    return result
 
 
 def _metpy(func, data, lat, lon, dim):
@@ -617,72 +624,3 @@ def gradient_y(d, lat, lon):
     lon -- an array of longitudes, the shape must match that of d
     """
     return _metpy(metpy.calc.gradient, d, lat, lon, 'y')
-
-
-def test(h, lat, lon):
-
-    if isinstance(lat, xr.Variable):
-        lat = lat.values
-
-    if hasattr(h, "dims"):
-        dims = h.dims
-    else:
-        dims = h.dimensions
-
-    dim_order = "".join([d for d in dims if d in 'yx'])
-
-    def f(heights, **kwargs):
-        c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
-        if dim_order == "yx":
-            dy, dx = kwargs['deltas']
-        else:
-            dx, dy = kwgard['deltas']
-        print("HEIGHTS: ", heights)
-        print("dy: ", dy)
-        print("dx: ", dx)
-        print("c: ", c)
-        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
-                dim_order=kwargs['dim_order'])
-
-    return _metpy(f, h, lat, lon, dim_order[0])
-    
-
-def sound_channel_axis(sspeed, depth, lat, lon):
-    """
-    Calculates the sound channel excess of a sound speed profile
-
-    Parameters:
-    sspeed -- Speed of Sound
-    lat -- an array of latitudes
-    lon -- an array of longitudes
-    """ 
-
-    return 0
-
-
-def critical_depth(mld, sspeed, depth, lat, lon):
-    """
-    Calculates the critical depth of a sound speed profile
-
-    Parameters:
-    mld -- Ocean Mixed Layer Depth
-    sspeed -- Speed of Sound
-    depth -- the depth(s) in meters
-    lat -- an array of latitudes
-    lon -- an array of longitudes
-    """
-    return 0
- 
-
-def depth_excess(critical_depth, depth, lat, lon):
-    """
-    Calculates the depth excess of a sound speed profile
-
-    Parameters:
-    critical_depth -- Critical depth of a sound speed profile
-    depth -- the depth(s) in meters
-    lat -- an array of latitudes
-    lon -- an array of longitudes
-    """
-
-    return 0
