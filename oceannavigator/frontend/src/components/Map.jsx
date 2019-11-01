@@ -445,6 +445,7 @@ export default class Map extends React.PureComponent {
       }).extend([
         new app.ResetPanButton(),
         new olcontrol.FullScreen(),
+        new olcontrol.ZoomSlider(),
         new olcontrol.MousePosition({
           projection: "EPSG:4326",
           coordinateFormat: function (c) {
