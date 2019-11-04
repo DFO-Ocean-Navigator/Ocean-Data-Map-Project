@@ -256,8 +256,11 @@ def sscp_point(sspeed, max_idx):
         p1 = 0
         if len(maxs[0] >= 2):
             p1 = maxs[0][0]
+            p3 = maxs[0][1]
+        else:
+            p3 = maxs[0][0]
         p2 = mins[0][0]
-        p3 = maxs[0][1]
+        
 
         p1_val = sspeed[p1]
         p2_val = sspeed[p2]
