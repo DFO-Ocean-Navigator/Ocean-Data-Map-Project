@@ -17,4 +17,47 @@
         float: right;
         max-width: $sidebar-width;
     }
+
+    .DateRangePickerInput {
+        border: 0px;
+    }
+
+    .DateRangePickerInput_arrow {
+        position: relative;
+        display: block;
+        left: 75%;
+        width: 24px;
+        transform: rotate(90deg)
+    }
+
+    .DateInput > input {
+        border: 1px solid #dbdbdb;
+    }
+
+    .SingleDatePicker {
+        vertical-align: top;
+    }
+
+    .current_hour_single {
+        display: inline-block;
+        height: 48px;
+        width: 77px;
+        position: relative;
+
+        .form-control {
+            padding: 11px 11px 9px;
+            font-size: 19px;
+            height: 48px; 
+        }
+    }
+
+    .hour_container {
+        display: inline-block;
+        float: right;
+        width: 77px;
+    }
+    .range1 {
+        margin-top: 20px;
+    }
 }
+

@@ -68,6 +68,9 @@ export default class Range extends React.Component {
     }
   }
 
+  /*
+
+  */
   updateParent() {
     clearTimeout(this.timeout);
     
@@ -76,6 +79,9 @@ export default class Range extends React.Component {
     this.timeout = setTimeout(this.props.onUpdate, 250, this.props.id, range);
   }
 
+  /*
+
+  */
   changed(key, value) {
     clearTimeout(this.timeout);
     
@@ -86,6 +92,9 @@ export default class Range extends React.Component {
     this.timeout = setTimeout(this.updateParent, 1000);
   }
 
+  /*
+
+  */
   keyPress(e) {
     const key = e.which || e.keyCode;
     if (key == 13) {
@@ -96,6 +105,9 @@ export default class Range extends React.Component {
     }
   }
 
+  /*
+
+  */
   autoChanged(e) {
     this.setState({
       auto: e.target.checked
@@ -113,10 +125,16 @@ export default class Range extends React.Component {
     }
   }
 
+  /*
+
+  */
   handleDefaultButton() {
     this.props.onUpdate(this.props.id, this.props.default_scale);
   }
 
+  /*
+
+  */
   getAutoScale() {
     $.ajax({
       url: this.props.autourl,

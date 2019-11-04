@@ -3,7 +3,6 @@
 
 """
 Handles API Queries
-
 This module handles all API Queries
 """
 
@@ -81,16 +80,13 @@ def range_query_impl(interp, radius, neighbours, dataset, projection, extent, va
 
 
 def info_impl():
-    raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+    return jsonify("This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
 
 def query_impl(q: str):
     """
     API Format: /api/<string:q>/
-
     <string:q> : Zone Type Can be (points,lines, areas, or class4)
-
     Returns predefined  points / lines / areas / class4's
     """
 
@@ -116,10 +112,8 @@ def query_impl(q: str):
 def query_id_impl(q: str, q_id: str):
     """
     API Format: /api/<string:q>/<string:q_id>.json'
-
     <string:q>    : Type of Data (areas, class4, drifters, observation)
     <string:q_id> : 
-
     """
     if q == 'areas':
         data = utils.misc.list_areas(q_id)
@@ -141,13 +135,11 @@ def query_id_impl(q: str, q_id: str):
 def get_data_impl(dataset: str, variable: str, time: int, depth: str, location: str):
     """
     API Format: /api/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
-
     <string:dataset>  : Dataset to extract data - Can be found using /api/datasets
     <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
     <int:time>        : Time retrieved data was gathered/modeled
     <string:depth>    : Water Depth - found using /api/depth/?dataset='...'
     <string:location> : Location of the data you want to retrieve (Lat, Long)
-
     **All Components Must be Included**
     """
     data = utils.misc.get_point_data(
@@ -162,13 +154,11 @@ def get_data_impl(dataset: str, variable: str, time: int, depth: str, location: 
 def query_file_impl(q: str, projection: str, resolution: int, extent: str, file_id: str):
     """
     API Format: /api/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
-
     <string:q>          : Type of data (points, lines, areas, class4, drifters, observations)
     <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
     <string:file_id>    : 
-
     **All components must be included**
     **Used Primarily by WebPage**
     """
@@ -207,28 +197,42 @@ def query_datasets_impl(args):
     """
     API Format: /api/datasets/
     ?id : will show only the name and id of the dataset
-
     Will return a list of possible datasets and their corresponding data
     """
 
     data = []
     if 'id' not in args:
-        for key in DatasetConfig.get_datasets():
-            config = DatasetConfig(key)
-            data.append({
-                'id': key,
-                'value': config.name,
-                'quantum': config.quantum,
-                'help': config.help,
-                'attribution': config.attribution,
-            })
+
+        if 'envType' in args:
+            for key in DatasetConfig.get_datasets():
+                config = DatasetConfig(key)
+                types = config.envtype
+                
+                if args.get('envType') in types:
+                    data.append({
+                        'id': key,
+                        'value': config.name,
+                        'quantum': config.quantum,
+                        'help': config.help,
+                        'attribution': config.attribution,
+                    })
+        else:
+            for key in DatasetConfig.get_datasets():
+                config = DatasetConfig(key)
+                data.append({
+                    'id': key,
+                    'value': config.name,
+                    'quantum': config.quantum,
+                    'help': config.help,
+                    'attribution': config.attribution,
+                })
     else:
         for key in DatasetConfig.get_datasets():
-            config = DatasetConfig(key)
             data.append({
                 'id': key,
                 'value': config.name
             })
+
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
     resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -238,7 +242,6 @@ def query_datasets_impl(args):
 def colors_impl(args):
     """
     API Format: /api/colors/
-
     Returns a list of colours for use in colour maps
     """
     data = [
@@ -263,7 +266,6 @@ def colors_impl(args):
 def colormaps_impl():
     """
     API Format: /api/colormaps/
-
     Returns a list of colourmaps
     """
 
@@ -283,7 +285,6 @@ def colormaps_impl():
 def colormap_image_impl():
     """
     API Format: /colormaps.png
-
     Returns image of colourmap example configurations
     """
 
@@ -296,10 +297,8 @@ def colormap_image_impl():
 def depth_impl(args):
     """
     API Format: /api/depth/?dataset=''&variable=' '
-
     dataset  : Dataset to extract data - Can be found using /api/datasets
     variable : Type of data to retrieve - found using /api/variables/?dataset='...'
-
     Returns all depths available for that variable in the dataset
     """
 
@@ -352,7 +351,6 @@ def depth_impl(args):
 def obs_vars_query_impl():
     """
     API Format: /api/observationvariables/
-
     Returns a list of the possible observation variables
     """
 
@@ -367,14 +365,11 @@ def obs_vars_query_impl():
 def vars_query_impl(args):
     """
     API Format: /api/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
-
     **Only use variables required for your specific request**
-
     dataset      : Dataset to extract data - Can be found using /api/datasets
     3d_only      : Boolean Value; When True, only variables with depth will be shown
     vectors_only : Boolean Value; When True, ONLY variables with magnitude will be shown 
     vectors      : Boolean Value; When True, magnitude components will be included
-
     **Boolean: True / False**
     """
 
@@ -427,13 +422,65 @@ def vars_query_impl(args):
     resp = jsonify(data)
     return resp
 
+def dataset_config():
+    """
+    Returns all the data located in the dataset config file as JSON
+    This does not perform any parsing in order to speed up the entire process.
+    """
+    datasetconfig = DatasetConfig._get_dataset_config()
+    data = jsonify(datasetconfig)
+    return data
+
+
+def all_time_query_impl(args):
+    """
+    API Format: /api/v1.0/all/timestamps/
+    Retrieves all timestamps for all available datasets
+    """
+    times = dict()
+
+    for dataset in get_datasets():
+        with open_dataset(get_dataset_url(dataset)) as ds:
+            for date in ds.timestamps:
+                if date.year not in times:
+                    times[date.year] = {
+                        date.month: {
+                            date.day: { 
+                                date.hour: [date.minute]
+                            }
+                        }
+                    }
+                else:
+                    if date.month not in times[date.year]:
+                        times[date.year][date.month] = {
+                            date.day: {
+                                date.hour: [date.minute]
+                            }
+                        }
+                       
+                        #times[date.year][date.month][date.day] = [date.hour]
+
+                    else:
+                        if date.day not in times[date.year][date.month]:
+                            times[date.year][date.month][date.day] = {
+                                date.hour: [date.minute]
+                            }
+                        
+                        else:
+                            if date.hour not in times[date.year][date.month][date.day]:
+                                times[date.year][date.month][date.day][date.hour] = [date.minute]
+                            elif date.minute not in times[date.year][date.month][date.day][date.hour]:
+                                times[date.year][date.month][date.day][date.hour].append(date.minute)
+
+
+    #print(times)
+    js = json.dumps(times)
+    return js
 
 def time_query_impl(args):
     """
     API Format: /api/timestamps/?dataset=' '
-
     dataset : Dataset to extract data - Can be found using /api/datasets
-
     Finds all data timestamps available for a specific dataset
     """
 
@@ -471,14 +518,13 @@ def time_query_impl(args):
     return resp
 
 
+
 def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     """
     API Format: /api/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
-
     <string:old_dataset> : Previous dataset used
     <int:date>           : Date of desired data - Can be found using /api/timestamps/?datasets='...'
     <string:new_dataset> : Dataset to extract data - Can be found using /api/datasets
-
     **Used when changing datasets.**
     """
 
@@ -499,14 +545,12 @@ def timestamp_for_date_impl(old_dataset: str, date: int, new_dataset: str):
     return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
-def scale_impl(dataset: str, variable: str, scale: str):
+def scale_impl(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label: str):
     """
     API Format: /scale/<string:dataset>/<string:variable>/<string:scale>.png
-
     <string:dataset>  : Dataset to extract data
     <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
     <string:scale>    : Desired Scale
-
     Returns a scale bar
     """
 
@@ -514,6 +558,10 @@ def scale_impl(dataset: str, variable: str, scale: str):
         'dataset': dataset,
         'variable': variable,
         'scale': scale,
+        'colourmap': colourmap,
+        'orientation': orientation,
+        'transparency': transparency,
+        'label': label
     })
 
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
@@ -522,7 +570,6 @@ def scale_impl(dataset: str, variable: str, scale: str):
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
         Caches a rendered image buffer on disk and sends it to the browser
-
         bytesIOBuff: BytesIO object containing image data
         f: filename of image to be cached
     """
@@ -539,8 +586,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-
-def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
+def tile_impl(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
     """
         Produces the map data tiles
     """
@@ -549,23 +595,58 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     f = os.path.join(cache_dir, request.path[1:])
 
     # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    #if _is_cache_valid(dataset, f):
+    #    return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
-    else:
-        if depth != "bottom" and depth != "all":
-            depth = int(depth)
-        img = plotting.tile.plot(projection, x, y, zoom, {
-            'interp': interp,
-            'radius': radius*1000,
-            'neighbours': neighbours,
-            'dataset': dataset,
-            'variable': variable,
-            'time': time,
-            'depth': depth,
-            'scale': scale,
-        })
-        return _cache_and_send_img(img, f)
+    #else:
+
+    display = display.split(',')
+    
+    if depth != "bottom" and depth != "all":
+        depth = int(depth)
+        if display[0] == 'colour':
+            img = plotting.tile.plot(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+               'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'display': display[1]
+            })
+        elif display[0] == 'contours':
+            img = plotting.tile.contour(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'contours': display[1],
+            })
+        elif display[0] == 'windbarbs':
+            img = plotting.tile.wind_barbs(projection, x, y, zoom, {
+                'interp': interp,
+                'radius': radius*1000,
+                'neighbours': neighbours,
+                'dataset': dataset,
+                'variable': variable,
+                'time': time,
+                'depth': depth,
+                'scale': scale,
+                'masked': masked,
+                'wind_barbs': display[1],   
+            })
+        else:
+            raise ValueError
+            return
+    return _cache_and_send_img(img, f)
 
 
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
@@ -650,10 +731,8 @@ def mbt_impl(projection: str, tiletype: str, zoom: int, x: int, y: int):
 def drifter_query_impl(q: str, drifter_id: str):
     """
     API Format: /api/drifters/<string:q>/<string:drifter_id>
-
     <string:q>          : vars / time (Data Request)
     <string:drifter_id> : ID of Drifter of Interest - Options can be found using /api/
-
     Vars - Returns a list of Variables applicable to the specified drifter
     Time - Returns the max and min time of the specified drifter
     }
@@ -674,10 +753,8 @@ def drifter_query_impl(q: str, drifter_id: str):
 def class4_query_impl(q: str, class4_id: str, index: str):
     """
     API Format: /api/class4/<string:q>/<string:class4_id>/
-
     <string:q>         : forecasts / models (Data Request)
     <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
-
     Returns a list of class4 datapoints for a given day 
     """
 
@@ -705,7 +782,6 @@ def subset_query_impl(args):
 def plot_impl(query: dict, args):
     """
     API Format: /plot/?query='...'&format
-
     query = {
         dataset   : Dataset to extract data
         names     :
@@ -740,19 +816,16 @@ def plot_impl(query: dict, args):
     """
     if 'station' in query:
         station = query.get('station')
-
         def wrapdeg(num):   #Ensures the lat and lon are between -180 and 180deg
             num = num % 360
             if num > 180:
                 num = num - 360
             return num
-
         for index in range(0, len(station)):
             if station[index][0] >= 0:
                 station[index][0] = wrapdeg(station[index][0])
             else:
                 station[index][0] = wrapdeg(station[index][0])
-
             if station[index][1] >= 0:
                 station[index][1] = wrapdeg(station[index][1])
             else:
@@ -789,7 +862,7 @@ def plot_impl(query: dict, args):
         plotter = StickPlotter(dataset, query, **options)
     else:
         raise APIError(
-            "You Have Not Selected a Plot Type - Please Review your Query")
+            "You have not provided a supported plottype argument - please review your query")
 
     filename = 'png'
 
@@ -816,7 +889,6 @@ def plot_impl(query: dict, args):
 def stats_impl(args, query=None):
     """
     API Format: /stats/?query='...'
-
     query = {
         dataset  : Dataset to extract data
         variable : Type of data to plot - Options found using /api/variables/?dataset='...'

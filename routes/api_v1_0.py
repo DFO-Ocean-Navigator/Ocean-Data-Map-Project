@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import datetime
 import hashlib
 import json
@@ -10,79 +12,94 @@ from flask_babel import gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
-from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
-                        time_index_to_datetime)
+from data.utils import (DateTimeEncoder, datetime_to_timestamp,
+                        get_data_vars_from_equation, string_to_datetime,
+                        timestamp_to_datetime)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
-
 bp_v1_0 = Blueprint('api_v1_0', __name__)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# API INTERFACE V1.0
-# ~~~~~~~~~~~~~~~~~~~~~~~
-
 
 @bp_v1_0.errorhandler(ErrorBase)
 def handle_error_v1(error):
     return routes.routes_impl.handle_error_impl(error)
 
-
 @bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
 def generateScript(query: str, lang: str, scriptType: str):
 
-    if lang == "python":
-        b = generatePython(query, scriptType)
-        resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.py', mimetype='application/x-python')
+  if lang == "python":
+    b = generatePython(query, scriptType)
+    resp = send_file(b, as_attachment=True, attachment_filename='script_template.py', mimetype='application/x-python')
+    
+  elif lang == "r":
+    b = generateR(query, scriptType)
+    resp = send_file(b, as_attachment=True, attachment_filename='script_template.r', mimetype='application/x-python')
+  
+  return resp
 
-    elif lang == "r":
-        b = generateR(query, scriptType)
-        resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.r', mimetype='application/x-python')
 
-    return resp
+#
+# Unchanged from v0.0
+#
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
+@bp_v1_0.route('/api/v1.0/contacts/test/')
+def query_contacts_test_v1_0():
+  url = 'https://gpw.canmarnet.gc.ca/BETA-GEO/wfs?service=wfs&version=2.0.0&srsname=EPSG:3857&request=GetFeature&typeNames=postgis:v2_m_identities&outputFormat=application%2Fjson&count=5000&CQL_FILTER=DWITHIN(geopoint,Point(50%20-49),200,kilometers)'
+  http = urllib3.PoolManager()
+  headers = urllib3.util.make_headers(basic_auth='')
+  response = http.request('GET', url, headers=headers)
+  response = response.data
+  #response = urllib3.urlopen(url)
+  return response
 
+#
+# Unchanged from v0.0
+#
+# will be capable of processing additional arguments for meteorology, oceanography, and ice
+#
+@bp_v1_0.route('/api/v1.0/contacts/')
+def query_contacts_v1_0():
+  url = request.args.get('query')
+  url = url.replace(' ', '%20')
+  http = urllib3.PoolManager()
+  headers = urllib3.util.make_headers(basic_auth='')
+  response = http.request('GET', url, headers=headers)
+  response = response.data
+  #response = urllib3.urlopen(url)
+  return response
 
 @bp_v1_0.route('/api/v1.0/datasets/')
 def datasets_query_v1_0():
     """
     API Format: /api/v1.0/datasets/
-
     Optional arguments:
     * id : Show only the name and id of the datasets
-
     Returns:
         Response -- Response object containing list of available datasets w/ some metadata.
     """
-
     return routes.routes_impl.query_datasets_impl(request.args)
 
+@bp_v1_0.route('/api/v1.0/datasetconfig/')
+def query_datasetconfig_v1_0():
+  return routes.routes_impl.dataset_config()
 
 @bp_v1_0.route('/api/v1.0/quantum/')
 def quantum_query_v1_0():
     """
     Returns the quantum of a given dataset.
-
     API Format: /api/v1.0/quantum/
-
     Raises:
         APIError: If `dataset` is not present in API arguments.
-
     Returns:
         Response -- Response object containing the dataset quantum string as JSON.
     """
-
     args = request.args
-
     if 'dataset' not in args:
         raise APIError("Please specify a dataset Using ?dataset='...' ")
-
     dataset = args.get('dataset')
     config = DatasetConfig(dataset)
-
     quantum = config.quantum
-
     return jsonify(quantum)
 
 
@@ -90,44 +107,32 @@ def quantum_query_v1_0():
 def variables_query_v1_0():
     """
     Returns the available variables for a given dataset.
-
     API Format: /api/v1.0/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
-
     Required Arguments:
     * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
-
     Optional Arguments:
     * 3d_only      : Boolean Value; When True, only variables with depth will be shown
     * vectors_only : Boolean Value; When True, only variables with magnitude will be shown
     * vectors      : Boolean Value; When True, magnitude components will be included
-
     **Boolean value: True / False**
     """
-
     args = request.args
-
     if 'dataset' not in args:
         raise APIError("Please specify a dataset Using ?dataset='...' ")
-
     dataset = args.get('dataset')
     config = DatasetConfig(dataset)
-
     data = []
-
     if 'vectors_only' not in args:
         with open_dataset(config, meta_only=True) as ds:
-
             for v in ds.variables:
                 if ('3d_only' in args) and v.is_surface_only():
                     continue
-
                 if not config.variable[v].is_hidden:
                     data.append({
                                 'id': v.key,
                                 'value': config.variable[v].name,
                                 'scale': config.variable[v].scale
                                 })
-
     if 'vectors' in args or 'vectors_only' in args:
         for variable in config.vector_variables:
             data.append({
@@ -135,26 +140,73 @@ def variables_query_v1_0():
                 'value': config.variable[variable].name,
                 'scale': config.variable[variable].scale,
             })
-
     data = sorted(data, key=lambda k: k['value'])
-
     return jsonify(data)
-
 
 @bp_v1_0.route('/api/v1.0/observationvariables/')
 def obs_vars_query_v1():
     return routes.routes_impl.obs_vars_query_impl()
 
+#
+# Unchanged from v0.0
+#
+@bp_v1_0.route('/api/v1.0/timestamps/old/')
+def time_query_v1_0():
+  if request.args['dataset'] == 'all':
+    return routes.routes_impl.all_time_query_impl(request.args)
+  else:
+    return routes.routes_impl.time_query_impl(request.args)
+
+#
+# Gets all available timestamps for all the datasets
+#
+@bp_v1_0.route('/api/v1.0/all/timestamps/')
+def all_time_query_v1_0():
+  return routes.routes_impl.all_time_query_impl(request.args)
+
+#
+# Unchanged from v0.0
+#
+@bp_v1_0.route('/api/v1.0/colormaps.png')
+def colormap_image_v1_0():
+  return routes.routes_impl.colormap_image_impl()
+
+#
+#
+#
+@bp_v1_0.route('/api/v1.0/timestamps/convert/<string:dataset>/<string:date>/')
+def convert(dataset: str, date: str):
+  
+  try:
+    with open_dataset(get_dataset_url(dataset)) as ds:
+      date = ds.convert_to_timestamp(date)
+      resp = jsonify({
+          'date': date,
+      })
+    return resp
+  except:
+    return Response(status=500)
+
+@bp_v1_0.route('/api/v1.0/timeindex/convert/<string:dataset>/<string:index>/')
+def num2date(dataset: str, index: str):
+  #try:
+  config = DatasetConfig(dataset)
+  with open_dataset(config) as ds:
+    date = ds.convert_to_date(index)
+    resp = jsonify({
+      'date': date
+    })
+    return resp
+  #except:
+    #return Response(status=500)
 
 @bp_v1_0.route('/api/v1.0/depth/')
 def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
-
     Required Arguments:
     * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
     * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
-
     Returns:
         Response -- Response object containing all depths available for the given variable as a JSON array.
     """
@@ -200,37 +252,48 @@ def depth_query_v1_0():
     return jsonify(data)
 
 
-@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
-def scale_v1_0(dataset: str, variable: str, scale: str):
+@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>/<string:colourmap>/<string:orientation>/<string:transparency>/<string:label>.png')
+def scale_v1_0(dataset: str, variable: str, scale: str, colourmap: str, orientation: str, transparency: str, label: str):
     """
     API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
-
     <string:dataset>  : Dataset to extract data
-    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <string:variable> : Type of data to retrieve - found using /api/v1.0/variables/?dataset='...'
     <string:scale>    : Desired scale
-
     Returns a scale bar
     """
 
-    return routes.routes_impl.scale_impl(dataset, variable, scale)
+    return routes.routes_impl.scale_impl(dataset, variable, scale, colourmap, orientation, transparency, label)
 
 
-@bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json')
-def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: int):
-    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, time)
+@bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<string:time>.json')
+def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: str):
+
+    config = DatasetConfig(dataset)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.range_query_impl(interp, radius, neighbours, dataset, projection, extent, variable, depth, timestamp)
 
 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
 def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+
     config = DatasetConfig(dataset)
-    with open_dataset(config) as ds:
-        date = ds.convert_to_timestamp(time)
-        # print(date)
-        return routes.routes_impl.get_data_impl(dataset, variable, date, depth, location)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.get_data_impl(dataset, variable, timestamp, depth, location)
 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
 def class4_query_v1_0(q: str, class4_id: str):
+    
+    time_range[0] = datetime_to_timestamp(
+        string_to_datetime(time_range[0]), config.time_dim_unit
+    )
+    time_range[1] = datetime_to_timestamp(
+        string_to_datetime(time_range[1]), config.time_dim_units
+    )
     return routes.routes_impl.class4_query_impl(q, class4_id, 0)
 
 
@@ -271,6 +334,11 @@ def subset_query_v1_0():
 
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
+    time_range[0] = datetime_to_timestamp(
+        string_to_datetime(time_range[0]), config.time_dim_units)
+    time_range[1] = datetime_to_timestamp(
+        string_to_datetime(time_range[1]), config.time_dim_units)
+
     variables = args['variables'].split(',')
     with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
         working_dir, subset_filename = dataset.subset(args)
@@ -316,11 +384,6 @@ def colormaps_v1_0():
     return routes.routes_impl.colormaps_impl()
 
 
-@bp_v1_0.route('/api/v1.0/colormaps.png')
-def colormap_image_v1_0():
-    return routes.routes_impl.colormap_image_impl()
-
-
 @bp_v1_0.route('/api/v1.0/')
 def info_v1_0():
     return routes.routes_impl.info_impl()
@@ -347,16 +410,12 @@ def timestamps():
     Returns all timestamps available for a given variable in a dataset. This is variable-dependent
     because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
     3D variables may be daily.
-
     API Format: /api/timestamps/?dataset=''&variable=''
-
     Required Arguments:
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
-
     Raises:
         APIError: if dataset or variable is not specified in the request
-
     Returns:
         Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
         dataset and variable.
@@ -376,16 +435,16 @@ def timestamps():
     vals = []
     with SQLiteDatabase(config.url) as db:
         if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'], 
+            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                     [v.key for v in db.get_data_variables()])
             vals = db.get_timestamps(data_vars[0])
         else:
             vals = db.get_timestamps(variable)
-    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
+    converted_vals = timestamp_to_datetime(vals, config.time_dim_units)
 
     result = []
-    for idx, date in enumerate(converted_vals):
-        if config.quantum == 'month' or config.variable[variable].quantum == 'month':
+    for idx, date in enumerate(converted_vals): #TODO: dump the enumerate once the front-end is off the indexes.
+        if config.quantum == 'month':
             date = datetime.datetime(
                 date.year,
                 date.month,
@@ -399,15 +458,20 @@ def timestamps():
     resp = Response(js, status=200, mimetype='application/json')
     return resp
 
-
 @bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
 def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
+    # TODO: migrate to new time interpolation method
     return routes.routes_impl.timestamp_for_date_impl(old_dataset, date, new_dataset)
 
 
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
-    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, time, depth, scale, zoom, x, y)
+@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:scale>/<int:masked>/<string:display>/<int:zoom>/<int:x>/<int:y>.png')
+def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: str, depth: str, scale: str, masked: int, display: str, zoom: int, x: int, y: int):
+
+    config = DatasetConfig(dataset)
+    timestamp = datetime_to_timestamp(
+        string_to_datetime(time), config.time_dim_units)
+
+    return routes.routes_impl.tile_impl(projection, interp, radius, neighbours, dataset, variable, timestamp, depth, scale, masked, display, zoom, x, y)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')

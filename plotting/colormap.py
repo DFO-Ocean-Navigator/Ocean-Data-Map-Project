@@ -44,12 +44,10 @@ colormaps = {
     'vorticity': cmocean.cm.curl,
     'divergence': cmocean.cm.curl,
     'gradient': cmocean.cm.curl,
+    'transparent': make_colormap([_c('#00000000')]),
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
-    'soundchannelaxis': cmocean.cm.matter,
-    'soniclayerdepth': cmocean.cm.matter,
-    'depthexcess': cmocean.cm.matter,
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
@@ -59,7 +57,10 @@ colormaps = {
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
     'iron': cmocean.cm.amp,
-    'matter': cmocean.cm.matter,
+    'soundchannelaxis': cmocean.cm.matter,
+    'soniclayerdepth': cmocean.cm.matter,
+    'depthexcess': cmocean.cm.matter,
+    'soundproducts': cmocean.cm.matter,
     'oxygen': cmocean.cm.oxy,
     'phosphate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
@@ -71,6 +72,7 @@ colormaps = {
         _c('#ffffff'),
         _c('#57a6bd'),
     ]),
+    'black': make_colormap([_c('#000000')]),
     'mercator_current': make_colormap([
         _c('#e1f3fc'),
         _c('#7ebce5'), 0.17, _c('#7ebce5'),
@@ -151,6 +153,7 @@ colormaps['wind'] = colormaps['velocity']
 # executed before the user's locale is known and would always be in English.
 gettext('Anomaly')
 gettext('Bathymetry')
+gettext('Black')
 gettext('Chlorophyll')
 gettext('Sea Surface Height (Free Surface)')
 gettext('Greyscale')
@@ -159,6 +162,7 @@ gettext('Iron')
 gettext('Sound Products')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
+gettext('Sound Products')
 gettext('Nitrate')
 gettext('Oxygen')
 gettext('Phosphate')
@@ -175,6 +179,7 @@ gettext('NEO SST')
 gettext('Color Brewer Blue-Yellow-Red')
 gettext('Temperature (old)')
 gettext('Vorticity')
+gettext('Transparent')
 
 colormap_names = {
     'anomaly': 'Anomaly',
@@ -187,6 +192,7 @@ colormap_names = {
     'matter': 'Sound Products',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
+    'soundproducts': 'Sound Products',
     'nitrate': 'Nitrate',
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
@@ -195,6 +201,7 @@ colormap_names = {
     'silicate': 'Silicate',
     'speed': 'Speed',
     'temperature': 'Temperature',
+    'transparent': 'Transparent',
     'velocity': 'Velocity',
     'waveheight': 'Wave Height',
     'waveperiod': 'Wave Period',
@@ -203,6 +210,7 @@ colormap_names = {
     'BuYlRd': 'Color Brewer Blue-Yellow-Red',
     'temperature-old': 'Temperature (old)',
     'vorticity': 'Vorticity',
+    'black': 'Black'
 }
 
 
