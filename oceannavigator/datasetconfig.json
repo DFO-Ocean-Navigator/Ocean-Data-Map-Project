@@ -171,7 +171,7 @@
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Deep Sound Channel Bottom", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},    
-            "sscp": {"name": "Secondary Sound Channel Potential (Above 1000m)", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
+            "sscp": {"name": "Potential Sub-Surface Channel", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "temp_gradientx": {
                 "hide": "true",
                 "name": "Temperature Gradient X",
@@ -269,7 +269,7 @@
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Deep Sound Channel Bottom", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
-            "sscp": {"name": "Secondary Sound Channel Potential", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
+            "sscp": {"name": "Potential Sub-Surface Channel", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "vorticity": { "name": "Water Vorticity", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
@@ -296,7 +296,7 @@
             "criticaldepth": {"name": "Deep Sound Channel Bottom", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},       
-            "sscp": {"name": "Secondary Sound Channel Potential", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
+            "sscp": {"name": "Potential Sub-Surface Channel", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "sossheig": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3], "zero_centered": "true", "quantum": "hour" },
             "iiceconc": { "name": "Ice Concentration", "unit": "fraction", "scale": [0, 1], "quantum": "hour" },
             "iicevol": { "name": "Ice Volume",        "unit": "m", "scale": [0, 10], "quantum": "hour" },
@@ -679,7 +679,7 @@
             "soundchannelaxis": {"name": "Deep Sound Channel Axis (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Deep Sound Channel Bottom", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "sscp": {"name": "Secondary Sound Channel Potential", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
+            "sscp": {"name": "Potential Sub-Surface Channel", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, ~votemper - 273.15, ~vosaline)"}        
         }
     },
@@ -918,7 +918,7 @@
             "soundchannelaxis": {"name": "Sound Channel Axis (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Sound Channel Bottom", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
-            "sscp": {"name": "Secondary Sound Channel Potential", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
+            "sscp": {"name": "Potential Sub-Surface Channel", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "depthexcess": {"name": "Depth Excess (BETA)", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, ~votemper - 273.15, ~vosaline)"}            
             }
     },
