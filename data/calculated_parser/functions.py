@@ -253,7 +253,9 @@ def sscp_point(sspeed, max_idx):
         # Perform additional Checking to ensure it's an actual sound channel
         maxs = argrelextrema(sspeed, np.greater)
 
-        p1 = maxs[0][0]
+        p1 = 0
+        if len(maxs[0] >= 2):
+            p1 = maxs[0][0]
         p2 = mins[0][0]
         p3 = maxs[0][1]
 
