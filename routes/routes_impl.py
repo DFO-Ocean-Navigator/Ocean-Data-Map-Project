@@ -553,19 +553,19 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
     else:
-    if depth != "bottom" and depth != "all":
-        depth = int(depth)
-    img = plotting.tile.plot(projection, x, y, zoom, {
-        'interp': interp,
-        'radius': radius*1000,
-        'neighbours': neighbours,
-        'dataset': dataset,
-        'variable': variable,
-        'time': time,
-        'depth': depth,
-        'scale': scale,
-    })
-    return _cache_and_send_img(img, f)
+        if depth != "bottom" and depth != "all":
+            depth = int(depth)
+        img = plotting.tile.plot(projection, x, y, zoom, {
+            'interp': interp,
+            'radius': radius*1000,
+            'neighbours': neighbours,
+            'dataset': dataset,
+            'variable': variable,
+            'time': time,
+            'depth': depth,
+            'scale': scale,
+        })
+        return _cache_and_send_img(img, f)
 
 
 def topo_impl(projection: str, zoom: int, x: int, y: int, shaded_relief: bool):
