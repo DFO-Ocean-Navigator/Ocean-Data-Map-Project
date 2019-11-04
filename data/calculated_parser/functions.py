@@ -254,7 +254,7 @@ def sscp_point(sspeed, max_idx):
         maxs = argrelextrema(sspeed, np.greater)
 
         p1 = 0
-        if len(maxs[0] >= 2):
+        if len(maxs[0]) >= 2:
             p1 = maxs[0][0]
             p3 = maxs[0][1]
         else:
