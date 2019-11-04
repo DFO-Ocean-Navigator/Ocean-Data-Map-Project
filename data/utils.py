@@ -29,7 +29,7 @@ def find_le(a, x):
 
 def find_ge(a, x):
     """
-    Find left-most value in `a` that is <= x.
+    Find left-most value in `a` that is >= x.
 
     `a` MUST be sorted in ascending order for
     this to perform optimally in O(log(n)).
@@ -43,6 +43,21 @@ def find_ge(a, x):
 
 
 def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> List[str]:
+    """Extracts the data variables (i.e. variables that exist in netcdf files, as opposed to
+        "calculated variables") from an equation string for a calculated variable.
+
+        We perform a regex to match all variable keys, and then a set-intersection to
+        filter out the "calculated" variables.
+
+    Arguments:
+        equation {str} -- equation string of a calculated variable.
+        data_variables {List[str]} -- list of non-calculated varaible keys in the dataset.
+
+    Returns:
+        List[str] -- List of strings containing the variable keys
+            present in the dataset's netcdf file.
+    """
+
     regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
 
     variables = set(re.findall(regex, equation))
@@ -52,6 +67,16 @@ def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> Lis
 
 
 def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
+    """Converts a given datetime object and time units string
+    into a netcdf timestamp integer with UTC encoding.
+
+    Arguments:
+        datetime {datetime.datetime} -- some datetime object
+        time_units {str} -- time units (e.g. 'seconds since 1950-01-01 00:00:00')
+
+    Returns:
+        [int] -- timestamp integer
+    """
 
     t = cftime.utime(time_units)
 
