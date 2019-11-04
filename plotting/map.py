@@ -736,6 +736,11 @@ class MapPlotter(Plotter):
                         linewidths=2,
                         levels=levels,
                         cmap=cmap)
+
+                    # Adds labels to the contour lines
+                    if self.contour.get('clabel'):
+                        plt.clabel(contours, inline=1, fontsize=10)
+                
                 else:
                     hatches = [
                         '//', 'xx', '\\\\', '--', '||', '..', 'oo', '**'

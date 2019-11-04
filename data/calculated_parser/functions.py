@@ -247,6 +247,7 @@ def sscp_point(sspeed, max_idx):
     """
     
     # Finds all local minima in sspeed
+
     mins = argrelextrema(sspeed, np.less, order=2)
     if len(mins[0]) >= 2:
 
@@ -309,8 +310,8 @@ def sscp(depth, lat, temperature,salinity):
                 result[y,x] = sscp_point(speed_point, max_depth)
             else:
                 result[y,x] = 0
-
     return result
+  
 
 def slopeofsomething_point(sspeed, depth):
     """
@@ -342,6 +343,7 @@ def slopeofsomething_point(sspeed, depth):
         previous_slope = new_slope
 
     return np.nan
+  
 
 def slopeofsomething(depth, lat, temperature, salinity):
     """

@@ -8,6 +8,7 @@ from bisect import bisect_left, bisect_right
 from typing import List
 
 import cftime
+import dateutil.parser
 import numpy as np
 import pytz
 
@@ -15,10 +16,8 @@ import pytz
 def find_le(a, x):
     """
     Find right-most value in `a` that is <= x.
-
     `a` MUST be sorted in ascending order for
     this to perform optimally in O(log(n)).
-
     If `x` is < all values in `a`, `a[0]` is returned.
     """
     i = bisect_right(a, x)
@@ -33,7 +32,6 @@ def find_ge(a, x):
 
     `a` MUST be sorted in ascending order for
     this to perform optimally in O(log(n)).
-
     If `x` is > all values in `a`, `a[-1]` is returned.
     """
     i = bisect_left(a, x)
@@ -65,6 +63,8 @@ def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> Lis
 
     return list(variables & data_vars)
 
+def string_to_datetime(string: str) -> datetime.datetime:
+    return dateutil.parser.parse(string).replace(tzinfo=pytz.UTC)
 
 def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     """Converts a given datetime object and time units string
@@ -84,7 +84,7 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     return t.date2num(datetime)
 
 
-def time_index_to_datetime(timestamps, time_units: str):
+def timestamp_to_datetime(timestamps, time_units: str):
 
     if isinstance(timestamps, np.ndarray):
         timestamps = timestamps.tolist()

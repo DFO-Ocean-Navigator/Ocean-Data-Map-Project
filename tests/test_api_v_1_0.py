@@ -109,8 +109,8 @@ class TestAPIv1(unittest.TestCase):
 
         res_data = self.__get_response_data(res)
         self.assertEqual(len(res_data), 2)
-        self.assertEqual(res_data[0]['id'], 2031436800)
         self.assertEqual(res_data[0]['value'], '2014-05-17T00:00:00+00:00')
+        self.assertEqual(res_data[1]['value'], '2014-06-16T12:00:00+00:00')
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
@@ -119,7 +119,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30.png')
+        res = self.app.get('/api/v1.0/scale/giops/votemper/-5,30/default/horizontal/True/False.png')
 
         self.assertEqual(res.status_code, 200)
 

@@ -45,6 +45,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         )
 
     def plot(self):
+        
         # Create base figure
         fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
 
@@ -71,6 +72,15 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
+        
+        
+        if 'xscale' in self.query:
+            ax.set_xlim([float(self.query.get('xscale')[0]),float(self.query.get('xscale')[1])])
+        else:
+            ax.set_xlim([
+                np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
+                np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
+            ])
 
 
         if self.query.get('annotate'):
@@ -150,9 +160,21 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # ~~~~~~~~~~~~~~~~~
         
 
-        ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
-        ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
+        if 'xlabel' in self.query:
+            ax.set_xlabel(gettext(self.query['xlabel']), fontsize=14)
+        else:
+            ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
+        
+        if 'ylabel' in self.query:
+            ax.set_ylabel(gettext(self.query['ylabel']), fontsize=14)
+        else:
+            ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
+        
         ax.invert_yaxis()
+
+        if ('yscale' in self.query):
+            ax.set_ylim(float(self.query.get('yscale')[0]), float(self.query.get('yscale')[1]))
+
         ax.xaxis.set_ticks_position('top')
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)

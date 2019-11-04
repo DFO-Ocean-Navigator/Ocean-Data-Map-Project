@@ -8,14 +8,14 @@
         width: 100%;
 
         > div {
-            position: relative;
+            //position: relative;
             max-height: 100%;
             max-width: 100%;
         }
     }
 }
 .Map {
-    position: relative;
+    //position: relative;
     cursor: crosshair;
     border-left: 5px solid #008cba;
     border-right: 5px solid #008cba;
@@ -52,6 +52,408 @@
             }
         }
     }
+    
+    .ol-scale-line {
+        left: 62.5%;
+        bottom: 3.5px;
+    }
+
+    .shipOptions_container {
+        //margin-left: -102px;
+        background-color: whitesmoke;
+        opacity: 0.9;
+        border-radius: 25px;
+        //margin-top: -97px;
+        
+        min-width: 200px;
+        height: fit-content;
+
+        .contactName {
+            font-size: 18px;
+            position: relative;
+            left: 15px;
+            height: 25px;
+        }
+
+        .contactLine {
+            width: 80%;
+            height: 2px;
+            position: relative;
+            margin-left: 10px;
+
+        }
+        
+        .contactArrow {
+            width: 0;
+            position: relative;
+            height: 0;
+            top: 30px;
+            left: calc(50% - 7.5px);
+            border-style: solid;
+            border-width: 15px 12.5px 0 12.5px;
+            border-color: #ebebeb transparent transparent transparent;
+        }
+
+        .topLeft {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+           
+            
+            .Icon {
+                left: 50%;
+                font-size: 25px;
+                position: relative;
+            }
+        }
+        .topLeft:hover {
+            //background-color: #f0f0f5;
+            //border-right: 2px solid #d9d9d9;
+            //border-bottom: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+
+        .topRight {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+            
+            .Icon {
+                font-size: 25px;
+                position: relative;
+                margin-left: 25%;
+            }
+        }
+        .topRight:hover {
+            //background-color: #f0f0f5;
+            //border-left: 2px solid #d9d9d9;
+            //border-bottom: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+
+        .btmLeft {
+            width: 33.3333%;
+            height: 100%;
+            float: left;
+            border-radius: 50%;
+            
+            
+            .Icon {
+                font-size: 25px;
+                position: relative;
+                margin-left: 25%;
+            }
+        }
+        .btmLeft:hover {
+            //background-color: #f0f0f5;
+            //border-right: 2px solid #d9d9d9;
+            //border-top: 2px solid #d9d9d9;
+            .Icon {
+                font-size: 28px;
+            }
+        }
+        
+    }
+
+    .time_container {
+        height: fit-content;
+        width: 60px;
+        bottom: 10px;
+        left: 21%;
+        border-radius: 25px;
+
+        .timeLayerContainer {
+            width: 100%;
+            height: 60px;
+
+            .timeIcon {
+                width: 25px;
+                left: -5.5px;
+                top: 1px;
+                pointer-events: none;
+                position: relative;
+            }
+
+            .timeBarToggle {
+                padding: 0px;
+                padding-left: 9px;
+                height: 42px;
+                width: 42px;
+                border-radius: 50%;
+                float: left;
+                display: inline-flex;
+                font-size: 22px;
+                font-weight: bold;
+                border: 4px solid #006687;
+                color: #006687;
+            }    
+            .timeBarToggle:focus {
+                    outline: none;
+            }
+            .timeBarToggle:hover {
+                background-color: #006687;
+                color: #e7e7e7;
+                border-color: #e7e7e7;
+            }
+            
+        }
+    }
+
+    .time_container_compare {
+        height: fit-content;
+        width: 99%;
+        top: calc(100% - 60px);
+        left: 1%;
+        position: relative;
+        border-radius: 25px;
+
+        .timeLayerContainer {
+            width: 80%;
+            height: 60px;
+
+            .timeIcon {
+                width: 25px;
+                left: -5.5px;
+                top: 1px;
+                pointer-events: none;
+                position: relative;
+            }
+
+            .timeBarToggle {
+                padding: 0px;
+                padding-left: 9px;
+                height: 42px;
+                width: 42px;
+                border-radius: 50%;
+                float: left;
+                display: inline-flex;
+                font-size: 22px;
+                font-weight: bold;
+                border: 4px solid #006687;
+                color: #006687;
+            }    
+            .timeBarToggle:focus {
+                    outline: none;
+            }
+            .timeBarToggle:hover {
+                background-color: #006687;
+                color: #e7e7e7;
+                border-color: #e7e7e7;
+            }
+            
+        }
+    }
+    
+
+    @keyframes slide-open {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        50% {
+            opacity: 1;
+            //transform: translateX(-25px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .hide {
+        display: none;
+    }
+
+    
+
+    .timeBarContainer {
+        height: 37px;
+        width: 100%;
+        margin-left: 50px;
+        padding: 3px;
+        position: relative;
+        top: 2.5px;
+        border-radius: 25px 25px 25px 25px;
+        background-color: rgba(255,255,255,0.5);
+        animation: slide-open 0.5s ease;
+
+
+        .startTimeContainer {
+            padding: 0px;
+            font-weight: bold;
+            width: 15%;
+            height: 100%;
+            display: inline-block;
+            vertical-align: top;
+            float: left;
+            border-radius: 25px 0px 0px 25px;
+        }
+
+        .buttonContainer::-webkit-scrollbar              { width: 2px; background: rgba(255,255,255,0); height: 30px; }
+        .buttonContainer::-webkit-scrollbar-button       { background: transparent }
+        .buttonContainer::-webkit-scrollbar-track        { background: transparent }
+        .buttonContainer::-webkit-scrollbar-track-piece  { background: transparent }
+        .buttonContainer::-webkit-scrollbar-thumb        {
+            background: #008cba;
+        }
+        .buttonContainer::-webkit-scrollbar-corner       { background-color: transparent }
+        .buttonContainer::-webkit-resizer                { background-color: transparent }
+        
+
+        .yearContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 30px;
+            left: -28px;
+            bottom: -1px;
+            transform-origin: top right;
+            height: 655px;
+
+        }
+        .monthContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 30px;
+            left: 30px;
+            bottom: 32px;
+            transform-origin: top right;
+            height: 596px;
+            
+        }
+        .dayContainer {
+            overflow: auto;
+            overflow-x: hidden;
+            transform: rotate(-90deg);
+            
+            position: relative;
+            display: inline-block;
+
+            width: 31px;
+            left: 82px;
+            bottom: 33px;
+            transform-origin: top right;
+            height: 545px; 
+        }
+        .timecontainer {
+            
+            height: 100%;
+            width: 70%;
+            display: inline-block;
+        }
+        .rangeContainer {
+            display: inline-block;
+            width: 95%;    
+            position: relative;
+            left: 16.45px;
+            top: 14px;
+
+            >div {
+                > div {
+                    height: 15px;
+                    top: -3px;
+                    width: 5px;
+                    position: relative;
+                    > div {
+                        > div {
+                            border-radius: 0px !important;
+                        }
+                    }
+                }
+            }
+        }
+        .selectedContainer {
+            display: block;
+            width: fit-content;
+            .yearButton {
+                vertical-align: top;
+                border-radius: 50px;
+                width: 60px;
+                height: 33px;
+                padding: 0px;
+                //margin-top: 3px;
+                color: white;
+                background-color: #006687
+            }
+            .monthButton {
+                border-radius: 50px;
+                width: 50px;
+                height: 33px;
+                padding: 0px;
+                vertical-align: top;
+                color: white;
+                background-color: #006687;
+                //margin-top: 3px;
+            }
+        }
+
+        .yearButtons {
+            transform: rotate(90deg);
+            vertical-align: bottom;
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 31px;
+            left: -15px;
+            top: -17px;
+            margin-top: 33px;
+            padding: 0px;
+        }
+        .monthButtons {
+            transform: rotate(90deg);
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 30px;
+            left: -10px;
+            //top: 15px;
+            padding: 0px;
+            margin-top: 25px;
+            top: -10px;
+        }
+        .dayButtons {
+            transform: rotate(90deg);
+            vertical-align: bottom;
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 31px;
+            padding: 0px;
+            margin-top: 28px;
+            top: -18px;
+            left: -10px;
+        }
+        
+        
+
+        .endTimeContainer {
+            padding: 0px;
+            font-weight: bold;
+            width: 15%;
+            height: 100%;
+            float: right;
+            display: inline-block;
+            border-radius: 0px 25px 25px 0px;
+        }
+    }
 
     // Map scale
     .scale-viewer {
@@ -69,27 +471,26 @@
 
     // Full-screen control
     .ol-full-screen {
-        left: 7.5em;
+        //left: 7.5em;
+        left: 0.5em;
         right: auto;
         top: 19em;
     }
 
     // Reset rotation button
     .ol-rotate {
-        left: 7.5em;;
+        //left: 7.5em;;
         right: auto;
         top: 7em;
     }
 
     // Zoom controls
     .ol-zoom {
-        left: 7.5em;
         top: 0.5em;
     }
 
     // Zoom Slider Control
     .ol-zoomslider {
-        left: 7.5em;
         background-color: transparent;
         top: 2.3em;
     }
@@ -97,13 +498,11 @@
     .ol-touch {
         margin-top: 212px;
         top: 2.75em;
-        left: 7.5em;
     }
 
     // Zoom In Control
     .ol-zoom-in {
         right: auto;
-        left: 7.5em;
     }
 
     // Zoom Out Control
@@ -115,7 +514,7 @@
 
     // Reset pan button
     .reset-pan {
-        left: 7.5em;
+        left: 0.5em;
         top: 17em;
     }
 
@@ -237,8 +636,177 @@
     .ol-popup {
     }
 
-    
+    .layerHierarchy {
+        width:347px;
+        height:fit-content;
+        background-color: white;
+        z-index: 0;
+        position: absolute;
+        float: right;
+        right: 1%;
+        top: 6%;
+        //padding-top: 10px;
+        opacity: 1;
+        
+        .timeIcon {
+            width: 37px;
+            display: inline;
+            top: -23px;
+            left: 5px;
+            position: relative;
+        }
+        .indexNum {
+            width: 0px;
+            position: relative;
+            top: -51px;
+            left: 2px;
+            height: 0px;
+            display: inline-flex;
+        }
 
+        .showLayers {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .layerContainer {
+            display: inline-block;
+            width: 90%;
+            margin-left: 5%;
+            margin-right: 5%;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            height:40px;
+            background-color: grey;
+
+            .layerTextContainer {
+                width: 70%;
+                float: left;
+                height: 100%;
+                padding-left: 10px;
+                line-height: 41px;
+            }
+
+            .buttonContainer {
+                float: right;
+                height: 100%;
+                width: 30%;
+                display: inline-block;
+            
+
+                .arrowsContainer {
+                    height: 100%;
+                    float: left;
+                    width: 50%;
+
+                    .layerButton {
+                        height: 50%;
+                        width: 100%;
+                        float: left;
+
+                        .layerIcon {
+                            float: right;
+                            height: 100%;
+                            width: 100%;
+                        }
+                    }   
+                }
+
+                .layerCloseButton {
+                    width: 50%;
+                    height: 100%;
+                    float: right;
+                }
+            }
+            
+        }
+        
+    }
+    
+    .layerHierarchy_compare {
+        width:347px;
+        height:fit-content;
+        background-color: white;
+        z-index: 0;
+        float: right;
+        position: absolute!important;
+        margin-left: calc(49% - 347px);
+        top: 6%;
+        //padding-top: 10px;
+        opacity: 1;
+        
+        .timeIcon {
+            width: 37px;
+            display: inline;
+            top: -23px;
+            left: 5px;
+            position: relative;
+        }
+        .indexNum {
+            width: 0px;
+            position: relative;
+            top: -51px;
+            left: 2px;
+            height: 0px;
+            display: inline-flex;
+        }
+
+        .showLayers {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .layerContainer {
+            display: inline-block;
+            width: 90%;
+            margin-left: 5%;
+            margin-right: 5%;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            height:40px;
+            background-color: grey;
+
+            .layerTextContainer {
+                width: 70%;
+                float: left;
+                height: 100%;
+                padding-left: 10px;
+                line-height: 41px;
+            }
+
+            .buttonContainer {
+                float: right;
+                height: 100%;
+                width: 30%;
+                display: inline-block;
+            
+
+                .arrowsContainer {
+                    height: 100%;
+                    float: left;
+                    width: 50%;
+
+                    .layerButton {
+                        height: 50%;
+                        width: 100%;
+                        float: left;
+
+                        .layerIcon {
+                            float: right;
+                            height: 100%;
+                            width: 100%;
+                        }
+                    }   
+                }
+
+                .layerCloseButton {
+                    width: 50%;
+                    height: 100%;
+                    float: right;
+                }
+            }
+            
+        }
+        
+    }
     .ol-popup:before {
     }
 
