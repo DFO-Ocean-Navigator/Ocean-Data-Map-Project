@@ -263,7 +263,7 @@ def sscp_point(sspeed, max_idx):
         else:
             p3 = maxs[0][0]
             if p3 < p2:
-                return 0
+                return np.nan
 
         p1_val = sspeed[p1]
         p2_val = sspeed[p2]
@@ -275,9 +275,9 @@ def sscp_point(sspeed, max_idx):
         if c1 > 5 and c2 > 5:
             return 1
         else:
-            return 0
+            return np.nan
     else:
-        return 0
+        return np.nan
 
             
 def sscp(depth, lat, temperature,salinity):
