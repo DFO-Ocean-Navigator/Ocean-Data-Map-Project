@@ -10,6 +10,9 @@ from data.nearest_grid_point import find_nearest_grid_point
 
 
 class Nemo(CalculatedData):
+    """Class used to access Nemo models.
+    """
+
     __depths = None
 
     def __init__(self, url: str, **kwargs):
