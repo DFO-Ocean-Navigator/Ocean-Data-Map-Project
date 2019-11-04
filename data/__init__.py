@@ -20,10 +20,25 @@ def open_dataset(dataset, **kwargs):
     Opens a dataset.
 
     Determines the type of model the dataset is from and opens the appropriate
-    data object.
+    data object (Nemo, Mercator, Fvcom).
 
     Params:
-    dataset -- Either a string URL for the dataset, or a DatasetConfig object
+        * dataset -- Either a string URL for the dataset, or a DatasetConfig object
+    
+    Required Keyword Arguments:
+        * variable {str or list} -- String or list of strings of variable keys to be loaded
+            (e.g. 'votemper' or ['votemper', 'vosaline']).
+        * timestamp {int} -- Integer value of date/time for requested data (e.g. 2128723200).
+            When loading a range of timestamps, this argument serves as the starting time.
+    
+    Optional Keywork Arguments:
+        * endtime {int} -- Integer value of date/time. This argument is only used when
+            loading a range of timestamps, and should hold the ending time.
+        * nearest_timestamp {bool} -- When true, open_dataset will assume the given
+            starttime (and endtime) do not exactly correspond to a timestamp integer
+            in the dataset, and will perform a binary search to find the nearest timestamp
+            that is less-than-or-equal-to the given starttime (and endtime).
+        * meta_only {bool} -- 
     """
 
     url = None
@@ -43,7 +58,8 @@ def open_dataset(dataset, **kwargs):
         args = {}
         args['calculated'] = calculated
         args['meta_only'] = __meta_only(**kwargs)
-        args['dataset_key'] = dataset.key
+        if __is_datasetconfig_object(dataset):
+            args['dataset_key'] = dataset.key
 
         if not args['meta_only']:
             if __is_sqlite_database(url):
@@ -59,7 +75,7 @@ def open_dataset(dataset, **kwargs):
         else:
             return Nemo(url, **args)
 
-    raise TypeError("Dataset url is None.")
+    raise ValueError("Dataset url is None.")
 
 
 def __is_datasetconfig_object(obj: object) -> bool:

@@ -247,13 +247,35 @@ def sscp_point(sspeed, max_idx):
     """
     
     # Finds all local minima in sspeed
-    mins = argrelextrema(sspeed, np.less)
+
+    mins = argrelextrema(sspeed, np.less, order=2)
     if len(mins[0]) >= 2:
 
-        # Check if it's a big enough difference
-        print(something)
+        # Perform additional Checking to ensure it's an actual sound channel
+        maxs = argrelextrema(sspeed, np.greater_equal, order=2)
 
-        return 1
+        p1 = 0
+        p2 = mins[0][0]
+        
+        if len(maxs[0]) >= 2:
+            p1 = maxs[0][0]
+            p3 = maxs[0][1]
+        else:
+            p3 = maxs[0][0]
+            if p3 < p2:
+                return 0
+
+        p1_val = sspeed[p1]
+        p2_val = sspeed[p2]
+        p3_val = sspeed[p3]
+
+        c1 = p1_val - p2_val
+        c2 = p3_val - p2_val
+
+        if c1 > 5 and c2 > 5:
+            return 1
+        else:
+            return 0
     else:
         return 0
 
@@ -288,8 +310,8 @@ def sscp(depth, lat, temperature,salinity):
                 result[y,x] = sscp_point(speed_point, max_depth)
             else:
                 result[y,x] = 0
-    
     return result
+  
 
 def slopeofsomething_point(sspeed, depth):
     """
@@ -321,6 +343,7 @@ def slopeofsomething_point(sspeed, depth):
         previous_slope = new_slope
 
     return np.nan
+  
 
 def slopeofsomething(depth, lat, temperature, salinity):
     """

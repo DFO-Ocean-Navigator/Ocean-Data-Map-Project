@@ -124,6 +124,7 @@
                 "unit": "m/s",
                 "equation": "sspeed(depth, nav_lat, votemper - 273.15, vosaline)"
             },
+
             "soundchannelaxis": {"name": "Sound Channel Axis (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "criticaldepth": {"name": "Sound Channel Bottom", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},

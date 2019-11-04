@@ -78,7 +78,6 @@ class TimeseriesPlotter(PointPlotter):
 
             times = None
             point_data = []
-            raise IOError
             for p in self.points:
                 data = []
                 for v in self.variables:

@@ -33,6 +33,9 @@ from utils.errors import ServerError
 
 
 class NetCDFData(Data):
+    """Handles reading of netcdf files.
+        Parent class of Nemo, Mercator, and Fvcom classes.
+    """
 
     def __init__(self, url: str, **kwargs):
         self._dataset: [xr.core.dataset.Dataset, netCDF4.Dataset] = None
