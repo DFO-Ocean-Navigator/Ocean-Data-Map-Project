@@ -549,10 +549,10 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     f = os.path.join(cache_dir, request.path[1:])
 
     # Check if the tile/image is cached and send it
-    #if _is_cache_valid(dataset, f):
-    #    return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+    if _is_cache_valid(dataset, f):
+        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
-    #else:
+    else:
     if depth != "bottom" and depth != "all":
         depth = int(depth)
     img = plotting.tile.plot(projection, x, y, zoom, {
