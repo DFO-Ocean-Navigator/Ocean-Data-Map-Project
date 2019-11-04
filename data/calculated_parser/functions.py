@@ -249,6 +249,9 @@ def sscp_point(sspeed, max_idx):
     # Finds all local minima in sspeed
     mins = argrelextrema(sspeed, np.less)
     if len(mins[0]) >= 2:
+
+        # Perform additional Checking to ensure it's an actual sound channel
+        print(something)
         return 1
     else:
         return 0
