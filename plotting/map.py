@@ -344,7 +344,7 @@ class MapPlotter(Plotter):
 
         if self.compare:
             self.variable_name += " Difference"
-            print(something)
+            self.cmap = self.compare.get('colormap_diff')
             compare_config = DatasetConfig(self.compare['dataset'])
             with open_dataset(compare_config, variable=self.compare['variables'], timestamp=self.compare['time']) as dataset:
                 data = []
