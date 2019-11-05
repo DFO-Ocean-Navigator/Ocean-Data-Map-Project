@@ -1177,12 +1177,16 @@ export default class Layer extends React.Component {
       ></NewComboBox>)
     }
     
+    let panelName = 'Ocean'
+    if (this.state.current_dataset === undefined || this.state.current_dataset === None) {
+      panelName = <div>{this.state.icons[this.props.layerType]} {_(this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name)}</div>
+    }
     const inputs = [
       <Panel
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.state.current_dataset ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name)}</div>}
+        header={panelName}
         bsStyle='primary'
       >
         <Button
