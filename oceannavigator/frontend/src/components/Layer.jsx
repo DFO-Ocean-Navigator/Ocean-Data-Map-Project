@@ -1178,7 +1178,7 @@ export default class Layer extends React.Component {
     }
     
     let panelName = 'Ocean'
-    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null && this.state.current_dataset === undefined && this.state.current_dataset === null && this.state.current_variable !== undefined) {
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null && this.state.current_dataset !== undefined && this.state.current_dataset !== null && this.state.current_variable !== undefined) {
       panelName = <div>{this.state.icons[this.props.layerType]} {_(this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name)}</div>
     }
     const inputs = [
