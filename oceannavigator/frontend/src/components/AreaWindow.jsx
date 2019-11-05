@@ -98,9 +98,11 @@ export default class AreaWindow extends React.Component {
     this._mounted = false;
   }
 
-  componentWillReceiveProps(props) {
-    if (this._mounted && stringify(this.props) !== stringify(props)) {
-
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.colormap_diff !== this.state.colormap_diff) {
+      this.forceUpdate()
+    }
+    if (this._mounted && stringify(prevProps) !== stringify(this.props)) {
       if (props.scale !== this.props.scale) {
         if (this.state.scale.indexOf("auto") !== -1) {
           this.setState({
@@ -124,6 +126,13 @@ export default class AreaWindow extends React.Component {
       }
     }
   }
+
+  /*componentWillReceiveProps(props) {
+    if (this._mounted && stringify(this.props) !== stringify(props)) {
+
+      
+    }
+  }*/
 
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
@@ -324,7 +333,7 @@ export default class AreaWindow extends React.Component {
           id='colormap_diff' 
           state={this.state.colormap_diff} 
           def='default' 
-          onUpdate={this.onLocalUpdate} 
+          onUpdate={this.onLocalUpdate}
           url='/api/v1.0/colormaps/' 
           title={_("Diff. Colourmap")}
         >
