@@ -1182,7 +1182,7 @@ export default class Layer extends React.Component {
         key='left_map_panel'
         collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name)}</div>}
+        header={this.state.current_dataset ? _("Left Map (Anchor)") : <div>{this.state.icons[this.props.layerType]} {_(this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name)}</div>}
         bsStyle='primary'
       >
         <Button
