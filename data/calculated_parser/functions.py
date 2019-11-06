@@ -241,9 +241,34 @@ def sscp_point(sspeed, max_idx):
     """
     
     # Finds all local minima in sspeed
-    mins = argrelextrema(sspeed, np.less)
+    mins = argrelextrema(sspeed, np.less, order=2)
     if len(mins[0]) >= 2:
-        return 1
+
+        # Perform additional Checking to ensure it's an actual sound channel
+        maxs = argrelextrema(sspeed, np.greater_equal, order=2)
+
+        p1 = 0
+        p2 = mins[0][0]
+        
+        if len(maxs[0]) >= 2:
+            p1 = maxs[0][0]
+            p3 = maxs[0][1]
+        else:
+            p3 = maxs[0][0]
+            if p3 < p2:
+                return 0
+
+        p1_val = sspeed[p1]
+        p2_val = sspeed[p2]
+        p3_val = sspeed[p3]
+
+        c1 = p1_val - p2_val
+        c2 = p3_val - p2_val
+
+        if c1 > 5 and c2 > 5:
+            return 1
+        else:
+            return 0
     else:
         return 0
 
@@ -495,6 +520,8 @@ def depthexcess(depth, lat, temperature, salinity):
                             depth_excess = np.nan
                     else:
                         depth_excess = np.nan
+                else:
+                    depth_excess = np.nan
             else:
                 depth_excess = np.nan
 

@@ -14,18 +14,22 @@ class TestFunctions(unittest.TestCase):
         sspeed_2 = np.array([1436.17, 1435.52, 1434.81, 1433.56, 1433.90, 1434.18, 1434.75, 1435.00, 1435.63, 1435.99, 1436.28, 1436.61, 1437.12])
         sspeed_3 = np.array([1437.32, 1436.70, 1435.45, 1433.97, 1436.16, 1435.27, 1433.81, 1433.11, 1433.79, 1434.98, 1436.29, 1437.16, 1438.12])
         sspeed_4 = np.array([1435.76, 1434.12, 1434.98, 1436.27, 1434.51, 1433.97, 1433.49, 1433.67, 1435.09, 1435.98, 1436.12, 1437.41, 1438.19])
+        sspeed_5 = np.array([1446.78, 1442.51, 1437.62, 1441.12, 1447.21, 1443.08, 1439.05, 1442.91, 1448.33])
         
         test_max = 13
+        test5_max = 9
 
         result_1 = sscp_point(sspeed_1, test_max)
         result_2 = sscp_point(sspeed_2, test_max)
         result_3 = sscp_point(sspeed_3, test_max)
         result_4 = sscp_point(sspeed_4, test_max)
-        
+        result_5 = sscp_point(sspeed_5, test5_max)
+
         self.assertAlmostEqual(result_1, 0)
         self.assertAlmostEqual(result_2, 0)
-        self.assertAlmostEqual(result_3, 1)
-        self.assertAlmostEqual(result_4, 1)
+        self.assertAlmostEqual(result_3, 0)
+        self.assertAlmostEqual(result_4, 0)
+        self.assertAlmostEqual(result_5, 1)
         
     #def test_sscp(self):
 

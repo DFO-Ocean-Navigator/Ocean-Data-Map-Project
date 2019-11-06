@@ -555,7 +555,6 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
     else:
         if depth != "bottom" and depth != "all":
             depth = int(depth)
-
         img = plotting.tile.plot(projection, x, y, zoom, {
             'interp': interp,
             'radius': radius*1000,
@@ -566,7 +565,6 @@ def tile_impl(projection: str, interp: str, radius: int, neighbours: int, datase
             'depth': depth,
             'scale': scale,
         })
-
         return _cache_and_send_img(img, f)
 
 
