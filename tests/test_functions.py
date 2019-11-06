@@ -24,7 +24,7 @@ class TestFunctions(unittest.TestCase):
         
         self.assertAlmostEqual(result_1, 0)
         self.assertAlmostEqual(result_2, 0)
-        self.assertAlmostEqual(result_3, 1)
+        self.assertAlmostEqual(result_3, 0)
         self.assertAlmostEqual(result_4, 1)
         
     #def test_sscp(self):
