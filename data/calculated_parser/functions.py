@@ -520,6 +520,8 @@ def depthexcess(depth, lat, temperature, salinity):
                             depth_excess = np.nan
                     else:
                         depth_excess = np.nan
+                else:
+                    depth_excess = np.nan
             else:
                 depth_excess = np.nan
 
