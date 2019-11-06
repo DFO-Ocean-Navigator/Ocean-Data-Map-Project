@@ -228,12 +228,6 @@ def cd_interpolation(cd_idx, sld_idx, speed_point, depth):
     return cd_depth
 
 
-def __is_min(p1, p2, p3):
-    if p2 < p1 and p2 < p3:
-        return p2
-    else:
-        return np.nan
-
 def sscp_point(sspeed, max_idx):
     """
     sscp - Secondary Sound Channel Potential (above 1000m)
