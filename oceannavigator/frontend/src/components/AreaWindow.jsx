@@ -99,9 +99,7 @@ export default class AreaWindow extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.colormap_diff !== this.state.colormap_diff) {
-      this.forceUpdate()
-    }
+    
     if (this._mounted && stringify(prevProps) !== stringify(this.props)) {
       if (prevProps.scale !== this.props.scale) {
         if (this.state.scale.indexOf("auto") !== -1) {
@@ -127,12 +125,6 @@ export default class AreaWindow extends React.Component {
     }
   }
 
-  /*componentWillReceiveProps(props) {
-    if (this._mounted && stringify(this.props) !== stringify(props)) {
-
-      
-    }
-  }*/
 
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
