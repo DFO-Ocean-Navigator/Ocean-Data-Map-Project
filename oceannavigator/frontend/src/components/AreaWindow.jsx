@@ -66,12 +66,12 @@ export default class AreaWindow extends React.Component {
       bathymetry: true, // Show bathymetry on map
       plotTitle: undefined,
       quiver: {
-        variable: "",
+        variable: "none",
         magnitude: "length",
         colormap: "default",
       },
       contour: {
-        variable: "",
+        variable: "none",
         colormap: "default",
         levels: "auto",
         legend: true,
