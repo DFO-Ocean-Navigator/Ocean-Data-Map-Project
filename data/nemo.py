@@ -256,6 +256,7 @@ class Nemo(CalculatedData):
             indices = edges[1, 1, :]
 
             if hasattr(time, "__len__"):
+                print(something)
                 data_in = var[time, :, miny:maxy, minx:maxx]
                 data_in = data_in.values.reshape(
                     [data_in.shape[0], data_in.shape[1], -1])

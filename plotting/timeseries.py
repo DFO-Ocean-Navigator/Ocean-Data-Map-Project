@@ -101,7 +101,6 @@ class TimeseriesPlotter(PointPlotter):
                         )
 
                     data.append(d)
-                print(something)
                 point_data.append(np.ma.array(data))
 
             point_data = np.ma.array(point_data)
