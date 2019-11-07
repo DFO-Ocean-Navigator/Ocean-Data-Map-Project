@@ -350,9 +350,8 @@ class TimeseriesPlotter(PointPlotter):
                                            [x[1] for x in self.points]]))  # Longitudes
 
             plt.subplot(gs[:, subplot])
-            print(something)
             plt.plot_date(
-                datenum, self.data[:, 0, :], '-', figure=fig)
+                datenum, self.data.data[0][0], '-', figure=fig)
             plt.ylabel("%s (%s)" % (self.variable_name.title(),
                                     utils.mathtext(self.variable_unit)), fontsize=14)
             plt.ylim(vmin, vmax)
