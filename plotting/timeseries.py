@@ -108,7 +108,7 @@ class TimeseriesPlotter(PointPlotter):
             for idx, factor in enumerate(self.scale_factors):
                 if factor != 1.0:
                     point_data[idx] = np.multiply(point_data[idx], factor)
-
+            print(something)
             starttime_idx = dataset.timestamp_to_time_index(self.starttime)
             endtime_idx = dataset.timestamp_to_time_index(self.endtime)
             times = dataset.timestamps[starttime_idx : endtime_idx + 1]
