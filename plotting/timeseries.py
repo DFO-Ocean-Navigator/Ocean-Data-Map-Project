@@ -129,6 +129,7 @@ class TimeseriesPlotter(PointPlotter):
                     point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
                 ), 1
             )
+        print(something)
 
         self.times = times
         self.data = point_data
