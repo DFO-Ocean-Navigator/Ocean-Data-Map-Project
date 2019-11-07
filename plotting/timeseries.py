@@ -94,8 +94,8 @@ class TimeseriesPlotter(PointPlotter):
                             float(p[0]),
                             float(p[1]),
                             self.depth,
-                            self.starttime,
-                            self.endtime,
+                            None,
+                            timestamps,
                             v,
                             return_depth=True
                         )

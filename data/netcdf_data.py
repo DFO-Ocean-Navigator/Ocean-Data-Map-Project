@@ -625,13 +625,7 @@ class NetCDFData(Data):
         if self.__timestamp_cache.get("org_timestamps") is None:
 
             var = self.time_variable
-
-            # Convert timestamps to UTC
-            print(something)
-            time_list = time_index_to_datetime(var.values, var.attrs['units'])
-            timestamps = np.array(time_list)
-            timestamps.setflags(write=False)  # Make immutable
-            self.__timestamp_cache["org_timestamps"] = timestamps
+            self.__timestamp_cache["org_timestamps"] = var.values
 
         return self.__timestamp_cache.get("org_timestamps")
 
