@@ -230,6 +230,7 @@ class Nemo(CalculatedData):
 
     def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
+                
         latvar, lonvar = self.__latlon_vars(variable)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -270,6 +271,7 @@ class Nemo(CalculatedData):
                 data = np.ma.array(data).reshape([len(time), d.shape[-2],
                                                   d.shape[-1]])
             else:
+                print(something)
                 data = np.ma.MaskedArray(np.zeros(d.values.shape[1:]),
                                          mask=True,
                                          dtype=d.values.dtype)
