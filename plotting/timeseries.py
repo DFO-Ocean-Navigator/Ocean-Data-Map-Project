@@ -76,7 +76,7 @@ class TimeseriesPlotter(PointPlotter):
                     set(dataset.depth_dimensions)):
                 self.depth = 0
             timestamps = dataset.org_timestamps
-            np.sort(timestamps)
+            #np.sort(timestamps)
             times = None
             point_data = []
             for p in self.points:
@@ -108,9 +108,9 @@ class TimeseriesPlotter(PointPlotter):
             for idx, factor in enumerate(self.scale_factors):
                 if factor != 1.0:
                     point_data[idx] = np.multiply(point_data[idx], factor)
-            #starttime_idx = dataset.timestamp_to_time_index(self.starttime)
-            #endtime_idx = dataset.timestamp_to_time_index(self.endtime)
-            times = dataset.timestamps#[starttime_idx : endtime_idx + 1]
+            starttime_idx = dataset.timestamp_to_time_index(self.starttime)
+            endtime_idx = dataset.timestamp_to_time_index(self.endtime)
+            times = dataset.timestamps[starttime_idx : endtime_idx + 1]
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
 
@@ -350,7 +350,7 @@ class TimeseriesPlotter(PointPlotter):
                 utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
                                            [x[1] for x in self.points]]))  # Longitudes
             plt.subplot(gs[:, subplot])
-            datenum = np.sort(datenum)
+            #datenum = np.sort(datenum)
             plt.plot_date(
                 datenum, self.data[:,0,:].transpose(), '-', figure=fig)
             plt.ylabel("%s (%s)" % (self.variable_name.title(),
