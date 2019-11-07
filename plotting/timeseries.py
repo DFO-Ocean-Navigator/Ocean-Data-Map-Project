@@ -76,6 +76,7 @@ class TimeseriesPlotter(PointPlotter):
                     set(dataset.depth_dimensions)):
                 self.depth = 0
             timestamps = dataset.org_timestamps
+            np.sort(timestamps)
             times = None
             point_data = []
             for p in self.points:
@@ -349,7 +350,7 @@ class TimeseriesPlotter(PointPlotter):
                 utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
                                            [x[1] for x in self.points]]))  # Longitudes
             plt.subplot(gs[:, subplot])
-            datenum = np.sort(datenum)
+            #datenum = np.sort(datenum)
             plt.plot_date(
                 datenum, self.data[:,0,:].transpose(), '-', figure=fig)
             plt.ylabel("%s (%s)" % (self.variable_name.title(),
