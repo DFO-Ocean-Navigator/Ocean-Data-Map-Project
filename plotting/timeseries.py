@@ -75,7 +75,7 @@ class TimeseriesPlotter(PointPlotter):
             if not (set(dataset.variables[var].dimensions) &
                     set(dataset.depth_dimensions)):
                 self.depth = 0
-            print(something)
+            timestamps = self.org_timestamps
             times = None
             point_data = []
             for p in self.points:
