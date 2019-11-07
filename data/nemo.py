@@ -298,6 +298,7 @@ class Nemo(CalculatedData):
                 )
 
         else:
+            print(something)
             if len(var.shape) == 4:
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
