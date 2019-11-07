@@ -257,7 +257,6 @@ class Nemo(CalculatedData):
             indices = edges[1, 1, :]
 
             if hasattr(time, "__len__"):
-                print(something)
                 data_in = var[time, :, miny:maxy, minx:maxx]
                 data_in = data_in.values.reshape(
                     [data_in.shape[0], data_in.shape[1], -1])
@@ -271,7 +270,6 @@ class Nemo(CalculatedData):
                 data = np.ma.array(data).reshape([len(time), d.shape[-2],
                                                   d.shape[-1]])
             else:
-                print(something)
                 data = np.ma.MaskedArray(np.zeros(d.values.shape[1:]),
                                          mask=True,
                                          dtype=d.values.dtype)
@@ -299,6 +297,7 @@ class Nemo(CalculatedData):
 
         else:
             if len(var.shape) == 4:
+                time = np.array([0,1,2])
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
@@ -308,7 +307,6 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data.values,
             )
-            print(something)
             if return_depth:
                 dep = self.depths[depth]
                 dep = np.tile(dep, len(latitude))
