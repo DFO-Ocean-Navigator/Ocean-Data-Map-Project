@@ -129,8 +129,7 @@ class TimeseriesPlotter(PointPlotter):
                     point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
                 ), 1
             )
-        print(something)
-
+        
         self.times = times
         self.data = point_data
         self.depths = depths
@@ -273,7 +272,7 @@ class TimeseriesPlotter(PointPlotter):
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
-
+        print(something)
         datenum = matplotlib.dates.date2num(self.times)
         if self.depth == 'all':
             size = list(map(float, self.size.split("x")))
