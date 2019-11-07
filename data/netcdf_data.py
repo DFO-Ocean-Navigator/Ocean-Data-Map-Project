@@ -613,6 +613,30 @@ class NetCDFData(Data):
         return self._variable_list
 
     @property
+    def org_timestamps(self):
+        """
+            Loads, caches, and returns the values of the
+            time dimension for the open netcdf files.
+
+            Note: to get all timestamp values from a dataset,
+            you must query the SQLiteDatabase.
+        """
+        # If the timestamp cache is empty
+        if self.__timestamp_cache.get("timestamps") is None:
+
+            var = self.time_variable
+
+            # Convert timestamps to UTC
+            print(something)
+            time_list = time_index_to_datetime(var.values, var.attrs['units'])
+            timestamps = np.array(time_list)
+            timestamps.setflags(write=False)  # Make immutable
+            self.__timestamp_cache["timestamps"] = timestamps
+
+        return self.__timestamp_cache.get("timestamps")
+
+
+    @property
     def timestamps(self):
         """
             Loads, caches, and returns the values of the
