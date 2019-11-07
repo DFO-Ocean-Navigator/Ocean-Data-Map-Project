@@ -253,7 +253,6 @@ class TimeseriesPlotter(PointPlotter):
         return super(TimeseriesPlotter, self).csv(header, columns, data)
 
     def plot(self):
-        print(something)
         if len(self.variables) > 1:
             if self.scale:
                 vmin = self.scale[0]
