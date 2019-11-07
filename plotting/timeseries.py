@@ -352,7 +352,7 @@ class TimeseriesPlotter(PointPlotter):
             plt.subplot(gs[:, subplot])
             #datenum = np.sort(datenum)
             plt.plot_date(
-                datenum, self.data[:,0,:].transpose(), '-', figure=fig)
+                datenum, self.data[:,0,:].transpose(), 'o', figure=fig)
             plt.ylabel("%s (%s)" % (self.variable_name.title(),
                                     utils.mathtext(self.variable_unit)), fontsize=14)
             plt.ylim(vmin, vmax)
