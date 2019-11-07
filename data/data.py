@@ -134,7 +134,11 @@ class Data(object, metaclass=abc.ABCMeta):
 
     def get_timeseries_point(self, latitude, longitude, depth, starttime,
                              endtime, variable, return_depth=False):
-        return self.get_point(latitude, longitude, depth,
+        # Find all time indexes in between
+        if hasattr(endtime, "__len__"):
+            return self.get_point(latitude, longitude, depth, endtime, variable, return_depth=return_depth)
+        else:
+            return self.get_point(latitude, longitude, depth,
                               [starttime, endtime],
                               variable, return_depth=return_depth)
 

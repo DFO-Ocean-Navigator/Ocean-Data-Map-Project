@@ -230,6 +230,7 @@ class Nemo(CalculatedData):
 
     def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
+                
         latvar, lonvar = self.__latlon_vars(variable)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -305,7 +306,6 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data.values,
             )
-
             if return_depth:
                 dep = self.depths[depth]
                 dep = np.tile(dep, len(latitude))
