@@ -76,7 +76,7 @@ class TimeseriesPlotter(PointPlotter):
                     set(dataset.depth_dimensions)):
                 self.depth = 0
             timestamps = dataset.org_timestamps
-            #np.sort(timestamps)
+            np.sort(timestamps)
             times = None
             point_data = []
             for p in self.points:
