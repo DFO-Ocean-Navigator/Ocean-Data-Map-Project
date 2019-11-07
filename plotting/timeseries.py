@@ -253,6 +253,7 @@ class TimeseriesPlotter(PointPlotter):
         return super(TimeseriesPlotter, self).csv(header, columns, data)
 
     def plot(self):
+        print(something)
         if len(self.variables) > 1:
             if self.scale:
                 vmin = self.scale[0]
@@ -272,7 +273,7 @@ class TimeseriesPlotter(PointPlotter):
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
-        print(something)
+        
         datenum = matplotlib.dates.date2num(self.times)
         if self.depth == 'all':
             size = list(map(float, self.size.split("x")))
