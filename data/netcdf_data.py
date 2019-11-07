@@ -622,7 +622,7 @@ class NetCDFData(Data):
             you must query the SQLiteDatabase.
         """
         # If the timestamp cache is empty
-        if self.__timestamp_cache.get("timestamps") is None:
+        if self.__timestamp_cache.get("org_timestamps") is None:
 
             var = self.time_variable
 
@@ -631,9 +631,9 @@ class NetCDFData(Data):
             time_list = time_index_to_datetime(var.values, var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
-            self.__timestamp_cache["timestamps"] = timestamps
+            self.__timestamp_cache["org_timestamps"] = timestamps
 
-        return self.__timestamp_cache.get("timestamps")
+        return self.__timestamp_cache.get("org_timestamps")
 
 
     @property
