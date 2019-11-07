@@ -298,7 +298,6 @@ class Nemo(CalculatedData):
                 )
 
         else:
-            print(something)
             if len(var.shape) == 4:
                 data = var[time, int(depth), miny:maxy, minx:maxx]
             else:
@@ -309,7 +308,7 @@ class Nemo(CalculatedData):
                 latitude, longitude,
                 data.values,
             )
-
+            print(something)
             if return_depth:
                 dep = self.depths[depth]
                 dep = np.tile(dep, len(latitude))
