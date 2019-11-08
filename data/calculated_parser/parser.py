@@ -61,7 +61,7 @@ class Parser:
         d = dict(zip(self.dims, key))
     
         if not isinstance(d['depth'], slice):
-            d['depth'] = slice(0,d['depth'])
+            d['depth'] = slice(d['depth'])
 
         try:
             if hasattr(variable, "dims"):
