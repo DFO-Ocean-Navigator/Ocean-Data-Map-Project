@@ -326,7 +326,7 @@ def slopeofsomething_point(sspeed, depth):
 
         temp_sspeed = temp_sspeed[:temp_sspeed.shape[0]-1]
         temp_depth = temp_depth[:temp_depth.shape[0]-1]
-        new_slope, intercept, r_value, p_value, std_err = linregress(temp_sspeed, temp_depth)
+        new_slope = ( temp_depth[0] - temp_depth[-1] ) / ( temp_sspeed[0] - temp_sspeed[-1] )
         # Determine breaking condition
         print("PREVIOUS SLOPE: ", previous_slope)
         print("NEW SLOPE: ", new_slope)
