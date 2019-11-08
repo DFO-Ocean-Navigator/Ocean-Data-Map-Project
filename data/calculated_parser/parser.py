@@ -54,13 +54,12 @@ class Parser:
         Returns a tuple of integers and/or slices
         """
         key = self.key
-        print(something)
         if not isinstance(key, tuple):
             key = (key,)
 
         d = dict(zip(self.dims, key))
     
-        if not isinstance(d['depth'], slice):
+        if not isinstance(d['depth'], slice) and isinstance(key[0], slice):
             d['depth'] = slice(d['depth'])
 
         try:
