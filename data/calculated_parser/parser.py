@@ -54,6 +54,7 @@ class Parser:
         Returns a tuple of integers and/or slices
         """
         key = self.key
+        print(something)
         if not isinstance(key, tuple):
             key = (key,)
 
