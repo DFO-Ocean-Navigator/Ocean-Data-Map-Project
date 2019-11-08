@@ -328,12 +328,6 @@ def slopeofsomething_point(sspeed, depth):
         temp_depth = temp_depth[:temp_depth.shape[0]-1]
         new_slope = ( temp_depth[0] - temp_depth[-1] ) / ( temp_sspeed[0] - temp_sspeed[-1] )
         # Determine breaking condition
-        print("PREVIOUS SLOPE: ", previous_slope)
-        print("NEW SLOPE: ", new_slope)
-        print("sspeed1 - ", temp_sspeed[0])
-        print("sspeed2 - ", temp_sspeed[-1])
-        print("depth1 - ", temp_depth[0])
-        print("depth2 - ", temp_depth[-1])
         slope_diff = previous_slope - new_slope
         if slope_diff < 0.1 and slope_diff > -0.1:
             return previous_slope
