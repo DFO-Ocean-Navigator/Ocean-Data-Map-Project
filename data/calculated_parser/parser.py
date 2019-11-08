@@ -60,6 +60,9 @@ class Parser:
 
         d = dict(zip(self.dims, key))
         try:
+            if not isinstance(d['depth'], slice):
+                d['depth'] = slice(0,d['depth'])
+        try:
             if hasattr(variable, "dims"):
                 # xarray calls it dims
                 key = [d[k] for k in variable.dims]
