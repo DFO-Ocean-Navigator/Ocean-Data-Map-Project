@@ -696,7 +696,7 @@ export default class OceanNavigator extends React.Component {
             updateLanguage={this.updateLanguage}
           />
           <WarningBar
-            showWarningInfo={this.showBugsModal}
+            showWarningInfo={false}
           />
           {map}
         </div>
