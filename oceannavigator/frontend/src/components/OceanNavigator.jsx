@@ -9,6 +9,7 @@ import DrifterWindow from "./DrifterWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
+import WarningBar from "./WarningBar.jsx";
 import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
