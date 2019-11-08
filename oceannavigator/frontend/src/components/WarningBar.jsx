@@ -24,10 +24,7 @@ export default class WarningBar extends React.PureComponent {
     if(this.state.show){
       return (
         <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
-              Please note we have found a bug related to velocity representation on the Ocean Navigator
-              (in particular with direction). We are working on a correction.
-              You may <Button bsStyle="link" onClick={this.props.showWarningInfo}>click here</Button>
-              for further detail. 
+              The Ocean Navigator will go down for brief maintenance at 1:00 NST
         </Alert>
       );
     }
