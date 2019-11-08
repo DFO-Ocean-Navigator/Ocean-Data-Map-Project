@@ -133,6 +133,13 @@ class TestFunctions(unittest.TestCase):
         test_result_1 = slopeofsomething_point(sspeed_1, depth_1)
         self.assertAlmostEqual(test_result_1, -23.508440422965638)
 
+        sspeed_2 = np.array([1494.3858, 1494.3122, 1492.9553, 1493.0089, 1492.2201, 1487.9422, 1482.8552, 1481.0305])
+        depth_2 = np.array([55.7643, 65.8073, 77.8539, 92.3261, 109.729, 130.666, 155.851, 186.26])
+        
+        self.assertEqual(len(sspeed_2), len(depth_2))
+        test_result_2 = slopeofsomething_point(sspeed_2, depth_2)
+        self.assertAlmostEqual(test_result_2, depth_2)
+
     @unittest.skip('Test Not Working')
     def test_cd_interpolation(self):
     
