@@ -138,7 +138,7 @@ class TestFunctions(unittest.TestCase):
         
         self.assertEqual(len(sspeed_2), len(depth_2))
         test_result_2 = slopeofsomething_point(sspeed_2, depth_2)
-        self.assertAlmostEqual(test_result_2, depth_2)
+        self.assertAlmostEqual(test_result_2, 5)
 
     @unittest.skip('Test Not Working')
     def test_cd_interpolation(self):
