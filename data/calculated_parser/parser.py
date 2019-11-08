@@ -54,14 +54,14 @@ class Parser:
         Returns a tuple of integers and/or slices
         """
         key = self.key
-        print(something)
         if not isinstance(key, tuple):
             key = (key,)
 
         d = dict(zip(self.dims, key))
-        try:
-            if not isinstance(d['depth'], slice):
-                d['depth'] = slice(0,d['depth'])
+    
+        if not isinstance(d['depth'], slice):
+            d['depth'] = slice(0,d['depth'])
+
         try:
             if hasattr(variable, "dims"):
                 # xarray calls it dims
