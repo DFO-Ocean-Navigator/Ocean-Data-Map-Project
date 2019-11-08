@@ -72,7 +72,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
 
-
+        print(something)
         if self.query.get('annotate'):
             # SOUND SPEED MINIMA
             
