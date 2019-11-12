@@ -137,10 +137,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             #plt.axvline(x=minspeed, ymin=0.5, ymax=1)
             #plt.axhline(y=minpos)
         
-        ax.set_xlim([
-            np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
-            np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
-        ])
+        #ax.set_xlim([
+        #    np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
+        #    np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
+        #])
+        ax.set_xlim([1450, 1550])
 
         if self.query.get('annotate'):
             # Sound Speed Minima
