@@ -64,6 +64,7 @@ export default class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+    this.updatePlotSetting = this.updatePlotSetting.bind(this);
   }
 
   componentDidMount() {
