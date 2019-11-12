@@ -146,6 +146,8 @@ export default class PointWindow extends React.Component {
     return
   }
   updatePlotSetting(key, value) {
+    console.warn("KEY: ", key)
+    console.warn("VALUE: ", value)
     let plotSettings = this.state.plotsettings;
 
     plotSettings[key] = value;
