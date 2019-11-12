@@ -3,7 +3,14 @@ import React from 'react';
 export default class Scale extends React.Component {
     constructor(props) {
         super(props)
+
+        this.updateScale = this.updateScale.bind(this);
     }
+
+    updateScale(e) {
+        console.warn("E: ", e)
+    }
+
 
     render () {
 

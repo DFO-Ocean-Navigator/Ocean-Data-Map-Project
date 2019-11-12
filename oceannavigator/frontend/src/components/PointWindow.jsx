@@ -64,7 +64,9 @@ export default class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+    this.applyPlotSettings = this.applyPlotSettings.bind(this);
     this.updatePlotSetting = this.updatePlotSetting.bind(this);
+
   }
 
   componentDidMount() {
@@ -140,7 +142,9 @@ export default class PointWindow extends React.Component {
     });
   }
 
-
+  applyPlotSettings() {
+    return
+  }
   updatePlotSetting(key, value) {
     let plotSettings = this.state.plotsettings;
 
@@ -312,6 +316,7 @@ export default class PointWindow extends React.Component {
       <Scale
         title='Y Scale'
         onChange={this.updatePlotSetting}
+        onApply={this.applyPlotSettings}
         minID='ymin'
         maxID='ymax'
         min={this.state.plotsettings.ymin}
