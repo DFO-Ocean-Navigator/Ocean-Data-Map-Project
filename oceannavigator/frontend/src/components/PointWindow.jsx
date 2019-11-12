@@ -298,6 +298,7 @@ export default class PointWindow extends React.Component {
 
     const select_xscale = (
       <Scale
+        title='X Scale'
         onChange={this.updatePlotSetting}
         minID='xmin'
         maxID='xmax'
@@ -308,6 +309,7 @@ export default class PointWindow extends React.Component {
 
     const select_yscale = (
       <Scale
+        title='Y Scale'
         onChange={this.updatePlotSetting}
         minID='ymin'
         maxID='ymax'
