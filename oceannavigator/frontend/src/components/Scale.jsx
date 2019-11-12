@@ -6,8 +6,6 @@ export default class Scale extends React.Component {
     }
 
     render () {
-        
-        min
 
         return (
             <div>
