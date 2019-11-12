@@ -612,7 +612,7 @@ export default class PointWindow extends React.Component {
               {datainputs}
             </Panel >
           </Col>
-          <Col lg={10}>
+          <Col lg={8}>
             <PlotImage
               query={plot_query} // For image saving link.
               permlink_subquery={permlink_subquery}
