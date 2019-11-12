@@ -515,27 +515,27 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.CTD:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputes = [select_imagesize, select_plottitle]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.TS:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputes = [select_imagesize, select_plottitle]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.SOUND:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputes = [select_imagesize, select_plottitle]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.OBSERVATION:
         datainputs = [select_location, toggle_map, select_dataset, observation_variable];
-        plotinputes = [select_imagesize, select_plottitle]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.MOORING:
         datainputs = [select_location, toggle_map, select_dataset, timeRange, depthVariableScale]
-        plotinputes = [select_imagesize, select_plottitle]
+        plotinputs = [select_imagesize, select_plottitle]
         if (this.state.depth == "all") {
           // Add Colormap selector
           datainputs.push(
@@ -551,7 +551,8 @@ export default class PointWindow extends React.Component {
         }
 
       case TabEnum.STICK:
-        datainputs = [global, timeRange, multiDepthVector]
+        datainputs = [select_location, toggle_map, select_dataset, timeRange, multiDepthVector]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
     }
 
@@ -627,6 +628,16 @@ export default class PointWindow extends React.Component {
               collapsible
               defaultExpanded
               header={_("Plot Settings")}
+              bsStyle='primary'
+            >
+              {plotinputs}
+            </Panel >
+            <Panel
+              key='save_settings'
+              id='save_settings'
+              collapsible
+              defaultExpanded
+              header={_("Save Settings")}
               bsStyle='primary'
             >
               {plotinputs}
