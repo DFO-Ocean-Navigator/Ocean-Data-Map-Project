@@ -441,7 +441,7 @@ export default class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.props.time;
         plot_query.variable = this.state.variable;
-        inputs = [global, time, profilevariable];
+        //inputs = [global, time, profilevariable];
         break;
       
       case TabEnum.CTD:
@@ -458,7 +458,7 @@ export default class PointWindow extends React.Component {
         } else if (this.state.variables.indexOf("salinity") !== -1) {
           plot_query.variable += "salinity";
         }
-        inputs = [global, time];
+        //inputs = [global, time];
         break;
     
       case TabEnum.TS:
@@ -468,14 +468,14 @@ export default class PointWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
         }
 
-        inputs = [global, time];
+        //inputs = [global, time];
         break;
       
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
         plot_query.annotate = this.state.annotate
-        inputs = [global, time];
+        //inputs = [global, time];
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
@@ -485,7 +485,7 @@ export default class PointWindow extends React.Component {
         
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.variable;
-        inputs = [global, observation_variable, profilevariable];
+        //inputs = [global, observation_variable, profilevariable];
         
         break;
       case TabEnum.MOORING:
@@ -497,7 +497,58 @@ export default class PointWindow extends React.Component {
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
 
+        /*
         inputs = [global, timeRange, depthVariableScale];
+        if (this.state.depth == "all") {
+          // Add Colormap selector
+          inputs.push(
+            <ComboBox
+              key='colormap'
+              id='colormap'
+              state={this.state.colormap}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/v1.0/colormaps/'
+              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>);
+        }*/
+
+        break;
+      case TabEnum.STICK:
+        plot_query.type = "stick";
+        plot_query.variable = this.state.variable;
+        plot_query.starttime = this.state.starttime;
+        plot_query.endtime = this.props.time;
+        plot_query.depth = this.state.depth;
+
+        //inputs = [global, timeRange, multiDepthVector];
+
+        break;
+    }
+
+    switch(this.state.selected) {
+      case TabEnum.PROFILE:
+        inputs = [global, time, profilevariable]
+        break;
+      
+      case TabEnum.CTD:
+        inputs = [global, time];
+        break;
+
+      case TabEnum.TS:
+        inputs = [global, time];
+        break;
+
+      case TabEnum.SOUND:
+        inputs = [global, time];
+        break;
+
+      case TabEnum.OBSERVATION:
+        inputs = [global, observation_variable];
+        break;
+
+      case TabEnum.MOORING:
+        inputs = [global, timeRange, depthVariableScale]
         if (this.state.depth == "all") {
           // Add Colormap selector
           inputs.push(
@@ -512,16 +563,8 @@ export default class PointWindow extends React.Component {
             </ComboBox>);
         }
 
-        break;
       case TabEnum.STICK:
-        plot_query.type = "stick";
-        plot_query.variable = this.state.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
-        plot_query.depth = this.state.depth;
-
-        inputs = [global, timeRange, multiDepthVector];
-
+        inputs = [global, timeRange, multiDepthVector]
         break;
     }
 
