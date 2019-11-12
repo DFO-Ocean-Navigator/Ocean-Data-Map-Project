@@ -7,7 +7,7 @@ export default class Scale extends React.Component {
         this.updateScale = this.updateScale.bind(this);
     }
 
-    updateScale(e) {
+    updateScale(key, e) {
         console.warn("E: ", e)
     }
 
@@ -28,7 +28,7 @@ export default class Scale extends React.Component {
                     placeholder='min'
                 ></input>
                 <input
-                    onChange={(e) => {console.warn(e)}}
+                    onChange={(e) => {this.updateScale(this.props.maxID, e.target.value)}}
                     className='scale'
                     id={this.props.maxID}
                     value={this.props.max}
