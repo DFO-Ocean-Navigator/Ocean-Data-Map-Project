@@ -28,7 +28,7 @@ export default class Scale extends React.Component {
                     placeholder='min'
                 ></input>
                 <input
-                    onChange={this.updateScale}
+                    onChange={(e) => {console.warn(e)}}
                     className='scale'
                     id={this.props.maxID}
                     value={this.props.max}
