@@ -17,6 +17,7 @@ import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
+import Scale from "./Scale.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -52,6 +53,7 @@ export default class PointWindow extends React.Component {
       size: "10x7",
       dpi: 144,
       plotTitles: Array(7).fill(""),
+      plotsettings: {}
     };
 
     if (props.init !== null) {
@@ -137,6 +139,16 @@ export default class PointWindow extends React.Component {
     });
   }
 
+
+  updatePlotSetting(key, value) {
+    let plotSettings = this.state.plotsettings;
+
+    plotSettings[key] = value;
+
+    this.setState({
+      plotsettings: plotSettings
+    })
+  }
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
@@ -282,6 +294,26 @@ export default class PointWindow extends React.Component {
         updatePlotTitle={this.updatePlotTitle}
         plotTitle={this.state.plotTitles[this.state.selected - 1]}
       ></CustomPlotLabels>
+    )
+
+    const select_xscale = (
+      <Scale
+        onChange={this.updatePlotSetting}
+        minID='xmin'
+        maxID='xmax'
+        min={this.state.plotsettings.xmin}
+        max={this.state.plotsettings.xmax}
+      ></Scale>
+    )
+
+    const select_yscale = (
+      <Scale
+        onChange={this.updatePlotSetting}
+        minID='ymin'
+        maxID='ymax'
+        min={this.state.plotsettings.ymin}
+        max={this.state.plotsettings.ymax}
+      ></Scale>
     )
 
     // Show a single time selector on all tabs except Stick and Virtual Mooring.
@@ -529,7 +561,7 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.SOUND:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_plottitle]
+        plotinputs = [select_plottitle, select_xscale, select_yscale]
         saveinputs = [select_imagesize]
         break;
 
