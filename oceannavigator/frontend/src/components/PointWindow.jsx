@@ -439,6 +439,7 @@ export default class PointWindow extends React.Component {
 
     let datainputs = [];
     let plotinputs = [];
+    let saveinputs = [];
 
     switch (this.state.selected) {
       case TabEnum.PROFILE:
@@ -510,32 +511,38 @@ export default class PointWindow extends React.Component {
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         datainputs = [select_location, toggle_map, select_dataset, profilevariable, time]
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
 
       case TabEnum.CTD:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
 
       case TabEnum.TS:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
 
       case TabEnum.SOUND:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
 
       case TabEnum.OBSERVATION:
         datainputs = [select_location, toggle_map, select_dataset, observation_variable];
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
 
       case TabEnum.MOORING:
         datainputs = [select_location, toggle_map, select_dataset, timeRange, depthVariableScale]
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         if (this.state.depth == "all") {
           // Add Colormap selector
           datainputs.push(
@@ -552,7 +559,8 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.STICK:
         datainputs = [select_location, toggle_map, select_dataset, timeRange, multiDepthVector]
-        plotinputs = [select_imagesize, select_plottitle]
+        plotinputs = [select_plottitle]
+        saveinputs = [select_imagesize]
         break;
     }
 
@@ -640,7 +648,7 @@ export default class PointWindow extends React.Component {
               header={_("Save Settings")}
               bsStyle='primary'
             >
-              {plotinputs}
+              {saveinputs}
             </Panel >
           </Col>
         </Row>
