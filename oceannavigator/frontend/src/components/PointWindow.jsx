@@ -219,61 +219,70 @@ export default class PointWindow extends React.Component {
     _("Saved Image Size");
 
     // Rendered across all tabs
-    const global = (
-      <div>
-        <ComboBox
-          key='dataset'
-          id='dataset'
-          state={this.props.dataset}
-          def=''
-          url='/api/v1.0/datasets/'
-          title={_("Dataset")}
-          onUpdate={this.props.onUpdate}
+
+    const select_dataset = (
+      <ComboBox
+        key='dataset'
+        id='dataset'
+        state={this.props.dataset}
+        def=''
+        url='/api/v1.0/datasets/'
+        title={_("Dataset")}
+        onUpdate={this.props.onUpdate}
+      />
+
+    )
+    const toggle_map = (
+      <SelectBox
+        key='showmap'
+        id='showmap'
+        state={this.state.showmap}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Location")}>{_("showmap_help")}
+      </SelectBox>
+    )
+
+    const toggle_annotations = (
+      <SelectBox
+        key='annotate'
+        id='annotate'
+        state={this.state.annotate}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Annotations")}>
+      </SelectBox>
+    )
+
+    const select_location = (
+      <div style={{ display: this.props.point.length == 1 ? "block" : "none", }}>
+        <LocationInput
+          key='point'
+          id='point'
+          state={this.props.point}
+          title={_("Location")}
+          onUpdate={this.onLocalUpdate}
         />
-        <SelectBox
-          key='showmap'
-          id='showmap'
-          state={this.state.showmap}
-          onUpdate={this.onLocalUpdate}
-          title={_("Show Location")}>{_("showmap_help")}
-        </SelectBox>
-
-        <SelectBox
-          key='annotate'
-          id='annotate'
-          state={this.state.annotate}
-          onUpdate={this.onLocalUpdate}
-          title={_("Show Annotations")}>
-        </SelectBox>
-
-        <div style={{ display: this.props.point.length == 1 ? "block" : "none", }}>
-          <LocationInput
-            key='point'
-            id='point'
-            state={this.props.point}
-            title={_("Location")}
-            onUpdate={this.onLocalUpdate}
-          />
-        </div>
-
-        <ImageSize
-          key='size'
-          id='size'
-          state={this.state.size}
-          onUpdate={this.onLocalUpdate}
-          title={_("Saved Image Size")}
-        />
-
-        {/* Plot Title */}
-        <CustomPlotLabels
-          key='title'
-          id='title'
-          title={_("Plot Title")}
-          updatePlotTitle={this.updatePlotTitle}
-          plotTitle={this.state.plotTitles[this.state.selected - 1]}
-        ></CustomPlotLabels>
       </div>
-    );
+    )
+
+    const select_imagesize = (
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+    )
+
+    const select_plottitle = (
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      ></CustomPlotLabels>
+    )
 
     // Show a single time selector on all tabs except Stick and Virtual Mooring.
     const showTime = this.state.selected !== TabEnum.STICK ||
@@ -428,14 +437,14 @@ export default class PointWindow extends React.Component {
       plotTitle: this.state.plotTitles[this.state.selected - 1],
     };
 
-    let inputs = [];
+    let datainputs = [];
+    let plotinputs = [];
 
     switch (this.state.selected) {
       case TabEnum.PROFILE:
         plot_query.type = "profile";
         plot_query.time = this.props.time;
         plot_query.variable = this.state.variable;
-        //inputs = [global, time, profilevariable];
         break;
 
       case TabEnum.CTD:
@@ -452,7 +461,6 @@ export default class PointWindow extends React.Component {
         } else if (this.state.variables.indexOf("salinity") !== -1) {
           plot_query.variable += "salinity";
         }
-        //inputs = [global, time];
         break;
 
       case TabEnum.TS:
@@ -462,15 +470,14 @@ export default class PointWindow extends React.Component {
           plot_query.compare_to = this.props.dataset_1;
         }
 
-        //inputs = [global, time];
         break;
 
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
         plot_query.annotate = this.state.annotate
-        //inputs = [global, time];
         break;
+
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
         plot_query.observation = this.props.point.map(function (o) {
@@ -479,9 +486,8 @@ export default class PointWindow extends React.Component {
 
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.variable;
-        //inputs = [global, observation_variable, profilevariable];
-
         break;
+
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.props.variable;
@@ -490,62 +496,49 @@ export default class PointWindow extends React.Component {
         plot_query.depth = this.state.depth;
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
-
-        /*
-        inputs = [global, timeRange, depthVariableScale];
-        if (this.state.depth == "all") {
-          // Add Colormap selector
-          inputs.push(
-            <ComboBox
-              key='colormap'
-              id='colormap'
-              state={this.state.colormap}
-              def='default'
-              onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-            </ComboBox>);
-        }*/
-
         break;
+
       case TabEnum.STICK:
         plot_query.type = "stick";
         plot_query.variable = this.state.variable;
         plot_query.starttime = this.state.starttime;
         plot_query.endtime = this.props.time;
         plot_query.depth = this.state.depth;
-
-        //inputs = [global, timeRange, multiDepthVector];
-
         break;
     }
 
     switch (this.state.selected) {
       case TabEnum.PROFILE:
-        inputs = [global, time, profilevariable]
+        datainputs = [select_location, toggle_map, select_dataset, profilevariable, time]
+        plotinputs = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.CTD:
-        inputs = [global, time];
+        datainputs = [select_location, toggle_map, select_dataset, time];
+        plotinputes = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.TS:
-        inputs = [global, time];
+        datainputs = [select_location, toggle_map, select_dataset, time];
+        plotinputes = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.SOUND:
-        inputs = [global, time];
+        datainputs = [select_location, toggle_map, select_dataset, time];
+        plotinputes = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.OBSERVATION:
-        inputs = [global, observation_variable];
+        datainputs = [select_location, toggle_map, select_dataset, observation_variable];
+        plotinputes = [select_imagesize, select_plottitle]
         break;
 
       case TabEnum.MOORING:
-        inputs = [global, timeRange, depthVariableScale]
+        datainputs = [select_location, toggle_map, select_dataset, timeRange, depthVariableScale]
+        plotinputes = [select_imagesize, select_plottitle]
         if (this.state.depth == "all") {
           // Add Colormap selector
-          inputs.push(
+          datainputs.push(
             <ComboBox
               key='colormap'
               id='colormap'
@@ -558,7 +551,7 @@ export default class PointWindow extends React.Component {
         }
 
       case TabEnum.STICK:
-        inputs = [global, timeRange, multiDepthVector]
+        datainputs = [global, timeRange, multiDepthVector]
         break;
     }
 
@@ -616,7 +609,7 @@ export default class PointWindow extends React.Component {
               header={_("Global Settings")}
               bsStyle='primary'
             >
-              {inputs}
+              {datainputs}
             </Panel >
           </Col>
           <Col lg={10}>
@@ -625,6 +618,19 @@ export default class PointWindow extends React.Component {
               permlink_subquery={permlink_subquery}
               action={this.props.action}
             />
+          </Col>
+          <Col lg={2}>
+
+            <Panel
+              key='plot_settings'
+              id='plot_settings'
+              collapsible
+              defaultExpanded
+              header={_("Plot Settings")}
+              bsStyle='primary'
+            >
+              {plotinputs}
+            </Panel >
           </Col>
         </Row>
       </div>
