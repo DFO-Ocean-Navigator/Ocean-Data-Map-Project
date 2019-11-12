@@ -8,20 +8,26 @@ export default class Scale extends React.Component {
     render () {
 
         return (
-            <div>
-                {this.props.title}
+            <div className='scale_container'>
+                <div className='scale_header'>
+                    {this.props.title}
+                </div>
+                <div className='input_container'>
                 <input
                     onChange={this.updateScale}
+                    className='scale'
                     id={this.props.minID}
                     value={this.props.min}
                     placeholder='min'
                 ></input>
                 <input
                     onChange={this.updateScale}
+                    className='scale'
                     id={this.props.maxID}
                     value={this.props.max}
                     placeholder='max'
                 ></input>
+                </div>
             </div>            
         )
     }
