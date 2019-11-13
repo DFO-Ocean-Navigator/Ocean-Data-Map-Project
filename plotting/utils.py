@@ -77,7 +77,7 @@ def mathtext(text):
 
 
 # Plots point(s) on a map (called when "Show Location" is true)
-def _map_plot(points, path=True, quiver=True, colours=np.array([])):
+def _map_plot(points, path=True, quiver=True, colors=list()):
     minlat = np.min(points[0, :])
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
@@ -129,7 +129,7 @@ def _map_plot(points, path=True, quiver=True, colours=np.array([])):
                      color='r')
     else:
         for idx in range(0, points.shape[1]):
-            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
+            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color=colors[0])
 
     # Draw a realistic background "blue marble"
     try:
