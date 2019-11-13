@@ -147,6 +147,7 @@ class ProfilePlotter(PointPlotter):
 
         self.plot_legend(fig, self.names)
         if 'plotsettings' in self.query:
+            plotsettings = self.query.get('plotsettings')
             if 'title' in plotsettings and plotsettings['title'] is not "":
                     plt.suptitle(plotsettings['title'], fontsize=15)
             else:
