@@ -229,7 +229,12 @@ export default class PointWindow extends React.Component {
   }
 
   applyPlotSettings() {
-    this.onLocalUpdate('plotsettings', this.state.plotsettings);
+    let plot_query = this.state.plot_query;
+    plot_query['plotsettings'] = this.state.plotsettings;
+    
+    this.setState({
+      plot_query: plot_query
+    });
   }
   updatePlotSetting(key, value) {
     console.warn("KEY: ", key)
