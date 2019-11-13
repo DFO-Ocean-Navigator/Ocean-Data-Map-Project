@@ -127,10 +127,14 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
                      width=0.25,
                      minlength=0.25,
                      color='r')
-    else:
+    elif len(colors) !== 0:
         for idx in range(0, points.shape[1]):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color=colors[0])
 
+    else:
+        for idx in range(0, points.shape[1]):
+            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
+        
     # Draw a realistic background "blue marble"
     try:
         m.bluemarble()
@@ -151,7 +155,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
 
 
-def point_plot(points):
+def point_plot(points, colors=list()):
     _map_plot(points, False)
 
 
