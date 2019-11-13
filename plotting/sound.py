@@ -66,8 +66,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         plt.subplot(gs[:, 1 if self.showmap else 0])
         ax = plt.gca()
         i = 0
+        colors = list()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
+            colors.append(ax[i].get_color())
+            print(something)
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
