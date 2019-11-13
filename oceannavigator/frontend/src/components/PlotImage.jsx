@@ -77,7 +77,10 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         loading: true
       })
-      this.loadImage(this.generateQuery(this.props.query));
+      let query = this.generateQuery(this.props.query);
+      console.warn("QUERY IN UPDATE: ", query)
+      this.loadImage(query);
+      //this.loadImage(this.generateQuery(this.props.query));
     }
   }
 
