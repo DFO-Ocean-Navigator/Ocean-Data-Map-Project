@@ -89,7 +89,7 @@ export default class PointWindow extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props && prevState !== this.state) {
-      
+
       // Update Plot Query
       let plot_query = {
         dataset: this.props.dataset,
@@ -102,7 +102,7 @@ export default class PointWindow extends React.Component {
         plotTitle: this.state.plotTitles[this.state.selected - 1],
       };
 
-      
+
       switch (this.state.selected) {
         case TabEnum.PROFILE:
           plot_query.type = "profile";
@@ -631,6 +631,17 @@ export default class PointWindow extends React.Component {
       starttime: this.state.starttime,
     };
 
+    let image = []
+    if (this.state.plot_query !== undefined) {
+      image.push(
+        <PlotImage
+          query={this.state.plot_query} // For image saving link.
+          permlink_subquery={permlink_subquery}
+          action={this.props.action}
+        />
+      )
+    }
+
     return (
       <div className='PointWindow Window'>
         <Nav
@@ -673,11 +684,7 @@ export default class PointWindow extends React.Component {
             </Panel >
           </Col>
           <Col lg={8}>
-            <PlotImage
-              query={this.state.plot_query} // For image saving link.
-              permlink_subquery={permlink_subquery}
-              action={this.props.action}
-            />
+            {image}
           </Col>
           <Col lg={2}>
 
