@@ -305,7 +305,7 @@ export default class PlotImage extends React.PureComponent {
         break;
     }
     console.warn("RETURNING QUERY: ", query)
-    return query;
+    return jQuery.extend({}, query);
   }
 
   urlFromQuery(q) {
