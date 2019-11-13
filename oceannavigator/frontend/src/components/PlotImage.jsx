@@ -74,7 +74,7 @@ export default class PlotImage extends React.PureComponent {
   componentDidUpdate(prevProps, prevState) {
     console.warn("PREV PROPS: ", prevProps.query)
     console.warn("CURRENT PROPS: ", this.props.query)
-    if (stringify(this.props.query) !== stringify(prevProps.query) || (stringify(this.props.query.plotsettings) !== stringify(prevProps.query.plotsettings))) {
+    if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
       console.warn("UPDATING")
       this.setState({
         loading: true
