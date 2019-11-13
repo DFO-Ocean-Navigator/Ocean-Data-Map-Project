@@ -129,6 +129,7 @@ def _map_plot(points, path=True, quiver=True, colours=np.array([])):
                      minlength=0.25,
                      color='r')
     else:
+        print(something)
         for idx in range(0, points.shape[1]):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
 
