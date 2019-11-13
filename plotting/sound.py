@@ -141,8 +141,49 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         #    np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
         #    np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
         #])
-        ax.set_xlim([1450, 1550])
+        
+        if 'plotsettings' in self.query:
+            plotsettings = self.query.get('plotsettings')
 
+            if 'xmin' in plotsettings and 'xmax' in plotsettings:
+                ax.set_xlim([float(plotsettings['xmin']), float(plotsettings['xmax'])])
+            elif 'xmin' in plotsettings:
+                ax.set_xlim([float(plotsettings['xmin']),(np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1)])
+            elif 'xmax' in plotsettings:
+                ax.set_xlim([ (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1), float(plotsettings['xmax'])])
+            else:
+                ax.set_xlim([
+                    (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1),
+                    (np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1),
+                ])
+
+            if 'ymin' in plotsettings and 'ymax' in plotsettings:
+                ax.set_ylim([float(plotsettings['ymin']), float(plotsettings['ymax'])])
+            elif 'ymin' in plotsettings:
+                ax.set_ylim(top=float(plotsettings['ymin']))
+            elif 'ymax' in plotsettings:
+                ax.set_ylim(bottom=float(plotsettings['ymax']))
+
+            if 'xlabel' in plotsettings:
+                ax.set_xlabel(plotsettings['xlabel'])
+            else:
+                ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
+
+            if 'ylabel' in plotsettings:
+                ax.set_ylabel(plotsettings['ylabel'])
+            else:
+                ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
+        
+        #This makes sure that everything is still setup if plotsettings doesn't exist
+        else:
+            ax.set_xlim([
+                (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1),
+                (np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1),
+            ])
+            ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
+            ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
+            
+        
         if self.query.get('annotate'):
             # Sound Speed Minima
             minspeed = float("{0:.2f}".format(minspeed))
@@ -151,8 +192,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # ~~~~~~~~~~~~~~~~~
         
 
-        ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
-        ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         ax.invert_yaxis()
         ax.xaxis.set_ticks_position('top')
         ax.xaxis.set_label_position('top')
