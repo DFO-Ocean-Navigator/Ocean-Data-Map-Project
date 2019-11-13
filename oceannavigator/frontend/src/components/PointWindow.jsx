@@ -7,7 +7,7 @@
 
 
 import React from "react";
-import { Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
+import { Nav, NavItem, Panel, Row, Col, Button } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
