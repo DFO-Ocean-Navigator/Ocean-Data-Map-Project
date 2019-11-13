@@ -64,7 +64,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         colors = list()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
-        
+        print(something)
         for line in ax.get_lines():
             colors.append(line.get_color())
 
