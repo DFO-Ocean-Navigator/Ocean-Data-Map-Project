@@ -72,8 +72,11 @@ export default class PlotImage extends React.PureComponent {
     Regenerates the query string when the query prop changes
   */
   componentDidUpdate(prevProps, prevState) {
-    if (stringify(this.props.query) !== stringify(prevProps.query)) {
+    if (stringify(this.props.query) !== stringify(prevProps.query) || (stringify(this.props.query.plotsettings) !== stringify(prevProps.query.plotsettings))) {
       console.warn("UPDATING")
+      this.setState({
+        loading: true
+      })
       this.loadImage(this.generateQuery(this.props.query));
     }
   }
