@@ -175,7 +175,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         
             if 'title' in plotsettings and plotsettings['title'] is not "":
-                ax.set_title(plotsettings['title']), fontsize=15)
+                ax.set_title(plotsettings['title'], fontsize=15)
+            else:
+                ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
+                ), fontsize=15)
 
         #This makes sure that everything is still setup if plotsettings doesn't exist
         else:
