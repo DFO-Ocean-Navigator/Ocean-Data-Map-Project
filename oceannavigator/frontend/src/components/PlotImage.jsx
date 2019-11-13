@@ -158,6 +158,12 @@ export default class PlotImage extends React.PureComponent {
       query.plotTitle = q.plotTitle;
     }
     
+    if (q.plotsettings !== undefined) {
+      console.warn("ADDING PLOT SETTINGS: ", q.plotsettings)
+      query.plotsettings = q.plotsettings;
+    }
+    
+
     switch(q.type) {
       case "profile":
       case "ts":
@@ -167,8 +173,7 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.annotate = q.annotate;
         query.time = q.time;
-        query.plotsettings = q.plotsettings;
-    
+        
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
