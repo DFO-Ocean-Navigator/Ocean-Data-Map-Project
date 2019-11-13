@@ -90,6 +90,8 @@ export default class PlotImage extends React.PureComponent {
   }
 
   loadImage(query) {
+
+    console.warn("LOAD IMAGE: ", query);
     const paramString = $.param({
       query: stringify(query),
       format: "json",
