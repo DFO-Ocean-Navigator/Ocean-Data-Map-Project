@@ -161,6 +161,7 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.annotate = q.annotate;
         query.time = q.time;
+        query.plotsettings = q.plotsettings;
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -170,9 +171,7 @@ export default class PlotImage extends React.PureComponent {
           };
         }
 
-        if (q.plotsettings !== undefined && jQuery.isEmptyObject(q.plotsettings)) {
-          query['plotsettings'] = q.plotsettings;
-        }
+        
 
         break;
       case "timeseries":
