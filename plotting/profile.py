@@ -149,12 +149,12 @@ class ProfilePlotter(PointPlotter):
         if 'plotsettings' in self.query:
             if 'title' in plotsettings and plotsettings['title'] is not "":
                     plt.suptitle(plotsettings['title'], fontsize=15)
-                else:
-                    plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
-                                             ", ".join(self.names),
-                                             ", ".join(self.variable_names),
-                                             self.date_formatter(self.iso_timestamp)),
-                         fontsize=15)
+            else:
+                plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
+                                         ", ".join(self.names),
+                                         ", ".join(self.variable_names),
+                                         self.date_formatter(self.iso_timestamp)),
+                     fontsize=15)
         else:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
                                              ", ".join(self.names),
