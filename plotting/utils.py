@@ -77,7 +77,7 @@ def mathtext(text):
 
 
 # Plots point(s) on a map (called when "Show Location" is true)
-def _map_plot(points, path=True, quiver=True):
+def _map_plot(points, path=True, quiver=True, colours=np.array([])):
     minlat = np.min(points[0, :])
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
@@ -111,6 +111,8 @@ def _map_plot(points, path=True, quiver=True):
         if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
                 (np.round(points[0, :], 2) == np.round(points[0, 0], 2)).all():
             marker = '.'
+
+        print(something)
         m.plot(points[1, :], points[0, :],
                latlon=True, color='r', linestyle='-', marker=marker)
         if quiver:
