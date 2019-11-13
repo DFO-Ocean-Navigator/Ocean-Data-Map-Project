@@ -156,6 +156,7 @@ export default class PlotImage extends React.PureComponent {
       case "profile":
       case "ts":
       case "sound":
+        console.warn("QUERY: ", q)
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
