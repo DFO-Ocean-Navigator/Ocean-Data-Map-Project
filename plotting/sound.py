@@ -160,9 +160,9 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             if 'ymin' in plotsettings and plotsettings['ymin']  is not "" and 'ymax' in plotsettings and plotsettings['ymax'] is not "":
                 ax.set_ylim([float(plotsettings['ymin']), float(plotsettings['ymax'])])
             elif 'ymin' in plotsettings and plotsettings['ymin'] is not "":
-                ax.set_ylim(top=float(plotsettings['ymin']))
+                ax.set_ylim(bottom=float(plotsettings['ymin']))
             elif 'ymax' in plotsettings and plotsettings['ymax'] is not "":
-                ax.set_ylim(bottom=float(plotsettings['ymax']))
+                ax.set_ylim(top=float(plotsettings['ymax']))
 
             if 'xlabel' in plotsettings:
                 ax.set_xlabel(plotsettings['xlabel'])
