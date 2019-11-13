@@ -608,7 +608,7 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.SOUND:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_plottitle, select_xscale, select_yscale]
+        plotinputs = [select_plottitle, select_xlabel, select_xscale, select_ylabel, select_yscale]
         saveinputs = [select_imagesize]
         break;
 
