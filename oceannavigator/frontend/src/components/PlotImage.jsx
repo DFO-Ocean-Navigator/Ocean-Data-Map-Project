@@ -72,6 +72,8 @@ export default class PlotImage extends React.PureComponent {
     Regenerates the query string when the query prop changes
   */
   componentDidUpdate(prevProps, prevState) {
+    console.warn("PREV PROPS: ", prevProps.query)
+    console.warn("CURRENT PROPS: ", this.props.query)
     if (stringify(this.props.query) !== stringify(prevProps.query) || (stringify(this.props.query.plotsettings) !== stringify(prevProps.query.plotsettings))) {
       console.warn("UPDATING")
       this.setState({
@@ -312,7 +314,6 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    console.warn("RETURNING QUERY: ", query)
     return jQuery.extend({}, query);
   }
 
