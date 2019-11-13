@@ -246,6 +246,7 @@ export default class PointWindow extends React.Component {
     this.setState({
       plotsettings: plotSettings
     })
+    this.forceUpdate()
   }
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
