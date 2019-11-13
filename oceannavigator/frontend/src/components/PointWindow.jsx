@@ -108,10 +108,6 @@ export default class PointWindow extends React.Component {
       if (this.props.dataset !== prevProps.dataset) {
         this.populateVariables(this.props.dataset);
       }
-    }
-
-    if (prevProps !== this.props && prevState !== this.state) {
-
 
 
       // Update Plot Query
