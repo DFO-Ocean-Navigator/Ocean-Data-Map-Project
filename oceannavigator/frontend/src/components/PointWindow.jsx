@@ -87,6 +87,94 @@ export default class PointWindow extends React.Component {
     this._mounted = false;
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props && prevState !== this.state) {
+      
+      // Update Plot Query
+      let plot_query = {
+        dataset: this.props.dataset,
+        quantum: this.props.quantum,
+        point: this.props.point,
+        showmap: this.state.showmap,
+        names: this.props.names,
+        size: this.state.size,
+        dpi: this.state.dpi,
+        plotTitle: this.state.plotTitles[this.state.selected - 1],
+      };
+
+      
+      switch (this.state.selected) {
+        case TabEnum.PROFILE:
+          plot_query.type = "profile";
+          plot_query.time = this.props.time;
+          plot_query.variable = this.state.variable;
+          break;
+
+        case TabEnum.CTD:
+          plot_query.type = "profile";
+          plot_query.time = this.props.time;
+          plot_query.variable = "";
+          if (this.state.variables.indexOf("votemper") !== -1) {
+            plot_query.variable += "votemper,";
+          } else if (this.state.variables.indexOf("temp") !== -1) {
+            plot_query.variable += "temp,";
+          }
+          if (this.state.variables.indexOf("vosaline") !== -1) {
+            plot_query.variable += "vosaline";
+          } else if (this.state.variables.indexOf("salinity") !== -1) {
+            plot_query.variable += "salinity";
+          }
+          break;
+
+        case TabEnum.TS:
+          plot_query.type = "ts";
+          plot_query.time = this.props.time;
+          if (this.props.dataset_compare) {
+            plot_query.compare_to = this.props.dataset_1;
+          }
+
+          break;
+
+        case TabEnum.SOUND:
+          plot_query.type = "sound";
+          plot_query.time = this.props.time;
+          plot_query.annotate = this.state.annotate
+          break;
+
+        case TabEnum.OBSERVATION:
+          plot_query.type = "observation";
+          plot_query.observation = this.props.point.map(function (o) {
+            return o[2];
+          });
+
+          plot_query.observation_variable = this.state.observation_variable;
+          plot_query.variable = this.state.variable;
+          break;
+
+        case TabEnum.MOORING:
+          plot_query.type = "timeseries";
+          plot_query.variable = this.props.variable;
+          plot_query.starttime = this.state.starttime;
+          plot_query.endtime = this.props.time;
+          plot_query.depth = this.state.depth;
+          plot_query.colormap = this.state.colormap;
+          plot_query.scale = this.state.scale;
+          break;
+
+        case TabEnum.STICK:
+          plot_query.type = "stick";
+          plot_query.variable = this.state.variable;
+          plot_query.starttime = this.state.starttime;
+          plot_query.endtime = this.props.time;
+          plot_query.depth = this.state.depth;
+          break;
+      }
+
+      this.setState({
+        plot_query: plot_query
+      })
+    }
+  }
   componentWillReceiveProps(props) {
     if (stringify(this.props) !== stringify(props) && this._mounted) {
       const state = {};
@@ -467,88 +555,9 @@ export default class PointWindow extends React.Component {
       }
     }
 
-    // Start constructing query for image
-    const plot_query = {
-      dataset: this.props.dataset,
-      quantum: this.props.quantum,
-      point: this.props.point,
-      showmap: this.state.showmap,
-      names: this.props.names,
-      size: this.state.size,
-      dpi: this.state.dpi,
-      plotTitle: this.state.plotTitles[this.state.selected - 1],
-    };
-
     let datainputs = [];
     let plotinputs = [];
     let saveinputs = [];
-
-    switch (this.state.selected) {
-      case TabEnum.PROFILE:
-        plot_query.type = "profile";
-        plot_query.time = this.props.time;
-        plot_query.variable = this.state.variable;
-        break;
-
-      case TabEnum.CTD:
-        plot_query.type = "profile";
-        plot_query.time = this.props.time;
-        plot_query.variable = "";
-        if (this.state.variables.indexOf("votemper") !== -1) {
-          plot_query.variable += "votemper,";
-        } else if (this.state.variables.indexOf("temp") !== -1) {
-          plot_query.variable += "temp,";
-        }
-        if (this.state.variables.indexOf("vosaline") !== -1) {
-          plot_query.variable += "vosaline";
-        } else if (this.state.variables.indexOf("salinity") !== -1) {
-          plot_query.variable += "salinity";
-        }
-        break;
-
-      case TabEnum.TS:
-        plot_query.type = "ts";
-        plot_query.time = this.props.time;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-        }
-
-        break;
-
-      case TabEnum.SOUND:
-        plot_query.type = "sound";
-        plot_query.time = this.props.time;
-        plot_query.annotate = this.state.annotate
-        break;
-
-      case TabEnum.OBSERVATION:
-        plot_query.type = "observation";
-        plot_query.observation = this.props.point.map(function (o) {
-          return o[2];
-        });
-
-        plot_query.observation_variable = this.state.observation_variable;
-        plot_query.variable = this.state.variable;
-        break;
-
-      case TabEnum.MOORING:
-        plot_query.type = "timeseries";
-        plot_query.variable = this.props.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
-        plot_query.depth = this.state.depth;
-        plot_query.colormap = this.state.colormap;
-        plot_query.scale = this.state.scale;
-        break;
-
-      case TabEnum.STICK:
-        plot_query.type = "stick";
-        plot_query.variable = this.state.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
-        plot_query.depth = this.state.depth;
-        break;
-    }
 
     switch (this.state.selected) {
       case TabEnum.PROFILE:
@@ -665,7 +674,7 @@ export default class PointWindow extends React.Component {
           </Col>
           <Col lg={8}>
             <PlotImage
-              query={plot_query} // For image saving link.
+              query={this.state.plot_query} // For image saving link.
               permlink_subquery={permlink_subquery}
               action={this.props.action}
             />
@@ -681,6 +690,9 @@ export default class PointWindow extends React.Component {
               bsStyle='primary'
             >
               {plotinputs}
+              <Button
+                onClick={this.applyPlotSettings}
+              >Apply</Button>
             </Panel >
             <Panel
               key='save_settings'
@@ -691,9 +703,6 @@ export default class PointWindow extends React.Component {
               bsStyle='primary'
             >
               {saveinputs}
-              <Button
-                onClick={this.applyPlotSettings}
-              >Apply</Button>
             </Panel >
           </Col>
         </Row>
