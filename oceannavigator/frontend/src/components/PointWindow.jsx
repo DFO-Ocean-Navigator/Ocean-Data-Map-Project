@@ -89,7 +89,7 @@ export default class PointWindow extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     
-    if (stringify(this.props) !== stringify(prevProps) && this._mounted) {
+    if ((stringify(this.props) !== stringify(prevProps) || stringify(this.state) !== stringify(prevState)) && this._mounted) {
       const state = {};
 
       if (!Array.isArray(this.state.depth)) {
