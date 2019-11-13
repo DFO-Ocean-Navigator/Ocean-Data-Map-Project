@@ -157,11 +157,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                     (np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1),
                 ])
 
-            if 'ymin' in plotsettings and 'ymax' in plotsettings:
+            if 'ymin' in plotsettings and plotsettings['ymin']  is not "" and 'ymax' in plotsettings and plotsettings['ymax'] is not "":
                 ax.set_ylim([float(plotsettings['ymin']), float(plotsettings['ymax'])])
-            elif 'ymin' in plotsettings:
+            elif 'ymin' in plotsettings and plotsettings['ymin'] is not "":
                 ax.set_ylim(top=float(plotsettings['ymin']))
-            elif 'ymax' in plotsettings:
+            elif 'ymax' in plotsettings and plotsettings['ymax'] is not "":
                 ax.set_ylim(bottom=float(plotsettings['ymax']))
 
             if 'xlabel' in plotsettings:
