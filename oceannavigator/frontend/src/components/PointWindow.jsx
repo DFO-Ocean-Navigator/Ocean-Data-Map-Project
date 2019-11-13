@@ -596,13 +596,13 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.CTD:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_plottitle]
+        plotinputs = []
         saveinputs = [select_imagesize]
         break;
 
       case TabEnum.TS:
         datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_plottitle]
+        plotinputs = []
         saveinputs = [select_imagesize]
         break;
 
@@ -614,13 +614,13 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.OBSERVATION:
         datainputs = [select_location, toggle_map, select_dataset, observation_variable];
-        plotinputs = [select_plottitle]
+        plotinputs = []
         saveinputs = [select_imagesize]
         break;
 
       case TabEnum.MOORING:
         datainputs = [select_location, toggle_map, select_dataset, timeRange, depthVariableScale]
-        plotinputs = [select_plottitle]
+        plotinputs = []
         saveinputs = [select_imagesize]
         if (this.state.depth == "all") {
           // Add Colormap selector
@@ -638,7 +638,7 @@ export default class PointWindow extends React.Component {
 
       case TabEnum.STICK:
         datainputs = [select_location, toggle_map, select_dataset, timeRange, multiDepthVector]
-        plotinputs = [select_plottitle]
+        plotinputs = []
         saveinputs = [select_imagesize]
         break;
     }
