@@ -156,7 +156,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
 
 
 def point_plot(points, colors=list()):
-    _map_plot(points, False)
+    _map_plot(points, False, colors=colors)
 
 
 def path_plot(points, quiver=True):
