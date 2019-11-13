@@ -73,6 +73,7 @@ export default class PlotImage extends React.PureComponent {
   */
   componentDidUpdate(prevProps, prevState) {
     if (stringify(this.props.query) !== stringify(prevProps.query)) {
+      console.warn("UPDATING")
       this.loadImage(this.generateQuery(this.props.query));
     }
   }
@@ -173,10 +174,8 @@ export default class PlotImage extends React.PureComponent {
             time: q.compare_to.time,
           };
         }
-
-        
-
         break;
+
       case "timeseries":
         query.showmap = q.showmap;
         query.station = q.point;
