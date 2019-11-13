@@ -18,6 +18,7 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import Scale from "./Scale.jsx";
+import PlotLabel from "./PlotLabel.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -385,13 +386,28 @@ export default class PointWindow extends React.Component {
     )
 
     const select_plottitle = (
-      <CustomPlotLabels
+      /*<CustomPlotLabels
         key='title'
         id='title'
         title={_("Plot Title")}
         updatePlotTitle={this.updatePlotTitle}
         plotTitle={this.state.plotTitles[this.state.selected - 1]}
-      ></CustomPlotLabels>
+      ></CustomPlotLabels>*/
+      <PlotLabel
+        title='Plot Title'
+        onChange={this.updatePlotSetting}
+        labelID='title'
+        value={this.state.plotsettings.title}
+      ></PlotLabel>
+    )
+
+    const select_xlabel = (
+      <PlotLabel
+        title='X Label'
+        onChange={this.updatePlotSetting}
+        labelID='xlabel'
+        value={this.state.plotsettings.xlabel}
+      ></PlotLabel>
     )
 
     const select_xscale = (
@@ -403,6 +419,15 @@ export default class PointWindow extends React.Component {
         min={this.state.plotsettings.xmin}
         max={this.state.plotsettings.xmax}
       ></Scale>
+    )
+
+    const select_ylabel = (
+      <PlotLabel
+        title='Y Label'
+        onChange={this.updatePlotSetting}
+        labelID='ylabel'
+        value={this.state.plotsettings.ylabel}
+      ></PlotLabel>
     )
 
     const select_yscale = (

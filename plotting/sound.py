@@ -145,11 +145,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         if 'plotsettings' in self.query:
             plotsettings = self.query.get('plotsettings')
 
-            if 'xmin' in plotsettings and 'xmax' in plotsettings:
+            if 'xmin' in plotsettings and plotsettings['xmin'] is not "" and 'xmax' in plotsettings and plotsettings['xmax'] is not "":
                 ax.set_xlim([float(plotsettings['xmin']), float(plotsettings['xmax'])])
-            elif 'xmin' in plotsettings:
+            elif 'xmin' in plotsettings and plotsettings['xmin'] is not "":
                 ax.set_xlim([float(plotsettings['xmin']),(np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1)])
-            elif 'xmax' in plotsettings:
+            elif 'xmax' in plotsettings and plotsettings['xmax'] is not "":
                 ax.set_xlim([ (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1), float(plotsettings['xmax'])])
             else:
                 ax.set_xlim([
