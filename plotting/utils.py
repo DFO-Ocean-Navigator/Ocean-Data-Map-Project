@@ -105,7 +105,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         resolution='i', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
     )
-
+    
     if path:
         marker = ''
         if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
@@ -132,6 +132,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color=colors[0])
 
     else:
+        print(something)
         for idx in range(0, points.shape[1]):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
         
