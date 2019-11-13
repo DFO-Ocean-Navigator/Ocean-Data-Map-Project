@@ -158,13 +158,13 @@ export default class PlotImage extends React.PureComponent {
       case "profile":
       case "ts":
       case "sound":
-        console.warn("QUERY: ", q)
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
         query.annotate = q.annotate;
         query.time = q.time;
         query.plotsettings = q.plotsettings;
+    
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -302,6 +302,7 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
+    console.warn("RETURNING QUERY: ", query)
     return query;
   }
 
