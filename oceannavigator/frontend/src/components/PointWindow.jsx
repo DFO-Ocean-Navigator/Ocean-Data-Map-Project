@@ -229,11 +229,11 @@ export default class PointWindow extends React.Component {
   }
 
   applyPlotSettings() {
-    let plot_query = this.state.plot_query;
+    let plot_query = jQuery.extend({}. this.state.plot_query);
     plot_query['plotsettings'] = jQuery.extend({}, this.state.plotsettings);
     
     this.setState({
-      plot_query: jQuery.extend({}, plot_query)
+      plot_query: plot_query
     });
   }
   updatePlotSetting(key, value) {
