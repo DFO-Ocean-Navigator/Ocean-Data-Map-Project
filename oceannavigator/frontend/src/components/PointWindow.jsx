@@ -88,7 +88,31 @@ export default class PointWindow extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    
+    if (stringify(this.props) !== stringify(prevProps) && this._mounted) {
+      const state = {};
+
+      if (!Array.isArray(this.state.depth)) {
+        state.depth = this.props.depth;
+      }
+      if (this.state.scale.indexOf("auto") !== -1) {
+        state.scale = this.props.scale + ",auto";
+      }
+      else {
+        state.scale = this.props.scale;
+      }
+
+      this.setState(state);
+
+      // Check if dataset was changed
+      if (this.props.dataset !== prevProps.dataset) {
+        this.populateVariables(this.props.dataset);
+      }
+    }
+
     if (prevProps !== this.props && prevState !== this.state) {
+
+
 
       // Update Plot Query
       let plot_query = {
@@ -173,28 +197,6 @@ export default class PointWindow extends React.Component {
       this.setState({
         plot_query: plot_query
       })
-    }
-  }
-  componentWillReceiveProps(props) {
-    if (stringify(this.props) !== stringify(props) && this._mounted) {
-      const state = {};
-
-      if (!Array.isArray(this.state.depth)) {
-        state.depth = props.depth;
-      }
-      if (this.state.scale.indexOf("auto") !== -1) {
-        state.scale = props.scale + ",auto";
-      }
-      else {
-        state.scale = props.scale;
-      }
-
-      this.setState(state);
-
-      // Check if dataset was changed
-      if (this.props.dataset !== props.dataset) {
-        this.populateVariables(props.dataset);
-      }
     }
   }
 
