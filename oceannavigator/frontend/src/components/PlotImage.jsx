@@ -68,11 +68,15 @@ export default class PlotImage extends React.PureComponent {
     this.loadImage(this.generateQuery(this.props.query));
   }
 
-  componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(this.generateQuery(props.query));
+  /*
+    Regenerates the query string when the query prop changes
+  */
+  componentDidUpdate(prevProps, prevState) {
+    if (stringify(this.props.query) !== stringify(prevProps.query)) {
+      this.loadImage(this.generateQuery(this.props.query));
     }
   }
+
 
   componentWillUnmount() {
     this._mounted = false;
@@ -165,6 +169,11 @@ export default class PlotImage extends React.PureComponent {
             time: q.compare_to.time,
           };
         }
+
+        if (q.plotsettings !== undefined && jQuery.isEmptyObject(q.plotsettings)) {
+          query['plotsettings'] = q.plotsettings;
+        }
+
         break;
       case "timeseries":
         query.showmap = q.showmap;
