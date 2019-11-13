@@ -112,7 +112,6 @@ def _map_plot(points, path=True, quiver=True, colours=np.array([])):
                 (np.round(points[0, :], 2) == np.round(points[0, 0], 2)).all():
             marker = '.'
 
-        print(something)
         m.plot(points[1, :], points[0, :],
                latlon=True, color='r', linestyle='-', marker=marker)
         if quiver:
@@ -129,7 +128,6 @@ def _map_plot(points, path=True, quiver=True, colours=np.array([])):
                      minlength=0.25,
                      color='r')
     else:
-        print(something)
         for idx in range(0, points.shape[1]):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
 
