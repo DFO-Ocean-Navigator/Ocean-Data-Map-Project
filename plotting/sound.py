@@ -165,15 +165,18 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 ax.set_ylim(top=float(plotsettings['ymax']))
 
             if 'xlabel' in plotsettings:
-                ax.set_xlabel(plotsettings['xlabel'])
+                ax.set_xlabel(plotsettings['xlabel'], fontsize=14)
             else:
                 ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
 
             if 'ylabel' in plotsettings:
-                ax.set_ylabel(plotsettings['ylabel'])
+                ax.set_ylabel(plotsettings['ylabel'], fontsize=14)
             else:
                 ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         
+            if 'title' in plotsettings and plotsettings['title'] is not "":
+                ax.set_title(plotsettings['title']), fontsize=15)
+
         #This makes sure that everything is still setup if plotsettings doesn't exist
         else:
             ax.set_xlim([
@@ -182,7 +185,9 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             ])
             ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
             ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
-            
+            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
+            ), fontsize=15)
         
         if self.query.get('annotate'):
             # Sound Speed Minima
@@ -197,14 +202,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
-
-        if not self.plotTitle:
-            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
-            ), fontsize=15)
-        else:
-            ax.set_title(self.plotTitle, fontsize=15)
-
         ax.title.set_position([0.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)

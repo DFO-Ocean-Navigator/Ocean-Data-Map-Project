@@ -14,7 +14,7 @@ export default class PlotLabel extends React.Component {
                 <div className='input_container'>
                     <input
                         onChange={(e) => {this.props.onChange(this.props.labelID, e.target.value)}}
-                        className='scale'
+                        className='label'
                         id={this.props.labelID}
                         value={this.props.value}
                         placeholder={this.props.title}
