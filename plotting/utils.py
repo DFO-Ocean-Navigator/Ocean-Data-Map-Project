@@ -111,7 +111,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
                 (np.round(points[0, :], 2) == np.round(points[0, 0], 2)).all():
             marker = '.'
-
+        print(something)
         m.plot(points[1, :], points[0, :],
                latlon=True, color='r', linestyle='-', marker=marker)
         if quiver:
