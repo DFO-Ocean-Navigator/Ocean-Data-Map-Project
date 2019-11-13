@@ -69,7 +69,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         colors = list()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
-            colors.append(ax[i].get_color())
+        
+        for line in ax.get_lines():
+            
+            #colors.append(ax[i].get_color())
             print(something)
 
         minspeed = np.amin(self.sspeed)
