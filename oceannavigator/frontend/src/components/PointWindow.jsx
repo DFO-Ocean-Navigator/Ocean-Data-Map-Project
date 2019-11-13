@@ -143,7 +143,7 @@ export default class PointWindow extends React.Component {
   }
 
   applyPlotSettings() {
-    return
+    this.onLocalUpdate('plotsettings', this.state.plotsettings);
   }
   updatePlotSetting(key, value) {
     console.warn("KEY: ", key)
@@ -691,6 +691,9 @@ export default class PointWindow extends React.Component {
               bsStyle='primary'
             >
               {saveinputs}
+              <Button
+                onClick={this.applyPlotSettings}
+              >Apply</Button>
             </Panel >
           </Col>
         </Row>
