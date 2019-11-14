@@ -105,8 +105,11 @@ class ProfilePlotter(PointPlotter):
 
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
-        subplot = 1
-
+        
+        subplot = 0
+        if self.showmap:
+            subplot = 1
+        
         
         is_y_label_plotted = False
         colour = list()
