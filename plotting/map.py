@@ -654,11 +654,11 @@ class MapPlotter(Plotter):
                 linewidths=0.5,
                 norm=LogNorm(vmin=1, vmax=6000),
                 cmap=mcolors.LinearSegmentedColormap.from_list(
-                    'black',
+                    'transparent_gray',
                     [(0, 0, 0, 0.5), (0, 0, 0, 0.1)]
                 ),
                 levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
-            plt.clabel(cs, fontsize='small', fmt='%1.0fm')
+            plt.clabel(cs, fontsize='medium', fmt='%1.0fm')
 
         if self.area and self.show_area:
             for a in self.area:
