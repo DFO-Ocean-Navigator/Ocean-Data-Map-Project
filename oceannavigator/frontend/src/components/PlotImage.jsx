@@ -72,15 +72,12 @@ export default class PlotImage extends React.PureComponent {
     Regenerates the query string when the query prop changes
   */
   componentDidUpdate(prevProps, prevState) {
-    console.warn("PREV PROPS: ", prevProps.query)
-    console.warn("CURRENT PROPS: ", this.props.query)
+
     if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
-      console.warn("UPDATING")
       this.setState({
         loading: true
       })
       let query = this.generateQuery(this.props.query);
-      console.warn("QUERY IN UPDATE: ", query)
       this.loadImage(query);
       //this.loadImage(this.generateQuery(this.props.query));
     }
@@ -100,7 +97,6 @@ export default class PlotImage extends React.PureComponent {
 
   loadImage(query) {
 
-    console.warn("LOAD IMAGE: ", query);
     const paramString = $.param({
       query: stringify(query),
       format: "json",
@@ -164,7 +160,6 @@ export default class PlotImage extends React.PureComponent {
     }
     
     if (q.plotsettings !== undefined) {
-      console.warn("ADDING PLOT SETTINGS: ", q.plotsettings)
       query.plotsettings = q.plotsettings;
     }
     
