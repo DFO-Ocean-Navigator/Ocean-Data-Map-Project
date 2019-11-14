@@ -155,7 +155,6 @@ class ProfilePlotter(PointPlotter):
             utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
                                        [x[1] for x in self.points]]), colour)  # Longitudes
 
-
         self.plot_legend(fig, self.names)
         if 'plotsettings' in self.query:
             plotsettings = self.query.get('plotsettings')
