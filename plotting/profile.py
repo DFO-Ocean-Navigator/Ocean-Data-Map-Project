@@ -126,7 +126,6 @@ class ProfilePlotter(PointPlotter):
             )
 
             current_axis = plt.gca()
-            print(something)
             current_axis.xaxis.set_label_position('top')
             current_axis.xaxis.set_ticks_position('top')
             current_axis.invert_yaxis()
