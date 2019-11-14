@@ -68,11 +68,24 @@ export default class PlotImage extends React.PureComponent {
     this.loadImage(this.generateQuery(this.props.query));
   }
 
-  componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(this.generateQuery(props.query));
+  /*
+    Regenerates the query string when the query prop changes
+  */
+  componentDidUpdate(prevProps, prevState) {
+    console.warn("PREV PROPS: ", prevProps.query)
+    console.warn("CURRENT PROPS: ", this.props.query)
+    if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
+      console.warn("UPDATING")
+      this.setState({
+        loading: true
+      })
+      let query = this.generateQuery(this.props.query);
+      console.warn("QUERY IN UPDATE: ", query)
+      this.loadImage(query);
+      //this.loadImage(this.generateQuery(this.props.query));
     }
   }
+
 
   componentWillUnmount() {
     this._mounted = false;
@@ -86,6 +99,8 @@ export default class PlotImage extends React.PureComponent {
   }
 
   loadImage(query) {
+
+    console.warn("LOAD IMAGE: ", query);
     const paramString = $.param({
       query: stringify(query),
       format: "json",
@@ -148,6 +163,12 @@ export default class PlotImage extends React.PureComponent {
       query.plotTitle = q.plotTitle;
     }
     
+    if (q.plotsettings !== undefined) {
+      console.warn("ADDING PLOT SETTINGS: ", q.plotsettings)
+      query.plotsettings = q.plotsettings;
+    }
+    
+
     switch(q.type) {
       case "profile":
       case "ts":
@@ -157,6 +178,7 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.annotate = q.annotate;
         query.time = q.time;
+        
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -166,6 +188,7 @@ export default class PlotImage extends React.PureComponent {
           };
         }
         break;
+
       case "timeseries":
         query.showmap = q.showmap;
         query.station = q.point;
@@ -291,7 +314,7 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    return query;
+    return jQuery.extend({}, query);
   }
 
   urlFromQuery(q) {
