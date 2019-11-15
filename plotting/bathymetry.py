@@ -615,7 +615,7 @@ class BathPlotter(Plotter):
         # Add "ids" to each of the graphs to pass up to the client
         # for templating
         ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
-        graphJSON = json.dumps(graphs, cls=csutils.PlotlyJSONEncoder)
+        graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
 
         return render_template('layouts/index.html',
