@@ -36,10 +36,10 @@ class BathPlotter(Plotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = 'map'
 
-        super(MapPlotter, self).__init__(dataset_name, query, **kwargs)
+        super(BathPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
-        super(MapPlotter, self).parse_query(query)
+        super(BathPlotter, self).parse_query(query)
 
         self.projection = query.get('projection')
 
@@ -445,7 +445,7 @@ class BathPlotter(Plotter):
         time = np.repeat(self.timestamp, data.shape[0])
         depth = self.depth_value_map.ravel()[::5]
 
-        return super(MapPlotter, self).odv_ascii(
+        return super(BathPlotter, self).odv_ascii(
             self.dataset_name,
             [self.variable_name],
             [self.variable_unit],
@@ -518,7 +518,7 @@ class BathPlotter(Plotter):
                 ])
             data.append(entry)
 
-        return super(MapPlotter, self).csv(header, columns, data)
+        return super(BathPlotter, self).csv(header, columns, data)
 
     def pole_proximity(self, points):
         near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False
@@ -876,4 +876,4 @@ class BathPlotter(Plotter):
 
         fig.tight_layout(pad=3, w_pad=4)
 
-        return super(MapPlotter, self).plot(fig)
+        return super(BathPlotter, self).plot(fig)
