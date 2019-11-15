@@ -45,6 +45,7 @@ from plotting.stick import StickPlotter
 from plotting.timeseries import TimeseriesPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
+from plotting.bathymetry import BathPlotter
 from utils.errors import APIError, ClientError
 
 MAX_CACHE = 315360000

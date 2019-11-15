@@ -579,4 +579,4 @@ class BathPlotter(Plotter):
         data = [trace]
         pyplot.iplot(data, file='basic-line-chart')
 
-        return 
+        return
