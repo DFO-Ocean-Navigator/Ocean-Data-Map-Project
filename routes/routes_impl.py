@@ -22,7 +22,7 @@ import netCDF4
 import numpy as np
 import pytz
 from flask import (Response, current_app, jsonify, request, send_file,
-                   send_from_directory)
+                   send_from_directory, render_template)
 from flask_babel import format_date, gettext
 from PIL import Image
 
