@@ -31,7 +31,7 @@ from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 from flask import render_template
 import chart_studio.plotly as plotly
-import chart_studio.tools as tls
+import pandas as pd
 
 class BathPlotter(Plotter):
 
