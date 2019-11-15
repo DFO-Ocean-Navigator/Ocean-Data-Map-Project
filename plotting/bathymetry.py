@@ -30,6 +30,9 @@ from plotting.plotter import Plotter
 from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 
+import plotly.plotly as plotly
+import plotly.tools as tls
+import plotly.graph_objs as go
 
 class BathPlotter(Plotter):
 
@@ -539,284 +542,11 @@ class BathPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
-        if self.filetype == 'geotiff':
-            f, fname = tempfile.mkstemp()
-            os.close(f)
-
-            driver = gdal.GetDriverByName('GTiff')
-            outRaster = driver.Create(fname,
-                                      self.latitude.shape[1],
-                                      self.longitude.shape[0],
-                                      1, gdal.GDT_Float64)
-            x = [self.longitude[0, 0], self.longitude[-1, -1]]
-            y = [self.latitude[0, 0], self.latitude[-1, -1]]
-            outRasterSRS = osr.SpatialReference()
-
-            x, y = self.basemap(x, y)
-            outRasterSRS.ImportFromProj4(self.basemap.proj4string)
-
-            pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
-            pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]
-            outRaster.SetGeoTransform((x[0], pixelWidth, 0, y[0], 0,
-                                       pixelHeight))
-
-            outband = outRaster.GetRasterBand(1)
-            d = self.data.astype("Float64")
-            ndv = d.fill_value
-            outband.WriteArray(d.filled(ndv))
-            outband.SetNoDataValue(ndv)
-            outRaster.SetProjection(outRasterSRS.ExportToWkt())
-            outband.FlushCache()
-            outRaster = None
-
-            with open(fname, 'r', encoding="latin-1") as f:
-                buf = f.read()
-            os.remove(fname)
-
-            return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
-        # Figure size
-        figuresize = list(map(float, self.size.split("x")))
-        fig = plt.figure(figsize=figuresize, dpi=self.dpi)
-        ax = plt.gca()
-
-        if self.scale:
-            vmin = self.scale[0]
-            vmax = self.scale[1]
-        else:
-            vmin, vmax = utils.normalize_scale(self.data,
-                                               self.dataset_config.variable[",".join(self.variables)])
-
-        c = self.basemap.imshow(
-            self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)
-
-        if len(self.quiver_data) == 2:
-            qx, qy = self.quiver_data
-            qx, qy, x, y = self.basemap.rotate_vector(qx, qy,
-                                                      self.quiver_longitude,
-                                                      self.quiver_latitude,
-                                                      returnxy=True)
-            qx = np.ma.masked_where(np.ma.getmask(self.quiver_data[0]), qx)
-            qy = np.ma.masked_where(np.ma.getmask(self.quiver_data[1]), qy)
-            quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
-
-            if self.quiver['magnitude'] != 'length':
-                qx = qx / quiver_mag
-                qy = qy / quiver_mag
-                qscale = 50
-            else:
-                qscale = None
-
-            if self.quiver['magnitude'] == 'color':
-                if self.quiver['colormap'] is None or \
-                   self.quiver['colormap'] == 'default':
-                    qcmap = colormap.colormaps.get('speed')
-                else:
-                    qcmap = colormap.colormaps.get(self.quiver['colormap'])
-                q = self.basemap.quiver(
-                    x, y,
-                    qx, qy,
-                    quiver_mag,
-                    width=0.0035,
-                    headaxislength=4, headlength=4,
-                    scale=qscale,
-                    pivot='mid',
-                    cmap=qcmap,
-                )
-            else:
-                q = self.basemap.quiver(
-                    x, y,
-                    qx, qy,
-                    width=0.0025,
-                    headaxislength=4, headlength=4,
-                    scale=qscale,
-                    pivot='mid',
-                )
-
-            if self.quiver['magnitude'] == 'length':
-                unit_length = np.mean(quiver_mag) * 2
-                unit_length = np.round(unit_length,
-                                       -int(np.floor(np.log10(unit_length))))
-                if unit_length >= 1:
-                    unit_length = int(unit_length)
-
-                plt.quiverkey(q, .65, .01,
-                              unit_length,
-                              self.quiver_name.title() + " " +
-                              str(unit_length) + " " +
-                              utils.mathtext(self.quiver_unit),
-                              coordinates='figure',
-                              labelpos='E')
-
-        if self.show_bathymetry:
-            # Plot bathymetry on top
-            cs = self.basemap.contour(
-                self.longitude, self.latitude, self.bathymetry, latlon=True,
-                linewidths=1,
-                norm=LogNorm(vmin=1, vmax=6000),
-                cmap=mcolors.LinearSegmentedColormap.from_list(
-                    'transparent_gray',
-                    [(0, 0, 0, 0.5), (0, 0, 0, 0.5)]
-                ),
-                levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
-            plt.clabel(cs, fontsize='small', fmt='%1.0fm')
-
-        if self.area and self.show_area:
-            for a in self.area:
-                polys = []
-                for co in a['polygons'] + a['innerrings']:
-                    coords = np.array(co).transpose()
-                    mx, my = self.basemap(coords[1], coords[0])
-                    map_coords = list(zip(mx, my))
-                    polys.append(Polygon(map_coords))
-
-                paths = []
-                for poly in polys:
-                    paths.append(poly.get_path())
-                path = concatenate_paths(paths)
-
-                poly = PathPatch(path,
-                                 fill=None,
-                                 edgecolor='#ffffff',
-                                 linewidth=5
-                                 )
-                plt.gca().add_patch(poly)
-                poly = PathPatch(path,
-                                 fill=None,
-                                 edgecolor='k',
-                                 linewidth=2
-                                 )
-                plt.gca().add_patch(poly)
-
-            if self.names is not None and len(self.names) > 1:
-                for idx, name in enumerate(self.names):
-                    x, y = self.basemap(
-                        self.centroids[idx].y, self.centroids[idx].x)
-                    plt.annotate(
-                        xy=(x, y),
-                        s=name,
-                        ha='center',
-                        va='center',
-                        size=12,
-                        # weight='bold'
-                    )
-
-        if len(self.contour_data) > 0:
-            if (self.contour_data[0].min() != self.contour_data[0].max()):
-                cmin, cmax = utils.normalize_scale(
-                    self.contour_data[0],
-                    self.dataset_config.variable[self.contour['variable']]
-                )
-                levels = None
-                if self.contour.get('levels') is not None and \
-                    self.contour['levels'] != 'auto' and \
-                        self.contour['levels'] != '':
-                    try:
-                        levels = list(
-                            set(
-                                [float(xx)
-                                 for xx in self.contour['levels'].split(",")
-                                 if xx.strip()]
-                            )
-                        )
-                        levels.sort()
-                    except ValueError:
-                        pass
-
-                if levels is None:
-                    levels = np.linspace(cmin, cmax, 5)
-                cmap = self.contour['colormap']
-                if cmap is not None:
-                    cmap = colormap.colormaps.get(cmap)
-                    if cmap is None:
-                        cmap = colormap.find_colormap(self.contour_name)
-
-                if not self.contour.get('hatch'):
-                    contours = self.basemap.contour(
-                        self.longitude, self.latitude, self.contour_data[
-                            0], latlon=True,
-                        linewidths=2,
-                        levels=levels,
-                        cmap=cmap)
-                else:
-                    hatches = [
-                        '//', 'xx', '\\\\', '--', '||', '..', 'oo', '**'
-                    ]
-                    if len(levels) + 1 < len(hatches):
-                        hatches = hatches[0:len(levels) + 2]
-                    self.basemap.contour(
-                        self.longitude, self.latitude, self.contour_data[
-                            0], latlon=True,
-                        linewidths=1,
-                        levels=levels,
-                        colors='k')
-                    contours = self.basemap.contourf(
-                        self.longitude, self.latitude, self.contour_data[0],
-                        latlon=True, colors=['none'],
-                        levels=levels,
-                        hatches=hatches,
-                        vmin=cmin, vmax=cmax, extend='both')
-
-                if self.contour['legend']:
-                    handles, l = contours.legend_elements()
-                    labels = []
-                    for i, lab in enumerate(l):
-                        if self.contour.get('hatch'):
-                            if self.contour_unit == 'fraction':
-                                if i == 0:
-                                    labels.append("$x \\leq {0: .0f}\\%$".
-                                                  format(levels[i] * 100))
-                                elif i == len(levels):
-                                    labels.append("$x > {0: .0f}\\%$".
-                                                  format(levels[i - 1] * 100))
-                                else:
-                                    labels.append(
-                                        "${0:.0f}\\% < x \\leq {1:.0f}\\%$".
-                                        format(levels[i - 1] * 100,
-                                               levels[i] * 100))
-                            else:
-                                if i == 0:
-                                    labels.append("$x \\leq %.3g$" %
-                                                  levels[i])
-                                elif i == len(levels):
-                                    labels.append("$x > %.3g$" %
-                                                  levels[i - 1])
-                                else:
-                                    labels.append("$%.3g < x \\leq %.3g$" %
-                                                  (levels[i - 1], levels[i]))
-                        else:
-                            if self.contour_unit == 'fraction':
-                                labels.append("{0:.0%}".format(levels[i]))
-                            else:
-                                labels.append("%.3g %s" % (
-                                    levels[i],
-                                    utils.mathtext(self.contour_unit)
-                                ))
-
-                    ax = plt.gca()
-
-                    if self.contour_unit != 'fraction' and not \
-                            self.contour.get('hatch'):
-                        contour_title = "%s (%s)" % (
-                            self.contour_name, utils.mathtext(
-                                self.contour_unit)
-                        )
-                    else:
-                        contour_title = self.contour_name
-
-                    leg = ax.legend(handles[::-1], labels[::-1],
-                                    loc='lower left', fontsize='medium',
-                                    frameon=True, framealpha=0.75,
-                                    title=contour_title)
-                    leg.get_title().set_fontsize('medium')
-                    if not self.contour.get('hatch'):
-                        for legobj in leg.legendHandles:
-                            legobj.set_linewidth(3)
-
-        # Map Info
-        self.basemap.drawmapboundary(fill_color=(0.3, 0.3, 0.3), zorder=-1)
-        self.basemap.drawcoastlines(linewidth=0.5)
-        self.basemap.fillcontinents(color='grey', lake_color='dimgrey')
-
+        
+        bathymetry = self.bathymetry
+        lon = self.longitude
+        lat = self.latitude
+        
         def find_lines(values):
             if np.amax(values) - np.amin(values) < 1:
                 return [values.mean()]
@@ -838,42 +568,15 @@ class BathPlotter(Plotter):
 
         parallels = find_lines(self.latitude)
         meridians = find_lines(self.longitude)
-        self.basemap.drawparallels(
-            parallels, labels=[1, 0, 0, 0], color=(0, 0, 0, 0.5))
-        self.basemap.drawmeridians(
-            meridians, labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85)
+        
+        
 
-        title = self.plotTitle
+        a = np.linspace(start=0, stop=36, num=36)
+        np.random.seed(25)
+        b = np.random.uniform(low=0.0, high=1.0, size=36)
 
-        if self.plotTitle is None or self.plotTitle == "":
-            area_title = "\n".join(
-                wrap(", ".join(self.names), 60)
-            ) + "\n"
+        trace = go.Scatter(x=a, y=b)
+        data = [trace]
+        pyplot.iplot(data, file='basic-line-chart')
 
-            title = "%s %s %s, %s" % (
-                area_title,
-                self.variable_name.title(),
-                self.depth_label,
-                self.date_formatter(self.timestamp)
-            )
-        plt.title(title.strip())
-        ax = plt.gca()
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label("%s (%s)" % (self.variable_name.title(),
-                                   utils.mathtext(self.variable_unit)), fontsize=14)
-
-        if self.quiver is not None and \
-            self.quiver['variable'] != '' and \
-            self.quiver['variable'] != 'none' and \
-                self.quiver['magnitude'] == 'color':
-            bax = divider.append_axes("bottom", size="5%", pad=0.35)
-            qbar = plt.colorbar(q, orientation='horizontal', cax=bax)
-            qbar.set_label(
-                self.quiver_name.title() + " " +
-                utils.mathtext(self.quiver_unit), fontsize=14)
-
-        fig.tight_layout(pad=3, w_pad=4)
-
-        return super(BathPlotter, self).plot(fig)
+        return 
