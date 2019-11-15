@@ -32,6 +32,7 @@ from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 from flask import render_template
 import chart_studio.plotly as plotly
+import chart_studio.utils as csutils
 import pandas as pd
 
 class BathPlotter(Plotter):
@@ -614,7 +615,7 @@ class BathPlotter(Plotter):
         # Add "ids" to each of the graphs to pass up to the client
         # for templating
         ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
-        graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+        graphJSON = json.dumps(graphs, cls=csutils.PlotlyJSONEncoder)
 
 
         return render_template('layouts/index.html',
