@@ -7,6 +7,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import osr
+import json
 import pyresample.utils
 from flask_babel import gettext
 from geopy.distance import VincentyDistance
