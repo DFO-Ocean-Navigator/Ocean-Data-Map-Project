@@ -32,7 +32,6 @@ from utils.misc import list_areas
 from flask import render_template
 import chart_studio.plotly as plotly
 import chart_studio.tools as tls
-import chart_studio.graph_objs as go
 
 class BathPlotter(Plotter):
 
