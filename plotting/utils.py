@@ -82,7 +82,6 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
     maxlon = np.max(points[1, :])
-    print(something)
     lat_d = max(maxlat - minlat, 50)
     lon_d = max(maxlon - minlon, 50)
     lat_d /= 10
