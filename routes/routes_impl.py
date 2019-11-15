@@ -787,6 +787,8 @@ def plot_impl(query: dict, args):
         plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
         plotter = StickPlotter(dataset, query, **options)
+    elif plottype == 'bathymetry':
+        plotter = BathPlotter(dataset, query, **options)
     else:
         raise APIError(
             "You Have Not Selected a Plot Type - Please Review your Query")
