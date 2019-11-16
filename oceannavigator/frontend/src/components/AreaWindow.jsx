@@ -687,6 +687,13 @@ export default class AreaWindow extends React.Component {
 
         content = <StatsTable query={plot_query}/>;
         break;
+
+      case 3:
+        content = <PlotImage
+          query={'/api/v1.0/'}
+          permlink_subquery={this.state}
+          action={this.props.action}
+        ></PlotImage>
     }
 
     return (
@@ -698,6 +705,7 @@ export default class AreaWindow extends React.Component {
         >
           <NavItem eventKey={1}>{_("Map")}</NavItem>
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
+          <NavItem eventKey={3}>{_("Bathymetry (BETA)")}</NavItem>
         </Nav>
         <Row>
           <Col lg={2}>
