@@ -571,6 +571,6 @@ class BathPlotter(Plotter):
         parallels = find_lines(self.latitude)
         meridians = find_lines(self.longitude)
         
-        
+        my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
 
-        return 
+        return my_plot_div
