@@ -547,6 +547,7 @@ class BathPlotter(Plotter):
     def plot(self):
         
         bathymetry = np.multiply(self.bathymetry, -1)
+        data = np.multiply(self.data, -1)
         lon = self.longitude
         lat = self.latitude
         
@@ -573,6 +574,6 @@ class BathPlotter(Plotter):
         meridians = find_lines(self.longitude)
         
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
-        my_plot_div = plot([Surface(z=bathymetry), Surface(z=self.data)], output_type='div')
+        my_plot_div = plot([Surface(z=bathymetry), Surface(z=data)], output_type='div')
 
         return Response(my_plot_div, status=200, mimetype='text/html')
