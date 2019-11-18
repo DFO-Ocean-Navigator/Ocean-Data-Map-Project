@@ -31,6 +31,7 @@ export default class PlotImage extends React.PureComponent {
       url: LOADING_IMAGE,
       showImagelink: false,
       loadIframe: false,
+      plot=<div></div>
     };
     
     // Function bindings
@@ -73,6 +74,19 @@ export default class PlotImage extends React.PureComponent {
     Regenerates the query string when the query prop changes
   */
   componentDidUpdate(prevProps, prevState) {
+    if (this.state.loadIframe !== prevState.loadIframe) {
+      if (this.state.loadIframe) {
+        $.ajax({
+          url: this.state.url,
+          type: 'GET',
+          success: function(data) {
+            this.setState({
+              plot: data
+            })
+          }
+        })
+      }
+    }
     if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
       this.setState({
         loading: true
@@ -367,9 +381,7 @@ export default class PlotImage extends React.PureComponent {
 
     let load
     if (this.state.loadIframe) {
-      load =  <div className="RenderedImage">
-                <iframe src={this.state.url}></iframe>
-              </div>
+      load =  this.state.plot
     } else {
       load =  <div className="RenderedImage">
                 <img src={this.state.url} />
