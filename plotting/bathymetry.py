@@ -555,7 +555,7 @@ class BathPlotter(Plotter):
 
             return pl_colorscale
 
-        cmap = cmocean_to_plotly(self.cmap, np.nanmax(self.bathymetry))
+        cmap = cmocean_to_plotly(cmocean.cm.deep, np.nanmax(self.bathymetry))
 
         bathymetry = np.multiply(self.bathymetry, -1)
         data = np.multiply(self.data, -1)
@@ -590,7 +590,6 @@ class BathPlotter(Plotter):
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot({
             "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude), Surface(z=data, x=self.longitude, y=self.latitude)],
-            
             "layout": layout
         }, output_type='div',)
 
