@@ -51,7 +51,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Setup figure layout
         width = 2 if self.showmap else 1
         # Scale TS Diagram to be double the size of location map
-        width_ratios = [1, 3] if self.showmap else None
+        width_ratios = [1, 2] if self.showmap else None
 
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
