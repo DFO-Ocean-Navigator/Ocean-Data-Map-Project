@@ -713,7 +713,6 @@ export default class AreaWindow extends React.Component {
         
         leftInputs = [globalSettings, mapSettings]; //Left Sidebar
         rightInputs = [dataset];  //Right Sidebar
-
         content = <PlotImage
           query={plot_query} // For image saving link.
           permlink_subquery={this.state}

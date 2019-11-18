@@ -247,6 +247,7 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
+      case "bathymetry":
         query.variable = q.variable;
         query.time = q.time;
         query.scale = q.scale;
