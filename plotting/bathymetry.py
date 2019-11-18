@@ -32,7 +32,7 @@ from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 from flask import render_template
 from flask import Response
-
+import cmocean 
 # New PLOTLY imports
 from plotly.offline import plot
 from plotly.graph_objs import Scatter, Surface, Layout
