@@ -31,7 +31,7 @@ from plotting.plotter import Plotter
 from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 from flask import render_template
-from flask import Markup
+from flask import Response
 
 # New PLOTLY imports
 from plotly.offline import plot
