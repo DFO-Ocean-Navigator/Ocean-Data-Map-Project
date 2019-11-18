@@ -30,6 +30,7 @@ export default class PlotImage extends React.PureComponent {
       loading: true,
       url: LOADING_IMAGE,
       showImagelink: false,
+      loadIframe: false,
     };
     
     // Function bindings
@@ -248,6 +249,9 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "map":
       case "bathymetry":
+        this.setState({
+          loadIframe: true
+        })
         query.variable = q.variable;
         query.time = q.time;
         query.scale = q.scale;
@@ -354,14 +358,22 @@ export default class PlotImage extends React.PureComponent {
       errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
     }
 
+    let load
+    if (this.state.loadIframe) {
+      load =  <div className="RenderedImage">
+                <iframe src={this.state.url}></iframe>
+              </div>
+    } else {
+      load =  <div className="RenderedImage">
+                <img src={this.state.url} />
+              </div>
+    }
+
     return (
       <div className='PlotImage'>
 
         {/* Rendered graph */}
-        <div className="RenderedImage">
-          <img src={this.state.url} />
-        </div>
-
+        {load}
         {errorAlert}
 
         <ButtonToolbar>
