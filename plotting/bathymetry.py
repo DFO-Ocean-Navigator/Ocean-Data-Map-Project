@@ -548,11 +548,9 @@ class BathPlotter(Plotter):
         
         bathymetry = np.multiply(self.bathymetry, -1)
         data = np.multiply(self.data, -1)
-        idxs = np.where(np.isnan(data))
+        idxs = np.where(data < bathymetry)
         data[idxs] = bathymetry[idxs]
-        if len(np.where(data < 5000)):
-            print(something)
-
+        
         lon = self.longitude
         lat = self.latitude
         
