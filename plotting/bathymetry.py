@@ -577,6 +577,6 @@ class BathPlotter(Plotter):
         meridians = find_lines(self.longitude)
         
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
-        my_plot_div = plot([Surface(z=bathymetry), Surface(z=data)], output_type='div')
+        my_plot_div = plot([Surface(z=bathymetry, x=self.latitude, y=self.longitude), Surface(z=data, y=self.latitude, x=self.longitude)], output_type='div')
 
         return Response(my_plot_div, status=200, mimetype='text/html')
