@@ -81,6 +81,7 @@ export default class PlotImage extends React.PureComponent {
           url: this.state.url,
           type: 'GET',
           success: function(data) {
+            console.warn("DATA: ", data)
             self.setState({
               plot: data
             })
