@@ -136,7 +136,8 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         
     # Draw a realistic background "blue marble"
     try:
-        m.bluemarble()
+        m.etopo()
+        #m.bluemarble()
 
         m.drawparallels(
             np.arange(
