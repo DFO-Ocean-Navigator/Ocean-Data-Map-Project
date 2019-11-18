@@ -35,7 +35,7 @@ from flask import Response
 
 # New PLOTLY imports
 from plotly.offline import plot
-from plotly.graph_objs import Scatter, Surface
+from plotly.graph_objs import Scatter, Surface, Layout
 
 class BathPlotter(Plotter):
 
@@ -575,9 +575,7 @@ class BathPlotter(Plotter):
 
         parallels = find_lines(self.latitude)
         meridians = find_lines(self.longitude)
-        layout = dict()
-        layout['xaxis'] = 'Longitude'
-        layout['yaxis'] = 'Latitude'
+        layout = Layout()
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot([Surface(z=bathymetry, x=self.longitude, y=self.latitude), Surface(z=data, x=self.longitude, y=self.latitude)], output_type='div', layout=layout)
 
