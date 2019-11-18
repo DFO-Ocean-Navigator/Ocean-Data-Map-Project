@@ -31,7 +31,7 @@ export default class PlotImage extends React.PureComponent {
       url: LOADING_IMAGE,
       showImagelink: false,
       loadIframe: false,
-      plot=<div></div>
+      plot:<div></div>
     };
     
     // Function bindings
