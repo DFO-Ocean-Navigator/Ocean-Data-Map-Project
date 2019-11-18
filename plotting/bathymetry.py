@@ -545,7 +545,7 @@ class BathPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
-        def cmocean_to_plotly(cmap, 1):
+        def cmocean_to_plotly(cmap, pl_entries):
             h = 1.0/(pl_entries-1)
             pl_colorscale = []
 
@@ -555,7 +555,7 @@ class BathPlotter(Plotter):
 
             return pl_colorscale
 
-        cmap = cmocean_to_plotly(cmocean.cm.deep, np.nanmax(self.bathymetry))
+        cmap = cmocean_to_plotly(cmocean.cm.deep, 1)
 
         bathymetry = np.multiply(self.bathymetry, -1)
         data = np.multiply(self.data, -1)
