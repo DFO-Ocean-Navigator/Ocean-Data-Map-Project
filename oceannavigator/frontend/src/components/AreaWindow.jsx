@@ -6,8 +6,10 @@
 */
 
 import React from "react";
-import {Nav, NavItem, Panel, Row,  Col, Button, 
-  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
+import {
+  Nav, NavItem, Panel, Row, Col, Button,
+  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem
+} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -31,7 +33,7 @@ export default class AreaWindow extends React.Component {
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
-    
+
     this.state = {
       currentTab: 1, // Currently selected tab
       scale: props.scale + ",auto",
@@ -99,7 +101,7 @@ export default class AreaWindow extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+
     if (this._mounted && stringify(prevProps) !== stringify(this.props)) {
       if (prevProps.scale !== this.props.scale) {
         if (this.state.scale.indexOf("auto") !== -1) {
@@ -129,7 +131,7 @@ export default class AreaWindow extends React.Component {
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitle) {
-      this.setState({plotTitle: title,});
+      this.setState({ plotTitle: title, });
     }
   }
 
@@ -158,7 +160,7 @@ export default class AreaWindow extends React.Component {
       */
 
       let newState = {};
-      if (typeof(key) === "string") {
+      if (typeof (key) === "string") {
         newState[key] = value;
       } else {
         for (let i = 0; i < key.length; i++) {
@@ -174,7 +176,7 @@ export default class AreaWindow extends React.Component {
         let parentValues = [];
 
         if (newState.hasOwnProperty("variable_scale")) {
-          if (typeof(this.state.variable) === "string" ||
+          if (typeof (this.state.variable) === "string" ||
             this.state.variable.length === 1) {
             parentKeys.push("variable_scale");
             parentValues.push(newState.variable_scale);
@@ -182,7 +184,7 @@ export default class AreaWindow extends React.Component {
         }
 
         if (newState.hasOwnProperty("variable")) {
-          if (typeof(this.state.variable) === "string") {
+          if (typeof (this.state.variable) === "string") {
             parentKeys.push("variable");
             parentValues.push(newState.variable);
           } else if (this.state.variable.length === 1) {
@@ -218,21 +220,21 @@ export default class AreaWindow extends React.Component {
 
   subsetArea() {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-    
+
     window.location.href = "/api/v1.0/subset/?" +
-       "&output_format=" + this.state.output_format +
-       "&dataset_name=" + this.state.dataset_0.dataset +
-       "&variables=" + this.state.output_variables.join() +
-       "&min_range=" + [AABB[0], AABB[2]].join() +
-       "&max_range=" + [AABB[1], AABB[3]].join() +
-       "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
-       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
-       "&should_zip=" + (this.state.zip ? 1 : 0);
+      "&output_format=" + this.state.output_format +
+      "&dataset_name=" + this.state.dataset_0.dataset +
+      "&variables=" + this.state.output_variables.join() +
+      "&min_range=" + [AABB[0], AABB[2]].join() +
+      "&max_range=" + [AABB[1], AABB[3]].join() +
+      "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+      "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
+      "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
   saveScript(key) {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-    
+
     let query = {
       "output_format": this.state.output_format,
       "dataset_name": this.state.dataset_0.dataset,
@@ -240,8 +242,8 @@ export default class AreaWindow extends React.Component {
       "min_range": [AABB[0], AABB[2]].join(),
       "max_range": [AABB[1], AABB[3]].join(),
       "time": [this.state.output_starttime, this.state.output_endtime].join(),
-      "user_grid": (this.state.convertToUserGrid ? 1:0),
-      "should_zip": (this.state.zip ? 1:0)
+      "user_grid": (this.state.convertToUserGrid ? 1 : 0),
+      "should_zip": (this.state.zip ? 1 : 0)
     };
 
     window.location.href = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/" + "SUBSET/";
@@ -276,7 +278,7 @@ export default class AreaWindow extends React.Component {
       key='map_settings'
     >
       <Row>   {/* Contains compare dataset and help button */}
-        <Col xs={9}> 
+        <Col xs={9}>
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
@@ -286,7 +288,7 @@ export default class AreaWindow extends React.Component {
           />
         </Col>
         <Col xs={3}>
-          <Button 
+          <Button
             bsStyle="link"
             key='show_help'
             onClick={this.props.showHelp}
@@ -295,21 +297,23 @@ export default class AreaWindow extends React.Component {
           </Button>
         </Col>
       </Row>
-    
+
       {/* Displays Options for Compare Datasets */}
       <Button
         bsStyle="default"
         key='swap_views'
         block
-        style={{display: this.props.dataset_compare ? "block" : "none"}}
+        style={{ display: this.props.dataset_compare ? "block" : "none" }}
         onClick={this.props.swapViews}
       >
         {_("Swap Views")}
       </Button>
 
       <div
-        style={{display: this.props.dataset_compare &&
-                         this.state.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+        style={{
+          display: this.props.dataset_compare &&
+            this.state.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"
+        }}
       >
         <Range
           auto
@@ -320,13 +324,13 @@ export default class AreaWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Diff. Variable Range")}
         />
-        <ComboBox 
-          key='colormap_diff' 
-          id='colormap_diff' 
-          state={this.state.colormap_diff} 
-          def='default' 
+        <ComboBox
+          key='colormap_diff'
+          id='colormap_diff'
+          state={this.state.colormap_diff}
+          def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/v1.0/colormaps/' 
+          url='/api/v1.0/colormaps/'
           title={_("Diff. Colourmap")}
         >
           {_("colourmap_help")}
@@ -335,57 +339,57 @@ export default class AreaWindow extends React.Component {
       </div>
       {/* End of Compare Datasets options */}
 
-      <SelectBox 
-        key='bathymetry' 
-        id='bathymetry' 
-        state={this.state.bathymetry} 
-        onUpdate={this.onLocalUpdate} 
+      <SelectBox
+        key='bathymetry'
+        id='bathymetry'
+        state={this.state.bathymetry}
+        onUpdate={this.onLocalUpdate}
         title={_("Show Bathymetry Contours")}
       />
 
-      <SelectBox 
-        key='showarea' 
-        id='showarea' 
-        state={this.state.showarea} 
-        onUpdate={this.onLocalUpdate} 
+      <SelectBox
+        key='showarea'
+        id='showarea'
+        state={this.state.showarea}
+        onUpdate={this.onLocalUpdate}
         title={_("Show Selected Area(s)")}
       >
         {_("showarea_help")}
       </SelectBox>
 
       {/* Arror Selector Drop Down menu */}
-      <QuiverSelector 
-        key='quiver' 
-        id='quiver' 
-        state={this.state.quiver} 
-        def='' 
-        onUpdate={this.onLocalUpdate} 
-        dataset={this.state.dataset_0.dataset} 
+      <QuiverSelector
+        key='quiver'
+        id='quiver'
+        state={this.state.quiver}
+        def=''
+        onUpdate={this.onLocalUpdate}
+        dataset={this.state.dataset_0.dataset}
         title={_("Arrows")}
       >
         {_("arrows_help")}
       </QuiverSelector>
 
       {/* Contour Selector drop down menu */}
-      <ContourSelector 
-        key='contour' 
-        id='contour' 
-        state={this.state.contour} 
-        def='' 
-        onUpdate={this.onLocalUpdate} 
-        dataset={this.state.dataset_0.dataset} 
+      <ContourSelector
+        key='contour'
+        id='contour'
+        state={this.state.contour}
+        def=''
+        onUpdate={this.onLocalUpdate}
+        dataset={this.state.dataset_0.dataset}
         title={_("Additional Contours")}
       >
         {_("contour_help")}
       </ContourSelector>
 
       {/* Image Size Selection */}
-      <ImageSize 
-        key='size' 
-        id='size' 
-        state={this.state.size} 
-        onUpdate={this.onLocalUpdate} 
-        title={_("Saved Image Size")} 
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
       ></ImageSize>
 
       {/* Plot Title */}
@@ -396,7 +400,7 @@ export default class AreaWindow extends React.Component {
         updatePlotTitle={this.updatePlotTitle}
         plotTitle={this.state.plotTitle}
       ></CustomPlotLabels>
-      
+
     </Panel>);
 
     const subsetPanel = (<Panel
@@ -413,7 +417,7 @@ export default class AreaWindow extends React.Component {
           multiple={true}
           state={this.state.output_variables}
           def={"defaults.dataset"}
-          onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
+          onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
           url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
           }
           title={_("Variables")}
@@ -423,7 +427,7 @@ export default class AreaWindow extends React.Component {
           id='time_range'
           key='time_range'
           state={this.state.output_timerange}
-          onUpdate={(key, value) => {this.setState({output_timerange: value,});}}
+          onUpdate={(key, value) => { this.setState({ output_timerange: value, }); }}
           title={_("Select Time Range")}
         />
 
@@ -434,15 +438,15 @@ export default class AreaWindow extends React.Component {
           def=''
           quantum={this.state.dataset_0.dataset_quantum}
           url={"/api/v1.0/timestamps/?dataset=" +
-                this.state.dataset_0.dataset +
-                "&variable=" +
-                this.state.dataset_0.variable}
+            this.state.dataset_0.dataset +
+            "&variable=" +
+            this.state.dataset_0.variable}
           title={this.state.output_timerange ? _("Start Time") : _("Time")}
-          onUpdate={(key, value) => { this.setState({output_starttime: value,}); }}
+          onUpdate={(key, value) => { this.setState({ output_starttime: value, }); }}
           max={this.state.dataset_0.time + 1}
         />
 
-        <div style={{display: this.state.output_timerange ? "block" : "none",}}>
+        <div style={{ display: this.state.output_timerange ? "block" : "none", }}>
           <TimePicker
             id='time'
             key='time'
@@ -450,18 +454,18 @@ export default class AreaWindow extends React.Component {
             def=''
             quantum={this.state.dataset_0.dataset_quantum}
             url={"/api/v1.0/timestamps/?dataset=" +
-                this.state.dataset_0.dataset +
-                "&variable=" +
-                this.state.dataset_0.variable}
+              this.state.dataset_0.dataset +
+              "&variable=" +
+              this.state.dataset_0.variable}
             title={_("End Time")}
-            onUpdate={(key, value) => { this.setState({output_endtime: value,}); }}
+            onUpdate={(key, value) => { this.setState({ output_endtime: value, }); }}
             min={this.state.dataset_0.time}
           />
         </div>
 
         <FormGroup controlId="output_format">
           <ControlLabel>{_("Output Format")}</ControlLabel>
-          <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value,}); }}>
+          <FormControl componentClass="select" onChange={e => { this.setState({ output_format: e.target.value, }); }}>
             <option value="NETCDF4">{_("NetCDF-4")}</option>
             <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
             <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
@@ -483,23 +487,23 @@ export default class AreaWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Convert to User Grid")}
         />
-*/}        
-        <SelectBox 
+*/}
+        <SelectBox
           id='zip'
           key='zip'
-          state={this.state.zip} 
-          onUpdate={this.onLocalUpdate} 
+          state={this.state.zip}
+          onUpdate={this.onLocalUpdate}
           title={_("Compress as *.zip")}
         />
 
-        <Button 
-          bsStyle="default" 
+        <Button
+          bsStyle="default"
           key='save'
           id='save'
           onClick={this.subsetArea}
           disabled={this.state.output_variables == ""}
         ><Icon icon="save" /> {_("Save")}</Button>
-        
+
         <DropdownButton
           id="script"
           title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
@@ -530,7 +534,7 @@ export default class AreaWindow extends React.Component {
         id='syncToGlobal'
         key='syncToGlobal'
         state={this.state.syncLocalToGlobalState}
-        onUpdate={(key, value) => { this.setState({syncLocalToGlobalState: value,}); } }
+        onUpdate={(key, value) => { this.setState({ syncLocalToGlobalState: value, }); }}
         title={_("Sync to Global State")}
       />
     </Panel>
@@ -544,33 +548,33 @@ export default class AreaWindow extends React.Component {
       header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
-      <DatasetSelector 
+      <DatasetSelector
         key='dataset_0'
         id='dataset_0'
         multiple={this.state.currentTab === 2}
-        state={this.state.dataset_0} 
+        state={this.state.dataset_0}
         onUpdate={this.onLocalUpdate}
         depth={true}
       />
 
-      <div style={{"display": this.state.currentTab == 1 ? "block" : "none"}}>
-        <Range 
-          auto 
-          key='scale' 
-          id='scale' 
-          state={this.state.scale} 
-          def={""} 
-          onUpdate={this.onLocalUpdate} 
-          title={_("Variable Range")} 
+      <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
+        <Range
+          auto
+          key='scale'
+          id='scale'
+          state={this.state.scale}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")}
         />
 
-        <ComboBox 
-          key='leftColormap' 
-          id='leftColormap' 
-          state={this.state.leftColormap} 
-          def='default' 
-          onUpdate={this.onLocalUpdate} 
-          url='/api/v1,0/colormaps/' 
+        <ComboBox
+          key='leftColormap'
+          id='leftColormap'
+          state={this.state.leftColormap}
+          def='default'
+          onUpdate={this.onLocalUpdate}
+          url='/api/v1,0/colormaps/'
           title={_("Colourmap")}
         >
           {_("colourmap_help")}
@@ -578,9 +582,9 @@ export default class AreaWindow extends React.Component {
         </ComboBox>
       </div>
     </Panel>);
-    
+
     const compare_dataset = <div key='compare_dataset'>
-      <div style={{"display": this.props.dataset_compare ? "block" : "none"}}>
+      <div style={{ "display": this.props.dataset_compare ? "block" : "none" }}>
         <Panel
           key='right_map'
           id='right_map'
@@ -606,13 +610,13 @@ export default class AreaWindow extends React.Component {
             title={_("Variable Range")}
           />
 
-          <ComboBox 
-            key='rightColormap' 
-            id='rightColormap' 
-            state={this.state.rightColormap} 
-            def='default' 
-            onUpdate={this.onLocalUpdate} 
-            url='/api/v1.0/colormaps/' 
+          <ComboBox
+            key='rightColormap'
+            id='rightColormap'
+            state={this.state.rightColormap}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/v1.0/colormaps/'
             title={_("Colourmap")}
           >
             {_("colourmap_help")}
@@ -633,7 +637,7 @@ export default class AreaWindow extends React.Component {
     };
 
     let content = null;
-    switch(this.state.currentTab) {
+    switch (this.state.currentTab) {
       case 1:
         plot_query.type = "map";
         plot_query.colormap = this.state.leftColormap;
@@ -644,7 +648,7 @@ export default class AreaWindow extends React.Component {
         plot_query.quiver = this.state.quiver;
         plot_query.contour = this.state.contour;
         plot_query.showarea = this.state.showarea;
-        plot_query.variable = this.state.dataset_0.variable; 
+        plot_query.variable = this.state.dataset_0.variable;
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
@@ -682,19 +686,50 @@ export default class AreaWindow extends React.Component {
         } else {
           plot_query.variable = this.state.dataset_0.variable;
         }
-        
+
         leftInputs = [globalSettings, dataset];
 
-        content = <StatsTable query={plot_query}/>;
+        content = <StatsTable query={plot_query} />;
         break;
 
       case 3:
-        plot_query.type = "bathymetry"
+        plot_query.type = "bathymetry";
+        plot_query.colormap = this.state.leftColormap;
+        plot_query.time = this.state.dataset_0.time;
+        plot_query.area = this.props.area;
+        plot_query.depth = this.state.dataset_0.depth;
+        plot_query.bathymetry = this.state.bathymetry;
+        plot_query.quiver = this.state.quiver;
+        plot_query.contour = this.state.contour;
+        plot_query.showarea = this.state.showarea;
+        plot_query.variable = this.state.dataset_0.variable;
+        plot_query.projection = this.props.projection;
+        plot_query.size = this.state.size;
+        plot_query.dpi = this.state.dpi;
+        plot_query.interp = this.props.options.interpType;
+        plot_query.radius = this.props.options.interpRadius;
+        plot_query.neighbours = this.props.options.interpNeighbours;
+        plot_query.plotTitle = this.state.plotTitle;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.scale = this.state.scale_1;
+          plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.rightColormap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
+        }
+
+        leftInputs = [globalSettings, mapSettings, subsetPanel]; //Left Sidebar
+        rightInputs = [dataset];  //Right Sidebar
+
+        if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
+          rightInputs.push(compare_dataset);
+        }
         content = <PlotImage
-          query={plot_query}
+          query={plot_query} // For image saving link.
           permlink_subquery={this.state}
           action={this.props.action}
-        ></PlotImage>
+        />;
+        break;
     }
 
     return (
