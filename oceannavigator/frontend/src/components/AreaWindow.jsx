@@ -689,39 +689,9 @@ export default class AreaWindow extends React.Component {
         break;
 
       case 3:
-        let query = {
-          area:[{"innerrings":[],
-          name:"",
-          polygons:[[[52.66972038368817,-56.237640380859375],[51.316880504045855,-33.73764038085937],[45.12005284153054,-36.37435913085938],[45.675482175606476,-40.768890380859375],[52.66972038368817,-56.237640380859375]]]}],
-          bathymetry:true,
-          colormap:"default",
-          contour: {
-            colormap:"default",
-            hatch:false,
-            legend:true,
-            levels:"auto",
-            variable:"none"
-          },
-          dataset:"giops_day",
-          depth:0,
-          interp:"gaussian",
-          neighbours:10,
-          projection:"EPSG:3857",
-          quantum:"day",
-          quiver: {
-            colormap:"default",
-            magnitude:"length",
-            variable:"none"
-          },
-          radius:25,
-          scale:"-5,30,auto",
-          showarea:true,
-          time:2205014400,
-          type:"bathymetry",
-          variable:"votemper"
-        }
+        plot_query.type = "bathymetry"
         content = <PlotImage
-          query={query}
+          query={plot_query}
           permlink_subquery={this.state}
           action={this.props.action}
         ></PlotImage>
