@@ -102,7 +102,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         urcrnrlat=maxlat,
         lat_0=np.mean(points[0, :]),
         lon_0=np.mean(points[1, :]),
-        resolution='f', projection='merc',
+        resolution='i', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
     )
     
@@ -136,8 +136,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
         
     # Draw a realistic background "blue marble"
     try:
-        m.etopo()
-        #m.bluemarble()
+        m.bluemarble()
 
         m.drawparallels(
             np.arange(
