@@ -545,7 +545,18 @@ class BathPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
-        
+        def cmocean_to_plotly(cmap, pl_entries):
+            h = 1.0/(pl_entries-1)
+            pl_colorscale = []
+
+            for k in range(pl_entries):
+                C = map(np.uint8, np.array(cmap(k*h)[:3])*255)
+                pl_colorscale.append([k*h, 'rgb'+str((C[0], C[1], C[2]))])
+
+            return pl_colorscale
+
+        cmap = cmocean_to_plotly(self.cmap, np.nanmax(self.bathymetry))
+
         bathymetry = np.multiply(self.bathymetry, -1)
         data = np.multiply(self.data, -1)
         idxs = np.where(data < bathymetry)
