@@ -710,20 +710,10 @@ export default class AreaWindow extends React.Component {
         plot_query.radius = this.props.options.interpRadius;
         plot_query.neighbours = this.props.options.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-          plot_query.compare_to.scale = this.state.scale_1;
-          plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.rightColormap;
-          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-
-        leftInputs = [globalSettings, mapSettings, subsetPanel]; //Left Sidebar
+        
+        leftInputs = [globalSettings]; //Left Sidebar
         rightInputs = [dataset];  //Right Sidebar
 
-        if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
-          rightInputs.push(compare_dataset);
-        }
         content = <PlotImage
           query={plot_query} // For image saving link.
           permlink_subquery={this.state}
