@@ -77,7 +77,7 @@ def mathtext(text):
 
 
 # Plots point(s) on a map (called when "Show Location" is true)
-def _map_plot(points, path=True, quiver=True):
+def _map_plot(points, path=True, quiver=True, colors=list()):
     minlat = np.min(points[0, :])
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
@@ -105,7 +105,7 @@ def _map_plot(points, path=True, quiver=True):
         resolution='i', projection='merc',
         rsphere=(6378137.00, 6356752.3142),
     )
-
+    
     if path:
         marker = ''
         if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
@@ -126,10 +126,14 @@ def _map_plot(points, path=True, quiver=True):
                      width=0.25,
                      minlength=0.25,
                      color='r')
+    elif len(colors) is not 0:
+        for idx in range(0, points.shape[1]):
+            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color=colors[idx])
+
     else:
         for idx in range(0, points.shape[1]):
             m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
-
+        
     # Draw a realistic background "blue marble"
     try:
         m.bluemarble()
@@ -150,8 +154,8 @@ def _map_plot(points, path=True, quiver=True):
         raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
 
 
-def point_plot(points):
-    _map_plot(points, False)
+def point_plot(points, colors=list()):
+    _map_plot(points, False, colors=colors)
 
 
 def path_plot(points, quiver=True):

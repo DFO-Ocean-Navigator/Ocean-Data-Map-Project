@@ -68,11 +68,20 @@ export default class PlotImage extends React.PureComponent {
     this.loadImage(this.generateQuery(this.props.query));
   }
 
-  componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(this.generateQuery(props.query));
+  /*
+    Regenerates the query string when the query prop changes
+  */
+  componentDidUpdate(prevProps, prevState) {
+    if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
+      this.setState({
+        loading: true
+      })
+      let query = this.generateQuery(this.props.query);
+      this.loadImage(query);
+      //this.loadImage(this.generateQuery(this.props.query));
     }
   }
+
 
   componentWillUnmount() {
     this._mounted = false;
@@ -86,6 +95,7 @@ export default class PlotImage extends React.PureComponent {
   }
 
   loadImage(query) {
+
     const paramString = $.param({
       query: stringify(query),
       format: "json",
@@ -148,6 +158,11 @@ export default class PlotImage extends React.PureComponent {
       query.plotTitle = q.plotTitle;
     }
     
+    if (q.plotsettings !== undefined) {
+      query.plotsettings = q.plotsettings;
+    }
+    
+
     switch(q.type) {
       case "profile":
       case "ts":
@@ -157,6 +172,7 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.annotate = q.annotate;
         query.time = q.time;
+        
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -166,6 +182,7 @@ export default class PlotImage extends React.PureComponent {
           };
         }
         break;
+
       case "timeseries":
         query.showmap = q.showmap;
         query.station = q.point;
@@ -291,7 +308,7 @@ export default class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    return query;
+    return jQuery.extend({}, query);
   }
 
   urlFromQuery(q) {

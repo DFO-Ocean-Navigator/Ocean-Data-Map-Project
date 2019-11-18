@@ -105,16 +105,14 @@ class ProfilePlotter(PointPlotter):
 
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+        
         subplot = 0
-
-        # Render point location
         if self.showmap:
-            plt.subplot(gs[0, subplot])
-            subplot += 1
-            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                       [x[1] for x in self.points]]))  # Longitudes
-
+            subplot = 1
+        
+        
         is_y_label_plotted = False
+        colour = list()
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
         for idx, _ in enumerate(self.variables):
@@ -124,8 +122,13 @@ class ProfilePlotter(PointPlotter):
                 self.data[:, idx, :].transpose(),
                 self.depths[:, idx, :].transpose()
             )
-
+            
             current_axis = plt.gca()
+            
+            colour = list()
+            for line in current_axis.get_lines():
+                colour.append(line.get_color())
+
             current_axis.xaxis.set_label_position('top')
             current_axis.xaxis.set_ticks_position('top')
             current_axis.invert_yaxis()
@@ -145,17 +148,31 @@ class ProfilePlotter(PointPlotter):
 
             subplot += 1
 
-        self.plot_legend(fig, self.names)
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, 0])
+            #subplot += 1
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]), colour)  # Longitudes
 
-        if not self.plotTitle:
+        self.plot_legend(fig, self.names)
+        if 'plotsettings' in self.query:
+            plotsettings = self.query.get('plotsettings')
+            if 'title' in plotsettings and plotsettings['title'] is not "":
+                    plt.suptitle(plotsettings['title'], fontsize=15)
+            else:
+                plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
+                                         ", ".join(self.names),
+                                         ", ".join(self.variable_names),
+                                         self.date_formatter(self.iso_timestamp)),
+                     fontsize=15)
+        else:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
                                              ", ".join(self.names),
                                              ", ".join(self.variable_names),
                                              self.date_formatter(self.iso_timestamp)),
                          fontsize=15)
-        else:
-            plt.suptitle(self.plotTitle, fontsize=15)
-
+        
         fig.tight_layout()
         fig.subplots_adjust(top=(0.8))
 

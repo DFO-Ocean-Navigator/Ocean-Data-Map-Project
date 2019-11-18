@@ -1,2 +1,31 @@
 .PointWindow {
+    .scale {
+        display: inline;
+        width: 60px;
+        height: 39px;
+        font-size: 100%;
+    }
+
+    .label {
+        display: inline;
+        width: 120px;
+        height: 39px;
+        font-size: 100%;
+        color: black;
+    }
+
+    .scale_container {
+        display: block;
+        float: left;
+        width: 100%;
+        padding-bottom: 10px;
+    }
+    .input_container {
+        float: right;
+    }
+    .scale_header {
+        font-weight: bold;
+        display: inline;
+    }
+
 }
