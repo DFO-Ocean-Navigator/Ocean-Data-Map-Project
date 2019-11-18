@@ -96,12 +96,12 @@ class BathPlotter(Plotter):
         self.centroid = list(combined.centroid.coords)[0]
         self.bounds = combined.bounds
 
-        #self.show_bathymetry = bool(query.get('bathymetry'))
-        #self.show_area = bool(query.get('showarea'))
+        self.show_bathymetry = bool(query.get('bathymetry'))
+        self.show_area = bool(query.get('showarea'))
 
-        #self.quiver = query.get('quiver')
+        self.quiver = query.get('quiver')
 
-        #self.contour = query.get('contour')
+        self.contour = query.get('contour')
 
     def load_data(self):
         distance = VincentyDistance()
