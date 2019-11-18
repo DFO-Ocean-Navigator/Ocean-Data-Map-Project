@@ -80,6 +80,7 @@ export default class PlotImage extends React.PureComponent {
         $.ajax({
           url: this.state.url,
           type: 'GET',
+          dataType: 'html',
           success: function(data) {
             console.warn("DATA: ", data)
             self.setState({
