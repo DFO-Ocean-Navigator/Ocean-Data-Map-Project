@@ -711,7 +711,7 @@ export default class AreaWindow extends React.Component {
         plot_query.neighbours = this.props.options.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
         
-        leftInputs = [globalSettings]; //Left Sidebar
+        leftInputs = [globalSettings, mapSettings]; //Left Sidebar
         rightInputs = [dataset];  //Right Sidebar
 
         content = <PlotImage
