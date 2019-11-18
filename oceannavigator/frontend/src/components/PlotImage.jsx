@@ -76,11 +76,12 @@ export default class PlotImage extends React.PureComponent {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.loadIframe !== prevState.loadIframe) {
       if (this.state.loadIframe) {
+        let self = this
         $.ajax({
           url: this.state.url,
           type: 'GET',
           success: function(data) {
-            this.setState({
+            self.setState({
               plot: data
             })
           }
