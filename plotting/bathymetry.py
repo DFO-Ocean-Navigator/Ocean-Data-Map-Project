@@ -96,12 +96,12 @@ class BathPlotter(Plotter):
         self.centroid = list(combined.centroid.coords)[0]
         self.bounds = combined.bounds
 
-        self.show_bathymetry = bool(query.get('bathymetry'))
-        self.show_area = bool(query.get('showarea'))
+        #self.show_bathymetry = bool(query.get('bathymetry'))
+        #self.show_area = bool(query.get('showarea'))
 
-        self.quiver = query.get('quiver')
+        #self.quiver = query.get('quiver')
 
-        self.contour = query.get('contour')
+        #self.contour = query.get('contour')
 
     def load_data(self):
         distance = VincentyDistance()
@@ -573,6 +573,6 @@ class BathPlotter(Plotter):
         meridians = find_lines(self.longitude)
         
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
-        my_plot_div = plot([Surface(z=bathymetry)], output_type='div')
+        my_plot_div = plot([Surface(z=bathymetry), Surface(z=self.data)], output_type='div')
 
         return Response(my_plot_div, status=200, mimetype='text/html')
