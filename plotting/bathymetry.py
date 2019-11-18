@@ -191,163 +191,162 @@ class BathPlotter(Plotter):
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
 
-        if len(self.variables) is not 0:
-            with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
-            
-                if len(self.variables) > 1:
-                    self.variable_unit = self.get_vector_variable_unit(
-                        dataset, self.variables
-                    )
-                    self.variable_name = self.get_vector_variable_name(
-                        dataset, self.variables
-                    )
-                    scale_factor = self.get_vector_variable_scale_factor(
-                        dataset, self.variables
+        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
+
+            if len(self.variables) > 1:
+                self.variable_unit = self.get_vector_variable_unit(
+                    dataset, self.variables
+                )
+                self.variable_name = self.get_vector_variable_name(
+                    dataset, self.variables
+                )
+                scale_factor = self.get_vector_variable_scale_factor(
+                    dataset, self.variables
+                )
+            else:
+                self.variable_unit = self.get_variable_units(
+                    dataset, self.variables
+                )[0]
+                self.variable_name = self.get_variable_names(
+                    dataset,
+                    self.variables
+                )[0]
+                scale_factor = self.get_variable_scale_factors(
+                    dataset, self.variables
+                )[0]
+
+            if self.cmap is None:
+                if len(self.variables) == 1:
+                    self.cmap = colormap.find_colormap(self.variable_name)
+                else:
+                    self.cmap = colormap.colormaps.get('speed')
+
+            if self.depth == 'bottom':
+                depth_value_map = 'Bottom'
+            else:
+                self.depth = np.clip(
+                    int(self.depth), 0, len(dataset.depths) - 1)
+                depth_value = dataset.depths[self.depth]
+                depth_value_map = depth_value
+
+            data = []
+            allvars = []
+            for v in self.variables:
+                var = dataset.variables[v]
+                allvars.append(v)
+                if self.filetype in ['csv', 'odv', 'txt']:
+                    d, depth_value_map = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.time,
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
+                        return_depth=True
                     )
                 else:
-                    self.variable_unit = self.get_variable_units(
-                        dataset, self.variables
-                    )[0]
-                    self.variable_name = self.get_variable_names(
-                        dataset,
-                        self.variables
-                    )[0]
-                    scale_factor = self.get_variable_scale_factors(
-                        dataset, self.variables
-                    )[0]
-    
-                if self.cmap is None:
-                    if len(self.variables) == 1:
-                        self.cmap = colormap.find_colormap(self.variable_name)
-                    else:
-                        self.cmap = colormap.colormaps.get('speed')
-    
-                if self.depth == 'bottom':
-                    depth_value_map = 'Bottom'
-                else:
-                    self.depth = np.clip(
-                        int(self.depth), 0, len(dataset.depths) - 1)
-                    depth_value = dataset.depths[self.depth]
-                    depth_value_map = depth_value
-    
-                data = []
-                allvars = []
-                for v in self.variables:
-                    var = dataset.variables[v]
-                    allvars.append(v)
-                    if self.filetype in ['csv', 'odv', 'txt']:
-                        d, depth_value_map = dataset.get_area(
-                            np.array([self.latitude, self.longitude]),
-                            self.depth,
-                            self.time,
-                            v,
-                            self.interp,
-                            self.radius,
-                            self.neighbours,
-                            return_depth=True
-                        )
-                    else:
-                        d = dataset.get_area(
-                            np.array([self.latitude, self.longitude]),
-                            self.depth,
-                            self.time,
-                            v,
-                            self.interp,
-                            self.radius,
-                            self.neighbours
-                        )
-    
-                    d = np.multiply(d, scale_factor)
-    
-                    data.append(d)
-                    if self.filetype not in ['csv', 'odv', 'txt']:
-                        if len(var.dimensions) == 3:
-                            self.depth_label = ""
-                        elif self.depth == 'bottom':
-                            self.depth_label = " at Bottom"
-                        else:
-                            self.depth_label = " at " + \
-                                str(int(np.round(depth_value_map))) + " m"
-    
-                if len(data) == 2:
-                    data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
-    
-                self.data = data[0]
-    
-                quiver_data = []
-                # Store the quiver data on the same grid as the main variable. This
-                # will only be used for CSV export.
-                quiver_data_fullgrid = []
-    
-                if self.quiver is not None and \
-                    self.quiver['variable'] != '' and \
-                        self.quiver['variable'] != 'none':
-                    for v in self.quiver['variable'].split(','):
-                        allvars.append(v)
-                        var = dataset.variables[v]
-                        quiver_unit = self.dataset_config.variable[var].unit
-                        quiver_name = self.dataset_config.variable[var].name
-                        quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
-                        d = dataset.get_area(
-                            np.array([quiver_lat, quiver_lon]),
-                            self.depth,
-                            self.time,
-                            v,
-                            self.interp,
-                            self.radius,
-                            self.neighbours,
-                        )
-                        quiver_data.append(d)
-                        # Get the quiver data on the same grid as the main
-                        # variable.
-                        d = dataset.get_area(
-                            np.array([self.latitude, self.longitude]),
-                            self.depth,
-                            self.time,
-                            v,
-                            self.interp,
-                            self.radius,
-                            self.neighbours,
-                        )
-                        quiver_data_fullgrid.append(d)
-    
-                    self.quiver_name = self.get_vector_variable_name(
-                        dataset, self.quiver['variable'].split(',')
-                    )
-                    self.quiver_longitude = quiver_lon
-                    self.quiver_latitude = quiver_lat
-                    self.quiver_unit = quiver_unit
-                self.quiver_data = quiver_data
-                self.quiver_data_fullgrid = quiver_data_fullgrid
-    
-                if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
-                    self.depth = 0
-    
-                contour_data = []
-                if self.contour is not None and \
-                    self.contour['variable'] != '' and \
-                        self.contour['variable'] != 'none':
                     d = dataset.get_area(
                         np.array([self.latitude, self.longitude]),
                         self.depth,
                         self.time,
-                        self.contour['variable'],
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours
+                    )
+
+                d = np.multiply(d, scale_factor)
+
+                data.append(d)
+                if self.filetype not in ['csv', 'odv', 'txt']:
+                    if len(var.dimensions) == 3:
+                        self.depth_label = ""
+                    elif self.depth == 'bottom':
+                        self.depth_label = " at Bottom"
+                    else:
+                        self.depth_label = " at " + \
+                            str(int(np.round(depth_value_map))) + " m"
+
+            if len(data) == 2:
+                data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
+
+            self.data = data[0]
+
+            quiver_data = []
+            # Store the quiver data on the same grid as the main variable. This
+            # will only be used for CSV export.
+            quiver_data_fullgrid = []
+
+            if self.quiver is not None and \
+                self.quiver['variable'] != '' and \
+                    self.quiver['variable'] != 'none':
+                for v in self.quiver['variable'].split(','):
+                    allvars.append(v)
+                    var = dataset.variables[v]
+                    quiver_unit = self.dataset_config.variable[var].unit
+                    quiver_name = self.dataset_config.variable[var].name
+                    quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
+                    d = dataset.get_area(
+                        np.array([quiver_lat, quiver_lon]),
+                        self.depth,
+                        self.time,
+                        v,
                         self.interp,
                         self.radius,
                         self.neighbours,
                     )
-                    vc = self.dataset_config.variable[self.contour['variable']]
-                    contour_unit = vc.unit
-                    contour_name = vc.name
-                    contour_factor = vc.scale_factor
-                    d = np.multiply(d, contour_factor)
-                    contour_data.append(d)
-                    self.contour_unit = contour_unit
-                    self.contour_name = contour_name
-    
-                self.contour_data = contour_data
-    
-                self.timestamp = dataset.timestamp_to_iso_8601(self.time)
+                    quiver_data.append(d)
+                    # Get the quiver data on the same grid as the main
+                    # variable.
+                    d = dataset.get_area(
+                        np.array([self.latitude, self.longitude]),
+                        self.depth,
+                        self.time,
+                        v,
+                        self.interp,
+                        self.radius,
+                        self.neighbours,
+                    )
+                    quiver_data_fullgrid.append(d)
+
+                self.quiver_name = self.get_vector_variable_name(
+                    dataset, self.quiver['variable'].split(',')
+                )
+                self.quiver_longitude = quiver_lon
+                self.quiver_latitude = quiver_lat
+                self.quiver_unit = quiver_unit
+            self.quiver_data = quiver_data
+            self.quiver_data_fullgrid = quiver_data_fullgrid
+
+            if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
+                self.depth = 0
+
+            contour_data = []
+            if self.contour is not None and \
+                self.contour['variable'] != '' and \
+                    self.contour['variable'] != 'none':
+                d = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    self.contour['variable'],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                )
+                vc = self.dataset_config.variable[self.contour['variable']]
+                contour_unit = vc.unit
+                contour_name = vc.name
+                contour_factor = vc.scale_factor
+                d = np.multiply(d, contour_factor)
+                contour_data.append(d)
+                self.contour_unit = contour_unit
+                self.contour_name = contour_name
+
+            self.contour_data = contour_data
+
+            self.timestamp = dataset.timestamp_to_iso_8601(self.time)
 
         if self.compare:
             self.variable_name += " Difference"
