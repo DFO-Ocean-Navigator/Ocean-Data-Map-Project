@@ -545,18 +545,8 @@ class BathPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
-        def cmocean_to_plotly(cmap, pl_entries):
-            h = 1.0/(pl_entries-1)
-            pl_colorscale = []
 
-            for k in range(pl_entries):
-                C = map(np.uint8, np.array(cmap(k*h)[:3])*255)
-                pl_colorscale.append([k*h, 'rgb'+str((C[0], C[1], C[2]))])
-
-            return pl_colorscale
-
-        cmap = cmocean_to_plotly(cmocean.cm.deep, 1)
-
+        
         bathymetry = np.multiply(self.bathymetry, -1)
         data = np.multiply(self.data, -1)
         idxs = np.where(data < bathymetry)
@@ -589,7 +579,7 @@ class BathPlotter(Plotter):
         layout = Layout(title="hello world", xaxis={"title": "Longitude"}, yaxis={"title": "Latitude"})
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot({
-            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude), Surface(z=data, x=self.longitude, y=self.latitude)],
+            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth'), Surface(z=data, x=self.longitude, y=self.latitude)],
             "layout": layout
         }, output_type='div',)
 
