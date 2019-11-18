@@ -163,7 +163,17 @@ export default class PlotImage extends React.PureComponent {
       query.plotsettings = q.plotsettings;
     }
     
-
+    if (q.type === 'bathymetry') {
+      this.setState({
+        loadIframe: true
+      })      
+    } else {
+      this.setState({
+        loadIframe: false,
+      })
+    }
+    
+    
     switch(q.type) {
       case "profile":
       case "ts":
@@ -249,9 +259,6 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "map":
       case "bathymetry":
-        this.setState({
-          loadIframe: true
-        })
         query.variable = q.variable;
         query.time = q.time;
         query.scale = q.scale;
