@@ -575,8 +575,12 @@ class BathPlotter(Plotter):
 
         parallels = find_lines(self.latitude)
         meridians = find_lines(self.longitude)
-        layout = Layout()
+        layout = Layout(title="hello world")
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
-        my_plot_div = plot([Surface(z=bathymetry, x=self.longitude, y=self.latitude), Surface(z=data, x=self.longitude, y=self.latitude)], output_type='div', layout=layout)
+        my_plot_div = plot({
+            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude), Surface(z=data, x=self.longitude, y=self.latitude)]
+            "output_type": 'div',
+            "layout": layout
+        })
 
         return Response(my_plot_div, status=200, mimetype='text/html')
