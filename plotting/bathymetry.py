@@ -579,7 +579,7 @@ class BathPlotter(Plotter):
         layout = Layout(title="Bathymetry with depth based variable", xaxis={"title": "Longitude"}, yaxis={"title": "Latitude"})
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot({
-            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, showscale=True)],
+            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True)],
             "layout": layout
         }, output_type='div',)
 
