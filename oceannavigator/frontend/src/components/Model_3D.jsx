@@ -9,17 +9,7 @@ export default class Model_3D extends React.Component {
         this.state = {
             test_query: {
                 "area": this.props.area,
-                "datasets": {
-                    [this.props.dataset]: {
-                        "quantum": this.props.quantum,
-                        'variables': {
-                            [this.props.variable]: {
-                                'colormap': 'default',
-                                'scale': 'default'
-                            }
-                        }
-                    }
-                },
+                "datasets": {},
                 "interp": this.props.interp,
                 "neighbours": this.props.neighbours,
                 "projection": this.props.projection,
