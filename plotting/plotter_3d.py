@@ -127,7 +127,7 @@ class Plotter3D(metaclass=ABCMeta):
         """
         
         # We are now only dealing with a single dataset so we can load the dataset config
-        config = DatasetConfig(dataset_id)
+        dataset_config = DatasetConfig(dataset_id)
 
         # initialize data as list that will eventually contain variable dicts
         data = list()
@@ -135,12 +135,12 @@ class Plotter3D(metaclass=ABCMeta):
         variables = dataset_obj.get('variables')
         for variable_id in variables:
             # Find out what variable_obj is (id or obj)
-            data.append(self.load_variable_data(config, variable_id, variables[variable_id]))
+            data.append(self.load_variable_data(dataset_config, variable_id, variables[variable_id]))
 
         print(something)
         return data
 
-    def load_variable_data(self, config, variable_id, variable_obj):
+    def load_variable_data(self, dataset_config, variable_id, variable_obj):
         """
             Called from load_dataset_data
 
@@ -150,7 +150,7 @@ class Plotter3D(metaclass=ABCMeta):
         """
         data = None
         # Open the dataset
-        with open_dataset(config, variable=variable_id, timestamp=self.time) as dataset:
+        with open_dataset(dataset_config, variable=variable_id, timestamp=self.time) as dataset:
             
             # Also for extras like plot titles and labels etc.
             variable_unit = self.get_variable_units(
@@ -220,7 +220,7 @@ class Plotter3D(metaclass=ABCMeta):
 
         for _, v in enumerate(variables):
             names.append(
-                self.dataset_config.variable[dataset.variables[v]].name)
+                dataset_config.variable[dataset.variables[v]].name)
 
         return names
 
@@ -236,7 +236,7 @@ class Plotter3D(metaclass=ABCMeta):
 
         for idx, v in enumerate(variables):
             units.append(
-                self.dataset_config.variable[dataset.variables[v]].unit)
+                dataset_config.variable[dataset.variables[v]].unit)
 
         return units
 
@@ -252,7 +252,7 @@ class Plotter3D(metaclass=ABCMeta):
 
         for idx, v in enumerate(variables):
             factors.append(
-                self.dataset_config.variable[dataset.variables[v]].scale_factor)
+                dataset_config.variable[dataset.variables[v]].scale_factor)
 
         return factors
 
