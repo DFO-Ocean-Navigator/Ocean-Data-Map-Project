@@ -57,11 +57,11 @@ export default class Model_3D extends React.Component {
 
         // Load Plot to render
 
-        <iframe src={this.urlFromStateQuery()} frameborder="0"></iframe>
+        let plot = <iframe src={this.urlFromStateQuery()} frameborder="0"></iframe>
 
         return (
             <div>
-                THERE'S NOTHING HERE, HOW REFRESHING
+                {plot}
             </div>
         )
     }
