@@ -293,7 +293,7 @@ class BathPlotter(Plotter3D):
         layout = Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot({
-            "data": [layers],
+            "data": layers,
             "layout": layout
         }, output_type='div',)
 
