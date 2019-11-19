@@ -99,6 +99,6 @@ class BathPlotter(Plotter3D):
         my_plot_div = plot({
             "data": layers,
             "layout": layout
-        }, output_type='div',)
+        }, include_plotlyjs=False, output_type='div',)
 
         return Response(my_plot_div, status=200, mimetype='text/html')

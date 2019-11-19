@@ -57,7 +57,7 @@ export default class Model_3D extends React.Component {
 
         // Load Plot to render
 
-        let plot = <iframe src={this.urlFromStateQuery()} frameborder="0" style={{width: '100%', height:'100%'}}></iframe>
+        let plot = <iframe src={this.urlFromStateQuery()} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
 
         return (
             <div>
