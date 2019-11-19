@@ -127,7 +127,7 @@ class Plotter3D(metaclass=ABCMeta):
         for variable_obj in dataset_obj:
             print(something)
             # Find out what variable_obj is (id or obj)
-            data.push(load_variable_data(config, variable_id variable_obj))
+            data.push(load_variable_data(config, variable_id, variable_obj))
 
         print(something)
         return data
