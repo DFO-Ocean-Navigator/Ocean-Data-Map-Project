@@ -80,7 +80,7 @@ class BathPlotter(Plotter3D):
         # Create surface plot for bathymetry
         bathymetry = np.multiply(self.bathymetry, -1)
         
-        layers.append(go.Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True, cmax=0))
+        layers.append(go.Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True))
 
         # Create and append layers for each layer of data (at this point variables and what not don't matter)
         # Should probably store the type in each layer (for now just do surface)
@@ -96,7 +96,7 @@ class BathPlotter(Plotter3D):
         #old for reference
         #Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len":1, "x":-0.1}, showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True
         
-        layout = go.Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
+        layout = go.Layout(autosize=True, title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
         #plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         #plot_div = plot({
         #    "data": layers,
