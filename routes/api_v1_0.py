@@ -305,6 +305,22 @@ def plot_v1_0():
 
     return resp
 
+@bp_v1_0.route('/api/v1.0/3d_model/', methods=['GET', 'POST'])
+def bath_3d_model():
+
+    args = None
+    if request.method == 'GET':
+        args = request.args
+    else:
+        args = request.form
+    
+    if "query" not in args:
+        raise APIError("Please provide a plot query")
+    
+    query = json.loads(args.get('query'))
+
+    return routes.routes_impl.plot_impl(query, args)
+
 
 @bp_v1_0.route('/api/v1.0/colors/')
 def colors_v1_0():

@@ -788,9 +788,6 @@ def plot_impl(query: dict, args):
         plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
         plotter = StickPlotter(dataset, query, **options)
-    elif plottype == 'bathymetry':
-        plotter = BathPlotter(dataset, query, **options)
-        return plotter.run()
     else:
         raise APIError(
             "You Have Not Selected a Plot Type - Please Review your Query")
@@ -815,6 +812,37 @@ def plot_impl(query: dict, args):
     response.cache_control.max_age = 300
 
     return response
+
+def bath_3d_model(query: dict, args):
+    """
+    API Format: /plot/?query='...'&format
+
+    query = {
+        dataset   : Dataset to extract data
+        names     :
+        plottitle : Title of Plot (Default if blank)
+        quantum   : (year, month, day, hour)
+        showmap   : Include a map of the plots location on the map
+        station   : Coordinates of the point/line/area/etc
+        time      : Time retrieved data was gathered/modeled
+        type      : File / Plot Type (Check Navigator for Possible options)
+        variable  : Type of data to plot - Options found using /api/variables/?dataset='...'
+    }
+    **Query must be written in JSON and converted to encodedURI**
+    **Not all components of query are required
+    """
+
+    dataset = query.get('dataset')
+    
+    options = {}
+    options['format'] = fmt
+    options['size'] = args.get('size', '15x9')
+    options['dpi'] = args.get('dpi', 72)
+
+
+    plotter = BathPlotter(dataset, query, **options)
+    return plotter.run()
+
 
 
 def stats_impl(args, query=None):
