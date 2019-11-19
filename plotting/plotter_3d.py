@@ -7,6 +7,7 @@ import numpy as np
 import pint
 import plotting.colormap as colormap
 import plotting.utils as utils
+import copy
 
 from oceannavigator import DatasetConfig
 from abc import ABCMeta, abstractmethod
