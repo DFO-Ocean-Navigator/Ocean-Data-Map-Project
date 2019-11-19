@@ -27,7 +27,7 @@ export default class Model_3D extends React.Component {
                             }
                         }
                     }
-                }
+                },
                 "interp":"gaussian",
                 "neighbours":10,
                 "projection":"EPSG:3857",
