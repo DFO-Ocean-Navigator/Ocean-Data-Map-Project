@@ -834,7 +834,7 @@ def bath_3d_model_impl(query: dict, args):
 
     dataset = query.get('dataset')
 
-    plotter = BathPlotter(dataset, query, **options)
+    plotter = BathPlotter(dataset, query)
     return plotter.run()
 
 
