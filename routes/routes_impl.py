@@ -813,7 +813,7 @@ def plot_impl(query: dict, args):
 
     return response
 
-def bath_3d_model(query: dict, args):
+def bath_3d_model_impl(query: dict, args):
     """
     API Format: /plot/?query='...'&format
 

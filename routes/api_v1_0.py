@@ -319,7 +319,7 @@ def bath_3d_model():
     
     query = json.loads(args.get('query'))
 
-    return routes.routes_impl.plot_impl(query, args)
+    return routes.routes_impl.bath_3d_model_impl(query, args)
 
 
 @bp_v1_0.route('/api/v1.0/colors/')
