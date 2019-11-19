@@ -100,7 +100,7 @@ class Plotter3D(metaclass=ABCMeta):
             # load_dataset_data returns a list of dicts
             # Therefore, self.data will be a list of dicts
             # NOT A LIST OF LISTS OF DICTS
-            self.data = self.data + load_dataset_data(dataset_id, datasets[dataset_id])
+            self.data = self.data + self.load_dataset_data(dataset_id, datasets[dataset_id])
         
             
         # vvvvv BELOW IS ALL OLD STUFF vvvvv
@@ -134,7 +134,7 @@ class Plotter3D(metaclass=ABCMeta):
 
         for variable_id in dataset_obj:
             # Find out what variable_obj is (id or obj)
-            data.push(load_variable_data(config, variable_id, dataset_obj.get('variables')[variable_id]))
+            data.push(self.load_variable_data(config, variable_id, dataset_obj.get('variables')[variable_id]))
 
         print(something)
         return data
