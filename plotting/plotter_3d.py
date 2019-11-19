@@ -178,7 +178,7 @@ class Plotter3D(metaclass=ABCMeta):
 
             var = dataset.variables[variable_id]
             
-            # This CSV... stuff may actually be important but not for that therefore add false to skip
+            # This CSV... stuff may actually be important but not for that therefore just skip for now
             if False:# or self.filetype in ['csv', 'odv', 'txt']:
                 data, depth_value_map = dataset.get_area(
                     np.array([self.latitude, self.longitude]),
