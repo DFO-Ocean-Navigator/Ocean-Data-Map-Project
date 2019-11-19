@@ -167,7 +167,7 @@ class Plotter3D(metaclass=ABCMeta):
             )[0]
             
             variable_obj['name'] = variable_name
-            variable_obj.['unit'] = variable_unit
+            variable_obj['unit'] = variable_unit
 
             # Gets the scale factor of the variable
             # Scale factor is the value to multiply data by to get the actual value
