@@ -96,12 +96,11 @@ class Plotter3D(metaclass=ABCMeta):
         self.data = list()
         datasets = query.get('datasets')
         # Loading the different datasets could probably be done in parallel
-        for dataset in datasets:
-            print(something)
-            #load_dataset_data returns a list of dicts
+        for dataset_id in datasets:
+            # load_dataset_data returns a list of dicts
             # Therefore, self.data will be a list of dicts
             # NOT A LIST OF LISTS OF DICTS
-            self.data = self.data + load_dataset_data(datset)
+            self.data = self.data + load_dataset_data(dataset_id, datasets[dataset_id])
         
             
         # vvvvv BELOW IS ALL OLD STUFF vvvvv
@@ -133,10 +132,9 @@ class Plotter3D(metaclass=ABCMeta):
         # initialize data as list that will eventually contain variable dicts
         data = list()
 
-        for variable_obj in dataset_obj:
-            print(something)
+        for variable_id in dataset_obj:
             # Find out what variable_obj is (id or obj)
-            data.push(load_variable_data(config, variable_id, variable_obj))
+            data.push(load_variable_data(config, variable_id, dataset_obj.get('variables')[variable_id]))
 
         print(something)
         return data
