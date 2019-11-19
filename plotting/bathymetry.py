@@ -42,84 +42,10 @@ class BathPlotter(Plotter3D):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = 'map'
 
-        super(BathPlotter, self).__init__(dataset_name, query, **kwargs)
-
-    def parse_query(self, query):
-        super(BathPlotter, self).parse_query(query)
-
-        self.projection = query.get('projection')
-
-        self.area = query.get('area')
-
-        names = []
-        centroids = []
-        all_rings = []
-        data = None
-        for idx, a in enumerate(self.area):
-            if isinstance(a, str):
-
-                sp = a.split('/', 1)
-                if data is None:
-                    data = list_areas(sp[0], simplify=False)
-
-                b = [x for x in data if x.get('key') == a]
-                a = b[0]
-                self.area[idx] = a
-            else:
-                self.points = copy.deepcopy(np.array(a['polygons']))
-                a['polygons'] = self.points.tolist()
-                a['name'] = " "
-
-            rings = [LinearRing(po) for po in a['polygons']]
-            if len(rings) > 1:
-                u = cascaded_union(rings)
-            else:
-                u = rings[0]
-
-            all_rings.append(u)
-            if a.get('name'):
-                names.append(a.get('name'))
-                centroids.append(u.centroid)
-        nc = sorted(zip(names, centroids))
-        self.names = [n for (n, c) in nc]
-        self.centroids = [c for (n, c) in nc]
-        data = None
-
-        if len(all_rings) > 1:
-            combined = cascaded_union(all_rings)
-        else:
-            combined = all_rings[0]
-
-        self.combined_area = combined
-        combined = combined.envelope
-
-        self.centroid = list(combined.centroid.coords)[0]
-        self.bounds = combined.bounds
-
-        self.show_bathymetry = bool(query.get('bathymetry'))
-        self.show_area = bool(query.get('showarea'))
-
-        self.quiver = query.get('quiver')
-
-        self.contour = query.get('contour')
-
-    def load_variable(self, variable):
-
-        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
-
-            self.variable_unit = self.get_variable_units(
-                dataset, self.variables
-            )[0]
-            self.variable_name = self.get_variable_names(
-                dataset,
-                self.variables
-            )[0]
-            scale_factor = self.get_variable_scale_factors(
-                dataset, self.variables
-            )[0]
-
-        return data
-
+        super(BathPlotter, self).__init__(dataset_name, query, **kwargs)        
+  
+    # THIS SHOULDN'T BE NEEDED ANYMORE
+    # CONFIRMING BEFORE REMOVING
     def load_data(self):
         distance = VincentyDistance()
         height = distance.measure(
@@ -231,20 +157,11 @@ class BathPlotter(Plotter3D):
                 scale_factor = self.get_variable_scale_factors(
                     dataset, self.variables
                 )[0]
-
-            if self.cmap is None:
-                if len(self.variables) == 1:
-                    self.cmap = colormap.find_colormap(self.variable_name)
-                else:
-                    self.cmap = colormap.colormaps.get('speed')
-
-            if self.depth == 'bottom':
-                depth_value_map = 'Bottom'
-            else:
-                self.depth = np.clip(
-                    int(self.depth), 0, len(dataset.depths) - 1)
-                depth_value = dataset.depths[self.depth]
-                depth_value_map = depth_value
+      
+            self.depth = np.clip(
+                int(self.depth), 0, len(dataset.depths) - 1)
+            depth_value = dataset.depths[self.depth]
+            depth_value_map = depth_value
 
             data = []
             allvars = []
@@ -289,108 +206,11 @@ class BathPlotter(Plotter3D):
                 data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
 
             self.data = data[0]
-
-            quiver_data = []
-            # Store the quiver data on the same grid as the main variable. This
-            # will only be used for CSV export.
-            quiver_data_fullgrid = []
-
-            if self.quiver is not None and \
-                self.quiver['variable'] != '' and \
-                    self.quiver['variable'] != 'none':
-                for v in self.quiver['variable'].split(','):
-                    allvars.append(v)
-                    var = dataset.variables[v]
-                    quiver_unit = self.dataset_config.variable[var].unit
-                    quiver_name = self.dataset_config.variable[var].name
-                    quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
-                    d = dataset.get_area(
-                        np.array([quiver_lat, quiver_lon]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                    )
-                    quiver_data.append(d)
-                    # Get the quiver data on the same grid as the main
-                    # variable.
-                    d = dataset.get_area(
-                        np.array([self.latitude, self.longitude]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                    )
-                    quiver_data_fullgrid.append(d)
-
-                self.quiver_name = self.get_vector_variable_name(
-                    dataset, self.quiver['variable'].split(',')
-                )
-                self.quiver_longitude = quiver_lon
-                self.quiver_latitude = quiver_lat
-                self.quiver_unit = quiver_unit
-            self.quiver_data = quiver_data
-            self.quiver_data_fullgrid = quiver_data_fullgrid
-
-            if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
-                self.depth = 0
-
-            contour_data = []
-            if self.contour is not None and \
-                self.contour['variable'] != '' and \
-                    self.contour['variable'] != 'none':
-                d = dataset.get_area(
-                    np.array([self.latitude, self.longitude]),
-                    self.depth,
-                    self.time,
-                    self.contour['variable'],
-                    self.interp,
-                    self.radius,
-                    self.neighbours,
-                )
-                vc = self.dataset_config.variable[self.contour['variable']]
-                contour_unit = vc.unit
-                contour_name = vc.name
-                contour_factor = vc.scale_factor
-                d = np.multiply(d, contour_factor)
-                contour_data.append(d)
-                self.contour_unit = contour_unit
-                self.contour_name = contour_name
-
-            self.contour_data = contour_data
-
+        
+            # Important but not part of data gathering IMO
             self.timestamp = dataset.timestamp_to_iso_8601(self.time)
 
-        if self.compare:
-            self.variable_name += " Difference"
-            self.cmap = cmap = colormap.find_colormap(self.compare.get('colormap_diff'))
-            compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config, variable=self.compare['variables'], timestamp=self.compare['time']) as dataset:
-                data = []
-                for v in self.compare['variables']:
-                    var = dataset.variables[v]
-                    d = dataset.get_area(
-                        np.array([self.latitude, self.longitude]),
-                        self.compare['depth'],
-                        self.compare['time'],
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                    )
-                    data.append(d)
-
-                if len(data) == 2:
-                    data = np.sqrt(data[0] ** 2 + data[1] ** 2)
-                else:
-                    data = data[0]
-
-                self.data -= data
-
+        
         # Load bathymetry data
         self.bathymetry = overlays.bathymetry(
             self.basemap,
@@ -399,150 +219,13 @@ class BathPlotter(Plotter3D):
             blur=2
         )
 
-        if self.depth != 'bottom' and self.depth != 0:
-            if len(quiver_data) > 0:
-                quiver_bathymetry = overlays.bathymetry(
-                    self.basemap, quiver_lat, quiver_lon)
-
-            self.data[np.where(
-                self.bathymetry < depth_value_map)] = np.ma.masked
-            for d in self.quiver_data:
-                d[np.where(quiver_bathymetry < depth_value)] = np.ma.masked
-            for d in self.contour_data:
-                d[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
-        else:
-            mask = maskoceans(self.longitude, self.latitude,
-                              self.data, True, 'h', 1.25).mask
-            self.data[~mask] = np.ma.masked
-            for d in self.quiver_data:
-                mask = maskoceans(
-                    self.quiver_longitude, self.quiver_latitude, d).mask
-                d[~mask] = np.ma.masked
-            for d in contour_data:
-                mask = maskoceans(self.longitude, self.latitude, d).mask
-                d[~mask] = np.ma.masked
-
-        if self.area and self.filetype in ['csv', 'odv', 'txt', 'geotiff']:
-            area_polys = []
-            for a in self.area:
-                rings = [LinearRing(p) for p in a['polygons']]
-                innerrings = [LinearRing(p) for p in a['innerrings']]
-
-                polygons = []
-                for r in rings:
-                    inners = []
-                    for ir in innerrings:
-                        if r.contains(ir):
-                            inners.append(ir)
-
-                    polygons.append(Poly(r, inners))
-
-                area_polys.append(MultiPolygon(polygons))
-
-            points = [Point(p) for p in zip(self.latitude.ravel(),
-                                            self.longitude.ravel())]
-
-            indicies = []
-            for a in area_polys:
-                indicies.append(np.where(
-                    list(map(
-                        lambda p, poly=a: poly.contains(p),
-                        points
-                    ))
-                )[0])
-
-            indicies = np.unique(np.array(indicies).ravel())
-            newmask = np.ones(self.data.shape, dtype=bool)
-            newmask[np.unravel_index(indicies, newmask.shape)] = False
-            self.data.mask |= newmask
-
+        
+        mask = maskoceans(self.longitude, self.latitude,
+                          self.data, True, 'h', 1.25).mask
+        self.data[~mask] = np.ma.masked
         self.depth_value_map = depth_value_map
 
-    def odv_ascii(self):
-        float_to_str = np.vectorize(lambda x: "%0.3f" % x)
-        data = float_to_str(self.data.ravel()[::5])
-        station = ["%06d" % x for x in range(1, len(data) + 1)]
-
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        time = np.repeat(self.timestamp, data.shape[0])
-        depth = self.depth_value_map.ravel()[::5]
-
-        return super(BathPlotter, self).odv_ascii(
-            self.dataset_name,
-            [self.variable_name],
-            [self.variable_unit],
-            station,
-            latitude,
-            longitude,
-            depth,
-            time,
-            data
-        )
-
-    def csv(self):
-        # If the user has selected the display of quiver data in the browser,
-        # then also export that data in the CSV file.
-        if self.quiver is not None and \
-            self.quiver['variable'] != '' and \
-                self.quiver['variable'] != 'none':
-            have_quiver = True
-        else:
-            have_quiver = False
-
-        header = [
-            ['Dataset', self.dataset_name],
-            ["Timestamp", self.timestamp.isoformat()]
-        ]
-
-        columns = [
-            "Latitude",
-            "Longitude",
-            "Depth (m)",
-            "%s (%s)" % (self.variable_name, self.variable_unit)
-        ]
-        data_in = self.data.ravel()[::5]
-        if have_quiver:
-            # Include bearing information in the exported data, as per user
-            # requests.
-            columns.extend([
-                "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
-                "Bearing (degrees clockwise positive from North)"
-            ])
-            quiver_data_in = (self.quiver_data_fullgrid[0].ravel()[::5],
-                              self.quiver_data_fullgrid[1].ravel()[::5])
-            bearing = np.arctan2(self.quiver_data_fullgrid[1].ravel()[::5],
-                                 self.quiver_data_fullgrid[0].ravel()[::5])
-            bearing = np.pi / 2.0 - bearing
-            bearing[bearing < 0] += 2 * np.pi
-            bearing *= 180.0 / np.pi
-
-        latitude = self.latitude.ravel()[::5]
-        longitude = self.longitude.ravel()[::5]
-        depth = self.depth_value_map.ravel()[::5]
-
-        data = []
-        for idx in range(0, len(latitude)):
-            if np.ma.is_masked(data_in[idx]):
-                continue
-
-            entry = [
-                "%0.4f" % latitude[idx],
-                "%0.4f" % longitude[idx],
-                "%0.1f" % depth[idx],
-                "%0.3f" % data_in[idx]
-            ]
-            if have_quiver:
-                entry.extend([
-                    "%0.3f" % quiver_data_in[0][idx],
-                    "%0.3f" % quiver_data_in[1][idx],
-                    "%0.3f" % bearing[idx]
-                ])
-            data.append(entry)
-
-        return super(BathPlotter, self).csv(header, columns, data)
-
+    
     def pole_proximity(self, points):
         near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False
         for p in points:

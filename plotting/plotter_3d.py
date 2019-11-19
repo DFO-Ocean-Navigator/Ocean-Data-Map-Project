@@ -1,337 +1,204 @@
 import contextlib
 import datetime
 import re
-from abc import ABCMeta, abstractmethod
-from io import BytesIO, StringIO
-
+import plotting.basemap as basemap
 import matplotlib.pyplot as plt
 import numpy as np
 import pint
-from flask_babel import format_date, format_datetime
-from PIL import Image
-
 import plotting.colormap as colormap
 import plotting.utils as utils
+
 from oceannavigator import DatasetConfig
+from abc import ABCMeta, abstractmethod
+from io import BytesIO, StringIO
+from flask_babel import format_date, format_datetime
+from PIL import Image
 
 
 # Base class for all plotting objects
 class Plotter3D(metaclass=ABCMeta):
-    def __init__(self, dataset_name: str, query: str, **kwargs):
-        self.dataset_name: str = dataset_name
-        self.dataset_config: DatasetConfig = DatasetConfig(dataset_name)
-        self.query: dict = query
-        self.format: str = kwargs['format']
-        self.dpi: int = int(kwargs['dpi'])
-        self.size: str = kwargs['size']
-        self.plotTitle: str = None
-        self.compare: bool = False
-        self.data = None
-        self.time: int = None
-        self.variables = None
-        self.variable_names = None
-        self.variable_units = None
+    def __init__(self, datasets: str, query: str, **kwargs):
+        
+        # Static because depth is not important at this time (but could be later)
+        # Relied on in load_data stuff
+        self.depth = 0
+        self.time = self.__get_time(query.get('time'))
+        self.interp: str = "gaussian"
+        self.radius: int = 25000  # radius in meters
+        self.neighbours: int = 10
+        self.projection = query.get('projection')
+
+        # Prep some stuff to get the lon and lat
+        # STUFF IN BETWEEN HASH TAGS DOESN'T REALLY BELONG IN THIS FUNCTION
+        ################################################################
+        self.area = query.get('area')
+        centroids = []
+
+        names = []
+        centroids = []
+        all_rings = []
+        data = None
+        for idx, a in enumerate(self.area):
+            if isinstance(a, str):
+
+                sp = a.split('/', 1)
+                if data is None:
+                    data = list_areas(sp[0], simplify=False)
+
+                b = [x for x in data if x.get('key') == a]
+                a = b[0]
+                self.area[idx] = a
+            else:
+                self.points = copy.deepcopy(np.array(a['polygons']))
+                a['polygons'] = self.points.tolist()
+                a['name'] = " "
+
+            rings = [LinearRing(po) for po in a['polygons']]
+            if len(rings) > 1:
+                u = cascaded_union(rings)
+            else:
+                u = rings[0]
+
+            all_rings.append(u)
+            if a.get('name'):
+                names.append(a.get('name'))
+                centroids.append(u.centroid)
+        nc = sorted(zip(names, centroids))
+        self.names = [n for (n, c) in nc]
+        self.centroids = [c for (n, c) in nc]
+        data = None
+
+        if len(all_rings) > 1:
+            combined = cascaded_union(all_rings)
+        else:
+            combined = all_rings[0]
+
+        self.combined_area = combined
+        combined = combined.envelope
+
+        self.centroid = list(combined.centroid.coords)[0]
+        self.bounds = combined.bounds
+        ################################################################
+        
+        # Get lat and lons and stores as self.latitude and self.longitude
+        self.get_lat_lon()
+
+
+        # NOW WE CHANGE OUR FOCUS TO GETTING THE ACTUAL DATA
+        self.data = list()
+        
+        for dataset in datasets:
+            
+            #load_dataset_data returns a list of dicts
+            # Therefore, self.data will be a list of dicts
+            # NOT A LIST OF LISTS OF DICTS
+            self.data = self.data + load_dataset_data(datset)
+        
+            
+        # vvvvv BELOW IS ALL OLD STUFF vvvvv
+
+        #self.query: dict = query
+
+        # This will exist and will hold all the variable data (as a list of numpy arrays) but might not necessarily be here
+        # This should also include information on how to plot it, eg colourmap
+        
+        
+        # Contains all the datasets with variables to plot, also contains the variables
+        self.datasets = datasets
+
         self.scale = None
         self.scale_factors = None
         self.date_formatter = None
         # Init interpolation stuff
-        self.interp: str = "gaussian"
-        self.radius: int = 25000  # radius in meters
-        self.neighbours: int = 10
-        self.filetype, self.mime = utils.get_mimetype(kwargs['format'])
-        self.filename: str = utils.get_filename(
-            self.plottype,
-            dataset_name,
-            self.filetype
-        )
+        
 
-    def prepare_plot(self):
-        # Extract requested data
-        self.parse_query(self.query)
-        self.load_data()
-
-        return self.data
-
-    # Called by routes_impl.py to parse query, load data, and return the generated file
-    # to be displayed by Javascript.
-    def run(self):
-        _ = self.prepare_plot()
-
-        if self.filetype == 'csv':
-            return self.csv()
-        elif self.filetype == 'txt':
-            return self.odv_ascii()
-        else:
-            return self.plot()
-
-    # Receives query sent from javascript and parses it.
-    @abstractmethod
-    def parse_query(self, query: dict):
-
-        self.date_formatter = self.__get_date_formatter(query.get('quantum'))
-
-        self.time = self.__get_time(query.get('time'))
-        self.starttime = self.__get_time(query.get('starttime'))
-        self.endtime = self.__get_time(query.get('endtime'))
-
-        if query.get('interp') is not None:
-            self.interp = query.get('interp')
-        if query.get('radius') is not None:
-            self.radius = query.get('radius') * 1000  # Convert to meters
-        if query.get('neighbours') is not None:
-            self.neighbours = query.get('neighbours')
-
-        self.plotTitle = query.get('plotTitle')
-
-        self.scale = self.__get_scale(query.get('scale'))
-
-        self.variables = self.__get_variables(query.get('variable'))
-
-        # Parse right-view if in compare mode
-        if query.get("compare_to") is not None:
-            self.compare = query.get("compare_to")
-            self.compare['variables'] = self.compare['variable'].split(',')
-
-            if self.compare.get('colormap_diff') == 'default':
-                self.compare['colormap_diff'] = 'anomaly'
-
-            try:
-                # Variable scale
-                self.compare['scale'] = self.__get_scale(self.compare['scale'])
-            except KeyError:
-                print("Ignoring scale attribute.")
-            try:
-                # Difference plot scale
-                self.compare['scale_diff'] = self.__get_scale(
-                    self.compare['scale_diff'])
-            except KeyError:
-                print("Ignoring scale_diff attribute.")
-
-        self.cmap = self.__get_colormap(query.get('colormap'))
-
-        self.linearthresh = self.__get_linear_threshold(
-            query.get('linearthresh'))
-
-        self.depth = self.__get_depth(query.get('depth'))
-
-        self.showmap = self.__get_showmap(query.get('showmap'))
-
-    def __get_date_formatter(self, quantum: str):
+    def load_dataset_data(self, dataset_id, dataset_obj):
         """
-        Returns the correct lambda to format a date given a quantum.
-
-        Arguments:
-            quantum {str} -- Dataset quantum ("hour", "month", "day")
-
-        Returns:
-            [lambda] -- Lambda that formats a given date string
+            Loads the data for all variables within the dataset object
+            Can be called for all required datasets to create multi dataset plots
         """
+        
+        # We are now only dealing with a single dataset so we can load the dataset config
+        config = DatasetConfig(dataset_id)
 
-        if quantum == 'month':
-            return lambda x: format_date(x, "MMMM yyyy")
-        elif quantum == 'hour':
-            return lambda x: format_datetime(x)
-        else:
-            return lambda x: format_date(x, "long")
+        # initialize data as list that will eventually contain variable dicts
+        data = list()
 
-    def __get_scale(self, query_scale: str):
+        for variable_obj in dataset_obj:
+            print(something)
+            # Find out what variable_obj is (id or obj)
+            data.push(load_variable_data(config, variable_id variable_obj))
+
+        print(something)
+        return data
+
+    def load_variable_data(self, config, variable_id, variable_obj):
         """
-        Splits a given query scale into a list.
+            Called from load_dataset_data
 
-        Arguments:
-            query_scale {str} -- Comma-separated min/max values for variable data range.
-
-        Returns:
-            [list] -- List of min/max values of query_scale
+            This is a helper function which will load the variable data for a particular dataset and variable
+            
+            This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
+        data = None
+        # Open the dataset
+        with open_dataset(config, variable=variable_id, timestamp=self.time) as dataset:
+            
+            # Also for extras like plot titles and labels etc.
+            variable_unit = self.get_variable_units(
+                dataset, variable_id
+            )[0]
+            
+            # Gets the name of the variable given it's id
+            # This is probably not going to be used for data gathering but should be inserted into the 
+            # variable object for use in generating titles etc.
+            variable_name = self.get_variable_names(
+                dataset,
+                variable_id
+            )[0]
+            
+            variable_obj.name = variable_name
+            variable_obj.unit = variable_unit
 
-        if query_scale is None or 'auto' in query_scale:
-            return None
+            # Gets the scale factor of the variable
+            # Scale factor is the value to multiply data by to get the actual value
+            scale_factor = self.get_variable_scale_factors(
+                dataset, variable_id
+            )[0]
 
-        return [float(x) for x in query_scale.split(',')]
 
-    def __get_variables(self, variables: str):
-        """
-        Splits a given variable string into a list.
+            var = dataset.variables[variable_id]
+            
+            # This CSV... stuff may actually be important but not for that therefore add false to skip
+            if False or self.filetype in ['csv', 'odv', 'txt']:
+                data, depth_value_map = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    variable_id,
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                    return_depth=True
+                )
+            else:
+                data = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    variable_id,
+                    self.interp,
+                    self.radius,
+                    self.neighbours
+                )
+            data = np.multiply(d, scale_factor)
 
-        Arguments:
-            variables {str} -- Comma-separated variable keys
+        variable_obj.data = data
 
-        Returns:
-            [list] -- List of varaible keys from variables
-        """
+        return variable_obj
 
-        if variables is None:
-            variables = ['votemper']
 
-        if isinstance(variables, str) or isinstance(variables, str):
-            variables = variables.split(',')
 
-        return [v for v in variables if v != '']
-
-    def __get_time(self, param: str):
-        if param is None or len(str(param)) == 0:
-            return -1
-        else:
-            try:
-                return int(param)
-            except ValueError:
-                return param
-
-    def __get_colormap(self, cmap: str):
-        if cmap is not None:
-            cmap = colormap.colormaps.get(cmap)
-
-        return cmap
-
-    def __get_linear_threshold(self, linearthresh: str):
-
-        if linearthresh is None or linearthresh == '':
-            linearthresh = 200
-        linearthresh = float(linearthresh)
-        if not linearthresh > 0:
-            linearthresh = 1
-
-        return linearthresh
-
-    def __get_depth(self, depth: str):
-
-        if depth is None or len(str(depth)) == 0:
-            depth = 0
-
-        if isinstance(depth, str) and depth.isdigit():
-            depth = int(depth)
-
-        if isinstance(depth, list):
-            for i in range(0, len(depth)):
-                if isinstance(depth[i], str) and depth[i].isdigit():
-                    depth[i] = int(depth[i])
-
-        return depth
-
-    def __get_showmap(self, showmap: str):
-        return showmap is None or bool(showmap)
-
-    @abstractmethod
-    def load_data(self):
-        pass
-
-    def load_misc(self, dataset, variables):
-        self.variable_names = self.get_variable_names(dataset, variables)
-        self.variable_units = self.get_variable_units(dataset, variables)
-        self.scale_factors = self.get_variable_scale_factors(
-            dataset, variables)
-
-    def plot(self, fig=None):
-
-        if fig is None:
-            fig = plt.gcf()
-
-        fig.text(1.0, 0.015, self.dataset_config.attribution,
-                 ha='right', size='small', va='top')
-        if self.compare:
-            fig.text(1.0, 0.0, DatasetConfig(self.compare['dataset']).attribution,
-                     ha='right', size='small', va='top')
-
-        with contextlib.closing(BytesIO()) as buf:
-            plt.savefig(
-                buf,
-                format=self.filetype,
-                dpi='figure',
-                bbox_inches='tight',
-                pad_inches=0.5
-            )
-            plt.close(fig)
-
-            if self.filetype == 'png':
-                buf.seek(0)
-                im = Image.open(buf)
-                with contextlib.closing(BytesIO()) as buf2:
-                    im.save(buf2, format='PNG', optimize=True)
-                    buf2.seek(0)
-                    return (buf2.getvalue(), self.mime, self.filename)
-
-            buf.seek(0)
-            return (buf.getvalue(), self.mime, self.filename)
-
-    def csv(self, header=[], columns=[], data=[]):
-        with contextlib.closing(StringIO()) as buf:
-            buf.write("\n".join(
-                ["// %s: %s" % (h[0], h[1]) for h in header]
-            ))
-            buf.write("\n")
-            buf.write(", ".join(columns))
-            buf.write("\n")
-
-            for l in data:
-                buf.write(", ".join(map(str, l)))
-                buf.write("\n")
-
-            return (buf.getvalue(), self.mime, self.filename)
-
-    def odv_ascii(self, cruise="", variables=[], variable_units=[],
-                  station=[], latitude=[], longitude=[], depth=[], time=[],
-                  data=[]):
-        with contextlib.closing(StringIO()) as buf:
-            buf.write("//<CreateTime>%s</CreateTime>\n" % (
-                datetime.datetime.now().isoformat()
-            ))
-            buf.write("//<Software>Ocean Navigator</Software>\n")
-            buf.write("\t".join([
-                "Cruise",
-                "Station",
-                "Type",
-                "yyyy-mm-ddThh:mm:ss.sss",
-                "Longitude [degrees_east]",
-                "Latitude [degrees_north]",
-                "Depth [m]",
-            ] + ["%s [%s]" % x for x in zip(variables, variable_units)]))
-            buf.write("\n")
-
-            if len(depth.shape) == 1:
-                depth = np.reshape(depth, (depth.shape[0], 1))
-
-            for idx in range(0, len(station)):
-                for idx2 in range(0, depth.shape[1]):
-                    if idx > 0 or idx2 > 0:
-                        cruise = ""
-
-                    if isinstance(data[idx], np.ma.MaskedArray):
-                        if len(data.shape) == 3 and \
-                           data[idx, :, idx2].mask.all():
-                            continue
-                        if len(data.shape) == 2 and \
-                           np.ma.is_masked(data[idx, idx2]):
-                            continue
-
-                    line = [
-                        cruise,
-                        station[idx],
-                        "C",
-                        time[idx].isoformat(),
-                        "%0.4f" % longitude[idx],
-                        "%0.4f" % latitude[idx],
-                        "%0.1f" % depth[idx, idx2],
-                    ]
-                    if len(data.shape) == 1:
-                        line.append(str(data[idx]))
-                    elif len(data.shape) == 2:
-                        line.append(str(data[idx, idx2]))
-                    else:
-                        line.extend(list(map(str, data[idx, :, idx2])))
-
-                    if idx > 0 and station[idx] == station[idx - 1] or \
-                       idx2 > 0:
-                        line[1] = ""
-                        line[2] = ""
-                        line[3] = ""
-                        line[4] = ""
-                        line[5] = ""
-
-                    buf.write("\t".join(line))
-                    buf.write("\n")
-
-            return (buf.getvalue(), self.mime, self.filename)
 
     def get_variable_names(self, dataset, variables):
         """Returns a list of names for the variables.
@@ -349,17 +216,6 @@ class Plotter3D(metaclass=ABCMeta):
 
         return names
 
-    def get_vector_variable_name(self, dataset, variables):
-        """Returns a name for the vector version of the variables.
-
-        Parameters:
-        dataset -- the dataset
-        variables -- a list of strings, each of which is the key for a
-                     variable
-        """
-        v = ",".join(variables)
-        return self.dataset_config.variable[v].name
-
     def get_variable_units(self, dataset, variables):
         """Returns a list of units for the variables.
 
@@ -375,17 +231,6 @@ class Plotter3D(metaclass=ABCMeta):
                 self.dataset_config.variable[dataset.variables[v]].unit)
 
         return units
-
-    def get_vector_variable_unit(self, dataset, variables):
-        """Returns a unit for the vector version of the variables.
-
-        Parameters:
-        dataset -- the dataset
-        variables -- a list of strings, each of which is the key for a
-                     variable
-        """
-        v = ",".join(variables)
-        return self.dataset_config.variable[v].unit
 
     def get_variable_scale_factors(self, dataset, variables):
         """Returns a list of scale factors for the variables.
@@ -403,51 +248,107 @@ class Plotter3D(metaclass=ABCMeta):
 
         return factors
 
-    def get_vector_variable_scale_factor(self, dataset, variables):
-        """Returns a scaling factor for the vector version of the variables.
 
-        Parameters:
-        dataset -- the dataset
-        variables -- a list of strings, each of which is the key for a
-                     variable
+    def get_lat_lon():
         """
-        v = ",".join(variables)
-        return self.dataset_config.variable[v].scale_factor
+            The only thing I know about this function is that it gets the latitudes and longitudes
 
-    def clip_value(self, input_value, variable):
-        output = input_value
+            I know it deals with weird edge cases etc. but
+            honestly it looks like gibberish
+        """
+        distance = VincentyDistance()
+        height = distance.measure(
+            (self.bounds[0], self.centroid[1]),
+            (self.bounds[2], self.centroid[1])
+        ) * 1000 * 1.25
+        width = distance.measure(
+            (self.centroid[0], self.bounds[1]),
+            (self.centroid[0], self.bounds[3])
+        ) * 1000 * 1.25
 
-        if output >= variable.shape[0]:
-            output = variable.shape[0] - 1
+        if self.projection == 'EPSG:32661':             # north pole projection
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            blat = min(self.bounds[0], self.bounds[2])
+            blat = 5 * np.floor(blat / 5)
 
-        if output < 0:
-            output = 0
+            if self.centroid[0] > 80 or near_pole or covers_pole:
+                self.basemap = basemap.load_map(
+                    'npstere', self.centroid, height, width, min(self.bounds[0], self.bounds[2]))
+            else:
+                self.basemap = basemap.load_map(
+                    'lcc', self.centroid, height, width)
+        elif self.projection == 'EPSG:3031':            # south pole projection
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            blat = max(self.bounds[0], self.bounds[2])
+            blat = 5 * np.ceil(blat / 5)
+            # is centerered close to the south pole
+            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80) or covers_pole) or near_pole:
+                self.basemap = basemap.load_map(
+                    'spstere', self.centroid, height, width, max(self.bounds[0], self.bounds[2]))
+            else:
+                self.basemap = basemap.load_map(
+                    'lcc', self.centroid, height, width)
+        elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
-        return output
+            height_bounds = [self.bounds[0], self.bounds[2]]
+            width_bounds = [self.bounds[1], self.bounds[3]]
+            height_buffer = (abs(height_bounds[1]-height_bounds[0]))*0.1
+            width_buffer = (abs(width_bounds[0]-width_bounds[1]))*0.1
 
-    def fix_startend_times(self, dataset, starttime, endtime):
-        starttime = np.clip(starttime, 0, len(dataset.timestamps) - 1)
-        endtime = np.clip(endtime, 0, len(dataset.timestamps) - 1)
+            if abs(width_bounds[1] - width_bounds[0]) > 360:
+                raise ClientError(gettext("You have requested an area that exceeds the width of the world. \
+                                        Thinking big is good but plots need to be less than 360 deg wide."))
 
-        if starttime > endtime:
-            starttime = endtime - 1
-            if starttime < 0:
-                starttime = 0
-                endtime = 2
+            if height_bounds[1] < 0:
+                height_bounds[1] = height_bounds[1]+height_buffer
+            else:
+                height_bounds[1] = height_bounds[1]+height_buffer
+            if height_bounds[0] < 0:
+                height_bounds[0] = height_bounds[0]-height_buffer
+            else:
+                height_bounds[0] = height_bounds[0]-height_buffer
 
-    def plot_legend(self, figure, labels):
-        if len(labels) > 10:
-            legend = plt.legend(labels, loc='upper right',
-                                bbox_to_anchor=(1, 0, 0.25, 1),
-                                borderaxespad=0.,
-                                bbox_transform=figure.transFigure,
-                                ncol=np.ceil(self.data.shape[0] /
-                                             30.0).astype(int))
-        elif len(labels) > 1:
-            legend = plt.legend(labels, loc='best')
+            new_width_bounds = []
+            new_width_bounds.append(width_bounds[0]-width_buffer)
+
+            new_width_bounds.append(width_bounds[1]+width_buffer)
+
+            if abs(new_width_bounds[1] - new_width_bounds[0]) > 360:
+                width_buffer = np.floor(
+                    (360-abs(width_bounds[1] - width_bounds[0]))/2)
+                new_width_bounds[0] = width_bounds[0]-width_buffer
+                new_width_bounds[1] = width_bounds[1]+width_buffer
+
+            if new_width_bounds[0] < -360:
+                new_width_bounds[0] = -360
+            if new_width_bounds[1] > 720:
+                new_width_bounds[1] = 720
+
+            self.basemap = basemap.load_map(
+                'merc', self.centroid,
+                (height_bounds[0], height_bounds[1]),
+                (new_width_bounds[0], new_width_bounds[1])
+            )
         else:
-            legend = None
+            self.basemap = basemap.load_map(
+                'lcc', self.centroid, height, width
+            )
 
-        if legend:
-            for legobj in legend.legendHandles:
-                legobj.set_linewidth(4.0)
+        if self.basemap.aspect < 1:
+            gridx = 500
+            gridy = int(500 * self.basemap.aspect)
+        else:
+            gridy = 500
+            gridx = int(500 / self.basemap.aspect)
+
+        self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
+        return
+
+    def get_bathymetry():
+        # Load bathymetry data
+        self.bathymetry = overlays.bathymetry(
+            self.basemap,
+            self.latitude,
+            self.longitude,
+            blur=2
+        )
