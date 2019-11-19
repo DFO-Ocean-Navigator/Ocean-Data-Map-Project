@@ -27,7 +27,7 @@ import plotting.overlays as overlays
 import plotting.utils as utils
 from data import open_dataset
 from oceannavigator import DatasetConfig
-from plotting.plotter import Plotter
+from plotting.plotter_3d import Plotter3D
 from utils.errors import ClientError, ServerError
 from utils.misc import list_areas
 from flask import render_template
@@ -37,7 +37,7 @@ import cmocean
 from plotly.offline import plot
 from plotly.graph_objs import Scatter, Surface, Layout
 
-class BathPlotter(Plotter):
+class BathPlotter(Plotter3D):
 
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = 'map'
@@ -102,6 +102,23 @@ class BathPlotter(Plotter):
         self.quiver = query.get('quiver')
 
         self.contour = query.get('contour')
+
+    def load_variable(self, variable):
+
+        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
+
+            self.variable_unit = self.get_variable_units(
+                dataset, self.variables
+            )[0]
+            self.variable_name = self.get_variable_names(
+                dataset,
+                self.variables
+            )[0]
+            scale_factor = self.get_variable_scale_factors(
+                dataset, self.variables
+            )[0]
+
+        return data
 
     def load_data(self):
         distance = VincentyDistance()
@@ -583,4 +600,4 @@ class BathPlotter(Plotter):
             "layout": layout
         }, output_type='div',)
 
-        return Response(my_plot_div, status=200, mimetype='text/plain')
+        return Response(my_plot_div, status=200, mimetype='text/html')
