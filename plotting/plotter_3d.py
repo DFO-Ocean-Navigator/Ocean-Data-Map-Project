@@ -118,6 +118,10 @@ class Plotter3D(metaclass=ABCMeta):
         self.date_formatter = None
         # Init interpolation stuff
         
+    def run(self):
+        _ = self.prepare_plot()
+
+        return self.plot()
 
     def load_dataset_data(self, dataset_id, dataset_obj):
         """
