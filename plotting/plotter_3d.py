@@ -102,7 +102,7 @@ class Plotter3D(metaclass=ABCMeta):
             # NOT A LIST OF LISTS OF DICTS
             self.data = self.data + self.load_dataset_data(dataset_id, datasets[dataset_id])
         
-            
+        print(something)
         # vvvvv BELOW IS ALL OLD STUFF vvvvv
 
         #self.query: dict = query
@@ -137,7 +137,6 @@ class Plotter3D(metaclass=ABCMeta):
             # Find out what variable_obj is (id or obj)
             data.append(self.load_variable_data(dataset_config, variable_id, variables[variable_id]))
 
-        print(something)
         return data
 
     def load_variable_data(self, dataset_config, variable_id, variable_obj):
