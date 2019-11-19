@@ -583,4 +583,4 @@ class BathPlotter(Plotter):
             "layout": layout
         }, output_type='div',)
 
-        return Response(my_plot_div, status=200, mimetype='text/html')
+        return Response(my_plot_div, status=200, mimetype='text/plain')
