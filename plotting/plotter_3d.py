@@ -154,7 +154,7 @@ class Plotter3D(metaclass=ABCMeta):
             
             # Also for extras like plot titles and labels etc.
             variable_unit = self.get_variable_units(
-                dataset, dataset_config, variable_id
+                dataset, dataset_config, [variable_id]
             )[0]
             
             # Gets the name of the variable given it's id
@@ -163,7 +163,7 @@ class Plotter3D(metaclass=ABCMeta):
             variable_name = self.get_variable_names(
                 dataset,
                 dataset_config,
-                variable_id
+                [variable_id]
             )[0]
             
             variable_obj.name = variable_name
@@ -172,7 +172,7 @@ class Plotter3D(metaclass=ABCMeta):
             # Gets the scale factor of the variable
             # Scale factor is the value to multiply data by to get the actual value
             scale_factor = self.get_variable_scale_factors(
-                dataset, dataset_config, variable_id
+                dataset, dataset_config, [variable_id]
             )[0]
 
 
