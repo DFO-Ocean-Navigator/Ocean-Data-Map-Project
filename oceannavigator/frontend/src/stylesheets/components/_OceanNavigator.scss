@@ -54,12 +54,17 @@ body {
     }
 }
 
+.full-screen-modal {
+    height: 100%;
+}
+
 .busy-modal {
     height: 100%;
     margin: 0 auto;
     .modal-content {
         position: absolute;
         left: 50%;
+        height: 100%;
         top: 50%;
         transform: translate(-50%, -50%);
         img {

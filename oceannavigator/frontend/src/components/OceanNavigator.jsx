@@ -705,7 +705,6 @@ export default class OceanNavigator extends React.Component {
           show={this.state.showModal}
           onHide={this.closeModal}
           dialogClassName='full-screen-modal'
-          style={{height: '100%'}}
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
