@@ -74,7 +74,7 @@ export default class PlotImage extends React.PureComponent {
     Regenerates the query string when the query prop changes
   */
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.loadIframe !== prevState.loadIframe) {
+    /*if (this.state.loadIframe !== prevState.loadIframe) {
       if (this.state.loadIframe) {
         let self = this
         $.ajax({
@@ -89,7 +89,7 @@ export default class PlotImage extends React.PureComponent {
           }
         })
       }
-    }
+    }*/
     if (stringify(this.props.query) !== stringify(prevProps.query) || (this.props.query.plotsettings !== prevProps.query.plotsettings)) {
       this.setState({
         loading: true
@@ -384,7 +384,7 @@ export default class PlotImage extends React.PureComponent {
 
     let load
     if (this.state.loadIframe) {
-      load =  this.state.plot
+      load =  <div>{this.state.url}</div>
     } else {
       load =  <div className="RenderedImage">
                 <img src={this.state.url} />
