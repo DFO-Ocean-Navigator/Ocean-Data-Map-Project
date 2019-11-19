@@ -119,7 +119,7 @@ class Plotter3D(metaclass=ABCMeta):
         # Init interpolation stuff
         
     def run(self):
-        _ = self.prepare_plot()
+        #_ = self.prepare_plot()
 
         return self.plot()
 
