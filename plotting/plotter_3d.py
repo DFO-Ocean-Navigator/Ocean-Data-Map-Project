@@ -9,6 +9,10 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 import copy
 
+from geopy.distance import VincentyDistance
+from shapely.geometry import LinearRing, MultiPolygon, Point
+
+
 from oceannavigator import DatasetConfig
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
