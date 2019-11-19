@@ -200,7 +200,7 @@ class Plotter3D(metaclass=ABCMeta):
                     self.radius,
                     self.neighbours
                 )
-            data = np.multiply(d, scale_factor)
+            data = np.multiply(data, scale_factor)
 
         variable_obj['data'] = data
 
