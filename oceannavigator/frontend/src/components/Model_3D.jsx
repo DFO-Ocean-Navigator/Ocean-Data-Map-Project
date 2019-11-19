@@ -37,22 +37,27 @@ export default class Model_3D extends React.Component {
 
         }
     
-        this.urlFromQuery = this.urlFromQuery.bind(this);
+        this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
     }
 
-    urlFromQuery(query) {
-        return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
+    urlFromStateQuery() {
+        return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(this.state.test_query));
     }
 
     render() {
 
         // Create all the components individually that need to be added to panels
-
+        // ADD LATER
 
         // Create Arrays holding all the components to each panel
-
+        // ADD LATER
 
         // Create the panels if their associated arrays are not of length 0
+        // ADD LATER
+
+        // Load Plot to render
+
+        <iframe src={this.urlFromStateQuery()} frameborder="0"></iframe>
 
         return (
             <div>
