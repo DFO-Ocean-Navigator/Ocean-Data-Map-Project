@@ -34,8 +34,10 @@ from flask import render_template
 from flask import Response
 import cmocean 
 # New PLOTLY imports
-from plotly.offline import plot
-from plotly.graph_objs import Scatter, Surface, Layout
+#from plotly.offline import plot
+#from plotly.graph_objs import Scatter, Surface, Layout
+import plotly.graph_objs as go
+import plotly.io as pio
 
 class BathPlotter(Plotter3D):
 
@@ -78,7 +80,7 @@ class BathPlotter(Plotter3D):
         # Create surface plot for bathymetry
         bathymetry = np.multiply(self.bathymetry, -1)
         
-        layers.append(Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True, cmax=0))
+        layers.append(go.Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True, cmax=0))
 
         # Create and append layers for each layer of data (at this point variables and what not don't matter)
         # Should probably store the type in each layer (for now just do surface)
@@ -86,7 +88,7 @@ class BathPlotter(Plotter3D):
             data = np.multiply(layer['data'], -1)
             idxs = np.where(data < bathymetry)
             data[idxs] = bathymetry[idxs]
-            layers.append(Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True))
+            layers.append(go.Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True))
 
         lon = self.longitude
         lat = self.latitude
@@ -94,11 +96,12 @@ class BathPlotter(Plotter3D):
         #old for reference
         #Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len":1, "x":-0.1}, showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True
         
-        layout = Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
-        #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
-        my_plot_div = plot({
-            "data": layers,
-            "layout": layout
-        }, output_type='div',)
-
-        return Response(my_plot_div, status=200, mimetype='text/html')
+        layout = go.Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
+        #plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
+        #plot_div = plot({
+        #    "data": layers,
+        #    "layout": layout
+        #}, output_type='div',)
+        fig = go.Figure(data=layers, layout=layout)
+        plot_div = pio.to_html(fig, full_html=False)
+        return Response(plot_div, status=200, mimetype='text/html')
