@@ -245,16 +245,8 @@ class BathPlotter(Plotter3D):
         return near_pole, covers_pole
 
     def plot(self):
-
         
-        bathymetry = np.multiply(self.bathymetry, -1)
-        data = np.multiply(self.data, -1)
-        idxs = np.where(data < bathymetry)
-        data[idxs] = bathymetry[idxs]
-        
-        lon = self.longitude
-        lat = self.latitude
-        
+        # Old stuff that might still be useful
         def find_lines(values):
             if np.amax(values) - np.amin(values) < 1:
                 return [values.mean()]
@@ -276,10 +268,32 @@ class BathPlotter(Plotter3D):
 
         parallels = find_lines(self.latitude)
         meridians = find_lines(self.longitude)
+        
+        # STUFF CURRENTLY BEING USED
+        
+        # Initialize var for plot layers
+        layers = list()
+
+        # Create surface plot for bathymetry
+        bathymetry = np.multiply(self.bathymetry, -1)
+        
+        layers.append(Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True))
+
+        # Create and append layers for each layer of data (at this point variables and what not don't matter)
+        # Should probably store the type in each layer (for now just do surface)
+        for _, layer in enumerate(self.data):
+            data = np.multiply(layer['data'], -1)
+            idxs = np.where(data < bathymetry)
+            data[idxs] = bathymetry[idxs]
+            layers.append(Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True))
+
+        lon = self.longitude
+        lat = self.latitude
+        
         layout = Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
         my_plot_div = plot({
-            "data": [Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len":1, "x":-0.1}, showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True)],
+            "data": [layers],
             "layout": layout
         }, output_type='div',)
 
