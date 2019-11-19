@@ -62,7 +62,6 @@ export default class Model_3D extends React.Component {
         return (
             
             <div>
-                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> 
                 {plot}
             </div>
         )
