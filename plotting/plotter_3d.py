@@ -96,11 +96,12 @@ class Plotter3D(metaclass=ABCMeta):
         self.data = list()
         datasets = query.get('datasets')
         # Loading the different datasets could probably be done in parallel
-        for dataset_id in datasets:
-            # load_dataset_data returns a list of dicts
-            # Therefore, self.data will be a list of dicts
-            # NOT A LIST OF LISTS OF DICTS
-            self.data = self.data + self.load_dataset_data(dataset_id, datasets[dataset_id])
+        if datasets is not None:
+            for dataset_id in datasets:
+                # load_dataset_data returns a list of dicts
+                # Therefore, self.data will be a list of dicts
+                # NOT A LIST OF LISTS OF DICTS
+                self.data = self.data + self.load_dataset_data(dataset_id, datasets[dataset_id])
         
         # vvvvv BELOW IS ALL OLD STUFF vvvvv
 
