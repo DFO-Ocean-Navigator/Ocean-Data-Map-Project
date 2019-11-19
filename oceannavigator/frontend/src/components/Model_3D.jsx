@@ -7,7 +7,7 @@ export default class Model_3D extends React.Component {
         super(props)
 
         this.state = {
-            test_query: {
+            next_query: {
                 "area": this.props.area,
                 "datasets": {},
                 "interp": this.props.interp,
@@ -16,16 +16,24 @@ export default class Model_3D extends React.Component {
                 "radius": this.props.radius,
                 "time": this.props.time,
             }
-
         }
     
         this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
     }
 
+    componentDidMount() {
+        this.loadNextPlot();
+    }
 
+    loadNextPlot() {
+        this.setState({
+            query: this.state.next_query,
+            url: this.urlFromStateQuery(this.state.next_query)
+        })
+    }
 
-    urlFromStateQuery() {
-        return "/api/v1.0/3d_model/?query=" + encodeURIComponent(stringify(this.state.test_query));
+    urlFromStateQuery(query) {
+        return "/api/v1.0/3d_model/?query=" + encodeURIComponent(stringify(query));
     }
 
     render() {
@@ -41,7 +49,7 @@ export default class Model_3D extends React.Component {
 
         // Load Plot to render
 
-        let plot = <iframe src={this.urlFromStateQuery()} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
+        let plot = <iframe src={this.state.url} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
 
         return (
             
