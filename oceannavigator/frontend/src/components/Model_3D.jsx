@@ -8,37 +8,31 @@ export default class Model_3D extends React.Component {
 
         this.state = {
             test_query: {
-                "area":[{
-                    "innerrings":[],
-                    "name":"",
-                    "polygons":[[[56.243349924105246,-45.3618621826172],[56.292156685076435,-33.5405731201172],[51.944264879028765,-33.4526824951172],[51.835777520452496,-45.317916870117195],[56.243349924105246,-45.3618621826172]]]
-                }],
+                "area": this.props.area,
                 "datasets": {
-                    'giops_day': {
-                        "quantum": "day",
+                    [this.props.dataset]: {
+                        "quantum": this.props.quantum,
                         'variables': {
-                            'soniclayerdepth': {
-                                'colormap': 'default',
-                                'scale': 'default'
-                            },
-                            'criticaldepth': {
+                            [this.props.variable]: {
                                 'colormap': 'default',
                                 'scale': 'default'
                             }
                         }
                     }
                 },
-                "interp":"gaussian",
-                "neighbours":10,
-                "projection":"EPSG:3857",
-                "radius":25,
-                "time":2204928000,
+                "interp": this.props.interp,
+                "neighbours": this.props.neighbours,
+                "projection": this.props.projection,
+                "radius": this.props.radius,
+                "time": this.props.time,
             }
 
         }
     
         this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
     }
+
+
 
     urlFromStateQuery() {
         return "/api/v1.0/3d_model/?query=" + encodeURIComponent(stringify(this.state.test_query));

@@ -721,7 +721,15 @@ export default class AreaWindow extends React.Component {
     let current = []
     if (this.state.currentTab === 3) {
       current = <Model_3D
-
+        dataset={this.state.dataset_0.dataset}
+        variable={this.state.dataset_0.variable}
+        quantum={this.state.dataset_0.dataset_quantum}
+        time={this.state.dataset_0.time}
+        interp={this.props.options.interpType}
+        radius={this.props.options.interpRadius}
+        neighbours={this.props.options.interpNeighbours}
+        projection={this.props.projection}
+        area={this.props.area}
       ></Model_3D>
     } else {
       current = <Row>
