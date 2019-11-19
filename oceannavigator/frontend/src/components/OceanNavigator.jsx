@@ -575,7 +575,6 @@ export default class OceanNavigator extends React.Component {
       case "area":
         modalContent = (
           <AreaWindow
-            style={{height: '100%'}}
             dataset_0={this.state}
             area={this.state.area}
             scale={this.state.scale}

@@ -737,7 +737,7 @@ export default class AreaWindow extends React.Component {
       </Row>
     }
     return (
-      <div className='AreaWindow Window' style={{height: '100%'}}>
+      <div className='AreaWindow Window'>
         <Nav
           bsStyle="tabs"
           activeKey={this.state.currentTab}
