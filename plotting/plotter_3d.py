@@ -102,7 +102,6 @@ class Plotter3D(metaclass=ABCMeta):
             # NOT A LIST OF LISTS OF DICTS
             self.data = self.data + self.load_dataset_data(dataset_id, datasets[dataset_id])
         
-        print(something)
         # vvvvv BELOW IS ALL OLD STUFF vvvvv
 
         #self.query: dict = query
