@@ -88,10 +88,13 @@ class Plotter3D(metaclass=ABCMeta):
         # Get lat and lons and stores as self.latitude and self.longitude
         self.get_lat_lon()
 
+        # This could probably be run in parallel to loading the rest of the data
+        self.get_bathymetry()
 
         # NOW WE CHANGE OUR FOCUS TO GETTING THE ACTUAL DATA
         self.data = list()
         
+        # Loading the different datasets could probably be done in parallel
         for dataset in datasets:
             
             #load_dataset_data returns a list of dicts
@@ -254,7 +257,7 @@ class Plotter3D(metaclass=ABCMeta):
         return factors
 
 
-    def get_lat_lon():
+    def get_lat_lon(self):
         """
             The only thing I know about this function is that it gets the latitudes and longitudes
 
@@ -349,7 +352,7 @@ class Plotter3D(metaclass=ABCMeta):
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
         return
 
-    def get_bathymetry():
+    def get_bathymetry(self):
         # Load bathymetry data
         self.bathymetry = overlays.bathymetry(
             self.basemap,
