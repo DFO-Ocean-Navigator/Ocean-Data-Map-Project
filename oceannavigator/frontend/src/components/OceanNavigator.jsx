@@ -711,7 +711,7 @@ export default class OceanNavigator extends React.Component {
           <Modal.Header closeButton closeLabel={_("Close")}>
             <Modal.Title>{modalTitle}</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body style={{height: '100%'}}>
             {modalContent}
           </Modal.Body>
           <Modal.Footer>
