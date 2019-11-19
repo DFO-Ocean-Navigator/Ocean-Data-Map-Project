@@ -23,6 +23,7 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
+import Model_3D from "./Model_3D.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -710,17 +711,31 @@ export default class AreaWindow extends React.Component {
         plot_query.radius = this.props.options.interpRadius;
         plot_query.neighbours = this.props.options.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
-        
+
         leftInputs = [globalSettings, mapSettings]; //Left Sidebar
         rightInputs = [dataset];  //Right Sidebar
-        content = <PlotImage
-          query={plot_query} // For image saving link.
-          permlink_subquery={this.state}
-          action={this.props.action}
-        />;
+
         break;
     }
 
+    current = []
+    if (this.state.currentTab === 3) {
+      current = <Model_3D
+
+      ></Model_3D>
+    } else {
+      current = <Row>
+        <Col lg={2}>
+          {leftInputs}
+        </Col>
+        <Col lg={8}>
+          {content}
+        </Col>
+        <Col lg={2}>
+          {rightInputs}
+        </Col>
+      </Row>
+    }
     return (
       <div className='AreaWindow Window'>
         <Nav
@@ -732,17 +747,8 @@ export default class AreaWindow extends React.Component {
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
           <NavItem eventKey={3}>{_("Bathymetry (BETA)")}</NavItem>
         </Nav>
-        <Row>
-          <Col lg={2}>
-            {leftInputs}
-          </Col>
-          <Col lg={8}>
-            {content}
-          </Col>
-          <Col lg={2}>
-            {rightInputs}
-          </Col>
-        </Row>
+        {current}
+
       </div>
     );
   }
