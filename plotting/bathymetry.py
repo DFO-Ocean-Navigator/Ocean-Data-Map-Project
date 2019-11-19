@@ -45,25 +45,6 @@ class BathPlotter(Plotter3D):
         super(BathPlotter, self).__init__(dataset_name, query, **kwargs)        
   
     
-    
-    def pole_proximity(self, points):
-        near_pole, covers_pole, quad1, quad2, quad3, quad4 = False, False, False, False, False, False
-        for p in points:
-            if abs(p[0]) > 80:
-                near_pole = True
-            if -180 <= p[1] <= -90:
-                quad1 = True
-            elif -90 <= p[1] <= 0:
-                quad2 = True
-            elif 0 <= p[1] <= 90:
-                quad3 = True
-            elif 90 <= p[1] <= 180:
-                quad4 = True
-            if quad1 and quad2 and quad3 and quad4:
-                covers_pole = True
-
-        return near_pole, covers_pole
-
     def plot(self):
         
         # Old stuff that might still be useful
@@ -109,6 +90,9 @@ class BathPlotter(Plotter3D):
 
         lon = self.longitude
         lat = self.latitude
+        
+        #old for reference
+        #Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len":1, "x":-0.1}, showscale=True), Surface(z=data, x=self.longitude, y=self.latitude, colorscale='Electric', showscale=True
         
         layout = Layout(title="Bathymetry with depth based variable", scene={"xaxis":{"title": "Longitude"}, "yaxis":{"title": "Latitude"}, "zaxis":{"title": "Depth"}})
         #my_plot_div = plot([Scatter(x=[1,2,3], y=[3,1,6])], output_type='div')
