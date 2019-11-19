@@ -833,12 +833,6 @@ def bath_3d_model_impl(query: dict, args):
     """
 
     dataset = query.get('dataset')
-    
-    options = {}
-    options['format'] = fmt
-    options['size'] = args.get('size', '15x9')
-    options['dpi'] = args.get('dpi', 72)
-
 
     plotter = BathPlotter(dataset, query, **options)
     return plotter.run()
