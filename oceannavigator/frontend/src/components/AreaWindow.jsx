@@ -575,7 +575,7 @@ export default class AreaWindow extends React.Component {
           state={this.state.leftColormap}
           def='default'
           onUpdate={this.onLocalUpdate}
-          url='/api/v1,0/colormaps/'
+          url='/api/v1.0/colormaps/'
           title={_("Colourmap")}
         >
           {_("colourmap_help")}

@@ -1,5 +1,4 @@
 import React from 'react';
-import Plotly from 'plotly.js'
 
 const stringify = require("fast-stable-stringify");
 
@@ -61,7 +60,9 @@ export default class Model_3D extends React.Component {
         let plot = <iframe src={this.urlFromStateQuery()} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
 
         return (
+            
             <div>
+                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> 
                 {plot}
             </div>
         )
