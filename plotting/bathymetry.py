@@ -78,7 +78,7 @@ class BathPlotter(Plotter3D):
         # Create surface plot for bathymetry
         bathymetry = np.multiply(self.bathymetry, -1)
         
-        layers.append(Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True))
+        layers.append(Surface(z=bathymetry, x=self.longitude, y=self.latitude, colorscale='Earth', colorbar={"len": 1, "x":-0.1}, showscale=True, cmax=0))
 
         # Create and append layers for each layer of data (at this point variables and what not don't matter)
         # Should probably store the type in each layer (for now just do surface)
