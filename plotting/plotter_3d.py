@@ -8,6 +8,7 @@ import pint
 import plotting.colormap as colormap
 import plotting.utils as utils
 import copy
+import plotting.overlays as overlays
 
 from geopy.distance import VincentyDistance
 from shapely.geometry import LinearRing, MultiPolygon, Point
