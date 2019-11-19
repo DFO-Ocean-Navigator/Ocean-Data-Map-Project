@@ -166,8 +166,8 @@ class Plotter3D(metaclass=ABCMeta):
                 [variable_id]
             )[0]
             
-            variable_obj.name = variable_name
-            variable_obj.unit = variable_unit
+            variable_obj['name'] = variable_name
+            variable_obj.['unit'] = variable_unit
 
             # Gets the scale factor of the variable
             # Scale factor is the value to multiply data by to get the actual value
@@ -202,7 +202,7 @@ class Plotter3D(metaclass=ABCMeta):
                 )
             data = np.multiply(d, scale_factor)
 
-        variable_obj.data = data
+        variable_obj['data'] = data
 
         return variable_obj
 
