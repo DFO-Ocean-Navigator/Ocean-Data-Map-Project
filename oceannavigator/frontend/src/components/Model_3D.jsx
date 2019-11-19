@@ -1,4 +1,5 @@
 import React from 'react';
+import Plotly from 'plotlyjs';
 
 const stringify = require("fast-stable-stringify");
 
