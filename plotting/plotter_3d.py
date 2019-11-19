@@ -13,7 +13,7 @@ import plotting.overlays as overlays
 from geopy.distance import VincentyDistance
 from shapely.geometry import LinearRing, MultiPolygon, Point
 
-
+from data import open_dataset
 from oceannavigator import DatasetConfig
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
