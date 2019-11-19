@@ -718,7 +718,7 @@ export default class AreaWindow extends React.Component {
         break;
     }
 
-    current = []
+    let current = []
     if (this.state.currentTab === 3) {
       current = <Model_3D
 
