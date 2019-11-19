@@ -352,3 +352,12 @@ class Plotter3D(metaclass=ABCMeta):
             self.longitude,
             blur=2
         )
+
+    def __get_time(self, param: str):
+        if param is None or len(str(param)) == 0:
+            return -1
+        else:
+            try:
+                return int(param)
+            except ValueError:
+                return param
