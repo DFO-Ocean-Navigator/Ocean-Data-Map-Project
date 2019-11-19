@@ -103,5 +103,5 @@ class BathPlotter(Plotter3D):
         #    "layout": layout
         #}, output_type='div',)
         fig = go.Figure(data=layers, layout=layout)
-        plot_div = pio.to_html(fig, full_html=False)
+        plot_div = pio.to_html(fig, full_html=True)
         return Response(plot_div, status=200, mimetype='text/html')
