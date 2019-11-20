@@ -51,8 +51,8 @@ def open_dataset(dataset, **kwargs):
 
     if url is not None:
 
-        variable_list = __get_variables(url)
-        if not variable_list:
+        dimension_list = __get_dimensions(url)
+        if not dimension_list:
             raise RuntimeError("Dataset not supported: " + url)
 
         args = {}
@@ -68,9 +68,9 @@ def open_dataset(dataset, **kwargs):
                 args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
                 args['grid_angle_file_url'] = __get_grid_angle_file_url(dataset)
 
-        if __is_mercator(variable_list):
+        if __is_mercator(dimension_list):
             return Mercator(url, **args)
-        elif __is_fvcom(variable_list):
+        elif __is_fvcom(dimension_list):
             return Fvcom(url, **args)
         else:
             return Nemo(url, **args)
@@ -172,29 +172,29 @@ def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, end
         return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
 
 
-def __is_mercator(variable_list: list) -> bool:
-    return 'latitude_longitude' in variable_list or 'LatLon_Projection' in variable_list
+def __is_mercator(dimension_list: list) -> bool:
+    return 'longitude' in dimension_list or 'latitude' in dimension_list
 
 
-def __is_fvcom(variable_list: list) -> bool:
-    return 'siglay' in variable_list
+def __is_fvcom(dimension_list: list) -> bool:
+    return 'siglay' in dimension_list
 
 
-def __get_variables(url: str) -> List[str]:
+def __get_dimensions(url: str) -> List[str]:
 
-    variable_list = []
+    dimension_list = []
 
     if __is_sqlite_database(url):
 
         with SQLiteDatabase(url) as db:
-            variable_list.append(db.get_all_variables())
+            dimension_list = db.get_all_dimensions()
 
     elif __is_aggregated_or_raw_netcdf(url):
         # Open dataset (can't use xarray here since it doesn't like FVCOM files)
         ds = Dataset(url, 'r')
 
-        variable_list = [var for var in ds.variables]
+        dimension_list = [dim for dim in ds.dimensions]
 
         ds.close()
 
-    return variable_list
+    return dimension_list
