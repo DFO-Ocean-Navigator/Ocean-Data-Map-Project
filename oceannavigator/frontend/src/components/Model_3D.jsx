@@ -35,6 +35,7 @@ export default class Model_3D extends React.Component {
     }
 
     updateVariables(key, values) {
+        console.warn("KEY: ", key)
         console.warn("VARIABLES: ", values);
 
         let dataset = this.state.dataset;
@@ -43,7 +44,7 @@ export default class Model_3D extends React.Component {
             return;
         }
 
-        
+
 
         this.setState({
             variables: values
