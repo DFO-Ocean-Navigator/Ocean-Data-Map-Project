@@ -129,7 +129,7 @@ export default class Model_3D extends React.Component {
               <Col lg={2} style={{height: '100%'}}>
                 {data_selection}
               </Col>
-              <Col lg={8}>
+              <Col lg={8} style={{height: '100%'}}>
                 <div style={{height: '100%', width: '100%'}}>
                     {plot}
                 </div>
