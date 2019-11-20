@@ -1,5 +1,6 @@
 import React from 'react';
 import ComboBox from "./ComboBox.jsx";
+import { Button } from 'react-bootstrap';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
