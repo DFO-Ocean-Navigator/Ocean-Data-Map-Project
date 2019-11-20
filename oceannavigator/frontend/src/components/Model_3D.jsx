@@ -2,6 +2,7 @@ import React from 'react';
 import ComboBox from "./ComboBox.jsx";
 
 const stringify = require("fast-stable-stringify");
+const i18n = require("../i18n.js");
 
 export default class Model_3D extends React.Component {
     constructor (props) {
