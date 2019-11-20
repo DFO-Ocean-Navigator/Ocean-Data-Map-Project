@@ -91,6 +91,7 @@ export default class Model_3D extends React.Component {
     }
 
     updateDataset(key, value) {
+        console.warn("UPDATING DATASET:", key, value);
         if (key === 'dataset') {
 
             let datasets = this.state.next_query.datasets;
