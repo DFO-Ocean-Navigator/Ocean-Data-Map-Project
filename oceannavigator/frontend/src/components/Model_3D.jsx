@@ -35,19 +35,36 @@ export default class Model_3D extends React.Component {
     }
 
     updateVariables(key, values) {
-        console.warn("KEY: ", key)
-        console.warn("VARIABLES: ", values);
-
+        
         let dataset = this.state.dataset;
 
-        if (this.state.dataset === undefined) {
+        if (dataset === undefined) {
             return;
         }
 
+        let variables = this.state.next_query.datasets[dataset].variables
+        
+        let var_template = {
+            scale: 'default',
+            colormap: 'default',
+        }
 
+        let new_variables = {}
+        for (let variable in values[0]) {
+            console.warn("Variable: ", variable);
+            if (variable in variables) {
+                new_variables[variable] = variables[variable];
+            } else {
+                new_variables[variable] = var_template;
+            }   
+        }
+
+        let next_query = this.state.next_query;
+        next_query.datasets[dataset].variables = new_variables;
 
         this.setState({
-            variables: values
+            variables: values[0],
+            next_query: next_query
         })
     }
 
