@@ -34,11 +34,20 @@ export default class Model_3D extends React.Component {
         this._mounted = true;
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.dataset !== this.state.dataset) {
+            this.updateVariables(this.state.variables);
+        }
+    }
+
     updateVariables(key, values) {
         
         let dataset = this.state.dataset;
 
-        if (dataset === undefined) {
+        if (dataset === undefined || this.state.next_query.datasets[dataset] === undefined) {
+            this.setState({
+                variables: values[0]
+            })
             return;
         }
 
@@ -56,6 +65,7 @@ export default class Model_3D extends React.Component {
                 new_variables[variable] = variables[variable];
             } else {
                 new_variables[variable] = var_template;
+                //new_variables[variable].scale = values[1][variable]
             }   
         }
 
