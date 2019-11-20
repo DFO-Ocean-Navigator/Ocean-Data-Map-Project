@@ -57,8 +57,10 @@ export default class Model_3D extends React.Component {
             })
             return;
         }
-
-        let variables = this.state.next_query.datasets[dataset].variables
+        let next_query = this.state.next_query;
+        console.warn("NEXT QUERY: ", next_query)
+        
+        let variables = next_query.datasets[dataset].variables
         
         let var_template = {
             scale: 'default',
@@ -77,7 +79,6 @@ export default class Model_3D extends React.Component {
             }   
         }
 
-        let next_query = this.state.next_query;
         next_query.datasets[dataset].variables = new_variables;
 
         this.setState({
