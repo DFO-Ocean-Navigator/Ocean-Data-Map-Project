@@ -339,8 +339,8 @@ export default class PointWindow extends React.Component {
         title={_("Dataset")}
         onUpdate={this.props.onUpdate}
       />
-
     )
+    
     const toggle_map = (
       <SelectBox
         key='showmap'

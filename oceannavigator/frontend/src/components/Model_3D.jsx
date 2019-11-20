@@ -39,10 +39,36 @@ export default class Model_3D extends React.Component {
     render() {
 
         // Create all the components individually that need to be added to panels
-        // ADD LATER
+        
+        const select_dataset = (
+            <ComboBox
+              key='dataset'
+              id='dataset'
+              state={this.props.dataset}
+              def=''
+              url='/api/v1.0/datasets/'
+              title={_("Dataset")}
+              onUpdate={this.props.onUpdate}
+            />
+        )
 
-        // Create Arrays holding all the components to each panel
-        // ADD LATER
+        const select_variable = (
+            <ComboBox
+              id='variable'
+              key='variable'
+              multiple={true}
+              state={this.state.output_variables}
+              def={"defaults.dataset"}
+              onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
+              url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
+              }
+              title={_("Variables")}
+            />
+        )
+        
+
+        // Create Arrays holding all the components for each panel
+        let data_selection = [select_dataset, select_variable];
 
         // Create the panels if their associated arrays are not of length 0
         // ADD LATER
@@ -52,10 +78,17 @@ export default class Model_3D extends React.Component {
         let plot = <iframe src={this.state.url} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
 
         return (
+            <Row>
+              <Col lg={2}>
+                {data_selection}
+              </Col>
+              <Col lg={8}>
+                <div style={{height: '100%'}}>
+                    {plot}
+                </div>
+              </Col>
+            </Row>
             
-            <div style={{height: '100%'}}>
-                {plot}
-            </div>
         )
     }
 }
