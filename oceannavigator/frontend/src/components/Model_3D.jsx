@@ -34,7 +34,7 @@ export default class Model_3D extends React.Component {
         this._mounted = true;
     }
 
-    updateVariables(values) {
+    updateVariables(key, values) {
         console.warn("VARIABLES: ", values);
 
         let dataset = Object.keys(this.state.next_query.datasets)[0];
@@ -46,8 +46,6 @@ export default class Model_3D extends React.Component {
     }
 
     updateDataset(key, value) {
-        console.warn("KEY: ", key)
-        console.warn("DATASET: ", value);
         if (key === 'dataset') {
             let datasets = this.state.next_query.datasets;
             let old_dataset_obj = datasets[this.state.dataset];
