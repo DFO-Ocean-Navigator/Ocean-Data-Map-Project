@@ -72,6 +72,24 @@ class SQLiteDatabase:
         # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
         return list(set(self.__flatten_list(file_list)))
 
+    def get_all_dimensions(self) -> List[str]:
+        """Returns a list of all the dimensions in the Dimensions table.
+        
+        Returns:
+            List[str] -- List of strings of all dimension names (e.g. time_counter, depth, x, latitude, etc.)
+        """
+        
+        self.c.execute(
+            """
+            SELECT 
+                name 
+            FROM 
+                Dimensions;
+            """ 
+        )
+
+        return self.__flatten_list(self.c.fetchall())
+
     def get_variable_dims(self, variable: str) -> List[str]:
         """Retrieves the given variables dimensions.
 
