@@ -17,14 +17,44 @@ export default class Model_3D extends React.Component {
                 "projection": this.props.projection,
                 "radius": this.props.radius,
                 "time": this.props.time,
-            }
+            },
+            dataset: this.props.dataset,
+            variables: this.props.variables
         }
     
         this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
+        this.loadNextPlot = this.loadNextPlot.bind(this);
+        this.updateVariables = this.updateVariables.bind(this);
+        this.updateDataset = this.updateDataset.bind(this);
     }
 
     componentDidMount() {
         this.loadNextPlot();
+    }
+
+    updateVariables(values) {
+        console.warn("VARIABLES: ", values);
+
+        let dataset = Object.keys(this.state.next_query.datasets)[0];
+        let variables = this.state.next_query.datasets[dataset].variables;
+
+        this.setState({
+            variables: values
+        })
+    }
+
+    updateDataset(key, value) {
+        console.warn("DATASET: ", value);
+        let datasets = this.state.next_query.datasets;
+        let old_dataset_obj = datasets[this.state.dataset];
+
+        delete datasets[this.state.dataset];
+
+        datasets[value] = old_dataset_obj;
+        
+        this.setState({
+            dataset: value
+        })
     }
 
     loadNextPlot() {
@@ -46,11 +76,11 @@ export default class Model_3D extends React.Component {
             <ComboBox
               key='dataset'
               id='dataset'
-              state={this.props.dataset}
+              state={this.state.dataset}
               def=''
               url='/api/v1.0/datasets/'
               title={_("Dataset")}
-              onUpdate={this.props.onUpdate}
+              onUpdate={this.updateDataset}
             />
         )
 
@@ -59,10 +89,10 @@ export default class Model_3D extends React.Component {
               id='variable'
               key='variable'
               multiple={true}
-              state={this.state.output_variables}
+              state={this.state.variables}
               def={"defaults.dataset"}
-              onUpdate={(keys, values) => { this.setState({ output_variables: values[0], }); }}
-              url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
+              onUpdate={this.updateVariables}
+              url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset
               }
               title={_("Variables")}
             />
