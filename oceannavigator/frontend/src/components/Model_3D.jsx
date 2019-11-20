@@ -13,9 +13,9 @@ export default class Model_3D extends React.Component {
             next_query: {
                 "area": this.props.area,
                 "datasets": {
-                    "quantum": "day",
-                    "variables": {
-                        [this.props.dataset]: {
+                    [this.props.dataset]: {
+                        "quantum": "day",
+                        "variables": {
                             [this.props.variable]: {
                                 scale: 'default',
                                 colormap: 'default',
