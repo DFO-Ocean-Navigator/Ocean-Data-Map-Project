@@ -41,6 +41,17 @@ class TestSqliteDatabase(TestCase):
 
             self.assertEqual(len(rng), 4)
 
+    def test_get_all_dimensions_returns_dims(self):
+
+        expected_dims = sorted(
+            ['axis_nbounds', 'depthv', 'time_counter', 'x', 'y'])
+
+        with SQLiteDatabase(self.historical_db) as db:
+
+            dims = sorted(db.get_all_dimensions())
+
+            self.assertTrue(expected_dims == dims)
+
     def test_get_variable_dims_returns_correct_dims(self):
 
         expected_dims = sorted(["depthv", "time_counter", "x", "y"])
