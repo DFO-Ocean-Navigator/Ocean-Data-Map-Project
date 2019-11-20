@@ -101,7 +101,7 @@ class TestSqliteDatabase(TestCase):
         with SQLiteDatabase(self.historical_db) as db:
 
             nc_files = sorted(db.get_netcdf_files(
-                self.historical_timestamps, "vo"))
+                self.historical_timestamps, ["vo"]))
 
             self.assertTrue(expected_nc_files == nc_files)
 
