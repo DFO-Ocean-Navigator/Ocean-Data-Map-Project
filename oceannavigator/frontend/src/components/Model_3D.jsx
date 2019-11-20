@@ -139,7 +139,7 @@ export default class Model_3D extends React.Component {
         
 
         return (
-            <div>
+            <div style={{height: "100%"}}>
                 {content}
             </div>
         )
