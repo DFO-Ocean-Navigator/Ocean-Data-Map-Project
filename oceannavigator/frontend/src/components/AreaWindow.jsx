@@ -720,6 +720,9 @@ export default class AreaWindow extends React.Component {
 
     let current = []
     if (this.state.currentTab === 3) {
+      console.warn("AREA WINDOW")
+      console.warn("DATASET: ", this.state.dataset_0.dataset)
+      console.warn("VARIABLE: ", this.state.dataset_0.variable)
       current = <Model_3D
         dataset={this.state.dataset_0.dataset}
         variable={this.state.dataset_0.variable}

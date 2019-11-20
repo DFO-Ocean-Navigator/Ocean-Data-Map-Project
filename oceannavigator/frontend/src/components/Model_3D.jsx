@@ -110,7 +110,7 @@ export default class Model_3D extends React.Component {
             let data_selection = [select_dataset, select_variable, toggle_apply];
     
             // Create the panels if their associated arrays are not of length 0
-            <Panel
+            let data_selection_panel = <Panel
               key='right_map'
               id='right_map'
               collapsible
@@ -127,7 +127,7 @@ export default class Model_3D extends React.Component {
         
             content = <Row style={{height: '100%'}}>
                 <Col lg={2} style={{height: '100%'}}>
-                  {data_selection}
+                  {data_selection_panel}
                 </Col>
                 <Col lg={8} style={{height: '100%'}}>
                   <div style={{height: '100%', width: '100%'}}>
