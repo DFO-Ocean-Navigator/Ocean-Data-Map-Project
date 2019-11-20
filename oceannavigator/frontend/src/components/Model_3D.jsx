@@ -1,6 +1,6 @@
 import React from 'react';
 import ComboBox from "./ComboBox.jsx";
-import { Button } from 'react-bootstrap';
+import { Panel, Row, Col, Button } from 'react-bootstrap';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
@@ -99,12 +99,26 @@ export default class Model_3D extends React.Component {
             />
         )
         
+        const toggle_apply = (
+            <Button
+                onClick={this.loadNextPlot}
+            >Apply</Button>
+        )
 
         // Create Arrays holding all the components for each panel
         let data_selection = [select_dataset, select_variable];
 
         // Create the panels if their associated arrays are not of length 0
-        // ADD LATER
+        <Panel
+          key='right_map'
+          id='right_map'
+          collapsible
+          defaultExpanded
+          header={_("Right Map")}
+          bsStyle='primary'
+        >
+            {data_selection}
+        </Panel>
 
         // Load Plot to render
 
