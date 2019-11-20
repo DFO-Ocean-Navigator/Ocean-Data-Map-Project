@@ -92,22 +92,23 @@ export default class Model_3D extends React.Component {
 
     updateDataset(key, value) {
         console.warn("UPDATING DATASET:", key, value);
-        if (key === 'dataset') {
+        
+        let datasets = this.state.next_query.datasets;
+        let old_dataset_obj = datasets[this.state.dataset];
+        
+        delete datasets[this.state.dataset];
+        
+        datasets[value[0]] = old_dataset_obj;
+        datasets[value[0]].quantum = value[2];
 
-            let datasets = this.state.next_query.datasets;
-            let old_dataset_obj = datasets[this.state.dataset];
-
-            delete datasets[this.state.dataset];
-
-            datasets[value] = old_dataset_obj;
-
-            let next_query = this.state.next_query;
-            next_query.datasets = datasets;
-            this.setState({
-                dataset: value,
-                next_query: next_query
-            })
-        }
+        let next_query = this.state.next_query;
+        next_query.datasets = datasets;
+        
+        this.setState({
+            dataset: value[0],
+            next_query: next_query
+        })
+        
     }
 
     loadNextPlot() {
