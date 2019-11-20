@@ -125,12 +125,12 @@ export default class Model_3D extends React.Component {
         let plot = <iframe src={this.state.url} frameBorder="0" style={{width: '100%', height:'100%'}}></iframe>
 
         return (
-            <Row>
-              <Col lg={2}>
+            <Row style={{height: '100%'}}>
+              <Col lg={2} style={{height: '100%'}}>
                 {data_selection}
               </Col>
               <Col lg={8}>
-                <div style={{height: '100%'}}>
+                <div style={{height: '100%', width: '100%'}}>
                     {plot}
                 </div>
               </Col>
