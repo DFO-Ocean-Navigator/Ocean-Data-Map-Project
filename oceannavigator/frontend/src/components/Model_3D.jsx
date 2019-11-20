@@ -12,7 +12,14 @@ export default class Model_3D extends React.Component {
         this.state = {
             next_query: {
                 "area": this.props.area,
-                "datasets": {},
+                "datasets": {
+                    [this.props.dataset]: {
+                        [this.props.variable]: {
+                            scale: 'default',
+                            colormap: 'default',
+                        }
+                    }
+                },
                 "interp": this.props.interp,
                 "neighbours": this.props.neighbours,
                 "projection": this.props.projection,
