@@ -723,6 +723,7 @@ export default class AreaWindow extends React.Component {
       console.warn("AREA WINDOW")
       console.warn("DATASET: ", this.state.dataset_0.dataset)
       console.warn("VARIABLE: ", this.state.dataset_0.variable)
+      console.warn("END AREA WINDOW")
       current = <Model_3D
         dataset={this.state.dataset_0.dataset}
         variable={this.state.dataset_0.variable}
