@@ -30,11 +30,13 @@ export default class Model_3D extends React.Component {
                 "time": this.props.time,
             },
             dataset: this.props.dataset,
-            variables: this.props.variable
+            variables: this.props.variable,
+            bath_only: false
         }
 
         this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
         this.loadNextPlot = this.loadNextPlot.bind(this);
+        this.toggleBathymetry = this.toggleBathymetry.bind(this);
         this.updateVariables = this.updateVariables.bind(this);
         this.updateDataset = this.updateDataset.bind(this);
     }
@@ -50,6 +52,12 @@ export default class Model_3D extends React.Component {
         }
     }
 
+    toggleBathymetry(id, value) {
+        this.setState({
+            [id]: value
+        })
+    }
+
     updateVariables(key, values) {
         console.warn("KEY: ", key);
         console.warn("VALUE: ", values);
@@ -57,7 +65,7 @@ export default class Model_3D extends React.Component {
         if (typeof values[0] === 'string') {
             return
         }
-        
+
         if (dataset === undefined || this.state.next_query.datasets[dataset] === undefined) {
             this.setState({
                 variables: values[0]
@@ -133,6 +141,17 @@ export default class Model_3D extends React.Component {
         let content = []
         // Create all the components individually that need to be added to panels
         if (this._mounted) {
+
+            const toggle_data = (
+                <SelectBox
+                    id='bath_only'
+                    key='bath_only'
+                    state={this.state.bath_only}
+                    onUpdate={this.toggleBathymetry}
+                    title={_("Bathymetry Only")}
+                />
+            )
+
             const select_dataset = (
                 <ComboBox
                     key='dataset'
@@ -166,7 +185,7 @@ export default class Model_3D extends React.Component {
             )
 
             // Create Arrays holding all the components for each panel
-            let data_selection = [select_dataset, select_variable, toggle_apply];
+            let data_selection = [toggle_data, select_dataset, select_variable, toggle_apply];
 
             // Create the panels if their associated arrays are not of length 0
             let data_selection_panel = <Panel
@@ -174,7 +193,7 @@ export default class Model_3D extends React.Component {
                 id='right_map'
                 collapsible
                 defaultExpanded
-                header={_("Right Map")}
+                header={_("3D Model")}
                 bsStyle='primary'
             >
                 {data_selection}

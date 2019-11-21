@@ -757,7 +757,7 @@ export default class AreaWindow extends React.Component {
         >
           <NavItem eventKey={1}>{_("Map")}</NavItem>
           <NavItem eventKey={2}>{_("Statistics")}</NavItem>
-          <NavItem eventKey={3}>{_("Bathymetry (BETA)")}</NavItem>
+          <NavItem eventKey={3}>{_("3D Model (BETA)")}</NavItem>
         </Nav>
         {current}
 
