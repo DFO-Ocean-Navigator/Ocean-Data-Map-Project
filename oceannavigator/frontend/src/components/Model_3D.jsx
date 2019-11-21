@@ -46,7 +46,7 @@ export default class Model_3D extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevState.dataset !== this.state.dataset) {
-            this.updateVariables('variable', this.state.variables);
+            this.updateVariables('variable', [this.state.variables]);
         }
     }
 
