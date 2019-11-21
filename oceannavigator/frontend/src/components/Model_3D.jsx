@@ -92,7 +92,7 @@ export default class Model_3D extends React.Component {
     }
 
     updateDataset(key, value) {
-        if (value === 'string') {
+        if (typeof value === 'string') {
             return
         }
         console.warn("UPDATING DATASET:", key, value);
