@@ -225,7 +225,7 @@ export default class Model_3D extends React.Component {
                 {plot}
             </div>
 
-            let plot_container = (
+            plot_container = (
                 <Plot
                 
                 
