@@ -47,6 +47,7 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from plotting.bathymetry import BathPlotter
 from utils.errors import APIError, ClientError
+from plotting.area import Area
 
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
