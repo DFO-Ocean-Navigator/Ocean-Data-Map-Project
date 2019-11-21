@@ -57,10 +57,11 @@ export default class Model_3D extends React.Component {
     toggleBathymetry(id, value) {
         if (value) {
             let next_query = this.state.next_query;
+            let temp_datasets = next_query.datasets;
             next_query.datasets = {};
             this.setState({
                 next_query: next_query,
-                temp_datasets: this.state.next_query.datasets
+                temp_datasets: temp_datasets
             })
         } else {
             let next_query = this.state.next_query;
