@@ -842,12 +842,12 @@ def bath_3d_model_impl(query: dict, args):
     return plotter.run()
 
 def get_area_data(args):
+    Area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'))
 
+    data = Area.get_variable()
     return data
 
 def get_bath_data(args):
-
-    area = Area(args)
 
     return data
 

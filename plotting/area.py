@@ -81,6 +81,8 @@ class Area():
 
         self.centroid = list(combined.centroid.coords)[0]
         self.bounds = combined.bounds
+
+        self.get_latlon()
         ################################################################
         
         # Get lat and lons and stores as self.latitude and self.longitude
@@ -108,7 +110,7 @@ class Area():
         return self.bathymetry
 
     
-    def get_latlon():
+    def cal_latlon():
         """
             The only thing I know about this function is that it gets the latitudes and longitudes
 
@@ -208,6 +210,8 @@ class Area():
         
         return self.latitude, self.longitude 
 
+    def get_latlon():
+        return self.latitude, self.longitude
     
     def get_variable(self, dataset, variable, depth, time):
         """
@@ -217,14 +221,15 @@ class Area():
             
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
-
         if (self.longitude is None and self.latitude is None):
             self.get_latlon()
 
+        time = self.__get_time(time)
+        
         data = None
 
         # Get Dataset Config
-        dataset_config = DatasetConfig(dataset_id)
+        dataset_config = DatasetConfig(dataset)
 
         # Open the dataset
         with open_dataset(dataset_config, variable=variable_id, timestamp=self.time) as dataset:
