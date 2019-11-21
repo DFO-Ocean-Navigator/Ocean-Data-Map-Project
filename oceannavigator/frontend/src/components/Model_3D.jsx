@@ -180,8 +180,8 @@ export default class Model_3D extends React.Component {
             // Load Plot to render
 
             let plot = <iframe src={this.state.url} frameBorder="0" style={{ width: '100%', height: '100%' }}></iframe>
-            let plot_container = <div class="holds-the-iframe">
-                {plot}
+            let plot_container = <div style={{height: '100%'}} class="holds-the-iframe">
+                {plot_container}
             </div>
             content = <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%' }}>
