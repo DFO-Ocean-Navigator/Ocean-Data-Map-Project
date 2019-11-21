@@ -2,6 +2,7 @@ import React from 'react';
 import ComboBox from "./ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
 import SelectBox from "./SelectBox.jsx";
+import Plot from 'react-plotly.js';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
@@ -223,6 +224,13 @@ export default class Model_3D extends React.Component {
             let plot_container = <div style={{height: '100%'}} className="holds-the-iframe">
                 {plot}
             </div>
+
+            let plot_container = (
+                <Plot
+                
+                
+                ></Plot>
+            )
             content = <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%' }}>
                     {data_selection_panel}
