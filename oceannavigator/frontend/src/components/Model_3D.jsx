@@ -99,14 +99,14 @@ export default class Model_3D extends React.Component {
         
         delete datasets[this.state.dataset];
         
-        datasets[value] = old_dataset_obj;
-        datasets[value].quantum = value[2];
+        datasets[value[0]] = old_dataset_obj;
+        datasets[value[0]].quantum = value[2];
 
         let next_query = this.state.next_query;
         next_query.datasets = datasets;
         
         this.setState({
-            dataset: value,
+            dataset: value[0],
             next_query: next_query
         })
         
