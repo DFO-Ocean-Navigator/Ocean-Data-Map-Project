@@ -51,7 +51,8 @@ export default class Model_3D extends React.Component {
     }
 
     updateVariables(key, values) {
-
+        console.warn("KEY: ", key);
+        console.warn("VALUE: ", value);
         let dataset = this.state.dataset;
 
         if (dataset === undefined || this.state.next_query.datasets[dataset] === undefined) {
