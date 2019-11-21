@@ -231,6 +231,12 @@ export default class Model_3D extends React.Component {
                         {
                             z: [[1,2,3],[1,2,3],[1,2,3]],
                             type: 'surface',
+                        },
+                        {
+                            z: [2],
+                            x: [2],
+                            y: [2],
+                            type: 'scatter'
                         }
                     ]}
                 
