@@ -32,7 +32,8 @@ export default class Model_3D extends React.Component {
             },
             dataset: this.props.dataset,
             variables: this.props.variable,
-            bath_only: false
+            bath_only: false,
+            temp_datasets: {}
         }
 
         this.urlFromStateQuery = this.urlFromStateQuery.bind(this);
@@ -57,6 +58,13 @@ export default class Model_3D extends React.Component {
         if (value) {
             let next_query = this.state.next_query;
             next_query.datasets = {};
+            this.setState({
+                next_query: next_query,
+                temp_datasets: this.state.next_query.datasets
+            })
+        } else {
+            let next_query = this.state.next_query;
+            next_query.datasets = this.state.temp_datasets;
             this.setState({
                 next_query: next_query
             })
