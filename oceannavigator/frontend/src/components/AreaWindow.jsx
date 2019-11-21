@@ -568,7 +568,6 @@ export default class AreaWindow extends React.Component {
           onUpdate={this.onLocalUpdate}
           title={_("Variable Range")}
         />
-
         <ComboBox
           key='leftColormap'
           id='leftColormap'
@@ -576,6 +575,7 @@ export default class AreaWindow extends React.Component {
           def='default'
           onUpdate={this.onLocalUpdate}
           url='/api/v1.0/colormaps/'
+
           title={_("Colourmap")}
         >
           {_("colourmap_help")}
