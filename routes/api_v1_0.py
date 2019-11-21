@@ -321,6 +321,19 @@ def bath_3d_model():
 
     return routes.routes_impl.bath_3d_model_impl(query, args)
 
+@bp_v1_0.route('/api/v1.0/data/area/')
+def get_area_data():
+    return routes.routes_impl.get_area_data(request.args)
+
+def get_bath_data():
+    return routes.routes_impl.get_bath_data(request.args)
+
+def get_point_data():
+    return routes.routes_impl.get_point_data(request.args)
+
+def get_latlon_data():
+    return routes.routes_impl.get_latlon_data(request.args)
+
 
 @bp_v1_0.route('/api/v1.0/colors/')
 def colors_v1_0():

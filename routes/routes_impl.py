@@ -841,7 +841,23 @@ def bath_3d_model_impl(query: dict, args):
     plotter = BathPlotter(dataset, query, **options)
     return plotter.run()
 
+def get_area_data(args):
 
+    return data
+
+def get_bath_data(args):
+
+    area = Area(args)
+
+    return data
+
+def get_point_data(args):
+
+    return data
+
+def get_latlon_data(args):
+
+    return data
 
 def stats_impl(args, query=None):
     """
