@@ -227,7 +227,12 @@ export default class Model_3D extends React.Component {
 
             plot_container = (
                 <Plot
-                
+                    data={[
+                        {
+                            z: [[1,2,3],[1,2,3],[1,2,3]],
+                            type: 'surface',
+                        }
+                    ]}
                 
                 ></Plot>
             )
