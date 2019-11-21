@@ -1,6 +1,7 @@
 import React from 'react';
 import ComboBox from "./ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
+import SelectBox from "./SelectBox.jsx";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
