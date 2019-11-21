@@ -72,9 +72,9 @@ export default class Model_3D extends React.Component {
         }
 
         let new_variables = {}
-        for (let variable in values[0]) {
+        for (let variable in values) {
             console.warn("Variable: ", variable);
-            variable = values[0][variable];
+            variable = values[variable];
             if (variable in variables) {
                 new_variables[variable] = variables[variable];
             } else {
