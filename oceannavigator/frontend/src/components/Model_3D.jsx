@@ -155,11 +155,16 @@ export default class Model_3D extends React.Component {
         })
         self = this
         $.ajax({
+            type: 'GET',
+            dataType: 'json',
             url: this.state.url,
             success: function(result) {
                 self.setState({
                     data: result
                 })
+            },
+            fail: function(xhr, textStatus, errorThrown) {
+                alert('request failed')
             }
         })
     }
