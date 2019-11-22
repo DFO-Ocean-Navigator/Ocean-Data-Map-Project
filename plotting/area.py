@@ -13,9 +13,6 @@ import plotting.colormap as colormap
 import plotting.basemap as basemap
 import plotting.overlays as overlays
 import plotting.utils as utils
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
 import pyresample.utils
 
 from data import open_dataset
@@ -347,3 +344,13 @@ class Area():
                 dataset_config.variable[dataset.variables[v]].scale_factor)
 
         return factors
+
+
+    def __get_time(self, param: str):
+        if param is None or len(str(param)) == 0:
+            return -1
+        else:
+            try:
+                return int(param)
+            except ValueError:
+                return param
