@@ -857,7 +857,7 @@ def get_area_data(args):
         depth = args.get('depth')
 
     data = area.get_variable(dataset, variable, depth, time)
-    return Response(data, status=200)
+    return Response(data, status=200, mimetype='application/json')
 
 def get_bath_data(args):
 
