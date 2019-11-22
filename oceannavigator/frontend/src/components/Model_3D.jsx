@@ -70,7 +70,7 @@ export default class Model_3D extends React.Component {
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: this.urlFromStateQuery(query),
+            url: this.urlFromStateQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
                 self.setState({
                     bathymetry: result
@@ -175,7 +175,7 @@ export default class Model_3D extends React.Component {
     loadNextPlot() {
         this.setState({
             query: this.state.next_query,
-            url: this.urlFromStateQuery(this.state.next_query)
+            url: this.urlFromStateQuery('/api/v1.0/data/area/', this.state.next_query)
         })
         self = this
         $.ajax({
@@ -193,8 +193,8 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    urlFromStateQuery(query) {
-        return "/api/v1.0/data/area/?query=" + encodeURIComponent(stringify(query));
+    urlFromStateQuery(header, query) {
+        return header + "?query=" + encodeURIComponent(stringify(query));
     }
 
     render() {
