@@ -267,7 +267,7 @@ export default class Model_3D extends React.Component {
             </div>
 
             plot_container = (
-                <Plot
+                <Plot style={{height: '100%'}}
                     data={[
                         {
                             z: this.state.data,
