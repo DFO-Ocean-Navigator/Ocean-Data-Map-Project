@@ -121,7 +121,7 @@ class Area():
         if self.bathymetry is not None:
             return self.bathymetry
 
-        if ('longitude' not in self or 'latitude' not in self:
+        if 'longitude' not in self or 'latitude' not in self:
             self.get_latlon()
 
         # Load bathymetry data
