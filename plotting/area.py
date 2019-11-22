@@ -134,7 +134,7 @@ class Area():
         return self.bathymetry
 
     
-    def calc_latlon():
+    def calc_latlon(self):
         """
             The only thing I know about this function is that it gets the latitudes and longitudes
 
