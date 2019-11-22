@@ -117,12 +117,12 @@ class Area():
         
         if not hasattr(self,'bathymetry'):
             # Load bathymetry data
-            self.bathymetry = overlays.bathymetry(
+            self.bathymetry = np.multiply(overlays.bathymetry(
                 self.basemap,
                 self.latitude,
                 self.longitude,
                 blur=2
-            )
+            ), -1)
 
         return self.bathymetry
 
@@ -293,7 +293,8 @@ class Area():
                     self.neighbours
                 )
             data = np.multiply(data, scale_factor)
-
+        
+        data = np.multiply(data, -1)
         return data
 
 
