@@ -1,20 +1,46 @@
 import contextlib
 import datetime
 import re
-import plotting.basemap as basemap
-import matplotlib.pyplot as plt
 import numpy as np
+import copy
+import os
+import osr
+import json
+import tempfile
+import cmocean 
 import pint
 import plotting.colormap as colormap
-import plotting.utils as utils
-import copy
+import plotting.basemap as basemap
 import plotting.overlays as overlays
+import plotting.utils as utils
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import pyresample.utils
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
 from flask_babel import format_date, format_datetime
+from textwrap import wrap
+from flask_babel import gettext
+from geopy.distance import VincentyDistance
+from osgeo import gdal
+
+from matplotlib.bezier import concatenate_paths
+from matplotlib.colors import LogNorm
+from matplotlib.patches import PathPatch, Polygon
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.basemap import maskoceans
+
+from shapely.geometry import LinearRing, MultiPolygon, Point
+from shapely.geometry import Polygon as Poly
+from shapely.ops import cascaded_union
+
+from utils.errors import ClientError, ServerError
+from utils.misc import list_areas
+
 
 
 class Area():
