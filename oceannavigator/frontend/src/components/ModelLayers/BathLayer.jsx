@@ -24,6 +24,7 @@ export default class BathLayer extends React.Component {
             projection: this.props.projection,
             radius: this.props.radius
         }
+        self = this
         $.ajax({
             type: 'GET',
             dataType: 'json',
