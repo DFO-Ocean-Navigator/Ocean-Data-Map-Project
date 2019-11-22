@@ -14,7 +14,15 @@ export default class Model_3D extends React.Component {
         this.state = {
             next_query: {
                 "area": this.props.area,
-                "datasets": {
+                "interp": this.props.interp,
+                "neighbours": this.props.neighbours,
+                "projection": this.props.projection,
+                "radius": this.props.radius,
+                "time": this.props.time,
+                "dataset": "giops_day",
+                "variable": "criticaldepth",
+                "depth": 0,
+                /*"datasets": {
                     [this.props.dataset]: {
                         "quantum": "day",
                         "variables": {
@@ -24,12 +32,7 @@ export default class Model_3D extends React.Component {
                             }
                         }
                     }
-                },
-                "interp": this.props.interp,
-                "neighbours": this.props.neighbours,
-                "projection": this.props.projection,
-                "radius": this.props.radius,
-                "time": this.props.time,
+                },*/
             },
             dataset: this.props.dataset,
             variables: this.props.variable,
@@ -150,6 +153,15 @@ export default class Model_3D extends React.Component {
             query: this.state.next_query,
             url: this.urlFromStateQuery(this.state.next_query)
         })
+
+        $.ajax({
+            url: this.state.url,
+            success: function(result) {
+                this.setState({
+                    data: result
+                })
+            }
+        })
     }
 
     urlFromStateQuery(query) {
@@ -229,7 +241,7 @@ export default class Model_3D extends React.Component {
                 <Plot
                     data={[
                         {
-                            z: [[1,2,3],[1,2,3],[1,2,3]],
+                            z: this.state.data,
                             type: 'surface',
                         },
                         {
