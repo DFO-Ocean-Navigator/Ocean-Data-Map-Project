@@ -856,8 +856,8 @@ def get_area_data(args):
     if 'depth' in args:
         depth = args.get('depth')
 
-    data = area.get_variable(dataset, variable, depth, time)
-    return data
+    data = {area.get_variable(dataset, variable, depth, time)}
+    return Response(data, status=200, mimetype='application/json')
 
 def get_bath_data(args):
 
@@ -895,7 +895,7 @@ def stats_impl(args, query=None):
 
     dataset = query.get('dataset')  # Retrieves dataset from query
 
-    data = areastats(dataset, query)
+    data = {areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')
 
 
