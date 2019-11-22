@@ -121,7 +121,7 @@ class Area():
         if self.bathymetry is not None:
             return self.bathymetry
 
-        if (self.longitude is None or self.latitude is None or self.basemap is None):
+        if ('longitude' not in self or 'latitude' not in self:
             self.get_latlon()
 
         # Load bathymetry data
@@ -142,7 +142,7 @@ class Area():
             honestly it looks like gibberish
         """
 
-        if (self.latitude is not None and self.longitude is not None and self.basemap is not None):
+        if 'latitude' in self and 'longitude' in self:
             return self.latitude, self.longitude
 
         distance = VincentyDistance()
@@ -245,7 +245,7 @@ class Area():
             
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
-        if (self.longitude is None and self.latitude is None):
+        if 'longitude' not in self or 'latitude' not in self:
             self.calc_latlon()
 
         time = self.__get_time(time)
