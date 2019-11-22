@@ -843,6 +843,7 @@ def bath_3d_model_impl(query: dict, args):
     return plotter.run()
 
 def get_area_data(args):
+    args = args.get('query')
     area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'), args.get('projection'))
 
     dataset = args.get('dataset')
