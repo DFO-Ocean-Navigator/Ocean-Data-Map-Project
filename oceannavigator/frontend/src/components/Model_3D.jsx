@@ -69,10 +69,10 @@ export default class Model_3D extends React.Component {
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: url,
+            url: this.urlFromStateQuery(query),
             success: function(result) {
                 self.setState({
-                    data: result
+                    bathymetry: result
                 })
             },
             fail: function(xhr, textStatus, errorThrown) {
@@ -273,16 +273,16 @@ export default class Model_3D extends React.Component {
                             type: 'surface',
                         },
                         {
+                            z: this.state.bathymetry,
+                            type: 'surface'
+                        },
+                        {
                             z: [2],
                             x: [2],
                             y: [2],
                             type: 'scatter'
                         },
-                        {
-                            x: [300],
-                            y: [300],
-                            type: 'line'
-                        }
+                        
                     ]}
                 
                 ></Plot>
