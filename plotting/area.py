@@ -19,7 +19,7 @@ from flask_babel import format_date, format_datetime
 
 class Area():
 
-    def __init__:
+    def __init__(self, datasets: str, query: str, **kwargs):
 
         # This deals with interpolation information
         # Static because depth is not important at this time (but could be later)
