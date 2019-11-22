@@ -895,7 +895,7 @@ def stats_impl(args, query=None):
 
     dataset = query.get('dataset')  # Retrieves dataset from query
 
-    data = {areastats(dataset, query)
+    data = areastats(dataset, query)
     return Response(data, status=200, mimetype='application/json')
 
 
