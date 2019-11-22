@@ -19,27 +19,30 @@ export default class DataLayer extends React.Component {
         }
     }
 
+    componentDidMount() {
+        this._mounted = true
+    }
 
     updateVariables(key, values) {
-        if (typeof values[0] === 'string') {return}
+        if (typeof values[0] === 'string') { return }
 
         let query = this.state.query;
         query.variable = values[0]
-        
+
         this.setState({
             query: query
         })
     }
 
     updateDataset(key, value) {
-        if (typeof value === 'string') {return}
-        
+        if (typeof value === 'string') { return }
+
         let query = this.state.query;
         query.dataset = value[0];
-        
+
         this.setState({
             query: query
-        })     
+        })
     }
 
     loadNextPlot() {
@@ -49,7 +52,7 @@ export default class DataLayer extends React.Component {
             type: 'GET',
             dataType: 'json',
             url: url,
-            success: function(result) {
+            success: function (result) {
                 self.setState({
                     data: result
                 })
@@ -59,7 +62,7 @@ export default class DataLayer extends React.Component {
 
 
     render() {
-        
+
         // Initialize each component
         if (this._mounted) {
 
@@ -105,27 +108,28 @@ export default class DataLayer extends React.Component {
                 >Apply</Button>
             )
 
-        // Add the components to an array in the correct order
-        let data_selection = [toggle_data, select_dataset, select_variable, toggle_apply];
+            // Add the components to an array in the correct order
+            let data_selection = [toggle_data, select_dataset, select_variable, toggle_apply];
 
 
 
-        // Create Panel with Panel Elements
-        let data_selection_panel = <Panel
-                                        key='right_map'
-                                        id='right_map'
-                                        collapsible
-                                        defaultExpanded
-                                        header={_("Surface")}
-                                        bsStyle='primary'
-                                    >
-                                        {data_selection}
-                                    </Panel>
+            // Create Panel with Panel Elements
+            let data_selection_panel = <Panel
+                key='right_map'
+                id='right_map'
+                collapsible
+                defaultExpanded
+                header={_("Surface")}
+                bsStyle='primary'
+            >
+                {data_selection}
+            </Panel>
 
-        return (
-            <div>
-                {data_selection_panel}
-            </div>
-        )
+            return (
+                <div>
+                    {data_selection_panel}
+                </div>
+            )
+        }
     }
 }
