@@ -170,7 +170,7 @@ export default class Model_3D extends React.Component {
     }
 
     urlFromStateQuery(query) {
-        return "/api/v1.0/3d_model/?query=" + encodeURIComponent(stringify(query));
+        return "/api/v1.0/data/area/?query=" + encodeURIComponent(stringify(query));
     }
 
     render() {
