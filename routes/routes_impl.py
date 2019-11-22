@@ -22,7 +22,7 @@ import netCDF4
 import numpy as np
 import pytz
 from flask import (Response, current_app, jsonify, request, send_file,
-                   send_from_directory, render_template)
+                   send_from_directory, render_template, make_response)
 from flask_babel import format_date, gettext
 from PIL import Image
 
@@ -858,7 +858,7 @@ def get_area_data(args):
 
     data = area.get_variable(dataset, variable, depth, time)
 
-    response = flask.make_response(data.tobytes())
+    response = make_response(data.tobytes())
     response.headers.set('Content-Type', 'application/octet-stream')
     return response
     #return Response(data.tobytes(), status=200, mimetype='application/octet-stream')
