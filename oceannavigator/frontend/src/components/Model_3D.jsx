@@ -140,7 +140,7 @@ export default class Model_3D extends React.Component {
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%' }}>
-                    {data_selection_panel}
+                    {layers}
                     {add_panel}
                 </Col>
                 <Col lg={8} style={{ height: '100%' }}>
