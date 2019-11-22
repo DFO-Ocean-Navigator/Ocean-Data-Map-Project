@@ -49,6 +49,7 @@ export default class Model_3D extends React.Component {
 
     componentDidMount() {
         this.loadNextPlot();
+        this.get_bathymetry();
         this._mounted = true;
     }
 
