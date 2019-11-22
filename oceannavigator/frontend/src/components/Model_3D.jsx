@@ -272,6 +272,7 @@ export default class Model_3D extends React.Component {
                         {
                             z: this.state.data,
                             type: 'surface',
+                            colorscale: 'Earth'
                         },
                         {
                             z: this.state.bathymetry,
