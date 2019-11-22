@@ -843,7 +843,7 @@ def bath_3d_model_impl(query: dict, args):
     return plotter.run()
 
 def get_area_data(args):
-    Area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'))
+    area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'))
 
     dataset = args.get('dataset')
     variable = args.get('variable')
@@ -853,7 +853,7 @@ def get_area_data(args):
     if 'depth' in args:
         depth = args.get('depth')
 
-    data = Area.get_variable(dataset, variable, depth, time)
+    data = area.get_variable(dataset, variable, depth, time)
     return data
 
 def get_bath_data(args):
