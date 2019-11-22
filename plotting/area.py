@@ -121,9 +121,6 @@ class Area():
         if self.bathymetry is not None:
             return self.bathymetry
 
-        if 'longitude' not in self or 'latitude' not in self:
-            self.get_latlon()
-
         # Load bathymetry data
         self.bathymetry = overlays.bathymetry(
             self.basemap,
@@ -141,9 +138,6 @@ class Area():
             I know it deals with weird edge cases etc. but
             honestly it looks like gibberish
         """
-
-        if 'latitude' in self and 'longitude' in self:
-            return self.latitude, self.longitude
 
         distance = VincentyDistance()
         height = distance.measure(
@@ -245,9 +239,7 @@ class Area():
             
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
-        if 'longitude' not in self or 'latitude' not in self:
-            self.calc_latlon()
-
+        
         time = self.__get_time(time)
         
         data = None
