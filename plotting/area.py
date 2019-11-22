@@ -249,7 +249,7 @@ class Area():
             
             # Also for extras like plot titles and labels etc.
             variable_unit = self.get_variable_units(
-                dataset, dataset_config, [variable_id]
+                dataset, dataset_config, [variable]
             )[0]
             
             # Gets the name of the variable given it's id
