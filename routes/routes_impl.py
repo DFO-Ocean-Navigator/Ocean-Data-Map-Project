@@ -857,11 +857,11 @@ def get_area_data(args):
         depth = args.get('depth')
 
     data = area.get_variable(dataset, variable, depth, time)
-
-    response = make_response(data.tobytes())
-    response.headers.set('Content-Type', 'application/octet-stream')
-    return response
-    #return Response(data.tobytes(), status=200, mimetype='application/octet-stream')
+    data = json.dumps(data.tolist())
+    #response = make_response(data.tobytes())
+    #response.headers.set('Content-Type', 'application/octet-stream')
+    #return response
+    return Response(data, status=200, mimetype='application/json')
 
 def get_bath_data(args):
 
