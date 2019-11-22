@@ -864,8 +864,17 @@ def get_area_data(args):
     return Response(data, status=200, mimetype='application/json')
 
 def get_bath_data(args):
+    if 'query' not in args:
+        raise APIError('No Query Provided')
+    args = json.loads(args.get('query'))
+    area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'), args.get('projection'))
 
-    return data
+    data = area.get_bathymetry()
+    data = json.dumps(data.tolist())
+    #response = make_response(data.tobytes())
+    #response.headers.set('Content-Type', 'application/octet-stream')
+    #return response
+    return Response(data, status=200, mimetype='application/json')
 
 def get_point_data(args):
 

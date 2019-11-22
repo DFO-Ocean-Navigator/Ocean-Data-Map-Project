@@ -113,20 +113,20 @@ class Area():
         #self.get_bathymetry()
 
        
-    def get_bathymetry():
+    def get_bathymetry(self):
         
-        if self.bathymetry is not None:
-            return self.bathymetry
-
-        # Load bathymetry data
-        self.bathymetry = overlays.bathymetry(
-            self.basemap,
-            self.latitude,
-            self.longitude,
-            blur=2
-        )
+        if 'bathymetry' not in self:
+            # Load bathymetry data
+            self.bathymetry = overlays.bathymetry(
+                self.basemap,
+                self.latitude,
+                self.longitude,
+                blur=2
+            )
+            
         return self.bathymetry
 
+        
     
     def calc_latlon(self):
         """

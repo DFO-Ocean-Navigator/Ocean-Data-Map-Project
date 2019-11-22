@@ -58,6 +58,29 @@ export default class Model_3D extends React.Component {
         }
     }
 
+    get_bathymetry() {
+        let query = {
+            area: this.props.area,
+            interp: this.props.interp,
+            neighbours: this.props.neighbours,
+            projection: this.props.projection,
+            radius: this.props.radius
+        }
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: url,
+            success: function(result) {
+                self.setState({
+                    data: result
+                })
+            },
+            fail: function(xhr, textStatus, errorThrown) {
+                alert('request failed')
+            }
+        })
+    }
+
     toggleBathymetry(id, value) {
         if (value) {
             let next_query = this.state.next_query;
