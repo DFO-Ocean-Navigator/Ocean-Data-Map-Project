@@ -277,6 +277,12 @@ export default class Model_3D extends React.Component {
                             z: this.state.bathymetry,
                             type: 'surface'
                         },
+                        {
+                            z: 0,
+                            y: 200,
+                            x: 200,
+                            type: 'scatter3d'
+                        }
                         
                     ]}
                 
