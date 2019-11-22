@@ -254,6 +254,11 @@ export default class Model_3D extends React.Component {
                             x: [2],
                             y: [2],
                             type: 'scatter'
+                        },
+                        {
+                            x: [300],
+                            y: [300],
+                            type: 'line'
                         }
                     ]}
                 
