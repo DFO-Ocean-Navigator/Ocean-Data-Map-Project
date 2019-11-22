@@ -26,17 +26,8 @@ export default class Model_3D extends React.Component {
     }
 
     componentDidMount() {
-        this.loadNextPlot();
-        this.get_bathymetry();
         this._mounted = true;
     }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevState.dataset !== this.state.dataset) {
-            this.updateVariables('variable', [[this.state.variables], 'default']);
-        }
-    }
-
 
     /*
         Adds the provided layer to the plot
