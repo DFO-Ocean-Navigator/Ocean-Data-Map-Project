@@ -845,7 +845,7 @@ def bath_3d_model_impl(query: dict, args):
 def get_area_data(args):
     if 'query' not in args:
         raise APIError('No Query Provided')
-    args = args.get('query')
+    args = json.loads(args.get('query'))
     area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'), args.get('projection'))
 
     dataset = args.get('dataset')
