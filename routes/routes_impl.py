@@ -845,7 +845,15 @@ def bath_3d_model_impl(query: dict, args):
 def get_area_data(args):
     Area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'))
 
-    data = Area.get_variable()
+    dataset = args.get('dataset')
+    variable = args.get('variable')
+    time = args.get('time')
+
+    depth = 0
+    if 'depth' in args:
+        depth = args.get('depth')
+
+    data = Area.get_variable(dataset, variable, depth, time)
     return data
 
 def get_bath_data(args):

@@ -82,7 +82,7 @@ class Area():
         self.centroid = list(combined.centroid.coords)[0]
         self.bounds = combined.bounds
 
-        self.get_latlon()
+        self.calc_latlon()
         ################################################################
         
         # Get lat and lons and stores as self.latitude and self.longitude
@@ -110,7 +110,7 @@ class Area():
         return self.bathymetry
 
     
-    def cal_latlon():
+    def calc_latlon():
         """
             The only thing I know about this function is that it gets the latitudes and longitudes
 
@@ -222,7 +222,7 @@ class Area():
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
         if (self.longitude is None and self.latitude is None):
-            self.get_latlon()
+            self.calc_latlon()
 
         time = self.__get_time(time)
         
@@ -232,7 +232,7 @@ class Area():
         dataset_config = DatasetConfig(dataset)
 
         # Open the dataset
-        with open_dataset(dataset_config, variable=variable_id, timestamp=self.time) as dataset:
+        with open_dataset(dataset_config, variable=variable, timestamp=time) as dataset:
             
             # Also for extras like plot titles and labels etc.
             variable_unit = self.get_variable_units(
@@ -245,16 +245,13 @@ class Area():
             variable_name = self.get_variable_names(
                 dataset,
                 dataset_config,
-                [variable_id]
+                [variable]
             )[0]
             
-            variable_obj['name'] = variable_name
-            variable_obj['unit'] = variable_unit
-
             # Gets the scale factor of the variable
             # Scale factor is the value to multiply data by to get the actual value
             scale_factor = self.get_variable_scale_factors(
-                dataset, dataset_config, [variable_id]
+                dataset, dataset_config, [variable]
             )[0]
 
 
