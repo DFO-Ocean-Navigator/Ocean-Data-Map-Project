@@ -19,22 +19,20 @@ from flask_babel import format_date, format_datetime
 
 class Area():
 
-    def __init__(self, datasets: str, query: str, **kwargs):
+    def __init__(self, area, interp, neighbours, radius, projection):
 
         # This deals with interpolation information
         # Static because depth is not important at this time (but could be later)
         # Relied on in load_data stuff
-        self.depth = 0
-        self.time = self.__get_time(query.get('time'))
         self.interp: str = "gaussian"
         self.radius: int = 25000  # radius in meters
         self.neighbours: int = 10
-        self.projection = query.get('projection')
+        self.projection = projection
 
         # Prep some stuff to get the lon and lat
         # STUFF IN BETWEEN HASH TAGS DOESN'T REALLY BELONG IN THIS FUNCTION
         ################################################################
-        self.area = query.get('area')
+        self.area = area
         centroids = []
 
         names = []
