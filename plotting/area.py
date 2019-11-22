@@ -115,7 +115,7 @@ class Area():
        
     def get_bathymetry(self):
         
-        if 'bathymetry' not in self:
+        if hasattr(self,'bathymetry'):
             # Load bathymetry data
             self.bathymetry = overlays.bathymetry(
                 self.basemap,
@@ -123,7 +123,7 @@ class Area():
                 self.longitude,
                 blur=2
             )
-            
+
         return self.bathymetry
 
         
