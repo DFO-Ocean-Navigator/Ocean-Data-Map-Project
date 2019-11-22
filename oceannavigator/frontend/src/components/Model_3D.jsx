@@ -81,7 +81,7 @@ export default class Model_3D extends React.Component {
     }
 
     updateVariables(key, values) {
-        console.warn("KEY: ", key);
+        /*console.warn("KEY: ", key);
         console.warn("VALUE: ", values);
         let dataset = this.state.dataset;
         if (typeof values[0] === 'string') {
@@ -121,11 +121,11 @@ export default class Model_3D extends React.Component {
         this.setState({
             variables: values[0],
             next_query: next_query
-        })
+        })*/
     }
 
     updateDataset(key, value) {
-        if (typeof value === 'string') {
+        /*if (typeof value === 'string') {
             return
         }
         console.warn("UPDATING DATASET:", key, value);
@@ -144,7 +144,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             dataset: value[0],
             next_query: next_query
-        })
+        })*/
         
     }
 
