@@ -153,11 +153,11 @@ export default class Model_3D extends React.Component {
             query: this.state.next_query,
             url: this.urlFromStateQuery(this.state.next_query)
         })
-
+        self = this
         $.ajax({
             url: this.state.url,
             success: function(result) {
-                this.setState({
+                self.setState({
                     data: result
                 })
             }
