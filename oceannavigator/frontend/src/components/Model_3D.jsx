@@ -94,18 +94,23 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    removeDataPanel(panelindex, layerindex) {
+    removeDataPanel(panel, layer) {
         let data_panels = this.state.data_panels;
-        let idx = data_panels.indexOf(panelindex);
+        let idx = data_panels.indexOf(panel);
         data_panels.splice(idx, 1);
         
         // Needs to remove data too
-        let layers = this.state.layers;
-        let data = layers.data;
+        let layers = this.state.layers
+        if (layer !== undefined) {
+            let data = layers.data;
+            idx = data.indexOf(layer);
+            data.splice(idx,1);
+            layers.data = data;    
+        }
         
-
         this.setState({
-            data_panels: data_panels
+            data_panels: data_panels,
+            layers: layers
         })
     }
     

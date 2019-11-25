@@ -31,6 +31,7 @@ export default class DataLayer extends React.Component {
         this.updateVariables = this.updateVariables.bind(this);
         this.updateDataset = this.updateDataset.bind(this);
         this.loadNextPlot = this.loadNextPlot.bind(this);
+        this.removePanel = this.removePanel.bind(this);
     }
 
     componentDidMount() {
@@ -86,6 +87,10 @@ export default class DataLayer extends React.Component {
         })
     }
 
+    removePanel() {
+        this.props.removePanel(this.props.id, this.state.surface);
+    }
+
 
     render() {
 
@@ -93,6 +98,12 @@ export default class DataLayer extends React.Component {
         let data_selection_panel = null;
         if (this._mounted) {
             console.warn("MOUNTED")
+
+            const remove_panel = (
+                <Button
+                    onClick={this.removePanel}
+                >X</Button>
+            )
 
             const select_dataset = (
                 <ComboBox
@@ -126,16 +137,8 @@ export default class DataLayer extends React.Component {
                 >Apply</Button>
             )
 
-            const toggle_remove = (
-                <Button
-                    onClick={this.removeLayer}
-                ></Button>
-            )
-
             // Add the components to an array in the correct order
             let data_selection = [select_dataset, select_variable, toggle_apply];
-
-
 
             // Create Panel with Panel Elements
             data_selection_panel = <Panel
@@ -143,7 +146,7 @@ export default class DataLayer extends React.Component {
                 id='right_map'
                 collapsible
                 defaultExpanded
-                header={_("Surface")}
+                header={<div>{_("Surface")}{remove_panel}</div>}
                 bsStyle='primary'
             >
                 {data_selection}
