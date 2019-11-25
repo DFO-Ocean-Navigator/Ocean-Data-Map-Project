@@ -23,6 +23,10 @@ export default class DataLayer extends React.Component {
                 "depth": 0,
             },
         }
+
+        this.updateVariables = this.updateVariables.bind(this);
+        this.updateDataset = this.updateDataset.bind(this);
+        this.loadNextPlot = this.loadNextPlot.bind(this);
     }
 
     componentDidMount() {
@@ -87,7 +91,7 @@ export default class DataLayer extends React.Component {
                 <ComboBox
                     key='dataset'
                     id='dataset'
-                    state={this.state.dataset}
+                    state={this.state.query.dataset}
                     def=''
                     url='/api/v1.0/datasets/'
                     title={_("Dataset")}
@@ -100,10 +104,10 @@ export default class DataLayer extends React.Component {
                     id='variable'
                     key='variable'
                     multiple={false}
-                    state={this.state.variables}
+                    state={this.state.query.variables}
                     def={"defaults.dataset"}
                     onUpdate={this.updateVariables}
-                    url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset
+                    url={"/api/v1.0/variables/?vectors&dataset=" + this.state.query.dataset
                     }
                     title={_("Variables")}
                 />
