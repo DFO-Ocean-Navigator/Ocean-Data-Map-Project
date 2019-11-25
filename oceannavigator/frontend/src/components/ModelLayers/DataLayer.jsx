@@ -104,6 +104,7 @@ export default class DataLayer extends React.Component {
 
             const remove_panel = (
                 <Button
+                    className='panelRemove'
                     onClick={this.removePanel}
                 >X</Button>
             )

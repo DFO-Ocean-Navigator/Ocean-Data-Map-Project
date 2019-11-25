@@ -8,4 +8,11 @@
         background: url(../images/spinner.gif) center center no-repeat;
     }
 
+    .panelRemove {
+        background: transparent;
+        border-color: transparent;
+        float: right;
+        top: -12px;
+        position: relative;
+    }
 }
