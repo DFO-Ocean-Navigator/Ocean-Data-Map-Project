@@ -38,6 +38,8 @@ export default class DataLayer extends React.Component {
     }
 
     updateVariables(key, values) {
+        console.warn("KEY: ", key);
+        console.warn("VALUE: ", value);
         if (typeof values[0] === 'string') { return }
 
         let query = this.state.query;
@@ -108,7 +110,7 @@ export default class DataLayer extends React.Component {
                     id='variable'
                     key='variable'
                     multiple={false}
-                    state={this.state.query.variables}
+                    state={this.state.query.variable}
                     def={"defaults.dataset"}
                     onUpdate={this.updateVariables}
                     url={"/api/v1.0/variables/?vectors&dataset=" + this.state.query.dataset
