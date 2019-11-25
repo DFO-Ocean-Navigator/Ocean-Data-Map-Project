@@ -49,11 +49,15 @@ export default class DataLayer extends React.Component {
     }
 
     updateDataset(key, value) {
-        if (typeof value === 'string') { return }
-
         let query = this.state.query;
-        query.dataset = value[0];
-
+            
+        if (key === 'variable') {
+            query.dataset = value;
+    
+            
+        } else if (key === 'variable_scale') {
+            // Will have to deal with this in Surface Object
+        }
         this.setState({
             query: query
         })
