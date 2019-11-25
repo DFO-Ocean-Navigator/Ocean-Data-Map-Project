@@ -38,6 +38,7 @@ export default class BathLayer extends React.Component {
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
+                console.warn("STATE: ", this.state);
                 let layer = this.state.surface;
                 this.data = result;
                 self.setState({
