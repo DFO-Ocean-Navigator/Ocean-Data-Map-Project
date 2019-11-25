@@ -31,7 +31,7 @@ export default class BathLayer extends React.Component {
             radius: this.props.radius
         }
         let self = this
-        let lock = False
+        let lock = false;
         $.ajax({
             type: 'GET',
             dataType: 'json',
