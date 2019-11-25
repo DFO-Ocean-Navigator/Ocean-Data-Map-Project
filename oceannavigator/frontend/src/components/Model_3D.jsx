@@ -15,6 +15,7 @@ export default class Model_3D extends React.Component {
 
         this.state = {
             layers: [],
+            data_panels: [],
             index: 0
         }
 
@@ -32,9 +33,9 @@ export default class Model_3D extends React.Component {
     /*
         Adds the provided layer to the plot
     */
-    addDataLayer(layer) {
+    addDataLayer(idx, layer) {
         let layers = this.state.layers;
-        layers.push(layer);
+        layers[idx] = layer;
         this.setState({
             layers: layers
         })
