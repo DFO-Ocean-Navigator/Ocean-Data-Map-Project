@@ -38,14 +38,14 @@ export default class BathLayer extends React.Component {
             success: function(result) {
                 console.warn("STATE: ", this.state);
                 let old = self.state.surface;
-                let layer;
+                let layer = self.state.surface;
                 if (old === undefined) {
                     layer = {
                         z: [],
                         type: 'surface'
                     }
                 }
-                layer = jQuery.extend({}, old);
+                layer = jQuery.extend({}, layer);
                 layer.z = result;
                 self.setState({
                     data: result,
