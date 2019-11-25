@@ -84,8 +84,9 @@ export default class Model_3D extends React.Component {
 
     addDataPanel() {
         let data_panels = this.state.data_panels;
-        data_panels.push(this.state.index);
+        
         let index = this.state.index;
+        data_panels.push(index);
         index = index + 1;
 
         this.setState({
@@ -155,6 +156,7 @@ export default class Model_3D extends React.Component {
         let plot_container = (
             <Plot style={{height: '100%'}}
                 data={this.state.layers}
+                onClick={(e) => {console.warn("ONCLICK: ", e)}}
             ></Plot>
         )
         

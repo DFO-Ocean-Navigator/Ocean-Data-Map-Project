@@ -22,6 +22,10 @@ export default class DataLayer extends React.Component {
                 "variable": "criticaldepth",
                 "depth": 0,
             },
+            surface: {
+                z: [],
+                type: 'surface'
+            }
         }
 
         this.updateVariables = this.updateVariables.bind(this);
@@ -63,9 +67,18 @@ export default class DataLayer extends React.Component {
             dataType: 'json',
             url: url,
             success: function (result) {
+                let layer = jQuery.extend({}, self.state.surface);
+                layer.z = result;
                 self.setState({
-                    data: result
+                    data: result,
+                    surface: layer
                 })
+                let idx = self.props.updateDataLayer(self.state.layerIDX, layer)
+                if (idx !== undefined) {
+                    self.setState({
+                        layerIDX: idx
+                    })
+                }
             }
         })
     }
@@ -77,15 +90,6 @@ export default class DataLayer extends React.Component {
         let data_selection_panel = null;
         if (this._mounted) {
             console.warn("MOUNTED")
-            const toggle_data = (
-                <SelectBox
-                    id='bath_only'
-                    key='bath_only'
-                    state={this.state.bath_only}
-                    onUpdate={this.toggleBathymetry}
-                    title={_("Bathymetry Only")}
-                />
-            )
 
             const select_dataset = (
                 <ComboBox
