@@ -19,7 +19,7 @@ export default class Model_3D extends React.Component {
                 type: 'surface'
             }],
             data_panels: [],
-            index: 0
+            index: 2
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -82,6 +82,7 @@ export default class Model_3D extends React.Component {
     }
 
     addDataPanel() {
+        console.warn("addDataPanel()")
         let data_panels = this.state.data_panels;
         
         let index = this.state.index;
@@ -138,6 +139,7 @@ export default class Model_3D extends React.Component {
             ></BathLayer>
         )
         for (let idx in this.state.data_panels) {
+            console.warn("IDX")
             layers.push(
                 <DataLayer
                     index={idx}
@@ -161,7 +163,7 @@ export default class Model_3D extends React.Component {
         let add_panel = (
             <Button
                 onClick={this.addDataPanel}
-            ></Button>
+            >Add Data Layer</Button>
         )
 
         let plot_container = (
