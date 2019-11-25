@@ -21,6 +21,7 @@ export default class Model_3D extends React.Component {
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
         this.addDataLayer = this.addDataLayer.bind(this);
+        this.updateDataLayer = this.updateDataLayer.bind(this);
         this.removeDataLayer = this.removeDataLayer.bind(this);
         this.addDataPanel = this.addDataPanel.bind(this);
         this.removeDataPanel = this.removeDataPanel.bind(this);
