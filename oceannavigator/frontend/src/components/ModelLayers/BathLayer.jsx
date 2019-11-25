@@ -6,10 +6,7 @@ export default class BathLayer extends React.Component {
 
         this.state = {
             data: [],
-            surface: {
-                z: [],
-                type: 'surface'
-            }
+            surface: undefined
         }
 
         this.get_bathymetry = this.get_bathymetry.bind(this);
