@@ -124,12 +124,12 @@ export default class DataLayer extends React.Component {
             >
                 {data_selection}
             </Panel>
-
-            return (
-                <div>
-                    {data_selection_panel}
-                </div>
-            )
         }
+        return (
+            <div>
+                {data_selection_panel}
+            </div>
+        )
+        
     }
 }
