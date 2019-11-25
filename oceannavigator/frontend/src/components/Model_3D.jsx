@@ -135,6 +135,7 @@ export default class Model_3D extends React.Component {
                     value={idx}
                     urlFromQuery={this.urlFromQuery}
                     addDataLayer={this.addDataLayer}
+                    updateDataLayer={this.updateDataLayer}
                     removeDataLayer={this.removeDataLayer}
                     area={this.props.area}
                     interp={this.props.interp}

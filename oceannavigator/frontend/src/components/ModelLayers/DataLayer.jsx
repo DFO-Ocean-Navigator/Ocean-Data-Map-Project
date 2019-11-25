@@ -60,7 +60,7 @@ export default class DataLayer extends React.Component {
     }
 
     loadNextPlot() {
-        let url = this.urlFromStateQuery('/api/v1.0/data/area/', this.state.query)
+        let url = this.props.urlFromQuery('/api/v1.0/data/area/', this.state.query)
         self = this
         $.ajax({
             type: 'GET',
