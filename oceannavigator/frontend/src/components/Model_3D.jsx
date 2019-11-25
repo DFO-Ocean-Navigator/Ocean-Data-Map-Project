@@ -41,6 +41,13 @@ export default class Model_3D extends React.Component {
     }
 
     /*
+        Updates the specified data with the provided data
+    */
+    updateDataLayer(idx, layer) {
+        
+    }
+
+    /*
         Removes the specified layer from the plot
     */
     removeDataLayer(layer) {
