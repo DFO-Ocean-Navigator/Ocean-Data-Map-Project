@@ -17,11 +17,12 @@ export default class BathLayer extends React.Component {
 
 
     componentDidMount() {
-        this.get_bathymetry();
+        
         let idx = this.props.addDataLayer(this.state.surface);
         this.setState({
             layerIDX: idx
         })
+        this.get_bathymetry();
     }
 
     get_bathymetry() {
