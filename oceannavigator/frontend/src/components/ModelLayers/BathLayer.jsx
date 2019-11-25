@@ -48,7 +48,7 @@ export default class BathLayer extends React.Component {
                 })
                 let idx = self.props.updateDataLayer(self.state.layerIDX, layer)
                 if (idx !== undefined) {
-                    this.setState({
+                    self.setState({
                         layerIDX: idx
                     })
                 }
