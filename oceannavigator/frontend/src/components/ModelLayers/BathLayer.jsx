@@ -43,6 +43,31 @@ export default class BathLayer extends React.Component {
                     layer = {
                         z: [],
                         type: 'surface',
+                        colorscale: 'Earth',
+                    }
+                }
+                layer = jQuery.extend({}, layer);
+                layer.z = result;
+                self.setState({
+                    data: result,
+                    surface: layer
+                })
+                self.props.updateDataLayer(old, layer)
+            }
+        })
+
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
+            success: function(result) {
+                console.warn("STATE: ", this.state);
+                let old = self.state.surface;
+                let layer = self.state.surface;
+                if (old === undefined) {
+                    layer = {
+                        z: [],
+                        type: 'surface',
                         colormap: 'Earth',
                     }
                 }
@@ -55,6 +80,8 @@ export default class BathLayer extends React.Component {
                 self.props.updateDataLayer(old, layer)
             }
         })
+
+        
     }
 
     render() {
