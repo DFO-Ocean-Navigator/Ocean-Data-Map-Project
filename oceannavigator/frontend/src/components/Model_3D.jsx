@@ -104,6 +104,7 @@ export default class Model_3D extends React.Component {
             <BathLayer
                 key='bathymetry'
                 addDataLayer={this.addDataLayer}
+                updateDataLayer={this.updateDataLayer}
                 removeDataLayer={this.removeDataLayer}
                 urlFromQuery={this.urlFromQuery}
                 area={this.props.area}
