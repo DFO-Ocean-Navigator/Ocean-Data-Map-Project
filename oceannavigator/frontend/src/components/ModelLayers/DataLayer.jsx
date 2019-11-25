@@ -99,63 +99,56 @@ export default class DataLayer extends React.Component {
 
         // Initialize each component
         let data_selection_panel = null;
-        if (this._mounted) {
-            console.warn("MOUNTED")
-
-            const remove_panel = (
-                <Button
-                    className='panelRemove'
-                    onClick={this.removePanel}
-                >X</Button>
-            )
-
-            const select_dataset = (
-                <ComboBox
-                    key='dataset'
-                    id='dataset'
-                    state={this.state.query.dataset}
-                    def=''
-                    url='/api/v1.0/datasets/'
-                    title={_("Dataset")}
-                    onUpdate={this.updateDataset}
-                />
-            )
-
-            const select_variable = (
-                <ComboBox
-                    id='variable'
-                    key='variable'
-                    multiple={false}
-                    state={this.state.query.variable}
-                    def={"defaults.dataset"}
-                    onUpdate={this.updateVariables}
-                    url={"/api/v1.0/variables/?vectors&dataset=" + this.state.query.dataset
-                    }
-                    title={_("Variables")}
-                />
-            )
-
-            const toggle_apply = (
-                <Button
-                    onClick={this.loadNextPlot}
-                >Apply</Button>
-            )
-
-            // Add the components to an array in the correct order
-            let data_selection = [select_dataset, select_variable, toggle_apply];
-
-            // Create Panel with Panel Elements
-            data_selection_panel = <Panel
-                key='right_map'
-                id='right_map'
-                collapsible
-                defaultExpanded
-                header={<div>{_("Surface")}{remove_panel}</div>}
-                bsStyle='primary'
-            >
-                {data_selection}
-            </Panel>
-        }
+        console.warn("MOUNTED")
+        const remove_panel = (
+            <Button
+                className='panelRemove'
+                onClick={this.removePanel}
+            >X</Button>
+        )
+        const select_dataset = (
+            <ComboBox
+                key='dataset'
+                id='dataset'
+                state={this.state.query.dataset}
+                def=''
+                url='/api/v1.0/datasets/'
+                title={_("Dataset")}
+                onUpdate={this.updateDataset}
+            />
+        )
+        const select_variable = (
+            <ComboBox
+                id='variable'
+                key='variable'
+                multiple={false}
+                state={this.state.query.variable}
+                def={"defaults.dataset"}
+                onUpdate={this.updateVariables}
+                url={"/api/v1.0/variables/?vectors&dataset=" + this.state.query.dataset
+                }
+                title={_("Variables")}
+            />
+        )
+        const toggle_apply = (
+            <Button
+                onClick={this.loadNextPlot}
+            >Apply</Button>
+        )
+        // Add the components to an array in the correct order
+        let data_selection = [select_dataset, select_variable, toggle_apply];
+        // Create Panel with Panel Elements
+        data_selection_panel = <Panel
+            key='right_map'
+            id='right_map'
+            collapsible
+            defaultExpanded
+            header={<div>{_("Surface")}{remove_panel}</div>}
+            bsStyle='primary'
+        >
+            {data_selection}
+        </Panel>
+        
         return (
             <div>
                 {data_selection_panel}
