@@ -64,9 +64,7 @@ export default class BathLayer extends React.Component {
 
     render() {
         return (
-            <div>
-                
-            </div>
+            null
         )
     }
 }
