@@ -34,9 +34,11 @@ export default class Model_3D extends React.Component {
         Adds the provided layer to the plot
     */
     addDataLayer(idx, layer) {
+        console.warn("addDataLayer");
         let layers = this.state.layers;
         layers.push(layer);
         idx = layers.indexOf(layer);
+        console.warn("LAYERS: ", layers)
         this.setState({
             layers: layers
         })
@@ -47,8 +49,10 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(idx, layer) {
+        console.warn('updateDataLayer');
         let layers = this.state.layers;
         layers[idx] = layer;
+        console.warn("LAYERS: ", layers)
         this.setState({
             layers: layers
         })
