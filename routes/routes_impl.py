@@ -871,18 +871,20 @@ def get_bath_data(args):
 
     data = area.get_bathymetry()
     data = json.dumps(data.tolist())
-    #response = make_response(data.tobytes())
-    #response.headers.set('Content-Type', 'application/octet-stream')
-    #return response
+    
     return Response(data, status=200, mimetype='application/json')
 
 def get_point_data(args):
-
-    return data
+    data = None
+    
+    return Response(data, status=200, mimetype='application/json')
 
 def get_latlon_data(args):
-
-    return data
+    lat, lon = area.get_latlon()
+    data = [lat.tolist(), lon.tolist()]
+    data = json.dumps(data)
+    
+    return Response(data, status=200, mimetype='application/json')
 
 def stats_impl(args, query=None):
     """

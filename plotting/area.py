@@ -225,7 +225,7 @@ class Area():
         
         return self.latitude, self.longitude 
 
-    def get_latlon():
+    def get_latlon(self):
         return self.latitude, self.longitude
     
     def get_variable(self, dataset, variable, depth, time):
