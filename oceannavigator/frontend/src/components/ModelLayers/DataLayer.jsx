@@ -124,7 +124,7 @@ export default class DataLayer extends React.Component {
             )
 
             // Add the components to an array in the correct order
-            let data_selection = [toggle_data, select_dataset, select_variable, toggle_apply];
+            let data_selection = [select_dataset, select_variable, toggle_apply];
 
 
 
