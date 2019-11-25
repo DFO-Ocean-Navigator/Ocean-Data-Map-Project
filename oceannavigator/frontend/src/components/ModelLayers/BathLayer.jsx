@@ -18,10 +18,10 @@ export default class BathLayer extends React.Component {
 
     componentDidMount() {
         
-        let idx = this.props.addDataLayer(this.state.surface);
+        /*let idx = this.props.addDataLayer(this.state.surface);
         this.setState({
             layerIDX: idx
-        })
+        })*/
         this.get_bathymetry();
     }
 
@@ -45,7 +45,13 @@ export default class BathLayer extends React.Component {
                 self.setState({
                     data: result,
                     surface: layer
-                }, () => self.props.updateDataLayer(self.state.layerIDX, layer))
+                })
+                let idx = self.props.updateDataLayer(self.state.layerIDX, layer)
+                if (idx !== undefined) {
+                    this.setState({
+                        layerIDX: idx
+                    })
+                }
             },
             fail: function(xhr, textStatus, errorThrown) {
                 alert('request failed')
