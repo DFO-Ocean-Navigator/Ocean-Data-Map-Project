@@ -22,10 +22,7 @@ export default class DataLayer extends React.Component {
                 "variable": "criticaldepth",
                 "depth": 0,
             },
-            surface: {
-                z: [],
-                type: 'surface'
-            }
+            surface: undefined
         }
 
         this.updateVariables = this.updateVariables.bind(this);
