@@ -32,19 +32,19 @@ export default class BathLayer extends React.Component {
             projection: this.props.projection,
             radius: this.props.radius
         }
-        //let self = this
+        let self = this
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
                 console.warn("STATE: ", this.state);
-                let layer = this.state.surface;
-                this.data = result;
+                let layer = self.state.surface;
+                layer.data = result;
                 self.setState({
                     data: result,
                     surface: layer
-                }, () => this.props.updateDataLayer(this.state.layerIDX, layer))
+                }, () => self.props.updateDataLayer(self.state.layerIDX, layer))
             },
             fail: function(xhr, textStatus, errorThrown) {
                 alert('request failed')
