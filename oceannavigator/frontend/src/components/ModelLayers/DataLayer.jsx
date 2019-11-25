@@ -1,7 +1,7 @@
 import React from 'react';
-import ComboBox from "./ComboBox.jsx";
+import ComboBox from "../ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
-import SelectBox from "./SelectBox.jsx";
+import SelectBox from "../SelectBox.jsx";
 
 export default class DataLayer extends React.Component {
     constructor(props) {
