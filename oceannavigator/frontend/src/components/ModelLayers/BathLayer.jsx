@@ -42,7 +42,8 @@ export default class BathLayer extends React.Component {
                 if (old === undefined) {
                     layer = {
                         z: [],
-                        type: 'surface'
+                        type: 'surface',
+                        colormap: 'Earth',
                     }
                 }
                 layer = jQuery.extend({}, layer);
@@ -52,9 +53,6 @@ export default class BathLayer extends React.Component {
                     surface: layer
                 })
                 self.props.updateDataLayer(old, layer)
-            },
-            fail: function(xhr, textStatus, errorThrown) {
-                alert('request failed')
             }
         })
     }
