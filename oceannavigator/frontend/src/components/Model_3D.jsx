@@ -33,7 +33,7 @@ export default class Model_3D extends React.Component {
     /*
         Adds the provided layer to the plot
     */
-    addDataLayer(layer) {
+    addDataLayer(idx, layer) {
         let layers = this.state.layers;
         layers.push(layer);
         idx = layers.indexOf(layer);
