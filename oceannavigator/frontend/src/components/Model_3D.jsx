@@ -53,7 +53,7 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(idx, layer) {
-        let layers = this.state.layers;
+        let layers = $.extend({}, this.state.layers);
         
         if (idx === undefined) {
             layers.push(layer);
