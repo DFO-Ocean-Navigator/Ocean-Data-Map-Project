@@ -880,6 +880,11 @@ def get_point_data(args):
     return Response(data, status=200, mimetype='application/json')
 
 def get_latlon_data(args):
+    if 'query' not in args:
+        raise APIError('No Query Provided')
+    args = json.loads(args.get('query'))
+    area = Area(args.get('area'), args.get('interp'), args.get('radius'), args.get('neighbours'), args.get('projection'))
+
     lat, lon = area.get_latlon()
     data = [lat.tolist(), lon.tolist()]
     data = json.dumps(data)
