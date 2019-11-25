@@ -140,6 +140,7 @@ export default class Model_3D extends React.Component {
         )
         for (let idx in this.state.data_panels) {
             console.warn("IDX: ", idx)
+            idx = this.state.data_panels[idx];
             layers.push(
                 <DataLayer
                     index={idx}
