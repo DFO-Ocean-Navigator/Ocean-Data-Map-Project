@@ -96,7 +96,7 @@ export default class Model_3D extends React.Component {
     }
 
     removeDataPanel(panel, layer) {
-        let data_panels = this.state.data_panels;
+        let data_panels = jQuery.extend([], this.state.data_panels);
         let idx = data_panels.indexOf(panel);
         data_panels.splice(idx, 1);
         
@@ -139,8 +139,8 @@ export default class Model_3D extends React.Component {
             ></BathLayer>
         )
         for (let idx in this.state.data_panels) {
-            console.warn("IDX: ", idx)
             idx = this.state.data_panels[idx];
+            console.warn("IDX: ", idx)
             layers.push(
                 <DataLayer
                     index={idx}
