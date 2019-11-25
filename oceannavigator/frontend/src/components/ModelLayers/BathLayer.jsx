@@ -5,13 +5,18 @@ export default class BathLayer extends React.Component {
         super(props);
 
         this.state = {
-            data: []
+            data: [],
+            surface: {
+                data: this.state.data,
+                type: 'Surface'
+            }
         }
+
+        this.get_bathymetry = this.get_bathymetry.bind(this);
     }
 
 
     componentDidMount() {
-        this.createSurface();
         this.get_bathymetry();
         let idx = this.props.addDataLayer(this.state.surface);
         this.setState({
@@ -27,16 +32,16 @@ export default class BathLayer extends React.Component {
             projection: this.props.projection,
             radius: this.props.radius
         }
-        let self = this
+        //let self = this
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
-                if (self.layerData !== undefined) {
+                if (this.layerData !== undefined) {
 
-                    let layer = self.surface;
-                    layer.data = result;
+                    let layer = this.surface;
+                    this.data = result;
                     self.setState({
                         data: result,
                         surface: layer
@@ -48,17 +53,6 @@ export default class BathLayer extends React.Component {
             fail: function(xhr, textStatus, errorThrown) {
                 alert('request failed')
             }
-        })
-    }
-
-    createSurface() {
-        let surface = {
-            data: this.state.data,
-            type: 'Surface'
-        }
-
-        this.setState({
-            surface: surface
         })
     }
 
