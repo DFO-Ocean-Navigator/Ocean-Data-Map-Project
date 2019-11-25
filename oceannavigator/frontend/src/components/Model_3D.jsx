@@ -15,7 +15,7 @@ export default class Model_3D extends React.Component {
 
         this.state = {
             layers: [{
-                data: [[1],[1],[1]],
+                z: [[1],[1],[1]],
                 type: 'surface'
             }],
             data_panels: [],

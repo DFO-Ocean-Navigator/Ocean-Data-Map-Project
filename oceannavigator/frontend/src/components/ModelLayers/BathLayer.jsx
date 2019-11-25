@@ -7,7 +7,7 @@ export default class BathLayer extends React.Component {
         this.state = {
             data: [],
             surface: {
-                data: [],
+                z: [],
                 type: 'surface'
             }
         }
@@ -41,7 +41,7 @@ export default class BathLayer extends React.Component {
             success: function(result) {
                 console.warn("STATE: ", this.state);
                 let layer = self.state.surface;
-                layer.data = result;
+                layer.z = result;
                 self.setState({
                     data: result,
                     surface: layer
