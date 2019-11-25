@@ -56,7 +56,7 @@ export default class BathLayer extends React.Component {
                 self.setState({
                     data: result,
                     surface: layer
-                }, lock = false)
+                }, () => lock = false)
                 self.props.updateDataLayer(old, layer)
             }
         })
