@@ -36,6 +36,8 @@ export default class DataLayer extends React.Component {
     }
 
     updateVariables(key, values) {
+        console.warn("KEY: ", key);
+        console.warn("VALUES: ", values);
         if (typeof values[0] === 'string') { return }
 
         let query = this.state.query;
