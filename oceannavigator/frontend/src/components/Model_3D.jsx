@@ -14,7 +14,10 @@ export default class Model_3D extends React.Component {
         super(props)
 
         this.state = {
-            layers: [],
+            layers: [{
+                data: [[1],[1],[1]],
+                type: 'surface'
+            }],
             data_panels: [],
             index: 0
         }
@@ -147,8 +150,7 @@ export default class Model_3D extends React.Component {
                 data={
                     this.state.layers,
                     {
-                        data: [[1],[1],[1]],
-                        type: 'surface'
+                        
                     }
                 }
             ></Plot>
