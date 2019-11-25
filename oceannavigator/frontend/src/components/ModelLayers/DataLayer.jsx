@@ -66,7 +66,7 @@ export default class DataLayer extends React.Component {
         // Initialize each component
         let data_selection_panel = null;
         if (this._mounted) {
-
+            console.warn("MOUNTED")
             const toggle_data = (
                 <SelectBox
                     id='bath_only'
