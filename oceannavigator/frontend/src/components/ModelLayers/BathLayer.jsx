@@ -66,6 +66,7 @@ export default class BathLayer extends React.Component {
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/latlon/', query),
             success: function(result) {
+                console.warn("RESULT: ", result)
                 while (lock) {
 
                 }
@@ -82,9 +83,8 @@ export default class BathLayer extends React.Component {
                 }
                 layer = jQuery.extend({}, layer);
                 layer.x = result[0];
-                layer.y = result
+                layer.y = result[1];
                 self.setState({
-                    data: result,
                     surface: layer
                 }, () => lock = false)
                 
