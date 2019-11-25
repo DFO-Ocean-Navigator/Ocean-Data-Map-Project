@@ -7,7 +7,7 @@ export default class BathLayer extends React.Component {
         this.state = {
             data: [],
             surface: {
-                data: this.state.data,
+                data: data,
                 type: 'Surface'
             }
         }
