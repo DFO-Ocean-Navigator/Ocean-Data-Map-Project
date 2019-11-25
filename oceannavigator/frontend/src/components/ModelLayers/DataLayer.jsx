@@ -64,6 +64,7 @@ export default class DataLayer extends React.Component {
     render() {
 
         // Initialize each component
+        let data_selection_panel = null;
         if (this._mounted) {
 
             const toggle_data = (
@@ -114,7 +115,7 @@ export default class DataLayer extends React.Component {
 
 
             // Create Panel with Panel Elements
-            let data_selection_panel = <Panel
+            data_selection_panel = <Panel
                 key='right_map'
                 id='right_map'
                 collapsible
