@@ -139,7 +139,7 @@ export default class Model_3D extends React.Component {
             ></BathLayer>
         )
         for (let idx in this.state.data_panels) {
-            console.warn("IDX")
+            console.warn("IDX: ", idx)
             layers.push(
                 <DataLayer
                     index={idx}
