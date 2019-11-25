@@ -45,8 +45,7 @@ export default class BathLayer extends React.Component {
                     self.setState({
                         data: result,
                         surface: layer
-                    })
-                    this.props.updateDataLayer(this.state.layerIDX, layer);
+                    }, () => this.props.updateDataLayer(this.state.layerIDX, layer))
                 }
                 
             },
