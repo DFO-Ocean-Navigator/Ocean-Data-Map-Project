@@ -40,18 +40,21 @@ export default class BathLayer extends React.Component {
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
                 console.warn("STATE: ", this.state);
-                let layer = jQuery.extend({}, self.state.surface);
+                let old = self.state.surface;
+                let layer;
+                if (old === undefined) {
+                    layer = {
+                        z: [],
+                        type: 'surface'
+                    }
+                }
+                layer = jQuery.extend({}, old);
                 layer.z = result;
                 self.setState({
                     data: result,
                     surface: layer
                 })
-                let idx = self.props.updateDataLayer(self.state.layerIDX, layer)
-                if (idx !== undefined) {
-                    self.setState({
-                        layerIDX: idx
-                    })
-                }
+                self.props.updateDataLayer(old, layer)
             },
             fail: function(xhr, textStatus, errorThrown) {
                 alert('request failed')

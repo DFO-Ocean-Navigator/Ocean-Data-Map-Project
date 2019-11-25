@@ -38,8 +38,6 @@ export default class DataLayer extends React.Component {
     }
 
     updateVariables(key, values) {
-        console.warn("KEY: ", key);
-        console.warn("VALUE: ", value);
         if (typeof values[0] === 'string') { return }
 
         let query = this.state.query;
@@ -123,6 +121,12 @@ export default class DataLayer extends React.Component {
                 <Button
                     onClick={this.loadNextPlot}
                 >Apply</Button>
+            )
+
+            const toggle_remove = (
+                <Button
+                    onClick={this.removeLayer}
+                ></Button>
             )
 
             // Add the components to an array in the correct order

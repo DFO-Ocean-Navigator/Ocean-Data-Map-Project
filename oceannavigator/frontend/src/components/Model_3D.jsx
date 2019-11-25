@@ -52,16 +52,15 @@ export default class Model_3D extends React.Component {
     /*
         Updates the specified data with the provided data
     */
-    updateDataLayer(idx, layer) {
+    updateDataLayer(old, layer) {
         let layers = jQuery.extend([], this.state.layers);
-        if (idx === undefined) {
+        if (old === undefined) {
             layers.push(layer);
-            idx = layers.indexOf(layer);
             this.setState({
                 layers: layers
             })
-            return idx;
         }
+        let idx = layers.indexOf(old);
         layers[idx] = layer;
         console.warn("LAYERS: ", layers)
         this.setState({
@@ -95,10 +94,16 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    removeDataPanel(index) {
+    removeDataPanel(panelindex, layerindex) {
         let data_panels = this.state.data_panels;
-        let idx = data_panels.indexOf(index);
+        let idx = data_panels.indexOf(panelindex);
         data_panels.splice(idx, 1);
+        
+        // Needs to remove data too
+        let layers = this.state.layers;
+        let data = layers.data;
+        
+
         this.setState({
             data_panels: data_panels
         })
