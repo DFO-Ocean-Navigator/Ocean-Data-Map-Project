@@ -82,7 +82,6 @@ export default class Model_3D extends React.Component {
         }
         let idx = layers.indexOf(old);
         layers[idx] = layer;
-        console.warn("LAYERS: ", layers)
         this.setState({
             layers: layers
         })
@@ -102,7 +101,6 @@ export default class Model_3D extends React.Component {
     }
 
     addDataPanel() {
-        console.warn("addDataPanel()")
         let data_panels = this.state.data_panels;
         
         let index = this.state.index;

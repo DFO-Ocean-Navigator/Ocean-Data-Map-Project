@@ -41,6 +41,7 @@ export default class DataLayer extends React.Component {
             let old = this.state.surface;
             let layer = this.state.surface;
             if (old === undefined) {
+                console.warn("CREATING SURFACE (DATA)")
                 layer = {
                     z: [],
                     type: 'surface',
