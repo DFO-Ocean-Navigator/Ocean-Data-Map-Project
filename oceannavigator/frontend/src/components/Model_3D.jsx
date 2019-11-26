@@ -47,6 +47,8 @@ export default class Model_3D extends React.Component {
         this.addDataPanel = this.addDataPanel.bind(this);
         this.removeDataPanel = this.removeDataPanel.bind(this);
         this.getLatLon = this.getLatLon.bind(this);
+        this.updateDepth = this.updateDepth.bind(this);
+        this.addVerticalLine = this.addVerticalLine.bind(this);
     }
 
     componentDidMount() {
@@ -150,6 +152,19 @@ export default class Model_3D extends React.Component {
         })
     }
 
+    updateDepth(min, max) {
+        this.setState({
+            depth: {
+                min: min,
+                max: max,
+            }
+        })
+    }
+
+    addVerticalLine(point) {
+        console.warn("POINT: ", point);
+    }
+
     render() {
         
         let layers = []
@@ -161,6 +176,7 @@ export default class Model_3D extends React.Component {
                 updateDataLayer={this.updateDataLayer}
                 removeDataLayer={this.removeDataLayer}
                 urlFromQuery={this.urlFromQuery}
+                updateDepth={this.updateDepth}
                 area={this.props.area}
                 interp={this.props.interp}
                 neighbours={this.props.neighbours}

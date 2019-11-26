@@ -86,9 +86,15 @@ export default class BathLayer extends React.Component {
                     data: result,
                     surface: layer
                 }, () => this.surface_lock = false)
-                self.props.updateDataLayer(old, layer)
+                self.props.updateDataLayer(old, layer);
+                self.updateDepth(result);
             }
         })
+    }
+
+    updateDepth(data) {
+        let max = Math.max(...alert.map(e => Array.isArray(e) ? getMax(e) : e));
+        this.props.updateDepth(0, max);
     }
 
     render() {
