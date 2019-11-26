@@ -30,20 +30,20 @@ export default class BathLayer extends React.Component {
 
             }
             this.surface_lock = true;
-            let layer = null;
-            if (this.state.surface === undefined) {
+            
+            let old = self.state.surface;
+            let layer = self.state.surface;
+            if (old === undefined) {
                 layer = {
                     z: [],
-                    x: this.props.lon,
-                    y: this.props.lat,
                     type: 'surface',
-                    colorscale: 'Earth'
+                    colorscale: 'Earth',
                 }
-            } else {
-                layer = this.state.surface;
-                layer.x = this.props.lon;
-                layer.y = this.props.lat;
             }
+            layer = jQuery.extend({}, layer);
+            layer.x = this.props.lon;
+            layer.y = this.props.lat;
+            
             this.setState({
                 surface: layer
             }, () => this.surface_lock = false)

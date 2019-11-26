@@ -33,6 +33,28 @@ export default class DataLayer extends React.Component {
 
     componentDidMount() {
         this._mounted = true
+
+        if (this.props.lat !== undefined && this.props.lon !== undefined) {
+            while (this.surface_lock) {}
+            this.surface_lock = true;
+            
+            let old = self.state.surface;
+            let layer = self.state.surface;
+            if (old === undefined) {
+                layer = {
+                    z: [],
+                    type: 'surface',
+                    colorscale: 'Earth',
+                }
+            }
+            layer = jQuery.extend({}, layer);
+            layer.x = this.props.lon;
+            layer.y = this.props.lat;
+            
+            this.setState({
+                surface: layer
+            }, () => this.surface_lock = false)
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
