@@ -36,8 +36,8 @@ export default class Model_3D extends React.Component {
                     "zaxis": {"title": "Depth"}
                 }
             },
-            lat: [],
-            lon: [],
+            lat: undefined,
+            lon: undefined,
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
