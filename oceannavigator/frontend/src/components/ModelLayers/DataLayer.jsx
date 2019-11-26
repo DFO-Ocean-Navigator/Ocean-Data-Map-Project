@@ -37,12 +37,26 @@ export default class DataLayer extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.lat !== this.props.lat || prevProps.lon !== this.props.lon) {
-            let layer = this.state.surface;
-            layer.y = this.props.lat
-            layer.x = this.props.lon
+            while (this.surface_lock) {}
+            this.surface_lock = true;
+
+            let layer = null
+            if (this.state.surface === undefined) {
+                layer = {
+                    z: [],
+                    y: this.props.lat,
+                    x: this.props.lon,
+                    type: 'surface'
+                }
+            } else {
+                layer = this.state.surface;
+                layer.y = this.props.lat
+                layer.x = this.props.lon    
+            }
+            
             this.setState({
                 surface: layer
-            })
+            }, () => this.surface_lock = false)
         }
     }
 
@@ -83,6 +97,8 @@ export default class DataLayer extends React.Component {
             dataType: 'json',
             url: url,
             success: function (result) {
+                while (this.surface_lock) {}
+                this.surface_lock = true;
                 let old = self.state.surface;
                 let layer = self.state.surface;
                 if (old === undefined) {
@@ -96,7 +112,7 @@ export default class DataLayer extends React.Component {
                 self.setState({
                     data: result,
                     surface: layer
-                })
+                }, () => this.surface_lock = false)
                 self.props.updateDataLayer(old, layer)
             }
         })

@@ -26,9 +26,27 @@ export default class BathLayer extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.lat !== this.props.lat || prevProps.lon !== this.props.lon) {
-            if (this.state.surface === undefined) {
+            while (this.surface_lock) {
 
             }
+            this.surface_lock = true;
+            let layer = null;
+            if (this.state.surface !== undefined) {
+                layer = {
+                    z: [],
+                    x: this.props.lon,
+                    y: this.props.lat,
+                    type: 'surface',
+                    colorscale: 'Earth'
+                }
+            } else {
+                layer = this.state.surface;
+                layer.x = this.props.lon;
+                layer.y = this.props.lat;
+            }
+            this.setState({
+                surface: layer
+            }, () => this.surface_lock = false)
         }
     }
 
@@ -46,6 +64,10 @@ export default class BathLayer extends React.Component {
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
+                while ( this.surface_lock) {
+
+                }
+                this.surface_lock = true;
                 let old = self.state.surface;
                 let layer = self.state.surface;
                 if (old === undefined) {
@@ -60,7 +82,7 @@ export default class BathLayer extends React.Component {
                 self.setState({
                     data: result,
                     surface: layer
-                })
+                }, () => this.surface_lock = false)
                 self.props.updateDataLayer(old, layer)
             }
         })
