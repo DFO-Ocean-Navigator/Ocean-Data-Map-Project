@@ -35,10 +35,12 @@ export default class Model_3D extends React.Component {
         this.removeDataLayer = this.removeDataLayer.bind(this);
         this.addDataPanel = this.addDataPanel.bind(this);
         this.removeDataPanel = this.removeDataPanel.bind(this);
+        this.getLatLon = this.getLatLon.bind(this);
     }
 
     componentDidMount() {
         this._mounted = true;
+        this.getLatLon();
     }
 
     /*
