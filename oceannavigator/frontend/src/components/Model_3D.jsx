@@ -119,7 +119,7 @@ export default class Model_3D extends React.Component {
         data_panels.splice(idx, 1);
         
         // Needs to remove data too
-        let layers = this.state.layers
+        let layers = jQuery.extends([], this.state.layers);
         if (layer !== undefined) {
             idx = layers.indexOf(layer);
             layers.splice(idx,1);    
