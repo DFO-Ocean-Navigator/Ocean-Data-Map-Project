@@ -38,8 +38,8 @@ export default class DataLayer extends React.Component {
             while (this.surface_lock) {}
             this.surface_lock = true;
             
-            let old = self.state.surface;
-            let layer = self.state.surface;
+            let old = this.state.surface;
+            let layer = this.state.surface;
             if (old === undefined) {
                 layer = {
                     z: [],
