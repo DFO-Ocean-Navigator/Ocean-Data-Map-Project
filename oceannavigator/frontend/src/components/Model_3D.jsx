@@ -24,7 +24,9 @@ export default class Model_3D extends React.Component {
                     "yaxis": {"title": "Latitude"},
                     "zaxis": {"title": "Depth"}
                 }
-            }
+            },
+            lat: [],
+            lon: [],
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -122,6 +124,20 @@ export default class Model_3D extends React.Component {
     
     urlFromQuery(header, query) {
         return header + "?query=" + encodeURIComponent(stringify(query));
+    }
+
+    getLatLon() {
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: this.props.urlFromQuery('/api/v1.0/data/latlon/', query),
+            success: function(result) {
+                self.setState({
+                    lat: result[0],
+                    lon: result[1]
+                })
+            }
+        })
     }
 
     render() {
