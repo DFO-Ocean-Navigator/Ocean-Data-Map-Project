@@ -120,7 +120,7 @@ export default class Model_3D extends React.Component {
     render() {
         
         let layers = []
-        if (len(this.state.layers) === 0) {
+        if (this.state.layers.length === 0) {
             layers = <img src={this.state.url} />
         } else {
             layers.push(
