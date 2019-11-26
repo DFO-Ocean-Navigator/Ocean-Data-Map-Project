@@ -18,6 +18,17 @@ export default class Model_3D extends React.Component {
             data_panels: [],
             index: 2,
             url: LOADING_IMAGE,
+            query: {
+                "area": this.props.area,
+                "interp": this.props.interp,
+                "neighbours": this.props.neighbours,
+                "projection": this.props.projection,
+                "radius": this.props.radius,
+                "time": this.props.time,
+                "dataset": "giops_day",
+                "variable": "criticaldepth",
+                "depth": 0,
+            },
             layout: {
                 scene: {
                     "xaxis": {"title": "Longitude"},
@@ -40,7 +51,7 @@ export default class Model_3D extends React.Component {
 
     componentDidMount() {
         this._mounted = true;
-        this.getLatLon();
+        this.getLatLon(this.state.query);
     }
 
     /*
@@ -128,11 +139,11 @@ export default class Model_3D extends React.Component {
         return header + "?query=" + encodeURIComponent(stringify(query));
     }
 
-    getLatLon() {
+    getLatLon(query) {
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: this.props.urlFromQuery('/api/v1.0/data/latlon/', query),
+            url: this.urlFromQuery('/api/v1.0/data/latlon/', query),
             success: function(result) {
                 self.setState({
                     lat: result[0],
