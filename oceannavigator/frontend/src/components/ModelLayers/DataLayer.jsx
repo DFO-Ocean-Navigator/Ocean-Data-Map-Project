@@ -55,6 +55,7 @@ export default class DataLayer extends React.Component {
             this.setState({
                 surface: layer
             }, () => this.surface_lock = false)
+            this.props.updateDataLayer(old, layer);
         }
     }
 
