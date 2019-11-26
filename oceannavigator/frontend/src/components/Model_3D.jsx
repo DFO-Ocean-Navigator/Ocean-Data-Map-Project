@@ -8,7 +8,7 @@ import BathLayer from './ModelLayers/BathLayer.jsx';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
-
+const LOADING_IMAGE = require("../images/spinner.gif");
 export default class Model_3D extends React.Component {
     constructor(props) {
         super(props)
@@ -16,7 +16,8 @@ export default class Model_3D extends React.Component {
         this.state = {
             layers: [],
             data_panels: [],
-            index: 2
+            index: 2,
+            url: LOADING_IMAGE
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -119,45 +120,48 @@ export default class Model_3D extends React.Component {
     render() {
         
         let layers = []
-
-        layers.push(
-            <BathLayer
-                key='bathymetry'
-                addDataLayer={this.addDataLayer}
-                updateDataLayer={this.updateDataLayer}
-                removeDataLayer={this.removeDataLayer}
-                urlFromQuery={this.urlFromQuery}
-                area={this.props.area}
-                interp={this.props.interp}
-                neighbours={this.props.neighbours}
-                projection={this.props.projection}
-                radius={this.props.radius}
-                time={this.props.time}
-            ></BathLayer>
-        )
-        for (let idx in this.state.data_panels) {
-            idx = this.state.data_panels[idx];
-            console.warn("IDX: ", idx)
+        if (len(this.state.layers) === 0) {
+            layers = <img src={this.state.url} />
+        } else {
             layers.push(
-                <DataLayer
-                    index={idx}
-                    key={idx}
-                    value={idx}
-                    urlFromQuery={this.urlFromQuery}
+                <BathLayer
+                    key='bathymetry'
                     addDataLayer={this.addDataLayer}
                     updateDataLayer={this.updateDataLayer}
                     removeDataLayer={this.removeDataLayer}
+                    urlFromQuery={this.urlFromQuery}
                     area={this.props.area}
                     interp={this.props.interp}
                     neighbours={this.props.neighbours}
                     projection={this.props.projection}
                     radius={this.props.radius}
                     time={this.props.time}
-                    removeDataPanel={this.removeDataPanel}
-                ></DataLayer>
+                ></BathLayer>
             )
+            for (let idx in this.state.data_panels) {
+                idx = this.state.data_panels[idx];
+                console.warn("IDX: ", idx)
+                layers.push(
+                    <DataLayer
+                        index={idx}
+                        key={idx}
+                        value={idx}
+                        urlFromQuery={this.urlFromQuery}
+                        addDataLayer={this.addDataLayer}
+                        updateDataLayer={this.updateDataLayer}
+                        removeDataLayer={this.removeDataLayer}
+                        area={this.props.area}
+                        interp={this.props.interp}
+                        neighbours={this.props.neighbours}
+                        projection={this.props.projection}
+                        radius={this.props.radius}
+                        time={this.props.time}
+                        removeDataPanel={this.removeDataPanel}
+                    ></DataLayer>
+                )
+            }    
         }
-
+        
         let add_panel = (
             <Button
                 onClick={this.addDataPanel}
