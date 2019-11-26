@@ -140,6 +140,7 @@ export default class Model_3D extends React.Component {
     }
 
     getLatLon(query) {
+        let self = this;
         $.ajax({
             type: 'GET',
             dataType: 'json',
