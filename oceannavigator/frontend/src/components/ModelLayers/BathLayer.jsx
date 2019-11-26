@@ -82,8 +82,8 @@ export default class BathLayer extends React.Component {
                     }
                 }
                 layer = jQuery.extend({}, layer);
-                layer.x = result[0];
-                layer.y = result[1];
+                layer.y = result[0];
+                layer.x = result[1];
                 self.setState({
                     surface: layer
                 }, () => lock = false)
