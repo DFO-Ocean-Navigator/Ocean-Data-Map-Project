@@ -31,7 +31,7 @@ export default class BathLayer extends React.Component {
             }
             this.surface_lock = true;
             let layer = null;
-            if (this.state.surface !== undefined) {
+            if (this.state.surface === undefined) {
                 layer = {
                     z: [],
                     x: this.props.lon,
