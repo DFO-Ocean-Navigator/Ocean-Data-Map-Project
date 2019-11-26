@@ -121,10 +121,8 @@ export default class Model_3D extends React.Component {
         // Needs to remove data too
         let layers = this.state.layers
         if (layer !== undefined) {
-            let data = layers.data;
-            idx = data.indexOf(layer);
-            data.splice(idx,1);
-            layers.data = data;    
+            idx = layers.indexOf(layer);
+            layers.splice(idx,1);    
         }
         
         this.setState({
