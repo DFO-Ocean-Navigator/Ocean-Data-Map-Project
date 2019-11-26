@@ -40,23 +40,22 @@ export default class DataLayer extends React.Component {
             while (this.surface_lock) {}
             this.surface_lock = true;
 
-            let layer = null
-            if (this.state.surface === undefined) {
+            let old = this.state.surface;
+            let layer = this.state.surface;
+            if (old === undefined) {
                 layer = {
                     z: [],
-                    y: this.props.lat,
-                    x: this.props.lon,
                     type: 'surface'
                 }
-            } else {
-                layer = this.state.surface;
-                layer.y = this.props.lat
-                layer.x = this.props.lon    
             }
+            layer = jQuery.extend({}, layer);
+            layer.y = this.props.lat
+            layer.x = this.props.lon    
             
             this.setState({
                 surface: layer
             }, () => this.surface_lock = false)
+            this.props.updateDataLayer(old, layer)
         }
     }
 
