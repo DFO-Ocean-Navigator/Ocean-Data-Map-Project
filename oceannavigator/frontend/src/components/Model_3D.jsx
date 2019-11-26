@@ -120,47 +120,45 @@ export default class Model_3D extends React.Component {
     render() {
         
         let layers = []
-        if (this.state.layers.length === 0) {
-            layers = <img src={this.state.url} />
-        } else {
+        
+        layers.push(
+            <BathLayer
+                key='bathymetry'
+                addDataLayer={this.addDataLayer}
+                updateDataLayer={this.updateDataLayer}
+                removeDataLayer={this.removeDataLayer}
+                urlFromQuery={this.urlFromQuery}
+                area={this.props.area}
+                interp={this.props.interp}
+                neighbours={this.props.neighbours}
+                projection={this.props.projection}
+                radius={this.props.radius}
+                time={this.props.time}
+            ></BathLayer>
+        )
+        for (let idx in this.state.data_panels) {
+            idx = this.state.data_panels[idx];
+            console.warn("IDX: ", idx)
             layers.push(
-                <BathLayer
-                    key='bathymetry'
+                <DataLayer
+                    index={idx}
+                    key={idx}
+                    value={idx}
+                    urlFromQuery={this.urlFromQuery}
                     addDataLayer={this.addDataLayer}
                     updateDataLayer={this.updateDataLayer}
                     removeDataLayer={this.removeDataLayer}
-                    urlFromQuery={this.urlFromQuery}
                     area={this.props.area}
                     interp={this.props.interp}
                     neighbours={this.props.neighbours}
                     projection={this.props.projection}
                     radius={this.props.radius}
                     time={this.props.time}
-                ></BathLayer>
+                    removeDataPanel={this.removeDataPanel}
+                ></DataLayer>
             )
-            for (let idx in this.state.data_panels) {
-                idx = this.state.data_panels[idx];
-                console.warn("IDX: ", idx)
-                layers.push(
-                    <DataLayer
-                        index={idx}
-                        key={idx}
-                        value={idx}
-                        urlFromQuery={this.urlFromQuery}
-                        addDataLayer={this.addDataLayer}
-                        updateDataLayer={this.updateDataLayer}
-                        removeDataLayer={this.removeDataLayer}
-                        area={this.props.area}
-                        interp={this.props.interp}
-                        neighbours={this.props.neighbours}
-                        projection={this.props.projection}
-                        radius={this.props.radius}
-                        time={this.props.time}
-                        removeDataPanel={this.removeDataPanel}
-                    ></DataLayer>
-                )
-            }    
-        }
+        }    
+        
         
         let add_panel = (
             <Button
@@ -168,12 +166,18 @@ export default class Model_3D extends React.Component {
             >Add Data Layer</Button>
         )
 
-        let plot_container = (
-            <Plot style={{height: '100%'}}
-                data={this.state.layers}
-                onClick={(e) => {console.warn("ONCLICK: ", e)}}
-            ></Plot>
-        )
+        let plot_container = null;
+        if (this.state.layers.length === 0) {
+            plot_container = <img src={this.state.url} />
+        } else {
+            plot_container = (
+                <Plot style={{height: '100%'}}
+                    data={this.state.layers}
+                    onClick={(e) => {console.warn("ONCLICK: ", e)}}
+                ></Plot>
+            )
+        }
+        
         
         let content = (
             <Row style={{ height: '100%' }}>
