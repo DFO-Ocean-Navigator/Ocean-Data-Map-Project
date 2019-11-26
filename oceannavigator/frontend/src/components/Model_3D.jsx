@@ -17,7 +17,14 @@ export default class Model_3D extends React.Component {
             layers: [],
             data_panels: [],
             index: 2,
-            url: LOADING_IMAGE
+            url: LOADING_IMAGE,
+            layout: {
+                scene: {
+                    "xaxis": {"title": "Longitude"},
+                    "yaxis": {"title": "Latitude"},
+                    "zaxis": {"title": "Depth"}
+                }
+            }
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -173,6 +180,7 @@ export default class Model_3D extends React.Component {
             plot_container = (
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
+                    layout={this.state.layout}
                     onClick={(e) => {console.warn("ONCLICK: ", e)}}
                 ></Plot>
             )
