@@ -4,6 +4,8 @@ export default class BathLayer extends React.Component {
     constructor(props) {
         super(props);
 
+        this.surface_lock = false;
+
         this.state = {
             data: [],
             surface: undefined
@@ -22,6 +24,14 @@ export default class BathLayer extends React.Component {
         this.get_bathymetry();
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.lat !== this.props.lat || prevProps.lon !== this.props.lon) {
+            if (this.state.surface === undefined) {
+
+            }
+        }
+    }
+
     get_bathymetry() {
         let query = {
             area: this.props.area,
@@ -31,17 +41,11 @@ export default class BathLayer extends React.Component {
             radius: this.props.radius
         }
         let self = this
-        let lock = false;
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
-                console.warn("STATE: ", this.state);
-                while (lock) {
-
-                }
-                lock = true;
                 let old = self.state.surface;
                 let layer = self.state.surface;
                 if (old === undefined) {
@@ -56,7 +60,7 @@ export default class BathLayer extends React.Component {
                 self.setState({
                     data: result,
                     surface: layer
-                }, () => lock = false)
+                })
                 self.props.updateDataLayer(old, layer)
             }
         })

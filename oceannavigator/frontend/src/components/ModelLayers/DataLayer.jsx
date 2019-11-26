@@ -35,6 +35,17 @@ export default class DataLayer extends React.Component {
         this._mounted = true
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.lat !== this.props.lat || prevProps.lon !== this.props.lon) {
+            let layer = this.state.surface;
+            layer.y = this.props.lat
+            layer.x = this.props.lon
+            this.setState({
+                surface: layer
+            })
+        }
+    }
+
     updateVariables(key, values) {
         let query = this.state.query;
         if (key === 'variable') {

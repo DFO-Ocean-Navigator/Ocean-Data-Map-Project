@@ -157,6 +157,8 @@ export default class Model_3D extends React.Component {
                 projection={this.props.projection}
                 radius={this.props.radius}
                 time={this.props.time}
+                lat={this.state.lat}
+                lon={this.state.lon}
             ></BathLayer>
         )
         for (let idx in this.state.data_panels) {
@@ -177,6 +179,8 @@ export default class Model_3D extends React.Component {
                     projection={this.props.projection}
                     radius={this.props.radius}
                     time={this.props.time}
+                    lat={this.state.lat}
+                    lon={this.state.lon}
                     removeDataPanel={this.removeDataPanel}
                 ></DataLayer>
             )
