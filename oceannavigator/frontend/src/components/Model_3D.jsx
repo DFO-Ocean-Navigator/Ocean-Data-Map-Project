@@ -152,17 +152,24 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    updateDepth(min, max) {
-        this.setState({
-            depth: {
-                min: min,
-                max: max,
+    addVerticalLine(points) {
+        console.warn("POINTS: ", points);
+        for (let point in points) {
+            console.warn("POINT: ", point)
+            let layers = this.state.layers;
+            let line_3d = {
+                x: [[point.pointNumber.x],[point.pointNumber.x]],
+                y: [[point.pointNumber.y],[point.pointNumber.y]],
+                z: [[point.fullData._cmin],[point.fullData._cmax]],
+                type: 'scatter3d',
+                mode: 'lines'
             }
-        })
-    }
-
-    addVerticalLine(point) {
-        console.warn("POINT: ", point);
+            layers.push(line_3d)
+            this.setState({
+                layers: layers,
+                vLine: line_3d,
+            })
+        }
     }
 
     render() {
@@ -176,7 +183,6 @@ export default class Model_3D extends React.Component {
                 updateDataLayer={this.updateDataLayer}
                 removeDataLayer={this.removeDataLayer}
                 urlFromQuery={this.urlFromQuery}
-                updateDepth={this.updateDepth}
                 area={this.props.area}
                 interp={this.props.interp}
                 neighbours={this.props.neighbours}
