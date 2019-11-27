@@ -47,7 +47,6 @@ export default class Model_3D extends React.Component {
         this.addDataPanel = this.addDataPanel.bind(this);
         this.removeDataPanel = this.removeDataPanel.bind(this);
         this.getLatLon = this.getLatLon.bind(this);
-        this.updateDepth = this.updateDepth.bind(this);
         this.addVerticalLine = this.addVerticalLine.bind(this);
     }
 
@@ -233,7 +232,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    onClick={(e) => {console.warn("ONCLICK: ", e)}}
+                    onClick={(e) => {this.addVerticalLine(e)}}
                 ></Plot>
             )
         }
