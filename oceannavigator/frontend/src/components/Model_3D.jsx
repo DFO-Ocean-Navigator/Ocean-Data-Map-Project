@@ -155,6 +155,7 @@ export default class Model_3D extends React.Component {
         console.warn("POINTS: ", points);
         for (let point in points) {
             console.warn("POINT: ", point)
+            point = points[point];
             let layers = this.state.layers;
             let line_3d = {
                 x: [[point.pointNumber.x],[point.pointNumber.x]],
