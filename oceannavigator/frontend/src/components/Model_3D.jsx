@@ -154,8 +154,9 @@ export default class Model_3D extends React.Component {
     addVerticalLine(points) {
         console.warn("POINTS: ", points);
         for (let point in points) {
-            console.warn("POINT: ", point)
             point = points[point];
+            console.warn("POINT: ", point);
+            console.warn("pointNumber: ", point.pointNumber);
             let layers = this.state.layers;
             let line_3d = {
                 x: [[point.pointNumber.x],[point.pointNumber.x]],
