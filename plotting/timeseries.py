@@ -75,7 +75,8 @@ class TimeseriesPlotter(PointPlotter):
             if not (set(dataset.variables[var].dimensions) &
                     set(dataset.depth_dimensions)):
                 self.depth = 0
-
+            timestamps = dataset.org_timestamps
+            np.sort(timestamps)
             times = None
             point_data = []
             for p in self.points:
@@ -94,24 +95,22 @@ class TimeseriesPlotter(PointPlotter):
                             float(p[0]),
                             float(p[1]),
                             self.depth,
-                            self.starttime,
-                            self.endtime,
+                            None,
+                            timestamps,
                             v,
                             return_depth=True
                         )
 
                     data.append(d)
-
                 point_data.append(np.ma.array(data))
 
             point_data = np.ma.array(point_data)
             for idx, factor in enumerate(self.scale_factors):
                 if factor != 1.0:
                     point_data[idx] = np.multiply(point_data[idx], factor)
-
-            starttime_idx = dataset.timestamp_to_time_index(self.starttime)
-            endtime_idx = dataset.timestamp_to_time_index(self.endtime)
-            times = dataset.timestamps[starttime_idx : endtime_idx + 1]
+            #starttime_idx = dataset.timestamp_to_time_index(self.starttime)
+            #endtime_idx = dataset.timestamp_to_time_index(self.endtime)
+            times = dataset.timestamps#[starttime_idx : endtime_idx + 1]
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
 
@@ -129,7 +128,7 @@ class TimeseriesPlotter(PointPlotter):
                     point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
                 ), 1
             )
-
+        
         self.times = times
         self.data = point_data
         self.depths = depths
@@ -272,7 +271,7 @@ class TimeseriesPlotter(PointPlotter):
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
-
+        
         datenum = matplotlib.dates.date2num(self.times)
         if self.depth == 'all':
             size = list(map(float, self.size.split("x")))
@@ -350,10 +349,10 @@ class TimeseriesPlotter(PointPlotter):
                 subplot += 1
                 utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
                                            [x[1] for x in self.points]]))  # Longitudes
-
             plt.subplot(gs[:, subplot])
+            #datenum = np.sort(datenum)
             plt.plot_date(
-                datenum, self.data[:, 0, :].transpose(), '-', figure=fig)
+                datenum, self.data[:,0,:].transpose(), 'o', figure=fig)
             plt.ylabel("%s (%s)" % (self.variable_name.title(),
                                     utils.mathtext(self.variable_unit)), fontsize=14)
             plt.ylim(vmin, vmax)

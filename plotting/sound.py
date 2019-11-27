@@ -57,18 +57,25 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
-        # Render point location
-        if self.showmap:
-            plt.subplot(gs[0, 0])
-            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                       [x[1] for x in self.points]]))  # Longitudes
-
+        
         # Plot Sound Speed profile
         plt.subplot(gs[:, 1 if self.showmap else 0])
         ax = plt.gca()
         i = 0
+        colors = list()
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], '-')
+        
+        for line in ax.get_lines():
+            colors.append(line.get_color())
+
+        # Render point location
+        if self.showmap:
+            plt.subplot(gs[0, 0])
+            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
+                                       [x[1] for x in self.points]]),
+                                        colors=colors)  # Longitudes
+
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)

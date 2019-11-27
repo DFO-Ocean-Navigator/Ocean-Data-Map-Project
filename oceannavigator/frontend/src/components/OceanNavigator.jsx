@@ -4,7 +4,8 @@ import MapToolbar from "./MapToolbar.jsx";
 import LayerSelection from "./LayerSelection.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
-import { Button, Modal } from "react-bootstrap";
+import WarningBar from "./WarningBar.jsx";
+import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import moment from "moment-timezone";
@@ -769,10 +770,9 @@ export default class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
           />
-          {/*<WarningBar
-            showWarningInfo={this.showBugsModal}
-          />*/}
-
+          <WarningBar
+            showWarningInfo={false}
+          />
           {map}
         </div>
 

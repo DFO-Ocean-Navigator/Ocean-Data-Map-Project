@@ -282,11 +282,10 @@ export default class AreaWindow extends React.Component {
   }
 
   /*
-  componentWillReceiveProps(props) {
+  componentDidUpdate(prevProps, prevState) {
     
-    if (this._mounted && stringify(this.props) !== stringify(props)) {
-
-      if (props.scale !== this.props.scale) {
+    if (this._mounted && stringify(prevProps) !== stringify(this.props)) {
+      if (prevProps.scale !== this.props.scale) {
         if (this.state.scale.indexOf("auto") !== -1) {
           this.setState({
             scale: this.props.scale + ",auto"
