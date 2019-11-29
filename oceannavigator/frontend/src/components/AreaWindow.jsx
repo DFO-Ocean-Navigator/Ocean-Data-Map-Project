@@ -569,7 +569,7 @@ export default class AreaWindow extends React.Component {
       </Checkbox>
     }
 
-    plotTitle = <CustomPlotLabels
+    let plotTitle = <CustomPlotLabels
         key='title'
         id='title'
         title={_("Plot Title")}
