@@ -568,6 +568,15 @@ export default class AreaWindow extends React.Component {
         Contour Labels
       </Checkbox>
     }
+
+    plotTitle = <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
+      ></CustomPlotLabels>
+
     let applyChanges2 = <Button
       key='2'
       onClick={this.updatePlot}
@@ -697,14 +706,7 @@ export default class AreaWindow extends React.Component {
         title={_("Saved Image Size")}
       ></ImageSize>
 
-      {/* Plot Title */}
-      <CustomPlotLabels
-        key='title'
-        id='title'
-        title={_("Plot Title")}
-        updatePlotTitle={this.updatePlotTitle}
-        plotTitle={this.state.plotTitle}
-      ></CustomPlotLabels>
+      {/*plotTitle*/}
       {applyChanges2}
     </Panel>);
 
