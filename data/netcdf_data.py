@@ -6,7 +6,9 @@ import re
 import uuid
 import warnings
 import zipfile
-
+from data.utils import (DateTimeEncoder, datetime_to_timestamp,
+                        get_data_vars_from_equation, string_to_datetime,
+                        timestamp_to_datetime)
 import cftime
 import dateutil.parser
 import geopy
@@ -23,7 +25,7 @@ import data.calculated
 from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
 from data.sqlite_database import SQLiteDatabase
-from data.utils import time_index_to_datetime
+from data.utils import timestamp_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
@@ -83,10 +85,8 @@ class NetCDFData(Data):
     def __find_variable(self, candidates: list):
         """Finds a matching variable in the dataset given a list
         of candidate keys.
-
         Arguments:
             candidates {list} -- list of possible variable key strings
-
         Returns:
             xArray.DataArray -- the corresponding variable's DataArray
         """
@@ -100,10 +100,8 @@ class NetCDFData(Data):
     def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
         time index(es) for the time dimension.
-
         Arguments:
             timestamp {int or list} -- Raw timestamp(s).
-
         Returns:
             [int or list] -- Time index(es).
         """
@@ -118,7 +116,7 @@ class NetCDFData(Data):
 
         time_var = self.time_variable
 
-        result = time_index_to_datetime(timestamp, time_var.attrs['units'])
+        result = timestamp_to_datetime(timestamp, time_var.attrs['units'])
 
         return result if len(result) > 1 else result[0]
 
@@ -176,7 +174,7 @@ class NetCDFData(Data):
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
 
-            """
+            
             quantum = query.get('quantum')
             if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
@@ -187,7 +185,6 @@ class NetCDFData(Data):
                         # the index search.
                         if date.date() == isoDate.date():
                             return idx
-
             else:
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
@@ -195,12 +192,11 @@ class NetCDFData(Data):
                         if date.date().year == isoDate.date().year and \
                                 date.date().month == isoDate.date().month:
                             return idx
-
             time_range = [dateutil.parser.parse(
                 x) for x in query.get('time').split(',')]
             time_range = [find_time_index(x) for x in time_range]
-            """
-            raise ServerError("Not implemented.")
+            
+            #raise ServerError("Not implemented.")
 
         apply_time_range = False
         if time_range[0] != time_range[1]:
@@ -568,7 +564,6 @@ class NetCDFData(Data):
     @property
     def latlon_variables(self):
         """Finds the lat and lon variable arrays in the dataset.
-
         Returns:
             list -- list containing the xarray.DataArray's for latitude and 
             longitude.
@@ -596,7 +591,6 @@ class NetCDFData(Data):
     def variables(self):
         """Returns a list of all data variables and their 
         attributes in the dataset.
-
         Returns:
             VariableList -- contains all the data variables (no coordinates)
         """
@@ -635,7 +629,6 @@ class NetCDFData(Data):
         """
             Loads, caches, and returns the values of the
             time dimension for the open netcdf files.
-
             Note: to get all timestamp values from a dataset,
             you must query the SQLiteDatabase.
         """
@@ -645,7 +638,7 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            time_list = time_index_to_datetime(var.values, var.attrs['units'])
+            time_list = timestamp_to_datetime(var.values, var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps

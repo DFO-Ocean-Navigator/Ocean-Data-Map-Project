@@ -45,6 +45,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         )
 
     def plot(self):
+        
         # Create base figure
         fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
 
@@ -78,6 +79,15 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
+        
+        
+        if 'xscale' in self.query:
+            ax.set_xlim([float(self.query.get('xscale')[0]),float(self.query.get('xscale')[1])])
+        else:
+            ax.set_xlim([
+                np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
+                np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
+            ])
 
 
         if self.query.get('annotate'):
@@ -144,62 +154,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             #plt.axvline(x=minspeed, ymin=0.5, ymax=1)
             #plt.axhline(y=minpos)
         
-        #ax.set_xlim([
-        #    np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
-        #    np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
-        #])
-        
-        if 'plotsettings' in self.query:
-            plotsettings = self.query.get('plotsettings')
+        ax.set_xlim([
+            np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
+            np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
+        ])
 
-            if 'xmin' in plotsettings and plotsettings['xmin'] is not "" and 'xmax' in plotsettings and plotsettings['xmax'] is not "":
-                ax.set_xlim([float(plotsettings['xmin']), float(plotsettings['xmax'])])
-            elif 'xmin' in plotsettings and plotsettings['xmin'] is not "":
-                ax.set_xlim([float(plotsettings['xmin']),(np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1)])
-            elif 'xmax' in plotsettings and plotsettings['xmax'] is not "":
-                ax.set_xlim([ (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1), float(plotsettings['xmax'])])
-            else:
-                ax.set_xlim([
-                    (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1),
-                    (np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1),
-                ])
-
-            if 'ymin' in plotsettings and plotsettings['ymin']  is not "" and 'ymax' in plotsettings and plotsettings['ymax'] is not "":
-                ax.set_ylim([float(plotsettings['ymin']), float(plotsettings['ymax'])])
-            elif 'ymin' in plotsettings and plotsettings['ymin'] is not "":
-                ax.set_ylim(bottom=float(plotsettings['ymin']))
-            elif 'ymax' in plotsettings and plotsettings['ymax'] is not "":
-                ax.set_ylim(top=float(plotsettings['ymax']))
-
-            if 'xlabel' in plotsettings:
-                ax.set_xlabel(plotsettings['xlabel'], fontsize=14)
-            else:
-                ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
-
-            if 'ylabel' in plotsettings:
-                ax.set_ylabel(plotsettings['ylabel'], fontsize=14)
-            else:
-                ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
-        
-            if 'title' in plotsettings and plotsettings['title'] is not "":
-                ax.set_title(plotsettings['title'], fontsize=15)
-            else:
-                ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
-                ), fontsize=15)
-
-        #This makes sure that everything is still setup if plotsettings doesn't exist
-        else:
-            ax.set_xlim([
-                (np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1),
-                (np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1),
-            ])
-            ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
-            ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
-            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
-            ), fontsize=15)
-        
         if self.query.get('annotate'):
             # Sound Speed Minima
             minspeed = float("{0:.2f}".format(minspeed))
@@ -208,11 +167,33 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             # ~~~~~~~~~~~~~~~~~
         
 
+        if 'xlabel' in self.query:
+            ax.set_xlabel(gettext(self.query['xlabel']), fontsize=14)
+        else:
+            ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
+        
+        if 'ylabel' in self.query:
+            ax.set_ylabel(gettext(self.query['ylabel']), fontsize=14)
+        else:
+            ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
+        
         ax.invert_yaxis()
+
+        if ('yscale' in self.query):
+            ax.set_ylim(float(self.query.get('yscale')[0]), float(self.query.get('yscale')[1]))
+
         ax.xaxis.set_ticks_position('top')
         ax.xaxis.set_label_position('top')
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
+
+        if not self.plotTitle:
+            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
+            ), fontsize=15)
+        else:
+            ax.set_title(self.plotTitle, fontsize=15)
+
         ax.title.set_position([0.5, 1.10])
         plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)

@@ -10,13 +10,15 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
+import moment from "moment-timezone";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-
+import DataSelection from "./DataSelection.jsx";
+import Spinner from '../images/spinner.gif';
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -27,18 +29,21 @@ export default class LineWindow extends React.Component {
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
-    
+   
     this.state = {
       selected: 1,
-      scale: props.scale + ",auto",
-      scale_1: props.scale_1 + ",auto",
-      scale_diff: "-10,10,auto",
+      //scale: props.scale + ",auto",
+      //scale_1: props.scale_1 + ",auto",
+      //scale_diff: "-10,10,auto",
+      data: {},
+      data_compare: {},
       colormap: "default",
       colormap_right: "default", // Colourmap for second (right) plot
       colormap_diff: "default", // Colourmap for difference plot
       showmap: true,
       surfacevariable: "none",
       linearthresh: 200,
+      scale_diff: '0,0',
       size: "10x7",
       dpi: 144,
       depth_limit: false,
@@ -55,40 +60,31 @@ export default class LineWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
+    this.updateData = this.updateData.bind(this);
+    this.populateVariables = this.populateVariables.bind(this);
+    this.updatePlot = this.updatePlot.bind(this);
   }
 
   componentDidMount() {
     this._mounted = true;
+    this.updateData(this.props.data, this.props.data_compare)
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props) {
+      this.updateData(this.props.data, this.props.data_compare)
+    }
+  }
+
 
   componentWillUnmount() {
     this._mounted = false;
   }
 
-  componentWillReceiveProps(props) {
 
-    if (stringify(this.props) !== stringify(props) && this._mounted) {
-
-      if (props.depth !== this.props.depth) {
-        this.setState({
-          depth: props.depth,
-        });
-      }
-      if (props.scale !== this.props.scale) {
-        if (this.state.scale.indexOf("auto") !== -1) {
-          this.setState({
-            scale: props.scale + ",auto"
-          });
-        } else {
-          this.setState({
-            scale: props.scale,
-          });
-        }
-      }
-    }
-  }
-
-  //Updates Plot with User Specified Title
+  /*
+    Updates Plot with User Specified Title
+  */
   updatePlotTitle (title) {
     if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
       const newTitles = this.state.plotTitles;
@@ -97,8 +93,129 @@ export default class LineWindow extends React.Component {
     }
   }
 
-  updateSelectedPlots (plots_selected, compare) {
+  /*
+    
+  */
+  updateData(data, compare_data) {
+    
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
+    let time = data.time
+    let compare_time = moment(time.valueOf())
+    
+    compare_time.tz('GMT')
+    time = moment(time.valueOf())
+    time.tz('GMT')
+    let output_starttime = moment(time.valueOf())
+    let output_endtime = moment(time.valueOf())
+    
+    if (jQuery.isEmptyObject(this.props.data_compare)) {
+        let data_compare = {
+          dataset: dataset,
+          variable: variable,
+    
+          display: display,
+          colourmap: colourmap,
+          dataset_quantum: quantum,
+          scale: scale + ',auto',
+          time: time,  
+        }
+        
+        this.setState({
+          data_compare: data_compare,
+          output_starttime: output_starttime,
+          output_endtime: output_endtime,
+        })
+    } else {
 
+      compare_time = compare_data.time
+      
+      let data_compare = {
+        dataset: compare_data.dataset,
+        depth: compare_data.depth,
+        variable: compare_data.variable,
+        display: compare_data.display,
+        colourmap: compare_data.colourmap,
+        quantum: compare_data.quantum,
+        scale: compare_data.scale + ',auto',
+        time: moment(compare_time.valueOf()),
+      }
+      
+      this.setState({
+        data_compare: data_compare,
+        output_starttime: output_starttime,
+        output_endtime: output_endtime,
+        dataset_compare: true
+      })
+    }
+    
+    this.setState({
+      data: {
+        dataset: dataset,
+        variable: variable,
+  
+        display: display,
+        colourmap: colourmap,
+        dataset_quantum: quantum,
+        scale: scale + ',auto',
+        time: time,
+      }
+    }, () => {
+      this.updatePlot()
+   })
+    
+  }
+
+
+  /*
+    Populates all the variables available in the dataset
+  */
+  populateVariables(dataset) {
+    if (dataset === undefined) {
+      return
+    }
+    $.ajax({
+      url: "/api/v1.0/variables/?dataset=" + dataset + "&anom",
+      dataType: "json",
+      cache: true,
+
+      success: function (data) {
+        if (this._mounted) {
+          const vars = data.map(function (d) {
+            return d.id;
+          });
+
+          //if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
+          //  this.props.onUpdate("variable", vars[0]);
+          //}
+
+          this.setState({
+            variables: data.map(function (d) {
+              return d.id;
+            }),
+          }, () => {
+            this.updatePlot()
+          });
+        }
+        //this.updatePlot()
+      }.bind(this),
+
+      error: function (xhr, status, err) {
+        if (this._mounted) {
+          console.error(this.props.url, status, err.toString());
+        }
+      }.bind(this)
+    });
+  }
+
+  /*
+    I have no idea what this does
+  */
+  updateSelectedPlots (plots_selected, compare) {
     let temp = [1, 0, 0];
     
     if(plots_selected[0]) {
@@ -129,27 +246,112 @@ export default class LineWindow extends React.Component {
     
   }
 
+  /*
+
+  */
   onLocalUpdate(key, value) {
     if (this._mounted) {
       
       var newState = {};
-      if (typeof(key) === "string") {
+
+      if (key === 'data') {
         newState[key] = value;
-      } 
-      else {
-        for (let i = 0; i < key.length; ++i) {
-          newState[key[i]] = value[i];
+      } else if (typeof(key) === "string") {
+        if (key === 'scale') {
+          let data = jQuery.extend({}, this.state.data)
+          data['scale'] = value
+          newState.data = data
+        } else {
+          newState[key] = value;
+        }
+      } else {
+        if (key[0] === 'colourmap') {
+          let data = jQuery.extend({}, this.state.data)
+          data['colourmap'] = value.join()
+          newState.data = data
+        } else {
+          for (let i = 0; i < key.length; ++i) {
+            newState[key[i]] = value[i];
+          }
         }
       }
       
       this.setState(newState);
+      
+      /*this.setState({
+        [key]: value
+      })*/
     }
   }
 
+  /*
+
+  */
+  updatePlot() {
+    if (jQuery.isEmptyObject(this.state.data)) {
+      return
+    }
+
+    
+    const plot_query = {
+      dataset: this.state.data.dataset,
+      quantum: this.state.data.dataset_quantum,
+      variable: this.state.data.variable,
+      path: this.props.line[0],
+      scale: this.state.data.scale,
+      colormap: this.state.data.colourmap,
+      showmap: this.state.showmap,
+      name: this.props.names[0],
+      size: this.state.size,
+      dpi: this.state.dpi,
+      plotTitle: this.state.plotTitles[this.state.selected - 1],
+      random: Math.random()
+    };
+
+    switch(this.state.selected) {
+      case 1:
+        plot_query.type = "transect";
+        plot_query.time = this.state.data.time;
+        plot_query.surfacevariable = this.state.surfacevariable;
+        plot_query.linearthresh = this.state.linearthresh;
+        plot_query.depth_limit = this.state.depth_limit;
+        plot_query.selectedPlots = this.state.selectedPlots.toString();
+        if (this.state.dataset_compare) {
+          plot_query.compare_to = this.state.data_compare
+          plot_query.compare_to.dataset = this.state.data_compare.dataset;
+          plot_query.compare_to.scale = this.state.data_compare.scale;
+          plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.data_compare.colourmap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
+        }
+        break;
+      case 2:
+        plot_query.type = "hovmoller";
+        plot_query.endtime = this.state.data.time;
+        plot_query.starttime = this.state.data.starttime;//this.props.starttime;
+        plot_query.depth = this.state.data.depth;
+        if (this.state.dataset_compare) {
+          plot_query.compare_to = this.state.data_compare
+          plot_query.compare_to.dataset = this.state.data_compare.dataset;
+          plot_query.compare_to.scale = this.state.data_compare.scale;
+          plot_query.compare_to.scale_diff = this.state.scale_diff;
+          plot_query.compare_to.colormap = this.state.data_compare.colourmap;
+          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
+        }
+        break;
+    }
+    this.setState({
+      plot_query: plot_query
+    })
+  }
+
+  /*
+
+  */
   onSelect(key) {
     this.setState({
-      selected: key
-    });
+      selected: key,
+    }, this.updatePlot);
   }
 
   render() {
@@ -166,6 +368,11 @@ export default class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
+    let applyChanges1 = <Button
+        key='1'
+        onClick={this.updatePlot}
+        >Apply Changes
+      </Button>
     const global = (<Panel 
       key='global_settings'
       id='global_settings'
@@ -179,8 +386,8 @@ export default class LineWindow extends React.Component {
           <SelectBox
             id='dataset_compare'
             key='dataset_compare'
-            state={this.props.dataset_compare}
-            onUpdate={this.props.onUpdate}
+            state={this.state.dataset_compare}
+            onUpdate={this.onLocalUpdate}
             title={_("Compare Datasets")}
           />
         </Col>
@@ -200,7 +407,7 @@ export default class LineWindow extends React.Component {
         id='swap_views'
         bsStyle="default"
         block
-        style={{display: this.props.dataset_compare ? "block" : "none"}}
+        style={{display: this.state.dataset_compare ? "block" : "none"}}
         onClick={this.props.swapViews}
       >
         {_("Swap Views")}
@@ -208,8 +415,8 @@ export default class LineWindow extends React.Component {
       
       {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
       <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+        style={{display: this.state.dataset_compare &&
+                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}
       >
         <Range
           auto
@@ -219,7 +426,7 @@ export default class LineWindow extends React.Component {
           def={""}
           onUpdate={this.onLocalUpdate}
           title={_("Diff. Variable Range")}
-        />
+        /> 
       </div>
 
       <SelectBox
@@ -246,9 +453,16 @@ export default class LineWindow extends React.Component {
         updatePlotTitle={this.updatePlotTitle}
         plotTitle={this.state.plotTitles[this.state.selected - 1]}
       ></CustomPlotLabels>
+      {applyChanges1}
     </Panel>);
-
-    const transectSettings = <Panel
+    let applyChanges2 = <Button
+      key='2'
+      onClick={this.updatePlot}
+      >Apply Changes
+    </Button>
+    var transectSettings
+    if (this._mounted) {
+      transectSettings = <Panel
       key='transect_settings'
       id='transect_settings'
       collapsible
@@ -262,7 +476,7 @@ export default class LineWindow extends React.Component {
         state={this.state.surfacevariable}
         onUpdate={this.onLocalUpdate}
         title={_("Surface Variable")}
-        url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
+        url={"/api/v1.0/variables/?dataset=" + this.state.data.dataset}
       >{_("surfacevariable_help")}</ComboBox>
 
       <NumberBox
@@ -281,8 +495,8 @@ export default class LineWindow extends React.Component {
       />
 
       <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
+        style={{display: this.state.dataset_compare &&
+                         this.state.data.variable == this.state.data_compare.variable ? "block" : "none"}}>
         <ComboBox
           key='colormap_diff'
           id='colormap_diff'
@@ -293,143 +507,129 @@ export default class LineWindow extends React.Component {
           title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
         </ComboBox>
       </div>
-
+      {applyChanges2}
     </Panel>;
+    }
     
-    const dataset = <Panel 
+    let applyChanges3 = <Button
+      key='3'
+      onClick={this.updatePlot}
+      >Apply Changes
+    </Button>
+    var dataset = null
+    if (this.state.data.scale !== undefined) {
+      dataset = <Panel 
       key='left_map'
       id='left_map'
       collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      header={this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
       <DatasetSelector
-        key='dataset_0'
-        id='dataset_0'
-        state={this.props.dataset_0}
-        onUpdate={this.props.onUpdate}
+        key='data'
+        id='data'
+        state={this.state.data}
+        onUpdate={this.onLocalUpdate}
         depth={this.state.selected == 2}
         variables={this.state.selected == 2 ? "all" : "3d"}
         time={this.state.selected == 2 ? "range" : "single"}
         line={true}
         updateSelectedPlots={this.updateSelectedPlots}
-        compare={this.props.dataset_compare}
+        compare={this.state.dataset_compare}
       />
-
+      
       <Range
         auto
         key='scale'
         id='scale'
-        state={this.state.scale}
+        state={this.state.data.scale}
         def={""}
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")}
       />
 
       <ComboBox
-        key='colormap'
-        id='colormap'
-        state={this.state.colormap}
+        key='colourmap'
+        id='colourmap'
+        state={this.state.data.colourmap}
         def='default'
         onUpdate={this.onLocalUpdate}
         url='/api/v1.0/colormaps/'
         title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
       </ComboBox>
+      {applyChanges3}
     </Panel>;
+    }
     
-    const compare_dataset = 
-    <div key='compare_dataset'>
-      
-      <Panel 
-        key='right_map'
-        id='right_map'
-        collapsible
-        defaultExpanded
-        header={_("Right Map")}
-        bsStyle='primary'
-      >
-        <DatasetSelector
-          key='dataset_1'
-          id='dataset_1'
-          state={this.props.dataset_1}
-          onUpdate={this.props.onUpdate}
-          depth={this.state.selected == 2}
-          variables={this.state.selected == 2 ? "all" : "3d"}
-          time={this.state.selected == 2 ? "range" : "single"}
-        />
-        <Range
-          auto
-          key='scale_1'
-          id='scale_1'
-          state={this.state.scale_1}
-          def={""}
-          onUpdate={this.onLocalUpdate}
-          title={_("Variable Range")}
-        />
-        <ComboBox
-          key='colormap_right'
-          id='colormap_right'
-          state={this.state.colormap_right}
-          def='default'
-          onUpdate={this.onLocalUpdate}
-          url='/api/v1.0/colormaps/'
-          title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-        </ComboBox>
-      </Panel>
-      
-    </div>;
+
+    if (jQuery.isEmptyObject(this.state.data_compare) === false && this.state.data_compare.scale !== undefined) {
+      var compare_dataset = <div key='compare_dataset'>
+      <div style={{ "display": this.state.dataset_compare ? "block" : "none" }}>  
+        <Panel 
+          key='right_map'
+          id='right_map'
+          collapsible
+          defaultExpanded
+          header={_("Right Map")}
+          bsStyle='primary'
+        >
+          <DatasetSelector
+            key='data_compare'
+            id='data_compare'
+            state={this.state.data_compare}
+            onUpdate={this.onLocalUpdate}
+            depth={this.state.selected == 2}
+            variables={this.state.selected == 2 ? "all" : "3d"}
+            time={this.state.selected == 2 ? "range" : "single"}
+          />
+          <Range
+            auto
+            key='compare_scale'
+            id='compare_scale'
+            state={this.state.data_compare.scale}
+            def={""}
+            onUpdate={this.onLocalUpdate}
+            title={_("Variable Range")}
+          />
+          <ComboBox
+            key='compare_colourmap'
+            id='compare_colourmap'
+            state={this.state.data_compare.colourmap}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/colormaps/'
+            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+          </ComboBox>
+        </Panel>
+      </div></div>;
+    }
+    
+    
+
+
 
     // Input panels
     const leftInputs = [global];
     const rightInputs = [dataset];
-    if (this.props.dataset_compare) {
+    if (this.state.dataset_compare) {
       rightInputs.push(compare_dataset);
     }
-    const plot_query = {
-      dataset: this.props.dataset_0.dataset,
-      quantum: this.props.quantum,
-      variable: this.props.variable,
-      path: this.props.line[0],
-      scale: this.state.scale,
-      colormap: this.state.colormap,
-      showmap: this.state.showmap,
-      name: this.props.names[0],
-      size: this.state.size,
-      dpi: this.state.dpi,
-      plotTitle: this.state.plotTitles[this.state.selected - 1],
-    };
-
-    switch(this.state.selected) {
-      case 1:
-        plot_query.type = "transect";
-        plot_query.time = this.props.time;
-        plot_query.surfacevariable = this.state.surfacevariable;
-        plot_query.linearthresh = this.state.linearthresh;
-        plot_query.depth_limit = this.state.depth_limit;
-        plot_query.selectedPlots = this.state.selectedPlots.toString();
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-          plot_query.compare_to.scale = this.state.scale_1;
-          plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
-          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-        leftInputs.push(transectSettings);
-        break;
-      case 2:
-        plot_query.type = "hovmoller";
-        plot_query.endtime = this.props.time;
-        plot_query.starttime = this.props.dataset_0.starttime;
-        plot_query.depth = this.props.depth;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
-          plot_query.compare_to.scale = this.state.scale_1;
-          plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
-          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-        break;
+    if (this.state.selected) {
+      leftInputs.push(transectSettings);
+    }
+    
+    let plotImage = ''
+    if (this.state.plot_query !== undefined) {
+      if (this.state.data.time !== undefined) {
+        plotImage = <PlotImage
+          query={this.state.plot_query}
+          permlink_subquery={this.state.data}
+          action={this.props.action}
+        />
+      }
+    } else {
+      <img src={Spinner} />;
     }
 
     return (
@@ -443,15 +643,13 @@ export default class LineWindow extends React.Component {
           <NavItem eventKey={2}>{_("Hovmöller Diagram")}</NavItem>
         </Nav>
         <Row>
+          
           <Col lg={2}>
             {leftInputs}
           </Col>
           <Col lg={8}>
-            <PlotImage
-              query={plot_query}
-              permlink_subquery={this.state}
-              action={this.props.action}
-            />
+          
+            {plotImage}
           </Col>
           <Col lg={2}>
             {rightInputs}

@@ -11,8 +11,14 @@ export default class Icon extends React.PureComponent {
   }
 
   render() {
+    let name
+    if ('name' in this.props) {
+      name = this.props.name
+    } else {
+      name = 'Icon'
+    }
     return (
-      <span className='Icon' title={this.props.alt}>
+      <span className={name} title={this.props.alt}>
         <FontAwesome name={this.props.icon} />
         <span className="alt"> {this.props.alt}</span>
       </span>

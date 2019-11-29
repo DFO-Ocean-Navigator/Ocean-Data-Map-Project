@@ -10,7 +10,7 @@ import {Button,
   Alert} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-
+import moment from 'moment-timezone';
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
@@ -37,9 +37,16 @@ export default class PlotImage extends React.PureComponent {
     this.getLink = this.getLink.bind(this);
     this.toggleImageLink = this.toggleImageLink.bind(this);
     this.generateScript = this.generateScript.bind(this);
+    this.formatTime = this.formatTime.bind(this);
   }
 
   generateScript(language) {
+    
+    if (this.props.query.type == "class4") {
+      this.setState({
+        errorMessage: "Unfortunately this feature is not yet available for Class4's, Check back soon!"
+      });
+    } else {
       if (language == "pythonPlot") {
         var url = stringify(this.generateQuery(this.props.query));
         url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "PLOT/";
@@ -59,6 +66,7 @@ export default class PlotImage extends React.PureComponent {
         }
       
       }
+    }
     
     window.location.href = url;
   }
@@ -76,9 +84,7 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         loading: true
       })
-      let query = this.generateQuery(this.props.query);
-      this.loadImage(query);
-      //this.loadImage(this.generateQuery(this.props.query));
+      this.loadImage(this.generateQuery(this.props.query));
     }
   }
 
@@ -106,13 +112,18 @@ export default class PlotImage extends React.PureComponent {
       this.setState({
         loading: true, 
         fail: false, 
-        url: LOADING_IMAGE,
+        //url: LOADING_IMAGE,
         paramString: paramString,
         errorMessage: null,
       });
-
+      let url
+      if (this.props.query.type === 'class4' || this.props.query.type === 'drifter') {
+        url = '/plot/'
+      } else {
+        url = '/api/v1.0/plot/'
+      }
       const promise = $.ajax({
-        url: "/api/v1.0/plot/",
+        url: url,
         cache: true,
         data: paramString,
         dataType: "json",
@@ -133,17 +144,48 @@ export default class PlotImage extends React.PureComponent {
       promise.fail(function(xhr) {
         if (this._mounted) {
           // Get our custom error message
-          const message = JSON.parse(xhr.responseText).message;
+
+          console.warn('xhr: ', xhr)
+          try {
+            const message = JSON.parse(xhr.responseText).message;
+            this.setState({
+              url: FAIL_IMAGE,
+              loading: false,
+              fail: true,
+              errorMessage: message,
+            });
+          }
+          catch(err) {
+            this.setState({
+              url: FAIL_IMAGE,
+              loading: false,
+              fail: true
+              });
+          }
           
-          this.setState({
-            url: FAIL_IMAGE,
-            loading: false,
-            fail: true,
-            errorMessage: message,
-          });
         }
       }.bind(this));
     }
+  }
+
+  formatTime(time) {
+    //let year = time.getUTCFullYear()
+    //let month = time.getUTCMonth()
+    //if (month.toString().length === 1) {
+    //  month = '0' + month
+    //}
+    //let date = time.getUTCDate()
+    //if (date.toString().length === 1) {
+    //  date = '0' + date
+    //}
+    //let hour = time.getUTCHours()
+    //time = year + '-' + month + '-' + date + 'T' + hour + ':00:00+00:00'
+    if (time === undefined) {
+      return
+    }
+    let formatted_time = time.format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]')
+    
+    return formatted_time
   }
 
   generateQuery(q) {
@@ -153,20 +195,31 @@ export default class PlotImage extends React.PureComponent {
       quantum: q.quantum,
       names: q.names,
     };
+    if ('title' in q) {
+      query.plotTitle = q['title'];
+    }
+    if ('xscale' in q) {
+      query.xscale = q['xscale']
+    }
+    if ('yscale' in q) {
+      query.yscale = q['yscale']
+    }
 
-    if (q.plotTitle !== null) {
-      query.plotTitle = q.plotTitle;
+    if ('ylabel' in q) {
+      query.ylabel = q['ylabel']
     }
-    
-    if (q.plotsettings !== undefined) {
-      query.plotsettings = q.plotsettings;
+    if ('xlabel' in q) {
+      query.xlabel = q['xlabel']
     }
-    
+    let time
+    let starttime
+    let endtime
 
     switch(q.type) {
       case "profile":
       case "ts":
       case "sound":
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
         query.station = q.point;
         query.showmap = q.showmap;
@@ -188,14 +241,14 @@ export default class PlotImage extends React.PureComponent {
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
-        query.starttime = q.starttime;
-        query.endtime = q.endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         query.scale = q.scale;
         query.colormap = q.colormap;
         break;
       case "transect":
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
-        query.time = q.time;
         query.scale = q.scale;
         query.path = q.path;
         query.showmap = q.showmap;
@@ -207,11 +260,12 @@ export default class PlotImage extends React.PureComponent {
         query.selectedPlots = q.selectedPlots;
 
         if (q.compare_to) {
+          time = this.formatTime(q.compare_to.time)
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
-            time: q.compare_to.time,
+            time: time,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             variable: q.compare_to.variable,
@@ -222,8 +276,8 @@ export default class PlotImage extends React.PureComponent {
         break;
       case "hovmoller":
         query.variable = q.variable;
-        query.starttime = q.starttime;
-        query.endtime = q.endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         query.scale = q.scale;
         query.colormap = q.colormap;
         query.path = q.path;
@@ -231,10 +285,10 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.name = q.name;
         if (q.compare_to) {
-          query.compare_to = {
+            query.compare_to = {
             variable: q.compare_to.variable,
-            starttime: q.starttime,
-            endtime: q.endtime,
+            starttime: this.formatTime(q.compare_to.starttime),
+            endtime: this.formatTime(q.compare_to.endtime),
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
             depth: q.compare_to.depth,
@@ -247,11 +301,11 @@ export default class PlotImage extends React.PureComponent {
         }
         break;
       case "map":
+        query.time = this.formatTime(q.time)
         query.variable = q.variable;
-        query.time = q.time;
         query.scale = q.scale;
         query.depth = q.depth;
-        query.colormap = q.colormap;
+        query.colormap = q.colourmap;
         query.area = q.area;
         query.projection = q.projection;
         query.bathymetry = q.bathymetry;
@@ -263,16 +317,17 @@ export default class PlotImage extends React.PureComponent {
         query.neighbours = q.neighbours;
               
         if (q.compare_to) {
+          let compareTime = q.compare_to.time.toISOString();
           query.compare_to = {
             dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.dataset_attribution,
             dataset_quantum: q.compare_to.dataset_quantum,
-            time: q.compare_to.time,
+            time: compareTime,
             variable: q.compare_to.variable,
             depth: q.compare_to.depth,
             scale: q.compare_to.scale,
             scale_diff: q.compare_to.scale_diff,
-            colormap: q.compare_to.colormap,
+            colormap: q.compare_to.colourmap,
             colormap_diff: q.compare_to.colormap_diff,
           };
         }
@@ -284,8 +339,8 @@ export default class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.latlon = q.latlon;
         query.buoyvariable = q.buoyvariable;
-        query.starttime = q.starttime;
-        query.endtime = q.endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         break;
       case "class4":
         query.class4id = q.class4id;
@@ -304,10 +359,11 @@ export default class PlotImage extends React.PureComponent {
         query.station = q.point;
         query.variable = q.variable;
         query.depth = q.depth;
-        query.starttime = q.starttime;
-        query.endtime = q.endtime;
+        query.starttime = this.formatTime(q.starttime);
+        query.endtime = this.formatTime(q.endtime);
         break;
     }
+    // Creates a duplicate to force an update
     return jQuery.extend({}, query);
   }
 
@@ -352,14 +408,30 @@ export default class PlotImage extends React.PureComponent {
     if (this.state.errorMessage !== null) {
       errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
     }
+    
+    var image
+    if (this.state.loading) {
+      image = <div className="spinner">
+        <div className="sk-folding-cube">
+          <div className="sk-cube1 sk-cube"></div>
+          <div className="sk-cube2 sk-cube"></div>
+          <div className="sk-cube4 sk-cube"></div>
+          <div className="sk-cube3 sk-cube"></div>
+        </div>
+      </div>//<Icon icon="spinner" name='loading'/>
+    } else {
+      image = <div className="RenderedImage">
+          <img src={this.state.url} />
+        </div>
+    }
 
     return (
       <div className='PlotImage'>
 
         {/* Rendered graph */}
-        <div className="RenderedImage">
-          <img src={this.state.url} />
-        </div>
+        {image}
+          
+        
 
         {errorAlert}
 

@@ -65,6 +65,13 @@ class Mercator(CalculatedData):
 
         return self.__depths
 
+    def __find_var(self, candidates):
+        for c in candidates:
+            if c in self._dataset.variables:
+                return self.get_dataset_variable(c)
+
+        return None
+
     def __bounding_box(self, lat, lon, n=10):
 
         y, x, _ = find_nearest_grid_point(lat, lon, self._dataset, self.latvar, self.lonvar, n)

@@ -9,7 +9,7 @@ import numpy as np
 import pint
 from flask_babel import format_date, format_datetime
 from PIL import Image
-
+from data.utils import datetime_to_timestamp, string_to_datetime
 import plotting.colormap as colormap
 import plotting.utils as utils
 from oceannavigator import DatasetConfig
@@ -90,8 +90,8 @@ class Plotter(metaclass=ABCMeta):
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
-            self.compare['variables'] = self.compare['variable'].split(',')
-
+            self.compare['variables'] = self.__get_variables(self.compare['variable'])#self.compare['variable'].split(',')
+            self.compare['time'] = self.__get_time(self.compare['time'])
             if self.compare.get('colormap_diff') == 'default':
                 self.compare['colormap_diff'] = 'anomaly'
 
@@ -119,10 +119,8 @@ class Plotter(metaclass=ABCMeta):
     def __get_date_formatter(self, quantum: str):
         """
         Returns the correct lambda to format a date given a quantum.
-
         Arguments:
             quantum {str} -- Dataset quantum ("hour", "month", "day")
-
         Returns:
             [lambda] -- Lambda that formats a given date string
         """
@@ -137,10 +135,8 @@ class Plotter(metaclass=ABCMeta):
     def __get_scale(self, query_scale: str):
         """
         Splits a given query scale into a list.
-
         Arguments:
             query_scale {str} -- Comma-separated min/max values for variable data range.
-
         Returns:
             [list] -- List of min/max values of query_scale
         """
@@ -153,10 +149,8 @@ class Plotter(metaclass=ABCMeta):
     def __get_variables(self, variables: str):
         """
         Splits a given variable string into a list.
-
         Arguments:
             variables {str} -- Comma-separated variable keys
-
         Returns:
             [list] -- List of varaible keys from variables
         """
@@ -169,14 +163,18 @@ class Plotter(metaclass=ABCMeta):
 
         return [v for v in variables if v != '']
 
-    def __get_time(self, param: str):
-        if param is None or len(str(param)) == 0:
+    def __get_time(self, param: str) -> int:
+        if not param:
             return -1
-        else:
-            try:
-                return int(param)
-            except ValueError:
-                return param
+        time = None
+        try:
+            time = datetime_to_timestamp(
+                string_to_datetime(param), self.dataset_config.time_dim_units)
+
+        except:
+            time = int(param)
+
+        return time
 
     def __get_colormap(self, cmap: str):
         if cmap is not None:
@@ -335,7 +333,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_variable_names(self, dataset, variables):
         """Returns a list of names for the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a
@@ -351,7 +348,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_vector_variable_name(self, dataset, variables):
         """Returns a name for the vector version of the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a
@@ -362,7 +358,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_variable_units(self, dataset, variables):
         """Returns a list of units for the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a
@@ -378,7 +373,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_vector_variable_unit(self, dataset, variables):
         """Returns a unit for the vector version of the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a
@@ -389,7 +383,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_variable_scale_factors(self, dataset, variables):
         """Returns a list of scale factors for the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a
@@ -405,7 +398,6 @@ class Plotter(metaclass=ABCMeta):
 
     def get_vector_variable_scale_factor(self, dataset, variables):
         """Returns a scaling factor for the vector version of the variables.
-
         Parameters:
         dataset -- the dataset
         variables -- a list of strings, each of which is the key for a

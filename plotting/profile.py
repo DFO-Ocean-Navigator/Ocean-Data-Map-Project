@@ -117,6 +117,7 @@ class ProfilePlotter(PointPlotter):
         # Each subplot has all points plotted
         for idx, _ in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
+            
 
             plt.plot(
                 self.data[:, idx, :].transpose(),
@@ -138,7 +139,12 @@ class ProfilePlotter(PointPlotter):
                                      utils.mathtext(self.variable_units[idx])), fontsize=14)
 
             # Put y-axis label on left-most graph (but after the point location)
-            if not is_y_label_plotted and (subplot == 0 or subplot == 1):
+            #if 'ylabel' in self.
+            
+            if 'ylabel' in self.query:
+                current_axis.set_ylabel(self.query['ylabel'], fontsize=14)
+
+            elif not is_y_label_plotted and (subplot == 0 or subplot == 1):
                 current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
 
@@ -146,7 +152,7 @@ class ProfilePlotter(PointPlotter):
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
 
-            subplot += 1
+               
 
         # Render point location
         if self.showmap:
@@ -156,23 +162,26 @@ class ProfilePlotter(PointPlotter):
                                        [x[1] for x in self.points]]), colour)  # Longitudes
 
         self.plot_legend(fig, self.names)
-        if 'plotsettings' in self.query:
-            plotsettings = self.query.get('plotsettings')
-            if 'title' in plotsettings and plotsettings['title'] is not "":
-                    plt.suptitle(plotsettings['title'], fontsize=15)
-            else:
-                plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
-                                         ", ".join(self.names),
-                                         ", ".join(self.variable_names),
-                                         self.date_formatter(self.iso_timestamp)),
-                     fontsize=15)
-        else:
+        
+        if 'xscale' in self.query:
+            min = float(self.query['xscale'][0])
+            max = float(self.query['xscale'][1])
+            plt.xlim(min, max)
+        
+        if 'yscale' in self.query:
+            min = float(self.query['yscale'][0])
+            max = float(self.query['yscale'][1])
+            plt.ylim(min, max)
+
+        if not self.plotTitle:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
                                              ", ".join(self.names),
                                              ", ".join(self.variable_names),
                                              self.date_formatter(self.iso_timestamp)),
                          fontsize=15)
-        
+        else:
+            plt.suptitle(self.plotTitle, fontsize=15)
+
         fig.tight_layout()
         fig.subplots_adjust(top=(0.8))
 
