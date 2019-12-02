@@ -401,8 +401,11 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     array = np.ma.masked_array(speed, np.isnan(speed))
     min_idx = array.argmin(axis = 0)
     new = np.take(depth.values, min_idx)
-    nan_idx = np.where(new[0] == depth.values[0])
+    old_shape = new.shape
+    new = new.reshape(new.shape[0] * new.shape[1])
+    nan_idx = np.where(new == depth.values[0])
     np.put(new, nan_idx, np.nan)
+    new.reshape(old_shape)
     print(something)
     return result
 
