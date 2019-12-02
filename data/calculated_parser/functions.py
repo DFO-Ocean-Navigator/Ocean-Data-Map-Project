@@ -383,7 +383,7 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     temperature: The temperatures(s) (at all depths) in celsius
     salinity: The salinity (at all depths) (unitless)
     """
-    
+    print(something)
     speed = sspeed(depth, lat, temperature, salinity)
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
