@@ -415,7 +415,7 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     new = new.reshape(old_shape)
     end = time.time()
     print("METHOD 2: ", end - start)
-    return result
+    return new
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
@@ -479,9 +479,8 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     end = time.time()
     print("METHOD 2: ", end - start)
     
-    print(something)
-
-    return result # Only return one horizontal slice
+    
+    return new # Only return one horizontal slice
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
