@@ -398,6 +398,12 @@ def soundchannelaxis(depth, lat, temperature, salinity):
             else:
                 result[y,x] = np.nan
                 
+    # TEST SECOND METHOD
+    min_idx = speed.argmin(axis = 0)
+    new = np.take(speed, min_idx)
+    nan_idx = np.where(new[0] == depth.values[0])
+    np.put(new[0], nan_idx, np.nan)
+    print(something)
     return result
 
 def soniclayerdepth(depth, lat, temperature, salinity):
