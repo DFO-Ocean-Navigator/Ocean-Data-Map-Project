@@ -460,7 +460,7 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     old_shape = min_idx.shape
     min_idx = min_idx.reshape(min_idx.shape[0] * min_idx.shape[1])
     mask = min_idx[:,None] < np.arange(50)
-    mask = mask.transpose().reshape(50, old_shape)
+    mask = mask.transpose().reshape(50, old_shape[0], old_shape[1])
     marray[mask] = np.nan
 
     # Re-Apply Mask
