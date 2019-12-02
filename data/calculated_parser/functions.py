@@ -11,6 +11,7 @@ from metpy.units import units
 from pint import UnitRegistry
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
+import time
 _ureg = UnitRegistry()
 
 # All functions in this file (that do not start with an underscore) will be
@@ -383,6 +384,8 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     temperature: The temperatures(s) (at all depths) in celsius
     salinity: The salinity (at all depths) (unitless)
     """
+    
+    start = time.time()
     speed = sspeed(depth, lat, temperature, salinity)
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
@@ -396,16 +399,17 @@ def soundchannelaxis(depth, lat, temperature, salinity):
                     result[y,x] = depth.values[idx]
             else:
                 result[y,x] = np.nan
-                
+    end = time.time()
+    print(end - start)    
     # TEST SECOND METHOD
-    array = np.ma.masked_array(speed, np.isnan(speed))
-    min_idx = array.argmin(axis = 0)
-    new = np.take(depth.values, min_idx)
-    old_shape = new.shape
-    new = new.reshape(new.shape[0] * new.shape[1])
-    nan_idx = np.where(new == depth.values[0])
-    np.put(new, nan_idx, np.nan)
-    new = new.reshape(old_shape)
+    #array = np.ma.masked_array(speed, np.isnan(speed))
+    #min_idx = array.argmin(axis = 0)
+    #new = np.take(depth.values, min_idx)
+    #old_shape = new.shape
+    #new = new.reshape(new.shape[0] * new.shape[1])
+    #nan_idx = np.where(new == depth.values[0])
+    #np.put(new, nan_idx, np.nan)
+    #new = new.reshape(old_shape)
     print(something)
     return result
 
