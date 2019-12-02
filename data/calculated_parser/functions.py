@@ -405,7 +405,7 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     new = new.reshape(new.shape[0] * new.shape[1])
     nan_idx = np.where(new == depth.values[0])
     np.put(new, nan_idx, np.nan)
-    new.reshape(old_shape)
+    new = new.reshape(old_shape)
     print(something)
     return result
 
