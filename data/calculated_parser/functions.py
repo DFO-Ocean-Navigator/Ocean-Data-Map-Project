@@ -435,7 +435,6 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
 
-    print(something)
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
@@ -455,6 +454,21 @@ def soniclayerdepth(depth, lat, temperature, salinity):
                         result[y,x] = sld
             else:
                 result[y,x] = np.nan
+
+    marray = np.ma.masked_array(speed, np.isnan(speed))
+    min_idx = marray.argmin(axis=0)
+    old_shape = min_idx.shape
+    min_idx = min_idx.reshape(min_idx.shape[0] * min_idx.shape[1])
+    mask = min_idx[:,None] < np.arange(50)
+    mask = mask.transpose().reshape(50, old_shape)
+    marray[mask] = np.nan
+
+    # Re-Apply Mask
+    marray = np.ma.masked_array(marray, np.isnan(marray))
+    max_idx = marray.argmax(axis=0)
+    new = np.take(depth.values, max_idx)
+
+    print(something)
 
     return result # Only return one horizontal slice
 
