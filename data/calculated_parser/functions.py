@@ -385,8 +385,9 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     salinity: The salinity (at all depths) (unitless)
     """
     
-    start = time.time()
     speed = sspeed(depth, lat, temperature, salinity)
+    
+    start = time.time()
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
@@ -400,17 +401,20 @@ def soundchannelaxis(depth, lat, temperature, salinity):
             else:
                 result[y,x] = np.nan
     end = time.time()
-    print(end - start)    
+    print("METHOD 1: ", end - start)    
     # TEST SECOND METHOD
-    #array = np.ma.masked_array(speed, np.isnan(speed))
-    #min_idx = array.argmin(axis = 0)
-    #new = np.take(depth.values, min_idx)
-    #old_shape = new.shape
-    #new = new.reshape(new.shape[0] * new.shape[1])
-    #nan_idx = np.where(new == depth.values[0])
-    #np.put(new, nan_idx, np.nan)
-    #new = new.reshape(old_shape)
-    print(something)
+    
+    start = time.time()
+    array = np.ma.masked_array(speed, np.isnan(speed))
+    min_idx = array.argmin(axis = 0)
+    new = np.take(depth.values, min_idx)
+    old_shape = new.shape
+    new = new.reshape(new.shape[0] * new.shape[1])
+    nan_idx = np.where(new == depth.values[0])
+    np.put(new, nan_idx, np.nan)
+    new = new.reshape(old_shape)
+    end = time.time()
+    print("METHOD 2: ", end - start)
     return result
 
 def soniclayerdepth(depth, lat, temperature, salinity):
