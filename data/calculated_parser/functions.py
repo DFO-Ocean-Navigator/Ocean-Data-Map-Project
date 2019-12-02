@@ -387,24 +387,6 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     
     speed = sspeed(depth, lat, temperature, salinity)
     
-    start = time.time()
-    result = np.empty((speed.shape[-2], speed.shape[-1]))
-    for x in range(speed.shape[-1]):
-        for y in range(speed.shape[-2]):
-            speed_point = speed[:,y,x]
-            if count_numerical_vals(speed_point) != 0:
-                idx = find_sca_idx(speed_point)
-                if np.isnan(idx):
-                    result[y,x] = idx
-                else:
-                    result[y,x] = depth.values[idx]
-            else:
-                result[y,x] = np.nan
-    end = time.time()
-    print("METHOD 1: ", end - start)    
-    # TEST SECOND METHOD
-    
-    start = time.time()
     array = np.ma.masked_array(speed, np.isnan(speed))
     min_idx = array.argmin(axis = 0)
     new = np.take(depth.values, min_idx)
@@ -413,8 +395,8 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     nan_idx = np.where(new == depth.values[0])
     np.put(new, nan_idx, np.nan)
     new = new.reshape(old_shape)
-    end = time.time()
-    print("METHOD 2: ", end - start)
+
+    
     return new
 
 def soniclayerdepth(depth, lat, temperature, salinity):
@@ -435,30 +417,6 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
 
-    start = time.time()
-    result = np.empty((speed.shape[-2], speed.shape[-1]))
-    for x in range(speed.shape[-1]):
-        for y in range(speed.shape[-2]):
-            speed_point = speed[:,y,x]
-            if (count_numerical_vals(speed_point) != 0):
-                
-                sca_idx = find_sca_idx(speed_point)
-                if (np.isnan(sca_idx)):
-                    result[y,x] = sca_idx
-                else:
-                    sld_idx = find_sld_idx(sca_idx, speed_point)
-
-                    if (np.isnan(sld_idx)):
-                        result[y,x] = sld_idx
-                    else:
-                        sld = depth.values[sld_idx]
-                        result[y,x] = sld
-            else:
-                result[y,x] = np.nan
-    end = time.time()
-    print("METHOD 1: ", end - start)
-
-    start = time.time()
     marray = np.ma.masked_array(speed, np.isnan(speed))
     min_idx = marray.argmin(axis=0)
     old_shape = min_idx.shape
@@ -476,9 +434,6 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     nan_idx = np.where(new == depth.values[0])
     np.put(new, nan_idx, np.nan)
     new = new.reshape(old_shape)
-    end = time.time()
-    print("METHOD 2: ", end - start)
-    
     
     return new # Only return one horizontal slice
 
