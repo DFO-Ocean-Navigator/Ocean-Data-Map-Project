@@ -399,9 +399,9 @@ def soundchannelaxis(depth, lat, temperature, salinity):
                 
     # TEST SECOND METHOD
     min_idx = speed.argmin(axis = 0)
-    new = np.take(speed, min_idx)
+    new = np.take(depth.values, min_idx)
     nan_idx = np.where(new[0] == depth.values[0])
-    np.put(new[0], nan_idx, np.nan)
+    np.put(new, nan_idx, np.nan)
     print(something)
     return result
 
