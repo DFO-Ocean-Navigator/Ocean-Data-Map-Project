@@ -459,8 +459,12 @@ def criticaldepth(depth, lat, temperature, salinity):
     salinity: The salinity (at all depths) (unitless)
     """
 
-    speed = sspeed(depth, lat, temperature, salinity)
     
+    speed = sspeed(depth, lat, temperature, salinity)
+
+
+    """
+    #VECTORIZING -- INCOMPLETE
     marray = np.ma.masked_array(speed, np.isnan(speed))
     min_idx = marray.argmin(axis=0)
     old_shape = min_idx.shape
@@ -494,7 +498,7 @@ def criticaldepth(depth, lat, temperature, salinity):
     # Prepare Interpolation
     cd_next_idx = cd_idx + 1
     cd_prev_idx = cd_idx - 1
-    
+    """
 
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
