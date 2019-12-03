@@ -153,7 +153,7 @@ export default class Model_3D extends React.Component {
 
     addVerticalLine(points) {
         console.warn("POINTS: ", points.points);
-
+        try {
             point = points
             console.warn("POINT: ", point);
             console.warn("pointNumber: ", point[0]);
@@ -171,6 +171,9 @@ export default class Model_3D extends React.Component {
                 layers: layers,
                 vLine: line_3d,
             })
+        } catch (err) {
+            
+        }
         
     }
 
