@@ -171,7 +171,7 @@ export default class Model_3D extends React.Component {
                 layers: layers,
                 vLine: line_3d,
             })
-        }
+        
     }
 
     render() {
