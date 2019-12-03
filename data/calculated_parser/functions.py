@@ -479,27 +479,21 @@ def criticaldepth(depth, lat, temperature, salinity):
     # Use the shallow array to find the Sonic Layer Depth
     shallow_array = np.ma.masked_array(shallow_array, np.isnan(shallow_array))
     deep_array = np.ma.masked_array(deep_array, np.isnan(deep_array))
-    max_idx = shallow_array.argmax(axis=0)
+    
+    #max_idx = shallow_array.argmax(axis=0)
 
-    for idx in enumerate(max_idx):
-        print(something)
-    print(something)
-    max_vals = np.take(shallow_array, max_idx)
+    max_vals = np.amax(shallow_array, axis=0)
 
     # Use the deep array and the Sonic Layer Value to find the Critical Depth
     cd_idx = np.abs(deep_array - max_vals).argmin(axis=0)
 
+    print(something)
     # Mask all zero values (Critical Depth doesn't exist)
     cd_idx = np.ma.masked_array(cd_idx, cd_idx == 0)
 
     # Prepare Interpolation
     cd_next_idx = cd_idx + 1
     cd_prev_idx = cd_idx - 1
-
-
-
-    print(something)
-
     
 
     result = np.empty((speed.shape[-2], speed.shape[-1]))
