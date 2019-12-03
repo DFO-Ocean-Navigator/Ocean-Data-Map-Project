@@ -158,7 +158,7 @@ export default class Model_3D extends React.Component {
             console.warn("POINT: ", point);
             console.warn("pointNumber: ", point[0]);
             console.warn("x, y, _cmin, _cmax: ", point[0].x, point[0].y, point[0].fullData._cmin, point[0].fullData._cmax)
-            let layers = jQuery.extends([], this.state.layers);
+            let layers = jQuery.extend([], this.state.layers);
             let line_3d = {
                 x: [[point[0].x],[point[0].x]],
                 y: [[point[0].y],[point[0].y]],
