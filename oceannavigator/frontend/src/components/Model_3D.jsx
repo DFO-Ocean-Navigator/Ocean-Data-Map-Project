@@ -172,7 +172,7 @@ export default class Model_3D extends React.Component {
                 vLine: line_3d,
             })
         } catch (err) {
-            
+
         }
         
     }
@@ -238,7 +238,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    onClick={(e) => {this.addVerticalLine(e)}}
+                    onClick={this.addVerticalLine}
                 ></Plot>
             )
         }
