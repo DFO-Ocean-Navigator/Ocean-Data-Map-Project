@@ -387,13 +387,24 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     
     speed = sspeed(depth, lat, temperature, salinity)
     
+    # Mask Array to allow for min index search
     array = np.ma.masked_array(speed, np.isnan(speed))
+
+    # Find index's of minimum values
     min_idx = array.argmin(axis = 0)
+
+    # Pull depths at minimum value
     new = np.take(depth.values, min_idx)
     old_shape = new.shape
+
+    # Flatten
     new = new.reshape(new.shape[0] * new.shape[1])
+    
+    # Remove Surface Values
     nan_idx = np.where(new == depth.values[0])
     np.put(new, nan_idx, np.nan)
+    
+    # Unflatten
     new = new.reshape(old_shape)
 
     
@@ -449,6 +460,19 @@ def criticaldepth(depth, lat, temperature, salinity):
     """
 
     speed = sspeed(depth, lat, temperature, salinity)
+    
+    marray = np.ma.masked_array(speed, np.isnan(speed))
+    min_idx = marray.argmin(axis=0)
+    old_shape = min_idx.shape
+    min_idx = min_idx.reshape(min_idx.shape[0] * min_idx.shape[1])
+    deep_mask = min_idx[:, None] < np.arange(50)
+    deep_mask = deep_mask.transpose().reshape(50, old_shape[0], old_shape[1])
+
+    shallow_mask = min_idx[:,None] > np.arange(50)
+    shallow_mask = shallow_mask.transpose().reshape(50, old_shape[0], old_shape[1])
+
+    print(something)
+    
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
