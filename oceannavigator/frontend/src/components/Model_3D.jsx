@@ -55,6 +55,12 @@ export default class Model_3D extends React.Component {
         this.getLatLon(this.state.query);
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (stringify(this.state.point) !== stringify(prevState.point)) {
+            this.addVerticalLine(this.state.point)
+        }
+    }
+
     /*
         Adds the provided layer to the plot
     */
