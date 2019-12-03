@@ -156,11 +156,11 @@ export default class Model_3D extends React.Component {
         for (let point in points) {
             point = points[point];
             console.warn("POINT: ", point);
-            console.warn("pointNumber: ", point.pointNumber);
+            console.warn("pointNumber: ", point[0]);
             let layers = this.state.layers;
             let line_3d = {
-                x: [[point.pointNumber.x],[point.pointNumber.x]],
-                y: [[point.pointNumber.y],[point.pointNumber.y]],
+                x: [[point.x],[point.x]],
+                y: [[point.y],[point.y]],
                 z: [[point.fullData._cmin],[point.fullData._cmax]],
                 type: 'scatter3d',
                 mode: 'lines'
