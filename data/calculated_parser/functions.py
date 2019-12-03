@@ -481,6 +481,8 @@ def criticaldepth(depth, lat, temperature, salinity):
     deep_array = np.ma.masked_array(deep_array, np.isnan(deep_array))
     max_idx = shallow_array.argmax(axis=0)
 
+    for (idx in max_idx):
+        print(something)
     print(something)
     max_vals = np.take(shallow_array, max_idx)
 
