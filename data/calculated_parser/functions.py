@@ -480,6 +480,8 @@ def criticaldepth(depth, lat, temperature, salinity):
     shallow_array = np.ma.masked_array(shallow_array, np.isnan(shallow_array))
     deep_array = np.ma.masked_array(deep_array, np.isnan(deep_array))
     max_idx = shallow_array.argmax(axis=0)
+
+    print(something)
     max_vals = np.take(shallow_array, max_idx)
 
     # Use the deep array and the Sonic Layer Value to find the Critical Depth
@@ -495,6 +497,8 @@ def criticaldepth(depth, lat, temperature, salinity):
 
 
     print(something)
+
+    
 
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
