@@ -56,7 +56,7 @@ export default class Model_3D extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (stringify(this.state.point) !== stringify(prevState.point)) {
+        if (this.state.point[0].x !== prevState.point[0].x && this.state.point[0].y !== prevState.point[0].y) {
             this.addVerticalLine(this.state.point)
         }
     }
