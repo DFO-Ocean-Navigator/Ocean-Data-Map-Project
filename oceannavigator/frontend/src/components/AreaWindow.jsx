@@ -1021,6 +1021,34 @@ export default class AreaWindow extends React.Component {
         content = <img src={Spinner} />;
       }
 
+      let current = []
+
+      if (this.state.currentTab === 3) {
+        current = <Model_3D
+          dataset={this.state.data.dataset}
+          variable={this.state.data.variable}
+          quantum={this.state.data.quantum}
+          time={this.state.data.time}
+          interp={this.props.options.interpType}
+          radius={this.props.options.interpRadius}
+          neighbours={this.props.options.interpNeighbours}
+          projection={this.props.projection}
+          area={this.props.area}
+        ></Model_3D>
+      } else {
+        current = <Row>
+          <Col lg={3}>
+            {leftInputs}
+          </Col>
+          <Col lg={6}>
+            {content}
+          </Col>
+          <Col lg={3}>
+            {rightInputs}
+          </Col>
+        </Row>
+      }
+
 
       return (
         <div className='AreaWindow Window'>
@@ -1031,18 +1059,9 @@ export default class AreaWindow extends React.Component {
           >
             <NavItem eventKey={1}>{_("Map")}</NavItem>
             <NavItem eventKey={2}>{_("Statistics")}</NavItem>
+            <NavItem eventKey={3}>{_("3D Model")}</NavItem>
           </Nav>
-          <Row>
-            <Col lg={3}>
-              {leftInputs}
-            </Col>
-            <Col lg={6}>
-              {content}
-            </Col>
-            <Col lg={3}>
-              {rightInputs}
-            </Col>
-          </Row>
+          {current}
         </div>
       );
     }
