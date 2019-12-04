@@ -918,6 +918,7 @@ def bath_3d_model_impl(query: dict, args):
 def get_map_point(args):
     args = json.loads(args.get('query'))
     points = args.get('points')
+
     print(something)
     mapImg = _map_plot(points, False, False)
     return
@@ -932,11 +933,11 @@ def get_map_line(args):
 def get_map_area(args):
     args = json.loads(args.get('query'))
     points = args.get('points')
-    print(something)
-
+    
     # Might have to connect the points
     mapImg = _map_plot(points, True, False)
-    return
+    response = make_response(mapImg)
+    return response
 
 def get_area_data(args):
     if 'query' not in args:
