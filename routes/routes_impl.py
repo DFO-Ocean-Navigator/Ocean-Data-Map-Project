@@ -936,7 +936,9 @@ def get_map_area(args):
     points = np.array(points).transpose()
     # Might have to connect the points
     mapImg = _map_plot(points, True, False)
-    response = make_response(mapImg)
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    response = make_response(img)
     return response
 
 def get_area_data(args):
