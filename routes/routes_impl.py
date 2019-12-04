@@ -48,6 +48,7 @@ from plotting.bathymetry import BathPlotter
 from utils.errors import APIError, ClientError
 from plotting.area import Area
 from plotting.utils import _map_plot
+import matplotlib.pyplot as plt
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
