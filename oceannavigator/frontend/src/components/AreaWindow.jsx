@@ -26,6 +26,7 @@ import TimePicker from "./time/TimePicker.jsx";
 import PropTypes from "prop-types";
 import Spinner from '../images/spinner.gif';
 import DataSelection from './DataSelection.jsx';
+import Model_3D from './Model_3D.jsx';
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
