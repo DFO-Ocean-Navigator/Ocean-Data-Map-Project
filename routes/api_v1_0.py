@@ -389,6 +389,18 @@ def bath_3d_model():
 
     return routes.routes_impl.bath_3d_model_impl(query, args)
 
+@bp_v1_0.route('/api/v1.0/map/point/')
+def get_map_point():
+    return routes.routes_impl.get_map_point(request.args)
+
+@bp_v1_0.route('/api/v1.0/map/line/')
+def get_map_line():
+    return routes.routes_impl.get_map_line(request.args)
+
+@bp_v1_0.route('/api/v1.0/map/area/')
+def get_map_area():
+    return routes.routes_impl.get_map_area(request.args)
+
 @bp_v1_0.route('/api/v1.0/data/area/')
 def get_area_data():
     return routes.routes_impl.get_area_data(request.args)

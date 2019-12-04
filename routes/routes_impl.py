@@ -47,7 +47,7 @@ from plotting.ts import TemperatureSalinityPlotter
 from plotting.bathymetry import BathPlotter
 from utils.errors import APIError, ClientError
 from plotting.area import Area
-
+from plotting.utils import _map_plot
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
@@ -914,6 +914,29 @@ def bath_3d_model_impl(query: dict, args):
 
     plotter = BathPlotter(dataset, query, **options)
     return plotter.run()
+
+def get_map_point(args):
+    args = json.loads(args.get('query'))
+    points = args.get('points')
+    print(something)
+    mapImg = _map_plot(points, False, False)
+    return
+
+def get_map_line(args):
+    args = json.loads(args.get('query'))
+    points = args.get('points')
+    print(something)
+    mapImg = _map_plot(points, True, False)
+    return
+
+def get_map_area(args):
+    args = json.loads(args.get('query'))
+    points = args.get('points')
+    print(something)
+
+    # Might have to connect the points
+    mapImg = _map_plot(points, True, False)
+    return
 
 def get_area_data(args):
     if 'query' not in args:
