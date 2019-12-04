@@ -45,7 +45,7 @@ export default class DataLayer extends React.Component {
                 layer = {
                     z: [],
                     type: 'surface',
-                    colorscale: 'Earth',
+                    colorscale: 'Viridis',
                 }
             }
             layer = jQuery.extend({}, layer);
@@ -69,7 +69,8 @@ export default class DataLayer extends React.Component {
             if (old === undefined) {
                 layer = {
                     z: [],
-                    type: 'surface'
+                    type: 'surface',
+                    colorscale: 'Viridis',
                 }
             }
             layer = jQuery.extend({}, layer);
@@ -127,7 +128,8 @@ export default class DataLayer extends React.Component {
                 if (old === undefined) {
                     layer = {
                         z: [],
-                        type: 'surface'
+                        type: 'surface',
+                        colorscale: 'Viridis',
                     }
                 }
                 layer = jQuery.extend({}, layer);
