@@ -933,7 +933,7 @@ def get_map_line(args):
 def get_map_area(args):
     args = json.loads(args.get('query'))
     points = args.get('points')
-    
+    points = np.array(points).transpose()
     # Might have to connect the points
     mapImg = _map_plot(points, True, False)
     response = make_response(mapImg)
