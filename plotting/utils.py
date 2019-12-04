@@ -150,6 +150,7 @@ def _map_plot(points, path=True, quiver=True, colors=list()):
                 round(maxlon),
                 round(lon_d / 1.5)
             ), labels=[0, 0, 0, 1])
+        return m
     except:
         raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
 
