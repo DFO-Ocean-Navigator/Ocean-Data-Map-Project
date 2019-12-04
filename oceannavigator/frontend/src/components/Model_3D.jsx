@@ -252,7 +252,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    {/*onClick={(e) => this.setState({point: e})}*/}
+                    /*onClick={(e) => this.setState({point: e})}*/
                 ></Plot>
             )
         }
