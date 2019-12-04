@@ -939,7 +939,7 @@ def get_map_area(args):
     mapImg = _map_plot(points, True, False)
     img = io.BytesIO()
     plt.savefig(img, format='png')
-    response = make_response(img, 'image/png')
+    response = send_file(img, mimetype='image/png')
     return response
 
 def get_area_data(args):
