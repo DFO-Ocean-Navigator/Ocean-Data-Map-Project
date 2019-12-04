@@ -37,9 +37,18 @@ export default class ComboBox extends React.Component {
     this._mounted = false;  //Component not mounted
   }
 
-  componentWillReceiveProps(nextProps) {
+  /*
+  // FUNCTION DEPRECATED
+  ReceiveProps(nextProps) {
     if (nextProps.url !== this.state.url || nextProps.data !== this.props.data) {
       this.populate(nextProps);
+    }
+  }
+  */
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.url !== this.state.url || this.props.data !== prevProps.data) {
+      this.populate(this.props);
     }
   }
 
@@ -57,7 +66,6 @@ export default class ComboBox extends React.Component {
         }
       }
     }
-    
     if (typeof(this.props.onUpdate) === "function") {
       // State key ID: "variable", "dataset", "projection", etc.
       const keys = [this.props.id];
@@ -234,7 +242,6 @@ export default class ComboBox extends React.Component {
   }
 
   render() {
-
     //Creates one drop down function for each option sent back
     const options = this.state.data.map(function(o) {
       var opts = {

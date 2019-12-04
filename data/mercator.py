@@ -30,10 +30,11 @@ class Mercator(CalculatedData):
     def __enter__(self):
         super(Mercator, self).__enter__()
 
-        if self.latvar is None:
-            self.latvar, self.lonvar = self.latlon_variables
-            self.__latsort = np.argsort(self.latvar[:])
-            self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
+        if not self._meta_only:
+            if self.latvar is None:
+                self.latvar, self.lonvar = self.latlon_variables
+                self.__latsort = np.argsort(self.latvar[:])
+                self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
         return self
 
@@ -63,6 +64,13 @@ class Mercator(CalculatedData):
             self.__depths.flags.writeable = False
 
         return self.__depths
+
+    def __find_var(self, candidates):
+        for c in candidates:
+            if c in self._dataset.variables:
+                return self.get_dataset_variable(c)
+
+        return None
 
     def __bounding_box(self, lat, lon, n=10):
 

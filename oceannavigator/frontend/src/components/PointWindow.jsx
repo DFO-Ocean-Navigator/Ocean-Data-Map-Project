@@ -7,18 +7,21 @@
 
 
 import React from "react";
-import { Nav, NavItem, Panel, Row, Col, Button } from "react-bootstrap";
+import { Button, Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
+import moment from "moment-timezone";
 import PlotImage from "./PlotImage.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
-import TimePicker from "./TimePicker.jsx";
+import TimePicker from "./time/TimePicker.jsx";
 import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import Scale from "./Scale.jsx";
-import PlotLabel from "./PlotLabel.jsx";
+import ReactLoading from 'react-loading';
+import Spinner from '../images/spinner.gif';
+import DataSelection from './DataSelection.jsx';
+
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -46,7 +49,7 @@ export default class PointWindow extends React.Component {
       depth: props.depth,
       showmap: true,
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
+      //starttime: Math.max(props.time - 24, 0),
       variables: [],
       annotate: false,
       variable: [props.variable],
@@ -54,7 +57,16 @@ export default class PointWindow extends React.Component {
       size: "10x7",
       dpi: 144,
       plotTitles: Array(7).fill(""),
-      plotsettings: {}
+
+      xminScale: undefined,
+      xmaxScale: undefined,
+      yminScale: undefined,
+      ymaxScale: undefined,
+      title: undefined,
+
+      focusedInput: {
+        focused: false,
+      }
     };
 
     if (props.init !== null) {
@@ -65,139 +77,60 @@ export default class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
-    this.applyPlotSettings = this.applyPlotSettings.bind(this);
-    this.updatePlotSetting = this.updatePlotSetting.bind(this);
-
+    this.updatePlot = this.updatePlot.bind(this);
+    this.updateScale = this.updateScale.bind(this);
+    this.updateData = this.updateData.bind(this);
+    this.onTimeUpdate = this.onTimeUpdate.bind(this);
   }
 
   componentDidMount() {
     this._mounted = true;
-
     // If an observation point has been picked, default to the
     // Observation tab.
-    if (this.props.point[0][2] !== undefined) {
-      this.setState({
-        selected: TabEnum.OBSERVATION,
-      });
+    if (this.props.init === undefined) {
+      this.updateData(this.props.data);
+    } else {
+      this.updatePlot()
     }
-
-    this.populateVariables(this.props.dataset);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.data !== this.props.data && this.props.init === undefined) {
+      this.updateData(this.props.data)
+    } 
+  }
   componentWillUnmount() {
     this._mounted = false;
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    
-    if ((stringify(this.props) !== stringify(prevProps) || stringify(this.state) !== stringify(prevState)) && this._mounted) {
+  /*
+  componentWillReceiveProps(props) {
+    if (stringify(this.props) !== stringify(props) && this._mounted) {
       const state = {};
 
       if (!Array.isArray(this.state.depth)) {
-        state.depth = this.props.depth;
+        state.depth = props.depth;
       }
       if (this.state.scale.indexOf("auto") !== -1) {
-        state.scale = this.props.scale + ",auto";
+        state.scale = props.scale + ",auto";
       }
       else {
-        state.scale = this.props.scale;
+        state.scale = props.scale;
       }
 
       this.setState(state);
 
       // Check if dataset was changed
-      if (this.props.dataset !== prevProps.dataset) {
-        this.populateVariables(this.props.dataset);
+      if (this.props.dataset !== props.dataset) {
+        this.populateVariables(props.dataset);
       }
-
-
-      // Update Plot Query
-      let plot_query = {
-        dataset: this.props.dataset,
-        quantum: this.props.quantum,
-        point: this.props.point,
-        showmap: this.state.showmap,
-        names: this.props.names,
-        size: this.state.size,
-        dpi: this.state.dpi,
-        plotTitle: this.state.plotTitles[this.state.selected - 1],
-      };
-
-
-      switch (this.state.selected) {
-        case TabEnum.PROFILE:
-          plot_query.type = "profile";
-          plot_query.time = this.props.time;
-          plot_query.variable = this.state.variable;
-          break;
-
-        case TabEnum.CTD:
-          plot_query.type = "profile";
-          plot_query.time = this.props.time;
-          plot_query.variable = "";
-          if (this.state.variables.indexOf("votemper") !== -1) {
-            plot_query.variable += "votemper,";
-          } else if (this.state.variables.indexOf("temp") !== -1) {
-            plot_query.variable += "temp,";
-          }
-          if (this.state.variables.indexOf("vosaline") !== -1) {
-            plot_query.variable += "vosaline";
-          } else if (this.state.variables.indexOf("salinity") !== -1) {
-            plot_query.variable += "salinity";
-          }
-          break;
-
-        case TabEnum.TS:
-          plot_query.type = "ts";
-          plot_query.time = this.props.time;
-          if (this.props.dataset_compare) {
-            plot_query.compare_to = this.props.dataset_1;
-          }
-
-          break;
-
-        case TabEnum.SOUND:
-          plot_query.type = "sound";
-          plot_query.time = this.props.time;
-          plot_query.annotate = this.state.annotate
-          break;
-
-        case TabEnum.OBSERVATION:
-          plot_query.type = "observation";
-          plot_query.observation = this.props.point.map(function (o) {
-            return o[2];
-          });
-
-          plot_query.observation_variable = this.state.observation_variable;
-          plot_query.variable = this.state.variable;
-          break;
-
-        case TabEnum.MOORING:
-          plot_query.type = "timeseries";
-          plot_query.variable = this.props.variable;
-          plot_query.starttime = this.state.starttime;
-          plot_query.endtime = this.props.time;
-          plot_query.depth = this.state.depth;
-          plot_query.colormap = this.state.colormap;
-          plot_query.scale = this.state.scale;
-          break;
-
-        case TabEnum.STICK:
-          plot_query.type = "stick";
-          plot_query.variable = this.state.variable;
-          plot_query.starttime = this.state.starttime;
-          plot_query.endtime = this.props.time;
-          plot_query.depth = this.state.depth;
-          break;
-      }
-
-      this.setState({
-        plot_query: plot_query
-      })
     }
   }
-
+*/
   populateVariables(dataset) {
+    if (dataset === undefined) {
+      return
+    }
     $.ajax({
       url: "/api/v1.0/variables/?dataset=" + dataset,
       dataType: "json",
@@ -209,16 +142,19 @@ export default class PointWindow extends React.Component {
             return d.id;
           });
 
-          if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
-            this.props.onUpdate("variable", vars[0]);
-          }
+          //if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
+          //  this.props.onUpdate("variable", vars[0]);
+          //}
 
           this.setState({
             variables: data.map(function (d) {
               return d.id;
             }),
+          }, () => {
+            this.updatePlot()
           });
         }
+        //this.updatePlot()
       }.bind(this),
 
       error: function (xhr, status, err) {
@@ -229,23 +165,6 @@ export default class PointWindow extends React.Component {
     });
   }
 
-  applyPlotSettings() {
-    let plot_query = jQuery.extend({}, this.state.plot_query);
-    plot_query['plotsettings'] = jQuery.extend({}, this.state.plotsettings);
-    
-    this.setState({
-      plot_query: plot_query
-    });
-  }
-  updatePlotSetting(key, value) {
-    let plotSettings = this.state.plotsettings;
-
-    plotSettings[key] = value;
-
-    this.setState({
-      plotsettings: plotSettings
-    })
-  }
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
@@ -255,10 +174,52 @@ export default class PointWindow extends React.Component {
     }
   }
 
+  onTimeUpdate(key, value) {
+    if (typeof(key) === typeof('string')) {
+      this.setState({
+        [key]: value
+      })
+    } else {
+      //let date = moment.tz(key, 'GMT')
+      //date.setUTCMonth(date.getUTCMonth() +1)
+      this.setState({
+            time: key
+      })
+    }
+  }
+
+  updateData(data) {
+
+    let dataset = data.dataset
+    let variable = data.variable
+    let display = data.display
+    let colourmap = data.colourmap
+    let quantum = data.quantum
+    let scale = data.scale
+    let time = data.time
+    
+    this.setState({
+      dataset: dataset,
+      variable: variable,
+
+      display: display,
+      colourmap: colourmap,
+      dataset_quantum: quantum,
+      scale: scale + ',auto',
+      time: time,
+    }, () => {
+      this.updatePlot()
+
+      // Why are we populating variables for a new date?
+      this.populateVariables(dataset)
+    })
+  }
+
   onLocalUpdate(key, value) {
     if (this._mounted) {
       let newState = {};
-
+      
+      
       if (typeof (key) === "string") {
         newState[key] = value;
       }
@@ -281,6 +242,7 @@ export default class PointWindow extends React.Component {
           parentValues.push(newState.depth[0]);
         }
       }
+
 
       if (newState.hasOwnProperty("point")) {
         parentKeys.push("point");
@@ -305,15 +267,151 @@ export default class PointWindow extends React.Component {
         this.props.onUpdate(parentKeys, parentValues);
       }
     }
+    //this.render()
   }
 
   // Handles when a tab is selected
   onSelect(key) {
     this.setState({
-      selected: key
-    });
+      selected: key,
+      
+    }, () => { this.updatePlot() });
   }
 
+  updateScale(e) {
+    let value = e.target.value
+    let key = e.target.id
+    this.setState({
+      [key]: value
+    })
+  }
+
+  updatePlot() {
+
+    let plot_query = {
+      dataset: this.state.dataset,
+      quantum: this.state.dataset_quantum,
+      point: this.props.point,
+      showmap: this.state.showmap,
+      names: this.props.names,
+      size: this.state.size,
+      dpi: this.state.dpi,
+      plotTitle: this.state.plotTitles[this.state.selected - 1],
+    };
+
+    // Manual X-Scale
+    if (this.state.xminScale != '' && this.state.xminScale != undefined) {
+      if (this.state.xmaxScale != '' && this.state.xmaxScale != undefined) {
+        plot_query.xscale = [this.state.xminScale, this.state.xmaxScale]
+
+      }
+    }
+    
+    // Manual Y-Scale
+    if (this.state.yminScale != '' && this.state.yminScale != undefined) {
+      if (this.state.ymaxScale != '' && this.state.ymaxScale != undefined) {
+        plot_query.yscale = [this.state.ymaxScale, this.state.yminScale]
+      }
+    }
+    
+    // Manual Plot Title
+    if (this.state.title != undefined && this.state.title != '') {
+      plot_query.title = this.state.title
+    }
+
+    // Manual X Label
+    if (this.state.xlabel != '' && this.state.xlabel != undefined) {
+      plot_query.xlabel = this.state.xlabel
+    }
+
+    // Manual Y Label
+    if (this.state.ylabel != '' && this.state.ylabel != undefined) {
+      plot_query.ylabel = this.state.ylabel
+    }
+
+    switch (this.state.selected) {
+      case TabEnum.PROFILE:
+        plot_query.type = "profile";
+        plot_query.time = this.state.time;
+        plot_query.variable = this.state.variable;
+        break;
+
+      case TabEnum.CTD:
+        plot_query.type = "profile";
+        plot_query.time = this.state.time;
+        plot_query.variable = "";
+        if (this.state.variables.indexOf("votemper") !== -1) {
+          plot_query.variable += "votemper,";
+        } else if (this.state.variables.indexOf("temp") !== -1) {
+          plot_query.variable += "temp,";
+        }
+        if (this.state.variables.indexOf("vosaline") !== -1) {
+          plot_query.variable += "vosaline";
+        } else if (this.state.variables.indexOf("salinity") !== -1) {
+          plot_query.variable += "salinity";
+        }
+        break;
+
+      case TabEnum.TS:
+        plot_query.type = "ts";
+        plot_query.time = this.state.time;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = this.props.dataset_1;
+        }
+        break;
+
+      case TabEnum.SOUND:
+        plot_query.type = "sound";
+        plot_query.time = this.state.time;
+        break;
+      case TabEnum.OBSERVATION:
+        plot_query.type = "observation";
+        plot_query.observation = this.props.point.map(function (o) {
+          return o[2];
+        });
+
+        plot_query.observation_variable = this.state.observation_variable;
+        plot_query.variable = this.state.variable;
+
+        break;
+      case TabEnum.MOORING:
+        plot_query.type = "timeseries";
+        plot_query.variable = this.state.variable;
+        plot_query.starttime = this.state.starttime;
+        plot_query.endtime = this.state.time;
+        plot_query.depth = this.state.depth;
+        plot_query.colormap = this.state.colormap;
+        plot_query.scale = this.state.scale;
+
+        if (this.state.depth == "all") {
+          // Add Colormap selector
+          inputs.push(
+            <ComboBox
+              key='colormap'
+              id='colormap'
+              state={this.state.colormap}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/colormaps/'
+              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>);
+        }
+
+        break;
+      case TabEnum.STICK:
+        
+        plot_query.type = "stick";
+        plot_query.variable = this.state.variable;
+        plot_query.starttime = this.state.starttime;
+        plot_query.endtime = this.state.time;
+        plot_query.depth = this.state.depth;
+        break;
+    }
+    this.setState({
+      query: plot_query
+    })
+  }
+  
   render() {
 
     _("Dataset");
@@ -327,42 +425,15 @@ export default class PointWindow extends React.Component {
     _("Colourmap");
     _("Saved Image Size");
 
+
+    /*let dataSelection = <DataSelection
+      data={this.props.data}
+      localUpdate={this.updateData}
+    ></DataSelection>*/
+
     // Rendered across all tabs
-
-    const select_dataset = (
-      <ComboBox
-        key='dataset'
-        id='dataset'
-        state={this.props.dataset}
-        def=''
-        url='/api/v1.0/datasets/'
-        title={_("Dataset")}
-        onUpdate={this.props.onUpdate}
-      />
-    )
-    
-    const toggle_map = (
-      <SelectBox
-        key='showmap'
-        id='showmap'
-        state={this.state.showmap}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Location")}>{_("showmap_help")}
-      </SelectBox>
-    )
-
-    const toggle_annotations = (
-      <SelectBox
-        key='annotate'
-        id='annotate'
-        state={this.state.annotate}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Annotations")}>
-      </SelectBox>
-    )
-
-    const select_location = (
-      <div style={{ display: this.props.point.length == 1 ? "block" : "none", }}>
+    if (this.props.point.length === 1) {
+      <div>
         <LocationInput
           key='point'
           id='point'
@@ -370,136 +441,223 @@ export default class PointWindow extends React.Component {
           title={_("Location")}
           onUpdate={this.onLocalUpdate}
         />
+        <SelectBox
+          key='showmap'
+          id='showmap'
+          state={this.state.showmap}
+          onUpdate={this.onLocalUpdate}
+          title={_("Show Location")}>{_("showmap_help")}
+        </SelectBox>
+      </div>
+    } else {
+      <SelectBox
+        key='showmap'
+        id='showmap'
+        state={this.state.showmap}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Location")}>{_("showmap_help")}
+      </SelectBox>
+    }
+    const location = 
+    <div> 
+      <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
+        <LocationInput
+          key='point'
+          id='point'
+          state={this.props.point}
+          title={_("Location")}
+          onUpdate={this.onLocalUpdate}
+        />
+        <SelectBox
+          key='showmap'
+          id='showmap'
+          state={this.state.showmap}
+          onUpdate={this.onLocalUpdate}
+          title={_("Show Location")}>{_("showmap_help")}
+        </SelectBox>
+      </div>
+      <SelectBox
+        key='annotate'
+        id='annotate'
+        state={this.state.annotate}
+        onUpdate={this.onLocalUpdate}
+        title={_("Show Annotations")}>
+      </SelectBox>
+    </div>
+    const dataset = <ComboBox
+      key='dataset'
+      id='dataset'
+      state={this.state.dataset}
+      def=''
+      url='/api/v1.0/datasets/'
+      title={_("Dataset")}
+      onUpdate={this.onLocalUpdate}
+    />
+
+    const image_size = <ImageSize
+      key='size'
+      id='size'
+      state={this.state.size}
+      onUpdate={this.onLocalUpdate}
+      title={_("Saved Image Size")}
+    />
+
+
+    const xscale = (
+      <div className='scale_container' key='xscale'>
+        <div className='scale_header'>
+          X-Axis Scale:
+          </div>
+        <div className='input_container'>
+          <input
+            onChange={this.updateScale}
+            className='scale'
+            id='xminScale'
+            value={this.state.xminScale}
+            placeholder='min'
+          ></input>,
+            <input
+            onChange={this.updateScale}
+            className='scale'
+            id='xmaxScale'
+            value={this.state.xmaxScale}
+            placeholder='max'
+          ></input>
+        </div>
+      </div>
+    )
+    const yscale = (
+      <div className='scale_container' key='yscale'>
+        <div className='scale_header'>
+          Y-Axis Scale:
+        </div>
+        <div className='input_container'>
+          <input
+            onChange={this.updateScale}
+            className='scale'
+            id='yminScale'
+            value={this.state.yminScale}
+            placeholder='min'
+          ></input>,
+            <input
+            onChange={this.updateScale}
+            className='scale'
+            id='ymaxScale'
+            value={this.state.ymaxScale}
+            placeholder='max'
+          ></input>
+        </div>
       </div>
     )
 
-    const select_imagesize = (
-      <ImageSize
-        key='size'
-        id='size'
-        state={this.state.size}
-        onUpdate={this.onLocalUpdate}
-        title={_("Saved Image Size")}
-      />
-    )
 
-    const select_plottitle = (
-      /*<CustomPlotLabels
-        key='title'
-        id='title'
-        title={_("Plot Title")}
-        updatePlotTitle={this.updatePlotTitle}
-        plotTitle={this.state.plotTitles[this.state.selected - 1]}
-      ></CustomPlotLabels>*/
-      <PlotLabel
-        title='Plot Title'
-        onChange={this.updatePlotSetting}
-        labelID='title'
-        value={this.state.plotsettings.title}
-      ></PlotLabel>
-    )
+    const label = <div className='label_container' key='label'>
+        <div className='label_container'>
+          <div className='label_header'>
+            Plot Title:
+          </div>
+          <input
+            onChange={this.updateScale}
+            className='label'
+            id='title'
+            value={this.state.title}
+            placeholder='Plot Title'
+          ></input>
+        </div>
+        <div className='label_container'>
+          <div className='label_header'>
+            X-Axis Label:
+          </div>
+          <input
+            onChange={this.updateScale}
+            className='label'
+            id='xlabel'
+            value={this.state.xlabel}
+            placeholder='X-Axis Label'
+          ></input>
+        </div>
+        
+        <div className='label_container'>
+          <div className='label_header'>
+            Y-Axis Label:
+          </div>
+          <input
+            onChange={this.updateScale}
+            className='label'
+            id='ylabel'
+            value={this.state.ylabel}
+            placeholder='Y-Axis Label'
+          ></input>
+        </div>
+      </div>
+    
 
-    const select_xlabel = (
-      <PlotLabel
-        title='X Label'
-        onChange={this.updatePlotSetting}
-        labelID='xlabel'
-        value={this.state.plotsettings.xlabel}
-      ></PlotLabel>
-    )
+    
+    let line1 = <hr key='1' className='line' />
+    let line2 = <hr key='2' className='line' />
+    let line3 = <hr key='3' className='line' />
 
-    const select_xscale = (
-      <Scale
-        title='X Scale'
-        onChange={this.updatePlotSetting}
-        minID='xmin'
-        maxID='xmax'
-        min={this.state.plotsettings.xmin}
-        max={this.state.plotsettings.xmax}
-      ></Scale>
-    )
-
-    const select_ylabel = (
-      <PlotLabel
-        title='Y Label'
-        onChange={this.updatePlotSetting}
-        labelID='ylabel'
-        value={this.state.plotsettings.ylabel}
-      ></PlotLabel>
-    )
-
-    const select_yscale = (
-      <Scale
-        title='Y Scale'
-        onChange={this.updatePlotSetting}
-        onApply={this.applyPlotSettings}
-        minID='ymin'
-        maxID='ymax'
-        min={this.state.plotsettings.ymin}
-        max={this.state.plotsettings.ymax}
-      ></Scale>
-    )
-
-    // Show a single time selector on all tabs except Stick and Virtual Mooring.
+    let timeObj = this.state.time
+    let starttimeObj = this.state.starttime
+    
     const showTime = this.state.selected !== TabEnum.STICK ||
       this.state.selected !== TabEnum.MOORING;
-    const time = showTime ? <TimePicker
-      key='time'
-      id='time'
-      state={this.props.time}
-      def=''
-      quantum={this.props.quantum}
-      url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
-      title={_("Time")}
-      onUpdate={this.props.onUpdate}
-    /> : null;
-
-    // Show a start and end time selector for only Stick and Virtual Mooring tabs.
+    
     const showTimeRange = this.state.selected === TabEnum.STICK ||
       this.state.selected === TabEnum.MOORING;
-    const timeRange = showTimeRange ? <div>
-      <TimePicker
-        key='starttime'
-        id='starttime'
-        state={this.state.starttime}
-        def=''
-        quantum={this.props.quantum}
-        url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
-        title={_("Start Time")}
-        onUpdate={this.onLocalUpdate}
-        max={this.props.time}
-      />
-      <TimePicker
-        key='time'
-        id='time'
-        state={this.props.time}
-        def=''
-        quantum={this.props.quantum}
-        url={"/api/v1.0/timestamps/?dataset=" + this.props.dataset + "&variable=" + this.props.variable}
-        title={_("End Time")}
-        onUpdate={this.props.onUpdate}
-        min={this.state.starttime}
-      /> </div> : null;
+    var time = null
+    var timeRange = null
+    if (this.state.dataset !== undefined) {
+      if (showTimeRange) {
+        timeRange = <TimePicker
+          range={true}
+          key={this.state.time.toISOString()}
+          dataset={this.state.dataset}
+          variable={this.state.variable}
+          quantum={this.state.dataset_quantum}
+          startDate={starttimeObj}
+          date={timeObj}
+          onTimeUpdate={this.onTimeUpdate}
+        />
+      }
 
+    
+    
+      if (showTime) {
+        time = <TimePicker
+        range={false}
+        variable={this.state.variable}
+        key={this.state.time.toISOString()}  
+        dataset={this.state.dataset}
+        quantum={this.state.dataset_quantum}
+        startDate={starttimeObj}
+        date={timeObj}
+        onTimeUpdate={this.onTimeUpdate}
+      ></TimePicker> 
+      }
+    }
+    
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    const depthVariableScale = showDepthVariableScale ? <div>
+    var depthVariableScale 
+    if (this.state.dataset !== undefined && showDepthVariableScale) {
+      depthVariableScale = <div>
       <ComboBox
         key='depth'
         id='depth'
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
+        url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset + "&all=True"}
         title={_("Depth")}></ComboBox>
 
       <ComboBox
         key='variable'
         id='variable'
-        state={this.props.variable}
+        state={this.state.variable}
         def=''
-        onUpdate={this.props.onUpdate}
-        url={"/api/v1.0/variables/?vectors&dataset=" + this.props.dataset}
+        onUpdate={this.onLocalUpdate}
+        url={"/api/v1.0/variables/?dataset=" + this.state.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
@@ -510,18 +668,21 @@ export default class PointWindow extends React.Component {
         def={""}
         onUpdate={this.onLocalUpdate}
         title={_("Variable Range")} />
-    </div> : null;
+    </div>
+    }
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
-    const multiDepthVector = showMultiDepthAndVector ? <div>
+    var multiDepthVector
+    if (this.state.dataset !== undefined && showMultiDepthAndVector) {
+      multiDepthVector = <div>
       <ComboBox
         key='variable'
         id='variable'
         state={this.state.variable}
         def=''
         onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/variables/?vectors_only&dataset=" + this.props.dataset}
+        url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset}
         title={_("Variable")}><h1>Variable</h1></ComboBox>
 
       <ComboBox
@@ -531,9 +692,9 @@ export default class PointWindow extends React.Component {
         state={this.state.depth}
         def={""}
         onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
+        url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.state.dataset}
         title={_("Depth")}></ComboBox>
-    </div> : null;
+    </div>}
 
 
     // Create Variable dropdown for Profile and Observation
@@ -546,7 +707,7 @@ export default class PointWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/variables/?3d_only&dataset=" + this.props.dataset}
+      url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset + "&anom"}
       title={_("Variable")}><h1>Variable</h1></ComboBox> : null;
 
     let observation_data = [];
@@ -562,8 +723,7 @@ export default class PointWindow extends React.Component {
           multiple
           onUpdate={this.onLocalUpdate}
         />;
-      }
-      else {
+      } else {
         observation_data = this.props.point[0][2].datatypes.map(
           function (o, i) {
             return { id: i, value: o.replace(/ \[.*\]/, "") };
@@ -581,66 +741,6 @@ export default class PointWindow extends React.Component {
       }
     }
 
-    let datainputs = [];
-    let plotinputs = [];
-    let saveinputs = [];
-
-    switch (this.state.selected) {
-      case TabEnum.PROFILE:
-        datainputs = [select_location, toggle_map, select_dataset, profilevariable, time]
-        plotinputs = [select_plottitle]
-        saveinputs = [select_imagesize]
-        break;
-
-      case TabEnum.CTD:
-        datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = []
-        saveinputs = [select_imagesize]
-        break;
-
-      case TabEnum.TS:
-        datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = []
-        saveinputs = [select_imagesize]
-        break;
-
-      case TabEnum.SOUND:
-        datainputs = [select_location, toggle_map, select_dataset, time];
-        plotinputs = [select_plottitle, select_xlabel, select_xscale, select_ylabel, select_yscale]
-        saveinputs = [select_imagesize]
-        break;
-
-      case TabEnum.OBSERVATION:
-        datainputs = [select_location, toggle_map, select_dataset, observation_variable];
-        plotinputs = []
-        saveinputs = [select_imagesize]
-        break;
-
-      case TabEnum.MOORING:
-        datainputs = [select_location, toggle_map, select_dataset, timeRange, depthVariableScale]
-        plotinputs = []
-        saveinputs = [select_imagesize]
-        if (this.state.depth == "all") {
-          // Add Colormap selector
-          datainputs.push(
-            <ComboBox
-              key='colormap'
-              id='colormap'
-              state={this.state.colormap}
-              def='default'
-              onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-            </ComboBox>);
-        }
-
-      case TabEnum.STICK:
-        datainputs = [select_location, toggle_map, select_dataset, timeRange, multiDepthVector]
-        plotinputs = []
-        saveinputs = [select_imagesize]
-        break;
-    }
-
     // Checks if the current dataset's variables contain Temperature
     // and Salinity. This is used to enable/disable some tabs.
     const hasTempSalinity =
@@ -653,19 +753,57 @@ export default class PointWindow extends React.Component {
       selected: this.state.selected,
       scale: this.state.scale,
       depth: this.state.depth,
+      dataset: this.state.dataset,
+      variable: this.state.variable,
       colormap: this.state.colormap,
       starttime: this.state.starttime,
+      time: this.state.time
     };
+    let inputs = [];
+    switch (this.state.selected) {
+      case TabEnum.PROFILE:
+        inputs = [time, line1, dataset, profilevariable, line2, xscale, yscale, label, image_size];
+        break;
+      case TabEnum.CTD:
+        inputs = [line1, time, dataset, line2, xscale, yscale, label, image_size];
+        break;
+      case TabEnum.TS:
+        inputs = [line1, time, dataset, line2, xscale, yscale, label, image_size];
+        break;
+      case TabEnum.SOUND:
+        inputs = [line1, time, line2, dataset, line3, xscale, yscale, label, image_size];
+        break;
+      case TabEnum.OBSERVATION:
+        inputs = [line1, dataset, observation_variable, profilevariable, label, image_size];
+        break;
+      case TabEnum.MOORING:
+        inputs = [line1, timeRange, dataset, depthVariableScale, label, image_size];
+        if (this.state.depth == "all") {
+          // Add Colormap selector
+          inputs.push(
+            <ComboBox
+              key='colormap'
+              id='colormap'
+              state={this.state.colormap}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/v1.0/colormaps/'
+              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>);
+        }
+        break;
+      case TabEnum.STICK:
+        inputs = [line1, timeRange, dataset, multiDepthVector, label, image_size];
+        break;
+    }
 
-    let image = []
-    if (this.state.plot_query !== undefined) {
-      image.push(
-        <PlotImage
-          query={this.state.plot_query} // For image saving link.
-          permlink_subquery={permlink_subquery}
-          action={this.props.action}
-        />
-      )
+    let plot_image = null;//<img src={Spinner} />
+    if (this.state.query != undefined) {
+      plot_image = <PlotImage
+        query={this.state.query} // For image saving link.
+        permlink_subquery={permlink_subquery}
+        action={this.props.action}
+      />
     }
 
     return (
@@ -696,47 +834,24 @@ export default class PointWindow extends React.Component {
             eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
         </Nav>
         <Row>
-          <Col lg={2}>
-
+          <Col lg={3}>
             <Panel
               key='global_settings'
               id='global_settings'
               collapsible
               defaultExpanded
-              header={_("Global Settings")}
+              header={_("Plot Customization")}
               bsStyle='primary'
             >
-              {datainputs}
-            </Panel >
-          </Col>
-          <Col lg={8}>
-            {image}
-          </Col>
-          <Col lg={2}>
-
-            <Panel
-              key='plot_settings'
-              id='plot_settings'
-              collapsible
-              defaultExpanded
-              header={_("Plot Settings")}
-              bsStyle='primary'
-            >
-              {plotinputs}
+              {location}
+              {inputs}
               <Button
-                onClick={this.applyPlotSettings}
-              >Apply</Button>
-            </Panel >
-            <Panel
-              key='save_settings'
-              id='save_settings'
-              collapsible
-              defaultExpanded
-              header={_("Save Settings")}
-              bsStyle='primary'
-            >
-              {saveinputs}
-            </Panel >
+                onClick={this.updatePlot}
+              >Apply Changes</Button>
+            </Panel>
+          </Col>
+          <Col lg={9}>
+            {plot_image}
           </Col>
         </Row>
       </div>
@@ -746,9 +861,10 @@ export default class PointWindow extends React.Component {
 
 //***********************************************************************
 PointWindow.propTypes = {
+  data: PropTypes.object,
   generatePermLink: PropTypes.func,
   point: PropTypes.array,
-  time: PropTypes.number,
+  time: PropTypes.object,
   variable: PropTypes.string,
   dpi: PropTypes.number,
   names: PropTypes.array,
