@@ -786,7 +786,7 @@ export default class Layer extends React.Component {
         name: 'data',
         preload: Infinity,
         opacity: this.state.opacity / 100,
-        zIndex: 20,
+        zIndex: 5,
         source: new olsource.XYZ({
           attributions: [
             new olcontrol.Attribution({
