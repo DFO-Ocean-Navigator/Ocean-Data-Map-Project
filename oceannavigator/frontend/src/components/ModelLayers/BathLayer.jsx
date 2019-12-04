@@ -79,7 +79,7 @@ export default class BathLayer extends React.Component {
                         z: [],
                         type: 'surface',
                         colorscale: 'Earth',
-                        colorbar:{"len": 1, "x":-0.1}
+                        colorbar:{"len": 1, "x":-0.1, title: "Bathymetry"}
                     }
                 }
                 layer = jQuery.extend({}, layer);

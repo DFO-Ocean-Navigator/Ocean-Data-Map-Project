@@ -46,6 +46,7 @@ export default class DataLayer extends React.Component {
                     z: [],
                     type: 'surface',
                     colorscale: 'Viridis',
+                    colorbar:{"len": 0.25,}
                 }
             }
             layer = jQuery.extend({}, layer);
@@ -71,6 +72,7 @@ export default class DataLayer extends React.Component {
                     z: [],
                     type: 'surface',
                     colorscale: 'Viridis',
+                    colorbar:{"len": 0.25, }
                 }
             }
             layer = jQuery.extend({}, layer);
@@ -130,6 +132,7 @@ export default class DataLayer extends React.Component {
                         z: [],
                         type: 'surface',
                         colorscale: 'Viridis',
+                        colorbar:{"len": 0.25}
                     }
                 }
                 layer = jQuery.extend({}, layer);
