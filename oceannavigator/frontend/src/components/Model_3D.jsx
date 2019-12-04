@@ -55,13 +55,7 @@ export default class Model_3D extends React.Component {
         this.getLatLon(this.state.query);
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (this.state.point !== undefined) {
-            if (prevState.point === undefined || this.state.point[0].x !== prevState.point[0].x && this.state.point[0].y !== prevState.point[0].y) {
-                this.addVerticalLine(this.state.point)
-            }
-        }
-        
+    componentDidUpdate(prevProps, prevState) {    
     }
 
     /*
@@ -252,7 +246,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    /*onClick={(e) => this.setState({point: e})}*/
+                    onClick={(e) => this.setState({point: e})}
                 ></Plot>
             )
         }
