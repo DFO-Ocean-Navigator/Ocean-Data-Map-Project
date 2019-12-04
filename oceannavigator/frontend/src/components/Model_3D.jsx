@@ -160,6 +160,11 @@ export default class Model_3D extends React.Component {
         })
     }
 
+    /*
+    Not Working Yet
+
+    Should add a vertical line to the point that was clicked
+    */
     addVerticalLine(points) {
         console.warn("POINTS: ", points.points);
         try {
@@ -247,7 +252,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    onClick={(e) => this.setState({point: e})}
+                    {/*onClick={(e) => this.setState({point: e})}*/}
                 ></Plot>
             )
         }
