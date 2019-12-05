@@ -86,6 +86,8 @@ export default class DataLayer extends React.Component {
     }
 
     updateVariables(key, values) {
+        console.warn("KEY: ", key);
+        console.warn("VALUE: ", value);
         let query = this.state.query;
         if (key === 'variable') {
             query.variable = values
@@ -99,10 +101,10 @@ export default class DataLayer extends React.Component {
 
     updateDataset(key, value) {
         let query = this.state.query;
+        console.warn("KEY: ", key);
+        console.warn("VALUE: ", value);
         if (key === 'variable') {
             query.dataset = value;
-    
-            
         } else if (key === 'variable_scale') {
             // Will have to deal with this in Surface Object
         }
