@@ -105,7 +105,7 @@ export default class RefPlane extends React.Component {
             id='right_map'
             collapsible
             defaultExpanded
-            header={<div>{_("Surface")}{remove_panel}</div>}
+            header={<div>{_("Reference Plane")}{remove_panel}</div>}
             bsStyle='primary'
         >
             {data_selection}
