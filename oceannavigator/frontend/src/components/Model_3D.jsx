@@ -173,7 +173,7 @@ export default class Model_3D extends React.Component {
             type: "sound"
         }
 
-        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=2x6'
+        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=4x7'
         
         this.setState({
             sspeed: url
