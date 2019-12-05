@@ -67,11 +67,9 @@ export default class Model_3D extends React.Component {
         Adds the provided layer to the plot
     */
     addDataLayer(idx, layer) {
-        console.warn("addDataLayer");
         let layers = this.state.layers;
         layers.push(layer);
         idx = layers.indexOf(layer);
-        console.warn("LAYERS: ", layers)
         this.setState({
             layers: layers
         })
@@ -166,26 +164,23 @@ export default class Model_3D extends React.Component {
         }
 
         query = {
-            dataset: this.state.dataset,
+            dataset: this.state.query.dataset,
             names:[],
-            quantum: this.state.quantum,
+            quantum: this.state.query.quantum,
             showmap:0,
             station:[[point.x, point.y]],
-            time: this.state.time,
+            time: this.state.query.time,
             type: "speed"
         }
 
         let url = this.urlFromQuery('/api/v1.0/plot/', query)
-        console.warn("SSPEED URL: ", url)
         
         this.setState({
-
+            sspeed: url
         })
     }
 
     updatePoint(e) {
-        console.warn("E: ", e);
-        console.warn("E.points: ", e.points);
         let p = e.points[0]
         let point = {
             x: p.x,
@@ -203,12 +198,8 @@ export default class Model_3D extends React.Component {
     Should add a vertical line to the point that was clicked
     */
     addVerticalLine(points) {
-        console.warn("POINTS: ", points.points);
         try {
             point = points
-            console.warn("POINT: ", point);
-            console.warn("pointNumber: ", point[0]);
-            console.warn("x, y, _cmin, _cmax: ", point[0].x, point[0].y, point[0].fullData._cmin, point[0].fullData._cmax)
             let layers = jQuery.extend([], this.state.layers);
             let line_3d = {
                 x: [[point[0].x],[point[0].x]],
@@ -338,7 +329,10 @@ export default class Model_3D extends React.Component {
             )
         }
         
-        
+        let sspeed = []
+        if (this.state.sspeed !== undefined) {
+            sspeed = <img src={this.state.sspeed}></img>
+        }
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
@@ -353,6 +347,7 @@ export default class Model_3D extends React.Component {
                 <Col lg={2} style={{ height: '100%', width: '25%' }}>
                     <div>
                         {point}
+                        {sspeed}
                     </div>
                 </Col>
             </Row>
