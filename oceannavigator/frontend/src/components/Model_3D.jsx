@@ -243,7 +243,7 @@ export default class Model_3D extends React.Component {
             point = <LocationInput
                 key='point'
                 id='point'
-                state={this.state.point}
+                state={[this.state.point[0].x, this.state.point[0].y]}
                 title={_("Location")}
                 onUpdate={this.onLocalUpdate}
             />
