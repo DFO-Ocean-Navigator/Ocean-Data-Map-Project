@@ -166,7 +166,7 @@ export default class Model_3D extends React.Component {
             }
         }
 
-        query = {
+        let query = {
             dataset: this.state.query.dataset,
             names:[],
             quantum: this.state.query.quantum,
