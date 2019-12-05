@@ -39,6 +39,7 @@
     "ol": "~5.3.3",
     "openlayers": "^4.6.5",
     "papaparse": "^4.3.3",
+    "plotly.js": "^1.51.2",
     "proj4": "~2.4.3",
     "prop-types": "^15.5.10",
     "react": "^16.8.6",
@@ -50,6 +51,7 @@
     "react-iframe": "1.0.7",
     "react-loading": "^2.0.3",
     "react-numeric-input": "^2.2.3",
+    "react-plotly.js": "^2.4.0",
     "react-rectangle": "^1.3.3",
     "react-simple-range": "^1.6.0",
     "webfontloader": "^1.6.28"
