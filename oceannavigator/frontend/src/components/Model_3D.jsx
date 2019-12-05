@@ -184,6 +184,15 @@ export default class Model_3D extends React.Component {
     updatePoint(e) {
         console.warn("E: ", e);
         console.warn("E.points: ", e.points);
+        let p = e.points[0]
+        let point = {
+            x: p.x,
+            y: p.y,
+        }
+
+        this.setState({
+            point: point
+        })
     }
 
     /*
