@@ -142,7 +142,7 @@ export default class Model_3D extends React.Component {
         if (options === undefined) {
             return header + "?query=" + encodeURIComponent(stringify(query));
         } else {
-            return header + "?query=" + encodeURIComponent(stringify(query) + options);
+            return header + "?query=" + encodeURIComponent(stringify(query)) + encodeURIComponent(options);
         }
         
     }
