@@ -51,6 +51,8 @@ export default class Model_3D extends React.Component {
         this.addVerticalLine = this.addVerticalLine.bind(this);
         this.fetchProfile = this.fetchProfile.bind(this);
         this.updatePoint = this.updatePoint.bind(this);
+        this.addPointPanel = this.addPointPanel.bind(this);
+        this.addPlanePanel = this.addPlanePanel.bind(this);
     }
 
     componentDidMount() {
@@ -222,8 +224,15 @@ export default class Model_3D extends React.Component {
             })
         } catch (err) {
 
-        }
-        
+        }   
+    }
+
+    addPointPanel() {
+
+    }
+
+    addPlanePanel() {
+
     }
 
     render() {
@@ -276,7 +285,18 @@ export default class Model_3D extends React.Component {
         let add_panel = (
             <Button
                 onClick={this.addDataPanel}
-            >Add Data Layer</Button>
+            >+ Data</Button>
+        )
+        let add_point = (
+            <Button
+                onClick={this.addPointPanel}
+            >+ Point</Button>
+        )
+
+        let add_plane = (
+            <Button
+                onClick={this.addPlanePanel}
+            >+ Plane</Button>
         )
 
         let point = [];
