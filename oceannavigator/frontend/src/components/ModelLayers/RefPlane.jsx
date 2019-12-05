@@ -25,9 +25,6 @@ export default class RefPlane extends React.Component {
             surface: undefined
         }
 
-        this.updateVariables = this.updateVariables.bind(this);
-        this.updateDataset = this.updateDataset.bind(this);
-        this.loadNextPlot = this.loadNextPlot.bind(this);
         this.removePanel = this.removePanel.bind(this);
         this.updateDepth = this.updateDepth.bind(this);
     }
@@ -96,7 +93,7 @@ export default class RefPlane extends React.Component {
             >Apply</Button>
         )
         // Add the components to an array in the correct order
-        let data_selection = [select_depth, toggle_apply];
+        let data_selection = [select_depth];
         // Create Panel with Panel Elements
         data_selection_panel = <Panel
             key='right_map'
