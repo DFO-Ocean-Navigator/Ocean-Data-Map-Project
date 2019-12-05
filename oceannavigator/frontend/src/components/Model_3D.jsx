@@ -256,6 +256,12 @@ export default class Model_3D extends React.Component {
                     title={_("Location")}
                     onUpdate={this.onLocalUpdate}
                 />
+                <Button
+                    onClick={() => console.warn("ADD VERTICAL PIN")}
+                >+ Pin</Button>
+                <Button
+                    onClick={() => console.warn("LOAD SOUND SPEED PROFILE")}
+                >+ Profile</Button>
             </Panel>
         }
 
