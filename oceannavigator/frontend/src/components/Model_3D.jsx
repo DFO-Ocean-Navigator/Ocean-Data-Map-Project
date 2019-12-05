@@ -171,7 +171,7 @@ export default class Model_3D extends React.Component {
             type: "sound"
         }
 
-        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=9x15'
+        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=2x4'
         
         this.setState({
             sspeed: url
@@ -221,7 +221,25 @@ export default class Model_3D extends React.Component {
     }
 
     addPlanePanel() {
+        let extraLayers = [];
+        if (this.state.extraLayers !== undefined) {
+            extraLayers = this.state.extraLayers;
+        }
 
+        let layer = <RefPlane
+            addDataLayer={this.addDataLayer}
+            updateDataLayer={this.updateDataLayer}
+            removeDataLayer={this.removeDataLayer}
+            lat={this.state.lat}
+            lon={this.state.lon}
+        ></RefPlane>
+
+        extraLayers.push(layer);
+        
+        this.setState({
+            extraLayers: extraLayers
+        });
+        
     }
 
     render() {
@@ -268,8 +286,7 @@ export default class Model_3D extends React.Component {
                     removeDataPanel={this.removeDataPanel}
                 ></DataLayer>
             )
-        }    
-        
+        }
         
         let add_panel = (
             <Button
@@ -334,8 +351,10 @@ export default class Model_3D extends React.Component {
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
-                    {layers}
                     {add_panel}
+                    {add_plane}
+                    {layers}
+                    {this.state.extraLayers}
                 </Col>
                 <Col lg={6} style={{ height: '100%', width: '55%' }}>
                     <div style={{ height: '100%', width: '100%' }}>
