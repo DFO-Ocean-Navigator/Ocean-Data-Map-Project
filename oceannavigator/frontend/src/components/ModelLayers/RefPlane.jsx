@@ -63,6 +63,9 @@ export default class RefPlane extends React.Component {
 
     updateDepth(e) {
         console.warn("E DEPTH: ", e.target.value);
+        this.setState({
+            depth: e.target.value
+        })
     }
 
     render() {
