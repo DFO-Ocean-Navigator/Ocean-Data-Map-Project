@@ -157,7 +157,7 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    fetchProfile(point) {
+    fetchProfile() {
         let point = this.state.point
         
         console.warn("POINT: ", point)
