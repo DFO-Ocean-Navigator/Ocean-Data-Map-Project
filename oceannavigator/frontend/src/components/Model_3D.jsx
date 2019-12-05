@@ -238,6 +238,17 @@ export default class Model_3D extends React.Component {
             >Add Data Layer</Button>
         )
 
+        let point = [];
+        if (this.state.point !== undefined) {
+            point = <LocationInput
+                key='point'
+                id='point'
+                state={this.state.point}
+                title={_("Location")}
+                onUpdate={this.onLocalUpdate}
+            />
+        }
+
         let plot_container = null;
         if (this.state.layers.length === 0) {
             plot_container = <img src={this.state.url} />
@@ -258,9 +269,14 @@ export default class Model_3D extends React.Component {
                     {layers}
                     {add_panel}
                 </Col>
-                <Col lg={8} style={{ height: '100%' }}>
+                <Col lg={6} style={{ height: '100%' }}>
                     <div style={{ height: '100%', width: '100%' }}>
                         {plot_container}
+                    </div>
+                </Col>
+                <Col lg={2} style={{ height: '100%' }}>
+                    <div>
+                        {point}
                     </div>
                 </Col>
             </Row>
