@@ -17,6 +17,15 @@ export default class LocationInput extends React.Component {
     this.keyPress = this.keyPress.bind(this);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props) {
+      this.setState({
+        latitude: parseFloat(this.props.state[0][0]),
+        longitude: parseFloat(this.props.state[0][1])
+      })
+    }
+  }
+
   updateParent() {
     clearTimeout(this.timeout);
     this.props.onUpdate(
