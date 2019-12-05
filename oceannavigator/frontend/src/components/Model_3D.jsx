@@ -281,18 +281,18 @@ export default class Model_3D extends React.Component {
 
         let point = [];
         if (this.state.point !== undefined) {
-            console.warn("POINT: ", this.state.point.points)
+                let p = [[this.state.point.x, this.state.point.y]]
                 point = <Panel
-                    key='right_map'
-                    id='right_map'
+                    key='point'
+                    id='point'
                     collapsible
                     defaultExpanded
-                    header={_("Right Map")}
+                    header={_("Point")}
                     bsStyle='primary'
                 ><LocationInput
                     key='point'
                     id='point'
-                    state={[[this.state.point.x, this.state.point.y]]}
+                    state={p}
                     title={_("Location")}
                     onUpdate={this.onLocalUpdate}
                 />
