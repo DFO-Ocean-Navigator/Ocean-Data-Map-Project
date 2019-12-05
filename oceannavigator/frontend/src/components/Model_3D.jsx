@@ -281,16 +281,16 @@ export default class Model_3D extends React.Component {
         
         let content = (
             <Row style={{ height: '100%' }}>
-                <Col lg={2} style={{ height: '100%' }}>
+                <Col lg={2} style={{ height: '100%', width: '20%' }}>
                     {layers}
                     {add_panel}
                 </Col>
-                <Col lg={6} style={{ height: '100%' }}>
+                <Col lg={6} style={{ height: '100%', width: '55%' }}>
                     <div style={{ height: '100%', width: '100%' }}>
                         {plot_container}
                     </div>
                 </Col>
-                <Col lg={2} style={{ height: '100%' }}>
+                <Col lg={2} style={{ height: '100%', width: '25%' }}>
                     <div>
                         {point}
                     </div>
