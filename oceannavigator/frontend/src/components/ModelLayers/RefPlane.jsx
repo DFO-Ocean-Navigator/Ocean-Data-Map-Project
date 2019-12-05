@@ -47,8 +47,10 @@ export default class RefPlane extends React.Component {
                 }
             }
             layer = jQuery.extend({}, layer);
-            //layer.y = this.props.lat
-            //layer.x = this.props.lon    
+            if (this.props.lat !== undefined && this.props.lon !== undefined) {
+                layer.y = this.props.lat
+                layer.x = this.props.lon    
+            }
             
             this.setState({
                 surface: layer
