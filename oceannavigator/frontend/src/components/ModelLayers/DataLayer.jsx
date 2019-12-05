@@ -87,7 +87,7 @@ export default class DataLayer extends React.Component {
 
     updateVariables(key, values) {
         console.warn("KEY: ", key);
-        console.warn("VALUE: ", value);
+        console.warn("VALUE: ", values);
         let query = this.state.query;
         if (key === 'variable') {
             query.variable = values
