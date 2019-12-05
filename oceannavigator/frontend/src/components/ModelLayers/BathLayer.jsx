@@ -27,14 +27,12 @@ export default class BathLayer extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.lat !== this.props.lat || prevProps.lon !== this.props.lon) {
             while (this.surface_lock) {
-                console.warn("LOCKED - LAT/LON")
             }
             this.surface_lock = true;
             
             let old = this.state.surface;
             let layer = this.state.surface;
             if (old === undefined) {
-                console.warn("UNDEFINED - LAT/LON")
                 layer = {
                     z: [],
                     type: 'surface',
@@ -68,13 +66,11 @@ export default class BathLayer extends React.Component {
             url: this.props.urlFromQuery('/api/v1.0/data/bathymetry/', query),
             success: function(result) {
                 while ( this.surface_lock) {
-                    console.warn("LOCKED - BATH")
                 }
                 this.surface_lock = true;
                 let old = self.state.surface;
                 let layer = self.state.surface;
                 if (old === undefined) {
-                    console.warn("UNDEFINED")
                     layer = {
                         z: [],
                         type: 'surface',

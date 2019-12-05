@@ -64,7 +64,6 @@ export default class RefPlane extends React.Component {
     }
 
     updateDepth(e) {
-        console.warn("E DEPTH: ", e.target.value);
         this.setState({
             depth: e.target.value
         })
@@ -74,7 +73,6 @@ export default class RefPlane extends React.Component {
 
         // Initialize each component
         let data_selection_panel = null;
-        console.warn("MOUNTED")
         const remove_panel = (
             <Button
                 className='panelRemove'

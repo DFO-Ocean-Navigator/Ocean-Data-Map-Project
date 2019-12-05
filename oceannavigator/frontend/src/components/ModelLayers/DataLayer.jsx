@@ -41,7 +41,6 @@ export default class DataLayer extends React.Component {
             let old = this.state.surface;
             let layer = this.state.surface;
             if (old === undefined) {
-                console.warn("CREATING SURFACE (DATA)")
                 layer = {
                     z: [],
                     type: 'surface',
@@ -100,9 +99,6 @@ export default class DataLayer extends React.Component {
 
     updateDataset(key, value) {
         let query = this.state.query;
-        console.warn("UPDATE DATASET");
-        console.warn("KEY: ", key);
-        console.warn("VALUE: ", value);
         if (key === 'variable') {
             query.dataset = value;
     
@@ -155,7 +151,6 @@ export default class DataLayer extends React.Component {
 
         // Initialize each component
         let data_selection_panel = null;
-        console.warn("MOUNTED")
         const remove_panel = (
             <Button
                 className='panelRemove'
