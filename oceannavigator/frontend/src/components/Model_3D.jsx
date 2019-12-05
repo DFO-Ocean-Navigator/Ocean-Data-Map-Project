@@ -241,11 +241,11 @@ export default class Model_3D extends React.Component {
 
         let point = [];
         if (this.state.point !== undefined) {
-            console.warn("POINT: ", this.state.point)
+            console.warn("POINT: ", this.state.point.points)
             point = <LocationInput
                 key='point'
                 id='point'
-                state={[this.state.point[0].x, this.state.point[0].y]}
+                state={[this.state.point.points[0].x, this.state.point.points[0].y]}
                 title={_("Location")}
                 onUpdate={this.onLocalUpdate}
             />
