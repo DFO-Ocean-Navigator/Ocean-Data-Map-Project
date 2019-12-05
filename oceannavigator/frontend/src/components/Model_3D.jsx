@@ -49,6 +49,8 @@ export default class Model_3D extends React.Component {
         this.removeDataPanel = this.removeDataPanel.bind(this);
         this.getLatLon = this.getLatLon.bind(this);
         this.addVerticalLine = this.addVerticalLine.bind(this);
+        this.fetchProfile = this.fetchProfile.bind(this);
+        this.updatePoint = this.updatePoint.bind(this);
     }
 
     componentDidMount() {
@@ -153,6 +155,35 @@ export default class Model_3D extends React.Component {
                 })
             }
         })
+    }
+
+    fetchProfile(point) {
+        if (point === undefined) {
+            
+            return
+        }
+
+        query = {
+            dataset: this.state.dataset,
+            names:[],
+            quantum: this.state.quantum,
+            showmap:0,
+            station:[[point.x, point.y]],
+            time: this.state.time,
+            type: "speed"
+        }
+
+        let url = this.urlFromQuery('/api/v1.0/plot/', query)
+        console.warn("SSPEED URL: ", url)
+        
+        this.setState({
+
+        })
+    }
+
+    updatePoint(e) {
+        console.warn("E: ", e);
+        console.warn("E.points: ", e.points);
     }
 
     /*
@@ -273,7 +304,7 @@ export default class Model_3D extends React.Component {
                 <Plot style={{height: '100%'}}
                     data={this.state.layers}
                     layout={this.state.layout}
-                    onClick={(e) => this.setState({point: e})}
+                    onClick={this.updatePoint}
                 ></Plot>
             )
         }
