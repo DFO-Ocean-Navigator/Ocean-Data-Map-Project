@@ -159,8 +159,11 @@ export default class Model_3D extends React.Component {
 
     fetchProfile(point) {
         if (point === undefined) {
-            
-            return
+            if (this.state.point !== undefined) {
+                point = this.state.point
+            } else {
+                return
+            }
         }
 
         query = {
