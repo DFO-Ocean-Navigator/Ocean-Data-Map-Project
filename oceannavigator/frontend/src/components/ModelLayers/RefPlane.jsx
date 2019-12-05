@@ -6,7 +6,7 @@ import SelectBox from "../SelectBox.jsx";
 const stringify = require("fast-stable-stringify");
 const i18n = require("../../i18n.js");
 
-export default class DataLayer extends React.Component {
+export default class RefPlane extends React.Component {
     constructor(props) {
         super(props);
 
