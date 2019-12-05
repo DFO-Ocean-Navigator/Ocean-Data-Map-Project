@@ -165,7 +165,8 @@ export default class Model_3D extends React.Component {
                 return
             }
         }
-
+        
+        console.warn("POINT: ", point)
         let query = {
             dataset: this.state.query.dataset,
             names:[],
