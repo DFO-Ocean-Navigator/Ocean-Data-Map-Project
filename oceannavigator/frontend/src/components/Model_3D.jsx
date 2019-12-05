@@ -5,7 +5,7 @@ import SelectBox from "./SelectBox.jsx";
 import Plot from 'react-plotly.js';
 import DataLayer from './ModelLayers/DataLayer.jsx';
 import BathLayer from './ModelLayers/BathLayer.jsx';
-import LocationInpute from './LocationInput.jsx';
+import LocationInput from './LocationInput.jsx';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
