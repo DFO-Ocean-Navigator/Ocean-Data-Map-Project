@@ -139,12 +139,7 @@ export default class Model_3D extends React.Component {
     }
     
     urlFromQuery(header, query, options) {
-        if (options === undefined) {
-            return header + "?query=" + encodeURIComponent(stringify(query));
-        } else {
-            return header + "?query=" + encodeURIComponent(stringify(query)) + encodeURIComponent(options);
-        }
-        
+        return header + "?query=" + encodeURIComponent(stringify(query));
     }
 
     getLatLon(query) {
@@ -176,7 +171,7 @@ export default class Model_3D extends React.Component {
             type: "sound"
         }
 
-        let url = this.urlFromQuery('/api/v1.0/plot/', query, '&size=9x15')
+        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=9x15'
         
         this.setState({
             sspeed: url
