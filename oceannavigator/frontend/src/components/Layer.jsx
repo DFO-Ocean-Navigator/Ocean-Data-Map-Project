@@ -80,9 +80,10 @@ export default class Layer extends React.Component {
     this.toggleCompare = this.toggleCompare.bind(this);
   }
 
+  /*
+    This needs to be updated before being used
+  */
   singleClick(feature, pixel) {
-
-
     this.infoRequest = $.ajax({
       url: (
         `/api/v1.0/data/${dataset}` +
@@ -723,9 +724,12 @@ export default class Layer extends React.Component {
       <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
     </div>
     new_layer.set('scaleBar', scaleBar)
-    new_layer.set('variable', this.state.current_variable);
-    new_layer.set('dataset', this.state.current_dataset);
 
+    if (this.props.datasetconfig !== undefined) {
+      new_layer.set('dataset', this.props.datasetconfig[this.state.current_dataset].name);
+      new_layer.set('variable', this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name);  
+    }
+    
     // Saves the new layer
     this.setState({
       layer: new_layer
@@ -749,9 +753,11 @@ export default class Layer extends React.Component {
     </div>
 
     layer.set('scaleBar', jQuery.extend({}, scaleBar))
-    layer.set('variable', this.state.current_variable);
-    layer.set('dataset', this.state.current_dataset);
-
+    if (this.props.datasetconfig !== undefined) {
+      new_layer.set('dataset', this.props.datasetconfig[this.state.current_dataset].name);
+      new_layer.set('variable', this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name);  
+    }
+    
     let props = layer.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
     //let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
