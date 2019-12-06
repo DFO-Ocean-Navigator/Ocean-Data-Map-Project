@@ -114,12 +114,12 @@ export default class Model_3D extends React.Component {
 
         let index = this.state.index;
         //data_panels.push(index);
-        idx = index + 1;
+        index = index + 1;
 
         let layer = [<DataLayer
-            index={idx}
-            key={idx}
-            value={idx}
+            index={index}
+            key={index}
+            value={index}
             urlFromQuery={this.urlFromQuery}
             addDataLayer={this.addDataLayer}
             updateDataLayer={this.updateDataLayer}
@@ -142,7 +142,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             extraLayers: layers,
             data_panels: data_panels,
-            index: idx
+            index: index
         })
     }
 
