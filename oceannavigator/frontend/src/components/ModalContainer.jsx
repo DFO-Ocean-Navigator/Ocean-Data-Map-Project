@@ -239,6 +239,11 @@ export default class ModalContainer extends React.Component {
 
     }
 
+    let title = [];
+    if (this.state.selected === false) {
+      title = 'Please Select A Layer To Plot'
+    }
+
     return (
         <Modal
           show={this.props.showModal}
@@ -247,7 +252,7 @@ export default class ModalContainer extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><div style={{'font-size': '25px', 'float': 'left'}}>Please Select A Layer To Plot</div></Modal.Title>
+            <Modal.Title><div style={{'font-size': '25px', 'float': 'left'}}>{title}</div></Modal.Title>
           </Modal.Header>
           <Modal.Body style={{height: '100%'}}>
             {modalContent}
