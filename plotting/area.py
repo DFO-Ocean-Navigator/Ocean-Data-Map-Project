@@ -235,14 +235,15 @@ class Area():
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
 
-        #self.date_formatter = self.__get_date_formatter(query.get('quantum'))
-        time = self.__get_time(time)
-        
-        data = None
-
         # Get Dataset Config
         dataset_config = DatasetConfig(dataset)
 
+        #self.date_formatter = self.__get_date_formatter(query.get('quantum'))
+        time = self.__get_time(time, dataset_config)
+        
+        data = None
+
+        
         # Open the dataset
         with open_dataset(dataset_config, variable=variable, timestamp=time) as dataset:
             
@@ -355,13 +356,13 @@ class Area():
     #        except ValueError:
     #            return param
 
-    def __get_time(self, param: str) -> int:
+    def __get_time(self, param: str, config) -> int:
         if not param:
             return -1
         time = None
         try:
             time = datetime_to_timestamp(
-                string_to_datetime(param), self.dataset_config.time_dim_units)
+                string_to_datetime(param), config.time_dim_units)
 
         except:
             time = int(param)
