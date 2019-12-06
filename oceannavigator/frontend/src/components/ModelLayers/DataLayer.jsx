@@ -95,7 +95,7 @@ export default class DataLayer extends React.Component {
             //  WIll have to deal with this in Surface Object
         } else {
             for (let i in key) {
-                console.warn("I: ", i);
+                query[key[i]] = values[i];
             }
         }
         this.setState({
