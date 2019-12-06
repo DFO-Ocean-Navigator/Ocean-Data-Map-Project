@@ -93,6 +93,10 @@ export default class DataLayer extends React.Component {
             query.variable = values
         } else if (key === 'variable_scale') {
             //  WIll have to deal with this in Surface Object
+        } else {
+            for (let i in key) {
+                console.warn("I: ", i);
+            }
         }
         this.setState({
             query: query
