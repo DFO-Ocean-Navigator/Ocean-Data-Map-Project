@@ -754,7 +754,7 @@ export default class Layer extends React.Component {
     </div>
 
     layer.set('scaleBar', jQuery.extend({}, scaleBar))
-    if (this.props.datasetconfig !== undefined) {
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
       layer.set('dataset', this.props.datasetconfig[this.state.current_dataset].name);
       layer.set('variable', this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name);  
     }
