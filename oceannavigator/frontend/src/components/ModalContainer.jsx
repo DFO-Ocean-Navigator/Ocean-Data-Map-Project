@@ -247,7 +247,7 @@ export default class ModalContainer extends React.Component {
           backdrop={true}
         >
           <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><div style={{'font-size': '25px', float: 'left'}}>Please Select A Layer To Plot</div></Modal.Title>
+            <Modal.Title><div style={{'font-size': '25px', 'float': 'left'}}>Please Select A Layer To Plot</div></Modal.Title>
           </Modal.Header>
           <Modal.Body style={{height: '100%'}}>
             {modalContent}
