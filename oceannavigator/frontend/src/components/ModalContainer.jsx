@@ -40,6 +40,7 @@ export default class ModalContainer extends React.Component {
     this.selectLayer = this.selectLayer.bind(this);
     this.selectCompare = this.selectCompare.bind(this);
     this.apply = this.apply.bind(this);
+    this.informSingle = this.informSingle.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -65,6 +66,26 @@ export default class ModalContainer extends React.Component {
       data_compare: data,
       dataset_compare: true,
     })
+  }
+
+  informSingle(key, value) {
+    if (key === 'main') {
+      if (this.state.informCompare && value) {
+        this.apply();
+      } else {
+        this.setState({
+          informMain: value
+        })
+      }
+    } else if (key === 'compare') {
+      if (this.state.informMain && value) {
+        this.apply();
+      } else {
+        this.setState({
+          informCompare: value
+        })
+      }
+    }
   }
 
   apply() {
@@ -187,6 +208,8 @@ export default class ModalContainer extends React.Component {
       modalContent.push(<SelectMapLayer
         map={this.props.map}
         name="Primary Layer:"
+        id='main'
+        inform={this.informSingle}
         select={this.selectLayer}
       ></SelectMapLayer>)
       
@@ -194,6 +217,8 @@ export default class ModalContainer extends React.Component {
         <SelectMapLayer
           map={this.props.map2}
           name="Comparison Layer:"
+          id='compare'
+          inform={this.informSingle}
           select={this.selectCompare}
         ></SelectMapLayer>
       )
