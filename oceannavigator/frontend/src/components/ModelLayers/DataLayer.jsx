@@ -107,10 +107,12 @@ export default class DataLayer extends React.Component {
         let query = this.state.query;
         console.warn("KEY: ", key);
         console.warn("VALUE: ", value);
-        if (key === 'variable') {
-            query.dataset = value;
-        } else if (key === 'variable_scale') {
-            // Will have to deal with this in Surface Object
+        if (typeof(key) === typeof('string')) {
+            query[key] = value;
+        } else {
+            for (let i in key) {
+                query[key[i]] = value[i];
+            }
         }
         this.setState({
             query: query
