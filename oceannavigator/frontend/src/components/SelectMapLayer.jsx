@@ -26,10 +26,12 @@ export default class SelectMapLayer extends React.Component {
             let l = [];
             for (let x in layers) {
                 let layer = layers[x].values_
+                console.warn("LAYER: ", layer);
                 if ('data' in layer) {
                     l.push(layer.data)
                 }
             }
+            console.warn("L: ", l)
             if (l.length === 1) {
                 this.props.select(l[0])
             }
