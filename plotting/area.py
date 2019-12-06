@@ -360,11 +360,11 @@ class Area():
         if not param:
             return -1
         time = None
-        try:
-            time = datetime_to_timestamp(
-                string_to_datetime(param), config.time_dim_units)
+        #try:
+        time = datetime_to_timestamp(
+            string_to_datetime(param), config.time_dim_units)
 
-        except:
-            time = int(param)
+        #except:
+        #    time = int(param)
 
         return time
