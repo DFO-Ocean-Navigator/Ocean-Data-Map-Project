@@ -108,10 +108,15 @@ export default class DataLayer extends React.Component {
         console.warn("KEY: ", key);
         console.warn("VALUE: ", value);
         if (typeof(key) === typeof('string')) {
+            if (key === 'dataset_help') {
+                return
+            } 
             query[key] = value;
         } else {
             for (let i in key) {
-                query[key[i]] = value[i];
+                if (key[i] !== 'dataset_help') {
+                    query[key[i]] = value[i];
+                }
             }
         }
         this.setState({

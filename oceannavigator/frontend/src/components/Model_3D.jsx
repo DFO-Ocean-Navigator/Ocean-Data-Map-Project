@@ -34,9 +34,9 @@ export default class Model_3D extends React.Component {
             },
             layout: {
                 scene: {
-                    "xaxis": {"title": "Longitude"},
-                    "yaxis": {"title": "Latitude"},
-                    "zaxis": {"title": "Depth"}
+                    "xaxis": { "title": "Longitude" },
+                    "yaxis": { "title": "Latitude" },
+                    "zaxis": { "title": "Depth" }
                 }
             },
             lat: undefined,
@@ -62,7 +62,7 @@ export default class Model_3D extends React.Component {
         this.getLatLon(this.state.query);
     }
 
-    componentDidUpdate(prevProps, prevState) {    
+    componentDidUpdate(prevProps, prevState) {
     }
 
     /*
@@ -111,14 +111,38 @@ export default class Model_3D extends React.Component {
 
     addDataPanel() {
         let data_panels = this.state.data_panels;
-        
+
         let index = this.state.index;
-        data_panels.push(index);
-        index = index + 1;
+        //data_panels.push(index);
+        idx = index + 1;
+
+        let layer = [<DataLayer
+            index={idx}
+            key={idx}
+            value={idx}
+            urlFromQuery={this.urlFromQuery}
+            addDataLayer={this.addDataLayer}
+            updateDataLayer={this.updateDataLayer}
+            removeDataLayer={this.removeDataLayer}
+            area={this.props.area}
+            interp={this.props.interp}
+            neighbours={this.props.neighbours}
+            projection={this.props.projection}
+            radius={this.props.radius}
+            time={this.props.time}
+            lat={this.state.lat}
+            lon={this.state.lon}
+            removeDataPanel={this.removeDataPanel}
+        ></DataLayer>]
+
+        let layers = this.state.extraLayers;
+        
+        layers = layer + layers;
 
         this.setState({
+            extraLayers: layers,
             data_panels: data_panels,
-            index: index
+            index: idx
         })
     }
 
@@ -126,20 +150,20 @@ export default class Model_3D extends React.Component {
         let data_panels = jQuery.extend([], this.state.data_panels);
         let idx = data_panels.indexOf(panel);
         data_panels.splice(idx, 1);
-        
+
         // Needs to remove data too
         let layers = jQuery.extend([], this.state.layers);
         if (layer !== undefined) {
             idx = layers.indexOf(layer);
-            layers.splice(idx,1);    
+            layers.splice(idx, 1);
         }
-        
+
         this.setState({
             data_panels: data_panels,
             layers: layers
         })
     }
-    
+
     urlFromQuery(header, query, options) {
         return header + "?query=" + encodeURIComponent(stringify(query));
     }
@@ -150,7 +174,7 @@ export default class Model_3D extends React.Component {
             type: 'GET',
             dataType: 'json',
             url: this.urlFromQuery('/api/v1.0/data/latlon/', query),
-            success: function(result) {
+            success: function (result) {
                 self.setState({
                     lat: result[0],
                     lon: result[1]
@@ -161,20 +185,20 @@ export default class Model_3D extends React.Component {
 
     fetchProfile() {
         let point = this.state.point
-        
+
         console.warn("POINT: ", point)
         let query = {
             dataset: this.state.query.dataset,
-            names:[],
+            names: [],
             quantum: this.state.query.quantum,
-            showmap:0,
-            station:[[point.x, point.y]],
+            showmap: 0,
+            station: [[point.x, point.y]],
             time: this.state.query.time,
             type: "sound"
         }
 
         let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=4x7'
-        
+
         this.setState({
             sspeed: url
         })
@@ -202,9 +226,9 @@ export default class Model_3D extends React.Component {
             point = points
             let layers = jQuery.extend([], this.state.layers);
             let line_3d = {
-                x: [[point[0].x],[point[0].x]],
-                y: [[point[0].y],[point[0].y]],
-                z: [[point[0].fullData._cmin],[point[0].fullData._cmax]],
+                x: [[point[0].x], [point[0].x]],
+                y: [[point[0].y], [point[0].y]],
+                z: [[point[0].fullData._cmin], [point[0].fullData._cmax]],
                 type: 'scatter3d',
                 mode: 'lines'
             }
@@ -215,7 +239,7 @@ export default class Model_3D extends React.Component {
             })
         } catch (err) {
 
-        }   
+        }
     }
 
     addPointPanel() {
@@ -237,17 +261,17 @@ export default class Model_3D extends React.Component {
         ></RefPlane>
 
         extraLayers.push(layer);
-        
+
         this.setState({
             extraLayers: extraLayers
         });
-        
+
     }
 
     render() {
-        
+
         let layers = []
-        
+
         layers.push(
             <BathLayer
                 key='bathymetry'
@@ -289,7 +313,7 @@ export default class Model_3D extends React.Component {
                 ></DataLayer>
             )
         }
-        
+
         let add_panel = (
             <Button
                 onClick={this.addDataPanel}
@@ -309,15 +333,15 @@ export default class Model_3D extends React.Component {
 
         let point = [];
         if (this.state.point !== undefined) {
-                let p = [[this.state.point.x, this.state.point.y]]
-                point = <Panel
-                    key='point'
-                    id='point'
-                    collapsible
-                    defaultExpanded
-                    header={_("Point")}
-                    bsStyle='primary'
-                ><LocationInput
+            let p = [[this.state.point.x, this.state.point.y]]
+            point = <Panel
+                key='point'
+                id='point'
+                collapsible
+                defaultExpanded
+                header={_("Point")}
+                bsStyle='primary'
+            ><LocationInput
                     key='point'
                     id='point'
                     state={p}
@@ -338,14 +362,14 @@ export default class Model_3D extends React.Component {
             plot_container = <img src={this.state.url} />
         } else {
             plot_container = (
-                <Plot style={{height: '100%'}}
+                <Plot style={{ height: '100%' }}
                     data={this.state.layers}
                     layout={this.state.layout}
                     onClick={this.updatePoint}
                 ></Plot>
             )
         }
-        
+
         let sspeed = []
         if (this.state.sspeed !== undefined) {
             sspeed = <img src={this.state.sspeed}></img>
@@ -371,7 +395,7 @@ export default class Model_3D extends React.Component {
                 </Col>
             </Row>
         )
-        
+
 
 
         return (
