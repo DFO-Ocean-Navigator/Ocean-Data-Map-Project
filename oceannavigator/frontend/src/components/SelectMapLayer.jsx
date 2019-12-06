@@ -34,6 +34,7 @@ export default class SelectMapLayer extends React.Component {
             }
             console.warn("L: ", l)
             if (l.length <= 1) {
+                console.warn("SELECTING")
                 this.props.select(l[0])
             }
         }
