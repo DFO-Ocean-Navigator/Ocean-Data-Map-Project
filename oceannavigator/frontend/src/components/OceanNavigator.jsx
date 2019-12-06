@@ -776,17 +776,7 @@ export default class OceanNavigator extends React.Component {
           {map}
         </div>
 
-        <Modal
-          show={this.state.showModal}
-          onHide={this.closeModal}
-          dialogClassName='full-screen-modal'
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{height: '100%'}}>
-            <ModalContainer
+        <ModalContainer
               modal={this.state.modal}
               map={this.mapComponent}
               map2={this.mapComponent2}
@@ -803,14 +793,9 @@ export default class OceanNavigator extends React.Component {
               action={this.action}
               swapViews={this.swapViews}
               options={this.state.options}
+              closeModal={this.closeModal}
             ></ModalContainer>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={this.closeModal}
-            ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
+        
 
         <Modal
           show={this.state.showPermalink}
