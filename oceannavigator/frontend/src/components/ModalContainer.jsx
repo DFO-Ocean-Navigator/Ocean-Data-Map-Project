@@ -69,6 +69,7 @@ export default class ModalContainer extends React.Component {
   }
 
   informSingle(key, value) {
+    console.warn("INFORM SINGLE: ", key, value)
     if (key === 'main') {
       if (this.state.informCompare && value) {
         this.apply();
