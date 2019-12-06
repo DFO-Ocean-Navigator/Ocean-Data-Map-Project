@@ -19,6 +19,7 @@ export default class Model_3D extends React.Component {
         this.state = {
             layers: [],
             data_panels: [],
+            extraLayers: [],
             index: 2,
             url: LOADING_IMAGE,
             query: {
@@ -116,7 +117,9 @@ export default class Model_3D extends React.Component {
         //data_panels.push(index);
         index = index + 1;
 
-        let layer = [<DataLayer
+        let layer = []
+        
+        layer.push(<DataLayer
             index={index}
             key={index}
             value={index}
@@ -133,7 +136,7 @@ export default class Model_3D extends React.Component {
             lat={this.state.lat}
             lon={this.state.lon}
             removeDataPanel={this.removeDataPanel}
-        ></DataLayer>]
+        ></DataLayer>)
 
         let layers = this.state.extraLayers;
         
