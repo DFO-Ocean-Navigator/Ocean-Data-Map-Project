@@ -30,11 +30,12 @@ export default class SelectMapLayer extends React.Component {
             for (let x in layers) {
                 let layer = layers[x].values_
                 if ('data' in layer) {
+                    console.warn("DATA: ", )
                     buttons.push(
                     <Button
                         onClick={() => this.props.select(layer.data)}
                     >
-                        {layer.data.variable}
+                        {layer.variable}
                     </Button>)
                 }
             }
