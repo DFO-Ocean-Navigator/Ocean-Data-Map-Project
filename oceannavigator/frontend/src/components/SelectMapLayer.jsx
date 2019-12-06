@@ -20,6 +20,15 @@ export default class SelectMapLayer extends React.Component {
         super (props)
     }
 
+    componentDidMount () {
+        if (this.props.map.map !== undefined) {
+            let layers = this.props.map.map.getLayers().getArray();
+            console.warn("LENGTH: ", layers.length)
+            if (layers.length === 1) {
+                this.props.select(layers[0].values_.data)
+            }
+        }
+    }
     render () {
 
         let buttons = [];

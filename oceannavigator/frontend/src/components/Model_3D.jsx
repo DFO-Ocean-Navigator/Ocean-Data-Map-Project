@@ -117,9 +117,8 @@ export default class Model_3D extends React.Component {
         //data_panels.push(index);
         index = index + 1;
 
-        let layer = []
-        
-        layer.push(<DataLayer
+        let layers = this.state.extraLayers;
+        layers.unshift(<DataLayer
             index={index}
             key={index}
             value={index}
@@ -137,10 +136,6 @@ export default class Model_3D extends React.Component {
             lon={this.state.lon}
             removeDataPanel={this.removeDataPanel}
         ></DataLayer>)
-
-        let layers = this.state.extraLayers;
-        
-        layers = layer + layers;
 
         this.setState({
             extraLayers: layers,
