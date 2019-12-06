@@ -128,87 +128,7 @@ export default class Layer extends React.Component {
     }
   }
 
-  /*
-    Sends the data information back to OceanNavigator.jsx to be used by the modals
-    
-  */
- /*
-  sendData(update) {
-    return
-    let data
-    if (this.state.current_map in this.props.state.data) {
-      data = jQuery.extend({}, this.props.state.data[this.state.current_map]) // Make a new object so it will trigger componentDidUpdate in other components
-    } else {
-      data = {}
-    }
-    let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
-    let time = undefined
-    
-    try {
-      time = this.props.state.timestamps[time_access];
-    } catch (err) {
-      console.warn("No Time Available")
-    }
-    
-    if (this.state.current_dataset !== undefined && this.state.current_variable !== undefined && time !== undefined) {
-      if (this.props.layerType in data) {
-        if (this.props.value in data[this.props.layerType]) {
-          if (data[this.props.layerType] !== undefined || data[this.props.layerType] !== {}) {
-            data[this.props.layerType][this.props.value] = undefined
-            delete [this.props.layerType][this.props.value]
-          }
-          data[this.props.layerType][this.props.value] = {
-            [this.state.current_dataset]: {
-              [this.state.current_variable]: {
-                frequency: 1,
-                quantum: this.state.current_quantum,
-                time: time,
-                scale: this.state.current_scale,
-                display: this.state.current_display,
-                colourmap: this.state.current_colourmap,
-                depth: this.state.current_depth
-              }
-            }
-          }
-        } else {
-          data[this.props.layerType][this.props.value] = {
-            [this.state.current_dataset]: {
-              [this.state.current_variable]: {
-                frequency: 1,
-                quantum: this.state.current_quantum,
-                time: time,
-                scale: this.state.current_scale,
-                display: this.state.current_display,
-                colourmap: this.state.current_colourmap,
-                depth: this.state.current_depth
-              }
-            }
-          }
-        }
-      } else {
-        data[this.props.layerType] = {
-          [this.props.value]: {
-            [this.state.current_dataset]: {
-              [this.state.current_variable]: {
-                frequency: 1,
-                quantum: this.state.current_quantum,
-                time: time,
-                scale: this.state.current_scale,
-                display: this.state.current_display,
-                colourmap: this.state.current_colourmap,
-                depth: this.state.current_depth
-              }
-            }
-          }
-        }
-      }
-    }
-    let new_data = jQuery.extend({}, this.props.state.data)
-    new_data[this.state.current_map] = data
-    this.props.globalUpdate('data', new_data)
-  }
-*/
-
+  
   /*
     
   */
@@ -803,6 +723,8 @@ export default class Layer extends React.Component {
       <img key={this.state.current_dataset + this.state.current_variable + this.props.layerType} src={'/api/v1.0/scale/' + this.state.current_dataset + '/' + this.state.current_variable + '/' + this.state.current_scale + '/' + this.state.current_colourmap + '/' + 'horizontal/True/False.png'}></img>
     </div>
     new_layer.set('scaleBar', scaleBar)
+    new_layer.set('variable', this.state.current_variable);
+    new_layer.set('dataset', this.state.current_dataset);
 
     // Saves the new layer
     this.setState({
@@ -827,6 +749,8 @@ export default class Layer extends React.Component {
     </div>
 
     layer.set('scaleBar', jQuery.extend({}, scaleBar))
+    layer.set('variable', this.state.current_variable);
+    layer.set('dataset', this.state.current_dataset);
 
     let props = layer.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
