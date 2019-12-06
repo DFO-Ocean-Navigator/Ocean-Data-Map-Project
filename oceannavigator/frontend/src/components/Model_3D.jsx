@@ -117,7 +117,7 @@ export default class Model_3D extends React.Component {
         //data_panels.push(index);
         index = index + 1;
 
-        let layers = this.state.extraLayers;
+        let layers = jQuery.extend([], this.state.extraLayers);
         layers.unshift(<DataLayer
             index={index}
             key={index}
@@ -287,7 +287,7 @@ export default class Model_3D extends React.Component {
                 lon={this.state.lon}
             ></BathLayer>
         )
-        for (let idx in this.state.data_panels) {
+        /*for (let idx in this.state.data_panels) {
             idx = this.state.data_panels[idx];
             console.warn("IDX: ", idx)
             layers.push(
@@ -310,7 +310,7 @@ export default class Model_3D extends React.Component {
                     removeDataPanel={this.removeDataPanel}
                 ></DataLayer>
             )
-        }
+        }*/
 
         let add_panel = (
             <Button
