@@ -125,8 +125,6 @@ class Area():
             ), -1)
 
         return self.bathymetry
-
-        
     
     def calc_latlon(self):
         """
@@ -236,7 +234,8 @@ class Area():
             
             This should only add a data variable to the variable_obj, thereby maintaining all the settings for when it is actually plotted
         """
-        
+
+        #self.date_formatter = self.__get_date_formatter(query.get('quantum'))
         time = self.__get_time(time)
         
         data = None
@@ -347,11 +346,24 @@ class Area():
         return factors
 
 
-    def __get_time(self, param: str):
-        if param is None or len(str(param)) == 0:
+    #def __get_time(self, param: str):
+    #    if param is None or len(str(param)) == 0:
+    #        return -1
+    #    else:
+    #        try:
+    #            return int(param)
+    #        except ValueError:
+    #            return param
+
+    def __get_time(self, param: str) -> int:
+        if not param:
             return -1
-        else:
-            try:
-                return int(param)
-            except ValueError:
-                return param
+        time = None
+        try:
+            time = datetime_to_timestamp(
+                string_to_datetime(param), self.dataset_config.time_dim_units)
+
+        except:
+            time = int(param)
+
+        return time
