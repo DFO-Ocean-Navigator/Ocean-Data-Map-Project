@@ -35,7 +35,7 @@ export default class SelectMapLayer extends React.Component {
                     <Button
                         onClick={() => this.props.select(layer.data)}
                     >
-                        {layer.variable}
+                        {layer.dataset + ' : ' + layer.variable}
                     </Button>)
                 }
             }
