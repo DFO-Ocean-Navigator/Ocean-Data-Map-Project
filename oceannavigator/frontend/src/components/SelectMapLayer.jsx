@@ -28,6 +28,7 @@ export default class SelectMapLayer extends React.Component {
                 let layer = layers[x].values_
                 console.warn("LAYER: ", layer);
                 if ('data' in layer) {
+                    console.warn('data: ', layer.data)
                     l.push(layer.data)
                 }
             }
