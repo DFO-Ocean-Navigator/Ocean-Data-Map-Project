@@ -725,7 +725,8 @@ export default class Layer extends React.Component {
     </div>
     new_layer.set('scaleBar', scaleBar)
 
-    if (this.props.datasetconfig !== undefined) {
+    if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
+
       new_layer.set('dataset', this.props.datasetconfig[this.state.current_dataset].name);
       new_layer.set('variable', this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name);  
     }
@@ -757,7 +758,7 @@ export default class Layer extends React.Component {
       new_layer.set('dataset', this.props.datasetconfig[this.state.current_dataset].name);
       new_layer.set('variable', this.props.datasetconfig[this.state.current_dataset].variables[this.state.current_variable].name);  
     }
-    
+
     let props = layer.getSource().getProperties();
     let time_access = this.state.current_map + this.props.layerType + this.props.value + this.state.current_dataset + this.state.current_variable
     //let timeString = this.dateToISO(this.props.state.timestamps[time_access], this.state.current_quantum)
