@@ -793,6 +793,7 @@ export default class OceanNavigator extends React.Component {
               action={this.action}
               swapViews={this.swapViews}
               options={this.state.options}
+              showModal={this.state.showModal}
               closeModal={this.closeModal}
             ></ModalContainer>
         

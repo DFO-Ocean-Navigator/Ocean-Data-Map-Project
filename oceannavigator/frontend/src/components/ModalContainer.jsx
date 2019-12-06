@@ -241,8 +241,8 @@ export default class ModalContainer extends React.Component {
 
     return (
         <Modal
-          show={this.state.showModal}
-          onHide={this.closeModal}
+          show={this.props.showModal}
+          onHide={this.props.closeModal}
           dialogClassName='full-screen-modal'
           backdrop={true}
         >
