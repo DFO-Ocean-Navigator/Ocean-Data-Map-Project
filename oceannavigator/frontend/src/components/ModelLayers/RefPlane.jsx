@@ -22,7 +22,8 @@ export default class RefPlane extends React.Component {
                 "variable": "criticaldepth",
                 "depth": 0,
             },
-            surface: undefined
+            surface: undefined,
+            depth: 0
         }
 
         this.removePanel = this.removePanel.bind(this);
