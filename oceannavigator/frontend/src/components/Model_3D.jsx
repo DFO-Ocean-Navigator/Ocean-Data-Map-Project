@@ -96,16 +96,17 @@ export default class Model_3D extends React.Component {
                 layers.push(layer);
                 this.setState({
                     layers: layers
-                }, () => this.lock = false)
+                }, () => {this.lock = false; console.warn('unlocking')})
                 return
             }
             let idx = layers.indexOf(old);
             layers[idx] = layer;
             this.setState({
                 layers: layers
-            }, () => this.lock = false)
+            }, () => {this.lock = false; console.warn('unlocking')})
         } catch (err) {
             console.warn("SOMETHING WENT WRONG")
+            this.lock = false;
         }
         
     }
