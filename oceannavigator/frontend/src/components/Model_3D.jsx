@@ -85,10 +85,7 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(old, layer) {
-        while (this.lock) {
-
-        }
-        this.lock = true;
+        console.warn("LOCK: ", this.lock);
         try {
             let layers = jQuery.extend([], this.state.layers);
             if (old === undefined) {
@@ -103,7 +100,7 @@ export default class Model_3D extends React.Component {
                 layers: layers
             }, () => this.lock = false)
         } catch (err) {
-            this.lock = false
+            console.warn("SOMETHING WENT WRONG")
         }
         
     }
