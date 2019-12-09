@@ -87,7 +87,7 @@ export default class Model_3D extends React.Component {
     updateDataLayer(old, layer) {
         console.warn("LOCK: ", this.lock);
         while (this.lock) {
-
+            console.warn("LOCKED")
         }
         this.lock = true;
         try {
@@ -108,7 +108,8 @@ export default class Model_3D extends React.Component {
             console.warn("SOMETHING WENT WRONG")
             this.lock = false;
         }
-        
+        console.warn('relinquishing lock')
+        this.lock = false;
     }
 
     /*
