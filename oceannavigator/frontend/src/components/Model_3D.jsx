@@ -44,6 +44,7 @@ export default class Model_3D extends React.Component {
             },
             lat: undefined,
             lon: undefined,
+            revision: 1
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -85,8 +86,6 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(old, layer) {
-        console.warn("LOCK: ", this.lock);
-        
         try {
             let layers = this.state.layers;//jQuery.extend([], this.state.layers);
             if (old === undefined) {
@@ -398,6 +397,7 @@ export default class Model_3D extends React.Component {
                     data={this.state.layers}
                     layout={this.state.layout}
                     onClick={this.updatePoint}
+                    revision={this.state.revision}
                 ></Plot>
             )
         }
