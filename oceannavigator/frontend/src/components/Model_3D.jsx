@@ -175,6 +175,7 @@ export default class Model_3D extends React.Component {
             success: function (result) {
                 let lat = result[0];
                 let lon = result[1];
+                console.warn("LENGTH: ", lat.length);
                 let i_1 = [lat[0][0], lon[0][0]]
                 let i_2 = [lat[0][lat[0].length], lon[0][lon[0].length]]
                 let i_3 = [lat[lat.length][0], lon[lon.length][0]]
