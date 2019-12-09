@@ -44,7 +44,6 @@ export default class Model_3D extends React.Component {
             },
             lat: undefined,
             lon: undefined,
-            revision: 1
         }
 
         this.urlFromQuery = this.urlFromQuery.bind(this);
@@ -67,12 +66,6 @@ export default class Model_3D extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (stringify(prevState.layers) !== stringify(this.state.layers)) {
-            this.setState({
-                revision: revision + 1
-            })
-            console.warn("LAYERS UPDATED")
-        }
     }
 
     /*
@@ -92,8 +85,10 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(old, layer) {
+        console.warn("LOCK: ", this.lock);
+        
         try {
-            let layers = this.state.layers//jQuery.extend([], this.state.layers);
+            let layers = this.state.layers;//jQuery.extend([], this.state.layers);
             if (old === undefined) {
                 layers.push(layer);
                 this.setState({
@@ -104,9 +99,12 @@ export default class Model_3D extends React.Component {
             let idx = layers.indexOf(old);
             layers[idx] = layer;
             this.setState({
-                layers: layers
-            }, )
-        } catch (err) {   
+                layers: layers,
+                revision: revision + 1
+            }, () => {console.warn("REVISION: ", this.state.revision)})
+
+        } catch (err) {
+            console.warn("SOMETHING WENT WRONG")   
         }
     }
 
