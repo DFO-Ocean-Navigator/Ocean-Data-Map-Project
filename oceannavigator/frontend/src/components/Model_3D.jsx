@@ -280,7 +280,7 @@ export default class Model_3D extends React.Component {
     addPlanePanel() {
         let extraLayers = [];
         if (this.state.extraLayers !== undefined) {
-            extraLayers = this.state.extraLayers;
+            extraLayers = jquery.extend([], this.state.extraLayers);
         }
 
         let layer = <RefPlane
