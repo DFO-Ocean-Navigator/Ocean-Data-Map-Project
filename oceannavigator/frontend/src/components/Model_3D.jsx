@@ -96,7 +96,7 @@ export default class Model_3D extends React.Component {
                 layers.push(layer);
                 this.setState({
                     layers: layers
-                }, this.lock = false)
+                }, () => this.lock = false)
                 return
             }
             let idx = layers.indexOf(old);
