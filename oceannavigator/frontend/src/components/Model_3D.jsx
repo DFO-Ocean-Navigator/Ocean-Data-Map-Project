@@ -44,6 +44,7 @@ export default class Model_3D extends React.Component {
             },
             lat: undefined,
             lon: undefined,
+            vLine: undefined,
             revision: 1
         }
 
@@ -266,7 +267,6 @@ export default class Model_3D extends React.Component {
                     y: [point.y, point.y],
                     z: [point.min_depth, point.max_depth],
                     type: 'scatter3d',
-                    mode: 'lines'
                 }
             
             this.updateDataLayer(old, line_3d);
