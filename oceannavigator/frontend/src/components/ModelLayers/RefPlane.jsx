@@ -40,17 +40,21 @@ export default class RefPlane extends React.Component {
 
             let old = this.state.surface;
             let layer = this.state.surface;
+            let depth = this.state.depth;
             if (old === undefined) {
                 layer = {
-                    z: [this.state.depth],
+                    z: [depth, depth, depth, depth],
                     type: 'surface',
                 }
+            } else {
+                layer = jQuery.extend({}, layer);
+                if (this.props.lat_corners !== undefined && this.props.lon_corners !== undefined) {
+                    layer.y = this.props.lat_corners
+                    layer.x = this.props.lon_corners
+                    layer.z = [depth, depth, depth, depth]
+                }
             }
-            layer = jQuery.extend({}, layer);
-            if (this.props.lat !== undefined && this.props.lon !== undefined) {
-                layer.y = this.props.lat
-                layer.x = this.props.lon    
-            }
+            
             
             this.setState({
                 surface: layer
