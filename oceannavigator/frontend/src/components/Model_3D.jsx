@@ -86,13 +86,18 @@ export default class Model_3D extends React.Component {
     */
     updateDataLayer(old, layer) {
         console.warn("LOCK: ", this.lock);
+        while (this.lock) {
+
+        }
+        this.lock = true;
         try {
             let layers = jQuery.extend([], this.state.layers);
             if (old === undefined) {
                 layers.push(layer);
                 this.setState({
                     layers: layers
-                })
+                }, this.lock = false)
+                return
             }
             let idx = layers.indexOf(old);
             layers[idx] = layer;
@@ -204,7 +209,7 @@ export default class Model_3D extends React.Component {
                         x: lon_corners,
                         y: lat_corners,
                         type: 'scatter3d',
-                        colorscale: 'Viridis',
+                        //colorscale: 'Viridis',
                     }
                     self.updateDataLayer(undefined, corners_layer)
                 })
