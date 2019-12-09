@@ -89,18 +89,23 @@ export default class Model_3D extends React.Component {
 
         }
         this.lock = true;
-        let layers = jQuery.extend([], this.state.layers);
-        if (old === undefined) {
-            layers.push(layer);
+        try {
+            let layers = jQuery.extend([], this.state.layers);
+            if (old === undefined) {
+                layers.push(layer);
+                this.setState({
+                    layers: layers
+                })
+            }
+            let idx = layers.indexOf(old);
+            layers[idx] = layer;
             this.setState({
                 layers: layers
-            })
+            }, () => this.lock = false)
+        } catch (err) {
+            this.lock = false
         }
-        let idx = layers.indexOf(old);
-        layers[idx] = layer;
-        this.setState({
-            layers: layers
-        }, () => this.lock = false)
+        
     }
 
     /*
