@@ -36,7 +36,7 @@ export default class RefPlane extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (this.state.depth !== prevState.depth) {
-            while (this.surface_lock) {}
+            while (this.surface_lock) { }
             this.surface_lock = true;
 
             let old = this.state.surface;
@@ -55,8 +55,8 @@ export default class RefPlane extends React.Component {
                 }
                 layer.z = [depth, depth, depth, depth]
             }
-            
-            
+
+
             this.setState({
                 surface: layer
             }, () => this.surface_lock = false)
@@ -74,6 +74,12 @@ export default class RefPlane extends React.Component {
         })
     }
 
+    updateTransparency(e) {
+        this.setState({
+            opacity: e.value
+        })
+    }
+
     render() {
 
         // Initialize each component
@@ -84,7 +90,7 @@ export default class RefPlane extends React.Component {
                 onClick={this.removePanel}
             >X</Button>
         )
-        
+
         const select_depth = (
             <input
                 onChange={this.updateDepth}
@@ -93,6 +99,21 @@ export default class RefPlane extends React.Component {
                 value={this.state.depth}
                 placeholder={'depth'}
             ></input>
+        )
+
+        const select_transparency = (
+            <div className='ComboBox input'>
+                <h1>Transparency</h1>
+                <ReactSimpleRange
+                    className='iceSlider'
+                    value={this.state.opacity}
+                    min={0}
+                    max={100}
+                    step={1}
+                    label={true}
+                    onChange={this.updateTransparency}
+                />
+            </div>
         )
 
         const toggle_apply = (
@@ -113,12 +134,12 @@ export default class RefPlane extends React.Component {
         >
             {data_selection}
         </Panel>
-        
+
         return (
             <div>
                 {data_selection_panel}
             </div>
         )
-        
+
     }
 }

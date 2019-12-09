@@ -238,6 +238,7 @@ export default class Model_3D extends React.Component {
 
     updatePoint(e) {
         let p = e.points[0]
+        console.warn("POINT: ", p)
         let point = {
             x: p.x,
             y: p.y,
@@ -260,7 +261,7 @@ export default class Model_3D extends React.Component {
             let line_3d = {
                 x: [[point[0].x], [point[0].x]],
                 y: [[point[0].y], [point[0].y]],
-                z: [[point[0].fullData._cmin], [point[0].fullData._cmax]],
+                z: [[point[0].min_depth], [point[0].max_depth]],
                 type: 'scatter3d',
                 mode: 'lines'
             }
