@@ -192,7 +192,7 @@ export default class Model_3D extends React.Component {
                 let i_4 = [lat[lat.length - 1][lat[lat.length - 1].length - 1], lon[lon.length - 1][lon[lon.length - 1].length - 1]]
                 let corners = [i_1, i_2, i_3, i_4]
                 let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
-                let lon_corners = [i_1[1], i_2[1], i_3[1], i_4[1]];
+                let lon_corners = [i_1[1], i_2[1], i_4[1], i_3[1]];
                 
                 self.setState({
                     lat: lat,
@@ -205,10 +205,10 @@ export default class Model_3D extends React.Component {
                         z: [0,0,0,0],
                         x: lon_corners,
                         y: lat_corners,
-                        type: 'surface',
+                        type: 'scatter3d',
                         //colorscale: 'Viridis',
                     }
-                    //self.updateDataLayer(undefined, corners_layer)
+                    self.updateDataLayer(undefined, corners_layer)
                 })
             }
         })
