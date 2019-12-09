@@ -262,9 +262,9 @@ export default class Model_3D extends React.Component {
             let old = this.state.vLine;
             
             let line_3d = {
-                    x: [[point.x], [point.x]],
-                    y: [[point.y], [point.y]],
-                    z: [[point.min_depth], [point.max_depth]],
+                    x: [point.x, point.x],
+                    y: [point.y, point.y],
+                    z: [point.min_depth, point.max_depth],
                     type: 'scatter3d',
                     mode: 'lines'
                 }
