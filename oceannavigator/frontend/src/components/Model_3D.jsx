@@ -206,6 +206,7 @@ export default class Model_3D extends React.Component {
                         x: lon_corners,
                         y: lat_corners,
                         type: 'scatter3d',
+                        mode: 'markers'
                         //colorscale: 'Viridis',
                     }
                     self.updateDataLayer(undefined, corners_layer)
