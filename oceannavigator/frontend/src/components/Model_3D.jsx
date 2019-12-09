@@ -397,6 +397,7 @@ export default class Model_3D extends React.Component {
                     data={this.state.layers}
                     layout={this.state.layout}
                     onClick={this.updatePoint}
+                    revision={this.state.revision}
                 ></Plot>
             )
         }
