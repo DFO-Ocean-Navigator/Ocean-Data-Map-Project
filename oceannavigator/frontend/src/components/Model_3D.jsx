@@ -99,7 +99,7 @@ export default class Model_3D extends React.Component {
             layers[idx] = layer;
             this.setState({
                 layers: layers,
-                revision: revision + 1
+                revision: this.state.revision + 1
             }, () => {console.warn("REVISION: ", this.state.revision)})
 
         } catch (err) {
