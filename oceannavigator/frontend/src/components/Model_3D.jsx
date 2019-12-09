@@ -175,8 +175,8 @@ export default class Model_3D extends React.Component {
             success: function (result) {
                 let lat = result[0];
                 let lon = result[1];
-
-                let corners = [[lat[0][0], lon[0][0]], [lat[0][-1], lon[0][-1]], [lat[-1][0], lon[-1][0]], [lat[-1][-1], lon[-1][-1]]]
+                
+                let corners = [[lat[0][0], lon[0][0]], [lat[0][lat[0].length], lon[0][lon[0].length]], [lat[lat.length][0], lon[lon.length][0]], [lat[lat.length][lat[lat.length].length], lon[lon.length][lon[lon.length].length]]
                 self.setState({
                     lat: lat,
                     lon: lon,
