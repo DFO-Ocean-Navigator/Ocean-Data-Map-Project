@@ -181,10 +181,24 @@ export default class Model_3D extends React.Component {
                 let i_3 = [lat[lat.length - 1][0], lon[lon.length - 1][0]]
                 let i_4 = [lat[lat.length - 1][lat[lat.length - 1].length - 1], lon[lon.length - 1][lon[lon.length - 1].length - 1]]
                 let corners = [i_1, i_2, i_3, i_4]
+                let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
+                let lon_corners = [i_1[1], i_2[1], i_3[1], i_4[1]];
+                
                 self.setState({
                     lat: lat,
                     lon: lon,
-                    corners: corners
+                    
+                    lat_corners: lat_corners,
+                    lon_corners: lon_corners,
+                }, () => {
+                    let corners_layer = {
+                        z: [0,0,0,0],
+                        x: lon_corners,
+                        y: lat_corners,
+                        type: 'scatter3d',
+                        colorscale: 'Viridis',
+                    }
+                    this.updateDataLayer(undefined, corners_layer)
                 })
             }
         })
