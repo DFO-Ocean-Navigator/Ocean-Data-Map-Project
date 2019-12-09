@@ -208,7 +208,7 @@ export default class Model_3D extends React.Component {
                         type: 'surface',
                         //colorscale: 'Viridis',
                     }
-                    self.updateDataLayer(undefined, corners_layer)
+                    //self.updateDataLayer(undefined, corners_layer)
                 })
             }
         })
