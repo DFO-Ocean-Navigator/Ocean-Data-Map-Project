@@ -285,6 +285,7 @@ export default class Model_3D extends React.Component {
         }
 
         let layer = <RefPlane
+            key='refplane'
             addDataLayer={this.addDataLayer}
             updateDataLayer={this.updateDataLayer}
             removeDataLayer={this.removeDataLayer}
