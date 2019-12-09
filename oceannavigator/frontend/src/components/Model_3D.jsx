@@ -16,6 +16,8 @@ export default class Model_3D extends React.Component {
     constructor(props) {
         super(props)
 
+        this.lock = false;
+
         this.state = {
             layers: [],
             data_panels: [],
@@ -83,6 +85,10 @@ export default class Model_3D extends React.Component {
         Updates the specified data with the provided data
     */
     updateDataLayer(old, layer) {
+        while (this.lock) {
+
+        }
+        this.lock = true;
         let layers = jQuery.extend([], this.state.layers);
         if (old === undefined) {
             layers.push(layer);
@@ -94,7 +100,7 @@ export default class Model_3D extends React.Component {
         layers[idx] = layer;
         this.setState({
             layers: layers
-        })
+        }, () => this.lock = false)
     }
 
     /*
