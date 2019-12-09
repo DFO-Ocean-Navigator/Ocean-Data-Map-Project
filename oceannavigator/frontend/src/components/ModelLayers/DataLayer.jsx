@@ -217,7 +217,6 @@ export default class DataLayer extends React.Component {
             <div>
                 {data_selection_panel}
             </div>
-        )
-        
+        )       
     }
 }

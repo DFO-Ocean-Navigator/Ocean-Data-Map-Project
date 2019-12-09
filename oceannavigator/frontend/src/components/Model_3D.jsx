@@ -173,9 +173,14 @@ export default class Model_3D extends React.Component {
             dataType: 'json',
             url: this.urlFromQuery('/api/v1.0/data/latlon/', query),
             success: function (result) {
+                let lat = result[0];
+                let lon = result[1];
+
+                let corners = [[lat[0][0], lon[0][0]], [lat[0][-1], lon[0][-1]], [lat[-1][0], lon[-1][0]], [lat[-1][-1], lon[-1][-1]]]
                 self.setState({
-                    lat: result[0],
-                    lon: result[1]
+                    lat: lat,
+                    lon: lon,
+                    corners: corners
                 })
             }
         })
