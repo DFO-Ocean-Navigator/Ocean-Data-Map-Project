@@ -256,20 +256,21 @@ export default class Model_3D extends React.Component {
 
     Should add a vertical line to the point that was clicked
     */
-    addVerticalLine(points) {
+    addVerticalLine() {
         try {
-            point = points
-            let layers = jQuery.extend([], this.state.layers);
+            let point = this.state.point
+            let old = this.state.vLine;
+            
             let line_3d = {
-                x: [[point.x], [point.x]],
-                y: [[point.y], [point.y]],
-                z: [[point.min_depth], [point.max_depth]],
-                type: 'scatter3d',
-                mode: 'lines'
-            }
-            layers.push(line_3d)
+                    x: [[point.x], [point.x]],
+                    y: [[point.y], [point.y]],
+                    z: [[point.min_depth], [point.max_depth]],
+                    type: 'scatter3d',
+                    mode: 'lines'
+                }
+            
+            this.updateDataLayer(old, line_3d);
             this.setState({
-                layers: layers,
                 vLine: line_3d,
             })
         } catch (err) {
@@ -385,7 +386,7 @@ export default class Model_3D extends React.Component {
                     onUpdate={this.onLocalUpdate}
                 />
                 <Button
-                    onClick={() => console.warn("ADD VERTICAL PIN")}
+                    onClick={this.addVerticalLine}
                 >+ Pin</Button>
                 <Button
                     onClick={this.fetchProfile}
