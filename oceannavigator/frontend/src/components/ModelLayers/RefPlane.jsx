@@ -40,7 +40,7 @@ export default class RefPlane extends React.Component {
             this.surface_lock = true;
 
             let old = this.state.surface;
-            let layer = this.state.surface;
+            let layer = jQuery.extend({}, this.state.surface);
             let depth = this.state.depth;
             if (old === undefined) {
                 layer = {
