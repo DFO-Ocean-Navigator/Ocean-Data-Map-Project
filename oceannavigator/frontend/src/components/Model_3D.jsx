@@ -242,6 +242,8 @@ export default class Model_3D extends React.Component {
         let point = {
             x: p.x,
             y: p.y,
+            min_depth: 0,
+            max_depth: p.fullData.cmin - 10
         }
 
         this.setState({
@@ -259,9 +261,9 @@ export default class Model_3D extends React.Component {
             point = points
             let layers = jQuery.extend([], this.state.layers);
             let line_3d = {
-                x: [[point[0].x], [point[0].x]],
-                y: [[point[0].y], [point[0].y]],
-                z: [[point[0].min_depth], [point[0].max_depth]],
+                x: [[point.x], [point.x]],
+                y: [[point.y], [point.y]],
+                z: [[point.min_depth], [point.max_depth]],
                 type: 'scatter3d',
                 mode: 'lines'
             }
