@@ -198,7 +198,7 @@ export default class Model_3D extends React.Component {
                         type: 'scatter3d',
                         colorscale: 'Viridis',
                     }
-                    this.updateDataLayer(undefined, corners_layer)
+                    self.updateDataLayer(undefined, corners_layer)
                 })
             }
         })
