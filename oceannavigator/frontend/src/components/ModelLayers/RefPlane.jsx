@@ -29,6 +29,7 @@ export default class RefPlane extends React.Component {
 
         this.removePanel = this.removePanel.bind(this);
         this.updateDepth = this.updateDepth.bind(this);
+        this.updateTransparency = this.updateTransparency.bind(this);
     }
 
     componentDidMount() {
