@@ -49,6 +49,7 @@ export default class RefPlane extends React.Component {
                 layer = {
                     z: [[depth*-1, depth*-1, depth*-1, depth*-1]],
                     type: 'surface',
+                    showscale: false,
                 }
             } else {
                 layer = jQuery.extend({}, layer);

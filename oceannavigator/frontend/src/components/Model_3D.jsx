@@ -104,7 +104,7 @@ export default class Model_3D extends React.Component {
             }, () => {console.warn("REVISION: ", this.state.revision)})
 
         } catch (err) {
-            console.warn("SOMETHING WENT WRONG")   
+            console.warn("SOMETHING WENT WRONG")
         }
     }
 
