@@ -2,6 +2,7 @@ import React from 'react';
 import ComboBox from "../ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
 import SelectBox from "../SelectBox.jsx";
+import ReactSimpleRange from "react-simple-range";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../../i18n.js");
@@ -61,6 +62,19 @@ export default class RefPlane extends React.Component {
                 surface: layer
             }, () => this.surface_lock = false)
             this.props.updateDataLayer(old, layer)
+        }
+
+        if (this.state.opacity !== prevState.opacity) {
+            let old = this.state.surface;
+            if (old !== undefined) {
+                let layer = jQuery.extend({}, this.state.surface);
+                layer.opacity = this.state.opacity;
+                
+                this.setState({
+                    surface: layer
+                }, () => this.surface_lock = false)
+                this.props.updateDataLayer(old, layer);
+            }
         }
     }
 
