@@ -414,7 +414,6 @@ export default class Model_3D extends React.Component {
                 </Col>
                 <Col lg={2} style={{ height: '100%', width: '25%' }}>
                     <div>
-                        {point}
                         {sspeed}
                     </div>
                 </Col>
