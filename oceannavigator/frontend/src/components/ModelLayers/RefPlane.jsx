@@ -54,8 +54,8 @@ export default class RefPlane extends React.Component {
                 if (this.props.lat_corners !== undefined && this.props.lon_corners !== undefined) {
                     let lat = this.props.lat_corners;
                     let lon = this.props.lon_corners;
-                    layer.y = [[lat[0], lat[1]], [lat[2], lat[3]]];
-                    layer.x = [[lon[0], lon[1]], [lon[2], lon[3]]];
+                    layer.y = [[lat[0], lat[1]], [lat[3], lat[2]]];
+                    layer.x = [[lon[0], lon[1]], [lon[3], lon[2]]];
                 }
                 layer.z = [[depth*-1, depth*-1], [depth*-1, depth*-1]]
             }
