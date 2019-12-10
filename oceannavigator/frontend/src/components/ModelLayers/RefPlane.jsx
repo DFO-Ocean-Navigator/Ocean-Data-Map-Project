@@ -136,7 +136,7 @@ export default class RefPlane extends React.Component {
             >Apply</Button>
         )
         // Add the components to an array in the correct order
-        let data_selection = [select_depth];
+        let data_selection = [select_depth, select_transparency];
         // Create Panel with Panel Elements
         data_selection_panel = <Panel
             key='right_map'
