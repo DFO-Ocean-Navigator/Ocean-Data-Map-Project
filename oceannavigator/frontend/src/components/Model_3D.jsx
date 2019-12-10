@@ -71,7 +71,6 @@ export default class Model_3D extends React.Component {
         /*
             To Be Moved (doesn't belong in this component)
         */
-        this.addVerticalLine = this.addVerticalLine.bind(this);
         this.fetchProfile = this.fetchProfile.bind(this);
         
         /*
