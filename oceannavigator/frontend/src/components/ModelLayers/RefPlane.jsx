@@ -46,7 +46,7 @@ export default class RefPlane extends React.Component {
             let depth = this.state.depth;
             if (old === undefined) {
                 layer = {
-                    z: [depth*-1, depth*-1, depth*-1, depth*-1],
+                    z: [[depth*-1, depth*-1, depth*-1, depth*-1]],
                     type: 'surface',
                 }
             } else {
@@ -55,7 +55,7 @@ export default class RefPlane extends React.Component {
                     layer.y = this.props.lat_corners
                     layer.x = this.props.lon_corners
                 }
-                layer.z = [depth*-1, depth*-1, depth*-1, depth*-1]
+                layer.z = [[depth*-1, depth*-1, depth*-1, depth*-1]]
             }
 
 
