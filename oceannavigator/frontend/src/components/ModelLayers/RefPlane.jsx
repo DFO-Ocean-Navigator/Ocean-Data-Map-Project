@@ -24,7 +24,8 @@ export default class RefPlane extends React.Component {
                 "depth": 0,
             },
             surface: undefined,
-            depth: 0
+            depth: 0,
+            opacity: 50
         }
 
         this.removePanel = this.removePanel.bind(this);
@@ -73,7 +74,7 @@ export default class RefPlane extends React.Component {
             let old = this.state.surface;
             if (old !== undefined) {
                 let layer = jQuery.extend({}, this.state.surface);
-                layer.opacity = this.state.opacity;
+                layer.opacity = this.state.opacity / 100;
                 
                 this.setState({
                     surface: layer
