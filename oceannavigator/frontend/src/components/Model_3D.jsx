@@ -7,6 +7,7 @@ import DataLayer from './ModelLayers/DataLayer.jsx';
 import BathLayer from './ModelLayers/BathLayer.jsx';
 import RefPlane from './ModelLayers/RefPlane.jsx';
 import LocationInput from './LocationInput.jsx';
+import PointContainer from './ModelLayers/Point/PointContainer.jsx';
 
 
 const stringify = require("fast-stable-stringify");
@@ -49,16 +50,35 @@ export default class Model_3D extends React.Component {
             revision: 1
         }
 
+        /*
+            Passed as Prop
+        */
         this.urlFromQuery = this.urlFromQuery.bind(this);
-        this.addDataLayer = this.addDataLayer.bind(this);
         this.updateDataLayer = this.updateDataLayer.bind(this);
         this.removeDataLayer = this.removeDataLayer.bind(this);
-        this.addDataPanel = this.addDataPanel.bind(this);
-        this.removeDataPanel = this.removeDataPanel.bind(this);
+        
+        /*
+            Called Automatically
+        */
         this.getLatLon = this.getLatLon.bind(this);
+        
+        /*
+            Called by Internal Functions
+        */
+        this.addPanel = this.addPanel.bind(this);
+        this.removePanel = this.removePanel.bind(this);
+        
+        /*
+            To Be Moved (doesn't belong in this component)
+        */
         this.addVerticalLine = this.addVerticalLine.bind(this);
         this.fetchProfile = this.fetchProfile.bind(this);
+        
+        /*
+            Called through User Selection
+        */
         this.updatePoint = this.updatePoint.bind(this);
+        this.addDataPanel = this.addDataPanel.bind(this);
         this.addPointPanel = this.addPointPanel.bind(this);
         this.addPlanePanel = this.addPlanePanel.bind(this);
     }
@@ -71,18 +91,6 @@ export default class Model_3D extends React.Component {
     componentDidUpdate(prevProps, prevState) {
     }
 
-    /*
-        Adds the provided layer to the plot
-    */
-    addDataLayer(idx, layer) {
-        let layers = this.state.layers;
-        layers.push(layer);
-        idx = layers.indexOf(layer);
-        this.setState({
-            layers: layers
-        })
-        return idx;
-    }
 
     /*
         Updates the specified data with the provided data
@@ -122,20 +130,56 @@ export default class Model_3D extends React.Component {
         })
     }
 
+    /*
+        Adds the Specified Selection Panel to the left sidebar
+    */
+    addPanel (panel) {
+        let layers = [];
+        
+        if (this.state.extraLayers !== undefined) {
+            layers = jQuery.extend([], this.state.extraLayers);
+        }
+        
+        layers.unshift(panel);
+        
+        this.setState({
+            extraLayers: layers
+        })
+    }
+
+    /*
+        Removes a previously added Selection Panel from the left sidebar
+    */
+    removePanel (panel, layer) {
+        let panels = jQuery.extend([], this.state.extraLayers);
+
+        let idx = panels.indexOf(panel);
+        panels.splice(idx, 1);
+
+        let layers = jQuery.extend([], this.state.layers);
+        if (layer !== undefined) {
+            idx = layers.indexOf(layer);
+            layers.splice(idx, 1);
+        }
+
+        this.setState({
+            extraLayers: panels,
+            layers: layers
+        })
+    }
+    
+    /*
+        Creates a data panel and requests it be added to the left panel
+    */
     addDataPanel() {
-        let data_panels = this.state.data_panels;
-
-        let index = this.state.index;
-        //data_panels.push(index);
-        index = index + 1;
-
-        let layers = jQuery.extend([], this.state.extraLayers);
-        layers.unshift(<DataLayer
+    
+        let index = this.state.index + 1;
+        
+        let layer = <DataLayer
             index={index}
             key={index}
             value={index}
             urlFromQuery={this.urlFromQuery}
-            addDataLayer={this.addDataLayer}
             updateDataLayer={this.updateDataLayer}
             removeDataLayer={this.removeDataLayer}
             area={this.props.area}
@@ -146,35 +190,19 @@ export default class Model_3D extends React.Component {
             time={this.props.time}
             lat={this.state.lat}
             lon={this.state.lon}
-            removeDataPanel={this.removeDataPanel}
-        ></DataLayer>)
+            removeDataPanel={this.removePanel}
+        ></DataLayer>
 
+        this.addPanel(layer);
         this.setState({
-            extraLayers: layers,
-            data_panels: data_panels,
             index: index
         })
     }
 
-    removeDataPanel(panel, layer) {
-        let data_panels = jQuery.extend([], this.state.data_panels);
-        let idx = data_panels.indexOf(panel);
-        data_panels.splice(idx, 1);
-
-        // Needs to remove data too
-        let layers = jQuery.extend([], this.state.layers);
-        if (layer !== undefined) {
-            idx = layers.indexOf(layer);
-            layers.splice(idx, 1);
-        }
-
-        this.setState({
-            data_panels: data_panels,
-            layers: layers
-        })
-    }
-
-    urlFromQuery(header, query, options) {
+    /*
+        Generates a generic url based on input
+    */
+    urlFromQuery(header, query) {
         return header + "?query=" + encodeURIComponent(stringify(query));
     }
 
@@ -216,8 +244,10 @@ export default class Model_3D extends React.Component {
         })
     }
 
-    fetchProfile() {
-        let point = this.state.point
+    /*
+        Renders a sound speed profile through the API
+    */
+    fetchProfile(point) {
 
         let query = {
             dataset: this.state.query.dataset,
@@ -236,6 +266,9 @@ export default class Model_3D extends React.Component {
         })
     }
 
+    /*
+        Updates the point held in state when a new point on the plot is clicked
+    */
     updatePoint(e) {
         let p = e.points[0]
         let point = {
@@ -244,69 +277,17 @@ export default class Model_3D extends React.Component {
             min_depth: 0,
             max_depth: p.fullData.cmin - 10
         }
-
         this.setState({
             point: point
         })
     }
 
     /*
-    Not Working Yet
-
-    Should add a vertical line to the point that was clicked
+        Adds a vertical reference line to the map
     */
-    addVerticalLine() {
-        try {
-            let point = this.state.point
-            let old = this.state.vLine;
-
-            let line_3d = {
-                x: [point.x, point.x],
-                y: [point.y, point.y],
-                z: [point.min_depth, point.max_depth],
-                type: 'scatter3d',
-            }
-
-            this.updateDataLayer(old, line_3d);
-            this.setState({
-                vLine: line_3d,
-            })
-        } catch (err) {
-
-        }
-    }
-
-    addPointPanel() {
-        /*
-        let panel = <Panel
-            key='point'
-            id='point'
-            collapsible
-            defaultExpanded
-            header={_("Point")}
-            bsStyle='primary'
-        ><LocationInput
-                key='point'
-                id='point'
-                state={}
-                title={_("Location")}
-                onUpdate={this.onLocalUpdate}
-            />
-            <Button
-                onClick={this.addVerticalLine}
-            >+ Pin</Button>
-            <Button
-                onClick={this.fetchProfile}
-            >+ Profile</Button>
-        </Panel>*/
-    }
+    
 
     addPlanePanel() {
-        let extraLayers = [];
-        if (this.state.extraLayers !== undefined) {
-            extraLayers = jQuery.extend([], this.state.extraLayers);
-        }
-
         let layer = <RefPlane
             key='refplane'
             addDataLayer={this.addDataLayer}
@@ -315,13 +296,18 @@ export default class Model_3D extends React.Component {
             lat_corners={this.state.lat_corners}
             lon_corners={this.state.lon_corners}
         ></RefPlane>
+        this.addPanel(layer);
+    }
 
-        extraLayers.push(layer);
-
-        this.setState({
-            extraLayers: extraLayers
-        });
-
+    addPointPanel() {
+        let layer = <PointContainer
+            key='pointcontainer'
+            updateDataLayer={this.updateDataLayer}
+            removeDataLayer={this.removeDataLayer}
+            fetchProfile={this.fetchProfile}
+            point={this.state.point}
+        ></PointContainer>
+        this.addPanel(layer);
     }
 
     render() {
@@ -386,31 +372,7 @@ export default class Model_3D extends React.Component {
             >+ Plane</Button>
         )
 
-        let point = [];
-        if (this.state.point.length !== 0) {
-            let p = [[this.state.point.x, this.state.point.y]]
-            point = <Panel
-                key='point'
-                id='point'
-                collapsible
-                defaultExpanded
-                header={_("Point")}
-                bsStyle='primary'
-            ><LocationInput
-                    key='point'
-                    id='point'
-                    state={p}
-                    title={_("Location")}
-                    onUpdate={this.onLocalUpdate}
-                />
-                <Button
-                    onClick={this.addVerticalLine}
-                >+ Pin</Button>
-                <Button
-                    onClick={this.fetchProfile}
-                >+ Profile</Button>
-            </Panel>
-        }
+        
 
         let plot_container = null;
         if (this.state.layers.length === 0) {
