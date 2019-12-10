@@ -44,6 +44,7 @@ export default class Model_3D extends React.Component {
             },
             lat: undefined,
             lon: undefined,
+            point: [],
             vLine: undefined,
             revision: 1
         }
@@ -286,7 +287,7 @@ export default class Model_3D extends React.Component {
         ><LocationInput
                 key='point'
                 id='point'
-                state={p}
+                state={}
                 title={_("Location")}
                 onUpdate={this.onLocalUpdate}
             />
@@ -324,9 +325,7 @@ export default class Model_3D extends React.Component {
 
     render() {
 
-        let layers = []
-
-        layers.push(
+        let bathymetry = [
             <BathLayer
                 key='bathymetry'
                 addDataLayer={this.addDataLayer}
@@ -342,7 +341,8 @@ export default class Model_3D extends React.Component {
                 lat={this.state.lat}
                 lon={this.state.lon}
             ></BathLayer>
-        )
+        ]
+
         /*for (let idx in this.state.data_panels) {
             idx = this.state.data_panels[idx];
             console.warn("IDX: ", idx)
@@ -373,11 +373,11 @@ export default class Model_3D extends React.Component {
                 onClick={this.addDataPanel}
             >+ Data</Button>
         )
-        let add_point = (
+        /*let add_point = (
             <Button
                 onClick={this.addPointPanel}
             >+ Point</Button>
-        )
+        )*/
 
         let add_plane = (
             <Button
@@ -441,7 +441,7 @@ export default class Model_3D extends React.Component {
                         defaultExpanded
                         bsStyle='primary'
                     >
-                        {layers}
+                        {bathymetry}
                         {this.state.extraLayers}
                     </Panel>
                 </Col>
