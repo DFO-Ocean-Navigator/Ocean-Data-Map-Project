@@ -434,10 +434,10 @@ export default class Model_3D extends React.Component {
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
+                    <div style={{width: '100%'}}>{layer_options}</div>
                     <Panel
                         key='layercontainer'
                         id='layercontainer'
-                        header={layer_options}
                         defaultExpanded
                         bsStyle='primary'
                     >
