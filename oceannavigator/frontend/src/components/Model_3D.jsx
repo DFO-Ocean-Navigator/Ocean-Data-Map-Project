@@ -276,7 +276,27 @@ export default class Model_3D extends React.Component {
     }
 
     addPointPanel() {
-
+        let panel = <Panel
+            key='point'
+            id='point'
+            collapsible
+            defaultExpanded
+            header={_("Point")}
+            bsStyle='primary'
+        ><LocationInput
+                key='point'
+                id='point'
+                state={p}
+                title={_("Location")}
+                onUpdate={this.onLocalUpdate}
+            />
+            <Button
+                onClick={this.addVerticalLine}
+            >+ Pin</Button>
+            <Button
+                onClick={this.fetchProfile}
+            >+ Profile</Button>
+        </Panel>
     }
 
     addPlanePanel() {
@@ -409,6 +429,8 @@ export default class Model_3D extends React.Component {
         if (this.state.sspeed !== undefined) {
             sspeed = <img src={this.state.sspeed}></img>
         }
+
+        let layer_options = [add_panel, add_plane, add_point];
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
@@ -418,8 +440,7 @@ export default class Model_3D extends React.Component {
                         defaultExpanded
                         bsStyle='primary'
                     >
-                        {add_panel}
-                        {add_plane}
+                        {layer_options}
                         {layers}
                         {this.state.extraLayers}
                     </Panel>
