@@ -101,7 +101,7 @@ export default class Model_3D extends React.Component {
             this.setState({
                 layers: layers,
                 revision: this.state.revision + 1
-            }, () => {console.warn("REVISION: ", this.state.revision)})
+            }, () => { console.warn("REVISION: ", this.state.revision) })
 
         } catch (err) {
             console.warn("SOMETHING WENT WRONG")
@@ -186,7 +186,6 @@ export default class Model_3D extends React.Component {
             success: function (result) {
                 let lat = result[0];
                 let lon = result[1];
-                console.warn("LENGTH: ", lat.length);
                 let i_1 = [lat[0][0], lon[0][0]]
                 let i_2 = [lat[0][lat[0].length - 1], lon[0][lon[0].length - 1]]
                 let i_3 = [lat[lat.length - 1][0], lon[lon.length - 1][0]]
@@ -194,16 +193,16 @@ export default class Model_3D extends React.Component {
                 let corners = [i_1, i_2, i_3, i_4]
                 let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
                 let lon_corners = [i_1[1], i_2[1], i_4[1], i_3[1]];
-                
+
                 self.setState({
                     lat: lat,
                     lon: lon,
-                    
+
                     lat_corners: lat_corners,
                     lon_corners: lon_corners,
                 }, () => {
                     let corners_layer = {
-                        z: [0,0,0,0],
+                        z: [0, 0, 0, 0],
                         x: lon_corners,
                         y: lat_corners,
                         type: 'scatter3d',
@@ -219,7 +218,6 @@ export default class Model_3D extends React.Component {
     fetchProfile() {
         let point = this.state.point
 
-        console.warn("POINT: ", point)
         let query = {
             dataset: this.state.query.dataset,
             names: [],
@@ -239,7 +237,6 @@ export default class Model_3D extends React.Component {
 
     updatePoint(e) {
         let p = e.points[0]
-        console.warn("POINT: ", p)
         let point = {
             x: p.x,
             y: p.y,
@@ -261,14 +258,14 @@ export default class Model_3D extends React.Component {
         try {
             let point = this.state.point
             let old = this.state.vLine;
-            
+
             let line_3d = {
-                    x: [point.x, point.x],
-                    y: [point.y, point.y],
-                    z: [point.min_depth, point.max_depth],
-                    type: 'scatter3d',
-                }
-            
+                x: [point.x, point.x],
+                y: [point.y, point.y],
+                z: [point.min_depth, point.max_depth],
+                type: 'scatter3d',
+            }
+
             this.updateDataLayer(old, line_3d);
             this.setState({
                 vLine: line_3d,
@@ -415,10 +412,17 @@ export default class Model_3D extends React.Component {
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
-                    {add_panel}
-                    {add_plane}
-                    {layers}
-                    {this.state.extraLayers}
+                    <Panel
+                        key='layercontainer'
+                        id='layercontainer'
+                        defaultExpanded
+                        bsStyle='primary'
+                    >
+                        {add_panel}
+                        {add_plane}
+                        {layers}
+                        {this.state.extraLayers}
+                    </Panel>
                 </Col>
                 <Col lg={6} style={{ height: '100%', width: '55%' }}>
                     <div style={{ height: '100%', width: '100%' }}>
