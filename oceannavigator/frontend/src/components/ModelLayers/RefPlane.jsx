@@ -66,7 +66,7 @@ export default class RefPlane extends React.Component {
             }, () => this.surface_lock = false)
             this.props.updateDataLayer(old, layer)
         }
-        return
+        
         if (this.state.opacity !== prevState.opacity) {
             while (this.surface_lock) { }
             this.surface_lock = true;
