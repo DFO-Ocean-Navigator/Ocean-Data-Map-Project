@@ -437,10 +437,10 @@ export default class Model_3D extends React.Component {
                     <Panel
                         key='layercontainer'
                         id='layercontainer'
+                        header={layer_options}
                         defaultExpanded
                         bsStyle='primary'
                     >
-                        {layer_options}
                         {layers}
                         {this.state.extraLayers}
                     </Panel>
