@@ -3,6 +3,7 @@ import ComboBox from "../ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
 import SelectBox from "../SelectBox.jsx";
 import ReactSimpleRange from "react-simple-range";
+import PropTypes from "prop-types";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../../i18n.js");

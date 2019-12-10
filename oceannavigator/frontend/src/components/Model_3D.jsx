@@ -8,7 +8,7 @@ import BathLayer from './ModelLayers/BathLayer.jsx';
 import RefPlane from './ModelLayers/RefPlane.jsx';
 import LocationInput from './LocationInput.jsx';
 import PointContainer from './ModelLayers/Point/PointContainer.jsx';
-
+import PropTypes from "prop-types";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
