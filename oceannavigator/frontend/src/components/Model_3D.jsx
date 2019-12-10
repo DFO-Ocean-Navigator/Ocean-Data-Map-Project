@@ -374,11 +374,11 @@ export default class Model_3D extends React.Component {
                 onClick={this.addDataPanel}
             >+ Data</Button>
         )
-        /*let add_point = (
+        let add_point = (
             <Button
                 onClick={this.addPointPanel}
             >+ Point</Button>
-        )*/
+        )
 
         let add_plane = (
             <Button
@@ -431,7 +431,7 @@ export default class Model_3D extends React.Component {
             sspeed = <img src={this.state.sspeed}></img>
         }
 
-        let layer_options = [add_panel, add_plane, add_point];
+        let layer_options = [add_panel, add_plane];
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
