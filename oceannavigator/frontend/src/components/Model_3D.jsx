@@ -277,6 +277,7 @@ export default class Model_3D extends React.Component {
     }
 
     addPointPanel() {
+        /*
         let panel = <Panel
             key='point'
             id='point'
@@ -297,7 +298,7 @@ export default class Model_3D extends React.Component {
             <Button
                 onClick={this.fetchProfile}
             >+ Profile</Button>
-        </Panel>
+        </Panel>*/
     }
 
     addPlanePanel() {
