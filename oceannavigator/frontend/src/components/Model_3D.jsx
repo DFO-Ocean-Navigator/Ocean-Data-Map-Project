@@ -387,7 +387,7 @@ export default class Model_3D extends React.Component {
         )
 
         let point = [];
-        if (this.state.point !== undefined) {
+        if (this.state.point.length !== 0) {
             let p = [[this.state.point.x, this.state.point.y]]
             point = <Panel
                 key='point'
