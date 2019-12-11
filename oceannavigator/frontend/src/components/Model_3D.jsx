@@ -88,7 +88,7 @@ export default class Model_3D extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.pointPanel !== undefined) {
+        if (this.state.point !== prevState.point) {
             pointPanel = this.state.pointPanel;
 
             layer = <PointContainer
@@ -96,13 +96,14 @@ export default class Model_3D extends React.Component {
                 updateDataLayer={this.updateDataLayer}
                 removeDataLayer={this.removeDataLayer}
                 fetchProfile={this.fetchProfile}
-                point={point}
+                point={this.state.point}
             ></PointContainer>
             this.updateDataLayer(pointPanel, layer);
             this.setState({
                 pointPanel: pointPanel
             })
         }
+        
     }
 
 
