@@ -49,19 +49,19 @@ class Parser:
     def get_key_for_variable(self, variable):
         """Using self.key and self.dims, determine the key for the particular
         variable.
+
         Params:
         variable -- the xarray or netcdf variable
+
         Returns a tuple of integers and/or slices
         """
+        
         key = self.key
         if not isinstance(key, tuple):
             key = (key,)
 
         d = dict(zip(self.dims, key))
     
-        if not isinstance(d['depth'], slice) and isinstance(key[0], slice):
-            d['depth'] = slice(d['depth'])
-
         try:
             if hasattr(variable, "dims"):
                 # xarray calls it dims
