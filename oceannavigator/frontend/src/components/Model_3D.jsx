@@ -89,9 +89,9 @@ export default class Model_3D extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (this.state.point !== prevState.point) {
-            pointPanel = this.state.pointPanel;
+            let pointPanel = this.state.pointPanel;
 
-            layer = <PointContainer
+            let layer = <PointContainer
                 key='clickPoint'
                 updateDataLayer={this.updateDataLayer}
                 removeDataLayer={this.removeDataLayer}
