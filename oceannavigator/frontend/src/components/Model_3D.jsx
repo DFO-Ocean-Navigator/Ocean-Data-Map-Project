@@ -279,6 +279,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             point: point
         })
+        this.addPointPanel();
     }
 
     /*
