@@ -75,7 +75,7 @@ export default class PointContainer extends React.Component {
         let layers = this.state.data;
 
         let point = [];
-        if (this.state.point !== 0) {
+        if (this.state.point !== undefined) {
             let p = [[this.state.point.x, this.state.point.y]]
             point = <Panel
                 key='point'
