@@ -170,17 +170,6 @@ class ProfilePlotter(PointPlotter):
         self.plot_legend(fig, self.names)
         
         
-
-        #if 'xscale' in self.query:
-        #    min = float(self.query['xscale'][0])
-        #    max = float(self.query['xscale'][1])
-        #    plt.xlim(min, max)
-        
-        #if 'yscale' in self.query:
-        #    min = float(self.query['yscale'][0])
-        #    max = float(self.query['yscale'][1])
-        #    plt.ylim(min, max)
-
         if not self.plotTitle:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
                                              ", ".join(self.names),
