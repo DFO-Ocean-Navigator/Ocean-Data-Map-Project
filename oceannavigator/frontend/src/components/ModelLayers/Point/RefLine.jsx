@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from "prop-types";
 
 const stringify = require("fast-stable-stringify");
-const i18n = require("../i18n.js");
-const LOADING_IMAGE = require("../images/spinner.gif");
+const i18n = require("../../../i18n.js");
+
 export default class RefLine extends React.Component {
     constructor (props) {
         super (props);

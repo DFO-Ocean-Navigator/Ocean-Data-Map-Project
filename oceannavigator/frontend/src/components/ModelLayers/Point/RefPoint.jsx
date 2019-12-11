@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from "prop-types";
 
 const stringify = require("fast-stable-stringify");
-const i18n = require("../i18n.js");
+const i18n = require("../../../i18n.js");
 const LOADING_IMAGE = require("../images/spinner.gif");
 export default class RefPoint extends React.Component {
     constructor (props) {
