@@ -87,7 +87,7 @@ export default class PointContainer extends React.Component {
             ><LocationInput
                     key='point'
                     id='point'
-                    state={this.state.point}
+                    state={[this.state.point.x. this.state.point.y]}
                     title={_("Location")}
                     onUpdate={this.onLocalUpdate}
                 />
