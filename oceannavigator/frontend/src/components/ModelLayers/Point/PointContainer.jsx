@@ -23,6 +23,11 @@ export default class PointContainer extends React.Component {
         this.onLocalUpdate = this.onLocalUpdate.bind(this);
     }
 
+    componentDidMount() {
+        this.setState({
+            point: this.props.point,
+        })
+    }
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.point !== this.props.point) {
             this.setState({
