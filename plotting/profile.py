@@ -148,6 +148,10 @@ class ProfilePlotter(PointPlotter):
                 current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
 
+            if ('yscale' in self.query):
+                plt.gca().set_ylim(float(self.query.get('yscale')[0]), float(self.query.get('yscale')[1]))
+
+
             if 'xscale' in self.query:
                 plt.gca().set_xlim(float(self.query.get('xscale')[0]), float(self.query.get('xscale')[1]))
             elif self.compare:
@@ -172,10 +176,10 @@ class ProfilePlotter(PointPlotter):
         #    max = float(self.query['xscale'][1])
         #    plt.xlim(min, max)
         
-        if 'yscale' in self.query:
-            min = float(self.query['yscale'][0])
-            max = float(self.query['yscale'][1])
-            plt.ylim(min, max)
+        #if 'yscale' in self.query:
+        #    min = float(self.query['yscale'][0])
+        #    max = float(self.query['yscale'][1])
+        #    plt.ylim(min, max)
 
         if not self.plotTitle:
             plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
