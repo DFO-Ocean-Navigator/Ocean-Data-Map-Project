@@ -4,6 +4,10 @@ import PropTypes from 'prop-types';
 import RefPoint from "./RefPoint.jsx";
 import RefLine from "./RefLine.jsx";
 import LocationInput from "../../LocationInput.jsx";
+
+const stringify = require("fast-stable-stringify");
+const i18n = require("../i18n.js");
+const LOADING_IMAGE = require("../images/spinner.gif");
 export default class PointContainer extends React.Component {
     constructor (props) {
         super (props);
