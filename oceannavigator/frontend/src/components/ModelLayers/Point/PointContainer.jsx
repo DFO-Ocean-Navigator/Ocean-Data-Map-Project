@@ -1,6 +1,9 @@
 import React from 'react';
-import PropTypes from "prop-types";
-
+import { Panel, Button} from 'react-bootstrap';
+import PropTypes from 'prop-types';
+import RefPoint from "./RefPoint.jsx";
+import RefLine from "./RefLine.jsx";
+import LocationInput from "../../LocationInput.jsx";
 export default class PointContainer extends React.Component {
     constructor (props) {
         super (props);
