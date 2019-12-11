@@ -13,7 +13,7 @@ export default class PointContainer extends React.Component {
         super (props);
 
         this.state = {
-            point: [],
+            point: undefined,
             panel: null,
         }
 
