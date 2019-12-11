@@ -100,7 +100,7 @@ export default class Model_3D extends React.Component {
             ></PointContainer>
             this.updateDataLayer(pointPanel, layer);
             this.setState({
-                pointPanel: pointPanel
+                pointPanel: layer
             })
         }
         
@@ -295,13 +295,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             point: point
         })
-        
-        
     }
-
-    /*
-        Adds a vertical reference line to the map
-    */
     
 
     addPlanePanel() {
