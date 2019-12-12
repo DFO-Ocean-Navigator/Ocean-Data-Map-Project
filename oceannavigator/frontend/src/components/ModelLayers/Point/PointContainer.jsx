@@ -112,6 +112,13 @@ export default class PointContainer extends React.Component {
                     title={_("Location")}
                     onUpdate={this.onLocalUpdate}
                 />
+                <NumericInput
+                  value={this.state.depth}
+                  precision={0}
+                  step={0.01}
+                  onChange={(n,s) => this.onLocalUpdate("depth", n)}
+                  id={'depth'}
+                />
                 <Button
                     onClick={this.RefLine}
                 >+ Pin</Button>
