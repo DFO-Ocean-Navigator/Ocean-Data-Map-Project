@@ -161,7 +161,7 @@ export default class Model_3D extends React.Component {
         let layers = [];
         if (this.state.extraLayers !== undefined) {
             console.warn("EXTRA LAYERS: ", this.state.extraLayers)
-            layers = jQuery.extend([], this.state.extraLayers);
+            layers = this.state.extraLayers;//jQuery.extend([], this.state.extraLayers);
         }
         
         layers.unshift(panel);
@@ -181,7 +181,7 @@ export default class Model_3D extends React.Component {
         console.warn("INITIAL PANELS: ", panels)
         let idx = panels.indexOf(panel);
         console.warn("IDX: ", idx);
-        panels = jQuery.extend([], panels);
+        //panels = jQuery.extend([], panels);
         panels.splice(idx, 1);
         console.warn("FINAL PANELS: ", panels);
         this.setState({
