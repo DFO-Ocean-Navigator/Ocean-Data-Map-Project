@@ -40,3 +40,11 @@ export default class RefPoint extends React.Component {
         return null;
     }
 }
+
+RefPoint.propTypes = {
+    x: PropTypes.number,
+    y: PropTypes.number,
+    depth: PropTypes.number,
+    updateDataLayer: PropTypes.func,
+    removeDataLayer: PropTypes.func,
+};

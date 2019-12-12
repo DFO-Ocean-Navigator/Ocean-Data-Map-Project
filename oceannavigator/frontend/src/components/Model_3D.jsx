@@ -1,12 +1,9 @@
 import React from 'react';
-import ComboBox from "./ComboBox.jsx";
 import { Panel, Row, Col, Button } from 'react-bootstrap';
-import SelectBox from "./SelectBox.jsx";
 import Plot from 'react-plotly.js';
 import DataLayer from './ModelLayers/DataLayer.jsx';
 import BathLayer from './ModelLayers/BathLayer.jsx';
 import RefPlane from './ModelLayers/RefPlane.jsx';
-import LocationInput from './LocationInput.jsx';
 import PointContainer from './ModelLayers/Point/PointContainer.jsx';
 import PropTypes from "prop-types";
 

@@ -52,3 +52,12 @@ export default class RefLine extends React.Component {
         return null;
     }
 }
+
+RefLine.propTypes = {
+    x: PropTypes.number,
+    y: PropTypes.number,
+    mindepth: PropTypes.number,
+    maxdepth: PropTypes.number,
+    updateDataLayer: PropTypes.func,
+    removeDataLayer: PropTypes.func,
+};

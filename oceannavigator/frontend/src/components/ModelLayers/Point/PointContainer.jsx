@@ -145,10 +145,9 @@ export default class PointContainer extends React.Component {
 // ******************************************************************************
 
 PointContainer.propTypes = {
-    generatePermLink: PropTypes.func,
-    dataset: PropTypes.string,
-    class4id: PropTypes.array,
-    init: PropTypes.object,
-    action: PropTypes.func,
-  };
+    updateDataLayer: PropTypes.func,
+    removeDataLayer: PropTypes.func,
+    fetchProfile: PropTypes.func,
+    point: PropTypes.object
+};
   
