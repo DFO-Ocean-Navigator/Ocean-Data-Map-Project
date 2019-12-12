@@ -89,7 +89,8 @@ export default class Model_3D extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         if (this.state.point !== prevState.point) {
             let pointPanel = this.state.pointPanel;
-            console.warn("POINT PANEL: ", pointPanel);
+            console.warn("POINT PANEL: ", pointPanel
+            );
             if (pointPanel !== undefined) {
                 console.warn("REMOVING EXISTING PANEL: ", pointPanel);
                 this.removePanel(pointPanel);
@@ -166,7 +167,7 @@ export default class Model_3D extends React.Component {
         
         this.setState({
             extraLayers: layers
-        });
+        }, () => console.warn("EXTRA LAYERS: ", this.state.extraLayers));
         console.warn("DONE ADD PANEL: ", this.state.extraLayers);
     }
 
