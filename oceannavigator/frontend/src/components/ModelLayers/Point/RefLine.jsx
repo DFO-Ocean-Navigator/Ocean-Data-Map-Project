@@ -11,27 +11,39 @@ export default class RefLine extends React.Component {
         this.state = {
             point: [] // This should be a scatter plot object for plotly
         }
+        this.updateLine = this.updateLine.bind(this);
+    }
+
+    componentDidMount() {
+        if (this.props.x !== undefined && this.props.y !== undefined) {
+            this.updateLine();
+        }
     }
 
     componentDidUpdate( prevProps, prevState ) {
         if (stringify(prevProps) !== stringify(this.props)) {
-            try {
-                let old = this.state.vLine;
-    
-                let line_3d = {
-                    x: [this.props.x, this.props.x],
-                    y: [this.props.y, this.props.y],
-                    z: [this.props.min_depth, this.props.max_depth],
-                    type: 'scatter3d',
-                }
-    
-                this.props.updateDataLayer(old, line_3d);
-                this.setState({
-                    vLine: line_3d,
-                })
-            } catch (err) {
-    
+            console.warn("Component Did Update")
+            this.updateLine();        
+        }
+    }
+
+    updateLine() {
+        try {
+            let old = this.state.vLine;
+
+            let line_3d = {
+                x: [this.props.x, this.props.x],
+                y: [this.props.y, this.props.y],
+                z: [this.props.min_depth, this.props.max_depth],
+                type: 'scatter3d',
             }
+
+            this.props.updateDataLayer(old, line_3d);
+            this.setState({
+                vLine: line_3d,
+            })
+        } catch (err) {
+
         }
     }
 
