@@ -72,6 +72,11 @@ export default class PointContainer extends React.Component {
     onLocalUpdate(key, value) {
         console.warn("KEY: ", key);
         console.warn("VALUE: ", value);
+        if (key === 'point') {
+            let point = this.state.point;
+            point.x = value[0];
+            point.y = value[1];
+        }
         this.setState({
             [key]: value
         });
