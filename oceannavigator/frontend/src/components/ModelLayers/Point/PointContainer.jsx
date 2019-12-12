@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import RefPoint from "./RefPoint.jsx";
 import RefLine from "./RefLine.jsx";
 import LocationInput from "../../LocationInput.jsx";
+import NumericInput from "react-numeric-input";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../../../i18n.js");
