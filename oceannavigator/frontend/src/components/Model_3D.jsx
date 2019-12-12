@@ -115,6 +115,7 @@ export default class Model_3D extends React.Component {
         (can also be used to create a new layer by providing undefined as the old one)
     */
     updateDataLayer(old, layer) {
+        console.warn("UPDATE DATA LAYER: ", old, layer);
         try {
             let layers = this.state.layers;//jQuery.extend([], this.state.layers);
             if (old === undefined) {
@@ -140,6 +141,7 @@ export default class Model_3D extends React.Component {
         Removes the specified layer from the plot
     */
     removeDataLayer(layer) {
+        console.warn("REMOVE DATA LAYER: ", layer);
         let layers = this.state.layers;
         let idx = layers.indexOf(layer);
         layers.splice(idx, 1);
