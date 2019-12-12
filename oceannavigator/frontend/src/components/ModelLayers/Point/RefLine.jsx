@@ -28,6 +28,7 @@ export default class RefLine extends React.Component {
     }
 
     updateLine() {
+        console.warn("UPDATE LINE")
         try {
             let old = this.state.vLine;
 
