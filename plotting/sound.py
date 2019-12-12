@@ -195,7 +195,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             ax.set_title(self.plotTitle, fontsize=15)
 
         ax.title.set_position([0.5, 1.10])
-        plt.subplots_adjust(top=0.85)
+        #plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)
 
         self.plot_legend(fig, self.names)
