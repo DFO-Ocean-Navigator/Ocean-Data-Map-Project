@@ -257,7 +257,7 @@ export default class ModalContainer extends React.Component {
           <Modal.Body style={{height: '100%'}}>
             {modalContent}
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer style={{padding: '3px'}}>
             <Button
               onClick={this.props.closeModal}
             ><Icon icon="close" alt={_("Close")} /> {_("Close")}</Button>
