@@ -15,6 +15,7 @@ export default class PointContainer extends React.Component {
         this.state = {
             point: undefined,
             panel: null,
+            depth: 0,
         }
 
         this.addData = this.addData.bind(this);
