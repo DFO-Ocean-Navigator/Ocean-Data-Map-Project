@@ -175,10 +175,12 @@ export default class Model_3D extends React.Component {
     removePanel (panel, layer) {
         console.warn("PANEL: ", panel);
         let panels = this.state.extraLayers;
+        console.warn("INITIAL PANELS: ", panels)
         let idx = panels.indexOf(panel);
         console.warn("IDX: ", idx);
         panels = jQuery.extend([], panels);
         panels.splice(idx, 1);
+        console.warn("FINAL PANELS: ", panels);
 
         let layers = jQuery.extend([], this.state.layers);
         if (layer !== undefined) {
