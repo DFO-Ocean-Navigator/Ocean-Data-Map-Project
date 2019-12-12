@@ -173,9 +173,10 @@ export default class Model_3D extends React.Component {
         Removes a previously added Selection Panel from the left sidebar
     */
     removePanel (panel, layer) {
-        
+        console.warn("PANEL: ", panel);
         let panels = this.state.extraLayers;
         let idx = panels.indexOf(panel);
+        console.warn("IDX: ", idx);
         panels = jQuery.extend([], panels);
         panels.splice(idx, 1);
 
