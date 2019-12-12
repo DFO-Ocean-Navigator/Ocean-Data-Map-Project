@@ -18,7 +18,7 @@ export default class Model_3D extends React.Component {
         super(props)
 
         this.lock = false;
-
+        this.panelLock = false;
         this.state = {
             layers: [],
             data_panels: [],
@@ -159,7 +159,8 @@ export default class Model_3D extends React.Component {
     addPanel (panel) {
         console.warn("ADD PANEL: ", panel);
         let layers = [];
-        
+        while (this.panelLock) { }
+        this.panelLock = true;
         if (this.state.extraLayers !== undefined) {
             layers = jQuery.extend([], this.state.extraLayers);
         }
@@ -168,7 +169,7 @@ export default class Model_3D extends React.Component {
         
         this.setState({
             extraLayers: layers
-        })
+        }, () => this.panelLock = false);
         console.warn("DONE ADD PANEL: ", this.state.extraLayers);
     }
 
@@ -176,6 +177,8 @@ export default class Model_3D extends React.Component {
         Removes a previously added Selection Panel from the left sidebar
     */
     removePanel (panel, layer) {
+        while (this.panelLock) { }
+        this.panelLock = true;
         console.warn("PANEL: ", panel);
         let panels = this.state.extraLayers;
         console.warn("INITIAL PANELS: ", panels)
@@ -194,7 +197,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             extraLayers: panels,
             layers: layers
-        })
+        }, () => this.panelLock = false);
     }
     
     /*
