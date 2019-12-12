@@ -70,6 +70,8 @@ export default class PointContainer extends React.Component {
     }
 
     onLocalUpdate(key, value) {
+        console.warn("KEY: ", key);
+        console.warn("VALUE: ", value);
         this.setState({
             [key]: value
         });
@@ -89,7 +91,7 @@ export default class PointContainer extends React.Component {
                 defaultExpanded
                 header={_("Point")}
                 bsStyle='primary'
-            ><LocationInput
+                ><LocationInput
                     key='point'
                     id='point'
                     state={[[this.state.point.x, this.state.point.y]]}
