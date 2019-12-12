@@ -127,6 +127,7 @@ export default class PointContainer extends React.Component {
             <div>
                 {point}
                 {layers}
+                {this.state.panel}
             </div>
         );
     }
