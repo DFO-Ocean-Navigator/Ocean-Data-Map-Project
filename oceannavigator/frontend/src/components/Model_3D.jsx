@@ -424,7 +424,7 @@ export default class Model_3D extends React.Component {
                     </div>
                 </Col>
                 <Col lg={2} style={{ height: '100%', width: '25%' }}>
-                    <div>
+                    <div className='sspeedProfile'>
                         {sspeed}
                     </div>
                 </Col>
