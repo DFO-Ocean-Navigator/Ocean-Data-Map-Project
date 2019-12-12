@@ -35,7 +35,7 @@ export default class RefLine extends React.Component {
             let line_3d = {
                 x: [this.props.x, this.props.x],
                 y: [this.props.y, this.props.y],
-                z: [this.props.min_depth, this.props.max_depth],
+                z: [this.props.mindepth, this.props.maxdepth],
                 type: 'scatter3d',
             }
 
