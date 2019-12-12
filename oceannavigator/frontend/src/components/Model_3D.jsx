@@ -160,6 +160,7 @@ export default class Model_3D extends React.Component {
         console.warn("ADD PANEL: ", panel);
         let layers = [];
         if (this.state.extraLayers !== undefined) {
+            console.warn("EXTRA LAYERS: ", this.state.extraLayers)
             layers = jQuery.extend([], this.state.extraLayers);
         }
         
