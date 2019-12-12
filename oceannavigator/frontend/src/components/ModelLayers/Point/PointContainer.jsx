@@ -74,8 +74,15 @@ export default class PointContainer extends React.Component {
         console.warn("VALUE: ", value);
         if (key === 'point') {
             let point = this.state.point;
-            point.x = value[0];
-            point.y = value[1];
+            if (point === undefined) {
+                point = {
+                    x: value[0],
+                    y: value[1],
+                }
+            } else {
+                point.x = value[0];
+                point.y = value[1];
+            }
             value = point;
         }
         this.setState({
