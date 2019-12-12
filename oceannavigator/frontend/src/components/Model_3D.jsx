@@ -18,7 +18,6 @@ export default class Model_3D extends React.Component {
         super(props)
 
         this.lock = false;
-        this.panelLock = false;
         this.state = {
             layers: [],
             data_panels: [],
@@ -110,8 +109,7 @@ export default class Model_3D extends React.Component {
             this.setState({
                 pointPanel: layer
             })
-        }
-        
+        }   
     }
 
 
