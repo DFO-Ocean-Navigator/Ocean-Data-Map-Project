@@ -157,6 +157,7 @@ export default class Model_3D extends React.Component {
         Adds the Specified Selection Panel to the left sidebar
     */
     addPanel (panel) {
+        console.warn("ADD PANEL: ", panel);
         let layers = [];
         
         if (this.state.extraLayers !== undefined) {
@@ -168,6 +169,7 @@ export default class Model_3D extends React.Component {
         this.setState({
             extraLayers: layers
         })
+        console.warn("DONE ADD PANEL: ", this.state.extraLayers);
     }
 
     /*
