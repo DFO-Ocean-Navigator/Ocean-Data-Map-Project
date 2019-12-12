@@ -89,10 +89,7 @@ export default class Model_3D extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         if (this.state.point !== prevState.point) {
             let pointPanel = this.state.pointPanel;
-            console.warn("POINT PANEL: ", pointPanel
-            );
             if (pointPanel !== undefined) {
-                console.warn("REMOVING EXISTING PANEL: ", pointPanel);
                 this.removePanel(pointPanel);
             }
 
@@ -105,7 +102,6 @@ export default class Model_3D extends React.Component {
             ></PointContainer>
 
             this.addPanel(layer);
-            console.warn("FINAL PANELS: ", this.state.extraLayers)
             
             this.setState({
                 pointPanel: layer
@@ -116,6 +112,7 @@ export default class Model_3D extends React.Component {
 
     /*
         Updates the specified data with the provided data
+        (can also be used to create a new layer by providing undefined as the old one)
     */
     updateDataLayer(old, layer) {
         try {
@@ -132,7 +129,7 @@ export default class Model_3D extends React.Component {
             this.setState({
                 layers: layers,
                 revision: this.state.revision + 1
-            }, () => { console.warn("REVISION: ", this.state.revision) })
+            })
 
         } catch (err) {
             console.warn("SOMETHING WENT WRONG")
@@ -157,36 +154,28 @@ export default class Model_3D extends React.Component {
         Adds the Specified Selection Panel to the left sidebar
     */
     addPanel (panel) {
-        console.warn("ADD PANEL: ", panel);
         let layers = [];
         if (this.state.extraLayers !== undefined) {
-            console.warn("EXTRA LAYERS: ", this.state.extraLayers)
-            layers = this.state.extraLayers;//jQuery.extend([], this.state.extraLayers);
+            layers = this.state.extraLayers;
         }
         
         layers.unshift(panel);
         
         this.setState({
             extraLayers: layers
-        }, () => console.warn("EXTRA LAYERS: ", this.state.extraLayers));
-        console.warn("DONE ADD PANEL: ", this.state.extraLayers);
+        });
     }
 
     /*
         Removes a previously added Selection Panel from the left sidebar
     */
     removePanel (panel, layer) {
-        console.warn("PANEL: ", panel);
         let panels = this.state.extraLayers;
-        console.warn("INITIAL PANELS: ", panels)
         let idx = panels.indexOf(panel);
-        console.warn("IDX: ", idx);
-        //panels = jQuery.extend([], panels);
         panels.splice(idx, 1);
-        console.warn("FINAL PANELS: ", panels);
         this.setState({
             extraLayers: panels
-        })
+        });
 
         if (layer !== undefined) {
             this.removeDataLayer(layer);
