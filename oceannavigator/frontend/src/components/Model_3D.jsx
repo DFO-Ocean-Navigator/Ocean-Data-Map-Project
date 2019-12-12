@@ -105,6 +105,7 @@ export default class Model_3D extends React.Component {
             ></PointContainer>
 
             this.addPanel(layer);
+            console.warn("FINAL PANELS: ", this.state.layers)
             
             this.setState({
                 pointPanel: layer
