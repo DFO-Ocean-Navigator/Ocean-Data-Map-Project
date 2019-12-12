@@ -407,13 +407,13 @@ export default class Model_3D extends React.Component {
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
-                    <div style={{width: '100%', height: '100%'}}>{layer_options}</div>
+                    <div style={{width: '100%', height: '7%'}}>{layer_options}</div>
                     <Panel
                         key='layercontainer'
                         id='layercontainer'
                         defaultExpanded
                         bsStyle='primary'
-                        style={{height: '100%', overflow: 'overlay'}}
+                        style={{height: '90%', overflow: 'overlay'}}
                     >
                         {bathymetry}
                         {this.state.extraLayers}
