@@ -406,7 +406,7 @@ export default class Model_3D extends React.Component {
             sspeed = <img src={this.state.sspeed}></img>
         }
 
-        let layer_options = [add_panel, add_plane, add_point];
+        let layer_options = [add_panel, add_plane];
         let content = (
             <Row style={{ height: '100%' }}>
                 <Col lg={2} style={{ height: '100%', width: '20%' }}>
