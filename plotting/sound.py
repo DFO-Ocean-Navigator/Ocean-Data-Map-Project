@@ -187,15 +187,16 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
 
-        #if not self.plotTitle:
-        #    ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-        #        ", ".join(self.names), self.date_formatter(self.iso_timestamp)
-        #    ), fontsize=15)
-        #else:
-        #    ax.set_title(self.plotTitle, fontsize=15)
+        if self.query.get('compressed') is not True:
+            if not self.plotTitle:
+                ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
+                    ", ".join(self.names), self.date_formatter(self.iso_timestamp)
+                ), fontsize=15)
+            else:
+                ax.set_title(self.plotTitle, fontsize=15)
+            plt.subplots_adjust(top=0.85)
 
         ax.title.set_position([0.5, 1.10])
-        #plt.subplots_adjust(top=0.85)
         ax.xaxis.grid(True)
 
         self.plot_legend(fig, self.names)

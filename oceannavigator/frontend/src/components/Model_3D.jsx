@@ -270,7 +270,8 @@ export default class Model_3D extends React.Component {
             showmap: 0,
             station: [[point.x, point.y]],
             time: this.state.query.time,
-            type: "sound"
+            type: "sound",
+            compressed: true
         }
 
         let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=2x5'
