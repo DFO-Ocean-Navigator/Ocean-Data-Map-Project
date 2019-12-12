@@ -413,7 +413,7 @@ export default class Model_3D extends React.Component {
                         id='layercontainer'
                         defaultExpanded
                         bsStyle='primary'
-                        style={{height: '100%'}}
+                        style={{height: '100%', overflow: 'overlay'}}
                     >
                         {bathymetry}
                         {this.state.extraLayers}
