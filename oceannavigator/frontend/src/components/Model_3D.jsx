@@ -142,12 +142,13 @@ export default class Model_3D extends React.Component {
         Removes the specified layer from the plot
     */
     removeDataLayer(layer) {
-        let layers = this.state.datalayers;
+        let layers = this.state.layers;
         let idx = layers.indexOf(layer);
         layers.splice(idx, 1);
 
         this.setState({
-            layers: layers
+            layers: layers,
+            revision: this.state.revision + 1,
         })
     }
 
@@ -181,17 +182,13 @@ export default class Model_3D extends React.Component {
         panels = jQuery.extend([], panels);
         panels.splice(idx, 1);
         console.warn("FINAL PANELS: ", panels);
-
-        let layers = jQuery.extend([], this.state.layers);
-        if (layer !== undefined) {
-            idx = layers.indexOf(layer);
-            layers.splice(idx, 1);
-        }
-
         this.setState({
-            extraLayers: panels,
-            layers: layers
-        });
+            extraLayers: panels
+        })
+
+        if (layer !== undefined) {
+            this.removeDataLayer(layer);
+        }
     }
     
     /*
