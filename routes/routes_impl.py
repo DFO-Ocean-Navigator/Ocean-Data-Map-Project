@@ -938,7 +938,7 @@ def get_map_area(args):
     points = args.get('points')
     points = np.array(points).transpose()
     # Might have to connect the points
-    fig = plt.figure()
+    fig = plt.figure(figsize='3x4')
     _map_plot(points, True, False)
 
     def make_response(data, mime):
@@ -956,7 +956,7 @@ def get_map_area(args):
             format='png',
             dpi='figure',
             bbox_inches='tight',
-            pad_inches=0.5
+            pad_inches=0
         )
         plt.close(fig)
 
