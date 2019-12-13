@@ -273,8 +273,8 @@ export default class Model_3D extends React.Component {
             compressed: true
         }
 
-        let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=2x5'
-
+        //let url = this.urlFromQuery('/api/v1.0/plot/', query) + '&size=2x5'
+        let url = 'dory-dev.cs.dal.ca:8021/api/v1.0/map/area/?query=%7B"points"%3A+%5B%5B51.35531765447794%2C+-49.211058497428894%5D%2C+%5B51.39920197206365%2C+-47.52356278896332%5D%2C+%5B50.24439496210104%2C+-47.4532459974289%5D%2C+%5B50.0641879487261%2C+-49.49230420589448%5D%2C+%5B51.35531765447794%2C+-49.211058497428894%5D%5D%7D';
         this.setState({
             sspeed: url
         })
