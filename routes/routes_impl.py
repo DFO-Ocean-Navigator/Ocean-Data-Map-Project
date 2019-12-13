@@ -943,7 +943,7 @@ def get_map_area(args):
     with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
-            format='json',
+            format='png',
             dpi='figure',
             bbox_inches='tight',
             pad_inches=0.5
