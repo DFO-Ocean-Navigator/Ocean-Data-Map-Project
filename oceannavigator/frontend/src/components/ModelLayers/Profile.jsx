@@ -1,8 +1,8 @@
 import React from 'react';
 
 const stringify = require("fast-stable-stringify");
-const i18n = require("../i18n.js");
-const LOADING_IMAGE = require("../images/spinner.gif");
+const i18n = require("../../i18n.js");
+const LOADING_IMAGE = require("../../images/spinner.gif");
 
 export default class  extends React.Component {
 
