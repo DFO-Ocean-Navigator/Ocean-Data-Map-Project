@@ -233,7 +233,7 @@ export default class Model_3D extends React.Component {
                 let i_2 = [lat[0][lat[0].length - 1], lon[0][lon[0].length - 1]]
                 let i_3 = [lat[lat.length - 1][0], lon[lon.length - 1][0]]
                 let i_4 = [lat[lat.length - 1][lat[lat.length - 1].length - 1], lon[lon.length - 1][lon[lon.length - 1].length - 1]]
-                let corners = [i_1, i_2, i_3, i_4, i_1];
+                let corners = [i_1, i_2, i_3, i_4];
                 console.warn("CORNERS CREATION: ", corners)
                 let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
                 let lon_corners = [i_1[1], i_2[1], i_4[1], i_3[1]];

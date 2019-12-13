@@ -939,7 +939,7 @@ def get_map_area(args):
     points = np.array(points).transpose()
     # Might have to connect the points
     fig = plt.figure(figsize=(4,3))
-    _map_plot(points, True, False, colors=args.get('colours'))
+    _map_plot(points, False, False, colors=args.get('colours'))
 
     def make_response(data, mime):
         b64 = base64.encodebytes(data).decode()
