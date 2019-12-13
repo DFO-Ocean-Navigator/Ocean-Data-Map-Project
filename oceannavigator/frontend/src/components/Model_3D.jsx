@@ -242,7 +242,7 @@ export default class Model_3D extends React.Component {
                     lat: lat,
                     lon: lon,
 
-                    corners: corners,
+                    corners: jQuery.extend([], corners),
 
                     lat_corners: lat_corners,
                     lon_corners: lon_corners,
