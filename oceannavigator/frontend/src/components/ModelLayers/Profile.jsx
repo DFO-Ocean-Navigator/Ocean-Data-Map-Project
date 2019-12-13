@@ -91,7 +91,7 @@ export default class  extends React.Component {
 
     render () {
         return (
-            <img src={this.state.url}></img>
+            <img className='map' src={this.state.url}></img>
         )
     }
 }
