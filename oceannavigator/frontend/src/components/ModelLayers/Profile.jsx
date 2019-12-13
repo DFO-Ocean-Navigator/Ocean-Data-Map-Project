@@ -14,6 +14,7 @@ export default class  extends React.Component {
 
 
     componentDidMount () {
+        console.warn("COMPONENT MOUNTING")
         if (this.props.points !== undefined) {
             this.props.points
 
@@ -26,27 +27,24 @@ export default class  extends React.Component {
     }
 
     loadImage(query) {
-
+        console.warn("LOAD IMAGE: ", query);
         const paramString = $.param({
           query: stringify(query),
           format: "json",
         });
     
-        if (this.state.paramString !== paramString) {
     
-          this.setState({
-            loading: true, 
-            fail: false, 
-            //url: LOADING_IMAGE,
-            paramString: paramString,
-            errorMessage: null,
-          });
-          let url
-          if (this.props.query.type === 'class4' || this.props.query.type === 'drifter') {
-            url = '/plot/'
-          } else {
-            url = '/api/v1.0/plot/'
-          }
+        this.setState({
+          loading: true, 
+          fail: false, 
+          //url: LOADING_IMAGE,
+          paramString: paramString,
+          errorMessage: null,
+        });
+          
+          
+        let url = '/api/v1.0/map/area/';
+          
           const promise = $.ajax({
             url: url,
             cache: true,
@@ -56,14 +54,13 @@ export default class  extends React.Component {
           }).promise();
     
           promise.done(function(data) {
-            if (this._mounted) {
+              console.warn("PROMISE DONE: ", data);
               this.setState({
                 loading: false,
                 fail: false,
                 url: data,
                 errorMessage: null,
               });
-            }
           }.bind(this));
                 
           promise.fail(function(xhr) {
@@ -86,7 +83,7 @@ export default class  extends React.Component {
                 });
             }
           }.bind(this));
-        }
+        
       }
 
     render () {
