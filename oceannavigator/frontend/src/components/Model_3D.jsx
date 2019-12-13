@@ -237,12 +237,12 @@ export default class Model_3D extends React.Component {
                 console.warn("CORNERS CREATION: ", corners)
                 let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
                 let lon_corners = [i_1[1], i_2[1], i_4[1], i_3[1]];
-
+                let corner_colour = [[255,165,0], [255,0,0], [0,255,0], [0,0,255]];
                 self.setState({
                     lat: lat,
                     lon: lon,
                     
-                    cornerColor: [[255,165,0], [255,0,0], [0,255,0], [0,0,255]],
+                    cornerColor: corner_colour,
                     corners: corners,
 
                     lat_corners: lat_corners,
@@ -254,7 +254,7 @@ export default class Model_3D extends React.Component {
                         y: lat_corners,
                         type: 'scatter3d',
                         mode: 'markers',
-                        marker: {color: this.state.cornerColor}
+                        marker: {color: corner_colour}
                         //colorscale: 'Viridis',
                     }
                     self.updateDataLayer(undefined, corners_layer)
