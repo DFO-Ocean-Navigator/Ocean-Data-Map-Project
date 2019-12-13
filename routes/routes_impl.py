@@ -15,21 +15,21 @@ import os
 import re
 import shutil
 import sqlite3
-from io import BytesIO
-
+import contextlib
 import netCDF4
 import numpy as np
 import pytz
-from flask import (Response, current_app, jsonify, request, send_file,
-                   send_from_directory, render_template, make_response)
-from flask_babel import format_date, gettext
-from PIL import Image
-
 import data.class4 as class4
 import plotting.colormap
 import plotting.scale
 import plotting.tile
 import utils.misc
+
+from io import BytesIO
+from flask import (Response, current_app, jsonify, request, send_file,
+                   send_from_directory, render_template, make_response)
+from flask_babel import format_date, gettext
+from PIL import Image
 from data import open_dataset
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
@@ -49,6 +49,7 @@ from utils.errors import APIError, ClientError
 from plotting.area import Area
 from plotting.utils import _map_plot
 import matplotlib.pyplot as plt
+
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
