@@ -233,13 +233,15 @@ export default class Model_3D extends React.Component {
                 let i_2 = [lat[0][lat[0].length - 1], lon[0][lon[0].length - 1]]
                 let i_3 = [lat[lat.length - 1][0], lon[lon.length - 1][0]]
                 let i_4 = [lat[lat.length - 1][lat[lat.length - 1].length - 1], lon[lon.length - 1][lon[lon.length - 1].length - 1]]
-                let corners = [i_1, i_2, i_3, i_4]
+                let corners = [i_1, i_2, i_3, i_4, i_1]
                 let lat_corners = [i_1[0], i_2[0], i_3[0], i_4[0]];
                 let lon_corners = [i_1[1], i_2[1], i_4[1], i_3[1]];
 
                 self.setState({
                     lat: lat,
                     lon: lon,
+
+                    corners: corners,
 
                     lat_corners: lat_corners,
                     lon_corners: lon_corners,
@@ -401,11 +403,14 @@ export default class Model_3D extends React.Component {
 
         let sspeed = []
         if (this.state.sspeed !== undefined) {
-            sspeed = <Profile
-            
+            sspeed = <img src={this.state.sspeed}></img>
+        }
+
+        let corners = [];
+        if (this.state.corners !== undefined) {
+            corners = <Profile
+                points={this.state.corners}
             ></Profile>
-            
-            //<img src={this.state.sspeed}></img>
         }
 
         let layer_options = [add_panel, add_plane];
@@ -431,7 +436,7 @@ export default class Model_3D extends React.Component {
                 </Col>
                 <Col lg={2} style={{ height: '100%', width: '25%' }}>
                     <div className='sspeedProfile'>
-                        {sspeed}
+                        {corners, sspeed}
                     </div>
                 </Col>
             </Row>
