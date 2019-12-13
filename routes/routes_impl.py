@@ -936,13 +936,13 @@ def get_map_area(args):
     points = args.get('points')
     points = np.array(points).transpose()
     # Might have to connect the points
-    fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
+    fig = plt.figure(figsize='5x5', dpi='720')
     _map_plot(points, True, False)
     
     with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
-            format=self.filetype,
+            format='json',
             dpi='figure',
             bbox_inches='tight',
             pad_inches=0.5
