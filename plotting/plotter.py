@@ -231,6 +231,7 @@ class Plotter(metaclass=ABCMeta):
             fig.text(1.0, 0.0, DatasetConfig(self.compare['dataset']).attribution,
                      ha='right', size='small', va='top')
 
+        print("FILETYPE: ", self.filetype)
         with contextlib.closing(BytesIO()) as buf:
             plt.savefig(
                 buf,

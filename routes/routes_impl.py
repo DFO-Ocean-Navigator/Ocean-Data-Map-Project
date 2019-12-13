@@ -939,7 +939,7 @@ def get_map_area(args):
     # Might have to connect the points
     fig = plt.figure()
     _map_plot(points, True, False)
-    
+
     with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
@@ -949,10 +949,16 @@ def get_map_area(args):
             pad_inches=0.5
         )
         plt.close(fig)
-        buf.seek(0)
-        return (buf.getvalue(), 'application/json')
 
-    return response
+    def make_response(data, mime):
+        b64 = base64.encodebytes(data).decode()
+        return Response(json.dumps("data:%s;base64,%s" % (
+            mime,
+            b64
+        )), status=200, mimetype="application/json")
+
+
+    return make_response(fig)
 
 def get_area_data(args):
     if 'query' not in args:
