@@ -241,7 +241,8 @@ export default class Model_3D extends React.Component {
                 self.setState({
                     lat: lat,
                     lon: lon,
-
+                    
+                    cornerColor: [[255,165,0], [255,0,0], [0,255,0], [0,0,255]],
                     corners: corners,
 
                     lat_corners: lat_corners,
@@ -253,7 +254,7 @@ export default class Model_3D extends React.Component {
                         y: lat_corners,
                         type: 'scatter3d',
                         mode: 'markers',
-                        marker: {color: [[255,165,0], [255,0,0], [0,255,0], [0,0,255]]}
+                        marker: {color: this.state.cornerColor}
                         //colorscale: 'Viridis',
                     }
                     self.updateDataLayer(undefined, corners_layer)
@@ -413,6 +414,7 @@ export default class Model_3D extends React.Component {
             corners = <Profile
                 key='map'
                 corners={this.state.corners}
+                cornerColor={this.state.cornerColor}
             ></Profile>
         }
         
