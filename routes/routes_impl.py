@@ -876,7 +876,7 @@ def plot_impl(query: dict, args):
         return data
 
     img, mime, filename = plotter.run()
-
+    print("MIME: ", mime)
     if img:
         response = make_response(img, mime)
     else:
@@ -958,20 +958,19 @@ def get_map_area(args):
         )
         plt.close(fig)
 
-        if self.filetype == 'png':
-                buf.seek(0)
-                im = Image.open(buf)
-                with contextlib.closing(BytesIO()) as buf2:
-                    im.save(buf2, format='PNG', optimize=True)
-                    buf2.seek(0)
-                    return (buf2.getvalue(), self.mime, self.filename)
+        buf.seek(0)
+        im = Image.open(buf)
+        with contextlib.closing(BytesIO()) as buf2:
+            im.save(buf2, format='PNG', optimize=True)
+            buf2.seek(0)
+            return (buf2.getvalue(), self.mime, self.filename)
 
         buf.seek(0)
-            #buf.getvalue(), self.mime, self.filename
+        #buf.getvalue(), self.mime, self.filename
 
-    
+    response = make_response(buf2.getvalue(), self.mime)
 
-    return make_response(fig)
+    return response
 
 def get_area_data(args):
     if 'query' not in args:
