@@ -940,17 +940,14 @@ def get_map_area(args):
     _map_plot(points, True, False)
     
     with contextlib.closing(BytesIO()) as buf:
-            plt.savefig(
-                buf,
-                format=self.filetype,
-                dpi='figure',
-                bbox_inches='tight',
-                pad_inches=0.5
-            )
-            plt.close(fig)
-    
-    
-    
+        plt.savefig(
+            buf,
+            format=self.filetype,
+            dpi='figure',
+            bbox_inches='tight',
+            pad_inches=0.5
+        )
+        plt.close(fig)
         buf.seek(0)
         return (buf.getvalue(), 'application/json')
 
