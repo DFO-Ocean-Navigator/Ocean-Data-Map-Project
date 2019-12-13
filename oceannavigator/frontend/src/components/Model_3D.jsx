@@ -253,7 +253,7 @@ export default class Model_3D extends React.Component {
                         y: lat_corners,
                         type: 'scatter3d',
                         mode: 'markers',
-                        marker=dict(color=[[255,255,255], [255,0,0], [0,255,0], [0,0,255]])
+                        marker: {color: [[255,255,255], [255,0,0], [0,255,0], [0,0,255]]}
                         //colorscale: 'Viridis',
                     }
                     self.updateDataLayer(undefined, corners_layer)
