@@ -6,6 +6,7 @@ import BathLayer from './ModelLayers/BathLayer.jsx';
 import RefPlane from './ModelLayers/RefPlane.jsx';
 import PointContainer from './ModelLayers/Point/PointContainer.jsx';
 import PropTypes from "prop-types";
+import Profile from "./ModelLayers/Profile.jsx";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
@@ -400,7 +401,11 @@ export default class Model_3D extends React.Component {
 
         let sspeed = []
         if (this.state.sspeed !== undefined) {
-            sspeed = <img src={this.state.sspeed}></img>
+            sspeed = <Profile
+            
+            ></Profile>
+            
+            //<img src={this.state.sspeed}></img>
         }
 
         let layer_options = [add_panel, add_plane];
