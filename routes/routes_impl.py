@@ -947,7 +947,7 @@ def get_map_area(args):
             mime,
             b64
         )), status=200, mimetype="application/json")
-        
+
     value = 0
     with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
@@ -968,7 +968,7 @@ def get_map_area(args):
             #(buf2.getvalue(), 'image/png', 'png')
 
         
-    response = make_response(value, 'application/json')
+    response = make_response(value, 'image/png')
 
     return response
 
