@@ -966,7 +966,7 @@ def get_map_area(args):
                     buf2.seek(0)
                     return (buf2.getvalue(), self.mime, self.filename)
 
-            buf.seek(0)
+        buf.seek(0)
             #buf.getvalue(), self.mime, self.filename
 
     
