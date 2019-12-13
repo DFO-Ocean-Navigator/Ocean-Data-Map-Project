@@ -936,7 +936,7 @@ def get_map_area(args):
     points = args.get('points')
     points = np.array(points).transpose()
     # Might have to connect the points
-    fig = plt.figure(figsize='5x5', dpi='720')
+    fig = plt.figure()
     _map_plot(points, True, False)
     
     with contextlib.closing(BytesIO()) as buf:
