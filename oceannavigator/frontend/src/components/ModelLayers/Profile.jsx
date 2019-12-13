@@ -32,7 +32,9 @@ export default class  extends React.Component {
 
 
     componentDidUpdate (prevProps, prevState) {
+        console.warn("UPDATING")
         if (prevProps.corners !== this.props.corners) {
+            console.warn("CORNER IN UPDATE: ", this.props.corners)
             let query = {
                 points: [this.props.corners]
             }
