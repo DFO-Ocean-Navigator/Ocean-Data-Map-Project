@@ -963,12 +963,10 @@ def get_map_area(args):
         with contextlib.closing(BytesIO()) as buf2:
             im.save(buf2, format='PNG', optimize=True)
             buf2.seek(0)
-            return (buf2.getvalue(), self.mime, self.filename)
+            #(buf2.getvalue(), 'image/png', 'png')
 
-        buf.seek(0)
-        #buf.getvalue(), self.mime, self.filename
-
-    response = make_response(buf2.getvalue(), self.mime)
+        
+    response = make_response(buf2.getvalue(), 'image/png')
 
     return response
 
