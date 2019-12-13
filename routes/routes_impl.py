@@ -871,6 +871,7 @@ def plot_impl(query: dict, args):
     filename = 'png'
 
     if 'data' in request.args:
+        print("DATA IN ARGS")
         data = plotter.prepare_plot()
         return data
 
@@ -940,6 +941,13 @@ def get_map_area(args):
     fig = plt.figure()
     _map_plot(points, True, False)
 
+    def make_response(data, mime):
+        b64 = base64.encodebytes(data).decode()
+        return Response(json.dumps("data:%s;base64,%s" % (
+            mime,
+            b64
+        )), status=200, mimetype="application/json")
+
     with contextlib.closing(BytesIO()) as buf:
         plt.savefig(
             buf,
@@ -950,13 +958,18 @@ def get_map_area(args):
         )
         plt.close(fig)
 
-    def make_response(data, mime):
-        b64 = base64.encodebytes(data).decode()
-        return Response(json.dumps("data:%s;base64,%s" % (
-            mime,
-            b64
-        )), status=200, mimetype="application/json")
+        if self.filetype == 'png':
+                buf.seek(0)
+                im = Image.open(buf)
+                with contextlib.closing(BytesIO()) as buf2:
+                    im.save(buf2, format='PNG', optimize=True)
+                    buf2.seek(0)
+                    return (buf2.getvalue(), self.mime, self.filename)
 
+            buf.seek(0)
+            #buf.getvalue(), self.mime, self.filename
+
+    
 
     return make_response(fig)
 
