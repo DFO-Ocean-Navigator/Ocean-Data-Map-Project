@@ -410,7 +410,7 @@ export default class Model_3D extends React.Component {
         let corners = [];
         corners = <Profile
             key='map'
-            points={this.state.corners}
+            corners={this.state.corners}
         ></Profile>
         
         let layer_options = [add_panel, add_plane];
