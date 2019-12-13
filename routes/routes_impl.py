@@ -943,10 +943,11 @@ def get_map_area(args):
 
     def make_response(data, mime):
         b64 = base64.encodebytes(data).decode()
-        return Response(json.dumps("data:%s;base64,%s" % (
+        plotData = json.dumps("data:%s;base64,%s" % (
             mime,
             b64
-        )), status=200, mimetype="application/json")
+        ))
+        return Response(plotData, status=200, mimetype='application/json')
 
     value = 0
     with contextlib.closing(BytesIO()) as buf:
@@ -967,10 +968,7 @@ def get_map_area(args):
             value = buf2.getvalue()
             #(buf2.getvalue(), 'image/png', 'png')
 
-        
-    response = make_response(value, 'image/png')
-
-    return response
+    return make_response(value, 'application/json')
 
 def get_area_data(args):
     if 'query' not in args:
