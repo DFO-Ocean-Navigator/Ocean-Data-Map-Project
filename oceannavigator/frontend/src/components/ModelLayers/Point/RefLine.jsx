@@ -49,14 +49,31 @@ export default class RefLine extends React.Component {
         }
     }
 
+    removeLine() {
+        if (this.state.vLine !== undefined) {
+            this.props.removeDataLayer(this.state.vLine);
+            this.setState({
+                vLine: undefined
+            })
+        }
+    }
+
     render() {
 
-
+        let removeButton = [];
+        if (this.state.vLine !== undefined) {
+            removeButton = <Button
+                onClick={this.removeLine}
+            ></Button>
+        }
 
         return (
-            <Button
-                onClick={this.updateLine}
-            >+ Pin</Button>
+            <div>
+                <Button
+                    onClick={this.updateLine}
+                >+ Pin</Button>
+                {removeButton}    
+            </div>
         )
     }
 }
