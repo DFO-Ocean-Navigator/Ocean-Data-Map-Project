@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from "prop-types";
 import { Button } from 'react-bootstrap';
+import Icon from '../../Icon.jsx';
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../../../i18n.js");
@@ -62,7 +63,9 @@ export default class RefLine extends React.Component {
     render() {
 
         let removeButton = [];
+        let addButtonIcon = '+';
         if (this.state.vLine !== undefined) {
+            addButtonIcon = <Icon icon='undo'/>
             removeButton = <Button
                 onClick={this.removeLine}
             >X</Button>
@@ -72,7 +75,7 @@ export default class RefLine extends React.Component {
             <div>
                 <Button
                     onClick={this.updateLine}
-                >+ Pin</Button>
+                >{addButtonIcon}</Button>
                 {removeButton}    
             </div>
         )
