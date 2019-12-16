@@ -14,6 +14,7 @@ export default class RefPoint extends React.Component {
         }
 
         this.updatePoint = this.updatePoint.bind(this);
+        this.removePoint = this.removePoint.bind(this);
     }
 
     componentDidUpdate( prevProps, prevState ) {
@@ -42,11 +43,25 @@ export default class RefPoint extends React.Component {
         }
     }
 
+    removePoint() {
+        if (this.state.point_layer !== undefined) {
+            this.props.removeDataLayer(this.state.point_layer)
+            this.setState({
+                point_layer: undefined
+            })
+        }
+    }
+
     render () {
         return (
-            <Button
-                onClick={this.updatePoint}
-            >+ Point</Button>
+            <div>
+                <Button
+                    onClick={this.updatePoint}
+                >+ Point</Button>
+                <Button
+                    onClick={this.removePoint}
+                ></Button>
+            </div>
         );
     }
 }
