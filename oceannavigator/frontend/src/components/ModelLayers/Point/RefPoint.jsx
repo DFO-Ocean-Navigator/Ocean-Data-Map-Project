@@ -33,7 +33,7 @@ export default class RefPoint extends React.Component {
             let line_3d = {
                 x: [this.props.x],
                 y: [this.props.y],
-                z: [this.props.depth],
+                z: [this.props.depth * -1],
                 type: 'scatter3d',
             }
             console.warn("CALLING UPDATEDATALAYER()")
