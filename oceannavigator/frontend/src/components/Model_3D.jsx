@@ -411,11 +411,11 @@ export default class Model_3D extends React.Component {
 
         let corners = [];
         if (this.state.corners !== undefined) {
-            corners = <Profile
+            corners = <LocationMap
                 key='map'
                 corners={this.state.corners}
                 cornerColor={this.state.cornerColor}
-            ></Profile>
+            ></LocationMap>
         }
         
         
