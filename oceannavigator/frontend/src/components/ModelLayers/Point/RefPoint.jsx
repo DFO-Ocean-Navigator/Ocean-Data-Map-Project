@@ -6,8 +6,8 @@ const stringify = require("fast-stable-stringify");
 const i18n = require("../../../i18n.js");
 
 export default class RefPoint extends React.Component {
-    constructor (props) {
-        super (props);
+    constructor(props) {
+        super(props);
 
         this.state = {
             point: [], // This should be a scatter plot object for plotly
@@ -18,7 +18,7 @@ export default class RefPoint extends React.Component {
         this.removePoint = this.removePoint.bind(this);
     }
 
-    componentDidUpdate( prevProps, prevState ) {
+    componentDidUpdate(prevProps, prevState) {
         /*if (stringify(prevProps) !== stringify(this.props)) {
             this.updatePoint();    
         }*/
@@ -53,15 +53,20 @@ export default class RefPoint extends React.Component {
         }
     }
 
-    render () {
+    render() {
+        
+        let removeButton = []
+        if (this.state.point_layer !== undefined) {
+            removeButton = <Button
+                onClick={this.removePoint}
+            ></Button>
+        }
         return (
             <div>
                 <Button
                     onClick={this.updatePoint}
                 >+ Point</Button>
-                <Button
-                    onClick={this.removePoint}
-                ></Button>
+                {removeButton}
             </div>
         );
     }
