@@ -871,12 +871,10 @@ def plot_impl(query: dict, args):
     filename = 'png'
 
     if 'data' in request.args:
-        print("DATA IN ARGS")
         data = plotter.prepare_plot()
         return data
 
     img, mime, filename = plotter.run()
-    print("MIME: ", mime)
     if img:
         response = make_response(img, mime)
     else:
@@ -922,14 +920,12 @@ def get_map_point(args):
     args = json.loads(args.get('query'))
     points = args.get('points')
 
-    print(something)
     mapImg = _map_plot(points, False, False)
     return
 
 def get_map_line(args):
     args = json.loads(args.get('query'))
     points = args.get('points')
-    print(something)
     mapImg = _map_plot(points, True, False)
     return
 

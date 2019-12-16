@@ -455,16 +455,12 @@ def contour(projection, x, y, z, args):
 
 def wind_barbs(projection, x, y, z, args):
     lat, lon = get_latlon_coords(projection, x, y, z)
-    print('LAT, LON: ', lat, lon)
-    print("LAT: ", lat)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
 
     dataset_name = args.get('dataset')
     variable = args.get('variable')
-    print("VARIABLE: ", variable)
     variable = variable.split(',')
-    print("NEW VARIABLE: ", variable)
     if variable != ['u-component_of_wind_height_above_ground', 'v-component_of_wind_height_above_ground']:
         raise ValueError
         return
@@ -488,15 +484,11 @@ def wind_barbs(projection, x, y, z, args):
 
         while time < 0:
             time += len(dataset.timestamps)
-        print("TIME: ", time)
         timestamp = dataset.timestamps[time]
-        print("TIMESTAMP: ", timestamp)
-
+    
         data = []
         all_vars = []
-        print("Variables: ", variable)
         for v in variable:
-            print("CURRENT VARIABLE: ", v)
             all_vars.append(v)
             d = dataset.get_area(
                 np.array([lat, lon]),
@@ -507,7 +499,6 @@ def wind_barbs(projection, x, y, z, args):
                 args.get('radius'),
                 args.get('neighbours')
             )
-            print("AFTER GET AREA")
             variables = config.variable[dataset.variables[variable[0]]]
             name = variables.name
             unit = variables.unit
@@ -522,8 +513,6 @@ def wind_barbs(projection, x, y, z, args):
         #data = data.transpose()
         #data = np.flip(data, 0)
 
-    print(data)
-    print("DATA TYPE: ", type(data))
     
     nparray_data = []
     for d in data:
@@ -536,12 +525,9 @@ def wind_barbs(projection, x, y, z, args):
         #print(len(nparray_data[0]))
     #data = nparray_data
     data = nparray_data
-    print(data)
-    print("NEW DATA TYPE: ", type(data))
     X, Y = np.meshgrid(data[0], data[1], sparse=True)   #Changing sparse to False will likely result in your pc crashing
     #U, V = 12* X, 12*Y
-    #print("NEW DATA TYPE: ", type(data))
-
+    
     #fig, axs = plt.subplots(nrows=2, ncols=2)  
 
     U = np.multiply(X,1.94384)
