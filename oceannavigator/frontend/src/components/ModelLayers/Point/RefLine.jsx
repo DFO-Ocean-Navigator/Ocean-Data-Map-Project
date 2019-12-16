@@ -13,6 +13,7 @@ export default class RefLine extends React.Component {
             point: [] // This should be a scatter plot object for plotly
         }
         this.updateLine = this.updateLine.bind(this);
+        this.removeLine = this.removeLine.bind(this);
     }
 
     componentDidMount() {
