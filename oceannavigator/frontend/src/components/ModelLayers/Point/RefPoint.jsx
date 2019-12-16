@@ -54,12 +54,12 @@ export default class RefPoint extends React.Component {
     }
 
     render() {
-        
+
         let removeButton = []
         if (this.state.point_layer !== undefined) {
             removeButton = <Button
                 onClick={this.removePoint}
-            ></Button>
+            >X</Button>
         }
         return (
             <div>

@@ -64,7 +64,7 @@ export default class RefLine extends React.Component {
         if (this.state.vLine !== undefined) {
             removeButton = <Button
                 onClick={this.removeLine}
-            ></Button>
+            >X</Button>
         }
 
         return (
