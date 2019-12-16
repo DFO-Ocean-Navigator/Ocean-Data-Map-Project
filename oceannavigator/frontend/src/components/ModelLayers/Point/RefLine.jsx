@@ -75,7 +75,7 @@ export default class RefLine extends React.Component {
             <div>
                 <Button
                     onClick={this.updateLine}
-                >{addButtonIcon}</Button>
+                >{addButtonIcon}{_(" Pin")</Button>
                 {removeButton}    
             </div>
         )
