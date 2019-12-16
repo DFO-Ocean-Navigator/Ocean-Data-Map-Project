@@ -56,7 +56,9 @@ export default class RefPoint extends React.Component {
     render() {
 
         let removeButton = []
+        let addButtonIcon = '+';
         if (this.state.point_layer !== undefined) {
+            addButtonIcon = <Icon icon='undo'/>
             removeButton = <Button
                 onClick={this.removePoint}
             >X</Button>
@@ -65,7 +67,7 @@ export default class RefPoint extends React.Component {
             <div>
                 <Button
                     onClick={this.updatePoint}
-                >+ Point</Button>
+                >{addButtonIcon}{_(" Point")}</Button>
                 {removeButton}
             </div>
         );
