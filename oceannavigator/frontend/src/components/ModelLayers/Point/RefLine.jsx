@@ -5,8 +5,8 @@ const stringify = require("fast-stable-stringify");
 const i18n = require("../../../i18n.js");
 
 export default class RefLine extends React.Component {
-    constructor (props) {
-        super (props);
+    constructor(props) {
+        super(props);
 
         this.state = {
             point: [] // This should be a scatter plot object for plotly
@@ -15,16 +15,16 @@ export default class RefLine extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.x !== undefined && this.props.y !== undefined) {
+        /*if (this.props.x !== undefined && this.props.y !== undefined) {
             this.updateLine();
-        }
+        }*/
     }
 
-    componentDidUpdate( prevProps, prevState ) {
-        if (stringify(prevProps) !== stringify(this.props)) {
+    componentDidUpdate(prevProps, prevState) {
+        /*if (stringify(prevProps) !== stringify(this.props)) {
             console.warn("Component Did Update")
-            this.updateLine();        
-        }
+            this.updateLine();
+        }*/
     }
 
     updateLine() {
@@ -48,8 +48,15 @@ export default class RefLine extends React.Component {
         }
     }
 
-    render () {
-        return null;
+    render() {
+
+
+
+        return (
+            <Button
+                onClick={this.updateLine}
+            >+ Pin</Button>
+        )
     }
 }
 

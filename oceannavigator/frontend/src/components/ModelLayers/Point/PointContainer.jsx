@@ -1,5 +1,5 @@
 import React from 'react';
-import { Panel, Button} from 'react-bootstrap';
+import { Panel, Button } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import RefPoint from "./RefPoint.jsx";
 import RefLine from "./RefLine.jsx";
@@ -10,8 +10,8 @@ const stringify = require("fast-stable-stringify");
 const i18n = require("../../../i18n.js");
 
 export default class PointContainer extends React.Component {
-    constructor (props) {
-        super (props);
+    constructor(props) {
+        super(props);
 
         this.state = {
             point: undefined,
@@ -38,13 +38,13 @@ export default class PointContainer extends React.Component {
         }
     }
 
-    addData (data) {
+    addData(data) {
         this.setState({
             data: data
         })
     }
 
-    RefPoint () {
+    RefPoint() {
         let panel = <RefPoint
             x={this.state.point.x}
             y={this.state.point.y}
@@ -57,7 +57,7 @@ export default class PointContainer extends React.Component {
         })
     }
 
-    RefLine () {
+    RefLine() {
         let panel = <RefLine
             x={this.state.point.x}
             y={this.state.point.y}
@@ -92,7 +92,7 @@ export default class PointContainer extends React.Component {
         });
     }
 
-    render () {
+    render() {
 
         let layers = this.state.data;
 
@@ -106,7 +106,8 @@ export default class PointContainer extends React.Component {
                 defaultExpanded
                 header={_("Point")}
                 bsStyle='primary'
-                ><LocationInput
+            >
+                <LocationInput
                     key='point'
                     id='point'
                     state={[[this.state.point.x, this.state.point.y]]}
@@ -114,15 +115,27 @@ export default class PointContainer extends React.Component {
                     onUpdate={this.onLocalUpdate}
                 />
                 <NumericInput
-                  value={this.state.depth}
-                  precision={0}
-                  step={0.01}
-                  onChange={(n,s) => this.onLocalUpdate("depth", n)}
-                  id={'depth'}
+                    value={this.state.depth}
+                    precision={0}
+                    step={0.01}
+                    onChange={(n, s) => this.onLocalUpdate("depth", n)}
+                    id={'depth'}
                 />
-                <Button
-                    onClick={this.RefLine}
-                >+ Pin</Button>
+                <RefLine
+                    x={this.state.point.x}
+                    y={this.state.point.y}
+                    mindepth={this.state.point.min_depth}
+                    maxdepth={this.state.point.max_depth}
+                    updateDataLayer={this.props.updateDataLayer}
+                    removeDataLayer={this.props.removeDataLayer}
+                ></RefLine>
+                <RefPoint
+                    x={this.state.point.x}
+                    y={this.state.point.y}
+                    depth={this.state.depth}
+                    updateDataLayer={this.props.updateDataLayer}
+                    removeDataLayer={this.props.removeDataLayer}
+                ></RefPoint>
                 <Button
                     onClick={this.RefPoint}
                 >+ Point</Button>
@@ -131,7 +144,7 @@ export default class PointContainer extends React.Component {
                 >+ Profile</Button>
             </Panel>
         }
-        
+
         return (
             <div>
                 {point}
@@ -150,4 +163,3 @@ PointContainer.propTypes = {
     fetchProfile: PropTypes.func,
     point: PropTypes.object
 };
-  
