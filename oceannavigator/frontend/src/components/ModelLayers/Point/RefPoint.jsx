@@ -25,6 +25,7 @@ export default class RefPoint extends React.Component {
     }
 
     updatePoint() {
+        console.warn("UPDATE POINT")
         try {
             let old = this.state.point_layer;
 
@@ -34,7 +35,7 @@ export default class RefPoint extends React.Component {
                 z: [this.props.depth],
                 type: 'scatter3d',
             }
-
+            console.warn("CALLING UPDATEDATALAYER()")
             this.props.updateDataLayer(old, line_3d);
             this.setState({
                 point_layer: line_3d,

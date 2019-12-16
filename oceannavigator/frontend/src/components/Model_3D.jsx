@@ -113,10 +113,11 @@ export default class Model_3D extends React.Component {
         (can also be used to create a new layer by providing undefined as the old one)
     */
     updateDataLayer(old, layer) {
-        console.warn("UPDATE DATA LAYER: ", old, layer);
+        console.warn("CALLING UPDATEDATALAYER(): ", old, layer);
         try {
             let layers = this.state.layers;//jQuery.extend([], this.state.layers);
             if (old === undefined) {
+                console.warn("NEW LAYER (IE. OLD IS UNDEFINED)")
                 layers.push(layer);
                 this.setState({
                     layers: layers
