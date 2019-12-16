@@ -136,9 +136,7 @@ export default class PointContainer extends React.Component {
                     updateDataLayer={this.props.updateDataLayer}
                     removeDataLayer={this.props.removeDataLayer}
                 ></RefPoint>
-                <Button
-                    onClick={this.RefPoint}
-                >+ Point</Button>
+                
                 <Button
                     onClick={() => this.props.fetchProfile(this.state.point)}
                 >+ Profile</Button>
