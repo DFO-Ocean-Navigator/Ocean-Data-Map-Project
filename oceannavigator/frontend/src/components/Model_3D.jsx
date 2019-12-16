@@ -257,6 +257,7 @@ export default class Model_3D extends React.Component {
                         y: lat_corners,
                         type: 'scatter3d',
                         mode: 'markers',
+                        showscale: false,
                         marker: {color: corner_colour}
                         //colorscale: 'Viridis',
                     }
