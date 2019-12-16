@@ -63,9 +63,9 @@ export default class RefLine extends React.Component {
     render() {
 
         let removeButton = [];
-        let addButtonIcon = ['+', _(" Pin")];
+        let addButtonIcon = '+';
         if (this.state.vLine !== undefined) {
-            addButtonIcon = [<Icon icon='undo'/>, _(" Pin")]
+            addButtonIcon = <Icon icon='undo'/>
             removeButton = <Button
                 onClick={this.removeLine}
             >X</Button>
@@ -75,7 +75,7 @@ export default class RefLine extends React.Component {
             <div>
                 <Button
                     onClick={this.updateLine}
-                >{addButtonIcon}</Button>
+                >{addButtonIcon}{_(" Pin")}</Button>
                 {removeButton}    
             </div>
         )
