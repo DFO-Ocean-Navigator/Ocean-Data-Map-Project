@@ -23,7 +23,7 @@ export default class LocationMap extends React.Component {
         if (this.props.corners !== undefined) {
             let query = {
                 points: [this.props.corners],//[[51.35531765447794, -49.211058497428894], [51.39920197206365, -47.52356278896332], [50.24439496210104, -47.4532459974289], [50.0641879487261, -49.49230420589448], [51.35531765447794, -49.211058497428894]]
-                colours: ['orange', 'red', 'green', 'blue']
+                colours: ['orange', 'red', 'blue', 'green']
             }
 
             this.loadImage(query);
