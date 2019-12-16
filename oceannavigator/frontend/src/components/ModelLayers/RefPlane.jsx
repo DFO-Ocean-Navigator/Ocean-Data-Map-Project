@@ -87,7 +87,7 @@ export default class RefPlane extends React.Component {
     }
 
     removePanel() {
-        this.props.removeDataPanel(this.props.id, this.state.surface);
+        this.props.removePanel(this.props.id, this.state.surface);
     }
 
     updateDepth(e) {
