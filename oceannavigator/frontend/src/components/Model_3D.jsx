@@ -6,7 +6,7 @@ import BathLayer from './ModelLayers/BathLayer.jsx';
 import RefPlane from './ModelLayers/RefPlane.jsx';
 import PointContainer from './ModelLayers/Point/PointContainer.jsx';
 import PropTypes from "prop-types";
-import Profile from "./ModelLayers/Profile.jsx";
+import LocationMap from "./ModelLayers/LocationMap.jsx";
 
 const stringify = require("fast-stable-stringify");
 const i18n = require("../i18n.js");
