@@ -119,8 +119,10 @@ export default class Model_3D extends React.Component {
             if (old === undefined) {
                 console.warn("NEW LAYER (IE. OLD IS UNDEFINED)")
                 layers.push(layer);
+                
                 this.setState({
-                    layers: layers
+                    layers: layers,
+                    revision: this.state.revision + 1,
                 })
                 return
             }
