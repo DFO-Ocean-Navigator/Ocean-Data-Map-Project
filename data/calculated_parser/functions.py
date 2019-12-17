@@ -462,44 +462,6 @@ def criticaldepth(depth, lat, temperature, salinity):
     
     speed = sspeed(depth, lat, temperature, salinity)
 
-
-    """
-    #VECTORIZING -- INCOMPLETE
-    marray = np.ma.masked_array(speed, np.isnan(speed))
-    min_idx = marray.argmin(axis=0)
-    old_shape = min_idx.shape
-    min_idx = min_idx.reshape(min_idx.shape[0] * min_idx.shape[1])
-    deep_mask = min_idx[:, None] < np.arange(50)
-    deep_mask = deep_mask.transpose().reshape(50, old_shape[0], old_shape[1])
-
-    shallow_mask = min_idx[:,None] > np.arange(50)
-    shallow_mask = shallow_mask.transpose().reshape(50, old_shape[0], old_shape[1])
-
-    deep_array = np.array(marray)
-    shallow_array = np.array(marray)
-    deep_array[shallow_mask] = np.nan
-    shallow_array[deep_mask] = np.nan
-
-    # Use the shallow array to find the Sonic Layer Depth
-    shallow_array = np.ma.masked_array(shallow_array, np.isnan(shallow_array))
-    deep_array = np.ma.masked_array(deep_array, np.isnan(deep_array))
-    
-    #max_idx = shallow_array.argmax(axis=0)
-
-    max_vals = np.amax(shallow_array, axis=0)
-
-    # Use the deep array and the Sonic Layer Value to find the Critical Depth
-    cd_idx = np.abs(deep_array - max_vals).argmin(axis=0)
-
-    print(something)
-    # Mask all zero values (Critical Depth doesn't exist)
-    cd_idx = np.ma.masked_array(cd_idx, cd_idx == 0)
-
-    # Prepare Interpolation
-    cd_next_idx = cd_idx + 1
-    cd_prev_idx = cd_idx - 1
-    """
-
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
