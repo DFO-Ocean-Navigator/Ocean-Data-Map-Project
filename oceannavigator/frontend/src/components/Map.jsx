@@ -1063,7 +1063,9 @@ export default class Map extends React.PureComponent {
     });
 
     draw.set("type", "multiPoint");
-    
+    draw.on("drawend", function(e) {
+      console.warn("END DRAWING")
+    })
     /*
     draw.on("drawend", function(e) {
       // Disable zooming when drawing
