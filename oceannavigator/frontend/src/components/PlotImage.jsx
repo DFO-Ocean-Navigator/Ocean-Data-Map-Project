@@ -144,8 +144,6 @@ export default class PlotImage extends React.PureComponent {
       promise.fail(function(xhr) {
         if (this._mounted) {
           // Get our custom error message
-
-          console.warn('xhr: ', xhr)
           try {
             const message = JSON.parse(xhr.responseText).message;
             this.setState({

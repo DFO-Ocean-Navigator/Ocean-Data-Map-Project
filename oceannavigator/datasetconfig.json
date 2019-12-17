@@ -342,6 +342,7 @@
                 "zero_centered": "true"
             },
             "magwatervel": {
+                "envtype": "ocean",
                 "name": "Water Velocity",
                 "unit": "m/s",
                 "scale": [0, 3],
@@ -375,6 +376,7 @@
                 "hide": "false"
             },
             "magicevel": {
+                "envtype": "ocean",
                 "name": "Sea Ice Velocity",
                 "unit": "m/s",
                 "scale": [0, 1],
@@ -678,6 +680,7 @@
                     "dims": ["time", "yc", "xc"]
                 },
                 "magwatervel": {
+                    "envtype": "ocean",
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3],
@@ -685,6 +688,7 @@
                     "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)"
                 },
                 "vomecrtn": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water North Velocity",
                     "scale": [
@@ -697,6 +701,7 @@
                     "zero_centered": "true"
                 },
                 "vozocrte": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water East Velocity",
                     "scale": [
@@ -762,6 +767,7 @@
                     "zero_centered": "true"
                 },
                 "iicevele": {
+                    "envtype": "ocean",
                     "name": "Sea Ice East Velocity",
                     "scale": [
                         -1,
@@ -774,6 +780,7 @@
                     "hide": "false"
                 },
                 "iiceveln": {
+                    "envtype": "ocean",
                     "name": "Sea Ice North Velocity",
                     "scale": [
                         -1,
@@ -786,6 +793,7 @@
                     "hide": "false"
                 },
                 "magicevel": {
+                    "envtype": "ocean",
                     "name": "Sea Ice Velocity",
                     "unit": "m/s",
                     "scale": [0, 1],
@@ -930,6 +938,7 @@
                     "zero_centered": "true"
                 },
                 "vomecrtn": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water North Velocity",
                     "scale": [
@@ -942,6 +951,7 @@
                     "zero_centered": "true"
                 },
                 "vozocrte": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water East Velocity",
                     "scale": [
@@ -954,6 +964,7 @@
                     "zero_centered": "true"
                 },
                 "magwatervel": {
+                    "envtype": "ocean",
                     "name": "Water Velocity",
                     "unit": "m/s",
                     "scale": [0, 3],
@@ -961,6 +972,7 @@
                     "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)"
                 },
                 "iicevele": {
+                    "envtype": "ocean",
                     "name": "Sea Ice East Velocity",
                     "scale": [
                         -1,
@@ -973,6 +985,7 @@
                     "hide": "false"
                 },
                 "iiceveln": {
+                    "envtype": "ocean",
                     "name": "Sea Ice North Velocity",
                     "scale": [
                         -1,
@@ -985,6 +998,7 @@
                     "hide": "false"
                 },
                 "magicevel": {
+                    "envtype": "ocean",
                     "name": "Sea Ice Velocity",
                     "unit": "m/s",
                     "scale": [0, 1],
@@ -1116,6 +1130,7 @@
                     "equation": "magnitude(vozocrtx * cos_alpha - vomecrty * sin_alpha, vozocrtx * sin_alpha + vomecrty * cos_alpha)"
                 },
                 "vomecrtn": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water North Velocity",
                     "scale": [
@@ -1128,6 +1143,7 @@
                     "zero_centered": "true"
                 },
                 "vozocrte": {
+                    "envtype": "ocean",
                     "hide": "false",
                     "name": "Water East Velocity",
                     "scale": [

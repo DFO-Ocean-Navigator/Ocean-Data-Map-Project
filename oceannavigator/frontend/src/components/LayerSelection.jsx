@@ -123,7 +123,7 @@ export default class LayerSelection extends React.Component {
                         {enabled_layers}  
                     </Nav>
                     <div className='vertical versionNumber'>
-                        v 4.0.0
+                        v 5.0.1
                     </div>
                 </div>
 
