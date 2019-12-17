@@ -1065,7 +1065,7 @@ export default class Map extends React.PureComponent {
     draw.set("type", "multiPoint");
     draw.on("drawend", function(e) {
       this.props.updateState("plotEnabled", true);
-    })
+    }.bind(this))
     /*
     draw.on("drawend", function(e) {
       // Disable zooming when drawing
