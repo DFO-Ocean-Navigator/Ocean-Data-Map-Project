@@ -1064,7 +1064,7 @@ export default class Map extends React.PureComponent {
 
     draw.set("type", "multiPoint");
     draw.on("drawend", function(e) {
-      console.warn("END DRAWING")
+      this.props.updateState("plotEnabled", true);
     })
     /*
     draw.on("drawend", function(e) {
