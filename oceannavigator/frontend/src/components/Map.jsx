@@ -1057,7 +1057,7 @@ export default class Map extends React.PureComponent {
 
     //this.resetMap();
 
-    let draw = new ol.interaction.Draw({
+    let draw = new olinteraction.Draw({
       source: this.vectorSource,
       type: "Point",
     });
