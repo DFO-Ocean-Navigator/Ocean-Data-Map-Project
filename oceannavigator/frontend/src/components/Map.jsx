@@ -1063,10 +1063,7 @@ export default class Map extends React.PureComponent {
     });
 
     draw.set("type", "multiPoint");
-
-    draw.on("singleclick", function(e) {
-      this.props.updateState("plotEnabled", true);
-    })
+    
     /*
     draw.on("drawend", function(e) {
       // Disable zooming when drawing

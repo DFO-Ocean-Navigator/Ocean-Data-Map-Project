@@ -569,15 +569,15 @@ export default class MapToolbar extends React.Component {
         }}
         
       >
-       <Icon icon='times-circle'/> {_("Disable Multi-Select")} 
+       <Icon icon='times-circle'/> {_("End Selection")} 
       </NavItem>
-      <NavItem 
+      {/* <NavItem 
         name="plot"
         onClick={this.buttonHandler}
         disabled={!this.props.plotEnabled}
       >
         <Icon icon='line-chart' /> {_("Plot")}
-      </NavItem>
+      </NavItem> */}
           
       <OverlayTrigger
         placement="bottom"
