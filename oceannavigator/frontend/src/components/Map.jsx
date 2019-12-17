@@ -910,7 +910,7 @@ export default class Map extends React.PureComponent {
     let lonlat = this.vectorSource.getFeatures();
 
     lonlat.forEach((t) => {
-      const converted = ol.proj.transform(t.getGeometry().getCoordinates(), "EPSG:3857", "EPSG:4326")
+      const converted = olproj.transform(t.getGeometry().getCoordinates(), "EPSG:3857", "EPSG:4326")
       features.push([converted[1], converted[0]])
     });
     //this.drawing = true;
