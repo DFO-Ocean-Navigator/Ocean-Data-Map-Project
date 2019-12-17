@@ -323,11 +323,11 @@
         }
         .monthContainer {
             overflow: auto;
-            overflow-x: hidden;
+            //overflow-x: hidden;
             transform: rotate(-90deg);
             
             position: relative;
-            display: inline-block;
+            display: block;
 
             width: 30px;
             left: 30px;
