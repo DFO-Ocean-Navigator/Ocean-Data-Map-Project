@@ -114,6 +114,7 @@ export default class PointContainer extends React.Component {
                     title={_("Location")}
                     onUpdate={this.onLocalUpdate}
                 />
+                <label>{_("Depth:")}</label>
                 <NumericInput
                     value={this.state.depth}
                     precision={0}
