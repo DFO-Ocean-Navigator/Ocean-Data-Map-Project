@@ -476,6 +476,8 @@ def criticaldepth(depth, lat, temperature, salinity):
                             cd_depth = np.nan
                     else:
                         cd_depth = np.nan
+                else:
+                    cd_depth = np.nan
             else:
                 cd_depth = np.nan
 
