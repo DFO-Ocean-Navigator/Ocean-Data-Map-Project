@@ -1,12 +1,5 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
 import {Checkbox, Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
-import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
-import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
