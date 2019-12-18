@@ -39,8 +39,8 @@ export default class LayerWrap extends React.Component {
   }
 
   removeLayer(map, dataset, variable, idx) {
-    this.removeTimeSource(map, dataset, variable)
-    this.removeData(map, dataset, variable, idx)
+    //this.removeTimeSource(map, dataset, variable)
+    //this.removeData(map, dataset, variable, idx)
 
     let layers = this.state.layers
     let i = layers.indexOf(idx)
