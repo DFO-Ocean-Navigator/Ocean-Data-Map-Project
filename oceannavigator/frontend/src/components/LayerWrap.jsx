@@ -22,8 +22,7 @@ export default class LayerWrap extends React.Component {
 
     this.addLayer = this.addLayer.bind(this);
     this.removeLayer = this.removeLayer.bind(this);
-    this.removeTimeSource = this.removeTimeSource.bind(this);
-    this.removeData = this.removeData.bind(this);
+    
   }
 
   addLayer() {
