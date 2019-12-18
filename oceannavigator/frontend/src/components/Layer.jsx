@@ -145,9 +145,9 @@ export default class Layer extends React.Component {
 
     // Not null, we need to remove old data before adding new
     // This MIGHT be DEPRECATED
-    if (dataset !== null && dataset !== undefined) {
+    /*if (dataset !== null && dataset !== undefined) {
       this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
-    }
+    }*/
 
     // Ensures we have the required data to continue
     if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
@@ -275,7 +275,7 @@ export default class Layer extends React.Component {
 
     const depths_promise = $.ajax("/api/v1.0/depth/?dataset=" + this.state.current_dataset + '&variable=' + variable)
 
-    this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    //this.props.removeData(this.state.current_map, this.state.current_dataset, this.state.current_variable, this.props.value)
     let scale = this.props.datasetconfig[this.state.current_dataset].variables[variable].scale;
     this.setState({
       current_variable: variable,
@@ -360,7 +360,7 @@ export default class Layer extends React.Component {
     }
 
     let old_map = this.state.current_map
-    this.props.removeData(old_map, this.state.current_dataset, this.state.current_variable, this.props.value)
+    //this.props.removeData(old_map, this.state.current_dataset, this.state.current_variable, this.props.value)
 
     let current_map;
 
