@@ -53,7 +53,7 @@ colormaps = {
     'surface height': cmocean.cm.balance,
     'surface elevation': cmocean.cm.balance,
     'velocity': cmocean.cm.delta,
-    'magwatervel': cmocean.cm.delta,
+    'magwatervel': cmocean.cm.speed,
     'waveheight': cmocean.cm.amp,
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
