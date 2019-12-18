@@ -40,24 +40,12 @@ export default class AreaWindow extends React.Component {
     this.state = {
       currentTab: 1, // Currently selected tab
       plot_query: undefined,
-
-      //scale: props.scale + ",auto",
-      //scale_1: props.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
       colormap_diff: "default",
       data: {},
       data_compare: {},
-      //dataset_0: {
-      //dataset: props.dataset_0.dataset,
-      //variable: props.dataset_0.variable,
-      //dataset_quantum: props.dataset_0.dataset_quantum,
-      //time: props.dataset_0.time,
-      //depth: props.dataset_0.depth,
-      //},
-      // Should dataset/variable changes in this window
-      // propagate to the entire site?
       syncLocalToGlobalState: false,
       dataset_compare: false,
       showarea: true,
@@ -82,8 +70,6 @@ export default class AreaWindow extends React.Component {
       dpi: 144, // Plot DPI
       output_timerange: false,
       output_variables: "",
-      //output_starttime: props.dataset_0.time,
-      //output_endtime: props.dataset_0.time,
       output_format: "NETCDF4", // Subset output format
       convertToUserGrid: false,
       zip: false, // Should subset file(s) be zipped
@@ -144,22 +130,6 @@ export default class AreaWindow extends React.Component {
     }
   }
 
-  /*
-  onTimeUpdate(key, value) {
-    let new_state = this.props.state
-    if (typeof(key) === typeof('string')) {
-      value = moment(value.valueOf())
-      value.tz('GMT')
-
-      new_state[key] = value
-    } else {
-      value = moment(key.valueOf())
-      value.tz('GMT')
-
-      new_state.time = value
-    }
-    this.props.onUpdate(jQuery.extend({}, new_state))
-  }*/
 
   /*
     If selected_right is null, empty, or undefined, will only load left map data
@@ -281,35 +251,6 @@ export default class AreaWindow extends React.Component {
     });
   }
 
-  /*
-  componentDidUpdate(prevProps, prevState) {
-    
-    if (this._mounted && stringify(prevProps) !== stringify(this.props)) {
-      if (prevProps.scale !== this.props.scale) {
-        if (this.state.scale.indexOf("auto") !== -1) {
-          this.setState({
-            scale: this.props.scale + ",auto"
-          });
-        } else {
-          this.setState({
-            scale: this.props.scale,
-          });
-        }
-      }
-
-      // Update time indices
-      if (prevProps.dataset_0.time !== this.state.dataset_0.time) {
-        this.setState(
-          {
-            output_starttime: this.props.dataset_0.time,
-            output_endtime: this.props.dataset_0.time
-          }
-        );
-      }
-    }
-    
-  }*/
-
 
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
@@ -319,69 +260,7 @@ export default class AreaWindow extends React.Component {
   }
 
   onLocalUpdate(key, value) {
-    /*
-    if (this._mounted) {
 
-      /*
-      // Passthrough to capture selected variables from DatasetSelector for StatsTable
-      if (key === "dataset_0") {
-        if (this.state.currentTab === 2 && value.hasOwnProperty("variable")) {
-          this.setState({
-            variable: value.variable
-          });
-        }
-
-        this.setState({dataset_0: value,});
-
-        // TODO: prevent the navigator trying to get tiles for multiple variables...only one
-        // variable should be passed up.
-        if (this.state.syncLocalToGlobalState) {
-          this.props.onUpdate(key, value);
-        }
-
-        return;
-      }
-      
-
-      let newState = {};
-      if (typeof(key) === "string") {
-        newState[key] = value;
-      } else {
-        for (let i = 0; i < key.length; i++) {
-          newState[key[i]] = value[i];
-        }
-      }
-      this.setState(newState);
-
-      if (this.state.syncLocalToGlobalState) {
-        this.props.onUpdate(key, value);
-
-        let parentKeys = [];
-        let parentValues = [];
-
-        if (newState.hasOwnProperty("variable_scale")) {
-          if (typeof(this.state.variable) === "string" ||
-            this.state.variable.length === 1) {
-            parentKeys.push("variable_scale");
-            parentValues.push(newState.variable_scale);
-          }
-        }
-
-        if (newState.hasOwnProperty("variable")) {
-          if (typeof(this.state.variable) === "string") {
-            parentKeys.push("variable");
-            parentValues.push(newState.variable);
-          } else if (this.state.variable.length === 1) {
-            parentKeys.push("variable");
-            parentValues.push(newState.variable[0]);
-          }
-        }
-
-        if (parentKeys.length > 0) {
-          this.props.onUpdate(parentKeys, parentValues);
-        }
-      }
-  }*/
     if (this._mounted) {
 
       let newState = this.state;
@@ -399,12 +278,7 @@ export default class AreaWindow extends React.Component {
           newState[key[i]] = value[i];
         }
       }
-
       this.setState(newState);
-
-      /*this.setState({
-        [key]: value
-      })*/
     }
   }
 
@@ -478,9 +352,7 @@ export default class AreaWindow extends React.Component {
     }
     switch (this.state.currentTab) {
       case 1:
-        //this.plotQuery = undefined
 
-        //if (this.plot_query === undefined) {
         let plotQuery = {
           dataset: this.state.data.dataset,
           quantum: this.state.data.dataset_quantum,
@@ -537,8 +409,6 @@ export default class AreaWindow extends React.Component {
 
         break;
     }
-    //this.render()
-
   }
 
   render() {

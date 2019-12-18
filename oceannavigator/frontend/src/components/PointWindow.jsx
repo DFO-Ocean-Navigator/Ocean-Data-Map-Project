@@ -425,12 +425,7 @@ export default class PointWindow extends React.Component {
     _("Colourmap");
     _("Saved Image Size");
 
-
-    /*let dataSelection = <DataSelection
-      data={this.props.data}
-      localUpdate={this.updateData}
-    ></DataSelection>*/
-
+    
     // Rendered across all tabs
     if (this.props.point.length === 1) {
       <div>

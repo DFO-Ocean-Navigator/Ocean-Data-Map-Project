@@ -167,17 +167,6 @@ export default class PlotImage extends React.PureComponent {
   }
 
   formatTime(time) {
-    //let year = time.getUTCFullYear()
-    //let month = time.getUTCMonth()
-    //if (month.toString().length === 1) {
-    //  month = '0' + month
-    //}
-    //let date = time.getUTCDate()
-    //if (date.toString().length === 1) {
-    //  date = '0' + date
-    //}
-    //let hour = time.getUTCHours()
-    //time = year + '-' + month + '-' + date + 'T' + hour + ':00:00+00:00'
     if (time === undefined) {
       return
     }
