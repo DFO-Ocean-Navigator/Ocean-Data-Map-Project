@@ -51,6 +51,7 @@ colormaps = {
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
+    'votemper': cmocean.
     'surface elevation': cmocean.cm.balance,
     'velocity': cmocean.cm.delta,
     'waveheight': cmocean.cm.amp,
@@ -141,7 +142,7 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'neo_sst.txt'))),
     'BuYlRd': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
-    'temperature': mcolors.ListedColormap(
+    'votemper': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
 }
 colormaps['wind'] = colormaps['velocity']
@@ -200,7 +201,7 @@ colormap_names = {
     'salinity': 'Salinity',
     'silicate': 'Silicate',
     'speed': 'Speed',
-    'temperature': 'Temperature',
+    'votemper': 'Temperature',
     'transparent': 'Transparent',
     'velocity': 'Velocity',
     'waveheight': 'Wave Height',
