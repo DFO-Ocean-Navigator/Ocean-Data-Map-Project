@@ -32,9 +32,6 @@ export default class LineWindow extends React.Component {
    
     this.state = {
       selected: 1,
-      //scale: props.scale + ",auto",
-      //scale_1: props.scale_1 + ",auto",
-      //scale_diff: "-10,10,auto",
       data: {},
       data_compare: {},
       colormap: "default",
@@ -170,7 +167,6 @@ export default class LineWindow extends React.Component {
     
   }
 
-
   /*
     Populates all the variables available in the dataset
   */
@@ -189,10 +185,6 @@ export default class LineWindow extends React.Component {
             return d.id;
           });
 
-          //if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
-          //  this.props.onUpdate("variable", vars[0]);
-          //}
-
           this.setState({
             variables: data.map(function (d) {
               return d.id;
@@ -201,7 +193,6 @@ export default class LineWindow extends React.Component {
             this.updatePlot()
           });
         }
-        //this.updatePlot()
       }.bind(this),
 
       error: function (xhr, status, err) {
@@ -275,12 +266,7 @@ export default class LineWindow extends React.Component {
           }
         }
       }
-      
       this.setState(newState);
-      
-      /*this.setState({
-        [key]: value
-      })*/
     }
   }
 
@@ -292,7 +278,6 @@ export default class LineWindow extends React.Component {
       return
     }
 
-    
     const plot_query = {
       dataset: this.state.data.dataset,
       quantum: this.state.data.dataset_quantum,
@@ -605,10 +590,6 @@ export default class LineWindow extends React.Component {
       </div></div>;
     }
     
-    
-
-
-
     // Input panels
     const leftInputs = [global];
     const rightInputs = [dataset];
