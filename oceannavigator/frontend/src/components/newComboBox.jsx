@@ -32,9 +32,7 @@ export default class NewComboBox extends React.Component {
     for (let i = 0; i < value_list.length; i += 1) {
       idx_list.push(i)
     }
-    //for (let i = 0; i < value_list.length; i += 1) {
     
-    //}
     if (id_list === [] || value_list === []) {
       id_list = ['ERROR']
       value_list = ['ERROR']
@@ -117,10 +115,8 @@ export default class NewComboBox extends React.Component {
         key: self.state.id_list[o],
         value: self.state.id_list[o],
       };
-
-
+      
       //Checks if each value in data has id or value
-    
       return React.createElement("option", opts, self.state.value_list[o]);    //Creates Option that was found
     });
 
