@@ -794,7 +794,7 @@ export default class MapToolbar extends React.Component {
                 target="_blank"
                 href="/documentation/"
               >
-                API
+                {_("API")}
               </NavItem>
             </OverlayTrigger>
             <OverlayTrigger
