@@ -514,14 +514,14 @@ export default class PointWindow extends React.Component {
             className='scale'
             id='xminScale'
             value={this.state.xminScale}
-            placeholder='min'
+            placeholder={_('min')}
           ></input>,
             <input
             onChange={this.updateScale}
             className='scale'
             id='xmaxScale'
             value={this.state.xmaxScale}
-            placeholder='max'
+            placeholder={_('max')}
           ></input>
         </div>
       </div>
@@ -537,14 +537,14 @@ export default class PointWindow extends React.Component {
             className='scale'
             id='yminScale'
             value={this.state.yminScale}
-            placeholder='min'
+            placeholder={_('min')}
           ></input>,
             <input
             onChange={this.updateScale}
             className='scale'
             id='ymaxScale'
             value={this.state.ymaxScale}
-            placeholder='max'
+            placeholder={_('max')}
           ></input>
         </div>
       </div>
@@ -561,7 +561,7 @@ export default class PointWindow extends React.Component {
             className='label'
             id='title'
             value={this.state.title}
-            placeholder='Plot Title'
+            placeholder={_('Plot Title')}
           ></input>
         </div>
         <div className='label_container'>
@@ -573,7 +573,7 @@ export default class PointWindow extends React.Component {
             className='label'
             id='xlabel'
             value={this.state.xlabel}
-            placeholder='X-Axis Label'
+            placeholder={_('X-Axis Label')}
           ></input>
         </div>
         
@@ -586,7 +586,7 @@ export default class PointWindow extends React.Component {
             className='label'
             id='ylabel'
             value={this.state.ylabel}
-            placeholder='Y-Axis Label'
+            placeholder={_('Y-Axis Label')}
           ></input>
         </div>
       </div>
