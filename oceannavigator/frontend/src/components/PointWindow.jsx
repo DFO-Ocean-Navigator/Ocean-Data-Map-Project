@@ -506,7 +506,7 @@ export default class PointWindow extends React.Component {
     const xscale = (
       <div className='scale_container' key='xscale'>
         <div className='scale_header'>
-          X-Axis Scale:
+          {_("X-Axis Scale: ")}
           </div>
         <div className='input_container'>
           <input
@@ -529,7 +529,7 @@ export default class PointWindow extends React.Component {
     const yscale = (
       <div className='scale_container' key='yscale'>
         <div className='scale_header'>
-          Y-Axis Scale:
+          {_("Y-Axis Scale: ")}
         </div>
         <div className='input_container'>
           <input
@@ -554,7 +554,7 @@ export default class PointWindow extends React.Component {
     const label = <div className='label_container' key='label'>
         <div className='label_container'>
           <div className='label_header'>
-            Plot Title:
+            {_("Plot Title: ")}
           </div>
           <input
             onChange={this.updateScale}
@@ -566,7 +566,7 @@ export default class PointWindow extends React.Component {
         </div>
         <div className='label_container'>
           <div className='label_header'>
-            X-Axis Label:
+            {_("X-Axis Label: ")}
           </div>
           <input
             onChange={this.updateScale}
@@ -579,7 +579,7 @@ export default class PointWindow extends React.Component {
         
         <div className='label_container'>
           <div className='label_header'>
-            Y-Axis Label:
+            {_("Y-Axis Label: ")}
           </div>
           <input
             onChange={this.updateScale}
@@ -683,7 +683,7 @@ export default class PointWindow extends React.Component {
         def=''
         onUpdate={this.onLocalUpdate}
         url={"/api/v1.0/variables/?3d_only&dataset=" + this.state.dataset}
-        title={_("Variable")}><h1>Variable</h1></ComboBox>
+        title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <ComboBox
         key='depth'
@@ -847,7 +847,7 @@ export default class PointWindow extends React.Component {
               {inputs}
               <Button
                 onClick={this.updatePlot}
-              >Apply Changes</Button>
+              >{_("Apply Changes")}</Button>
             </Panel>
           </Col>
           <Col lg={9}>

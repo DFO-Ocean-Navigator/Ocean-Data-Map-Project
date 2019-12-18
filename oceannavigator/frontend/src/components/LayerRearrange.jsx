@@ -69,6 +69,8 @@ export default class LayerRearrange extends React.PureComponent {
 
   render() {
 
+    _("Layers")
+
     let layers = []
     var self = this;
 
@@ -90,7 +92,7 @@ export default class LayerRearrange extends React.PureComponent {
           <Button
             className='showLayers'
             onClick={this.showLayers}
-          >Layers</Button>
+          >{_("Layers")}</Button>
           { layers }
         </div >
         

@@ -458,7 +458,7 @@ export default class LineWindow extends React.Component {
     let applyChanges2 = <Button
       key='2'
       onClick={this.updatePlot}
-      >Apply Changes
+      >{_("Apply Changes")}
     </Button>
     var transectSettings
     if (this._mounted) {
@@ -514,7 +514,7 @@ export default class LineWindow extends React.Component {
     let applyChanges3 = <Button
       key='3'
       onClick={this.updatePlot}
-      >Apply Changes
+      >{_("Apply Changes")}
     </Button>
     var dataset = null
     if (this.state.data.scale !== undefined) {

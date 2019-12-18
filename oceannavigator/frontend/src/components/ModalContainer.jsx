@@ -182,7 +182,7 @@ export default class ModalContainer extends React.Component {
       }
 
     } else if (this.props.map !== null) {
-      modalContent = [<div>Unfortunately multi-layer plotting is not currently supported. Please select a layer before continuing</div>]
+      modalContent = [<div>{_("Unfortunately multi-layer plotting is not currently supported. Please select a layer before continuing")}</div>]
       
       modalContent.push(<SelectMapLayer
         map={this.props.map}
@@ -207,7 +207,7 @@ export default class ModalContainer extends React.Component {
         <Button
           onClick={this.apply}
           disabled={dataAvailable}
-        >PLOT</Button>
+        >{_("PLOT")}</Button>
       )
 
     }
