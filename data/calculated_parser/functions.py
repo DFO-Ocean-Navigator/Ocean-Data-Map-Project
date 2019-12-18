@@ -11,6 +11,7 @@ from metpy.units import units
 from pint import UnitRegistry
 from scipy.signal import argrelextrema
 from scipy.stats import linregress
+
 _ureg = UnitRegistry()
 
 # All functions in this file (that do not start with an underscore) will be
@@ -385,20 +386,29 @@ def soundchannelaxis(depth, lat, temperature, salinity):
     """
     
     speed = sspeed(depth, lat, temperature, salinity)
-    result = np.empty((speed.shape[-2], speed.shape[-1]))
-    for x in range(speed.shape[-1]):
-        for y in range(speed.shape[-2]):
-            speed_point = speed[:,y,x]
-            if count_numerical_vals(speed_point) != 0:
-                idx = find_sca_idx(speed_point)
-                if np.isnan(idx):
-                    result[y,x] = idx
-                else:
-                    result[y,x] = depth.values[idx]
-            else:
-                result[y,x] = np.nan
-                
-    return result
+    
+    # Mask Array to allow for min index search
+    array = np.ma.masked_array(speed, np.isnan(speed))
+
+    # Find index's of minimum values
+    min_idx = array.argmin(axis = 0)
+
+    # Pull depths at minimum value
+    new = np.take(depth.values, min_idx)
+    old_shape = new.shape
+
+    # Flatten
+    new = new.reshape(new.shape[0] * new.shape[1])
+    
+    # Remove Surface Values
+    nan_idx = np.where(new == depth.values[0])
+    np.put(new, nan_idx, np.nan)
+    
+    # Unflatten
+    new = new.reshape(old_shape)
+
+    
+    return new
 
 def soniclayerdepth(depth, lat, temperature, salinity):
     """
@@ -417,27 +427,26 @@ def soniclayerdepth(depth, lat, temperature, salinity):
     
     # Find speed of sound
     speed = sspeed(depth, lat, temperature, salinity)
-    result = np.empty((speed.shape[-2], speed.shape[-1]))
-    for x in range(speed.shape[-1]):
-        for y in range(speed.shape[-2]):
-            speed_point = speed[:,y,x]
-            if (count_numerical_vals(speed_point) != 0):
-                
-                sca_idx = find_sca_idx(speed_point)
-                if (np.isnan(sca_idx)):
-                    result[y,x] = sca_idx
-                else:
-                    sld_idx = find_sld_idx(sca_idx, speed_point)
 
-                    if (np.isnan(sld_idx)):
-                        result[y,x] = sld_idx
-                    else:
-                        sld = depth.values[sld_idx]
-                        result[y,x] = sld
-            else:
-                result[y,x] = np.nan
+    marray = np.ma.masked_array(speed, np.isnan(speed))
+    min_idx = marray.argmin(axis=0)
+    old_shape = min_idx.shape
+    min_idx = min_idx.reshape(min_idx.shape[0] * min_idx.shape[1])
+    mask = min_idx[:,None] < np.arange(50)
+    mask = mask.transpose().reshape(50, old_shape[0], old_shape[1])
+    marray[mask] = np.nan
 
-    return result # Only return one horizontal slice
+    # Re-Apply Mask
+    marray = np.ma.masked_array(marray, np.isnan(marray))
+    max_idx = marray.argmax(axis=0)
+    new = np.take(depth.values, max_idx)
+
+    new = new.reshape(new.shape[0] * new.shape[1])
+    nan_idx = np.where(new == depth.values[0])
+    np.put(new, nan_idx, np.nan)
+    new = new.reshape(old_shape)
+    
+    return new # Only return one horizontal slice
 
 def criticaldepth(depth, lat, temperature, salinity):
     """
@@ -450,7 +459,9 @@ def criticaldepth(depth, lat, temperature, salinity):
     salinity: The salinity (at all depths) (unitless)
     """
 
+    
     speed = sspeed(depth, lat, temperature, salinity)
+
     result = np.empty((speed.shape[-2], speed.shape[-1]))
     for x in range(speed.shape[-1]):
         for y in range(speed.shape[-2]):
