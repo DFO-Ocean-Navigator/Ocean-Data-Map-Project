@@ -7,7 +7,7 @@ import * as olcontrol from "ol/control";
 import * as olsource from "ol/source";
 import * as ollayer from "ol/layer";
 import ReactSimpleRange from "react-simple-range";
-import IceComboBox from "./GenericComboBox.jsx/index.js";
+import GenericComboBox from "./GenericComboBox.jsx";
 import NewComboBox from "./newComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
 const i18n = require("../i18n.js");
@@ -869,23 +869,23 @@ export default class Layer extends React.Component {
     let depth = []
     if (this.state.depths.length > 0) {
       if (this.props.layerType === 'ocean') {
-        depth.push(<IceComboBox
+        depth.push(<GenericComboBox
           data={this.state.depths}
           current={this.state.current_depth}
           localUpdate={this.localUpdate}
           key='depth'
           name='current_depth'
           title={_("Depth")}
-        ></IceComboBox>)
+        ></GenericComboBox>)
       } else if (this.props.layerType === 'met') {
-        depth.push(<IceComboBox
+        depth.push(<GenericComboBox
           data={this.state.depths}
           current={this.state.current_depth}
           localUpdate={this.localUpdate}
           key='depth'
           name='current_depth'
           title={_("Altitude")}
-        ></IceComboBox>)
+        ></GenericComboBox>)
       }
     }
 
@@ -955,14 +955,14 @@ export default class Layer extends React.Component {
         {depth}
         {this.range}
 
-        <IceComboBox
+        <GenericComboBox
           data={this.props.state.display}
           current={this.state.current_display}
           localUpdate={this.localUpdate}
           key='current_display'
           name='current_display'
           title={_("Display")}
-        ></IceComboBox>
+        ></GenericComboBox>
 
         <ComboBox
           id='current_colourmap'

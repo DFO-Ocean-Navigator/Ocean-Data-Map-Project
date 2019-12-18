@@ -757,49 +757,6 @@ export default class AreaWindow extends React.Component {
             date={timeObj}
             onTimeUpdate={this.onTimeUpdate}
           ></TimePicker>
-          {/*
-          <TimePicker
-            id='output_starttime'
-            key='starttime'
-            state={this.state.output_starttime}
-            //def=''
-            quantum={this.state.data.quantum}
-            date={this.state.data.time}
-            onTimeUpdate={}
-            //url={"/api/timestamps/?dataset=" +
-            //  this.state.data.dataset +
-            //  "&quantum=" +
-            //  this.state.data.quantum}
-            //title={this.state.output_timerange ? _("Start Time") : _("Time")}
-            
-            //onUpdate={(key, value) => { this.setState({ output_starttime: value, }); }}
-            //max={this.state.data.time + 1}
-            //updateDate={this.updateDate}
-          />
-          */}
-          {/* 
-          <div style={{ display: this.state.output_timerange ? "block" : "none", }}>
-            <TimePicker
-              id='output_endtime'
-              startid='output_starttime'
-              range={true}
-              key='time'
-              dataset={this.state.data.dataset}
-              quantum={this.state.data.quantum}
-              startDate={this.state.output_starttime}
-              date={this.state.output_endtime}
-              //state={this.state.output_endtime}
-              //def=''
-              //url={"/api/timestamps/?dataset=" +
-              //  this.state.data.dataset +
-              //  "&quantum=" +
-              //  this.state.data.quantum}
-              //title={_("End Time")}
-              //onUpdate={(key, value) => { this.setState({ output_endtime: value, }); }}
-              //min={this.state.data.time}
-            />
-          </div>
-          */}
 
           <FormGroup controlId="output_format">
             <ControlLabel>{_("Output Format")}</ControlLabel>
@@ -817,15 +774,6 @@ export default class AreaWindow extends React.Component {
             </FormControl>
           </FormGroup>
 
-          {/*
-        <SelectBox
-          id='convertToUserGrid'
-          key='convertToUserGrid'
-          state={this.state.convertToUserGrid}
-          onUpdate={this.onLocalUpdate}
-          title={_("Convert to User Grid")}
-        />
-        */}
           <SelectBox
             id='zip'
             key='zip'
