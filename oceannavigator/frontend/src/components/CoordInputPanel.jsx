@@ -62,7 +62,7 @@ export default class CoordInputPanel extends React.Component {
               onChange={e => this.onChange(e.target, DataInput.LATITUDE)}
             />
             <br />
-            <ControlLabel>{_("Longittude")}: </ControlLabel>
+            <ControlLabel>{_("Longitude")}: </ControlLabel>
             <FormControl
               type="text"
               placeholder="0.0000"
