@@ -7,7 +7,7 @@ import * as olcontrol from "ol/control";
 import * as olsource from "ol/source";
 import * as ollayer from "ol/layer";
 import ReactSimpleRange from "react-simple-range";
-import IceComboBox from "./IceComboBox.jsx";
+import IceComboBox from "./GenericComboBox.jsx/index.js";
 import NewComboBox from "./newComboBox.jsx";
 import { Checkbox } from 'react-bootstrap'
 const i18n = require("../i18n.js");

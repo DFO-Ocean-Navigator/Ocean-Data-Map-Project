@@ -52,7 +52,6 @@ export default class SettingsTab extends React.Component {
       
     }
 
-
     return (
         <Panel
               collapsible
@@ -60,47 +59,7 @@ export default class SettingsTab extends React.Component {
               header={_("Enabled Features")}
               bsStyle='primary'
         >
-
-        {check_boxes}
-
-        {/*
-          <Checkbox
-              id='_foundation'
-              checked={this.props.state._foundation}
-              onChange={this.updateFeature}
-          >
-              Foundation
-          </Checkbox>
-          <Checkbox
-              id='_environment'
-              checked={this.props.state._environment}
-              onChange={this.updateFeature}
-          >
-              Environment
-          </Checkbox>
-          <Checkbox
-              id='_intelligence'
-              checked={this.props.state._intelligence}
-              onChange={this.updateFeature}
-          >
-              Intelligence
-          </Checkbox>
-          <Checkbox
-              id='_derived'
-              checked={this.props.state._derived}
-              onChange={this.updateFeature}
-          >
-              Derived Products
-          </Checkbox>
-          <Checkbox
-              id='_planning'
-              checked={this.props.state._planning}
-              onChange={this.updateFeature}
-          >
-              Planning Tools
-          </Checkbox>
-        */}
-          
+          {check_boxes} 
         </Panel>
 
     );

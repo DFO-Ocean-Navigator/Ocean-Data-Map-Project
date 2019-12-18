@@ -9,7 +9,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-export default class IceComboBox extends React.Component {
+export default class GenericComboBox extends React.Component {
   constructor(props) {
     super(props);
 
@@ -149,7 +149,7 @@ export default class IceComboBox extends React.Component {
 }
 
 //***********************************************************************
-IceComboBox.propTypes = {
+GenericComboBox.propTypes = {
     data: PropTypes.array,
     current: PropTypes.string,
     localUpdate: PropTypes.func,
