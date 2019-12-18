@@ -8,7 +8,7 @@ import { DateRangePicker, SingleDatePicker } from 'react-dates';
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css';
 import moment from "moment-timezone";
-import IceComboBox from "../IceComboBox.jsx";
+import GenericComboBox from "../GenericComboBox.jsx";
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
@@ -318,22 +318,22 @@ export default class TimePicker extends React.Component {
       if (this.props.quantum === 'hour') {
         let hours_available = this.findHours(this.props.date)
         picker.push(<div className='hour_container'>
-          <IceComboBox
+          <GenericComboBox
           data={hours_available}
           current={this.state.endHour}
           localUpdate={this.singleHourUpdate}
           key='endHour'
           className='current_hour_single range0'
           name='endHour'
-        ></IceComboBox>
-        <IceComboBox
+        ></GenericComboBox>
+        <GenericComboBox
           data={hours_available}
           current={this.state.startHour}
           localUpdate={this.singleHourUpdate}
           key='startHour'
           className='current_hour_single range1'
           name='startHour'
-        ></IceComboBox>
+        ></GenericComboBox>
         </div>  )
       }
     } else {
@@ -347,14 +347,14 @@ export default class TimePicker extends React.Component {
       ></SingleDatePicker>]
       if (this.props.quantum === 'hour' && this._mounted) {
         let hours_available = this.findHours(this.props.date)
-        picker.push(<IceComboBox
+        picker.push(<GenericComboBox
           data={hours_available}
           current={this.state.current_hour}
           localUpdate={this.singleHourUpdate}
           key='endHour'
           className='current_hour_single'
           name='endHour'
-        ></IceComboBox>)
+        ></GenericComboBox>)
       }
     }
     

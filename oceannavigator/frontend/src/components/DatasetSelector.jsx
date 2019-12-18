@@ -2,9 +2,8 @@ import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./time/TimePicker.jsx";
 import PropTypes from "prop-types";
-import VelocitySelector from "./VelocitySelector.jsx";
 import moment from "moment";
-import IceComboBox from "./IceComboBox.jsx";
+
 
 const i18n = require("../i18n.js");
 
