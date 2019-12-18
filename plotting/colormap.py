@@ -46,13 +46,14 @@ colormaps = {
     'gradient': cmocean.cm.curl,
     'transparent': make_colormap([_c('#00000000')]),
     'bathymetry': cmocean.cm.deep,
-    'salinity': cmocean.cm.haline,
+    'vosaline': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
     'surface elevation': cmocean.cm.balance,
     'velocity': cmocean.cm.delta,
+    'magwatervel': cmocean.cm.speed,
     'waveheight': cmocean.cm.amp,
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
@@ -143,6 +144,8 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
     'temperature': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
+    'votemper': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
 }
 colormaps['wind'] = colormaps['velocity']
 
@@ -189,7 +192,6 @@ colormap_names = {
     'grey': 'Greyscale',
     'ice': 'Ice',
     'iron': 'Iron',
-    'matter': 'Sound Products',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
     'soundproducts': 'Sound Products',
@@ -197,10 +199,10 @@ colormap_names = {
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
     'phytoplankton': 'Phytoplankton',
-    'salinity': 'Salinity',
+    'vosaline': 'Salinity',
     'silicate': 'Silicate',
     'speed': 'Speed',
-    'temperature': 'Temperature',
+    'votemper': 'Temperature',
     'transparent': 'Transparent',
     'velocity': 'Velocity',
     'waveheight': 'Wave Height',
