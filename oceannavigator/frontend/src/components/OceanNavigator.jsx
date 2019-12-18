@@ -325,45 +325,7 @@ export default class OceanNavigator extends React.Component {
     });
   }
 
-  /*
-  changeDataset(dataset, state) {
-    // Busy modal
-    this.setState({
-      busy: true,
-    });
-
-    // When dataset changes, so does time & variable list
-    const var_promise = $.ajax("/api/variables/?dataset=" + dataset).promise();
-    const time_promise = $.ajax(
-      "/api/timestamp/" +
-      this.state.dataset + "/" +
-      this.state.time + "/" +
-      dataset
-    ).promise();
-    
-    $.when(var_promise, time_promise).done(function(variable, time) {
-      let newvariable = this.state.variable;
-      
-      if ($.inArray(this.state.variable, variable[0].map(function(e) 
-      { return e.id; })) == -1) {
-        newvariable = variable[0][0].id;
-      }
-
-      // If no state parameter has been passed
-      // make a skeleton one
-      if (state === undefined) {
-        state = { };
-      }
-
-      state.dataset = dataset;
-      state.variable = newvariable;
-      state.time = time[0];
-      state.busy = false;
-
-      this.setState(state);
-    }.bind(this));
-  }*/
-
+  
   action(name, arg, arg2, arg3) {
     switch (name) {
       case "point":
@@ -376,12 +338,6 @@ export default class OceanNavigator extends React.Component {
           label: 'PointPlot'
         });
 
-        /*
-        this.mapComponent.resetMap();
-        if (this.mapComponent2) {
-          this.mapComponent2.resetMap();
-        }
-        */
         if (typeof (arg) === "object") {
           // The EnterPoint component correctly orders the coordinate
           // pair, so no need to swap it.
@@ -615,16 +571,7 @@ export default class OceanNavigator extends React.Component {
     }
   }
 
-  /*
-  componentDidUpdate(prevProps, prevState) {
-    
-    if (this.state.showModal && !prevState.showModal) {
-      window.history.replaceState(prevState, null, null);
-      window.history.pushState(null, null, null);
-    }
-  }
-  */
-
+ 
   generatePermLink(subquery, permalinkSettings) {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
@@ -671,12 +618,6 @@ export default class OceanNavigator extends React.Component {
     // Pick which map we need
     let map = null;
     if (true){//'right' in this.state.data) {
-
-      //const secondState = $.extend(true, {}, this.state);
-      //for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
-      //  const keys = Object.keys(this.state.dataset_1);
-      //  secondState[keys[i]] = this.state.dataset_1[keys[i]];
-      //}
       map = <div className='multimap'>
         <Map
           ref={(m) => this.mapComponent = m}
