@@ -142,6 +142,8 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'neo_sst.txt'))),
     'BuYlRd': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'BuYlRd.txt'))),
+    'temperature': mcolors.ListedColormap(
+        np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
     'votemper': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'temperature.txt'))),
 }
