@@ -77,7 +77,7 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     Returns:
         [int] -- timestamp integer
     """
-
+    print(something)
     t = cftime.utime(time_units)
 
     datetime = datetime.replace(tzinfo=pytz.UTC)
