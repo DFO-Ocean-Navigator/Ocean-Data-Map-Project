@@ -81,7 +81,7 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     t = cftime.utime(time_units)
 
     datetime = datetime.replace(tzinfo=pytz.UTC)
-    return t.date2num(datetime)
+    return int(t.date2num(datetime))
 
 
 def timestamp_to_datetime(timestamps, time_units: str):

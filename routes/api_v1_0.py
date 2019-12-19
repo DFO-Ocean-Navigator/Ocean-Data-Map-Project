@@ -434,6 +434,7 @@ def timestamps():
 
     vals = []
     with SQLiteDatabase(config.url) as db:
+        print(something)
         if variable in config.calculated_variables:
             data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                     [v.key for v in db.get_data_variables()])
