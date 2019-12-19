@@ -434,11 +434,11 @@ def timestamps():
 
     vals = []
     with SQLiteDatabase(config.url) as db:
-        print(something)
         if variable in config.calculated_variables:
             data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                     [v.key for v in db.get_data_variables()])
             vals = db.get_timestamps(data_vars[0])
+            print(soemthing)
         else:
             vals = db.get_timestamps(variable)
     converted_vals = timestamp_to_datetime(vals, config.time_dim_units)
