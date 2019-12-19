@@ -164,7 +164,7 @@
         "name": "GIOPS Daily",
         "url": "/home/buildadm/ocean-nav/db/GIOPS-Daily.sqlite3",
         "envtype": ["ocean", "ice"],
-        "enabled": true,
+        "enabled": false,
         "quantum": "day",
         "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
