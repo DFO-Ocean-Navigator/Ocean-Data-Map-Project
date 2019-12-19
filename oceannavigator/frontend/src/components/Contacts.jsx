@@ -26,7 +26,7 @@ export default class Contacts extends React.Component {
 
     this.state = {
       currentTab: 1,
-      trafficTypes: ['Marine Traffic'],
+      trafficTypes: [_('Marine Traffic')],
       displayTraffic: true
     };
 

@@ -533,14 +533,14 @@ export default class Map extends React.PureComponent {
 
 
     // Info popup balloon
-    this.map.on("singleclick", function (e) {
+    /*this.map.on("singleclick", function (e) {
+      if (this._drawing) { // Prevent conflict with drawing
+        return;
+      }
       let toRender = this.state.toRender
       this.setState({
         toRender: <p>Loading...</p>
       })
-      if (this._drawing) { // Prevent conflict with drawing
-        return;
-      }
       this.contactInfo = false
       toRender = []
       const feature = this.map.forEachFeatureAtPixel(
@@ -626,7 +626,7 @@ export default class Map extends React.PureComponent {
           }
         }
       }
-    }.bind(this));
+    }.bind(this));*/
 
 
     var select = new olinteraction.Select({
