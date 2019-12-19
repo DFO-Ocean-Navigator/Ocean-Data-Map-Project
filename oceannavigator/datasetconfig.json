@@ -1173,11 +1173,11 @@
     },
     "riops_forecast": {
         "envtype": ["ocean", "ice"],
-        "url": "http://localhost:8080/thredds/dodsC/riops/forecast/aggregated.ncml",
+        "url": "/data/db/riops_fc2dll.sqlite3",
         "name": "RIOPS Forecast",
         "quantum": "hour",
         "type": "forecast",
-        "enabled": false,
+        "enabled": true,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "RIOPS Forecast from CONCEPTS",
