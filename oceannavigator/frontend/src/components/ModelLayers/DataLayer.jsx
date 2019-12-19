@@ -156,7 +156,7 @@ export default class DataLayer extends React.Component {
     }
 
     removePanel() {
-        this.props.removeDataPanel(this.props.id, this.state.surface);
+        this.props.removePanel(this.props.index, this.state.surface);
     }
 
 

@@ -18,7 +18,7 @@ export default class Model_3D extends React.Component {
         this.lock = false;
         this.state = {
             layers: [],
-            data_panels: [],
+            data_panels: {},
             extraLayers: [],
             index: 2,
             url: LOADING_IMAGE,
@@ -184,6 +184,14 @@ export default class Model_3D extends React.Component {
             this.removeDataLayer(layer);
         }
     }
+
+    removePanelbyIndex (idx, layer) {
+        // Find panel from idx
+        let panels = this.state.data_panels;
+        let panel = panels[idx];
+        
+        this.removePanel(panel, layer);
+    }
     
     /*
         Creates a data panel and requests it be added to the left panel
@@ -207,11 +215,13 @@ export default class Model_3D extends React.Component {
             time={this.props.time}
             lat={this.state.lat}
             lon={this.state.lon}
-            removeDataPanel={this.removePanel}
+            removePanel={this.removePanelByIndex}
         ></DataLayer>
-
+        let panels = this.state.data_panels;
+        panels[index] = layer;
         this.addPanel(layer);
         this.setState({
+            data_panels: panels,
             index: index
         })
     }
@@ -309,6 +319,7 @@ export default class Model_3D extends React.Component {
     addPlanePanel() {
         let layer = <RefPlane
             key='refplane'
+            index={this.state.index}
             addDataLayer={this.addDataLayer}
             updateDataLayer={this.updateDataLayer}
             removeDataLayer={this.removeDataLayer}
@@ -316,17 +327,27 @@ export default class Model_3D extends React.Component {
             lat_corners={this.state.lat_corners}
             lon_corners={this.state.lon_corners}
         ></RefPlane>
+        this.setState({
+            index: this.state.index + 1
+        })
         this.addPanel(layer);
     }
 
     addPointPanel() {
+
         let layer = <PointContainer
             key='pointcontainer'
+            index={this.state.index}
             updateDataLayer={this.updateDataLayer}
             removeDataLayer={this.removeDataLayer}
             fetchProfile={this.fetchProfile}
             point={this.state.point}
         ></PointContainer>
+        let panels = this.state.data_panels;
+        panels[index] = 
+        this.setState({
+            index: this.state.index + 1
+        })
         this.addPanel(layer);
     }
 
