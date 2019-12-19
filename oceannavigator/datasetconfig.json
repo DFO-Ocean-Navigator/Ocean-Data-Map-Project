@@ -10,7 +10,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "grid_angle_file_url": "/data/grids/giops/grid_angle.nc",
         "type": "historical",
-        "url": "/home/buildadm/ocean-nav/db/GIOPS-Monthly.sqlite3",
+        "url": "/data/db/GIOPS-Monthly.sqlite3",
         "lat_var_key": "nav_lat",
         "lon_var_key": "nav_lon",
         "variables": {
@@ -162,7 +162,7 @@
     },
     "giops_day": {
         "name": "GIOPS Daily",
-        "url": "/home/buildadm/ocean-nav/db/GIOPS-Daily.sqlite3",
+        "url": "/data/db/GIOPS-Daily.sqlite3",
         "envtype": ["ocean", "ice"],
         "enabled": true,
         "quantum": "day",
@@ -197,7 +197,7 @@
     },
     "giops_forecast": {
         "envtype": ["ocean", "ice"],
-        "url": "/home/buildadm/ocean-nav/db/GIOPS-Forecast.sqlite3",
+        "url": "/data/db/GIOPS-forecast.sqlite3",
         "name": "GIOPS 10-day Forecast",
         "quantum": "split",
         "type": "forecast",
@@ -267,7 +267,7 @@
         }
     },
     "riops_reanalysis_surface": {
-        "url": "/home/buildadm/ocean-nav/db/RIOPS-Reanalysis-Surface.sqlite3",
+        "url": "/data/db/RIOPS-Reanalysis-Surface.sqlite3",
         "name": "RIOPS Reanalysis (Surface)",
         "type": "historical",
         "enabled": true,
@@ -283,7 +283,7 @@
         }
     },
     "riops_reanalysis_3d": {
-        "url": "/home/buildadm/ocean-nav/db/RIOPS-Reanalysis-3D.sqlite3",
+        "url": "/data/db/RIOPS-Reanalysis-3D.sqlite3",
         "envtype": ["ocean"],
         "name": "RIOPS Reanalysis (3D)",
         "type": "historical",
