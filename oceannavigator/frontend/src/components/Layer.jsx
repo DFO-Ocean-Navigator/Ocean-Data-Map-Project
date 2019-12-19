@@ -224,17 +224,11 @@ export default class Layer extends React.Component {
     let new_scale
     let new_depth_list
 
-    // Not null, we need to remove old data before adding new
-    // This MIGHT be DEPRECATED
-    if (dataset !== null && dataset !== undefined) {
-      this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
-    }
-
     // Ensures we have the required data to continue
     if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
 
       // Check for giops_day (Tries to load as default dataset)
-      if ('giops_day' in this.props.datasetconfig && dataset === undefined || dataset === null) {
+      if ('giops_day' in this.props.datasetconfig && this.props.datasetconfig['giops_day'].enabled && dataset === undefined || dataset === null) {
 
         new_dataset = 'giops_day';
         let giops_obj = this.props.datasetconfig['giops_day']
@@ -278,14 +272,16 @@ export default class Layer extends React.Component {
           new_dataset = d;
           new_quantum = d;
 
-          for (let v in this.props.datasetconfig[d].variables) {
-            new_variable = v;
-            new_scale = this.props.datasetconfig[d].variables[v].scale;
-            
+          if (this.props.datasetconfig[d].enabled) {
+            for (let v in this.props.datasetconfig[d].variables) {
+              new_variable = v;
+              new_scale = this.props.datasetconfig[d].variables[v].scale;
+              
+              break;
+            }
+  
             break;
           }
-
-          break;
         }
       }
 
@@ -743,7 +739,7 @@ export default class Layer extends React.Component {
       iso = date.format('YYYY[-01-01T00:00:00+00:00]')
       //iso = date.getUTCFullYear() + '-01-01T00:00:00+00:00'
     } else {    // Returns ISO to max available precision
-      is = date.format('YYYY-MM-DD[T]HH[:]MM[:]SS[:00:00]')
+      iso = date.format('YYYY-MM-DD[T]HH[:]MM[:]SS[:00:00]')
       //iso = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate() + 'T' + date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds() + '+00:00'
     }
 
