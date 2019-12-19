@@ -224,17 +224,11 @@ export default class Layer extends React.Component {
     let new_scale
     let new_depth_list
 
-    // Not null, we need to remove old data before adding new
-    // This MIGHT be DEPRECATED
-    if (dataset !== null && dataset !== undefined) {
-      this.props.removeData(this.state.current_map, old_dataset, old_variable, this.props.value);
-    }
-
     // Ensures we have the required data to continue
     if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
 
       // Check for giops_day (Tries to load as default dataset)
-      if ('giops_day' in this.props.datasetconfig && dataset === undefined || dataset === null) {
+      if ('giops_day' in this.props.datasetconfig && this.props.datasetconfig['giops_day'].enabled && dataset === undefined || dataset === null) {
 
         new_dataset = 'giops_day';
         let giops_obj = this.props.datasetconfig['giops_day']
