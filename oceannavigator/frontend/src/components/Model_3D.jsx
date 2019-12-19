@@ -372,31 +372,6 @@ export default class Model_3D extends React.Component {
             ></BathLayer>
         ]
 
-        /*for (let idx in this.state.data_panels) {
-            idx = this.state.data_panels[idx];
-            console.warn("IDX: ", idx)
-            layers.push(
-                <DataLayer
-                    index={idx}
-                    key={idx}
-                    value={idx}
-                    urlFromQuery={this.urlFromQuery}
-                    addDataLayer={this.addDataLayer}
-                    updateDataLayer={this.updateDataLayer}
-                    removeDataLayer={this.removeDataLayer}
-                    area={this.props.area}
-                    interp={this.props.interp}
-                    neighbours={this.props.neighbours}
-                    projection={this.props.projection}
-                    radius={this.props.radius}
-                    time={this.props.time}
-                    lat={this.state.lat}
-                    lon={this.state.lon}
-                    removeDataPanel={this.removeDataPanel}
-                ></DataLayer>
-            )
-        }*/
-
         let add_panel = (
             <Button
                 onClick={this.addDataPanel}
