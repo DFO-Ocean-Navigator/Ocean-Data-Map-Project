@@ -171,27 +171,13 @@ render() {
   return (
     <div>
 
-      {/*<Layer
-              state={this.props.state}
-              swapViews={this.props.swapViews}
-              toggleLayer={this.props.toggleLayer}
-              reloadLayer={this.props.reloadLayer}
-              mapComponent={this.props.mapComponent}
-              globalUpdate={this.props.globalUpdate}
-              showHelp={this.props.showHelp}
-              options={this.props.state.options}
-              updateOptions={this.props.updateOptions}
-              layerType='met'
-              defaultDataset='gem'
-            />*/}
+      
       {layers}
       <Button
         onClick={this.addLayer}
       >
-
-        New {this.props.layerType} Layer
-
-            </Button>
+        {_("New")} {_(this.props.layerType)} {_("Layer")}
+      </Button>
 
     </div>
   );

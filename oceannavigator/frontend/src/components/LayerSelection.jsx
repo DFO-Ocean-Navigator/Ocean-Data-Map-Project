@@ -87,6 +87,13 @@ export default class LayerSelection extends React.Component {
     
     render() {
 
+        _('Foundation');
+        _("Environment");
+        _("Intelligence");
+        _("Derived Products");
+        _("Planning Tools");
+
+
         let enabled_layers = [];
         if (this.props.state._foundation === true && this.props.state.allowedTabs['_foundation'] === true) {
             enabled_layers.push(<NavItem key='_foundation' className={this.state.buttons[0]} eventKey={1}>
@@ -193,9 +200,9 @@ export default class LayerSelection extends React.Component {
                     </div>                        
                     <div className='settings'>
                         <div className='analyticsDisclaimer' style={{width: '75%', float: 'left'}}>
-                            This website uses Google Analytics. By continuing, you accept the usage of cookies.
+                            {_("This website uses Google Analytics. By continuing, you accept the usage of cookies.")}
                             <br />
-                            <a href='https://www.wikihow.com/Disable-Cookies'>How to disable Cookies</a>
+                            <a href='https://www.wikihow.com/Disable-Cookies'>{_("How to disable Cookies")}</a>
                         </div>
                         <Button key='settingsButton' style={{width: '25%'}} className={this.state.buttons[5]} onClick={() => this.tabSelect(6)}>
                             <Icon icon='gear'/>

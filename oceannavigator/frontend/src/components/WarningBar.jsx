@@ -24,7 +24,7 @@ export default class WarningBar extends React.PureComponent {
     if(this.props.showWarningInfo){
       return (
         <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
-              The Ocean Navigator will go down for brief maintenance at 12:45 NST
+              {_("The Ocean Navigator will go down for brief maintenance at 12:45 NST")}
         </Alert>
       );
     }
