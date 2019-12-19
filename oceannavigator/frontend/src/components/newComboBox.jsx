@@ -1,10 +1,7 @@
 /* eslint react/no-deprecated: 0 */
 
 import React from "react";
-import $ from "jquery";
-import jQuery from "jquery";
-import {Modal, Button, FormControl} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import { FormControl } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");

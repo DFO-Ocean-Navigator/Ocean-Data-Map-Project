@@ -1,7 +1,6 @@
 import React from 'react';
 import Icon from "./Icon.jsx";
-import { Button, Nav, NavItem, NavLink } from 'react-bootstrap';
-import MapInputs from './MapInputs.jsx';
+import { Button, Nav, NavItem } from 'react-bootstrap';
 import FoundationTab from './FoundationTab.jsx';
 import IntelligenceTab from './IntelligenceTab.jsx';
 import DerivedProductsTab from './DerivedProductsTab.jsx';

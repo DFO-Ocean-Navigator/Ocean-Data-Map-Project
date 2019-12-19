@@ -1,7 +1,5 @@
 import React from 'react';
-import SelectBox from "./SelectBox.jsx";
 import PropTypes from "prop-types";
-import { stringify } from 'querystring';
 import { Checkbox } from 'react-bootstrap'
 
 export default class DataSelection extends React.Component {

@@ -1,7 +1,6 @@
 /*eslint no-unused-vars: ["error", {"varsIgnorePattern": "jQuery" }]*/
 import React from "react";
 import $ from "jquery";
-import jQuery from "jquery";
 import PropTypes from "prop-types";
 
 import "jquery-ui-css/base.css";

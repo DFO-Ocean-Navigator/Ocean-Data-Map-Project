@@ -1,17 +1,5 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
-import { Panel, Button, Row, Col, Tabs, Tab } from "react-bootstrap";
 import Icon from "./Icon.jsx";
-import Options from "./Options.jsx";
-import PropTypes from "prop-types";
-import ContactButton from "./ContactButton.jsx";
-import * as ol from "ol";
-
-
-
 
 const i18n = require("../i18n.js");
 

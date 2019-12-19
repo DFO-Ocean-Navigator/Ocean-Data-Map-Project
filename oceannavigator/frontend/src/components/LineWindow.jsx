@@ -17,7 +17,6 @@ import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import DataSelection from "./DataSelection.jsx";
 import Spinner from '../images/spinner.gif';
 
 const i18n = require("../i18n.js");

@@ -5,10 +5,8 @@
 
 */
 
-
 import React from "react";
 import { Button, Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
-import moment from "moment-timezone";
 import PlotImage from "./PlotImage.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ComboBox from "./ComboBox.jsx";
@@ -17,11 +15,6 @@ import LocationInput from "./LocationInput.jsx";
 import Range from "./Range.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
-import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import ReactLoading from 'react-loading';
-import Spinner from '../images/spinner.gif';
-import DataSelection from './DataSelection.jsx';
-
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");

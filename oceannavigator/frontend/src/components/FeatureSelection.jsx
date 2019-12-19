@@ -1,5 +1,5 @@
 import React from "react";
-import {Checkbox, Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
+import { Checkbox, Panel } from "react-bootstrap";
 
 const i18n = require("../i18n.js");
 

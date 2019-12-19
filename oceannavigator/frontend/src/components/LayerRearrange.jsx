@@ -1,9 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Button } from "react-bootstrap";
-import FontAwesome from "react-fontawesome";
-
-
 
 const i18n = require("../i18n.js");
 
