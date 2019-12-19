@@ -197,7 +197,7 @@
     },
     "giops_forecast": {
         "envtype": ["ocean", "ice"],
-        "url": "/data/db/GIOPS-forecast.sqlite3",
+        "url": "/data/db/giops_fc3dll.sqlite3",
         "name": "GIOPS 10-day Forecast",
         "quantum": "split",
         "type": "forecast",
