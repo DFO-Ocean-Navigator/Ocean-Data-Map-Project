@@ -53,6 +53,7 @@ export default class Model_3D extends React.Component {
         this.urlFromQuery = this.urlFromQuery.bind(this);
         this.updateDataLayer = this.updateDataLayer.bind(this);
         this.removeDataLayer = this.removeDataLayer.bind(this);
+        this.removePanelByIndex = this.removePanelByIndex.bind(this);
         
         /*
             Called Automatically
@@ -185,7 +186,7 @@ export default class Model_3D extends React.Component {
         }
     }
 
-    removePanelbyIndex (idx, layer) {
+    removePanelByIndex (idx, layer) {
         // Find panel from idx
         let panels = this.state.data_panels;
         let panel = panels[idx];
