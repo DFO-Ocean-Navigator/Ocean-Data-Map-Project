@@ -272,14 +272,16 @@ export default class Layer extends React.Component {
           new_dataset = d;
           new_quantum = d;
 
-          for (let v in this.props.datasetconfig[d].variables) {
-            new_variable = v;
-            new_scale = this.props.datasetconfig[d].variables[v].scale;
-            
+          if (this.props.datasetconfig[d].enabled) {
+            for (let v in this.props.datasetconfig[d].variables) {
+              new_variable = v;
+              new_scale = this.props.datasetconfig[d].variables[v].scale;
+              
+              break;
+            }
+  
             break;
           }
-
-          break;
         }
       }
 
