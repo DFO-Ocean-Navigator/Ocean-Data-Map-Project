@@ -360,7 +360,7 @@ export default class TimePicker extends React.Component {
     
     return (
       <div>
-        <h1 style={{fontWeight: 'bold'}}>Time (UTC)</h1>
+        <h1 style={{fontWeight: 'bold'}}>{_("Time (UTC)")}</h1>
         {picker}
       </div>
     );

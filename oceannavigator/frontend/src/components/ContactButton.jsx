@@ -10,7 +10,7 @@ export default class ContactButton extends React.Component {
 
     this.state = {
       showing: true,
-      displayState: 'Add',
+      displayState: _('Add'),
     };
 
     // Function bindings
@@ -46,7 +46,7 @@ export default class ContactButton extends React.Component {
 
   render() {
 
-    let add_remove = this.state.showing ? 'Add' : 'Remove';
+    let add_remove = this.state.showing ? _('Add') : _('Remove');
     
     return (
         <div>
