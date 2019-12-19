@@ -212,6 +212,7 @@ def plot(projection, x, y, z, args):
     time = args.get('time')
 
     data = []
+    time = 2207840400
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
 
         for v in variable:
