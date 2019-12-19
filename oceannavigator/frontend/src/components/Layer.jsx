@@ -739,7 +739,7 @@ export default class Layer extends React.Component {
       iso = date.format('YYYY[-01-01T00:00:00+00:00]')
       //iso = date.getUTCFullYear() + '-01-01T00:00:00+00:00'
     } else {    // Returns ISO to max available precision
-      is = date.format('YYYY-MM-DD[T]HH[:]MM[:]SS[:00:00]')
+      iso = date.format('YYYY-MM-DD[T]HH[:]MM[:]SS[:00:00]')
       //iso = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate() + 'T' + date.getUTCHours() + ':' + date.getUTCMinutes() + ':' + date.getUTCSeconds() + '+00:00'
     }
 
