@@ -87,7 +87,7 @@ export default class RefPlane extends React.Component {
     }
 
     removePanel() {
-        this.props.removePanel(this.props.id, this.state.surface);
+        this.props.removePanel(this.props.index, this.state.surface);
     }
 
     updateDepth(e) {
@@ -141,7 +141,7 @@ export default class RefPlane extends React.Component {
         const toggle_apply = (
             <Button
                 onClick={this.loadNextPlot}
-            >Apply</Button>
+            >{_("Apply")}</Button>
         )
         // Add the components to an array in the correct order
         let data_selection = [select_depth, select_transparency];

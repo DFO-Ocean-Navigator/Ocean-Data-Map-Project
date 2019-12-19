@@ -324,7 +324,7 @@ export default class Model_3D extends React.Component {
             addDataLayer={this.addDataLayer}
             updateDataLayer={this.updateDataLayer}
             removeDataLayer={this.removeDataLayer}
-            removePanel={this.removePanel}
+            removePanel={this.removePanelByIndex}
             lat_corners={this.state.lat_corners}
             lon_corners={this.state.lon_corners}
         ></RefPlane>
