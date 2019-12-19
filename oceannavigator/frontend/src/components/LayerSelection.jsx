@@ -198,7 +198,7 @@ export default class LayerSelection extends React.Component {
                         />
                     </div>                        
                     <div className='settings'>
-                        <div className='analyticsDisclaimer' style={{width: '75%', float: 'left'}}>
+                        <div className='analyticsDisclaimer' style={{width: '75%', float: 'left', 'font-size': '12px'}}>
                             {_("This website uses Google Analytics. By continuing, you accept the usage of cookies.")}
                             <br />
                             <a href='https://www.wikihow.com/Disable-Cookies'>{_("How to disable Cookies")}</a>
