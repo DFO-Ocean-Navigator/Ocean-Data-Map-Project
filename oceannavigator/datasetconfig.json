@@ -202,7 +202,7 @@
         "quantum": "split",
         "type": "forecast",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "enabled": false,
+        "enabled": true,
         "cache": 6,
         "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "GIOPS 10-day Forecast from CONCEPTS",
