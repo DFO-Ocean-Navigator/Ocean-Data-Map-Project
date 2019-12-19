@@ -14,6 +14,7 @@ from data.calculated import CalculatedData
 from data.nearest_grid_point import find_nearest_grid_point
 from data.variable import Variable
 from data.variable_list import VariableList
+from utils.errors import APIError
 
 
 class Mercator(CalculatedData):
@@ -294,15 +295,19 @@ class Mercator(CalculatedData):
             return res
 
     def get_profile(self, latitude, longitude, timestamp, variable):
+        var = self.get_dataset_variable(variable)
+        # We expect the following shape (time, depth, lat, lon)
+        if len(var.shape) != 4:
+            raise APIError("This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
+        
+        time = self.timestamp_to_time_index(timestamp)
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
-
-        var = self.get_dataset_variable(variable)
-        time = self.timestamp_to_time_index(timestamp)
 
         res = self.__resample(
             self.latvar[miny:maxy],

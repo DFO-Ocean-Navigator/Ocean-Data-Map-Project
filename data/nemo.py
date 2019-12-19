@@ -7,6 +7,7 @@ from pykdtree.kdtree import KDTree
 
 from data.calculated import CalculatedData
 from data.nearest_grid_point import find_nearest_grid_point
+from utils.errors import APIError
 
 
 class Nemo(CalculatedData):
@@ -323,6 +324,14 @@ class Nemo(CalculatedData):
             return res
 
     def get_profile(self, latitude, longitude, timestamp, variable):
+        var = self.get_dataset_variable(variable)
+        # We expect the following shape (time, depth, lat, lon)
+        if len(var.shape) != 4:
+            raise APIError(
+                "This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
+
+        time_index = self.timestamp_to_time_index(timestamp)
+
         latvar, lonvar = self.__latlon_vars(variable)
         
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -331,10 +340,6 @@ class Nemo(CalculatedData):
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
-
-        var = self.get_dataset_variable(variable)
-
-        time_index = self.timestamp_to_time_index(timestamp)
 
         res = self.__resample(
             latvar[miny:maxy, minx:maxx],
