@@ -896,7 +896,7 @@ export default class Layer extends React.Component {
       let new_layers = layers;
       let layer = this.state.layer;
       this.setState({
-        layerState: 'Add Layer'
+        layerState: _("Add Layer")
       })
 
       new_layers.splice(new_layers.indexOf(layer), 1);
@@ -911,7 +911,7 @@ export default class Layer extends React.Component {
       this.updateLayer()
 
       this.setState({
-        layerState: 'Remove Layer'
+        layerState: _("Remove Layer")
       })
 
       let new_layers = this.props.layers
@@ -943,7 +943,7 @@ export default class Layer extends React.Component {
       new_layers.splice(new_layers.indexOf(this.state.layer), 1);
       this.setState({
         layers: new_layers,
-        layerState: 'Add Layer'
+        layerState: _("Add Layer")
       })
     }
   }
@@ -1083,6 +1083,13 @@ export default class Layer extends React.Component {
     _("Show Bathymetry Contours");
     _("Remove Layer");
     _("Use as Comparison");
+    _("Display");
+    _("Variable");
+    _("Altitude");
+    _("Depth");
+    _("Dataset");
+    _("Colour Map");
+
 
     if (Object.keys(this.props.state.timestamps).length > 0 && this.props.state.timestamps !== undefined && this._mounted === true) {
 
@@ -1251,7 +1258,7 @@ export default class Layer extends React.Component {
           title={_("Colour Map")}></ComboBox>
 
         <div className='ComboBox input'>
-          <h1>Transparency</h1>
+          <h1>{_("Transparency")}</h1>
           <ReactSimpleRange
             className='iceSlider'
             value={this.state.opacity}

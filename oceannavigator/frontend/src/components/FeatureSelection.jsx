@@ -29,11 +29,11 @@ export default class SettingsTab extends React.Component {
   render() {
     const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
     let all_tabs = {
-      _foundation: 'Foundation',
-      _environment: 'Environment',
-      _intelligence: 'Intelligence',
-      _derived: 'Derived Products',
-      _planning: 'Planning Tools'
+      _foundation: _('Foundation'),
+      _environment: _('Environment'),
+      _intelligence: _('Intelligence'),
+      _derived: _('Derived Products'),
+      _planning: _('Planning Tools')
 
     }
     let check_boxes = []
