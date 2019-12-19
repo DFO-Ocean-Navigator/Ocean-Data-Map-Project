@@ -192,8 +192,7 @@
             "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},    
             "depthexcess": {"name": "Depth Excess (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
             "sscp": {"name": "Secondary Sound Channel Potential", "envtype": "ocean", "scale": [0,1], "scale_factor": 1, "unit":"m", "equation": "sscp(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"},
-            "vorticity": { "name": "Water Vorticity", "envtype": "ocean", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" },
-            "criticaldepth": {"name": "Critical Depth (BETA)", "envtype": "ocean", "scale": [0, 2000], "scale_factor": 1, "unit":"m", "equation": "criticaldepth(~depth, nav_lat, ~votemper - 273.15, ~vosaline)"}
+            "vorticity": { "name": "Water Vorticity", "envtype": "ocean", "scale": [-50, 50], "scale_factor": 1e6, "unit": "1/10^6 s", "equation": "vorticity(vozocrtx, vomecrty, nav_lat, nav_lon)", "zero_centered": "true" }
         }
     },
     "giops_forecast": {
