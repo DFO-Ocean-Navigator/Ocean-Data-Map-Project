@@ -9,12 +9,11 @@ from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
 from data.sqlite_database import SQLiteDatabase
-from data.utils import find_le, roll_time, get_data_vars_from_equation
-
-# We cannot cache by URL anymore since with the sqlite approach it points to a database
-# and the original cache system wasn't aware which individual NC files were opened.
+from data.utils import find_le, get_data_vars_from_equation, roll_time
+from utils.decorators import hashable_lru
 
 
+@hashable_lru
 def open_dataset(dataset, **kwargs):
     """
     Opens a dataset.
@@ -22,15 +21,18 @@ def open_dataset(dataset, **kwargs):
     Determines the type of model the dataset is from and opens the appropriate
     data object (Nemo, Mercator, Fvcom).
 
+    Note: the returned dataset object will be LRU-cached internally so frequent calls
+    to open the "same" dataset will have minimal overhead.
+
     Params:
         * dataset -- Either a string URL for the dataset, or a DatasetConfig object
-    
+
     Required Keyword Arguments:
         * variable {str or list} -- String or list of strings of variable keys to be loaded
             (e.g. 'votemper' or ['votemper', 'vosaline']).
         * timestamp {int} -- Integer value of date/time for requested data (e.g. 2128723200).
             When loading a range of timestamps, this argument serves as the starting time.
-    
+
     Optional Keywork Arguments:
         * endtime {int} -- Integer value of date/time. This argument is only used when
             loading a range of timestamps, and should hold the ending time.
@@ -66,7 +68,8 @@ def open_dataset(dataset, **kwargs):
                 __check_kwargs(**kwargs)
                 # Get required NC files from database and add to args
                 args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
-                args['grid_angle_file_url'] = __get_grid_angle_file_url(dataset)
+                args['grid_angle_file_url'] = __get_grid_angle_file_url(
+                    dataset)
 
         if __is_mercator(dimension_list):
             return Mercator(url, **args)
@@ -114,7 +117,7 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
         calculated_variables = datasetconfig.calculated_variables
         if variable[0] in calculated_variables:
             equation = calculated_variables[variable[0]]['equation']
-            
+
             variable = get_data_vars_from_equation(
                 equation, [v.key for v in db.get_data_variables()])
 
@@ -126,8 +129,10 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
 
         return file_list
 
+
 def __get_grid_angle_file_url(datasetconfig) -> str:
     return datasetconfig.grid_angle_file_url
+
 
 def __get_requested_timestamps(db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp) -> List[int]:
 
