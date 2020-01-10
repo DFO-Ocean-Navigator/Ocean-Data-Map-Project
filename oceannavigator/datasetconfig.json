@@ -94,7 +94,7 @@
     "giops_fc_3dps": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/giops-fc3dps.sqlite3",
-        "name": "GIOPS Forecast Surface - Polar Stereographic",
+        "name": "GIOPS Forecast 3D - Polar Stereographic",
         "quantum": "day",
         "type": "forecast",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
@@ -117,7 +117,7 @@
     "riops_fc_2dll": {
         "climatology": "",
         "envtype": ["ocean", "ice"],
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "name": "RIOPS Forecast Surface - LatLon",
         "quantum": "day",
@@ -143,7 +143,7 @@
     "riops_fc_2dps": {
         "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "name": "RIOPS Forecast Surface - Polar Stereographic",
         "quantum": "hour",
@@ -175,7 +175,7 @@
     "riops_fc_3dps": {
         "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
-        "enabled": true,
+        "enabled": false,
         "help": "",
         "name": "RIOPS Forecast 3D - Polar Stereographic",
         "quantum": "hour",
