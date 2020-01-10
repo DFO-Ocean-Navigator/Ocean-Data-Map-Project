@@ -32,7 +32,7 @@ class TestOpenDataset(unittest.TestCase):
         self.patch_dataset_config_ret_val_sqlite = {
             "giops": {
                 "enabled": True,
-                "url": "tests/testdata/databases/Historical.sqlite3",
+                "url": "tests/testdata/databases/test-nemo.sqlite3",
                 "grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc",
                 "time_dim_units": "seconds since 1950-01-01 00:00:00",
                 "quantum": "day",
@@ -102,7 +102,7 @@ class TestOpenDataset(unittest.TestCase):
         config = DatasetConfig('giops')
 
         with self.assertRaises(RuntimeError):
-            with open_dataset(config, variable='votemper', timestamp=2031436800) as ds:
+            with open_dataset(config, variable='votemper', timestamp=420) as ds:
                 pass
 
     @patch.object(DatasetConfig, "_get_dataset_config")
