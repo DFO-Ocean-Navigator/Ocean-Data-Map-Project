@@ -43,6 +43,9 @@ def open_dataset(dataset, **kwargs):
         * meta_only {bool} -- 
     """
 
+    if not dataset:
+        raise ValueError("Unknown dataset.")
+
     url = None
     if __is_datasetconfig_object(dataset):
         url = dataset.url
@@ -55,7 +58,7 @@ def open_dataset(dataset, **kwargs):
 
         dimension_list = __get_dimensions(url)
         if not dimension_list:
-            raise RuntimeError("Dataset not supported: " + url)
+            raise RuntimeError("Dataset not supported: %s." % url)
 
         args = {}
         args['calculated'] = calculated
@@ -65,9 +68,13 @@ def open_dataset(dataset, **kwargs):
 
         if not args['meta_only']:
             if __is_sqlite_database(url):
-                __check_kwargs(**kwargs)
+                __check_required_kwargs(**kwargs)
                 # Get required NC files from database and add to args
-                args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
+                nc_files = __get_nc_file_list(url, dataset, **kwargs)
+                if not nc_files:
+                    raise RuntimeError("Netcdf file list is empty.")
+
+                args['nc_files'] = nc_files
                 args['grid_angle_file_url'] = __get_grid_angle_file_url(
                     dataset)
 
@@ -97,7 +104,7 @@ def __meta_only(**kwargs) -> bool:
     return kwargs.get('meta_only', False)
 
 
-def __check_kwargs(**kwargs):
+def __check_required_kwargs(**kwargs):
     if 'variable' not in kwargs:
         raise RuntimeError(
             "Opening a dataset via sqlite requires the 'variable' keyword argument.")
@@ -123,6 +130,9 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
 
         timestamp = __get_requested_timestamps(
             db, variable[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
+
+        if not timestamp:
+            raise RuntimeError("Error finding timestamp(s) in database.")
 
         file_list = db.get_netcdf_files(
             timestamp, variable)
