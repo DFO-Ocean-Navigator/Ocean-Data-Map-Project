@@ -70,11 +70,7 @@ def open_dataset(dataset, **kwargs):
             if __is_sqlite_database(url):
                 __check_required_kwargs(**kwargs)
                 # Get required NC files from database and add to args
-                nc_files = __get_nc_file_list(url, dataset, **kwargs)
-                if not nc_files:
-                    raise RuntimeError("Netcdf file list is empty.")
-
-                args['nc_files'] = nc_files
+                args['nc_files'] = __get_nc_file_list(url, dataset, **kwargs)
                 args['grid_angle_file_url'] = __get_grid_angle_file_url(
                     dataset)
 
@@ -114,7 +110,6 @@ def __check_required_kwargs(**kwargs):
 
 
 def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
-
     with SQLiteDatabase(url) as db:
 
         variable = kwargs['variable']
@@ -136,6 +131,9 @@ def __get_nc_file_list(url: str, datasetconfig, **kwargs) -> List[str]:
 
         file_list = db.get_netcdf_files(
             timestamp, variable)
+
+        if not file_list:
+            raise RuntimeError("NetCDF file list is empty.")
 
         return file_list
 
