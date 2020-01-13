@@ -223,15 +223,15 @@ export default class Layer extends React.Component {
     let new_variable
     let new_scale
     let new_depth_list
-
+    let default_dataset = 'giops_fc_2dll'
     // Ensures we have the required data to continue
     if (this.props.datasetconfig !== undefined && this.props.datasetconfig !== null) {
 
       // Check for giops_day (Tries to load as default dataset)
-      if ('giops_day' in this.props.datasetconfig && this.props.datasetconfig['giops_day'].enabled && dataset === undefined || dataset === null) {
+      if (default_dataset in this.props.datasetconfig && this.props.datasetconfig[default_dataset].enabled && dataset === undefined || dataset === null) {
 
-        new_dataset = 'giops_day';
-        let giops_obj = this.props.datasetconfig['giops_day']
+        new_dataset = default_dataset;
+        let giops_obj = this.props.datasetconfig[default_dataset]
         new_quantum = giops_obj.quantum
 
         // Check for votemper (Tries to load as default variable)
