@@ -23,25 +23,31 @@ try:
 except ImportError:
     import pickle
 
-from thredds_crawler.crawl import Crawl
+from ftplib import FTP
 
 
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()
 
 
-def list_class4_files(class4_catalog_url):
-    # Taken from Ocean Navigator source file "misc.py".
-    c = Crawl(class4_catalog_url, select=[".*_GIOPS_.*.nc$"])
-
+def list_class4_files(class4_ftp_url):
+    ftpSite = FTP(class4_ftp_url)
+    ftpSite.login("anonymous","anonymous")
+    thisYear = datetime.datetime.now().year
+    files = []
     result = []
-    for dataset in c.datasets:
-        value = dataset.name[:-3]
+    for i in range(2011, thisYear + 1):
+        fullList = ftpSite.nlst("/class4/" + str(i))
+        for filename in fullList:
+            if ("_GIOPS_" in filename) and ("profile.nc" in filename):
+                files.append(filename[13:-3])
+    for names in files:
+        value = names
         date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
         result.append({
             'name': date.strftime("%Y-%m-%d"),
             'id': value
-        })
+            })
 
     return result
 
@@ -64,8 +70,8 @@ def main():
                   opts.config_file.name)
         sys.exit(1)
 
-    if 'CLASS4_CATALOG_URL' not in config:
-        log.error(('Catalog URL for Class4 files not found in configuration '
+    if 'CLASS4_FTP' not in config:
+        log.error(('FTP server for Class4 files not found in configuration '
                    'file'))
         sys.exit(1)
 
@@ -74,9 +80,9 @@ def main():
                    'file'))
         sys.exit(1)
 
-    log.info('Generating list of Class4 files from catalog URL %s ...',
-             config['CLASS4_CATALOG_URL'])
-    class4_files = list_class4_files(config['CLASS4_CATALOG_URL'])
+    log.info('Generating list of Class4 files from FTP site %s ...',
+             config['CLASS4_FTP'])
+    class4_files = list_class4_files(config['CLASS4_FTP'])
 
     output_file_name = os.path.join(config['CACHE_DIR'], 'class4_files.pickle')
     try:

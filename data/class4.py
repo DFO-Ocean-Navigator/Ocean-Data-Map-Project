@@ -14,21 +14,28 @@ from netCDF4 import Dataset, chartostring
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 from thredds_crawler.crawl import Crawl
+from ftplib import FTP
+
 
 
 def __list_class4_files_slowly():
-    # This function has poor performance; only use as a fallback.
-    c = Crawl(current_app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"],
-              workers=16)
-
+    ftpSite = FTP(current_app.config['CLASS4_FTP'])
+    ftpSite.login("anonymous","anonymous")
+    thisYear = datetime.datetime.now().year
+    files = []
     result = []
-    for dataset in c.datasets:
-        value = dataset.name[:-3]
+    for i in range(2011, thisYear + 1):
+        fullList = ftpSite.nlst("/class4/" + str(i))
+        for filename in fullList:
+            if ("_GIOPS_" in filename) and ("profile.nc" in filename):
+                files.append(filename[13:-3])
+    for names in files:
+        value = names
         date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
         result.append({
             'name': date.strftime("%Y-%m-%d"),
             'id': value
-        })
+            })
 
     return result
 
