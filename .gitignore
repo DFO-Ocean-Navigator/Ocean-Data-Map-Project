@@ -90,7 +90,3 @@ ENV/
 
 .vscode/*
 *.code-workspace
-runserver.sh
-oceannavigator/oceannavigator.cfg
-data/calculated_parser/parsetab.py
-data/calculated_parser/parsetab.py
