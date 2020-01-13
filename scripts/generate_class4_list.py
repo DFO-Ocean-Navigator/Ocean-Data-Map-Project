@@ -47,7 +47,7 @@ def list_class4_files(class4_ftp_url):
         result.append({
             'name': date.strftime("%Y-%m-%d"),
             'id': value
-            })
+        })
 
     return result
 

@@ -35,7 +35,7 @@ def __list_class4_files_slowly():
         result.append({
             'name': date.strftime("%Y-%m-%d"),
             'id': value
-            })
+        })
 
     return result
 
