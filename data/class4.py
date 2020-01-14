@@ -96,7 +96,8 @@ def list_class4_files():
 
 
 def list_class4(d):
-    dataset_url = current_app.config["CLASS4_URL"] % d
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (d[7:11], d)
 
     with Dataset(dataset_url, 'r') as ds:
         lat = ds['latitude'][:]
@@ -143,7 +144,8 @@ def get_view_from_extent(extent):
 
 
 def class4(class4_id, projection, resolution, extent):
-    dataset_url = current_app.config["CLASS4_URL"] % class4_id
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
 
     proj = pyproj.Proj(init=projection)
     view = get_view_from_extent(extent)
@@ -205,7 +207,8 @@ def class4(class4_id, projection, resolution, extent):
 
 
 def list_class4_forecasts(class4_id):
-    dataset_url = current_app.config["CLASS4_URL"] % class4_id
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
