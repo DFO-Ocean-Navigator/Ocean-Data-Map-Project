@@ -712,8 +712,12 @@ export default class AreaWindow extends React.Component {
 
     let time = "";
     let timeObj = this.state.output_endtime//new Date(this.props.state.time);
+    timeObj = moment(timeObj.valueOf()) //new Date(this.props.state.time);
+    timeObj.tz('GMT')
     let starttimeObj = this.state.output_starttime//new Date(this.props.state.starttime);
-
+    starttimeObj = moment(starttimeObj.valueOf()) //new Date(this.props.state.time);
+    starttimeObj.tz('GMT')
+    
     var subsetPanel = null;
     if (this._mounted) {
       subsetPanel = (<Panel
