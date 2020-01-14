@@ -488,3 +488,10 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 @bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
 def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     return routes.routes_impl.mbt_impl(projection, tiletype, zoom, x, y)
+
+@bp_v1_0.after_request
+def after_request(response):
+    header = response.headers
+    # Relying on iptables to keep this safe
+    header['Access-Control-Allow-Origin'] = '*'
+    return response
