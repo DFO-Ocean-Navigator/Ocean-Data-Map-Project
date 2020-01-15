@@ -38,7 +38,8 @@ class Class4Plotter(Plotter):
 
     def load_data(self):
         indices = self.class4[:, 1].astype(int)
-        with Dataset(current_app.config["CLASS4_URL"] % self.class4[0][0], 'r') as ds:
+        # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+        with Dataset(current_app.config["CLASS4_URL"] % (self.class4[0][0][7:11], self.class4[0][0]), 'r') as ds:
             self.latitude = ds['latitude'][indices]
             self.longitude = ds['longitude'][indices]
             self.ids = list(map(str.strip, chartostring(ds['id'][indices])))
@@ -81,7 +82,8 @@ class Class4Plotter(Plotter):
         additional_model_names = []
         for m in self.models:
             additional_model_names.append(m.split("_")[2])
-            with Dataset(current_app.config["CLASS4_URL"] % m, 'r') as ds:
+            # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+            with Dataset(current_app.config["CLASS4_URL"] % (m[7:11], m), 'r') as ds:
                 m_data = []
                 for i in indices:
                     data = []

@@ -14,16 +14,23 @@ from netCDF4 import Dataset, chartostring
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 from thredds_crawler.crawl import Crawl
+from ftplib import FTP
+
 
 
 def __list_class4_files_slowly():
-    # This function has poor performance; only use as a fallback.
-    c = Crawl(current_app.config["CLASS4_CATALOG_URL"], select=[".*_GIOPS_.*.nc$"],
-              workers=16)
-
+    ftpSite = FTP(current_app.config['CLASS4_FTP'])
+    ftpSite.login("anonymous","anonymous")
+    thisYear = datetime.datetime.now().year
+    files = []
     result = []
-    for dataset in c.datasets:
-        value = dataset.name[:-3]
+    for i in range(2011, thisYear + 1):
+        fullList = ftpSite.nlst("/class4/" + str(i))
+        for filename in fullList:
+            if ("_GIOPS_" in filename) and ("profile.nc" in filename):
+                files.append(filename[13:-3])
+    for names in files:
+        value = names
         date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
         result.append({
             'name': date.strftime("%Y-%m-%d"),
@@ -89,7 +96,8 @@ def list_class4_files():
 
 
 def list_class4(d):
-    dataset_url = current_app.config["CLASS4_URL"] % d
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (d[7:11], d)
 
     with Dataset(dataset_url, 'r') as ds:
         lat = ds['latitude'][:]
@@ -136,7 +144,8 @@ def get_view_from_extent(extent):
 
 
 def class4(class4_id, projection, resolution, extent):
-    dataset_url = current_app.config["CLASS4_URL"] % class4_id
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
 
     proj = pyproj.Proj(init=projection)
     view = get_view_from_extent(extent)
@@ -198,7 +207,8 @@ def class4(class4_id, projection, resolution, extent):
 
 
 def list_class4_forecasts(class4_id):
-    dataset_url = current_app.config["CLASS4_URL"] % class4_id
+    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
