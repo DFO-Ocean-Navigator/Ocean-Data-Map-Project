@@ -232,17 +232,22 @@ def list_class4_forecasts(class4_id):
 
 
 def list_class4_models(class4_id):
-    select = ["(.*/)?%s.*_profile.nc$" % class4_id[:16]]
-    c = Crawl(current_app.config["CLASS4_CATALOG_URL"], select=select)
-
+    ftpSite = FTP(current_app.config['CLASS4_FTP'])
+    ftpSite.login("anonymous","anonymous")
+    thisYear = datetime.datetime.now().year
+    files = []
     result = []
-    for dataset in c.datasets:
-        value = dataset.name[:-3]
-        model = value.split("_")[2]
+    for i in range(2011, thisYear + 1):
+        fullList = ftpSite.nlst("/class4/" + str(i))
+        for filename in fullList:
+            if "profile.nc" in filename:
+                files.append(filename[13:-3])
+    result = []
+    for filenames in files:
+        model = filenames.split("_")[2]
         if model != "GIOPS":
             result.append({
-                'value': value.split("_")[2],
-                'id': value
+                'value': model,
+                'id': filenames
             })
-
     return result
