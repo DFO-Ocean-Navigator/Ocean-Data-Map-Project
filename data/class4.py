@@ -5,6 +5,7 @@ import fcntl
 import os
 import pickle as pickle
 import time
+from ftplib import FTP
 
 import cftime
 import numpy as np
@@ -13,14 +14,11 @@ from flask import current_app
 from netCDF4 import Dataset, chartostring
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
-from thredds_crawler.crawl import Crawl
-from ftplib import FTP
-
 
 
 def __list_class4_files_slowly():
     ftpSite = FTP(current_app.config['CLASS4_FTP'])
-    ftpSite.login("anonymous","anonymous")
+    ftpSite.login("anonymous", "anonymous")
     thisYear = datetime.datetime.now().year
     files = []
     result = []
@@ -145,7 +143,8 @@ def get_view_from_extent(extent):
 
 def class4(class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
+    dataset_url = current_app.config["CLASS4_URL"] % (
+        class4_id[7:11], class4_id)
 
     proj = pyproj.Proj(init=projection)
     view = get_view_from_extent(extent)
@@ -208,7 +207,8 @@ def class4(class4_id, projection, resolution, extent):
 
 def list_class4_forecasts(class4_id):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_URL"] % (class4_id[7:11], class4_id)
+    dataset_url = current_app.config["CLASS4_URL"] % (
+        class4_id[7:11], class4_id)
     with Dataset(dataset_url, 'r') as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
@@ -233,10 +233,9 @@ def list_class4_forecasts(class4_id):
 
 def list_class4_models(class4_id):
     ftpSite = FTP(current_app.config['CLASS4_FTP'])
-    ftpSite.login("anonymous","anonymous")
+    ftpSite.login("anonymous", "anonymous")
     thisYear = datetime.datetime.now().year
     files = []
-    result = []
     for i in range(2011, thisYear + 1):
         fullList = ftpSite.nlst("/class4/" + str(i))
         for filename in fullList:

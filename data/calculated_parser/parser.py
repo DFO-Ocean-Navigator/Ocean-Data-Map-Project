@@ -68,7 +68,7 @@ class Parser:
             else:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
-            raise SyntaxError
+            raise SyntaxError     
 
         return tuple(key)
 
