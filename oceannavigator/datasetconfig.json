@@ -55,7 +55,7 @@
             "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
+            "sspeed": { "name": "Speed of Sound", "hide": true, "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
         }
     },
     "giops_fc_2dps": {
@@ -143,10 +143,10 @@
     "riops_fc_2dps": {
         "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
-        "enabled": false,
+        "enabled": true,
         "help": "",
         "name": "RIOPS Forecast Surface - Polar Stereographic",
-        "quantum": "hour",
+        "quantum": "day",
         "type": "forecast",
         "cache": 6,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
@@ -175,28 +175,23 @@
     "riops_fc_3dps": {
         "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
-        "enabled": false,
+        "enabled": true,
         "help": "",
         "name": "RIOPS Forecast 3D - Polar Stereographic",
-        "quantum": "hour",
+        "quantum": "day",
         "type": "forecast",
         "cache": 6,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "url": "/data/db/riops-fc3dps.sqlite3",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
+        "lat_var_key": "yc",
+        "lon_var_key": "xc",
         "variables": {
             "vozocrtx": { "envtype": "ocean", "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "vomecrty": { "envtype": "ocean", "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "votemper": { "envtype": "ocean", "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
             "vosaline": { "envtype": "ocean", "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" },
-            "soundchannelaxis": {"name": "Sound Channel Axis (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "soundchannelaxis(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "criticaldepth": {"name": "Sound Channel Bottom", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "criticaldepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "soniclayerdepth": {"name": "Sonic Layer Depth (BETA)", "envtype": "ocean", "scale": [0,1000], "scale_factor": 1, "unit": "m", "equation": "soniclayerdepth(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "sscp": {"name": "Secondary Sound Channel Potential", "envtype": "ocean", "scale": [0, 1], "scale_factor": 1, "unit": "m", "equation": "sscp(~depth, latitude, ~votemper - 273.15, ~vosaline)"},
-            "depthexcess": {"name": "Depth Excess (BETA)", "envtype": "ocean", "scale": [0, 1000], "scale_factor": 1, "unit": "m", "equation": "depthexcess(~depth, latitude, ~votemper - 273.15, ~vosaline)"}        
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
         }
     },
     "glorys3": {
