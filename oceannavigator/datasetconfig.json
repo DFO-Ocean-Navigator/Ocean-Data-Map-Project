@@ -34,7 +34,7 @@
             "iicepressure": { "name": "Internal Ice Pressure", "envtype": "ice", "unit": "Nm-1", "scale": [-1, 1] }
         }
     },
-    "giops_fc_3dll": {
+    "giops_day": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/giops-fc3dll.sqlite3",
         "name": "GIOPS Forecast 3D - LatLon",
@@ -117,7 +117,7 @@
     "riops_fc_2dll": {
         "climatology": "",
         "envtype": ["ocean", "ice"],
-        "enabled": false,
+        "enabled": true,
         "help": "",
         "name": "RIOPS Forecast Surface - LatLon",
         "quantum": "day",
