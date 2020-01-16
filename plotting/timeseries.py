@@ -118,22 +118,22 @@ class TimeseriesPlotter(PointPlotter):
             # depths = dataset.depths
             depths = dep
 
-        if point_data.shape[1] == 2:
-            # Under the current API this indicates that velocity data is being
-            # loaded. Save each velocity component (X and Y) for possible CSV
-            # export later.
-            self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
+            if point_data.shape[1] == 2:
+                # Under the current API this indicates that velocity data is being
+                # loaded. Save each velocity component (X and Y) for possible CSV
+                # export later.
+                self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
 
-            point_data = np.ma.expand_dims(
-                np.sqrt(
-                    point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
-                ), 1
-            )
+                point_data = np.ma.expand_dims(
+                    np.sqrt(
+                        point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
+                    ), 1
+                )
 
-        self.times = times
-        self.data = point_data
-        self.depths = depths
-        self.depth_unit = "m"
+            self.times = times
+            self.data = point_data
+            self.depths = depths
+            self.depth_unit = "m"
 
     def csv(self):
         header = [
