@@ -95,7 +95,7 @@ class NetCDFData(Data):
                 return self._dataset.variables[c]
 
         raise KeyError("None of ", candidates,
-                       " where found in ", self._dataset)
+                       " were found in ", self._dataset)
 
     def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
@@ -176,8 +176,7 @@ class NetCDFData(Data):
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
 
-            """
-            quantum = query.get('quantum')
+            quantum = self._dataset_config.quantum
             if quantum == 'day' or quantum == 'hour':
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
@@ -199,8 +198,6 @@ class NetCDFData(Data):
             time_range = [dateutil.parser.parse(
                 x) for x in query.get('time').split(',')]
             time_range = [find_time_index(x) for x in time_range]
-            """
-            raise ServerError("Not implemented.")
 
         apply_time_range = False
         if time_range[0] != time_range[1]:
@@ -265,16 +262,9 @@ class NetCDFData(Data):
                 self.get_dataset_variable(time_var)[time_range[1]].values)), "yyyyMMdd"))
 
         dataset_name = query.get('dataset_name')
-        # Figure out coordinate dimension names
-        if "riops" in dataset_name:
-            lon_coord = "xc"
-            lat_coord = "yc"
-        elif dataset_name == "giops_forecast":
-            lon_coord = "longitude"
-            lat_coord = "latitude"
-        else:
-            lon_coord = "x"
-            lat_coord = "y"
+        lat_coord = self._dataset_config.lat_var_key
+        lon_coord = self._dataset_config.lon_var_key
+
         # Do subset along coordinates
         subset = self._dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
 
