@@ -191,7 +191,7 @@
             "vomecrty": { "envtype": "ocean", "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "votemper": { "envtype": "ocean", "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
             "vosaline": { "envtype": "ocean", "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
         }
     },
     "glorys3": {
