@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 import xarray as xr
 
@@ -30,13 +32,20 @@ class CalculatedData(NetCDFData):
 
         self._calculated_variable_list = None
 
-    """
-        Returns the value of a given variable name from the dataset
-
-        key: The raw name of the variable
-    """
+    def __get_calculated_dims(self, variable_key: str) -> list:
+        try:
+            return self._calculated[variable_key]['dims']
+        except KeyError:
+            raise KeyError(
+                "{} does not have a dims attribute defined in datasetconfig.json. This is required for all calculated variables.".format(variable_key))
 
     def get_dataset_variable(self, key: str):
+        """
+        Returns the value of a given variable name from the dataset
+
+        Parameters:
+        key: The raw name of the variable (e.g. votemper, sspeed, etc.)
+        """
         if key in self._calculated:
             # if the variable is a calculated one, return the CalculatedArray,
             # otherwise pass the request along to the underlying dataset.
@@ -46,15 +55,19 @@ class CalculatedData(NetCDFData):
                               self).get_dataset_variable(key).attrs
 
             attrs = {**attrs, **self._calculated[key]}
+
             return CalculatedArray(self._dataset,
-                                   self._calculated[key]['equation'], attrs, self.url, self._meta_only)
+                                   self._calculated[key]['equation'],
+                                   self.__get_calculated_dims(key),
+                                   attrs,
+                                   self.url)
         else:
             return self._dataset.variables[key]
 
     @property
     def variables(self):
         """
-        Returns a list of all data variables and their 
+        Returns a list of all data variables and their
         attributes in the dataset.
         """
         if self._calculated_variable_list is None:
@@ -64,14 +77,12 @@ class CalculatedData(NetCDFData):
             for name, data in self._calculated.items():
                 if name not in variable_list:
                     # New Variable
-                    dims = CalculatedArray(
-                        self._dataset, data['equation'], db_url=self.url, meta_only=self._meta_only).dims
                     temp_list.append(
                         Variable(
                             name,
                             data.get('long_name', name),
                             data.get('units', '1'),
-                            dims,
+                            self.__get_calculated_dims(name),
                             data.get('valid_min',
                                      np.finfo(np.float64).min),
                             data.get('valid_max',
@@ -92,7 +103,7 @@ class CalculatedArray():
     data to the calling method.
     """
 
-    def __init__(self, parent, expression, attrs={}, db_url="", meta_only=False):
+    def __init__(self, parent, expression, dims, attrs={}, db_url=""):
         """
         Parameters:
         parent -- the underlying dataset
@@ -100,12 +111,13 @@ class CalculatedArray():
         attrs -- optional, any attributes that the CalculatedArray should have
         """
         self._parent = parent
-        self._expression = expression
+        self._expression: str = expression
         self._parser = data.calculated_parser.parser.Parser()
         self._parser.lexer.lexer.input(expression)
+        self._dims: list = dims
         self._attrs: dict = attrs
         self._db_url: str = db_url
-        self._meta_only: bool = meta_only
+        self._shape: tuple = self.__calculate_var_shape()
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
@@ -136,7 +148,14 @@ class CalculatedArray():
 
         data = self._parser.parse(
             self._expression, self._parent, key, key_dims)
+
         return xr.DataArray(data)
+
+    def __calculate_var_shape(self) -> tuple:
+        # Determine shape of calculated variable based on its
+        # declared dims in datasetconfig.json
+        return tuple(self._parent[s].shape[0]
+                     for s in self._dims)
 
     @property
     def attrs(self):
@@ -148,56 +167,12 @@ class CalculatedArray():
         return AttrDict(self._attrs)
 
     @property
-    def shape(self):
-        return max(
-            map(
-                lambda v: self._parent.variables[v].shape,
-                filter(
-                    lambda x: x in self._parent.variables,
-                    self._parser.lexer.variables
-                )
-            ),
-            key=len
-        )
+    def shape(self) -> tuple:
+        return self._shape
 
     @property
-    def dims(self):
-
-        if self._meta_only:
-            return self.__dims_meta_only()
-
-        return self.__dims_opened()
-
-    def __dims_meta_only(self):
-        result = ()
-
-        with SQLiteDatabase(self._db_url) as db:
-            variables = db.get_data_variables()
-
-            for v in self._parser.lexer.variables:
-                if v not in variables:
-                    continue
-
-                d = db.get_variable_dims(v)
-
-                if len(d) > len(result):
-                    result = d
-
-        return result
-
-    def __dims_opened(self):
-        result = ()
-
-        for v in self._parser.lexer.variables:
-            if v not in self._parent.variables:
-                continue
-
-            d = self.__get_parent_variable_dims(v)
-
-            if len(d) > len(result):
-                result = d
-
-        return result
+    def dims(self) -> list:
+        return self._dims
 
     def __get_parent_variable_dims(self, variable: str):
 

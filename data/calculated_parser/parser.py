@@ -1,8 +1,10 @@
-import ply.yacc as yacc
-import numpy as np
+#!/usr/bin/env python
 
-import data.calculated_parser.lexer
+import numpy as np
+import ply.yacc as yacc
+
 import data.calculated_parser.functions as functions
+import data.calculated_parser.lexer
 
 
 class Parser:
@@ -16,13 +18,14 @@ class Parser:
         # highest, followed by exponentiation, then multiplication/division and
         # addition/subtraction is last on the list.
         self.precedence = (
-            ('left','PLUS','MINUS'),
-            ('left','TIMES','DIVIDE'),
-            ('left','POWER'),
-            ('right','UMINUS'),
-            )
+            ('left', 'PLUS', 'MINUS'),
+            ('left', 'TIMES', 'DIVIDE'),
+            ('left', 'POWER'),
+            ('right', 'UMINUS'),
+        )
         self.parser = yacc.yacc(module=self)
         self.data = None
+        self.expression = None
         self.result = np.nan
 
     def parse(self, expression, data, key, dims):
@@ -38,9 +41,10 @@ class Parser:
         Returns a numpy array of data.
         """
         self.data = data
-        self.result = np.nan
+        self.result = np.nan  # populated by p_statement_expr()
         self.key = key
         self.dims = dims
+        self.expression = expression
         self.parser.parse(expression)
         self.data = None
         self.key = None
@@ -68,7 +72,7 @@ class Parser:
             else:
                 key = [d[k] for k in variable.dimensions]
         except KeyError:
-            raise SyntaxError     
+            raise SyntaxError
 
         return tuple(key)
 
@@ -81,10 +85,10 @@ class Parser:
     def p_expression_variable(self, t):
         'expression : ID'
         t[0] = self.data.variables[t[1]][
-                self.get_key_for_variable(
-                    self.data.variables[t[1]]
-                    )
-                ]
+            self.get_key_for_variable(
+                self.data.variables[t[1]]
+            )
+        ]
 
     def p_expression_uop(self, t):
         '''expression : MINUS expression %prec UMINUS'''
@@ -142,4 +146,5 @@ class Parser:
         t[0] = t[1]
 
     def p_error(self, t):
-        t[0] = None
+        raise SyntaxError(
+            'Syntax error in equation: {}...{}'.format(self.expression, t))
