@@ -149,7 +149,7 @@ export default class Map extends React.PureComponent {
       if (this.props.state.vectortype) {
         $.ajax({
           url: (
-            `/api/${this.props.state.vectortype}` +
+            `/api/v1.0/${this.props.state.vectortype}` +
             `/${projection.getCode()}` +
             `/${Math.round(resolution)}` +
             `/${extent.map(function (i) { return Math.round(i);})}` +
