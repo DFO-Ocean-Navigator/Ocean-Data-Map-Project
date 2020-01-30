@@ -560,7 +560,7 @@ class NetCDFData(Data):
         """Finds the lat and lon variable arrays in the dataset.
 
         Returns:
-            list -- list containing the xarray.DataArray's for latitude and 
+            list -- list containing the xarray.DataArray's for latitude and
             longitude.
         """
         return (
@@ -584,7 +584,7 @@ class NetCDFData(Data):
 
     @property
     def variables(self):
-        """Returns a list of all data variables and their 
+        """Returns a list of all data variables and their
         attributes in the dataset.
 
         Returns:
