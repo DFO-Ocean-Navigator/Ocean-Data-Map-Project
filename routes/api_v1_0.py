@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import json
+import sqlite3
 
 import numpy as np
 from flask import (Blueprint, Flask, Response, jsonify, request, send_file,
@@ -15,6 +16,7 @@ from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
 from utils.errors import APIError, ErrorBase
+import xarray as xr
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -373,14 +375,19 @@ def timestamps():
         raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
 
-    vals = []
-    with SQLiteDatabase(config.url) as db:
-        if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'], 
-                                                    [v.key for v in db.get_data_variables()])
-            vals = db.get_timestamps(data_vars[0])
-        else:
-            vals = db.get_timestamps(variable)
+    try:
+        with SQLiteDatabase(config.url) as db:
+            if variable in config.calculated_variables:
+                data_vars = get_data_vars_from_equation(
+                    config.calculated_variables[variable]["equation"],
+                    [v.key for v in db.get_data_variables()],
+                )
+                vals = db.get_timestamps(data_vars[0])
+            else:
+                vals = db.get_timestamps(variable)
+    except sqlite3.OperationalError:
+        with xr.open_dataset(config.url, decode_cf=False) as ds:
+            vals = [int(val) for val in ds.time.values]
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
