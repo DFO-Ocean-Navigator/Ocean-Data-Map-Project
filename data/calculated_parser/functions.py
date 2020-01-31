@@ -55,6 +55,16 @@ def magnitude(a, b):
     return np.sqrt(a ** 2 + b ** 2)
 
 
+def __calc_pressure(depth, latitude):
+    pressure = []
+    try:
+        pressure = [seawater.pres(d, latitude) for d in depth]
+    except TypeError:
+        pressure = seawater.pres(depth, latitude)
+
+    return pressure
+
+
 def sspeed(depth, latitude, temperature, salinity):
     """
     Calculates the speed of sound.
@@ -65,13 +75,61 @@ def sspeed(depth, latitude, temperature, salinity):
     temperature: The temperatures(s) in Celsius
     salinity: The salinity (unitless)
     """
-    try:
-        press = [seawater.pres(d, latitude) for d in depth]
-    except TypeError:
-        press = seawater.pres(depth, latitude)
+    press = __calc_pressure(depth, latitude)
 
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
+
+
+def density(depth, latitude, temperature, salinity):
+    """
+    Calculates the density of sea water.
+
+    Parameters:
+    depth: The depth(s) in meters
+    latitude: The latitude(s) in degrees North
+    temperature: The temperatures(s) in Celsius
+    salinity: The salinity (unitless)
+    """
+
+    press = __calc_pressure(depth, latitude)
+
+    density = seawater.dens(salinity, temperature, press)
+    return np.array(density)
+
+
+def heatcap(depth, latitude, temperature, salinity):
+    """
+    Calculates the heat capacity of sea water.
+
+    Parameters:
+    depth: The depth(s) in meters
+    latitude: The latitude(s) in degrees North
+    temperature: The temperatures(s) in Celsius
+    salinity: The salinity (unitless)
+    """
+
+    press = __calc_pressure(depth, latitude)
+
+    heatcap = seawater.cp(salinity, temperature, press)
+    return np.array(heatcap)
+
+
+def tempgradient(depth, latitude, temperature, salinity):
+    """
+    Calculates the adiabatic temp gradient of sea water.
+
+    Parameters:
+    depth: The depth(s) in meters
+    latitude: The latitude(s) in degrees North
+    temperature: The temperatures(s) in Celsius
+    salinity: The salinity (unitless)
+    """
+
+    press = __calc_pressure(depth, latitude)
+
+    tempgradient = seawater.adtg(salinity, temperature, press)
+    return np.array(tempgradient)
 
 
 def _metpy(func, data, lat, lon, dim):
