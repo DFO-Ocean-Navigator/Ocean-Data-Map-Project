@@ -1,12 +1,10 @@
 import datetime
 import hashlib
 import json
-
 import numpy as np
-from flask import (Blueprint, Flask, Response, jsonify, request, send_file,
+from flask import (Blueprint, Flask, Response, current_app, jsonify, request, send_file,
                    send_from_directory)
-from flask_babel import gettext
-
+from flask_babel import format_date, gettext
 import routes.routes_impl
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
@@ -14,7 +12,35 @@ from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
 from oceannavigator import DatasetConfig
 from plotting.scriptGenerator import generatePython, generateR
-from utils.errors import APIError, ErrorBase
+from utils.errors import APIError, ErrorBase, ClientError
+import base64
+import gzip
+import io
+import os
+import re
+import shutil
+import sqlite3
+from io import BytesIO
+import netCDF4
+import pytz
+from PIL import Image
+import data.class4 as class4
+import plotting.colormap
+import plotting.scale
+import plotting.tile
+import utils.misc
+from plotting.class4 import Class4Plotter
+from plotting.drifter import DrifterPlotter
+from plotting.hovmoller import HovmollerPlotter
+from plotting.map import MapPlotter
+from plotting.observation import ObservationPlotter
+from plotting.profile import ProfilePlotter
+from plotting.sound import SoundSpeedPlotter
+from plotting.stats import stats as areastats
+from plotting.stick import StickPlotter
+from plotting.timeseries import TimeseriesPlotter
+from plotting.transect import TransectPlotter
+from plotting.ts import TemperatureSalinityPlotter
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
