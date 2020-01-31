@@ -58,6 +58,23 @@
             "sspeed": { "name": "Speed of Sound", "hide": true, "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
         }
     },
+    "ssc_wwatch3_fc_2dll": {
+        "envtype": ["ocean"],
+        "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf2DWaveFields30mV17-02",
+        "name": "SalishSeaCast WaveWatch III® Forecast",
+        "quantum": "hour",
+        "type": "forecast",
+        "time_dim_units": "seconds since 1970-01-01T00:00:00Z",
+        "enabled": true,
+        "cache": 6,
+        "attribution": "EOAS UBC, IOS DFO, ES uVic",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "SalishSeaCast WaveWatch III® Forecast -&nbsp;<a href=\\\"https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf2DWaveFields30mV17-02.html\\\" target=\\\"_new\\\">ERDDAP Metadata</a>",
+        "variables": {
+            "hs": { "name": "Significant Wave Height", "envtype": "ocean", "unit": "m", "scale": [0, 2] }
+        }
+    },
     "giops_fc_2dps": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/giops-fc2dps.sqlite3",
