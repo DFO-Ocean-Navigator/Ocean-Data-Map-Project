@@ -778,5 +778,33 @@
                 "unit": "Celsius"
             }
         }
+    },
+    "cmems_monthly": {
+        "url": "/data/db/cmems_monthly.sqlite3",
+        "name": "CMEMS Global Reanalysis (Monthly) 1/12 deg",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "thetao": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "so": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "vo": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uo": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(uo, vo)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vsi": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "usi": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "sithick": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "bottomT": { "name": "Sea Floor Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "zos": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlotst": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
     }
 }
+
