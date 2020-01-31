@@ -3,6 +3,7 @@
 import datetime
 import os
 import re
+import sqlite3
 import uuid
 import warnings
 import zipfile
@@ -594,11 +595,25 @@ class NetCDFData(Data):
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
-
-            with SQLiteDatabase(self.url) as db:
-
-                self._variable_list = db.get_data_variables()  # Cache the list for later
+        if self._variable_list is None:
+            try:
+                with SQLiteDatabase(self.url) as db:
+                    self._variable_list = db.get_data_variables()  # Cache the list for later
+            except sqlite3.OperationalError:
+                with xr.open_dataset(self.url) as ds:
+                    ## TODO: Probably push this to a function or method like db.get_data_variables()
+                    result = [
+                        Variable(
+                            var,
+                            ds[var].attrs["long_name"],
+                            ds[var].attrs["units"],
+                            [dim for dim in ds.dims],
+                            ds[var].attrs["valid_min"],
+                            ds[var].attrs["valid_max"],
+                        )
+                        for var in ds.data_vars
+                    ]
+                    self._variable_list = VariableList(result)
 
         return self._variable_list
 
