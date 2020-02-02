@@ -41,19 +41,23 @@ class Data(object, metaclass=abc.ABCMeta):
     def timestamp_to_iso_8601(self, timestamp):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def timestamps(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def depths(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def variables(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def depth_dimensions(self):
         pass
 
