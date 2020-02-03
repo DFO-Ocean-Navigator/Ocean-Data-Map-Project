@@ -40,6 +40,10 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'phosphate': cmocean.cm.matter,
+    'nitrate': cmocean.cm.matter,
+    'partial pressure': cmocean.cm.matter,
+    'primary production': cmocean.cm.algae,
     'temp gradient': cmocean.cm.thermal,
     'heat': cmocean.cm.thermal,
     'density': cmocean.cm.dense,
@@ -68,6 +72,19 @@ colormaps = {
     'silicate': make_colormap([
         _c('#ffffff'),
         _c('#57a6bd'),
+    ]),
+    'ph': make_colormap([
+        _c('#ED1B26'),
+        _c('#F46432'), 0.1, _c('#F46432'),
+        _c('#FFC324'), 0.2, _c('#FFC324'),
+        _c('#84C341'), 0.3, _c('#84C341'),
+        _c('#33A94B'), 0.4, _c('#33A94B'),
+        _c('#0AB8B6'), 0.5, _c('#0AB8B6'),
+        _c('#4591CD'), 0.6, _c('#4591CD'),
+        _c('#5A51A2'), 0.7, _c('#5A51A2'),
+        _c('#63459D'), 0.8, _c('#63459D'),
+        _c('#6C2180'), 0.9, _c('6C2180'),
+        _c('#49176E')
     ]),
     'mercator_current': make_colormap([
         _c('#e1f3fc'),
