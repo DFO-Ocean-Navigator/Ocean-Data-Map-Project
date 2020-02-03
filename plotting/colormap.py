@@ -40,8 +40,6 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
-    'phosphate': cmocean.cm.matter,
-    'nitrate': cmocean.cm.matter,
     'partial pressure': cmocean.cm.matter,
     'primary production': cmocean.cm.algae,
     'temp gradient': cmocean.cm.thermal,
