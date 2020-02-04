@@ -788,6 +788,56 @@
             "zos": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
             "mlotst": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
         }
-    }
+    },
+    "freebiorys2v4_monthly": {
+        "name": "Global Reanalysis Bio 2v4 (Monthly)",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-global-reanalysis-bio-001-029-monthly.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "phyc": { "name": "Total Phytoplankton", "unit": "mmol/m^3", "scale": [0, 13] },
+            "ph": { "name": "PH", "unit": "1", "scale": [7, 8.3] },
+            "spco2": { "name": "Surface Partial Pressure of CO2", "unit": "Pa", "scale": [25, 78] },
+            "fe": { "name": "Dissolved Iron", "unit": "mmol/m^3", "scale": [4.9e-6, 0.02] },
+            "nppv": { "name": "Total Primary Production of Phyto", "unit": "mmol/m^3/day", "scale": [0, 100] },
+            "o2": { "name": "Dissolved Oxygen", "unit": "mmol/m^3", "scale": [0, 410] },
+            "si": { "name": "Dissolved Silicate", "unit": "mmol/m^3", "scale": [0, 77] },
+            "po4": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 3] },
+            "no3": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 13.5] },
+            "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
+        }
+    },
+    "freebiorys2v4_daily": {
+        "name": "Global Reanalysis Bio 2v4 (Daily)",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-global-reanalysis-bio-001-029-daily.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "phyc": { "name": "Total Phytoplankton", "unit": "mmol/m^3", "scale": [0, 13] },
+            "ph": { "name": "PH", "unit": "1", "scale": [7, 8.3] },
+            "spco2": { "name": "Surface Partial Pressure of CO2", "unit": "Pa", "scale": [25, 78] },
+            "fe": { "name": "Dissolved Iron", "unit": "mmol/m^3", "scale": [4.9e-6, 0.02] },
+            "nppv": { "name": "Total Primary Production of Phyto", "unit": "mmol/m^3/day", "scale": [0, 100] },
+            "o2": { "name": "Dissolved Oxygen", "unit": "mmol/m^3", "scale": [0, 410] },
+            "si": { "name": "Dissolved Silicate", "unit": "mmol/m^3", "scale": [0, 77] },
+            "po4": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 3] },
+            "no3": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 13.5] },
+            "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
+        }
+     }
 }
 
