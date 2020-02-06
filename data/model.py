@@ -78,7 +78,6 @@ class Model(metaclass=abc.ABCMeta):
 
         if not hasattr(latitude, "__len__"):
             latitude = [latitude]
-            longitude = [longitude]
             profile = [profile]
             orig_dep = [orig_dep]
 
