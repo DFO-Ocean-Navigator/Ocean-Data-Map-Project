@@ -167,7 +167,7 @@ class SQLiteDatabase:
 
         self.c.execute(
             """
-            SELECT
+            SELECT DISTINCT
                 timestamp
             FROM
                 TimestampVariableFilepath tvf
