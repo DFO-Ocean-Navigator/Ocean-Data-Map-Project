@@ -61,11 +61,10 @@ class Model(metaclass=abc.ABCMeta):
                 latitude, longitude, depth, time, variable, return_depth=return_depth
             )
             return numpy.reshape(a, area.shape[1:]), numpy.reshape(d, area.shape[1:])
-        else:
-            a = self.get_point(
-                latitude, longitude, depth, time, variable, return_depth=return_depth
-            )
-            return numpy.reshape(a, area.shape[1:])
+        a = self.get_point(
+            latitude, longitude, depth, time, variable, return_depth=return_depth
+        )
+        return numpy.reshape(a, area.shape[1:])
 
     def get_path_profile(self, path, time, variable, numpoints=100):
         distances, times, lat, lon, bearings = geo.path_to_points(path, numpoints)
