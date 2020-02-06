@@ -16,6 +16,7 @@ from shapely.geometry.polygon import LinearRing
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
+from thredds_crawler.crawl import Crawl
 
 
 def list_kml_files(subdir):
