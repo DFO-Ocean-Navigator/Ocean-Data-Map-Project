@@ -1,56 +1,54 @@
-import math
-import re
-import warnings
-
-import cftime
 import numpy as np
 import pyresample
-import pytz
-from cachetools import TTLCache
-from netCDF4 import Dataset
 from pint import UnitRegistry
 
 from data.calculated import CalculatedData
+import data.geo as geo
+from data.model import Model
 from data.nearest_grid_point import find_nearest_grid_point
-from data.variable import Variable
-from data.variable_list import VariableList
 from utils.errors import APIError
 
 
-class Mercator(CalculatedData):
+class Mercator(Model):
     __depths = None
 
-    def __init__(self, url, **kwargs):
+    def __init__(self, nc_data: CalculatedData) -> None:
+        super().__init__(nc_data)
         self.latvar = None
         self.lonvar = None
         self.__latsort = None
         self.__lonsort = None
-
-        super(Mercator, self).__init__(url, **kwargs)
+        self.nc_data = nc_data
+        self._dataset = nc_data._dataset
+        self._meta_only = nc_data.meta_only
+        self.variables = nc_data.variables
 
     def __enter__(self):
-        super(Mercator, self).__enter__()
+        self.nc_data.__enter__()
+        self._dataset = self.nc_data._dataset
 
         if not self._meta_only:
             if self.latvar is None:
-                self.latvar, self.lonvar = self.latlon_variables
+                self.latvar, self.lonvar = self.nc_data.latlon_variables
                 self.__latsort = np.argsort(self.latvar[:])
                 self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
         return self
 
-    """
-        Finds, caches, and returns the valid depths for the dataset.
-    """
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.nc_data.__exit__(exc_type, exc_value, traceback)
+
     @property
     def depths(self) -> np.ndarray:
+        """Finds, caches, and returns the valid depths for the dataset.
+        """
         if self.__depths is None:
             var = None
-            for v in self.depth_dimensions:
+            for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
                 if v in list(self._dataset.coords.keys()):
                     # Get DataArray for depth
-                    var = self.get_dataset_variable(v)
+                    var = self.nc_data.get_dataset_variable(v)
                     break
 
             if var is not None:
@@ -120,7 +118,7 @@ class Mercator(CalculatedData):
                     lats=grid_lat
                 )
 
-                output.append(super(Mercator, self)._interpolate(input_def, output_def, data[:, :, d].transpose()))
+                output.append(self.nc_data.interpolate(input_def, output_def, data[:, :, d].transpose()))
 
             output = np.ma.array(output).transpose()
         else:
@@ -136,12 +134,30 @@ class Mercator(CalculatedData):
                 lats=grid_lat
             )
 
-            output = super(Mercator, self)._interpolate(input_def, output_def, data.transpose())
+            output = self.nc_data.interpolate(input_def, output_def, data.transpose())
 
         if len(origshape) == 4:
             output = output.reshape(origshape[2:])
 
         return np.squeeze(output)
+
+    def get_path(self, path, depth, time, variable, numpoints=100, times=None, return_depth=False):
+        if times is None:
+            if hasattr(time, "__len__"):
+                times = self.nc_data.timestamp_to_iso_8601(time)
+            else:
+                times = None
+        distances, times, lat, lon, bearings = \
+            geo.path_to_points(path, numpoints, times=times)
+
+        if return_depth:
+            result, dep = self.get_point(lat, lon, depth, time, variable,
+                                         return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result, dep
+        else:
+            result = self.get_point(lat, lon, depth, time, variable,
+                                    return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         miny, maxy, minx, maxx, radius = self.__bounding_box(
@@ -151,9 +167,9 @@ class Mercator(CalculatedData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -190,15 +206,14 @@ class Mercator(CalculatedData):
 
         lat_out, lon_out = np.meshgrid(self.latvar[miny:maxy],
                                        self.lonvar[minx:maxx])
-        
+
         return (
             lat_out,
             lon_out,
             data
         )
 
-    def get_point(self, latitude, longitude, depth, timestamp, variable,
-                  return_depth=False):
+    def get_point(self, latitude, longitude, depth, timestamp, variable, return_depth=False):
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
@@ -207,9 +222,9 @@ class Mercator(CalculatedData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -295,12 +310,12 @@ class Mercator(CalculatedData):
             return res
 
     def get_profile(self, latitude, longitude, timestamp, variable):
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
         # We expect the following shape (time, depth, lat, lon)
         if len(var.shape) != 4:
             raise APIError("This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
-        
-        time = self.timestamp_to_time_index(timestamp)
+
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)
