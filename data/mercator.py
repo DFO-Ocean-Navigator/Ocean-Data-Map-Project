@@ -306,8 +306,7 @@ class Mercator(Model):
 
         if return_depth:
             return res, dep
-        else:
-            return res
+        return res
 
     def get_profile(self, latitude, longitude, timestamp, variable):
         var = self.nc_data.get_dataset_variable(variable)
