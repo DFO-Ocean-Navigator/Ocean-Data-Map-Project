@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-
 import numpy as np
 import xarray as xr
 
 import data.calculated_parser.parser
 from data.netcdf_data import NetCDFData
-from data.sqlite_database import SQLiteDatabase
 from data.variable import Variable
 from data.variable_list import VariableList
 
@@ -24,7 +21,7 @@ class CalculatedData(NetCDFData):
         Keyword Parameters:
         calculated -- a dict of the calculated variables.
         """
-        super(CalculatedData, self).__init__(url, **kwargs)
+        super().__init__(url, **kwargs)
         if 'calculated' in kwargs:
             self._calculated = kwargs['calculated']
         else:
@@ -37,7 +34,8 @@ class CalculatedData(NetCDFData):
             return self._calculated[variable_key]['dims']
         except KeyError:
             raise KeyError(
-                "{} does not have a dims attribute defined in datasetconfig.json. This is required for all calculated variables.".format(variable_key))
+                f"{variable_key} does not have a dims attribute defined in datasetconfig.json. "
+                f"This is required for all calculated variables.")
 
     def get_dataset_variable(self, key: str):
         """
@@ -71,22 +69,20 @@ class CalculatedData(NetCDFData):
         attributes in the dataset.
         """
         if self._calculated_variable_list is None:
-            variable_list = super(CalculatedData, self).variables
+            variable_list = super().variables
             temp_list = list(variable_list)
 
-            for name, data in self._calculated.items():
+            for name, calculated_var in self._calculated.items():
                 if name not in variable_list:
                     # New Variable
                     temp_list.append(
                         Variable(
                             name,
-                            data.get('long_name', name),
-                            data.get('units', '1'),
+                            calculated_var.get('long_name', name),
+                            calculated_var.get('units', '1'),
                             self.__get_calculated_dims(name),
-                            data.get('valid_min',
-                                     np.finfo(np.float64).min),
-                            data.get('valid_max',
-                                     np.finfo(np.float64).max),
+                            calculated_var.get('valid_min', np.finfo(np.float64).min),
+                            calculated_var.get('valid_max', np.finfo(np.float64).max),
                         )
                     )
                 else:
@@ -146,10 +142,10 @@ class CalculatedArray():
                 if d != key_dims:
                     return np.nan
 
-        data = self._parser.parse(
+        data_array = self._parser.parse(
             self._expression, self._parent, key, key_dims)
 
-        return xr.DataArray(data)
+        return xr.DataArray(data_array)
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
@@ -161,7 +157,7 @@ class CalculatedArray():
     def attrs(self):
         class AttrDict(dict):
             def __init__(self, *args, **kwargs):
-                super(AttrDict, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 self.__dict__ = self
 
         return AttrDict(self._attrs)
