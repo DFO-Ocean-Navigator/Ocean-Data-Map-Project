@@ -22,6 +22,7 @@ import data.utils
 from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
 from data.sqlite_database import SQLiteDatabase
+from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
 
@@ -91,8 +92,7 @@ class NetCDFData(Data):
             if c in self._dataset.variables.keys():
                 return self._dataset.variables[c]
 
-        raise KeyError("None of ", candidates,
-                       " were found in ", self._dataset)
+        raise KeyError(f"None of {candidates} were found in {self._dataset}")
 
     def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
@@ -565,13 +565,20 @@ class NetCDFData(Data):
     def dimensions(self) -> List[str]:
         """Return a list of the dimensions in the dataset.
         """
+        if self.url.endswith(".sqlite3"):
+            try:
+                with SQLiteDatabase(self.url) as db:
+                    dimension_list = db.get_all_dimensions()
+            except sqlite3.OperationalError:
+                pass
+            return dimension_list
+
+        # Open dataset (can't use xarray here since it doesn't like FVCOM files)
         try:
-            with SQLiteDatabase(self.url) as db:
-                dimension_list = db.get_all_dimensions()
-        except sqlite3.OperationalError:
-            # Open dataset (can't use xarray here since it doesn't like FVCOM files)
             with netCDF4.Dataset(self.url) as ds:
                 dimension_list = [dim for dim in ds.dimensions]
+        except FileNotFoundError:
+            dimension_list = []
         return dimension_list
 
     @property
@@ -600,11 +607,24 @@ class NetCDFData(Data):
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
-
-            with SQLiteDatabase(self.url) as db:
-
-                self._variable_list = db.get_data_variables()  # Cache the list for later
+        if self._variable_list is None:
+            try:
+                with SQLiteDatabase(self.url) as db:
+                    self._variable_list = db.get_data_variables()  # Cache the list for later
+            except (sqlite3.OperationalError, sqlite3.DatabaseError):
+                with xarray.open_dataset(self.url) as ds:
+                    ## TODO: Probably push this to a function or method like db.get_data_variables()
+                    result = []
+                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
+                    for var in ds.data_vars:
+                        if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
+                            continue
+                        result.append(
+                            Variable(
+                                var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                                [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
+                        )
+                    self._variable_list = VariableList(result)
 
         return self._variable_list
 
@@ -631,8 +651,12 @@ class NetCDFData(Data):
         return self.__timestamp_cache.get("timestamps")
 
     def get_nc_file_list(self, datasetconfig, **kwargs):
-        if not datasetconfig.url.endswith(".sqlite3"):
-            # This method is only applicabale to SQLite-indexed datasets
+        try:
+            if not datasetconfig.url.endswith(".sqlite3"):
+                # This method is only applicable to SQLite-indexed datasets
+                return
+        except AttributeError:
+            # Probably a file path dataset config for which this method is also not applicable
             return
 
         with SQLiteDatabase(self.url) as db:

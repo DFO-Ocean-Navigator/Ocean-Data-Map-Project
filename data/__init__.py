@@ -50,7 +50,7 @@ def open_dataset(dataset, **kwargs):
     args = {
         "calculated": calculated_vars,
         "meta_only": kwargs.get("meta_only", False),
-        "grid_angle_file_url": dataset.grid_angle_file_url,
+        "grid_angle_file_url": getattr(dataset, "grid_angle_file_url", ""),
     }
     try:
         args["dataset_key"] = dataset.key
