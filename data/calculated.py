@@ -128,26 +128,10 @@ class CalculatedArray():
             pass
 
     def __getitem__(self, key):
-        """This is where the magic happens.
-        The dimensions of the key are determined by looking at the dimensions
-        of all the underlying variables used in the calculation, this is then
-        passed along to the parser where the calculation is performed.
-        """
-        key_dims = ()
-        for v in self._parser.lexer.variables:
-            if v not in self._parent.variables:
-                continue
-
-            d = self.__get_parent_variable_dims(v)
-
-            if len(d) > len(key_dims):
-                key_dims = d
-            elif len(d) == len(key_dims):
-                if d != key_dims:
-                    return np.nan
+        # This is where the magic happens.
 
         data = self._parser.parse(
-            self._expression, self._parent, key, key_dims)
+            self._expression, self._parent, key, self._dims)
 
         return xr.DataArray(data)
 
