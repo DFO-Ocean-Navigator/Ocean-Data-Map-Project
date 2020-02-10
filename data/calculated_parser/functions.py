@@ -132,6 +132,29 @@ def tempgradient(depth, latitude, temperature, salinity):
     return np.array(tempgradient)
 
 
+def deepsoundchannel(depth, latitude, temperature, salinity):
+    """
+    Finds the minimum of the speed of sound.
+
+    # https://en.wikipedia.org/wiki/SOFAR_channel
+
+    Required Arguments:
+        * depth: The depth(s) in meters
+        * lat: The latitude(s) in degrees North
+        * temperature: The temperatures(s) (at all depths) in Celsius
+        * salinity: The salinity (at all depths)
+    """
+
+    sound_speed = sspeed(depth, latitude, temperature, salinity)
+
+    # The resulting shape of sound_speed is (full_depth, lat_slice, lon_slice)
+    # So we simply need to find the minimum sound speed along each lat/lon index
+    # Using numpy axis magic, we want the minimum along the full_depth axis = 0.
+    # https://stackoverflow.com/a/52468964/2231969
+
+    return np.nanmin(sound_speed, axis=0)
+
+
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
 
