@@ -1,7 +1,14 @@
-import ply.lex as lex
-import numpy as np
+#!/usr/bin/env python
+
 import re
+
+import numpy as np
+import ply.lex as lex
+
 import data.calculated_parser.functions as functions
+
+# Intro to PLY: https://www.dabeaz.com/ply/PLYTalk.pdf
+
 
 class Lexer:
     """This is the Lexer (or tokenizer) part of the domain specific language.
@@ -11,18 +18,20 @@ class Lexer:
     def __init__(self, **kwargs):
         # a list of the tokens that are used in this language
         self.tokens = [
-                'NUMBER',
-                'PLUS',
-                'MINUS',
-                'TIMES',
-                'DIVIDE',
-                'POWER',
-                'LPAREN',
-                'RPAREN',
-                'ID',
-                'COMMA',
-                'CONST'
-                ]
+            'NUMBER',
+            'PLUS',
+            'MINUS',
+            'TIMES',
+            'DIVIDE',
+            'POWER',
+            'LPAREN',
+            'RPAREN',
+            'ID', # variable key OR function name (see below t_ID)
+            'COMMA',
+            'CONST', # math constant (see below t_CONST)
+            'LBRKT',
+            'RBRKT'
+        ]
 
         # These tokens don't require any additional processing
         self.t_PLUS = '\\+'
@@ -33,6 +42,8 @@ class Lexer:
         self.t_LPAREN = '\\('
         self.t_RPAREN = '\\)'
         self.t_COMMA = ','
+        self.t_LBRKT = '\\['
+        self.t_RBRKT = '\\]'
 
         # Ignore tabs and spaces
         self.t_ignore = ' \t'
