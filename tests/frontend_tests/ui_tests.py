@@ -12,12 +12,10 @@ of the user interface of the navigator.
 import pyautogui as gui
 import time
 import yaml
+from dimension_config import open_config
 
 
-# Open dimension config
-with open('dimension_config.yaml', 'r') as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
-
+config = open_config()
 dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']

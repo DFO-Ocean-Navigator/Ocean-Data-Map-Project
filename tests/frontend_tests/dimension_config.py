@@ -1,5 +1,5 @@
 """
-Write x and y location config file
+Write x and y location to a config file
 ==========================
 :Author: Samuel Babalola
 :Created: 2020-02-11
@@ -40,6 +40,13 @@ def create_config():
 
     with open('dimension_config.yaml', 'w') as f:
         yaml.dump(info, f, default_flow_style=False)
+
+
+def open_config():
+    # Open dimension config
+    with open('dimension_config.yaml', 'r') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+    return config
 
 
 # Identify mouse postion
