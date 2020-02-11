@@ -26,6 +26,12 @@ address = config['web_addresses']
 sleep = 5
 
 def find_temperature_bar():
+    """
+
+    Function to locate the temperature bar on
+    the ocean navigator public page. 
+    
+    """
     screenWidth, screenHeight = gui.size()
     # Find the Chrome pin in task bar
     gui.moveTo(dimension['firefox_icon'])
@@ -43,7 +49,7 @@ def find_temperature_bar():
         paths['test_temperature'], confidence=0.7, grayscale=True)
 
     if image_loc is None:
-        gui.alert(text='Hmmm shady stuff', title='Temperature bar not found', button='OK')
+        gui.alert(text='Temperature bar not found!', title='Temperature bar', button='OK')
     else:
         gui.click(button='right', x=image_loc.x, y=image_loc.y)
         gui.alert(text='Temperature bar check complete!', title='Temperature bar', button='Close')
