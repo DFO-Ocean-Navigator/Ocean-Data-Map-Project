@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import functools
+from typing import Union
 
 import metpy.calc
 import numpy as np
@@ -62,10 +63,13 @@ def __calc_pressure(depth, latitude):
     except TypeError:
         pressure = seawater.pres(depth, latitude)
 
-    return pressure
+    return np.array(pressure)
 
 
-def sspeed(depth, latitude, temperature, salinity):
+def sspeed(depth: Union[np.ndarray, xr.Variable],
+           latitude: np.ndarray,
+           temperature: np.ndarray,
+           salinity: np.ndarray):
     """
     Calculates the speed of sound.
 
@@ -75,7 +79,21 @@ def sspeed(depth, latitude, temperature, salinity):
     temperature: The temperatures(s) in Celsius
     salinity: The salinity (unitless)
     """
+
+    if type(latitude) is not np.ndarray:
+        latitude = np.array(latitude)
+
     press = __calc_pressure(depth, latitude)
+
+    if type(temperature) is not np.ndarray:
+        temperature = np.array(temperature)
+
+    if type(salinity) is not np.ndarray:
+        salinity = np.array(salinity)
+
+    if salinity.shape != press.shape:
+        # pad array shape to match otherwise seawater freaks out
+        press = press[..., np.newaxis]
 
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
@@ -130,6 +148,47 @@ def tempgradient(depth, latitude, temperature, salinity):
 
     tempgradient = seawater.adtg(salinity, temperature, press)
     return np.array(tempgradient)
+
+
+def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
+                     latitude: np.ndarray,
+                     temperature: np.ndarray,
+                     salinity: np.ndarray) -> np.ndarray:
+    """
+    Find and return the depth of the minimum value of the
+    speed of sound.
+
+    https://en.wikipedia.org/wiki/SOFAR_channel
+
+    Required Arguments:
+        * depth: The depth(s) in meters
+        * lat: The latitude(s) in degrees North
+        * temperature: The temperatures(s) (at all depths) in Celsius
+        * salinity: The salinity (at all depths)
+    """
+    
+    if type(latitude) is not np.ndarray:
+        latitude = np.array(latitude)
+
+    if type(temperature) is not np.ndarray:
+        temperature = np.array(temperature)
+
+    if type(salinity) is not np.ndarray:
+        salinity = np.array(salinity)
+
+    sound_speed = sspeed(depth, latitude, temperature, salinity)
+
+    # Mask out NaN values to prevent an exception blow-up.
+    masked_sound_speed = np.ma.masked_array(sound_speed, np.isnan(sound_speed))
+
+    # The resulting shape of sound_speed is (full_depth, lat_slice, lon_slice)
+    # So we simply need to find the minimum sound speed along each lat/lon index
+    # Using numpy axis magic, we want the minimum along the full_depth axis = 0.
+    # https://stackoverflow.com/a/52468964/2231969
+
+    min_indices = np.argmin(masked_sound_speed, axis=0)
+
+    return depth.values[min_indices]
 
 
 def _metpy(func, data, lat, lon, dim):
@@ -289,7 +348,7 @@ def geostrophic_x(h, lat, lon):
         if dim_order == "yx":
             dy, dx = kwargs['deltas']
         else:
-            dx, dy = kwgard['deltas']
+            dx, dy = kwargs['deltas']
 
         return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
                                            dim_order=kwargs['dim_order'])

@@ -55,7 +55,8 @@
             "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "hide": true, "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
         }
     },
     "giops_fc_2dps": {
@@ -114,7 +115,8 @@
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1030], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "riops_fc_2dll": {
@@ -197,7 +199,8 @@
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1050], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "glorys3": {
