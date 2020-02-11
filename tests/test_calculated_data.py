@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import unittest
 from unittest.mock import patch
 
@@ -83,10 +81,21 @@ class TestCalculatedData(unittest.TestCase):
                              "Sea water potential temperature")
             self.assertEqual(v.shape, (1, 50, 850, 1800))
 
+    def test_calculated_var_wo_dims_raises(self):
+        calculated = {
+            'votemper': {
+                'equation': 'votemper -273.15',
+                'units': 'degree_C',
+            }
+        }
+        with CalculatedImpl('tests/testdata/mercator_test.nc', calculated=calculated) as data:
+            with self.assertRaises(KeyError):
+                data.get_dataset_variable("votemper")
+
 
 class CalculatedImpl(CalculatedData):
     def __init__(self, url: str, **kwargs):
-        super(CalculatedImpl, self).__init__(url, **kwargs)
+        super().__init__(url, **kwargs)
 
     def get_point(self):
         pass

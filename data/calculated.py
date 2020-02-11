@@ -48,9 +48,8 @@ class CalculatedData(NetCDFData):
             # if the variable is a calculated one, return the CalculatedArray,
             # otherwise pass the request along to the underlying dataset.
             attrs = {}
-            if key in super(CalculatedData, self).variables:
-                attrs = super(CalculatedData,
-                              self).get_dataset_variable(key).attrs
+            if key in super().variables:
+                attrs = super().get_dataset_variable(key).attrs
 
             attrs = {**attrs, **self._calculated[key]}
 
@@ -73,20 +72,19 @@ class CalculatedData(NetCDFData):
             temp_list = list(variable_list)
 
             for name, calculated_var in self._calculated.items():
-                if name not in variable_list:
-                    # New Variable
-                    temp_list.append(
-                        Variable(
-                            name,
-                            calculated_var.get('long_name', name),
-                            calculated_var.get('units', '1'),
-                            self.__get_calculated_dims(name),
-                            calculated_var.get('valid_min', np.finfo(np.float64).min),
-                            calculated_var.get('valid_max', np.finfo(np.float64).max),
-                        )
+                if name in variable_list:
+                    continue
+                # New Variable
+                temp_list.append(
+                    Variable(
+                        name,
+                        calculated_var.get('long_name', name),
+                        calculated_var.get('units', '1'),
+                        self.__get_calculated_dims(name),
+                        calculated_var.get('valid_min', np.finfo(np.float64).min),
+                        calculated_var.get('valid_max', np.finfo(np.float64).max),
                     )
-                else:
-                    pass
+                )
 
             self._calculated_variable_list = VariableList(temp_list)
 
