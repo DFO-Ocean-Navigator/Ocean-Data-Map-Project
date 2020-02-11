@@ -38,8 +38,9 @@ class TestDataFunctions(unittest.TestCase):
         lat = np.array([[45, 45], [45, 45]])
         temp = 0.5 * np.ones((10, 2, 2))
         sal = 32 * np.ones((10, 2, 2))
-        self.assertAlmostEqual(funcs.sspeed(
-            dep, lat, temp, sal)[0, 0, 0], 1447.4, 1)
+
+        np.testing.assert_allclose(funcs.sspeed(
+            dep, lat, temp, sal)[0, 0, 0], 1447.4, rtol=self.relative_tolerance)
 
     def test_deepsoundchannel(self):
         self.assertEqual(funcs.deepsoundchannel(xr.Variable(
