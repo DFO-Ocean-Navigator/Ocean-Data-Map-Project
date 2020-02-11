@@ -1,0 +1,14 @@
+location:
+  firefox_icon: !!python/tuple
+  - 27
+  - 60
+  firefox_search: !!python/tuple
+  - 360
+  - 106
+  new_firefox_window: !!python/tuple
+  - 131
+  - 103
+paths:
+  test_temperature: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/temp.png
+web_addresses:
+  ocean_navigator: navigator.oceansdata.ca/public/
