@@ -141,7 +141,7 @@ def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
     Find and return the depth of the minimum value of the
     speed of sound.
 
-    # https://en.wikipedia.org/wiki/SOFAR_channel
+    https://en.wikipedia.org/wiki/SOFAR_channel
 
     Required Arguments:
         * depth: The depth(s) in meters
@@ -162,7 +162,7 @@ def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
 
     min_indices = np.argmin(masked_sound_speed, axis=0)
 
-    return depth[:][min_indices]
+    return depth.values[min_indices]
 
 
 def _metpy(func, data, lat, lon, dim):
