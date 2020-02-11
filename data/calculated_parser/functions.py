@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import functools
+from typing import Union
 
 import metpy.calc
 import numpy as np
@@ -132,7 +133,10 @@ def tempgradient(depth, latitude, temperature, salinity):
     return np.array(tempgradient)
 
 
-def deepsoundchannel(depth, latitude, temperature, salinity):
+def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
+                     latitude: np.ndarray,
+                     temperature: np.ndarray,
+                     salinity: np.ndarray) -> np.ndarray:
     """
     Find and return the depth of the minimum value of the
     speed of sound.
@@ -148,17 +152,17 @@ def deepsoundchannel(depth, latitude, temperature, salinity):
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
 
-        # Mask out NaN values to prevent a exception blow-up.
+    # Mask out NaN values to prevent an exception blow-up.
     masked_sound_speed = np.ma.masked_array(sound_speed, np.isnan(sound_speed))
 
     # The resulting shape of sound_speed is (full_depth, lat_slice, lon_slice)
     # So we simply need to find the minimum sound speed along each lat/lon index
     # Using numpy axis magic, we want the minimum along the full_depth axis = 0.
     # https://stackoverflow.com/a/52468964/2231969
-    
+
     min_indices = np.argmin(masked_sound_speed, axis=0)
 
-    return depth.values[min_indices]
+    return depth[:][min_indices]
 
 
 def _metpy(func, data, lat, lon, dim):

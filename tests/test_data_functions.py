@@ -3,6 +3,7 @@
 import unittest
 
 import numpy as np
+import xarray as xr
 
 import data.calculated_parser.functions as funcs
 
@@ -40,4 +41,5 @@ class TestDataFunctions(unittest.TestCase):
             dep, lat, temp, sal)[0, 0, 0], 1447.4, 1)
 
     def test_deepsoundchannel(self):
-        self.assertEqual(funcs.deepsoundchannel([0], [45], [0.5], [32]), 0)
+        self.assertEqual(funcs.deepsoundchannel(xr.Variable(
+            data=[0], dims=['depth']), [45], [0.5], [32]), 0)
