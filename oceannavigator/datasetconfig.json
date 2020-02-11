@@ -943,6 +943,58 @@
             "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
             "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
         }
+    },
+    "cmems_ran-arc-day": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-day-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (daily)",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
+    },
+    "cmems_ran-arc": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (Monthly)",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
     }
 }
 
