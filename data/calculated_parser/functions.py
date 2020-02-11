@@ -66,7 +66,10 @@ def __calc_pressure(depth, latitude):
     return np.array(pressure)
 
 
-def sspeed(depth, latitude, temperature, salinity):
+def sspeed(depth: Union[np.ndarray, xr.Variable],
+           latitude: np.ndarray,
+           temperature: np.ndarray,
+           salinity: np.ndarray):
     """
     Calculates the speed of sound.
 
@@ -76,7 +79,17 @@ def sspeed(depth, latitude, temperature, salinity):
     temperature: The temperatures(s) in Celsius
     salinity: The salinity (unitless)
     """
+
+    if type(latitude) is not np.ndarray:
+        latitude = np.array(latitude)
+
     press = __calc_pressure(depth, latitude)
+
+    if type(temperature) is not np.ndarray:
+        temperature = np.array(temperature)
+
+    if type(salinity) is not np.ndarray:
+        salinity = np.array(salinity)
 
     if salinity.shape != press.shape:
         # pad array shape to match otherwise seawater freaks out
@@ -153,6 +166,15 @@ def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
         * temperature: The temperatures(s) (at all depths) in Celsius
         * salinity: The salinity (at all depths)
     """
+    
+    if type(latitude) is not np.ndarray:
+        latitude = np.array(latitude)
+
+    if type(temperature) is not np.ndarray:
+        temperature = np.array(temperature)
+
+    if type(salinity) is not np.ndarray:
+        salinity = np.array(salinity)
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
 

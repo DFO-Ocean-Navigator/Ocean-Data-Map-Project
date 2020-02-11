@@ -31,9 +31,10 @@ class TestDataFunctions(unittest.TestCase):
             actual, expected, rtol=self.relative_tolerance)
 
     def test_sspeed(self):
-        self.assertAlmostEqual(funcs.sspeed(0, 45, 0.5, 32), 1447.4, 1)
+        np.testing.assert_allclose(funcs.sspeed(xr.Variable(
+            data=[0], dims=['depth']), [45], [0.5], [32]), 1447.4, rtol=self.relative_tolerance)
 
-        dep = range(0, 10)
+        dep = np.array(range(0, 10))
         lat = np.array([[45, 45], [45, 45]])
         temp = 0.5 * np.ones((10, 2, 2))
         sal = 32 * np.ones((10, 2, 2))
