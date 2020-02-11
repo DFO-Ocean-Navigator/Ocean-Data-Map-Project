@@ -842,7 +842,7 @@
             "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
         }
      },
-     "sjap": {
+    "sjap": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/sjap1003d.sqlite3",
         "name": "Port of St. John",
@@ -900,6 +900,48 @@
             "ssh_ib": { "name": "Sea Surface Height Inverse Barometer", "envtype": "ocean", "unit": "m", "scale": [0.1, 0.15] },
             "so": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [0, 33] },
             "zos": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-0.55, 0.72] }
+        }
+    },
+    "arc-rean-bio_daily": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4(2007-2010) Daily",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-day-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
+        }
+     },
+    "arc-rean-bio_monthly": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4 (2007-2010) Monthly",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
         }
     }
 }
