@@ -63,7 +63,7 @@ def __calc_pressure(depth, latitude):
     except TypeError:
         pressure = seawater.pres(depth, latitude)
 
-    return pressure
+    return np.array(pressure)
 
 
 def sspeed(depth, latitude, temperature, salinity):
@@ -77,6 +77,10 @@ def sspeed(depth, latitude, temperature, salinity):
     salinity: The salinity (unitless)
     """
     press = __calc_pressure(depth, latitude)
+
+    if salinity.shape != press.shape:
+        # pad array shape to match otherwise seawater freaks out
+        press = press[..., np.newaxis]
 
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
