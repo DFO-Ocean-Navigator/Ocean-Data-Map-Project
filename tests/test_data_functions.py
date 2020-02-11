@@ -38,3 +38,6 @@ class TestDataFunctions(unittest.TestCase):
         sal = 32 * np.ones((10, 2, 2))
         self.assertAlmostEqual(funcs.sspeed(
             dep, lat, temp, sal)[0, 0, 0], 1447.4, 1)
+
+    def test_deepsoundchannel(self):
+        self.assertEqual(funcs.deepsoundchannel([0], [45], [0.5], [32]), 0)
