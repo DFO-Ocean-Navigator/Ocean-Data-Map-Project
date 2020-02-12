@@ -1,18 +1,21 @@
+from typing import Union
+
 import numpy as np
 import pyresample
 from pint import UnitRegistry
 
-from data.calculated import CalculatedData
 import data.geo as geo
+from data.calculated import CalculatedData
 from data.model import Model
 from data.nearest_grid_point import find_nearest_grid_point
+from data.netcdf_data import NetCDFData
 from utils.errors import APIError
 
 
 class Mercator(Model):
     __depths = None
 
-    def __init__(self, nc_data: CalculatedData) -> None:
+    def __init__(self, nc_data: Union[CalculatedData, NetCDFData]) -> None:
         super().__init__(nc_data)
         self.latvar = None
         self.lonvar = None
@@ -22,12 +25,16 @@ class Mercator(Model):
         self._dataset = nc_data._dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
+        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
 
     def __enter__(self):
         self.nc_data.__enter__()
         self._dataset = self.nc_data._dataset
 
         if not self._meta_only:
+            self.time_variable = self.nc_data.time_variable
+            ## TODO: Figure out how to expose cached timestamps re: test_timestamps()
+            self.timestamps = self.nc_data.timestamps
             if self.latvar is None:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
                 self.__latsort = np.argsort(self.latvar[:])
@@ -46,7 +53,7 @@ class Mercator(Model):
             var = None
             for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in list(self._dataset.coords.keys()):
+                if v in self._dataset.coords.keys():
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
@@ -54,9 +61,7 @@ class Mercator(Model):
             if var is not None:
                 ureg = UnitRegistry()
                 unit = ureg.parse_units(var.attrs['units'].lower())
-                self.__depths = ureg.Quantity(
-                    var[:].values, unit
-                ).to(ureg.meters).magnitude
+                self.__depths = ureg.Quantity(var[:].values, unit).to(ureg.meters).magnitude
             else:
                 self.__depths = np.array([0])
 
@@ -169,7 +174,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.nc_data.timestamp_to_time_index(timestamp)
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -224,7 +229,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.nc_data.timestamp_to_time_index(timestamp)
+        time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -314,7 +319,7 @@ class Mercator(Model):
         if len(var.shape) != 4:
             raise APIError("This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
 
-        time = self.nc_data.timestamp_to_time_index(timestamp)
+        time = self.timestamp_to_time_index(timestamp)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)

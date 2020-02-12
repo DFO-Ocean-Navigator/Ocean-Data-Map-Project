@@ -608,23 +608,27 @@ class NetCDFData(Data):
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
         if self._variable_list is None:
-            try:
-                with SQLiteDatabase(self.url) as db:
-                    self._variable_list = db.get_data_variables()  # Cache the list for later
-            except (sqlite3.OperationalError, sqlite3.DatabaseError):
-                with xarray.open_dataset(self.url) as ds:
-                    ## TODO: Probably push this to a function or method like db.get_data_variables()
-                    result = []
-                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
-                    for var in ds.data_vars:
-                        if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
-                            continue
-                        result.append(
-                            Variable(
-                                var, ds[var].attrs["long_name"], ds[var].attrs["units"],
-                                [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
-                        )
-                    self._variable_list = VariableList(result)
+            if self.url.endswith(".sqlite3"):
+                try:
+                    with SQLiteDatabase(self.url) as db:
+                        self._variable_list = db.get_data_variables()  # Cache the list for later
+                        return self._variable_list
+                except (sqlite3.OperationalError, sqlite3.DatabaseError):
+                    pass
+
+            with xarray.open_dataset(self.url) as ds:
+                ## TODO: Probably push this to a function or method like db.get_data_variables()
+                result = []
+                required_attrs = {"long_name", "units", "valid_min", "valid_max"}
+                for var in ds.data_vars:
+                    if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
+                        continue
+                    result.append(
+                        Variable(
+                            var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                            [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
+                    )
+                self._variable_list = VariableList(result)
 
         return self._variable_list
 
