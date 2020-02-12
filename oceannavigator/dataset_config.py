@@ -154,7 +154,7 @@ class DatasetConfig():
         variables = {}
         for key,data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
-            is_vector = ',' in key
+            is_vector = 'mag' in key
 
             if (is_hidden is False or \
                     is_hidden is None or \
