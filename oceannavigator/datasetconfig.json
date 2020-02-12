@@ -55,7 +55,8 @@
             "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "hide": true, "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
         }
     },
     "giops_fc_2dps": {
@@ -114,7 +115,8 @@
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1030], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "riops_fc_2dll": {
@@ -197,7 +199,8 @@
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1050], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "glorys3": {
@@ -839,7 +842,7 @@
             "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
         }
      },
-     "sjap": {
+    "sjap": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/sjap1003d.sqlite3",
         "name": "Port of St. John",
@@ -897,6 +900,100 @@
             "ssh_ib": { "name": "Sea Surface Height Inverse Barometer", "envtype": "ocean", "unit": "m", "scale": [0.1, 0.15] },
             "so": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [0, 33] },
             "zos": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-0.55, 0.72] }
+        }
+    },
+    "arc-rean-bio_daily": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4(2007-2010) Daily",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-day-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
+        }
+     },
+    "arc-rean-bio_monthly": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4 (2007-2010) Monthly",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
+        }
+    },
+    "cmems_ran-arc-day": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-day-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (daily)",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
+    },
+    "cmems_ran-arc": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (Monthly)",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
         }
     }
 }
