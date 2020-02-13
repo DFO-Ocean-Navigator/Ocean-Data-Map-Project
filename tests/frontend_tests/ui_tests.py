@@ -33,18 +33,9 @@ def find_temperature_bar():
     
     """
     screenWidth, screenHeight = gui.size()
-    # Find the Chrome pin in task bar
-    gui.moveTo(dimension['firefox_icon'])
-    #Right click for a new window
-    gui.click(button='right')
-    gui.moveTo(dimension['new_firefox_window'])
-    gui.click()
-    time.sleep(sleep)
-    # Go to Firefox search
-    gui.moveTo(dimension['firefox_search'])
-    gui.typewrite(address['ocean_navigator'], interval=0.08)
-    gui.press('enter')
-    time.sleep(sleep)
+    # Go to the navigator web page
+    #navigator_webpage()
+    # Locate temperature color bar on public page 
     image_loc = gui.locateCenterOnScreen(
         paths['test_temperature'], confidence=0.7, grayscale=True)
 
@@ -55,7 +46,33 @@ def find_temperature_bar():
         gui.alert(text='Temperature bar check complete!', title='Temperature bar', button='Close', timeout=box_timeout)
 
 
+def navigator_webpage():
+    """
+
+    Function to access the navigator web page
+    *reduce duplicated codes. 
+    
+    """
+    # Find the firefox pin in task bar
+    gui.moveTo(dimension['firefox_icon'])
+    #Right click for a new window
+    gui.click(button='right')
+    gui.moveTo(dimension['new_firefox_window'])
+    gui.click()
+    time.sleep(sleep)
+    # Go to Firefox search
+    gui.moveTo(dimension['firefox_search'])
+    gui.typewrite(address['ocean_navigator'], interval=0.08)
+    gui.press('enter')
+    time.sleep(sleep) 
+
 def move_to_et_click(position):
+    """
+
+    Function to move to a postion and click
+    *reduce duplicated codes. 
+    
+    """
     gui.moveTo(position)
     gui.click()
 
@@ -79,24 +96,20 @@ def draw_point():
     # Pick a point on the map
     move_to_et_click(dimension['map_point'])
     time.sleep(plot_render_sleep)
+    gui.alert('Conducting test...', 'Wait', timeout=box_timeout/2)
     # Find expected plot
     image_loc = gui.locateCenterOnScreen(
         paths['point_index'], confidence=0.5, grayscale=True)
 
     if image_loc is None:
-        gui.alert(text='Point index not found!', title='Map point', button='OK')
+        gui.alert(text='Point index not found!', title='Map point', button='OK', timeout=box_timeout)
     else:
-        gui.click(button='right', x=image_loc.x, y=image_loc.y)
         gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
-
-
-
-
 
 
 def main():
     find_temperature_bar()
     draw_point()
 
-if '__main__' == __name__:
+if __name__ == '__main__':
     main()
