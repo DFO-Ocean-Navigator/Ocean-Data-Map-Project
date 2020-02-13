@@ -8,7 +8,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "enabled": true,
         "cache": 6,
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "lat_var_key": "latitude",
         "lon_var_key": "longitude",
@@ -43,7 +43,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "enabled": true,
         "cache": 6,
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "lat_var_key": "latitude",
         "lon_var_key": "longitude",
@@ -55,7 +55,8 @@
             "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "hide": true, "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
         }
     },
     "giops_fc_2dps": {
@@ -67,7 +68,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "enabled": true,
         "cache": 6,
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "lat_var_key": "yc",
         "lon_var_key": "xc",
@@ -100,7 +101,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "enabled": true,
         "cache": 6,
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "lat_var_key": "yc",
         "lon_var_key": "xc",
@@ -111,7 +112,11 @@
             "vomecrty": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, yc, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1030], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "riops_fc_2dll": {
@@ -141,7 +146,7 @@
         }
     },
     "riops_fc_2dps": {
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
         "enabled": true,
         "help": "",
@@ -173,7 +178,7 @@
         }
     },
     "riops_fc_3dps": {
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "envtype": ["ocean"],
         "enabled": true,
         "help": "",
@@ -191,12 +196,16 @@
             "vomecrty": { "envtype": "ocean", "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "votemper": { "envtype": "ocean", "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
             "vosaline": { "envtype": "ocean", "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
-            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)" }
+            "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1050], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "glorys3": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
         "enabled": false,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>                 <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2013)</li>                 <li>Variables Available:                     <ul>                         <li>Eastward Velocity</li>                         <li>Ice Concentration</li>                         <li>Northward Velocity</li>                         <li>Salinity</li>                         <li>Sea Ice Eastward Velocity</li>                         <li>Sea Ice Northward Velocity</li>                         <li>Sea Ice Thickness</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Surface Height</li>                         <li>Sea Water Velocity</li>                         <li>Temperature</li>                     </ul>                 </li>             </ul>",
         "name": "GLORYS v3",
@@ -367,7 +376,7 @@
     },
     "glorys4": {
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "enabled": false,
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "name": "GLORYS v4",
@@ -569,13 +578,13 @@
     },
     "glorys4_climatology": {
         "envtype": ["ocean", "ice"],
-        "url": "http://10.0.3.56:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "name": "GLORYS v4 Climatology",
         "quantum": "month",
         "type": "historical",       
         "enabled": false,
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
         "attribution": "GLORYS2V4 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "variables": {
@@ -602,7 +611,7 @@
     },
     "glorysv3_climatology": {
         "attribution": "GLORYS2V3 from <a href='https://www.mercator-ocean.fr/'>Mercator Ocean</a>",
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys/aggregated.ncml",
         "enabled": false,
         "help": "Global Ocean Reanalysis and Simulation             <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Computed from the monthly averages January 1993&ndash;December 2013</li>             <li>Variables Available:                 <ul>                     <li>Eastward Velocity</li>                     <li>Ice Concentration</li>                     <li>Northward Velocity</li>                     <li>Salinity</li>                     <li>Sea Ice Eastward Velocity</li>                     <li>Sea Ice Northward Velocity</li>                     <li>Sea Ice Thickness</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Surface Height</li>                     <li>Sea Water Velocity</li>                     <li>Temperature</li>                 </ul>             </li>             </ul>",
         "name": "GLORYSV3 Climatology",
@@ -725,14 +734,14 @@
     },
     "levitus98_phc21": {
         "attribution": "Unknown",
-        "climatology": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "enabled": false,
         "help": "Combination of Levitus98 and PHC 2.1             <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Variables Available:                 <ul>                     <li>Salinity</li>                     <li>Water Temperature</li>                 </ul>             </li>             </ul>",
         "name": "World Ocean Atlas Climatology",
         "quantum": "month",
         "type": "historical",        
         "time_dim_units": "seconds since 1950-01-01 00: 00: 00",
-        "url": "http://10.0.3.56:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "url": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "variables": {
             "vosaline": {
                 "hide": "false",
@@ -755,5 +764,237 @@
                 "unit": "Celsius"
             }
         }
+    },
+    "cmems_monthly": {
+        "url": "/data/db/cmems_monthly.sqlite3",
+        "name": "CMEMS Global Reanalysis (Monthly) 1/12 deg",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "thetao": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "so": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "vo": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uo": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(uo, vo)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vsi": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "usi": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "sithick": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "bottomT": { "name": "Sea Floor Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "zos": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlotst": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
+    },
+    "freebiorys2v4_monthly": {
+        "name": "Global Reanalysis Bio 2v4 (Monthly)",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-global-reanalysis-bio-001-029-monthly.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "phyc": { "name": "Total Phytoplankton", "unit": "mmol/m^3", "scale": [0, 13] },
+            "ph": { "name": "PH", "unit": "1", "scale": [7, 8.3] },
+            "spco2": { "name": "Surface Partial Pressure of CO2", "unit": "Pa", "scale": [25, 78] },
+            "fe": { "name": "Dissolved Iron", "unit": "mmol/m^3", "scale": [4.9e-6, 0.02] },
+            "nppv": { "name": "Total Primary Production of Phyto", "unit": "mmol/m^3/day", "scale": [0, 100] },
+            "o2": { "name": "Dissolved Oxygen", "unit": "mmol/m^3", "scale": [0, 410] },
+            "si": { "name": "Dissolved Silicate", "unit": "mmol/m^3", "scale": [0, 77] },
+            "po4": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 3] },
+            "no3": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 13.5] },
+            "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
+        }
+    },
+    "freebiorys2v4_daily": {
+        "name": "Global Reanalysis Bio 2v4 (Daily)",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-global-reanalysis-bio-001-029-daily.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "E.U. Copernicus Marine Service Information (CMEMS)",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "phyc": { "name": "Total Phytoplankton", "unit": "mmol/m^3", "scale": [0, 13] },
+            "ph": { "name": "PH", "unit": "1", "scale": [7, 8.3] },
+            "spco2": { "name": "Surface Partial Pressure of CO2", "unit": "Pa", "scale": [25, 78] },
+            "fe": { "name": "Dissolved Iron", "unit": "mmol/m^3", "scale": [4.9e-6, 0.02] },
+            "nppv": { "name": "Total Primary Production of Phyto", "unit": "mmol/m^3/day", "scale": [0, 100] },
+            "o2": { "name": "Dissolved Oxygen", "unit": "mmol/m^3", "scale": [0, 410] },
+            "si": { "name": "Dissolved Silicate", "unit": "mmol/m^3", "scale": [0, 77] },
+            "po4": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 3] },
+            "no3": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 13.5] },
+            "chl": { "name": "Total Chlorophyll", "unit": "mg/m^3", "scale": [0.03, 4.7] }
+        }
+     },
+    "sjap": {
+        "envtype": ["ocean", "ice"],
+        "url": "/data/db/sjap1003d.sqlite3",
+        "name": "Port of St. John",
+        "quantum": "day",
+        "type": "forecast",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "enabled": true,
+        "cache": 6,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "IPSL",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
+        "help" : "",
+        "variables": {
+            "uo": { "name": "Water X Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-0.34, 0.34], "zero_centered": "true" },
+            "vo": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-0.35, 0.35], "zero_centered": "true" },
+            "ubar": { "name": "Ocean Current (i-axis)", "unit": "m/s", "scale": [-0.30, 0.23]},
+            "vbar": { "name": "Ocean Current (j-axis)", "unit": "m/s", "scale": [-0.12, 0.07]},
+            "tauuo": { "name": "Wind Stress (i-axis)", "unit": "N/m^2", "scale": [0, 0.13]},
+            "tauvo": { "name": "Wind Stress (j-axis)", "unit": "N/m^2", "scale": [0, 0.07]},
+            "thetao": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [0, 18.1] },
+            "mldr10_1": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 53.8] },
+            "heatc": { "name": "Heat Content", "unit": "J/m^2", "scale": [0, 5e9] },
+            "saltc": { "name": "Salinity Concentration", "envtype": "ocean", "unit": "1e-3*kg/m^2", "scale": [0, 3.8e6] },
+            "ssh_ib": { "name": "Sea Surface Height Inverse Barometer", "envtype": "ocean", "unit": "m", "scale": [-0.21, -0.19] },
+            "so": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [0, 32.5] },
+            "zos": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-0.61, 0.30] }
+        }
+    },
+    "bof": {
+        "envtype": ["ocean", "ice"],
+        "url": "/data/db/bof1803d.sqlite3",
+        "name": "Bay of Fundy",
+        "quantum": "day",
+        "type": "forecast",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "enabled": true,
+        "cache": 6,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "IPSL",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
+        "help" : "",
+        "variables": {
+            "uo": { "name": "Water X Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-0.4, 0.4], "zero_centered": "true" },
+            "vo": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-0.45, 0.45], "zero_centered": "true" },
+            "ubar": { "name": "Ocean Current (i-axis)", "unit": "m/s", "scale": [-0.3, 0.2]},
+            "vbar": { "name": "Ocean Current (j-axis)", "unit": "m/s", "scale": [-0.35, 0.15]},
+            "tauuo": { "name": "Wind Stress (i-axis)", "unit": "N/m^2", "scale": [0, 0.07]},
+            "tauvo": { "name": "Wind Stress (j-axis)", "unit": "N/m^2", "scale": [-0.04, 0.015]},
+            "thetao": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [0, 15] },
+            "mldr10_1": { "name": "Ocean Mixed Layer Depth", "unit": "m", "scale": [0, 94] },
+            "heatc": { "name": "Heat Content", "unit": "J/m^2", "scale": [0, 6.7e9] },
+            "saltc": { "name": "Salinity Concentration", "envtype": "ocean", "unit": "1e-3*kg/m^2", "scale": [0, 7.3e6] },
+            "ssh_ib": { "name": "Sea Surface Height Inverse Barometer", "envtype": "ocean", "unit": "m", "scale": [0.1, 0.15] },
+            "so": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [0, 33] },
+            "zos": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-0.55, 0.72] }
+        }
+    },
+    "arc-rean-bio_daily": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4(2007-2010) Daily",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-day-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
+        }
+     },
+    "arc-rean-bio_monthly": {
+        "name": "MyOcean Arctic bio pilot reanalysis TOPAZ4 (2007-2010) Monthly",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "url": "/data/db/cmems-artic_reanalysis_bio_002_005-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "http://marine.copernicus.eu/services-portfolio/service-commitments-and-licence/",
+        "variables": {
+            "chla": { "name": "Chlorophyll Concentration", "unit": "mg/m^3", "scale": [0.03e-7, 4.5e-7] },
+            "nitrat": { "name": "Nitrate Concentration", "unit": "mmol/m^3", "scale": [0, 0.012] },
+            "phosphat": { "name": "Phosphate Concentration", "unit": "mmol/m^3", "scale": [0, 1.2e-3] },
+            "oxygen": { "name": "Oxygen Concentration", "unit": "mmol/m^3", "scale": [0, 0.013] },
+            "pbiomass": { "name": "Pytoplanton Concentration", "unit": "mmol/m^3", "scale": [0, 2e-4] },
+            "zbiomass": { "name": "Zooplankton Concentration", "unit": "mmol/m^3", "scale": [0, 1.1e-3] }
+        }
+    },
+    "cmems_ran-arc-day": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-day-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (daily)",
+        "quantum": "day",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
+    },
+    "cmems_ran-arc": {
+        "url": "/data/db/cmems-artic_reanalysis_phys_002_003-dataset-ran-arc-myoceanv2-be.sqlite3",
+        "name": "Pilot Copernicus/TOPAZ Arctic reanalysis (Monthly)",
+        "quantum": "month",
+        "type": "historical",
+        "time_dim_units": "hours since 1950-01-01",
+        "enabled": true,
+        "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "NERSC, Thormoehlens gate 47, N-5006 Bergen, Norway",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "",
+        "variables": {
+            "temperature": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "salinity": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "v": { "name": "Water North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "u": { "name": "Water East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(u, v)",  "dims": ["time", "depth", "latitude", "longitude"] },
+            "vice": { "name": "Sea Ice North Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "uice": { "name": "Sea Ice East Velocity", "unit": "m/s", "scale": [-3, 3] },
+            "siconc": { "name": "Sea Ice Concentration", "unit": "fraction", "scale": [0, 1] },
+            "hice": { "name": "Sea Ice Thickness", "unit": "m", "scale": [0, 10] },
+            "ssh": { "name": "Sea Surface Height", "unit": "m", "scale": [-3, 3] },
+            "mlp": { "name": "Ocean Mixed Layer Thickness", "unit": "m", "scale": [0, 4000] }
+        }
     }
 }
+
