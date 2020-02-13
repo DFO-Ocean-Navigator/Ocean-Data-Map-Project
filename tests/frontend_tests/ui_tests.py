@@ -22,6 +22,8 @@ address = config['web_addresses']
 
 # Set default sleep time
 sleep = 5
+plot_render_sleep = 10
+box_timeout = 2500
 
 def find_temperature_bar():
     """
@@ -40,7 +42,7 @@ def find_temperature_bar():
     time.sleep(sleep)
     # Go to Firefox search
     gui.moveTo(dimension['firefox_search'])
-    gui.typewrite(address['ocean_navigator'])
+    gui.typewrite(address['ocean_navigator'], interval=0.08)
     gui.press('enter')
     time.sleep(sleep)
     image_loc = gui.locateCenterOnScreen(
@@ -50,10 +52,51 @@ def find_temperature_bar():
         gui.alert(text='Temperature bar not found!', title='Temperature bar', button='OK')
     else:
         gui.click(button='right', x=image_loc.x, y=image_loc.y)
-        gui.alert(text='Temperature bar check complete!', title='Temperature bar', button='Close')
+        gui.alert(text='Temperature bar check complete!', title='Temperature bar', button='Close', timeout=box_timeout)
+
+
+def move_to_et_click(position):
+    gui.moveTo(position)
+    gui.click()
+
+
+def draw_point():
+    """
+
+    Function performs UI test on the draw point
+    functionality of the navigator. 
+    
+    Assumption, user ran the temperature bar test
+    so firefox and the navigator page are open.
+    """
+    sleep = 1.7
+    # Navigate to Point
+    move_to_et_click(dimension['point_position'])
+    time.sleep(sleep)
+    # Pick the point dropdown
+    move_to_et_click(dimension['draw_point_icon'])
+    time.sleep(sleep)
+    # Pick a point on the map
+    move_to_et_click(dimension['map_point'])
+    time.sleep(plot_render_sleep)
+    # Find expected plot
+    image_loc = gui.locateCenterOnScreen(
+        paths['point_index'], confidence=0.5, grayscale=True)
+
+    if image_loc is None:
+        gui.alert(text='Point index not found!', title='Map point', button='OK')
+    else:
+        gui.click(button='right', x=image_loc.x, y=image_loc.y)
+        gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
+
+
+
+
+
 
 def main():
     find_temperature_bar()
+    draw_point()
 
 if '__main__' == __name__:
     main()
