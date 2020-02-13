@@ -1,14 +1,24 @@
 location:
+  draw_point_icon: !!python/tuple
+  - 637
+  - 202
   firefox_icon: !!python/tuple
   - 27
   - 60
   firefox_search: !!python/tuple
   - 360
   - 106
+  map_point: !!python/tuple
+  - 1321
+  - 678
   new_firefox_window: !!python/tuple
-  - 131
-  - 103
+  - 147
+  - 43
+  point_position: !!python/tuple
+  - 616
+  - 148
 paths:
+  point_index: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/point_index.png
   test_temperature: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/temp.png
 web_addresses:
   ocean_navigator: navigator.oceansdata.ca/public/
