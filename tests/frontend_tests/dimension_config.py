@@ -20,7 +20,7 @@ def create_config():
     """
 
     firefox_icon = (27, 60)
-    new_firefox_window = (131,103)
+    new_firefox_window = (147,43)
     firefox_search = (360, 106)
     info = {}
     location = {
@@ -37,16 +37,35 @@ def create_config():
     info['location'] = location
     info['paths'] = paths
     info['web_addresses'] = web_addresses
+    # write to config file
+    write_to_config(info)
 
-    with open('dimension_config.yaml', 'w') as f:
-        yaml.dump(info, f, default_flow_style=False)
 
-
-def open_config():
+def open_config(config_file='dimension_config.yaml'):
     # Open dimension config
-    with open('dimension_config.yaml', 'r') as f:
+    with open(config_file, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
+
+def write_to_config(file, config_file='dimension_config.yaml'):
+    # write to extisting config file
+    with open(config_file, 'w') as f:
+        yaml.dump(file, f, default_flow_style=False)
+
+def update_config_file(header=None, key=None, value=None):
+    """
+    Update existing configuration file with new values
+    for a given key
+
+    key : str
+    """
+
+    with open('dimension_config.yaml', 'r') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
+    config[header][key] = value 
+    # write to config file
+    write_to_config(config)
 
 
 # Identify mouse postion
@@ -57,10 +76,12 @@ def identifyloc():
     while True:
         MouseX, MouseY = gui.position()
         print(MouseX, MouseY)
-        time.sleep(5)
+        time.sleep(2.7)
+
 
 def main():
-    create_config()
+    #identifyloc()
+    update_config_file('paths', 'point_index', os.path.abspath('locate_onscreen/point_index.png'))
 
 if '__main__' == __name__:
     main()
