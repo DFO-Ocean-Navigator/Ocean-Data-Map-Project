@@ -28,6 +28,7 @@ class TestMercator(unittest.TestCase):
         self.assertIs(ds._dataset, nc_data._dataset)
         self.assertIs(ds._meta_only, nc_data.meta_only)
         self.assertEqual(ds.variables, nc_data.variables)
+        self.assertEqual(ds.timestamp_to_time_index, nc_data.timestamp_to_time_index)
 
     def test_open_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc', **{"meta_only": True})
@@ -37,6 +38,8 @@ class TestMercator(unittest.TestCase):
     def test_open_not_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
+            self.assertIsNotNone(ds.time_variable)
+            self.assertIsNotNone(ds.timestamps)
             self.assertIsNotNone(ds.latvar)
             self.assertIsNotNone(ds.lonvar)
 

@@ -19,13 +19,13 @@ class Mercator(Model):
         super().__init__(nc_data)
         self.latvar = None
         self.lonvar = None
-        self.__latsort = None
-        self.__lonsort = None
         self.nc_data = nc_data
         self._dataset = nc_data._dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
         self.timestamp_to_time_index = nc_data.timestamp_to_time_index
+        self.time_variable = None
+        self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
@@ -37,8 +37,6 @@ class Mercator(Model):
             self.timestamps = self.nc_data.timestamps
             if self.latvar is None:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
-                self.__latsort = np.argsort(self.latvar[:])
-                self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
         return self
 
