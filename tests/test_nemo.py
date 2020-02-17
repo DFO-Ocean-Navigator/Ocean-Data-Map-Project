@@ -64,23 +64,7 @@ class TestNemo(unittest.TestCase):
         with Nemo(nc_data) as ds:
             np.testing.assert_array_equal(ds.depths, np.array([0]))
 
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_variables_sqlitedb(self, mock_query_func):
-        mock_query_func.return_value = self.variable_list_mock
-
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            variables = ds.variables
-
-            self.assertEqual(len(variables), 1)
-            self.assertTrue('votemper' in variables)
-            self.assertEqual(variables['votemper'].name,
-                             'Water temperature at CMC')
-            self.assertEqual(variables['votemper'].unit, 'Kelvins')
-            self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
-                ["deptht", "time_counter", "y", "x"]))
-
-    def test_variables_xarray(self):
+    def test_variables(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
             variables = ds.variables
