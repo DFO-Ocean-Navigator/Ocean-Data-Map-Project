@@ -107,17 +107,6 @@ class TestNemo(unittest.TestCase):
 
             self.assertEqual(time_var.attrs["title"], "Time")
 
-    ## TODO: latlon_variables is not used outside of classes like Mercator into which
-    ##       a NetCDFData instance is injected, so I think this test should move to
-    ##       test_netcdf_data.py.
-    def test_latlon_variables(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            lat, lon = ds.latlon_variables
-
-            self.assertEqual(lat.attrs["long_name"], "Latitude")
-            self.assertEqual(lon.attrs["long_name"], "Longitude")
-
     ## TODO: Need to write this test.
     def test_get_path(self):
         assert False

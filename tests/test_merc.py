@@ -97,20 +97,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(time_var.attrs["standard_name"], "time")
             self.assertEqual(time_var.attrs["long_name"], "Validity time")
 
-    ## TODO: latlon_variables is not used outside of classes like Mercator into which
-    ##       a NetCDFData instance is injected, so I think this test should move to
-    ##       test_netcdf_data.py.
-    def test_latlon_variables(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            lat, lon = ds.latlon_variables
-
-            self.assertEqual(lat.attrs["long_name"], "Latitude")
-            self.assertEqual(lat.attrs["standard_name"], "latitude")
-
-            self.assertEqual(lon.attrs["long_name"], "Longitude")
-            self.assertEqual(lon.attrs["standard_name"], "longitude")
-
     ## TODO: Need to write this test.
     def test_get_path(self):
         assert False
