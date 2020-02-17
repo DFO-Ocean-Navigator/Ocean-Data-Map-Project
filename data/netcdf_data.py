@@ -89,10 +89,12 @@ class NetCDFData(Data):
             xArray.DataArray -- the corresponding variable's DataArray
         """
         for c in candidates:
-            if c in self._dataset.variables.keys():
+            try:
                 return self._dataset.variables[c]
-
-        raise KeyError(f"None of {candidates} were found in {self._dataset}")
+            except KeyError:
+                continue
+        else:
+            raise KeyError(f"None of {candidates} were found in {self._dataset}")
 
     def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding

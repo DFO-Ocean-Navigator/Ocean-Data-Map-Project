@@ -23,3 +23,9 @@ class TestNetCDFData(unittest.TestCase):
 
             self.assertEqual(lat.attrs["long_name"], "Latitude")
             self.assertEqual(lon.attrs["long_name"], "Longitude")
+
+    def test_latlon_variables_not_found_raises(self):
+        # Use salishseacast_ssh_test.nc here because it has neither nav_lat nor latitude variables
+        with NetCDFData('tests/testdata/salishseacast_ssh_test.nc') as nc_data:
+            with self.assertRaises(KeyError):
+                lat, lon = nc_data.latlon_variables
