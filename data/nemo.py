@@ -1,61 +1,77 @@
-#!/usr/bin/env python
+from typing import Union
 
 import numpy as np
 import pyresample
 from pint import UnitRegistry
-from pykdtree.kdtree import KDTree
 
+import data.geo as geo
 from data.calculated import CalculatedData
+from data.model import Model
 from data.nearest_grid_point import find_nearest_grid_point
+from data.netcdf_data import NetCDFData
 from utils.errors import APIError
 
 
-class Nemo(CalculatedData):
+class Nemo(Model):
     """Class used to access Nemo models.
     """
 
     __depths = None
 
-    def __init__(self, url: str, **kwargs):
-        super(Nemo, self).__init__(url, **kwargs)
+    def __init__(self, nc_data: Union[CalculatedData, NetCDFData]) -> None:
+        super().__init__(nc_data)
+        self.latvar = None
+        self.lonvar = None
+        self.__latsort = None
+        self.__lonsort = None
+        self.nc_data = nc_data
+        self._dataset = nc_data._dataset
+        self._meta_only = nc_data.meta_only
+        self.variables = nc_data.variables
+        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
+        self.time_variable = None
+        self.timestamps = None
 
-    
     def __enter__(self):
-        super(Nemo, self).__enter__()
-
+        self.nc_data.__enter__()
+        self._dataset = self.nc_data._dataset
+        if not self._meta_only:
+            self.time_variable = self.nc_data.time_variable
+            ## TODO: Figure out how to expose cached timestamps re: test_timestamps()
+            self.timestamps = self.nc_data.timestamps
         return self
 
-    """
-        Finds, caches, and returns the valid depths for the dataset.
-    """
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.nc_data.__exit__(exc_type, exc_value, traceback)
+
     @property
     def depths(self):
+        """Finds, caches, and returns the valid depths for the dataset.
+        """
         if self.__depths is None:
             var = None
             # Look through possible dimension names
-            for v in self.depth_dimensions:
+            for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in list(self._dataset.coords.keys()):
+                if v in self._dataset.coords.keys():
                     # Get DataArray for depth
-                    var = self.get_dataset_variable(v)
+                    var = self.nc_data.get_dataset_variable(v)
                     break
             if var is not None:
                 ureg = UnitRegistry()
                 unit = ureg.parse_units(var.attrs['units'].lower())
-                self.__depths = ureg.Quantity(
-                    var.values, unit
-                ).to(ureg.meters).magnitude            
+                self.__depths = ureg.Quantity(var.values, unit).to(ureg.meters).magnitude
             else:
                 self.__depths = np.array([0])
-            self.__depths.setflags(write=False) # Make immutable
+
+            # Make immutable
+            self.__depths.setflags(write=False)
 
         return self.__depths
 
-    """
-        Computes and returns points bounding lat, lon.
-    """
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
-
+        """Computes and returns points bounding lat, lon.
+        """
         y, x, d = find_nearest_grid_point(lat, lon, self._dataset, latvar, lonvar, n)
 
         def fix_limits(data, limit):
@@ -79,11 +95,10 @@ class Nemo(CalculatedData):
         minx, maxx = fix_limits(x, latvar.shape[1])
 
         return miny, maxy, minx, maxx, np.clip(np.amax(d), 5000, 50000)
-    
-    """
-        Resamples data given lat/lon inputs and outputs
-    """
+
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
+        """ Resamples data given lat/lon inputs and outputs
+        """
         if len(var.shape) == 3:
             var = np.rollaxis(var, 0, 3)
         elif len(var.shape) == 4:
@@ -109,7 +124,7 @@ class Nemo(CalculatedData):
             output = []
             # multiple depths
             for d in range(0, data.shape[2]):
-                
+
                 masked_lon_in.mask = masked_lat_in.mask = \
                     data[:, :, d].view(np.ma.MaskedArray).mask
 
@@ -119,33 +134,32 @@ class Nemo(CalculatedData):
                     nprocs=8
                 )
 
-                output.append(super(Nemo, self)._interpolate(input_def, output_def, data[:, :, d]))
+                output.append(self.nc_data.interpolate(input_def, output_def, data[:, :, d]))
 
             output = np.ma.array(output).transpose()
-            
+
         else:
             masked_lon_in.mask = masked_lat_in.mask = \
                 var[:].view(np.ma.MaskedArray).mask
-            
+
             input_def = pyresample.geometry.SwathDefinition(
                 lons=masked_lon_in,
                 lats=masked_lat_in
             )
 
-            output = super(Nemo, self)._interpolate(input_def, output_def, data)
-           
+            output = self.nc_data.interpolate(input_def, output_def, data)
+
 
         if len(origshape) == 4:
             output = output.reshape(origshape[2:])
 
         return np.squeeze(output)
 
-    """
-        Returns the xarray.DataArray for latitude and longitude variables in the dataset.
-    """
     def __latlon_vars(self, variable):
+        """ Returns the xarray.DataArray for latitude and longitude variables in the dataset.
+        """
         # Get DataArray
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
 
         # Get variable attributes
         attrs = list(var.attrs.keys())
@@ -164,18 +178,36 @@ class Nemo(CalculatedData):
             for p in pairs:
                 if p[0] in coordinates:
                     return (
-                        self.get_dataset_variable(p[0]),
-                        self.get_dataset_variable(p[1]) # Check this
+                        self.nc_data.get_dataset_variable(p[0]),
+                        self.nc_data.get_dataset_variable(p[1]) # Check this
                     )
         else:
             for p in pairs:
                 if p[0] in self._dataset.variables:
                     return (
-                        self.get_dataset_variable(p[0]),
-                        self.get_dataset_variable(p[1])
+                        self.nc_data.get_dataset_variable(p[0]),
+                        self.nc_data.get_dataset_variable(p[1])
                     )
 
         raise LookupError("Cannot find latitude & longitude variables")
+
+    def get_path(self, path, depth, time, variable, numpoints=100, times=None, return_depth=False):
+        if times is None:
+            if hasattr(time, "__len__"):
+                times = self.nc_data.timestamp_to_iso_8601(time)
+            else:
+                times = None
+        distances, times, lat, lon, bearings = \
+            geo.path_to_points(path, numpoints, times=times)
+
+        if return_depth:
+            result, dep = self.get_point(lat, lon, depth, time, variable,
+                                         return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result, dep
+        else:
+            result = self.get_point(lat, lon, depth, time, variable,
+                                    return_depth=return_depth)
+            return np.array([lat, lon]), distances, times, result
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
@@ -186,8 +218,8 @@ class Nemo(CalculatedData):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        var = self.get_dataset_variable(variable)
-        
+        var = self.nc_data.get_dataset_variable(variable)
+
         time = self.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
@@ -241,13 +273,13 @@ class Nemo(CalculatedData):
             longitude = np.array([longitude])
 
         # Get xarray.Variable
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
 
         time = self.timestamp_to_time_index(timestamp)
-        
+
 
         if depth == 'bottom':
-            
+
             if hasattr(time, "__len__"):
                 d = var[time[0], :, miny:maxy, minx:maxx]
             else:
@@ -324,7 +356,7 @@ class Nemo(CalculatedData):
             return res
 
     def get_profile(self, latitude, longitude, timestamp, variable):
-        var = self.get_dataset_variable(variable)
+        var = self.nc_data.get_dataset_variable(variable)
         # We expect the following shape (time, depth, lat, lon)
         if len(var.shape) != 4:
             raise APIError(
@@ -333,7 +365,7 @@ class Nemo(CalculatedData):
         time_index = self.timestamp_to_time_index(timestamp)
 
         latvar, lonvar = self.__latlon_vars(variable)
-        
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, latvar, lonvar, 10)
 

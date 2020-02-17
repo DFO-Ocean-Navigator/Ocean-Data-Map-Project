@@ -1,5 +1,6 @@
-from data.mercator import Mercator
 from data.calculated import CalculatedData
+from data.mercator import Mercator
+from data.nemo import Nemo
 from utils.decorators import hashable_lru
 
 
@@ -67,8 +68,6 @@ def open_dataset(dataset, **kwargs):
     if not dimension_list:
         raise RuntimeError("Dataset not supported: %s." % url)
 
-    ## TODO: For now, just work on Mercator model objects.
-    ##       Need to extend to Nemo, Fvcom, and maybe Wwatch3 later.
-    ##       I wonder if including a `model type` attr in datasetconfig.json
-    ##       might be preferrable to "sniffing" via dimension_list?
-    return Mercator(nc_data)
+    if 'longitude' in dimension_list or 'latitude' in dimension_list:
+        return Mercator(nc_data)
+    return Nemo(nc_data)

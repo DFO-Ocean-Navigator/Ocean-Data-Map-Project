@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import datetime
 import unittest
 from unittest.mock import patch
@@ -8,6 +6,7 @@ import numpy as np
 import pytz
 
 from data.nemo import Nemo
+from data.netcdf_data import NetCDFData
 from data.variable import Variable
 from data.variable_list import VariableList
 
@@ -21,18 +20,57 @@ class TestNemo(unittest.TestCase):
         ])
 
     def test_init(self):
-        Nemo(None)
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        ds = Nemo(nc_data)
+        self.assertIsNone(ds.latvar)
+        self.assertIsNone(ds.lonvar)
+        self.assertIs(ds.nc_data, nc_data)
+        self.assertIs(ds._dataset, nc_data._dataset)
+        self.assertIs(ds._meta_only, nc_data.meta_only)
+        self.assertEqual(ds.variables, nc_data.variables)
+        self.assertEqual(ds.timestamp_to_time_index, nc_data.timestamp_to_time_index)
 
-    def test_open(self):
-        with Nemo('tests/testdata/nemo_test.nc'):
-            pass
+    def test_open_meta_only(self):
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc', **{"meta_only": True})
+        with Nemo(nc_data) as ds:
+            self.assertIs(ds._dataset, nc_data._dataset)
+
+    def test_open_not_meta_only(self):
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            self.assertIsNotNone(ds.time_variable)
+            self.assertIsNotNone(ds.timestamps)
+
+    def test_depths(self):
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            expected = np.array([
+                0.494025, 1.54138, 2.64567, 3.81949, 5.07822, 6.44061, 7.92956,
+                9.573, 11.405, 13.4671, 15.8101, 18.4956, 21.5988, 25.2114, 29.4447,
+                34.4342, 40.3441, 47.3737, 55.7643, 65.8073, 77.8539, 92.3261, 109.729,
+                130.666, 155.851, 186.126, 222.475, 266.04, 318.127, 380.213, 453.938,
+                541.089, 643.567, 763.333, 902.339, 1062.44, 1245.29, 1452.25, 1684.28,
+                1941.89, 2225.08, 2533.34, 2865.7, 3220.82, 3597.03, 3992.48, 4405.22,
+                4833.29, 5274.78, 5727.92],
+                dtype=np.float32)
+            np.testing.assert_array_equal(ds.depths, expected)
+
+    @patch("tests.test_nemo.NetCDFData")
+    def test_no_depth_variable(self, patch_netcdfdata):
+        # This is a hack to trigger the no depth variable edge case
+        patch_netcdfdata.depth_dimensions.return_value = []
+
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            np.testing.assert_array_equal(ds.depths, np.array([0]))
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_variables(self, mock_query_func):
+    def test_variables_sqlitedb(self, mock_query_func):
         mock_query_func.return_value = self.variable_list_mock
 
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            variables = n.variables
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            variables = ds.variables
 
             self.assertEqual(len(variables), 1)
             self.assertTrue('votemper' in variables)
@@ -42,43 +80,60 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ["deptht", "time_counter", "y", "x"]))
 
+    def test_variables_xarray(self):
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            variables = ds.variables
+
+            self.assertEqual(len(variables), 3)
+            self.assertTrue('votemper' in variables)
+            self.assertEqual(variables['votemper'].name,
+                             'Water temperature at CMC')
+            self.assertEqual(variables['votemper'].unit, 'Kelvins')
+            self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
+                ["deptht", "time_counter", "y", "x"]))
+
     def test_timestamp_to_time_index(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-
-            idx = n.timestamp_to_time_index(2031436800)
-
-            self.assertEqual(idx, 0)
-
-    def test_timestamp_to_time_index(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-
-            idx = n.timestamp_to_time_index(2031436800)
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            idx = ds.timestamp_to_time_index(2031436800)
 
             self.assertEqual(idx, 0)
 
     def test_time_variable(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            time_var = n.time_variable
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            time_var = ds.time_variable
 
             self.assertEqual(time_var.attrs["title"], "Time")
 
+    ## TODO: latlon_variables is not used outside of classes like Mercator into which
+    ##       a NetCDFData instance is injected, so I think this test should move to
+    ##       test_netcdf_data.py.
     def test_latlon_variables(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            lat, lon = n.latlon_variables
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            lat, lon = ds.latlon_variables
 
             self.assertEqual(lat.attrs["long_name"], "Latitude")
             self.assertEqual(lon.attrs["long_name"], "Longitude")
 
+    ## TODO: Need to write this test.
+    def test_get_path(self):
+        assert False
+
     def test_get_point(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
             self.assertAlmostEqual(
-                n.get_point(13.0, -149.0, 0, 2031436800, 'votemper'),
+                ds.get_point(13.0, -149.0, 0, 2031436800, 'votemper'),
                 299.17, places=2
             )
 
     def test_get_raw_point(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            lat, lon, data = n.get_raw_point(
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            lat, lon, data = ds.get_raw_point(
                 13.0, -149.0, 0, 2031436800, 'votemper'
             )
 
@@ -88,16 +143,18 @@ class TestNemo(unittest.TestCase):
         self.assertAlmostEqual(data.values[1, 1], 299.3, places=1)
 
     def test_get_profile(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            p, d = n.get_profile(13.0, -149.0, 2031436800, 'votemper')
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            p, d = ds.get_profile(13.0, -149.0, 2031436800, 'votemper')
             self.assertAlmostEqual(p[0], 299.17, places=2)
             self.assertAlmostEqual(p[10], 299.15, places=2)
             self.assertAlmostEqual(p[20], 296.466766, places=6)
             self.assertTrue(np.ma.is_masked(p[49]))
 
     def test_get_profile_depths(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            p = n.get_profile_depths(
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            p = ds.get_profile_depths(
                 13.0,
                 -149.0,
                 2031436800,
@@ -110,14 +167,20 @@ class TestNemo(unittest.TestCase):
             self.assertAlmostEqual(p[7], 277.90, places=2)
 
     def test_bottom_point(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
             self.assertAlmostEqual(
-                n.get_point(13.0, -149.0, 'bottom', 2031436800, 'votemper'),
+                ds.get_point(13.0, -149.0, 'bottom', 2031436800, 'votemper'),
                 274.13, places=2
             )
 
+    ## TODO: Need to write this test.
+    def test_get_raw_bottom_point(self):
+        assert False
+
     def test_get_area(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
             a = np.array(
                 np.meshgrid(
                     np.linspace(5, 10, 10),
@@ -125,21 +188,22 @@ class TestNemo(unittest.TestCase):
                 )
             )
 
-            r = n.get_area(a, 0, 2031436800, 'votemper', "gaussian", 25000, 10)
+            r = ds.get_area(a, 0, 2031436800, 'votemper', "gaussian", 25000, 10)
             self.assertAlmostEqual(r[5, 5], 301.285, places=3)
 
-            r = n.get_area(a, 0, 2031436800, 'votemper', "bilinear", 25000, 10)
+            r = ds.get_area(a, 0, 2031436800, 'votemper', "bilinear", 25000, 10)
             self.assertAlmostEqual(r[5, 5], 301.269, places=3)
 
-            r = n.get_area(a, 0, 2031436800, 'votemper', "nearest", 25000, 10)
+            r = ds.get_area(a, 0, 2031436800, 'votemper', "nearest", 25000, 10)
             self.assertAlmostEqual(r[5, 5], 301.28986, places=5)
 
-            r = n.get_area(a, 0, 2031436800, 'votemper', "inverse", 25000, 10)
+            r = ds.get_area(a, 0, 2031436800, 'votemper', "inverse", 25000, 10)
             self.assertAlmostEqual(r[5, 5], 301.2795, places=4)
 
     def test_get_path_profile(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            p, d, r, dep = n.get_path_profile(
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            p, d, r, dep = ds.get_path_profile(
                 [[13, -149], [14, -140], [15, -130]], 2031436800, 'votemper', 10)
 
             self.assertEqual(r.shape[0], 50)
@@ -149,15 +213,17 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(d[0], 0)
 
     def test_get_timeseries_point(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            r = n.get_timeseries_point(
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            r = ds.get_timeseries_point(
                 13.0, -149.0, 0, 2031436800, 2034072000, 'votemper')
             self.assertAlmostEqual(r[0], 299.17, places=2)
             self.assertAlmostEqual(r[1], 299.72, places=2)
 
     def test_get_timeseries_profile(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            r, d = n.get_timeseries_profile(
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            r, d = ds.get_timeseries_profile(
                 13.0, -149.0, 2031436800, 2034072000, 'votemper')
             self.assertAlmostEqual(r[0, 0], 299.17, places=2)
             self.assertAlmostEqual(r[0, 10], 299.15, places=2)
@@ -168,16 +234,19 @@ class TestNemo(unittest.TestCase):
             self.assertTrue(np.ma.is_masked(r[1, 49]))
 
     def test_timestamps(self):
-        with Nemo('tests/testdata/nemo_test.nc') as n:
-            self.assertEqual(len(n.timestamps), 2)
-            self.assertEqual(n.timestamps[0],
+        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
+        with Nemo(nc_data) as ds:
+            self.assertEqual(len(ds.timestamps), 2)
+            self.assertEqual(ds.timestamps[0],
                              datetime.datetime(2014, 5, 17, 0, 0, 0, 0,
                                                pytz.UTC))
 
             # Property is read-only
+            ## TODO: This assertion fails because Mercator.timestanps is an attr that exposes
+            ##       nc_data.timestamps. It can be assigned, but it is immutable (assertion below)
             with self.assertRaises(AttributeError):
-                n.timestamps = []
+                ds.timestamps = []
 
             # List is immutable
             with self.assertRaises(ValueError):
-                n.timestamps[0] = 0
+                ds.timestamps[0] = 0
