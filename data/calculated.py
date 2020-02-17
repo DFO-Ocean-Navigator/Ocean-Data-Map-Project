@@ -53,13 +53,13 @@ class CalculatedData(NetCDFData):
 
             attrs = {**attrs, **self._calculated[key]}
 
-            return CalculatedArray(self._dataset,
+            return CalculatedArray(self.dataset,
                                    self._calculated[key]['equation'],
                                    self.__get_calculated_dims(key),
                                    attrs,
                                    self.url)
         else:
-            return self._dataset.variables[key]
+            return self.dataset.variables[key]
 
     @property
     def variables(self):

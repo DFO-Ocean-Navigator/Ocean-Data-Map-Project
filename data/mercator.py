@@ -20,7 +20,7 @@ class Mercator(Model):
         self.latvar = None
         self.lonvar = None
         self.nc_data = nc_data
-        self._dataset = nc_data._dataset
+        self._dataset = nc_data.dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
         self.timestamp_to_time_index = nc_data.timestamp_to_time_index
@@ -29,7 +29,7 @@ class Mercator(Model):
 
     def __enter__(self):
         self.nc_data.__enter__()
-        self._dataset = self.nc_data._dataset
+        self._dataset = self.nc_data.dataset
 
         if not self._meta_only:
             self.time_variable = self.nc_data.time_variable

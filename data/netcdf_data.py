@@ -36,8 +36,7 @@ class NetCDFData(Data):
     def __init__(self, url: str, **kwargs: Dict) -> None:
         super().__init__(url)
         self.meta_only: bool = kwargs.get('meta_only', False)
-        ## TODO: dataset should be a public attr for model classes to access
-        self._dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
+        self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         self._nc_files: list = []
@@ -55,10 +54,10 @@ class NetCDFData(Data):
             decode_times = False
 
             if self._nc_files:
-                self._dataset = xarray.open_mfdataset(
+                self.dataset = xarray.open_mfdataset(
                     self._nc_files, decode_times=decode_times)
             else:
-                self._dataset = xarray.open_dataset(
+                self.dataset = xarray.open_dataset(
                     self.url, decode_times=decode_times)
 
             if self._grid_angle_file_url:
@@ -66,7 +65,7 @@ class NetCDFData(Data):
                     self._grid_angle_file_url,
                     drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
                 )
-                self._dataset = self._dataset.merge(angle_file)
+                self.dataset = self.dataset.merge(angle_file)
                 angle_file.close()
 
             self._dataset_open = True
@@ -75,7 +74,7 @@ class NetCDFData(Data):
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self._dataset_open:
-            self._dataset.close()
+            self.dataset.close()
             self._dataset_open = False
 
     def __find_variable(self, candidates: list):
@@ -90,11 +89,11 @@ class NetCDFData(Data):
         """
         for c in candidates:
             try:
-                return self._dataset.variables[c]
+                return self.dataset.variables[c]
             except KeyError:
                 continue
         else:
-            raise KeyError(f"None of {candidates} were found in {self._dataset}")
+            raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
     def timestamp_to_time_index(self, timestamp):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
@@ -210,25 +209,25 @@ class NetCDFData(Data):
             return None
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
-        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
+        lat_var = find_variable("lat", list(self.dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable(
-            "depth", list(self._dataset.variables.keys()))
+            "depth", list(self.dataset.variables.keys()))
 
         # self.get_dataset_variable should be used below instead of
-        # self._dataset.variables[...] because self._dataset.variables[...]
+        # self.dataset.variables[...] because self.dataset.variables[...]
         # will go directly to the underlying dataset and will not handle
         # calculated variables.
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self._dataset,
+                bottom_left[0], bottom_left[1], self.dataset,
                 self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self._dataset, self.get_dataset_variable(
+                top_right[0], top_right[1], self.dataset, self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
 
@@ -250,7 +249,7 @@ class NetCDFData(Data):
             p1 = geopy.Point([85.0, 180.0])
 
         # Get timestamp
-        time_var = find_variable("time", list(self._dataset.variables.keys()))
+        time_var = find_variable("time", list(self.dataset.variables.keys()))
         timestamp = str(format_date(pandas.to_datetime(np.float64(
             self.get_dataset_variable(time_var)[time_range[0]].values)), "yyyyMMdd"))
         endtimestamp = ""
@@ -263,7 +262,7 @@ class NetCDFData(Data):
         lon_coord = self._dataset_config.lon_var_key
 
         # Do subset along coordinates
-        subset = self._dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
+        subset = self.dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
 
         # Select requested time (time range if applicable)
         if apply_time_range:
@@ -540,7 +539,7 @@ class NetCDFData(Data):
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing
-            the time dimension in self._dataset
+            the time dimension in self.dataset
         """
 
         if self._time_variable is not None:
@@ -595,7 +594,7 @@ class NetCDFData(Data):
         """
         Returns the value of a given variable name from the dataset
         """
-        return self._dataset.variables[key]
+        return self.dataset.variables[key]
 
     @property
     def variables(self) -> VariableList:
