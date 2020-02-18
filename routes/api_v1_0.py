@@ -48,6 +48,8 @@ bp_v1_0 = Blueprint('api_v1_0', __name__)
 # API INTERFACE V1.0
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
+MAX_CACHE = 315360000
+FAILURE = ClientError("Bad API usage")
 
 @bp_v1_0.errorhandler(ErrorBase)
 def handle_error_v1(error):
@@ -307,10 +309,10 @@ def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: 
     """
     API Format: /api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
 
-    <string:dataset>  : Dataset to extract data - Can be found using /api/datasets
-    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
+    <string:dataset>  : Dataset to extract data - Can be found using /api/v1.0/datasets
+    <string:variable> : Type of data to retrieve - found using /api/v1.0/variables/?dataset='...'
     <int:time>        : Time retrieved data was gathered/modeled
-    <string:depth>    : Water Depth - found using /api/depth/?dataset='...'
+    <string:depth>    : Water Depth - found using /api/v1.0/depth/?dataset='...'
     <string:location> : Location of the data you want to retrieve (Lat, Long)
 
     **All Components Must be Included**
@@ -863,6 +865,11 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
         Generates topographical tiles
     """
 
+    if shaded_relief == "true":
+        bShaded_relief = True
+    else:
+        bShaded_relief = False
+
     shape_file_dir = current_app.config['SHAPE_FILE_DIR']
 
     if zoom > 7:
@@ -874,7 +881,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     else:
-        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, shaded_relief)
+        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
 
         return _cache_and_send_img(bytesIOBuff, f)
 
@@ -945,3 +952,49 @@ def after_request(response):
     # Relying on iptables to keep this safe
     header['Access-Control-Allow-Origin'] = '*'
     return response
+
+
+def _is_cache_valid(dataset: str, f: str) -> bool:
+    """
+        Returns True if dataset cache is valid
+    """
+
+    config = DatasetConfig(dataset)
+    if os.path.isfile(f):
+        cache_time = config.cache
+        if cache_time is not None:
+            modtime = datetime.datetime.fromtimestamp(
+                os.path.getmtime(f)
+            )
+            age_hours = (
+                datetime.datetime.now() - modtime
+            ).total_seconds() / 3600
+            if age_hours > cache_time:
+                os.remove(f)
+                return False
+            else:
+                return True
+        else:
+            return True
+    else:
+        return False
+
+def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
+    """
+        Caches a rendered image buffer on disk and sends it to the browser
+
+        bytesIOBuff: BytesIO object containing image data
+        f: filename of image to be cached
+    """
+    p = os.path.dirname(f)
+    if not os.path.isdir(p):
+        os.makedirs(p)
+
+    # This seems excessive
+    bytesIOBuff.seek(0)
+    dataIO = BytesIO(bytesIOBuff.read())
+    im = Image.open(dataIO)
+    im.save(f, format='PNG', optimize=True)  # For cache
+
+    bytesIOBuff.seek(0)
+    return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
