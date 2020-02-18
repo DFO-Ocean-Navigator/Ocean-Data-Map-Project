@@ -2,22 +2,18 @@ import base64
 import datetime
 import gzip
 import hashlib
-import io
 import json
 import os
-import re
 import shutil
 import sqlite3
 from io import BytesIO
 
 import numpy as np
-import pytz
 from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
                    send_file, send_from_directory)
 from PIL import Image
 
 import data.class4 as class4
-import netCDF4
 import plotting.colormap
 import plotting.scale
 import plotting.tile
@@ -26,7 +22,7 @@ from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
-from flask_babel import format_date, gettext
+from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
 from plotting.drifter import DrifterPlotter
