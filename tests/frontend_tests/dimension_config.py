@@ -67,21 +67,11 @@ def update_config_file(header=None, key=None, value=None):
     # write to config file
     write_to_config(config)
 
-
-# Identify mouse postion
-def identifyloc():
-    """
-    Locate and return current x and y mouse postion
-    """
-    while True:
-        MouseX, MouseY = gui.position()
-        print(MouseX, MouseY)
-        time.sleep(2.7)
-
-
 def main():
     #identifyloc()
-    update_config_file('paths', 'point_index', os.path.abspath('locate_onscreen/point_index.png'))
+    #update_config_file('location', 'map_icon', (696, 145))
+    update_config_file('location', 'close_index', (1733, 171))
+    #update_config_file('paths', 'line_index', '/locate_onscreen/line_index.png')
 
 if '__main__' == __name__:
     main()

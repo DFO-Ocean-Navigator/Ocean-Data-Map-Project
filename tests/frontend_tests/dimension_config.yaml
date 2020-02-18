@@ -1,4 +1,10 @@
 location:
+  close_index: !!python/tuple
+  - 1733
+  - 171
+  draw_on_map: !!python/tuple
+  - 752
+  - 195
   draw_point_icon: !!python/tuple
   - 637
   - 202
@@ -8,6 +14,9 @@ location:
   firefox_search: !!python/tuple
   - 360
   - 106
+  map_icon: !!python/tuple
+  - 696
+  - 145
   map_point: !!python/tuple
   - 1321
   - 678
@@ -18,6 +27,7 @@ location:
   - 616
   - 148
 paths:
+  line_index: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/line_index.png
   point_index: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/point_index.png
   test_temperature: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/temp.png
 web_addresses:
