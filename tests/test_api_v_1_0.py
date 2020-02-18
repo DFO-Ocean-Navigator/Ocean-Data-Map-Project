@@ -49,7 +49,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(resp_data[0]['scale'], [-5, 30])
         self.assertEqual(resp_data[0]['value'], 'Temperature')
 
-        res = self.app.get('/api/v1.0/variables/?dataset=giops&vectors')
+        res = self.app.get('/api/v1.0/variables/?dataset=giops')
 
         self.assertEqual(res.status_code, 200)
 

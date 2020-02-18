@@ -32,7 +32,7 @@ class TestUtil(unittest.TestCase):
                         "name": "my_variable",
                     }
                 }
-            },
+            }
         }
 
         self.assertEqual(len(DatasetConfig.get_datasets()), 1)
@@ -60,16 +60,19 @@ class TestUtil(unittest.TestCase):
             "key": {
                 "enabled": True,
                 "variables": {
-                    "var,var2": {
+                    "magmyvar": {
+                        "name": "my_variable",
+                    },
+                    "magnitudemyvar": {
                         "name": "my_variable",
                     }
                 }
             },
         }
 
-        self.assertEqual(len(DatasetConfig("key").variables), 0)
-        self.assertEqual(len(DatasetConfig("key").vector_variables), 1)
-        result = DatasetConfig("key").variable["var,var2"]
+        self.assertEqual(len(DatasetConfig("key").variables), 2)
+        self.assertEqual(len(DatasetConfig("key").vector_variables), 2)
+        result = DatasetConfig("key").variable["magmyvar"]
         self.assertEqual(result.name, "my_variable")
         self.assertEqual(result.unit, "Unknown")
 

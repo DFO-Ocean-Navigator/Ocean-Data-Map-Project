@@ -22,7 +22,7 @@ class SQLiteDatabase:
     def __init__(self, url: str):
         self.url = url  # URL to sqlite database
         # URI for opening in read-only mode
-        self.uri = 'file:{}?mode=ro'.format(url)
+        self.uri = f'file:{url}?mode=ro'
         self.conn = None  # sqlite connection handle
         self.c = None
 

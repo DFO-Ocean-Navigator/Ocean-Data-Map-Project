@@ -177,9 +177,15 @@ def variables_query_v1_0():
 
     data = []
 
-    if 'vectors_only' not in args:
+    if 'vectors_only' in args:
+        for variable in config.vector_variables:
+            data.append({
+                'id': variable,
+                'value': config.variable[variable].name,
+                'scale': config.variable[variable].scale,
+            })
+    else:
         with open_dataset(config, meta_only=True) as ds:
-
             for v in ds.variables:
                 if ('3d_only' in args) and v.is_surface_only():
                     continue
@@ -190,14 +196,6 @@ def variables_query_v1_0():
                                 'value': config.variable[v].name,
                                 'scale': config.variable[v].scale
                                 })
-
-    if 'vectors' in args or 'vectors_only' in args:
-        for variable in config.vector_variables:
-            data.append({
-                'id': variable,
-                'value': config.variable[variable].name,
-                'scale': config.variable[variable].scale,
-            })
 
     data = sorted(data, key=lambda k: k['value'])
 
@@ -775,7 +773,7 @@ def timestamps():
     vals = []
     with SQLiteDatabase(config.url) as db:
         if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'], 
+            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                     [v.key for v in db.get_data_variables()])
             vals = db.get_timestamps(data_vars[0])
         else:
@@ -945,6 +943,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
             with open(requestf, 'wb') as tileout:
                 shutil.copyfileobj(gzipped, tileout)
         return send_file(requestf)
+
 
 @bp_v1_0.after_request
 def after_request(response):

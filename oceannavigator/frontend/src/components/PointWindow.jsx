@@ -331,7 +331,7 @@ export default class PointWindow extends React.Component {
         state={this.props.variable}
         def=''
         onUpdate={this.props.onUpdate}
-        url={"/api/v1.0/variables/?vectors&dataset="+this.props.dataset}
+        url={"/api/v1.0/variables/?dataset="+this.props.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
       <Range
