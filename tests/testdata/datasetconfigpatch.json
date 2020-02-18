@@ -9,7 +9,7 @@
         "help": "help",
         "attribution": "attrib",
         "variables": {
-            "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "deptht", "y", "x"] }
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }
     },
 
@@ -24,7 +24,7 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "variables": {
-            "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] }
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }
     }
 }
