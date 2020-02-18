@@ -19,36 +19,10 @@ class TestAPIv1(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
 
-        self.patch_dataset_config_ret_val = {
-            "giops": {
-                "enabled": True,
-                "url": "tests/testdata/nemo_test.nc",
-                "grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc",
-                "time_dim_units": "seconds since 1950-01-01 00:00:00",
-                "quantum": "day",
-                "name": "GIOPS",
-                "help": "help",
-                "attribution": "attrib",
-                "variables": {
-                    "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "deptht", "y", "x"] },
-                }
-            },
-
-            "giops_real": {
-                "enabled": True,
-                "url": "tests/testdata/giops_test.nc",
-                "name": "GIOPS Forecast 3D - Polar Stereographic",
-                "quantum": "day",
-                "type": "forecast",
-                "lat_var_key": "yc",
-                "lon_var_key": "xc",
-                "time_dim_units": "seconds since 1950-01-01 00:00:00",
-                "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
-                "variables": {
-                    "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
-                }
-            }
-        }
+        with open('tests/testdata/endpoints.json') as endpoints:
+            self.apiLinks = json.load(endpoints)
+        with open('tests/testdata/datasetpatch.json') as dataPatch:
+            self.patch_dataset_config_ret_val = json.load(dataPatch)
 
         self.patch_data_vars_ret_val = VariableList([
             Variable('votemper', 'Water temperature at CMC',
@@ -176,10 +150,6 @@ class TestAPIv1(unittest.TestCase):
         res_data = self.__get_response_data(res)
         self.assertEqual(res_data, "day")
 
-    # To do: flesh out these tests, these just confirm the API returns data
-
-
-    # one offs
     def test_api_info(self):
         res = self.app.get('/api/')
         self.assertEqual(res.status_code, 400)
@@ -193,9 +163,7 @@ class TestAPIv1(unittest.TestCase):
     def test_generatescript_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        res = self.app.get(
-            '/api/v1.0/generatescript/%7B%22dataset%22:%22giops%22,%22names%22:[%2242.3585,%20-36.0695%22],%22plotTitle%22:%22%22,%22quantum%22:%22day%22,%22showmap%22:true,%22station%22:[[42.35854391749709,-36.06948852539062,null]],%22time%22:2211840000,%22type%22:%22profile%22,%22variable%22:[%22votemper%22]%7D/python/PLOT/'
-        )
+        res = self.app.get(self.apiLinks['generatescript'])
         self.assertEqual(res.status_code, 200)
 
     def test_observationvariables_endpoint(self):
@@ -207,9 +175,7 @@ class TestAPIv1(unittest.TestCase):
     def test_range_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        res = self.app.get(
-            "/api/v1.0/range/giops_real/votemper/gaussian/25/10/EPSG:3857/-14958556.575346138,2726984.1854711734,3826607.4960187795,11239011.655308401/0/2212704000.json?_=1581603111469"
-        )
+        res = self.app.get(self.apiLinks["range"])
         self.assertEqual(res.status_code, 200)
 
 
@@ -244,7 +210,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
         
-        res = self.app.get('/api/v1.0/stats/?query=%7B%22area%22%3A%5B%7B%22innerrings%22%3A%5B%5D%2C%22name%22%3A%22%22%2C%22polygons%22%3A%5B%5B%5B52.10650519075634%2C-36.59683227539063%5D%2C%5B51.727028157047755%2C-29.12612915039064%5D%2C%5B49.095452162534826%2C-29.917144775390632%5D%2C%5B48.86471476180279%2C-36.77261352539063%5D%2C%5B52.10650519075634%2C-36.59683227539063%5D%5D%5D%7D%5D%2C%22dataset%22%3A%22giops_real%22%2C%22depth%22%3A0%2C%22time%22%3A2057094000%2C%22variable%22%3A%22votemper%22%7D')
+        res = self.app.get(self.apiLinks["stats"])
         self.assertEqual(res.status_code, 200)
 
 
@@ -255,9 +221,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        res = self.app.get(
-            '/api/v1.0/subset/?&output_format=NETCDF4&dataset_name=giops_real&variables=votemper&min_range=59.489726035537075,-31.337127685546886&max_range=60.67317856581772,-27.206268310546882&time=2212704000,2212704000&user_grid=0&should_zip=0'
-        )
+        res = self.app.get(self.apiLinks["subset"])
         self.assertEqual(res.status_code, 200)
 
 
@@ -269,9 +233,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # map (area)
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22area%22%3A%5B%7B%22innerrings%22%3A%5B%5D%2C%22name%22%3A%22%22%2C%22polygons%22%3A%5B%5B%5B60.67317856581772%2C-30.54611206054687%5D%2C%5B60.54377524118843%2C-27.206268310546882%5D%2C%5B59.489726035537075%2C-28.085174560546875%5D%2C%5B59.71209717332292%2C-31.337127685546886%5D%2C%5B60.67317856581772%2C-30.54611206054687%5D%5D%5D%7D%5D%2C%22bathymetry%22%3Atrue%2C%22colormap%22%3A%22default%22%2C%22contour%22%3A%7B%22colormap%22%3A%22default%22%2C%22hatch%22%3Afalse%2C%22legend%22%3Atrue%2C%22levels%22%3A%22auto%22%2C%22variable%22%3A%22none%22%7D%2C%22dataset%22%3A%22giops_real%22%2C%22depth%22%3A0%2C%22interp%22%3A%22gaussian%22%2C%22neighbours%22%3A10%2C%22projection%22%3A%22EPSG%3A3857%22%2C%22quantum%22%3A%22day%22%2C%22quiver%22%3A%7B%22colormap%22%3A%22default%22%2C%22magnitude%22%3A%22length%22%2C%22variable%22%3A%22none%22%7D%2C%22radius%22%3A25%2C%22scale%22%3A%22-5%2C30%2Cauto%22%2C%22showarea%22%3Atrue%2C%22time%22%3A2212704000%2C%22type%22%3A%22map%22%2C%22variable%22%3A%22votemper%22%7D&'
-        )
+        res = self.app.get(self.apiLinks["plot_map"])
         self.assertEqual(res.status_code, 200)
 
 
@@ -283,9 +245,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # transect (line)
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22colormap%22%3A%22default%22%2C%22dataset%22%3A%22giops_real%22%2C%22depth_limit%22%3Afalse%2C%22linearthresh%22%3A200%2C%22path%22%3A%5B%5B61.16443708638272%2C-28.964080810546882%5D%2C%5B60.60854176060906%2C-27.382049560546875%5D%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22scale%22%3A%22-5%2C30%2Cauto%22%2C%22selectedPlots%22%3A%220%2C1%2C1%22%2C%22showmap%22%3Atrue%2C%22surfacevariable%22%3A%22none%22%2C%22time%22%3A%222212704000%22%2C%22type%22%3A%22transect%22%2C%22variable%22%3A%22votemper%22%7D'
-        )
+        res = self.app.get(self.apiLinks["plot_transect"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/timeseries.. blame nabil")
@@ -298,9 +258,7 @@ class TestAPIv1(unittest.TestCase):
 
         # timeseries (point, virtual mooring) 
         # returns IndexError: index 0 is out of bounds for axis 0 with size 0
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22colormap%22%3A%22default%22%2C%22dataset%22%3A%22giops_real%22%2C%22depth%22%3A0%2C%22endtime%22%3A2057094000%2C%22names%22%3A%5B%2261.3125%2C%20-28.3351%22%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22scale%22%3A%22-5%2C30%2Cauto%22%2C%22showmap%22%3Atrue%2C%22starttime%22%3A2211926376%2C%22station%22%3A%5B%5B61.31245157483821%2C-28.335113525390625%2Cnull%5D%5D%2C%22type%22%3A%22timeseries%22%2C%22variable%22%3A%22vosaline%22%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks["plot_timeseries"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/ts.. returning error")
@@ -313,9 +271,7 @@ class TestAPIv1(unittest.TestCase):
 
         # ts (point, T/S Plot)
         # KeyError: 'vosaline'
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22dataset%22%3A%22giops_real%22%2C%22names%22%3A%5B%2261.3125%2C%20-28.3351%22%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22showmap%22%3Atrue%2C%22station%22%3A%5B%5B61.31245157483821%2C-28.335113525390625%2Cnull%5D%5D%2C%22time%22%3A2057094000%2C%22type%22%3A%22ts%22%7D&format=json'
-        )  
+        res = self.app.get(self.apiLinks["plot_ts"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/sound.. returning error")
@@ -328,9 +284,7 @@ class TestAPIv1(unittest.TestCase):
 
         # sound (point, Speed of Sound)
         # IndexError: list index out of range
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22dataset%22%3A%22giops_real%22%2C%22names%22%3A%5B%2260.2616%2C%20-28.5246%22%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22showmap%22%3Atrue%2C%22station%22%3A%5B%5B60.26161708284462%2C-28.52462768554688%2Cnull%5D%5D%2C%22time%22%3A2212704000%2C%22type%22%3A%22sound%22%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks[plot_sound])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -341,9 +295,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # profile (point, profile)
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22dataset%22%3A%22giops_real%22%2C%22names%22%3A%5B%2260.3487%2C%20-28.6125%22%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22showmap%22%3Atrue%2C%22station%22%3A%5B%5B60.34869562531861%2C-28.612518310546875%2Cnull%5D%5D%2C%22time%22%3A2212704000%2C%22type%22%3A%22profile%22%2C%22variable%22%3A%5B%22votemper%22%5D%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks["plot_profile"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/hovmoller.. returning error")
@@ -357,9 +309,7 @@ class TestAPIv1(unittest.TestCase):
         # hovmoller (line, Hovmöller Diagram)
         # TypeError: object of type 'datetime.datetime' has no len()
         # possibly a problem with how mant timestamps are in giops_test
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22colormap%22%3A%22default%22%2C%22dataset%22%3A%22giops_real%22%2C%22depth%22%3A0%2C%22endtime%22%3A2212704000%2C%22path%22%3A%5B%5B60.86631247462259%2C-29.667205810546882%5D%2C%5B60.30518536282736%2C-27.909393310546882%5D%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22scale%22%3A%22-5%2C30%2Cauto%22%2C%22showmap%22%3Atrue%2C%22starttime%22%3A%222213006400%22%2C%22type%22%3A%22hovmoller%22%2C%22variable%22%3A%22votemper%22%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks["plot_hovmoller"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/hovmoller.. returning error")
@@ -372,9 +322,7 @@ class TestAPIv1(unittest.TestCase):
 
         # observation (point, Observation) 
         # returns RuntimeError: Opening a dataset via sqlite requires the 'timestamp' keyword argument.
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22dataset%22%3A%22giops_real%22%2C%22names%22%3A%5B%22Pearkes%20003%20507%22%5D%2C%22observation%22%3A%5B1587%5D%2C%22observation_variable%22%3A%5B7%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22type%22%3A%22observation%22%2C%22variable%22%3A%5B%22votemper%22%5D%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks["plot_observation"])
         self.assertEqual(res.status_code, 200)
 
 
@@ -388,9 +336,7 @@ class TestAPIv1(unittest.TestCase):
 
         # drifter returns AttributeError: 'NoneType' object has no attribute 'replace'
         # or, can also return IndexError: index 0 is out of bounds for axis 0 with size 0
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22buoyvariable%22%3A%5B%22sst%22%5D%2C%22dataset%22%3A%22giops_real%22%2C%22depth%22%3A0%2C%22drifter%22%3A%5B%22300234063122470%22%5D%2C%22latlon%22%3Afalse%2C%22quantum%22%3A%22day%22%2C%22showmap%22%3Atrue%2C%22type%22%3A%22drifter%22%2C%22variable%22%3A%5B%22votemper%22%5D%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks[plot_drifter])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/stickplot.. explaination in definition..")
@@ -403,9 +349,7 @@ class TestAPIv1(unittest.TestCase):
 
         # stick (point, Stick Plot) returns NameError: name 'timestamp' is not defined
         # or RuntimeError: Error finding timestamp(s) in database.
-        res = self.app.get(
-            '/api/v1.0/plot/?query=%7B%22dataset%22%3A%22giops%22%2C%22depth%22%3A0%2C%22endtime%22%3A2057094000%2C%22names%22%3A%5B%2251.7270%2C%20-32.7296%22%5D%2C%22plotTitle%22%3A%22%22%2C%22quantum%22%3A%22day%22%2C%22starttime%22%3A2211926376%2C%22station%22%3A%5B%5B51.727028157047755%2C-32.72964477539064%2Cnull%5D%5D%2C%22type%22%3A%22stick%22%2C%22variable%22%3A%5B%22votemper%22%5D%7D&format=json'
-        )
+        res = self.app.get(self.apiLinks["plot_stick"])
         self.assertEqual(res.status_code, 200)
 
 
