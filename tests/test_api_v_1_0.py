@@ -21,7 +21,7 @@ class TestAPIv1(unittest.TestCase):
 
         with open('tests/testdata/endpoints.json') as endpoints:
             self.apiLinks = json.load(endpoints)
-        with open('tests/testdata/datasetpatch.json') as dataPatch:
+        with open('tests/testdata/datasetconfigpatch.json') as dataPatch:
             self.patch_dataset_config_ret_val = json.load(dataPatch)
 
         self.patch_data_vars_ret_val = VariableList([

@@ -21,7 +21,6 @@ import netCDF4
 import plotting.colormap
 import plotting.scale
 import plotting.tile
-import routes.routes_impl
 import utils.misc
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
