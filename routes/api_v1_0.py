@@ -115,7 +115,6 @@ def datasets_query_v1_0():
             })
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
 
