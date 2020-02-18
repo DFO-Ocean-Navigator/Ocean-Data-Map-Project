@@ -91,6 +91,7 @@ def draw_point():
     """
     sleep = 1.7
     # Navigate to Point
+    time.sleep(sleep)
     move_to_et_click(dimension['point_position'])
     time.sleep(sleep)
     # Pick the point dropdown
@@ -106,6 +107,8 @@ def draw_point():
 
     if image_loc is None:
         gui.alert(text='Point index not found!', title='Map point', button='OK', timeout=box_timeout)
+        # Retry the test in case of slow network connection
+        retry_location_test(paths['point_index'], 'Map point')
     else:
         time.sleep(0)
         gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
@@ -114,6 +117,28 @@ def draw_point():
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
+
+def retry_location_test(test_index, ui_test):
+    """
+
+    Function retries image location. There could
+    be cases where there is a slow internet connection
+    
+    Assumption, user ran the temperature bar test
+    so firefox and the navigator page are open.
+    """
+    gui.alert('Retry test...', 'Wait', timeout=box_timeout)
+    # Additional 5 seconds
+    time.sleep(5)
+    # Find expected plot
+    image_loc = gui.locateCenterOnScreen(
+        test_index, confidence=0.3, grayscale=True)
+
+    if image_loc is None:
+        gui.alert(text='Index not found!', title='{}'.format(ui_test), button='OK', timeout=box_timeout)
+    else:
+        time.sleep(0)
+        gui.alert(text='UI test complete!', title='{}'.format(ui_test), button='Close', timeout=box_timeout)
 
 
 def draw_map():
@@ -126,7 +151,8 @@ def draw_map():
     so firefox and the navigator page are open.
     """
     sleep = 1.7
-    # Navigate to Point
+    # Navigate to Point icon
+    time.sleep(sleep)
     move_to_et_click(dimension['map_icon'])
     time.sleep(sleep)
     # Pick the point dropdown
@@ -153,6 +179,8 @@ def draw_map():
 
     if image_loc is None:
         gui.alert(text='Line index not found!', title='UI test', button='OK', timeout=box_timeout)
+        # Retry the test in case of slow network connection
+        retry_location_test(paths['line_index'], 'Line Index')
     else:
         gui.alert(text='Line UI test complete!', title='UI test', button='Close', timeout=box_timeout)
 
