@@ -36,7 +36,7 @@ class TestAPIv1(unittest.TestCase):
 
             "giops_real": {
                 "enabled": True,
-                "url": "tests/testdata/appended.nc",
+                "url": "tests/testdata/giops_test.nc",
                 "name": "GIOPS Forecast 3D - Polar Stereographic",
                 "quantum": "day",
                 "type": "forecast",
