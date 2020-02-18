@@ -23,21 +23,24 @@ def construct_interface():
     certain options will be available for user. 
     
     """
-
+    sleep = 2
     screenWidth, screenHeight = gui.size()
     # Go to ocean navigator web page
     ui_tests.navigator_webpage()
     #Contruct option box for available tests
-    option = gui.confirm("Select prefered UI test", 'UI test options', ['All', 'Temperature bar', 'Point index'])
+    option = gui.confirm("Select prefered UI test", 'UI test options', ['All', 'Temperature bar', 'Point index', 'Line index'])
 
     if option == 'All':
         ui_tests.main()
     elif option == 'Temperature bar':
-        time.sleep(2)
+        time.sleep(sleep)
         ui_tests.find_temperature_bar()
     elif option == 'Point index':
-        time.sleep(2)
+        time.sleep(sleep)
         ui_tests.draw_point()
+    elif option == 'Line index':
+        time.sleep(sleep)
+        ui_tests.draw_map()     
 
 
 def main():
