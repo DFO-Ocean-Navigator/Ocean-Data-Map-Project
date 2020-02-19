@@ -1,6 +1,12 @@
 """Unit tests for data.netcdf_data.
 """
 import unittest
+from unittest.mock import Mock
+
+import cftime
+import numpy
+import pytz
+import xarray
 
 from data.netcdf_data import NetCDFData
 
@@ -21,6 +27,81 @@ class TestNetCDFData(unittest.TestCase):
         self.assertFalse(nc_data._dataset_open)
         self.assertEqual(nc_data._dataset_key, "")
         self.assertIsNone(nc_data._dataset_config)
+
+    def test_enter_meta_only(self):
+        kwargs = {"meta_only": True}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+            self.assertFalse(nc_data._dataset_open)
+            self.assertIsNone(nc_data.dataset)
+
+    def test_enter_nc_files_list(self):
+        nc_data = NetCDFData("tests/testdata/nemo_test.nc")
+        nc_data._nc_files = ["tests/testdata/nemo_test.nc"]
+        nc_data.__enter__()
+        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+        self.assertTrue(nc_data._dataset_open)
+
+    def test_enter_no_nc_files_list(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+
+    @unittest.skip(
+        "Some incompatibility between tests/testdata/nemo_test.nc and "
+        "tests/testdata/nemo_grid_angle.nc results in "
+        "ValueError: arguments without labels along dimension 'x' cannot be aligned "
+        "because they have different dimension sizes: {1442, 101}"
+    )
+    def test_enter_grid_angle_file(self):
+        kwargs = {"grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc"}
+        nc_data = NetCDFData("tests/testdata/nemo_test.nc", **kwargs)
+        nc_data._dataset_config = Mock(lat_var_key="nav_lat", lon_var_key="nav_lon")
+        nc_data.__enter__()
+        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+        self.assertTrue(nc_data._dataset_open)
+
+    def test_exit(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertTrue(nc_data._dataset_open)
+        self.assertFalse(nc_data._dataset_open)
+
+    def test_timestamp_to_time_index_int_timestamp(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            result = nc_data.timestamp_to_time_index(2031436800)
+            self.assertEqual(result, 0)
+
+    def test_timestamp_to_time_index_timestamp_list(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            result = nc_data.timestamp_to_time_index([2031436800, 2034072000])
+            numpy.testing.assert_array_equal(result, numpy.array([0, 1]))
+
+    def test_timestamp_to_iso_8601_int_timestamp(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            result = nc_data.timestamp_to_iso_8601(2031436800)
+            self.assertEqual(result, cftime.real_datetime(2014, 5, 17, tzinfo=pytz.UTC))
+
+    def test_timestamp_to_iso_8601_timestamp_list(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            result = nc_data.timestamp_to_iso_8601([2031436800, 2034072000])
+            expected = [
+                cftime.real_datetime(2014, 5, 17, tzinfo=pytz.UTC),
+                cftime.real_datetime(2014, 6, 16, 12, tzinfo=pytz.UTC),
+            ]
+            self.assertEqual(result, expected)
+
+    def test_convert_to_timestamp_str(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            date_formatted = nc_data.convert_to_timestamp("2014-06-16T12:00:00Z")
+            self.assertEqual(date_formatted, 1)
+
+    def test_convert_to_timestamp_list(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            date_formatted = nc_data.convert_to_timestamp(
+                "2014-05-17T00:00:00Z, 2014-06-16T12:00:00Z"
+            )
+            ## TODO: Should there really be a leading space???
+            expected = {" 2014-06-16T12:00:00Z": 1, "2014-05-17T00:00:00Z": 0}
+            self.assertEqual(date_formatted, expected)
 
     def test_mercator_latlon_variables(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:

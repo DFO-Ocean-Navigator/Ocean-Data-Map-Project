@@ -54,11 +54,9 @@ class NetCDFData(Data):
             decode_times = False
 
             if self._nc_files:
-                self.dataset = xarray.open_mfdataset(
-                    self._nc_files, decode_times=decode_times)
+                self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
             else:
-                self.dataset = xarray.open_dataset(
-                    self.url, decode_times=decode_times)
+                self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
 
             if self._grid_angle_file_url:
                 angle_file = xarray.open_mfdataset(
@@ -95,15 +93,15 @@ class NetCDFData(Data):
         else:
             raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
-    def timestamp_to_time_index(self, timestamp):
-        """Converts a given timestamp (e.g. 2031436800) into the corresponding
-        time index(es) for the time dimension.
+    def timestamp_to_time_index(self, timestamp: Union[int, List]):
+        """Converts a given timestamp (e.g. 2031436800) or list of timestamps
+        into the corresponding time index(es) for the time dimension.
 
         Arguments:
             timestamp {int or list} -- Raw timestamp(s).
 
         Returns:
-            [int or list] -- Time index(es).
+            [int or ndarray] -- Time index(es).
         """
 
         time_var = self.time_variable
@@ -112,7 +110,16 @@ class NetCDFData(Data):
 
         return result if result.shape[0] > 1 else result[0]
 
-    def timestamp_to_iso_8601(self, timestamp):
+    def timestamp_to_iso_8601(self, timestamp: Union[int, List]):
+        """Converts a given timestamp (e.g. 2031436800) or list of timestamps
+        into the corresponding time index(es) for the time dimension.
+
+        Arguments:
+            timestamp {int or list} -- Raw timestamp(s).
+
+        Returns:
+            [int or list] -- Time index(es).
+        """
 
         time_var = self.time_variable
 
@@ -145,12 +152,10 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
 
-    """
-        Subsets a netcdf file with all depths
-    """
 
     def subset(self, query):
-
+        """ Subsets a netcdf file with all depths
+        """
         # Ensure we have an output folder that will be cleaned by tmpreaper
         if not os.path.isdir("/tmp/subset"):
             os.makedirs("/tmp/subset")
