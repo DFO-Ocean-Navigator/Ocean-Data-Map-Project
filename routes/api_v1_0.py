@@ -835,22 +835,22 @@ def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, datase
     if _is_cache_valid(dataset, f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
-    else:
-        if depth != "bottom" and depth != "all":
-            depth = int(depth)
 
-        img = plotting.tile.plot(projection, x, y, zoom, {
-            'interp': interp,
-            'radius': radius*1000,
-            'neighbours': neighbours,
-            'dataset': dataset,
-            'variable': variable,
-            'time': time,
-            'depth': depth,
-            'scale': scale,
-        })
+    if depth != "bottom" and depth != "all":
+        depth = int(depth)
 
-        return _cache_and_send_img(img, f)
+    img = plotting.tile.plot(projection, x, y, zoom, {
+        'interp': interp,
+        'radius': radius*1000,
+        'neighbours': neighbours,
+        'dataset': dataset,
+        'variable': variable,
+        'time': time,
+        'depth': depth,
+        'scale': scale,
+    })
+
+    return _cache_and_send_img(img, f)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
@@ -874,10 +874,9 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
-    else:
-        bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
 
-        return _cache_and_send_img(bytesIOBuff, f)
+    bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
+    return _cache_and_send_img(bytesIOBuff, f)
 
 
 @bp_v1_0.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
@@ -896,9 +895,9 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
-    else:
-        img = plotting.tile.bathymetry(projection, x, y, zoom, {})
-        return _cache_and_send_img(img, f)
+        
+    img = plotting.tile.bathymetry(projection, x, y, zoom, {})
+    return _cache_and_send_img(img, f)
 
 
 @bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
@@ -918,27 +917,26 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     # Send file if cached or select data in SQLite file
     if os.path.isfile(requestf):
         return send_file(requestf)
-    else:
-        y = (2**zoom-1) - y
-        connection = sqlite3.connect(
-            shape_file_dir + "/{}.mbtiles".format(tiletype))
-        selector = connection.cursor()
-        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = {} AND tile_column = {} AND tile_row = {}".format(
-            zoom, x, y)
-        selector.execute(sqlite)
-        tile = selector.fetchone()
-        if tile == None:
-            return send_file(shape_file_dir + "/blank.mbt")
 
-        # Write tile to cache and send file
-        if not os.path.isdir(basedir):
-            os.makedirs(basedir)
-        with open(requestf + ".pbf", 'wb') as f:
-            f.write(tile[0])
-        with gzip.open(requestf + ".pbf", 'rb') as gzipped:
-            with open(requestf, 'wb') as tileout:
-                shutil.copyfileobj(gzipped, tileout)
-        return send_file(requestf)
+    y = (2**zoom-1) - y
+    connection = sqlite3.connect(
+        shape_file_dir + "/{}.mbtiles".format(tiletype))
+    selector = connection.cursor()
+    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+    if tile == None:
+        return send_file(shape_file_dir + "/blank.mbt")
+
+    # Write tile to cache and send file
+    if not os.path.isdir(basedir):
+        os.makedirs(basedir)
+    with open(requestf + ".pbf", 'wb') as f:
+        f.write(tile[0])
+    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
+        with open(requestf, 'wb') as tileout:
+            shutil.copyfileobj(gzipped, tileout)
+    return send_file(requestf)
 
 
 @bp_v1_0.after_request
