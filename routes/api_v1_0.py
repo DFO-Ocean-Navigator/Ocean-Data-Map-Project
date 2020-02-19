@@ -288,11 +288,11 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
 def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: int):
     extent = list(map(float, extent.split(",")))
 
-    min, max = plotting.scale.get_scale(
+    minValue, maxValue = plotting.scale.get_scale(
         dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours)
     resp = jsonify({
-        'min': min,
-        'max': max,
+        'min': minValue,
+        'max': maxValue,
     })
     resp.cache_control.max_age = MAX_CACHE
     return resp
