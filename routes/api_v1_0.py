@@ -96,7 +96,14 @@ def datasets_query_v1_0():
     """
 
     data = []
-    if 'id' not in request.args:
+    if 'id' in request.args:
+        for key in DatasetConfig.get_datasets():
+            config = DatasetConfig(key)
+            data.append({
+                'id': key,
+                'value': config.name
+            })
+    else:
         for key in DatasetConfig.get_datasets():
             config = DatasetConfig(key)
             data.append({
@@ -105,13 +112,6 @@ def datasets_query_v1_0():
                 'quantum': config.quantum,
                 'help': config.help,
                 'attribution': config.attribution,
-            })
-    else:
-        for key in DatasetConfig.get_datasets():
-            config = DatasetConfig(key)
-            data.append({
-                'id': key,
-                'value': config.name
             })
     data = sorted(data, key=lambda k: k['value'])
     resp = jsonify(data)
