@@ -336,7 +336,7 @@ def class4_query_v1_0(q: str, class4_id: str):
     Returns a list of class4 datapoints for a given day 
     """
 
-    if class4_id == None:
+    if not class4_id:
         raise APIError("Please Specify an ID ")
 
     if q == 'forecasts':
@@ -404,7 +404,7 @@ def stats_v1_0():
         date = dataset.convert_to_timestamp(query.get('time'))
         date = {'time': date}
         query.update(date)
-        if query == None:
+        if not query:
             # Invalid API Check
             if 'query' not in args:  # Invalid API Check
                 raise APIError(
