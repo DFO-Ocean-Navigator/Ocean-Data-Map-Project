@@ -28,7 +28,7 @@ export default class DrifterSelector extends React.Component {
     this._mounted = true;
 
     $.ajax({
-      url: "/api/drifters/meta.json",
+      url: "/api/v1.0/drifters/meta.json",
       dataType: "json",
       success: function(data) {
         const imei = Object.keys(data.imei).filter(function (k) {
@@ -60,7 +60,7 @@ export default class DrifterSelector extends React.Component {
 
       }.bind(this),
       error: function(r, status, err) {
-        console.error("/api/drifters/meta.json", status, err.toString());
+        console.error("/api/v1.0/drifters/meta.json", status, err.toString());
       },
     });
   }

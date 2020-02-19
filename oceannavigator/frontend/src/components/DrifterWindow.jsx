@@ -34,7 +34,7 @@ export default class DrifterWindow extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: `/api/drifters/time/${this.props.drifter}`,
+      url: `/api/v1.0/drifters/time/${this.props.drifter}`,
       dataType: "json",
       cache: true,
       success: function(data) {
