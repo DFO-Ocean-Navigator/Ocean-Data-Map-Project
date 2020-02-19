@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'leftPLUSMINUSleftTIMESDIVIDEleftPOWERrightUMINUSCOMMA CONST DIVIDE ID LPAREN MINUS NUMBER PLUS POWER RPAREN TIMESstatement : expressionexpression : IDexpression : MINUS expression %prec UMINUSexpression : expression PLUS expression\n                    | expression MINUS expression\n                    | expression TIMES expression\n                    | expression DIVIDE expression\n                    | expression POWER NUMBERexpression : LPAREN expression RPARENexpression : NUMBERexpression : CONSTexpression : ID LPAREN arguments RPARENarguments : argumentarguments : arguments COMMA argumentargument : expression'
+_lr_signature = 'leftPLUSMINUSleftTIMESDIVIDEleftPOWERrightUMINUSCOMMA CONST DIVIDE ID LBRKT LPAREN MINUS NUMBER PLUS POWER RBRKT RPAREN TIMESstatement : expressionexpression : IDexpression : LBRKT ID RBRKTexpression : MINUS expression %prec UMINUSexpression : expression PLUS expression\n                    | expression MINUS expression\n                    | expression TIMES expression\n                    | expression DIVIDE expression\n                    | expression POWER NUMBERexpression : LPAREN expression RPARENexpression : NUMBERexpression : CONSTexpression : ID LPAREN arguments RPARENarguments : argumentarguments : arguments COMMA argumentargument : expression'
     
-_lr_action_items = {'ID':([0,4,6,8,9,10,11,13,26,],[3,3,3,3,3,3,3,3,3,]),'MINUS':([0,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,23,24,25,26,],[4,9,-2,4,-10,4,-11,4,4,4,4,4,-3,9,-4,-5,-6,-7,-8,9,-9,-12,4,]),'LPAREN':([0,3,4,6,8,9,10,11,13,26,],[6,13,6,6,6,6,6,6,6,6,]),'NUMBER':([0,4,6,8,9,10,11,12,13,26,],[5,5,5,5,5,5,5,20,5,5,]),'CONST':([0,4,6,8,9,10,11,13,26,],[7,7,7,7,7,7,7,7,7,]),'$end':([1,2,3,5,7,14,16,17,18,19,20,24,25,],[0,-1,-2,-10,-11,-3,-4,-5,-6,-7,-8,-9,-12,]),'PLUS':([2,3,5,7,14,15,16,17,18,19,20,23,24,25,],[8,-2,-10,-11,-3,8,-4,-5,-6,-7,-8,8,-9,-12,]),'TIMES':([2,3,5,7,14,15,16,17,18,19,20,23,24,25,],[10,-2,-10,-11,-3,10,10,10,-6,-7,-8,10,-9,-12,]),'DIVIDE':([2,3,5,7,14,15,16,17,18,19,20,23,24,25,],[11,-2,-10,-11,-3,11,11,11,-6,-7,-8,11,-9,-12,]),'POWER':([2,3,5,7,14,15,16,17,18,19,20,23,24,25,],[12,-2,-10,-11,-3,12,12,12,12,12,-8,12,-9,-12,]),'RPAREN':([3,5,7,14,15,16,17,18,19,20,21,22,23,24,25,27,],[-2,-10,-11,-3,24,-4,-5,-6,-7,-8,25,-13,-15,-9,-12,-14,]),'COMMA':([3,5,7,14,16,17,18,19,20,21,22,23,24,25,27,],[-2,-10,-11,-3,-4,-5,-6,-7,-8,26,-13,-15,-9,-12,-14,]),}
+_lr_action_items = {'ID':([0,4,5,7,9,10,11,12,14,29,],[3,15,3,3,3,3,3,3,3,3,]),'LBRKT':([0,5,7,9,10,11,12,14,29,],[4,4,4,4,4,4,4,4,4,]),'MINUS':([0,2,3,5,6,7,8,9,10,11,12,14,16,17,18,19,20,21,22,25,26,27,28,29,],[5,10,-2,5,-11,5,-12,5,5,5,5,5,-4,10,-5,-6,-7,-8,-9,10,-3,-10,-13,5,]),'LPAREN':([0,3,5,7,9,10,11,12,14,29,],[7,14,7,7,7,7,7,7,7,7,]),'NUMBER':([0,5,7,9,10,11,12,13,14,29,],[6,6,6,6,6,6,6,22,6,6,]),'CONST':([0,5,7,9,10,11,12,14,29,],[8,8,8,8,8,8,8,8,8,]),'$end':([1,2,3,6,8,16,18,19,20,21,22,26,27,28,],[0,-1,-2,-11,-12,-4,-5,-6,-7,-8,-9,-3,-10,-13,]),'PLUS':([2,3,6,8,16,17,18,19,20,21,22,25,26,27,28,],[9,-2,-11,-12,-4,9,-5,-6,-7,-8,-9,9,-3,-10,-13,]),'TIMES':([2,3,6,8,16,17,18,19,20,21,22,25,26,27,28,],[11,-2,-11,-12,-4,11,11,11,-7,-8,-9,11,-3,-10,-13,]),'DIVIDE':([2,3,6,8,16,17,18,19,20,21,22,25,26,27,28,],[12,-2,-11,-12,-4,12,12,12,-7,-8,-9,12,-3,-10,-13,]),'POWER':([2,3,6,8,16,17,18,19,20,21,22,25,26,27,28,],[13,-2,-11,-12,-4,13,13,13,13,13,-9,13,-3,-10,-13,]),'RPAREN':([3,6,8,16,17,18,19,20,21,22,23,24,25,26,27,28,30,],[-2,-11,-12,-4,27,-5,-6,-7,-8,-9,28,-14,-16,-3,-10,-13,-15,]),'COMMA':([3,6,8,16,18,19,20,21,22,23,24,25,26,27,28,30,],[-2,-11,-12,-4,-5,-6,-7,-8,-9,29,-14,-16,-3,-10,-13,-15,]),'RBRKT':([15,],[26,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'statement':([0,],[1,]),'expression':([0,4,6,8,9,10,11,13,26,],[2,14,15,16,17,18,19,23,23,]),'arguments':([13,],[21,]),'argument':([13,26,],[22,27,]),}
+_lr_goto_items = {'statement':([0,],[1,]),'expression':([0,5,7,9,10,11,12,14,29,],[2,16,17,18,19,20,21,25,25,]),'arguments':([14,],[23,]),'argument':([14,29,],[24,30,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,19 +27,20 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> statement","S'",1,None,None,None),
-  ('statement -> expression','statement',1,'p_statement_expr','parser.py',51),
-  ('expression -> ID','expression',1,'p_expression_variable','parser.py',55),
-  ('expression -> MINUS expression','expression',2,'p_expression_uop','parser.py',63),
-  ('expression -> expression PLUS expression','expression',3,'p_expression_binop','parser.py',67),
-  ('expression -> expression MINUS expression','expression',3,'p_expression_binop','parser.py',68),
-  ('expression -> expression TIMES expression','expression',3,'p_expression_binop','parser.py',69),
-  ('expression -> expression DIVIDE expression','expression',3,'p_expression_binop','parser.py',70),
-  ('expression -> expression POWER NUMBER','expression',3,'p_expression_binop','parser.py',71),
-  ('expression -> LPAREN expression RPAREN','expression',3,'p_expression_group','parser.py',79),
-  ('expression -> NUMBER','expression',1,'p_expression_number','parser.py',83),
-  ('expression -> CONST','expression',1,'p_expression_const','parser.py',87),
-  ('expression -> ID LPAREN arguments RPAREN','expression',4,'p_expression_function','parser.py',91),
-  ('arguments -> argument','arguments',1,'p_arguments','parser.py',100),
-  ('arguments -> arguments COMMA argument','arguments',3,'p_arguments_1','parser.py',104),
-  ('argument -> expression','argument',1,'p_argument','parser.py',109),
+  ('statement -> expression','statement',1,'p_statement_expr','parser.py',114),
+  ('expression -> ID','expression',1,'p_expression_variable','parser.py',118),
+  ('expression -> LBRKT ID RBRKT','expression',3,'p_expression_variable_full_depth','parser.py',126),
+  ('expression -> MINUS expression','expression',2,'p_expression_uop','parser.py',132),
+  ('expression -> expression PLUS expression','expression',3,'p_expression_binop','parser.py',136),
+  ('expression -> expression MINUS expression','expression',3,'p_expression_binop','parser.py',137),
+  ('expression -> expression TIMES expression','expression',3,'p_expression_binop','parser.py',138),
+  ('expression -> expression DIVIDE expression','expression',3,'p_expression_binop','parser.py',139),
+  ('expression -> expression POWER NUMBER','expression',3,'p_expression_binop','parser.py',140),
+  ('expression -> LPAREN expression RPAREN','expression',3,'p_expression_group','parser.py',153),
+  ('expression -> NUMBER','expression',1,'p_expression_number','parser.py',157),
+  ('expression -> CONST','expression',1,'p_expression_const','parser.py',161),
+  ('expression -> ID LPAREN arguments RPAREN','expression',4,'p_expression_function','parser.py',165),
+  ('arguments -> argument','arguments',1,'p_arguments','parser.py',174),
+  ('arguments -> arguments COMMA argument','arguments',3,'p_arguments_1','parser.py',178),
+  ('argument -> expression','argument',1,'p_argument','parser.py',183),
 ]
