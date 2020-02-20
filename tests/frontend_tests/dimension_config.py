@@ -68,10 +68,8 @@ def update_config_file(header=None, key=None, value=None):
     write_to_config(config)
 
 def main():
-    #identifyloc()
     #update_config_file('location', 'map_icon', (696, 145))
-    update_config_file('location', 'close_index', (1733, 171))
-    #update_config_file('paths', 'line_index', '/locate_onscreen/line_index.png')
+    update_config_file('paths', 'area_index', '/locate_onscreen/area_index.png')
 
 if '__main__' == __name__:
     main()

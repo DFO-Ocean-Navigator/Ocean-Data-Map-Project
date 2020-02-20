@@ -1,7 +1,7 @@
 location:
   close_index: !!python/tuple
-  - 1733
-  - 171
+  - 1096
+  - 138
   draw_on_map: !!python/tuple
   - 752
   - 195
@@ -27,8 +27,9 @@ location:
   - 616
   - 148
 paths:
-  line_index: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/line_index.png
-  point_index: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/point_index.png
-  test_temperature: /home/samuel/navigator/tests/frontend_tests/locate_onscreen/temp.png
+  area_index: locate_onscreen/area_index.png
+  line_index: locate_onscreen/line_index.png
+  point_index: locate_onscreen/point_index.png
+  test_temperature: locate_onscreen/temp.png
 web_addresses:
   ocean_navigator: navigator.oceansdata.ca/public/
