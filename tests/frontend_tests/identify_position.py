@@ -21,7 +21,7 @@ def identifyloc():
     while True:
         MouseX, MouseY = gui.position()
         print(MouseX, MouseY)
-        time.sleep(2.3)
+        time.sleep(1.6)
 
 
 def main():
