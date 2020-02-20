@@ -104,7 +104,7 @@ class NetCDFData(Data):
             [int or ndarray] -- Time index(es).
         """
 
-        time_var = self.time_variable
+        time_var = self.time_variable.astype(np.int)
 
         result = np.nonzero(np.isin(time_var, timestamp))[0]
 

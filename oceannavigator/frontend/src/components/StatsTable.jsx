@@ -53,7 +53,7 @@ export default class StatsTable extends React.Component {
     });
   
     const promise = $.ajax({
-      url: "/stats/",
+      url: "/api/v1.0/stats/",
       data: paramString,
       method: (paramString.length < 1536) ? "GET" : "POST",
       dataType: "json",

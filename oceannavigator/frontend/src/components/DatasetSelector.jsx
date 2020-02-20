@@ -151,7 +151,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.variable}
           def={"defaults.dataset"}
           onUpdate={this.variableUpdate}
-          url={"/api/v1.0/variables/?vectors&dataset=" + this.props.state.dataset + variables
+          url={"/api/v1.0/variables/?dataset=" + this.props.state.dataset + variables
           }
           title={_("Variable")}
         ><h1>{_("Variable")}</h1></ComboBox>

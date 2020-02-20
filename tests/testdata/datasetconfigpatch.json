@@ -1,0 +1,30 @@
+{
+    "giops": {
+        "enabled": 1,
+        "url": "tests/testdata/nemo_test.nc",
+        "grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "quantum": "day",
+        "name": "GIOPS",
+        "help": "help",
+        "attribution": "attrib",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
+    },
+
+    "giops_real": {
+        "enabled": 1,
+        "url": "tests/testdata/giops_test.nc",
+        "name": "GIOPS Forecast 3D - Polar Stereographic",
+        "quantum": "day",
+        "type": "forecast",
+        "lat_var_key": "yc",
+        "lon_var_key": "xc",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
+    }
+}

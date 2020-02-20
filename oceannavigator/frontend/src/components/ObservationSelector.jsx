@@ -24,7 +24,7 @@ export default class ObservationSelector extends React.Component {
   // Load data
   componentDidMount() {
     $.ajax({
-      url: "/api/observation/meta.json",
+      url: "/api/v1.0/observation/meta.json",
       dataType: "json",
       success: function(data) {
         this.setState({
@@ -32,7 +32,7 @@ export default class ObservationSelector extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error("/api/observation/meta.json", status, err.toString());
+        console.error("/api/v1.0/observation/meta.json", status, err.toString());
       },
     });
   }

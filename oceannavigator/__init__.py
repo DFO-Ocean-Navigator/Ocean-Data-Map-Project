@@ -9,9 +9,7 @@ from .dataset_config import DatasetConfig
 babel = Babel()
 
 def config_blueprints(app):
-    from routes.api_v0_0 import bp_v0_0
     from routes.api_v1_0 import bp_v1_0
-    app.register_blueprint(bp_v0_0)
     app.register_blueprint(bp_v1_0)
 
 def create_app(testing = False):
