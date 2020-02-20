@@ -66,6 +66,36 @@ def __calc_pressure(depth, latitude):
     return np.array(pressure)
 
 
+def oxygensaturation(temperature: np.ndarray,
+                     salinity: np.ndarray):
+    """
+    Calculate the solubility (saturation) of 
+    Oxygen (O2) in seawater.
+
+    Required Arguments:
+
+    * temperature: temperature values in Celsius.
+    * salinity: salinity values.
+    """
+
+    return seawater.satO2(salinity, temperature)
+
+
+def nitrogensaturation(temperature: np.ndarray,
+                       salinity: np.ndarray):
+    """
+    Calculate the solubility (saturation) of 
+    Nitrogen (N2) in seawater.
+
+    Required Arguments:
+
+    * temperature: temperature values in Celsius.
+    * salinity: salinity values.
+    """
+
+    return seawater.satN2(salinity, temperature)
+
+
 def sspeed(depth: Union[np.ndarray, xr.Variable],
            latitude: np.ndarray,
            temperature: np.ndarray,
@@ -73,11 +103,12 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
     """
     Calculates the speed of sound.
 
-    Parameters:
-    depth: The depth(s) in meters
-    latitude: The latitude(s) in degrees North
-    temperature: The temperatures(s) in Celsius
-    salinity: The salinity (unitless)
+    Required Arguments:
+
+    * depth: The depth(s) in meters
+    * latitude: The latitude(s) in degrees North
+    * temperature: The temperatures(s) in Celsius
+    * salinity: The salinity (unitless)
     """
 
     if type(latitude) is not np.ndarray:
@@ -166,7 +197,7 @@ def deepsoundchannel(depth: Union[np.ndarray, xr.Variable],
         * temperature: The temperatures(s) (at all depths) in Celsius
         * salinity: The salinity (at all depths)
     """
-    
+
     if type(latitude) is not np.ndarray:
         latitude = np.array(latitude)
 
