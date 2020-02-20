@@ -389,7 +389,7 @@ export default class PointWindow extends React.Component {
           key='observation_variable'
           id='observation_variable'
           state={this.state.observation_variable}
-          url='/api/observationvariables/'
+          url='/api/v1.0/observationvariables/'
           title={_("Observation Variable")}
           multiple
           onUpdate={this.onLocalUpdate}

@@ -108,7 +108,7 @@ export default class MapToolbar extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: "/api/points/",
+      url: "/api/v1.0/points/",
       dataType: "json",
       cache: true,
       success: function(data) {
@@ -121,7 +121,7 @@ export default class MapToolbar extends React.Component {
       }
     });
     $.ajax({
-      url: "/api/lines/",
+      url: "/api/v1.0/lines/",
       dataType: "json",
       cache: true,
       success: function(data) {
@@ -134,7 +134,7 @@ export default class MapToolbar extends React.Component {
       }
     });
     $.ajax({
-      url: "/api/areas/",
+      url: "/api/v1.0/areas/",
       dataType: "json",
       cache: true,
       success: function(data) {
@@ -147,7 +147,7 @@ export default class MapToolbar extends React.Component {
       }
     });
     $.ajax({
-      url: "/api/class4/",
+      url: "/api/v1.0/class4/",
       dataType: "json",
       cache: true,
       success: function(data) {
