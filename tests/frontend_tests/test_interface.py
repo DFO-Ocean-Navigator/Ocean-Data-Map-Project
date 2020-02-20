@@ -1,5 +1,5 @@
 """
-Use-friendly interactive UI test interface
+User-friendly interactive UI test interface
 ==========================
 :Author: Samuel Babalola
 :Created: 2020-02-11
@@ -14,7 +14,12 @@ tests as well).
 import pyautogui as gui
 import time
 import yaml
-import ui_tests
+import utils
+
+from test_area_index import draw_area
+from test_line_index import draw_map
+from test_point_index import draw_point
+from test_temperature import find_temperature_bar
 
 def construct_interface():
     """
@@ -26,21 +31,31 @@ def construct_interface():
     sleep = 2
     screenWidth, screenHeight = gui.size()
     # Go to ocean navigator web page
-    ui_tests.navigator_webpage()
+    utils.navigator_webpage()
     #Contruct option box for available tests
-    option = gui.confirm("Select prefered UI test", 'UI test options', ['All', 'Temperature bar', 'Point index', 'Line index'])
+    option = gui.confirm("Select prefered UI test", 'UI test options', 
+                        ['All', 'Temperature bar', 'Point index', 'Line index', 'Area index'])
+
+    def all():
+        find_temperature_bar()
+        draw_point()
+        draw_map()
+        draw_area()
 
     if option == 'All':
-        ui_tests.main()
+        all()
     elif option == 'Temperature bar':
         time.sleep(sleep)
-        ui_tests.find_temperature_bar()
+        find_temperature_bar()
     elif option == 'Point index':
         time.sleep(sleep)
-        ui_tests.draw_point()
+        draw_point()
     elif option == 'Line index':
         time.sleep(sleep)
-        ui_tests.draw_map()     
+        draw_map()    
+    elif option == 'Area index':
+        time.sleep(sleep)
+        draw_area()     
 
 
 def main():
