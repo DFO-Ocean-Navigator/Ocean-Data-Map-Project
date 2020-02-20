@@ -866,7 +866,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 
     shape_file_dir = current_app.config['SHAPE_FILE_DIR']
 
-    if zoom > 7:
+    if zoom > 6:
         return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
@@ -887,7 +887,7 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 
     shape_file_dir = current_app.config['SHAPE_FILE_DIR']
 
-    if zoom > 7:
+    if zoom > 6:
         return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config['CACHE_DIR']
@@ -911,7 +911,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     basedir = requestf.rsplit("/", 1)[0]
 
     # Send blank tile if conditions aren't met
-    if (zoom < 7) or (projection != "EPSG:3857"):
+    if (zoom < 6) or (projection != "EPSG:3857"):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
