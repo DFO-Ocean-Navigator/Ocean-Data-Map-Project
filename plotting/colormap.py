@@ -40,6 +40,7 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'nitrogen': cmocean.cm.balance,
     'depth': cmocean.cm.deep,
     'deep': cmocean.cm.deep,
     'partial pressure': cmocean.cm.matter,
@@ -191,8 +192,10 @@ gettext('Temperature (old)')
 gettext('Vorticity')
 gettext('Density')
 gettext('Deep')
+gettext('Balance')
 
 colormap_names = {
+    'balance': 'Balance',
     'anomaly': 'Anomaly',
     'bathymetry': 'Bathymetry',
     'chlorophyll': 'Chlorophyll',
