@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import Mock
 
 import cftime
+import netCDF4
 import numpy
 import pytz
 import xarray
@@ -41,9 +42,26 @@ class TestNetCDFData(unittest.TestCase):
         self.assertIsInstance(nc_data.dataset, xarray.Dataset)
         self.assertTrue(nc_data._dataset_open)
 
+    @unittest.skip(
+        "Format of tests/testdata/fvcom_tests.nc causes "
+        "ValueError: MFNetCDF4 only works with NETCDF3_* and NETCDF4_CLASSIC formatted files, "
+        "not NETCDF4"
+    )
+    def test_enter_nc_files_list_fvcom(self):
+        nc_data = NetCDFData("tests/testdata/fvcom_test.nc")
+        nc_data._nc_files = ["tests/testdata/fvcom_test.nc"]
+        nc_data.__enter__()
+        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+        self.assertTrue(nc_data._dataset_open)
+
     def test_enter_no_nc_files_list(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+
+    def test_enter_no_nc_files_list_fvcom(self):
+        with NetCDFData("tests/testdata/fvcom_test.nc") as nc_data:
+            self.assertIsInstance(nc_data.dataset, netCDF4.Dataset)
             self.assertTrue(nc_data._dataset_open)
 
     @unittest.skip(

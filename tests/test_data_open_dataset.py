@@ -81,7 +81,6 @@ class TestOpenDataset(unittest.TestCase):
         with open_dataset(config) as ds:
             self.assertTrue(isinstance(ds, Nemo))
 
-    @unittest.skip("Returning Fvcom model dataset is not yet implemented")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
     def test_open_dataset_meta_only_returns_fvcom_object(
@@ -95,7 +94,6 @@ class TestOpenDataset(unittest.TestCase):
         with open_dataset(config, meta_only=True) as ds:
             self.assertTrue(isinstance(ds, Fvcom))
 
-    @unittest.skip("Returning Fvcom model dataset is not yet implemented")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
     def test_open_dataset_returns_fvcom_object(

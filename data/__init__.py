@@ -1,4 +1,5 @@
 from data.calculated import CalculatedData
+from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
 from utils.decorators import hashable_lru
@@ -70,4 +71,6 @@ def open_dataset(dataset, **kwargs):
 
     if 'longitude' in dimension_list or 'latitude' in dimension_list:
         return Mercator(nc_data)
+    elif 'siglay' in dimension_list:
+        return Fvcom(nc_data)
     return Nemo(nc_data)

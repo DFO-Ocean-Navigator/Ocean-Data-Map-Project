@@ -14,6 +14,7 @@ import pandas
 import pint
 import pyresample
 import xarray
+import xarray.core.variable
 from cachetools import TTLCache
 from flask_babel import format_date
 
@@ -54,9 +55,15 @@ class NetCDFData(Data):
             decode_times = False
 
             if self._nc_files:
-                self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
+                try:
+                    self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
+                except xarray.core.variable.MissingDimensionsError:
+                    self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
-                self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                try:
+                    self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                except xarray.core.variable.MissingDimensionsError:
+                    self.dataset = netCDF4.Dataset(self.url)
 
             if self._grid_angle_file_url:
                 angle_file = xarray.open_mfdataset(
@@ -622,19 +629,34 @@ class NetCDFData(Data):
                 except (sqlite3.OperationalError, sqlite3.DatabaseError):
                     pass
 
-            with xarray.open_dataset(self.url) as ds:
-                ## TODO: Probably push this to a function or method like db.get_data_variables()
-                result = []
-                required_attrs = {"long_name", "units", "valid_min", "valid_max"}
-                for var in ds.data_vars:
-                    if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
-                        continue
-                    result.append(
-                        Variable(
-                            var, ds[var].attrs["long_name"], ds[var].attrs["units"],
-                            [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
-                    )
-                self._variable_list = VariableList(result)
+            try:
+                with xarray.open_dataset(self.url, decode_times=False) as ds:
+                    ## TODO: Probably push this to a function or method like db.get_data_variables()
+                    result = []
+                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
+                    for var in ds.data_vars:
+                        if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
+                            continue
+                        result.append(
+                            Variable(
+                                var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                                [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
+                        )
+                    self._variable_list = VariableList(result)
+            except xarray.core.variable.MissingDimensionsError:
+                with netCDF4.Dataset(self.url) as ds:
+                    ## TODO: Probably push this to a function or method like db.get_data_variables()
+                    result = []
+                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
+                    for var in ds.variables:
+                        if set(ds[var].ncattrs()).intersection(required_attrs) != required_attrs:
+                            continue
+                        result.append(
+                            Variable(
+                                var, ds[var].getncattr("long_name"), ds[var].getncattr("units"),
+                                [dim for dim in ds.dims], ds[var].getncattr("valid_min"), ds[var].getncattr("valid_max"))
+                        )
+                    self._variable_list = VariableList(result)
 
         return self._variable_list
 
