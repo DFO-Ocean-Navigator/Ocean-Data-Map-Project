@@ -143,3 +143,31 @@ class TestNetCDFData(unittest.TestCase):
         with NetCDFData("tests/testdata/salishseacast_ssh_test.nc") as nc_data:
             with self.assertRaises(KeyError):
                 lat, lon = nc_data.latlon_variables
+
+    def test_xarray_variables(self):
+        with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
+            vars = nc_data.variables
+
+            self.assertEqual(vars[0].key, "votemper")
+            self.assertEqual(vars[0].name, "Sea water potential temperature")
+            self.assertEqual(vars[0].unit, "Kelvin")
+            self.assertEqual(vars[0].dimensions, ("depth", "latitude", "longitude", "time"))
+            self.assertEqual(vars[0].valid_min, 173.0)
+            self.assertEqual(vars[0].valid_max, 373.0)
+
+    def test_fvcom_variables(self):
+        with NetCDFData("tests/testdata/fvcom_test.nc") as nc_data:
+            vars = nc_data.variables
+
+            self.assertEqual(vars[3].key, "temp")
+            self.assertEqual(vars[3].name, "temperature")
+            self.assertEqual(vars[3].unit, "degrees_C")
+            self.assertEqual(vars[3].dimensions, ("time", "maxStrlen64", "node", "siglay"))
+            self.assertIsNone(vars[3].valid_min)
+            self.assertIsNone(vars[3].valid_max)
+
+    def test_variable_list_cached(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertIsNone(nc_data._variable_list)
+            vars = nc_data.variables
+            self.assertEqual(nc_data._variable_list, vars)

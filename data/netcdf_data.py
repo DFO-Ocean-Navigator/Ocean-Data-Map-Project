@@ -58,11 +58,15 @@ class NetCDFData(Data):
                 try:
                     self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
+                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                    # duplication issue, so fall back to using netCDF4.Dataset()
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 try:
                     self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
+                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                    # duplication issue, so fall back to using netCDF4.Dataset()
                     self.dataset = netCDF4.Dataset(self.url)
 
             if self._grid_angle_file_url:
@@ -620,45 +624,63 @@ class NetCDFData(Data):
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
-        if self._variable_list is None:
-            if self.url.endswith(".sqlite3"):
-                try:
-                    with SQLiteDatabase(self.url) as db:
-                        self._variable_list = db.get_data_variables()  # Cache the list for later
-                        return self._variable_list
-                except (sqlite3.OperationalError, sqlite3.DatabaseError):
-                    pass
+        if self._variable_list is not None:
+            return self._variable_list
 
+        if self.url.endswith(".sqlite3"):
+            with SQLiteDatabase(self.url) as db:
+                self._variable_list = db.get_data_variables()  # Cache the list for later
+                return self._variable_list
+        try:
+            with xarray.open_dataset(self.url, decode_times=False) as ds:
+                self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
+            return self._variable_list
+        except xarray.core.variable.MissingDimensionsError:
+            # xarray won't open FVCOM files due to dimension/coordinate/variable label
+            # duplication issue, so fall back to using netCDF4.Dataset()
+            with netCDF4.Dataset(self.url) as ds:
+                self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
+            return self._variable_list
+
+    @staticmethod
+    def _get_xarray_data_variables(ds):
+        result = []
+        required_attrs = {"long_name", "units"}
+        for var in ds.data_vars:
+            if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
+                continue
+            result.append(
+                Variable(
+                    var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                    tuple([dim for dim in ds.dims]),
+                    # Use .get() here to provide None if variable metadata lacks
+                    # valid_min or valid_max
+                    ds[var].attrs.get("valid_min"), ds[var].attrs.get("valid_max"))
+            )
+        return VariableList(result)
+
+    @staticmethod
+    def _get_netcdf4_data_variables(ds):
+        result = []
+        required_attrs = {"long_name", "units"}
+        for var in ds.variables:
+            if set(ds[var].ncattrs()).intersection(required_attrs) != required_attrs:
+                continue
             try:
-                with xarray.open_dataset(self.url, decode_times=False) as ds:
-                    ## TODO: Probably push this to a function or method like db.get_data_variables()
-                    result = []
-                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
-                    for var in ds.data_vars:
-                        if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
-                            continue
-                        result.append(
-                            Variable(
-                                var, ds[var].attrs["long_name"], ds[var].attrs["units"],
-                                [dim for dim in ds.dims], ds[var].attrs["valid_min"], ds[var].attrs["valid_max"])
-                        )
-                    self._variable_list = VariableList(result)
-            except xarray.core.variable.MissingDimensionsError:
-                with netCDF4.Dataset(self.url) as ds:
-                    ## TODO: Probably push this to a function or method like db.get_data_variables()
-                    result = []
-                    required_attrs = {"long_name", "units", "valid_min", "valid_max"}
-                    for var in ds.variables:
-                        if set(ds[var].ncattrs()).intersection(required_attrs) != required_attrs:
-                            continue
-                        result.append(
-                            Variable(
-                                var, ds[var].getncattr("long_name"), ds[var].getncattr("units"),
-                                [dim for dim in ds.dims], ds[var].getncattr("valid_min"), ds[var].getncattr("valid_max"))
-                        )
-                    self._variable_list = VariableList(result)
-
-        return self._variable_list
+                valid_min = ds[var].getncattr("valid_min")
+            except AttributeError:
+                valid_min = None
+            try:
+                valid_max = ds[var].getncattr("valid_max")
+            except AttributeError:
+                valid_max = None
+            result.append(
+                Variable(
+                    var, ds[var].getncattr("long_name"), ds[var].getncattr("units"),
+                    tuple([dim for dim in ds.dimensions]),
+                    valid_min, valid_max)
+            )
+        return VariableList(result)
 
     @property
     def timestamps(self):
