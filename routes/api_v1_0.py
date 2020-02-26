@@ -914,6 +914,9 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     if (zoom < 7) or (projection != "EPSG:3857"):
         return send_file(shape_file_dir + "/blank.mbt")
 
+    if (zoom > 11) and (tiletype == "bath"):
+        return send_file(shape_file_dir + "/blank.mbt")
+
     # Send file if cached or select data in SQLite file
     if os.path.isfile(requestf):
         return send_file(requestf)
