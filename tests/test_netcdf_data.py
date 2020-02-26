@@ -1,5 +1,6 @@
 """Unit tests for data.netcdf_data.
 """
+import datetime
 import unittest
 from unittest.mock import Mock
 
@@ -151,7 +152,9 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(vars[0].key, "votemper")
             self.assertEqual(vars[0].name, "Sea water potential temperature")
             self.assertEqual(vars[0].unit, "Kelvin")
-            self.assertEqual(vars[0].dimensions, ("depth", "latitude", "longitude", "time"))
+            self.assertEqual(
+                vars[0].dimensions, ("depth", "latitude", "longitude", "time")
+            )
             self.assertEqual(vars[0].valid_min, 173.0)
             self.assertEqual(vars[0].valid_max, 373.0)
 
@@ -162,7 +165,9 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(vars[3].key, "temp")
             self.assertEqual(vars[3].name, "temperature")
             self.assertEqual(vars[3].unit, "degrees_C")
-            self.assertEqual(vars[3].dimensions, ("time", "maxStrlen64", "node", "siglay"))
+            self.assertEqual(
+                vars[3].dimensions, ("time", "maxStrlen64", "node", "siglay")
+            )
             self.assertIsNone(vars[3].valid_min)
             self.assertIsNone(vars[3].valid_max)
 
@@ -171,3 +176,19 @@ class TestNetCDFData(unittest.TestCase):
             self.assertIsNone(nc_data._variable_list)
             vars = nc_data.variables
             self.assertEqual(nc_data._variable_list, vars)
+
+    def test_timestamps(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertEqual(len(nc_data.timestamps), 2)
+            self.assertEqual(
+                nc_data.timestamps[0],
+                datetime.datetime(2014, 5, 17, 0, 0, 0, 0, pytz.UTC),
+            )
+
+            # Property is read-only
+            with self.assertRaises(AttributeError):
+                nc_data.timestamps = []
+
+            # List is immutable
+            with self.assertRaises(ValueError):
+                nc_data.timestamps[0] = 0

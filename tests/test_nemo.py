@@ -147,10 +147,6 @@ class TestNemo(unittest.TestCase):
                 274.13, places=2
             )
 
-    ## TODO: Need to write this test.
-    def test_get_raw_bottom_point(self):
-        assert False
-
     def test_get_area(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
@@ -213,13 +209,6 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(ds.timestamps[0],
                              datetime.datetime(2014, 5, 17, 0, 0, 0, 0,
                                                pytz.UTC))
-
-            # Property is read-only
-            ## TODO: This assertion fails because Mercator.timestanps is an attr that exposes
-            ##       nc_data.timestamps. It can be assigned, but it is immutable (assertion below)
-            with self.assertRaises(AttributeError):
-                ds.timestamps = []
-
             # List is immutable
             with self.assertRaises(ValueError):
                 ds.timestamps[0] = 0

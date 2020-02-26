@@ -130,10 +130,6 @@ class TestMercator(unittest.TestCase):
         self.assertEqual(len(data.values.ravel()), 156)
         self.assertAlmostEqual(data.values[4, 4], 298.8, places=1)
 
-    ## TODO: Need to write this test.
-    def test_get_raw_bottom_point(self):
-        assert False
-
     def test_get_profile(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
@@ -142,8 +138,6 @@ class TestMercator(unittest.TestCase):
             self.assertAlmostEqual(p[10], 298.426, places=3)
             self.assertTrue(np.ma.is_masked(p[49]))
 
-    ## TODO: This test passes now. Has the bug been resolved?
-    @unittest.skip("Bottom is bugged atm")
     def test_bottom_point(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
@@ -159,13 +153,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(ds.timestamps[0],
                              datetime.datetime(2017, 3, 3, 0, 0, 0, 0,
                                                pytz.UTC))
-
-            # Property is read-only
-            ## TODO: This assertion fails because Mercator.timestanps is an attr that exposes
-            ##       nc_data.timestamps. It can be assigned, but it is immutable (assertion below)
-            with self.assertRaises(AttributeError):
-                ds.timestamps = []
-
             # List is immutable
             with self.assertRaises(ValueError):
                 ds.timestamps[0] = 0
