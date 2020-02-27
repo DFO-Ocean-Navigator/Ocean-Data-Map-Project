@@ -245,6 +245,23 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     return np.array(tempgradient)
 
 
+def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray) -> np.ndarray:
+
+    min_indices = __find_depth_index_of_min_value(soundspeed)
+
+    # Mask out values below deep sound channel
+    mask = min_indices.ravel()[..., np.newaxis] < np.arange(
+        soundspeed.shape[0])
+    mask = mask.T.reshape(soundspeed.shape)
+
+    soundspeed[mask] = np.nan
+
+    # Find sonic layer depth indices
+    max_indices = __find_depth_index_of_max_value(soundspeed)
+
+    return depth[max_indices]
+
+
 def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
     """
     Find and return the depth of the maximum value of the speed
@@ -262,19 +279,7 @@ def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
 
-    min_indices = __find_depth_index_of_min_value(sound_speed)
-
-    # Mask out values below deep sound channel
-    mask = min_indices.ravel()[..., np.newaxis] < np.arange(
-        sound_speed.shape[0])
-    mask = mask.T.reshape(sound_speed.shape)
-
-    sound_speed[mask] = np.nan
-
-    # Find sonic layer depth indices
-    max_indices = __find_depth_index_of_max_value(sound_speed)
-
-    return depth[max_indices]
+    return __soniclayerdepth_from_sound_speed(sound_speed, depth)
 
 
 def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
@@ -299,6 +304,27 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
     return depth[min_indices]
+
+
+def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
+    """
+    Find and return the deep sound channel bottom (the second depth where
+    the speed of sound id equal to the speed at the sonic layer depth).
+
+    Required Arguments:
+        * depth: Depth in meters
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
+    """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
+    sound_speed = sspeed(depth, latitude, temperature, salinity)
+    sonic_layer_depth = __soniclayerdepth_from_sound_speed(sound_speed, depth)
+
+    return np.array([])
 
 
 def _metpy(func, data, lat, lon, dim):
