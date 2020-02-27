@@ -94,6 +94,13 @@ export default class TimePicker extends React.Component {
       max = this.getPrevTimestamp(parseInt(props.max));
     }
 
+    if (!min) {
+      min = data[0].id;
+    }
+    if (!max) {
+      max = data[data.length - 1].id;
+    }
+
     return [min, max];
   }
 
