@@ -1,4 +1,4 @@
-#!env python
+#!/usr/bin/env python
 
 """
 Generate a list of Class 4 files and save it to a cache file.
