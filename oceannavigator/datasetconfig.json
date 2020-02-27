@@ -1,4 +1,50 @@
 {
+    "historical_giops_monthly": {
+        "attribution": "Historical GIOPS Monthly Averages from CONCEPTS",
+        "climatology": "http://localhost:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "enabled": true,
+        "help": "Global Ice Ocean Prediction System<U+2029>        <ul><U+2029>            <li>Global Coverage</li><U+2029>            <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li><U+2029>            <li>50 vertical z-levels</li><U+2029>            <li>Available as monthly averages (May 2014&ndash;April 2015)</li><U+2029>            <li>Variables Available:<U+2029>                <ul><U+2029> <li>Ice Concentration</li><U+2029>                    <li>Ice Volume</li><U+2029>                    <li>Meridional Wind</li><U+2029> <li>Salinity</li><U+2029>                    <li>Sea Surface Height (Free Surface)</li><U+2029>                    <li>Sea Water Velocity</li> <U+2029>                    <li>Sea Water East Velocity</li><U+2029>                    <li>Sea Water North Velocity</li><U+2029> <li>Sea Water X Velocity</li><U+2029>                    <ul><U+2029>                      <li>water velocity along model x grid lines</li><U+2029> </ul><U+2029>                    <li>Sea Water Y Velocity</li><U+2029>                     <ul><U+2029>                      <li >water velocity along model y grid lines</li><U+2029>                    </ul><U+2029>                    <li>Water Temperature</li><U+2029> <li>Wind</li><U+2029>                    <li>Zonal Wind</li><U+2029>                </ul><U+2029>            </li><U+2029>        </ul>",
+        "name": "Historical GIOPS Monthly",
+        "quantum": "month",
+        "url": "/data/db/historical-giops-monthly.sqlite3",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "variables": {
+            "vozocrtx": { "name": "Water X Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vomecrty": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vozocrte,vomecrtn": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "scale_factor": 1 },
+            "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
+            "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
+            "sossheig": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
+            "aice": { "name": "Ice Concentration", "envtype": "ocean", "unit": "fraction", "scale": [0, 1] },
+            "vice": { "name": "Ice Volume",        "envtype": "ocean", "unit": "m", "scale": [0, 10] },
+            "u_wind": { "name": "Zonal Wind",      "envtype": "ocean", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
+            "v_wind": { "name": "Meridional Wind", "envtype": "ocean", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
+            "wind":   { "name": "Wind",            "envtype": "ocean", "unit": "m/s", "scale": [0, 20] }
+        }
+    },
+    "historical_giops_day": {
+        "name": "Historical GIOPS Daily",
+        "url": "/data/db/historical-giops-daily.sqlite3",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "enabled": true,
+        "quantum": "day",
+        "climatology": "http://trinity:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
+        "attribution": "GIOPS Daily Values from CONCEPTS",
+        "help": "Global Ice Ocean Prediction System<U+2029>        <ul><U+2029>            <li>Global Coverage</li><U+2029>            <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li><U+2029>            <li>50 vertical z-levels</li><U+2029>            <li>Available as monthly averages (May 2014&ndash;April 2015)</li><U+2029>            <li>Variables Available:<U+2029>                <ul><U+2029>                    <li>Ice Concentration</li><U+2029>                    <li>Ice Volume</li><U+2029>                    <li>Meridional Wind</li><U+2029>                    <li>Salinity</li><U+2029>                    <li>Sea Surface Height (Free Surface)</li><U+2029>                    <li>Sea Water Velocity</li><U+2029>                    <li>Sea Water East Velocity</li><U+2029>                    <li>Sea Water North Velocity</li><U+2029>                    <li>Sea Water X Velocity</li><U+2029>                    <ul><U+2029>                      <li>water velocity along model x grid lines</li><U+2029>                    </ul><U+2029>                    <li>Sea Water Y Velocity</li><U+2029>                     <ul><U+2029>                      <li>water velocity along model y grid lines</li><U+2029>                    </ul><U+2029>                    <li>Water Temperature</li><U+2029>                    <li>Wind</li><U+2029>                    <li>Zonal Wind</li><U+2029>                </ul><U+2029>            </li><U+2029>        </ul>",
+        "variables": {
+            "vozocrtx": { "name": "Water X Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vomecrty": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vozocrte,vomecrtn": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "scale_factor": 1 },
+            "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time_counter", "depth", "y", "x"] },
+            "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
+            "sossheig": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-3, 3], "zero_centered": "true"  },
+            "aice": { "name": "Ice Concentration", "envtype": "ocean", "unit": "fraction", "scale": [0, 1] },
+            "vice": { "name": "Ice Volume",        "envtype": "ocean", "unit": "m", "scale": [0, 10] },
+            "u_wind": { "name": "Zonal Wind",      "envtype": "ocean", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
+            "v_wind": { "name": "Meridional Wind", "envtype": "ocean", "unit": "m/s", "scale": [-20, 20], "zero_centered": "true"  },
+            "wind":   { "name": "Wind",            "envtype": "ocean", "unit": "m/s", "scale": [0, 20] }
+        }
+    },
     "wcps_2dll": {
         "envtype": ["ocean", "ice"],
         "url": "/data/db/wcps-2dll.sqlite3",
@@ -23,7 +69,6 @@
             "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "latitude", "longitude"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-0.07, 5], "equation": "votemper - 273.15", "dims": ["time", "latitude", "longitude"] },
             "tairsurf": { "name": "Surface Air Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-20, 20], "equation": "tairsurf - 273.15", "dims": ["time", "latitude", "longitude"] },
-            "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [0, 0.75] },
             "sossheig": { "name": "Sea Surface Height", "envtype": "ocean", "unit": "m", "scale": [-2, 2], "zero_centered": "true" },
             "iiceconc": { "name": "Ice Concentration", "envtype": "ice", "unit": "fraction", "scale": [0, 1] },
             "sokaraml": { "name": "Ocean Mixed Layer Depth", "envtype": "ocean", "unit": "m", "scale": [2, 265] },
@@ -32,7 +77,7 @@
             "itzocrtx": { "name": "Sea Ice East Velocity", "envtype": "ice", "unit": "m/s", "scale": [-0.5, 0.5], "zero_centered": "true" },
             "magicevel": { "name": "Sea Ice Velocity", "envtype": "ice", "unit": "m/s", "scale": [0, 1], "equation": "magnitude(itmecrty, itzocrtx)", "dims": ["time", "latitude", "longitude"] },
             "iicestrength": { "name": "Compressive Ice Strength", "envtype": "ice", "unit": "Nm-1", "scale": [-1, 1], "scale_factor": 1e4},
-            "iicepressure": { "name": "Internal Ice Pressure", "envtype": "ice", "unit": "Nm-1", "scale": [-1, 1] }
+            "iicepressure": { "name": "Internal Ice Pressure", "envtype": "ice", "unit": "Nm-1", "scale": [-17, 40], "scale_factor": 1e2 }
         }
     },
     "giops_fc_2dll": {
@@ -127,7 +172,8 @@
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] },
-            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
         }
     },
     "giops_10day": {
@@ -152,7 +198,8 @@
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "latitude", "longitude"] },
-            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "latitude", "longitude"] }
         }
     },
     "giops_fc_2dps": {
@@ -240,14 +287,15 @@
         "variables": {
             "vozocrtx": { "name": "Water X Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
             "vomecrty": { "name": "Water Y Velocity", "envtype": "ocean", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-                "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "yc", "xc"] },
+            "magwatervel": { "name": "Water Velocity", "envtype": "ocean", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "yc", "xc"] },
             "votemper": { "name": "Temperature", "envtype": "ocean", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "yc", "xc"] },
             "vosaline": { "name": "Salinity", "envtype": "ocean", "unit": "PSU", "scale": [30, 40] },
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1030], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "giops_fc_10day_3dps": {
@@ -275,7 +323,8 @@
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1030], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "riops_fc_2dll": {
@@ -361,7 +410,10 @@
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1050], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] },
+            "oxygensaturation": { "name": "Oxygen Saturation", "scale": [4, 11], "unit": "ml/l", "equation": "oxygensaturation(votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "nitrogensaturation": { "name": "Nitrogen Saturation", "scale": [8, 20], "unit": "ml/l", "equation": "nitrogensaturation(votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "ecc_datamart_riops_fc_3dps": {
@@ -387,7 +439,9 @@
             "sspeed": { "name": "Speed of Sound", "envtype": "ocean", "scale": [1400, 1600], "scale_factor": 1, "unit": "m/s", "equation": "sspeed(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "density": { "name": "Water Density", "envtype": "ocean", "scale": [1000, 1050], "scale_factor": 1, "unit": "kg/m^3", "equation": "density(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
             "heatcapacity": { "name": "Heat Capacity", "envtype": "ocean", "scale": [3950, 4220], "scale_factor": 1, "unit": "J/(kg*K)", "equation": "heatcap(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
-            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] }
+            "tempgradient": { "name": "Adiabatic Temp Gradient", "envtype": "ocean", "scale": [-2.9e-5, 1.5e-4], "scale_factor": 1, "unit": "Celsius/db", "equation": "tempgradient(depth, latitude, votemper - 273.15, vosaline)", "dims": ["time", "depth", "yc", "xc"] },
+            "deepsoundchannel": { "name": "Deep Sound Channel", "unit": "m", "scale": [0, 1700], "equation": "deepsoundchannel([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] },
+            "soniclayerdepth": { "name": "Sonic Layer Depth", "unit": "m", "scale": [0, 1400], "equation": "soniclayerdepth([depth], latitude, [votemper] - 273.15, [vosaline])", "dims": ["time", "yc", "xc"] }
         }
     },
     "glorys3": {
@@ -399,7 +453,7 @@
         "quantum": "month",
         "type": "historical",   
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
-        "url": "/home/buildadm/ocean-nav/db/GLORYSV3.sqlite3",
+        "url": "/data/db/climatology-glorysv3.sqlite3",
         "variables": {
             "iicethic": {
                 "hide": "false",
@@ -410,30 +464,6 @@
                 ],
                 "scale_factor": 1,
                 "unit": "m"
-            },
-            "iicevele": {
-                "name": "Sea Ice East Velocity",
-                "scale": [
-                    -1,
-                    1
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "zero_centered": "true",
-                "equation": "iicevelu * cos_alpha - iicevelv * sin_alpha",
-                "hide": "true"
-            },
-            "iiceveln": {
-                "name": "Sea Ice North Velocity",
-                "scale": [
-                    -1,
-                    1
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "zero_centered": "true",
-                "equation": "iicevelu * sin_alpha + iicevelv * cos_alpha",
-                "hide": "true"
             },
             "iicevelu": {
                 "hide": "false",
@@ -450,16 +480,6 @@
                 "name": "Sea Ice Y Velocity",
                 "scale": [
                     -1,
-                    1
-                ],
-                "scale_factor": 1,
-                "unit": "m/s"
-            },
-            "iicevele,iiceveln": {
-                "hide": "true",
-                "name": "Sea Ice Velocity",
-                "scale": [
-                    0,
                     1
                 ],
                 "scale_factor": 1,
@@ -520,40 +540,6 @@
                 "name": "Water X Velocity",
                 "scale": [
                     -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s"
-            },
-            "vozocrte": {
-                "hide": "true",
-                "name": "Water East Velocity",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "equation": "vozocrtx * cos_alpha - vomecrty * sin_alpha",
-                "zero_centered": "true"
-            },
-            "vomecrtn": {
-                "hide": "true",
-                "name": "Water North Velocity",
-                "scale": [
-                    -3,
-                    3
-                ],
-                "scale_factor": 1,
-                "unit": "m/s",
-                "equation": "vozocrtx * sin_alpha + vomecrty * cos_alpha",
-                "zero_centered": "true"
-            },
-            "vozocrte,vomecrtn": {
-                "hide": "true",
-                "name": "Water Velocity",
-                "scale": [
-                    0,
                     3
                 ],
                 "scale_factor": 1,
@@ -1205,4 +1191,3 @@
         }
     }
 }
-
