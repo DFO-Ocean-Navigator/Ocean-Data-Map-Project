@@ -944,9 +944,14 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
 
 @bp_v1_0.after_request
 def after_request(response):
+    # https://flask.palletsprojects.com/en/1.1.x/security/
+
     header = response.headers
     # Relying on iptables to keep this safe
     header['Access-Control-Allow-Origin'] = '*'
+    header['X-XSS-Protection'] = '1; mode=block'
+    header['X-Frame-Options'] = 'SAMEORIGIN'
+
     return response
 
 
