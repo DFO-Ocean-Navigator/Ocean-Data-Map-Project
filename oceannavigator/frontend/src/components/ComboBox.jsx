@@ -255,7 +255,7 @@ export default class ComboBox extends React.Component {
       return React.createElement("option", opts, o.value);    //Creates Option that was found
     });
 
-    if (this.state.data.length > 1) {
+    if (this.state.data.length > 1 || this.props.alwaysShow) {
       var value = this.props.state;
       if (this.props.multiple && value == "all") {
         value = this.state.data.map(function(d) {
@@ -271,10 +271,12 @@ export default class ComboBox extends React.Component {
 
       const hasHelp =
         (this.props.children != null && this.props.children.length > 0) ||
-        this.state.data.slice(-1)[0].hasOwnProperty("help");
+        (this.state.data.length > 1 &&
+          this.state.data.slice(-1)[0].hasOwnProperty("help"));
 
       var helpOptions = [];
-      if (this.state.data.slice(-1)[0].hasOwnProperty("help")) {
+      if (this.state.data.length > 1 &&
+        this.state.data.slice(-1)[0].hasOwnProperty("help")) {
         helpOptions = this.state.data.map(function(d) {
           return (
             <p key={d.id}><em>{d.value}</em>:
@@ -336,6 +338,7 @@ export default class ComboBox extends React.Component {
 //***********************************************************************
 ComboBox.propTypes = {
   multiple: PropTypes.bool,
+  alwaysShow: PropTypes.bool,
   title: PropTypes.string,
   data: PropTypes.array,
   state: PropTypes.oneOfType([PropTypes.string, 

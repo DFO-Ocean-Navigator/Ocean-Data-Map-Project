@@ -97,56 +97,59 @@ export default class Class4Window extends React.Component {
         <Row>
           <Col lg={2}>
             <Panel 
-              collapsible
               defaultExpanded
-              header={_("Class 4 Settings")}
               bsStyle='primary'
             >
-              <ComboBox
-                key='forecast'
-                id='forecast'
-                state={this.state.forecast}
-                def=''
-                url={
-                  "/api/class4/forecasts/" + this.props.class4id
-                }
-                title={_("Forecast")}
-                onUpdate={this.onLocalUpdate}
-              />
-              <SelectBox
-                key='showmap'
-                id='showmap'
-                state={this.state.showmap}
-                onUpdate={this.onLocalUpdate}
-                title={_("Show Location")}>{_("showmap_help")}</SelectBox>
-              <SelectBox
-                key='climatology'
-                id='climatology'
-                state={this.state.climatology}
-                onUpdate={this.onLocalUpdate}
-                title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
-              <ComboBox
-                key='models'
-                id='models'
-                state={this.state.models}
-                multiple
-                onUpdate={this.onLocalUpdate}
-                url={"/api/class4/models/" + this.props.class4id}
-                title={_("Additional Models")} />
-              <ComboBox
-                key='error'
-                id='error'
-                state={this.state.error}
-                def=''
-                data={error_options}
-                title={_("Show Error")}
-                onUpdate={this.onLocalUpdate} />
-              <ImageSize
-                key='size'
-                id='size'
-                state={this.state.size}
-                onUpdate={this.onLocalUpdate}
-                title={_("Saved Image Size")} />
+              <Panel.Heading>{_("Class 4 Settings")}</Panel.Heading>
+              <Panel.Collapse>
+                <Panel.Body>
+                  <ComboBox
+                    key='forecast'
+                    id='forecast'
+                    state={this.state.forecast}
+                    def=''
+                    url={
+                      "/api/class4/forecasts/" + this.props.class4id
+                    }
+                    title={_("Forecast")}
+                    onUpdate={this.onLocalUpdate}
+                  />
+                  <SelectBox
+                    key='showmap'
+                    id='showmap'
+                    state={this.state.showmap}
+                    onUpdate={this.onLocalUpdate}
+                    title={_("Show Location")}>{_("showmap_help")}</SelectBox>
+                  <SelectBox
+                    key='climatology'
+                    id='climatology'
+                    state={this.state.climatology}
+                    onUpdate={this.onLocalUpdate}
+                    title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
+                  <ComboBox
+                    key='models'
+                    id='models'
+                    state={this.state.models}
+                    multiple
+                    onUpdate={this.onLocalUpdate}
+                    url={"/api/class4/models/" + this.props.class4id}
+                    title={_("Additional Models")} />
+                  <ComboBox
+                    key='error'
+                    id='error'
+                    state={this.state.error}
+                    def=''
+                    data={error_options}
+                    title={_("Show Error")}
+                    onUpdate={this.onLocalUpdate} />
+                  <ImageSize
+                    key='size'
+                    id='size'
+                    state={this.state.size}
+                    onUpdate={this.onLocalUpdate}
+                    title={_("Saved Image Size")} />
+                </Panel.Body>
+              </Panel.Collapse>
             </Panel>
           </Col>
 

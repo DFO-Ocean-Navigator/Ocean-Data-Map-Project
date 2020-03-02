@@ -69,79 +69,88 @@ export default class Permalink extends React.Component {
 
         <br />
         <Panel
-          collapsible
           defaultExpanded
-          header={_("Advanced")}
           bsStyle="warning"
         >
-          <p>{_("Please select which feature's state you would like to be saved.")}</p>
-          <br />
-          <form>
-            <Panel
-              collapsible
-              header={_("Global Map Settings")}
-              defaultExpanded 
-              bsStyle='primary' 
-            >
-              <Checkbox 
-                checked={this.state.projection}
-                name="projection"
-                onChange={this.handleChange}
-              >{_("Projection")}</Checkbox>
-              <Checkbox
-                checked={this.state.basemap}
-                name="basemap"
-                onChange={this.handleChange}
-              >{_("Basemap")}</Checkbox>
-              <Checkbox
-                checked={this.state.bathymetry}
-                name="bathymetry"
-                onChange={this.handleChange}
-              >{_("Bathymetry Contours")}</Checkbox>
-              <Checkbox
-                checked={this.state.dataset_compare}
-                name="dataset_compare"
-                onChange={this.handleChange}
-              >{_("Side-by-side Comparison")}</Checkbox>
-            </Panel>
-            <Panel
-              collapsible
-              header={_("View Settings")}
-              defaultExpanded
-              bsStyle="primary"
-            >
-              <Checkbox
-                checked={this.state.zoom}
-                name="zoom"
-                onChange={this.handleChange}
-              >{_("Zoom")}</Checkbox>
-              <Checkbox
-                checked={this.state.dataset}
-                name="dataset"
-                onChange={this.handleChange}
-              >{_("Dataset (Primary/Left Map)")}</Checkbox>
-              <Checkbox
-                checked={this.state.dataset_1}
-                name="dataset_1"
-                onChange={this.handleChange}
-              >{_("Dataset (Right Map)")}</Checkbox>
-              <Checkbox
-                checked={this.state.variable}
-                name="variable"
-                onChange={this.handleChange}
-              >{_("Variable")}</Checkbox>
-              <Checkbox
-                checked={this.state.depth}
-                name="depth"
-                onChange={this.handleChange}
-              >{_("Depth")}</Checkbox>
-              <Checkbox
-                checked={this.state.time}
-                name="time"
-                onChange={this.handleChange}
-              >{_("Time")}</Checkbox>
-            </Panel>
-          </form>
+          <Panel.Heading>{_("Advanced")}</Panel.Heading>
+          <Panel.Collapse>
+            <Panel.Body>
+              <p>{_("Please select which feature's state you would like to be saved.")}</p>
+              <br />
+              <form>
+                <Panel
+                  defaultExpanded 
+                  bsStyle='primary' 
+                >
+                  <Panel.Heading>{_("Global Map Settings")}</Panel.Heading>
+                  <Panel.Collapse>
+                    <Panel.Body>
+                      <Checkbox 
+                        checked={this.state.projection}
+                        name="projection"
+                        onChange={this.handleChange}
+                      >{_("Projection")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.basemap}
+                        name="basemap"
+                        onChange={this.handleChange}
+                      >{_("Basemap")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.bathymetry}
+                        name="bathymetry"
+                        onChange={this.handleChange}
+                      >{_("Bathymetry Contours")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.dataset_compare}
+                        name="dataset_compare"
+                        onChange={this.handleChange}
+                      >{_("Side-by-side Comparison")}</Checkbox>
+                    </Panel.Body>
+                  </Panel.Collapse>
+                </Panel>
+                <Panel
+                  defaultExpanded
+                  bsStyle="primary"
+                >
+                  <Panel.Heading>{_("View Settings")}</Panel.Heading>
+                  <Panel.Collapse>
+                    <Panel.Body>
+                      <Checkbox
+                        checked={this.state.zoom}
+                        name="zoom"
+                        onChange={this.handleChange}
+                      >{_("Zoom")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.dataset}
+                        name="dataset"
+                        onChange={this.handleChange}
+                      >{_("Dataset (Primary/Left Map)")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.dataset_1}
+                        name="dataset_1"
+                        onChange={this.handleChange}
+                      >{_("Dataset (Right Map)")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.variable}
+                        name="variable"
+                        onChange={this.handleChange}
+                      >{_("Variable")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.depth}
+                        name="depth"
+                        onChange={this.handleChange}
+                      >{_("Depth")}</Checkbox>
+                      <Checkbox
+                        checked={this.state.time}
+                        name="time"
+                        onChange={this.handleChange}
+                      >{_("Time")}</Checkbox>
+                    </Panel.Body>
+                  </Panel.Collapse>
+                </Panel>
+              </form>
+            </Panel.Body>
+          </Panel.Collapse>
         </Panel>
       </div>
     );

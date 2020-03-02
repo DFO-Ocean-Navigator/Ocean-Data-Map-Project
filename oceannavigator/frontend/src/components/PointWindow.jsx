@@ -221,55 +221,57 @@ export default class PointWindow extends React.Component {
     const global = (<Panel
       key='global_settings'
       id='global_settings'
-      collapsible
       defaultExpanded
-      header={_("Global Settings")}
       bsStyle='primary'
     >
-      <ComboBox
-        key='dataset'
-        id='dataset'
-        state={this.props.dataset}
-        def=''
-        url='/api/v1.0/datasets/'
-        title={_("Dataset")}
-        onUpdate={this.props.onUpdate}
-      />
-      <SelectBox
-        key='showmap'
-        id='showmap'
-        state={this.state.showmap}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Location")}>{_("showmap_help")}
-      </SelectBox>
-      
-      <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
-        <LocationInput
-          key='point'
-          id='point'
-          state={this.props.point}
-          title={_("Location")}
-          onUpdate={this.onLocalUpdate}
-        />
-      </div>
-      
-      <ImageSize
-        key='size'
-        id='size'
-        state={this.state.size}
-        onUpdate={this.onLocalUpdate}
-        title={_("Saved Image Size")}
-      />
+      <Panel.Heading>{_("Global Settings")}</Panel.Heading>
+      <Panel.Collapse>
+        <Panel.Body>
+          <ComboBox
+            key='dataset'
+            id='dataset'
+            state={this.props.dataset}
+            def=''
+            url='/api/v1.0/datasets/'
+            title={_("Dataset")}
+            onUpdate={this.props.onUpdate}
+          />
+          <SelectBox
+            key='showmap'
+            id='showmap'
+            state={this.state.showmap}
+            onUpdate={this.onLocalUpdate}
+            title={_("Show Location")}>{_("showmap_help")}
+          </SelectBox>
+          
+          <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
+            <LocationInput
+              key='point'
+              id='point'
+              state={this.props.point}
+              title={_("Location")}
+              onUpdate={this.onLocalUpdate}
+            />
+          </div>
+          
+          <ImageSize
+            key='size'
+            id='size'
+            state={this.state.size}
+            onUpdate={this.onLocalUpdate}
+            title={_("Saved Image Size")}
+          />
 
-      {/* Plot Title */}
-      <CustomPlotLabels
-        key='title'
-        id='title'
-        title={_("Plot Title")}
-        updatePlotTitle={this.updatePlotTitle}
-        plotTitle={this.state.plotTitles[this.state.selected - 1]}
-      ></CustomPlotLabels>
-
+          {/* Plot Title */}
+          <CustomPlotLabels
+            key='title'
+            id='title'
+            title={_("Plot Title")}
+            updatePlotTitle={this.updatePlotTitle}
+            plotTitle={this.state.plotTitles[this.state.selected - 1]}
+          ></CustomPlotLabels>
+        </Panel.Body>
+      </Panel.Collapse>
     </Panel>);
 
     // Show a single time selector on all tabs except Stick and Virtual Mooring.
