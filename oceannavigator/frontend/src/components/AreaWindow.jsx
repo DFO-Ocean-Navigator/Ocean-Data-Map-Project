@@ -416,7 +416,7 @@ export default class AreaWindow extends React.Component {
               state={this.state.output_variables}
               def={"defaults.dataset"}
               onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
-              url={"/api/v1.0/variables/?vectors&dataset=" + this.state.dataset_0.dataset
+              url={"/api/v1.0/variables/?dataset=" + this.state.dataset_0.dataset
               }
               title={_("Variables")}
             />
@@ -580,7 +580,7 @@ export default class AreaWindow extends React.Component {
               state={this.state.leftColormap} 
               def='default' 
               onUpdate={this.onLocalUpdate} 
-              url='/api/v1,0/colormaps/' 
+              url='/api/v1.0/colormaps/' 
               title={_("Colourmap")}
             >
               {_("colourmap_help")}

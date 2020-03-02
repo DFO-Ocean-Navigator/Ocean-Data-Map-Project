@@ -56,7 +56,7 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 13,
+  "EPSG:3857": 16,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };
@@ -149,7 +149,7 @@ export default class Map extends React.PureComponent {
       if (this.props.state.vectortype) {
         $.ajax({
           url: (
-            `/api/${this.props.state.vectortype}` +
+            `/api/v1.0/${this.props.state.vectortype}` +
             `/${projection.getCode()}` +
             `/${Math.round(resolution)}` +
             `/${extent.map(function (i) { return Math.round(i);})}` +
@@ -218,7 +218,7 @@ export default class Map extends React.PureComponent {
     this.layer_bath = new ollayer.Tile(
       {
         source: new olsource.XYZ({
-          url: `/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
+          url: `/api/v1.0/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
           projection: this.props.state.projection,
         }),
         opacity: this.props.options.mapBathymetryOpacity,
@@ -988,7 +988,7 @@ export default class Map extends React.PureComponent {
       this.layer_bath.setSource(
         new olsource.XYZ({
           url: (
-            `/tiles/bath/${this.props.state.projection}` +
+            `/api/v1.0/tiles/bath/${this.props.state.projection}` +
             "/{z}/{x}/{y}.png"
           ),
           projection: this.props.state.projection,

@@ -76,6 +76,20 @@ class Parser:
 
         return tuple(key)
 
+    def get_key_for_variable_full_depth(self, variable_key):
+        variable = self.data.variables[variable_key]
+
+        if 'depth' in variable_key:
+            depth_levels = variable.shape[0]  # Expecting (depth shape)
+            return (slice(0, depth_levels), )
+
+        key = list(self.key)
+        # Expecting (time, depth, lat, lon) shape
+        depth_levels = variable.shape[1]
+        key.insert(1, slice(0, depth_levels))
+
+        return tuple(key)
+
     # Similar to the Lexer, these p_*, methods cannot have proper python
     # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
@@ -88,6 +102,13 @@ class Parser:
             self.get_key_for_variable(
                 self.data.variables[t[1]]
             )
+        ]
+
+    def p_expression_variable_full_depth(self, t):
+        '''expression : LBRKT ID RBRKT'''
+
+        t[0] = self.data.variables[t[2]][
+            self.get_key_for_variable_full_depth(t[2])
         ]
 
     def p_expression_uop(self, t):

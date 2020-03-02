@@ -110,14 +110,14 @@ class TestCalculatedArray(unittest.TestCase):
 
     def test_passthrough(self):
         dataset = xr.Dataset({'var': ('x', [1, 2, 3, 4, 5])})
-        array = CalculatedArray(dataset, "var", [])
+        array = CalculatedArray(dataset, "var", ['x'])
         self.assertEqual(array[0], 1)
         self.assertEqual(array[2], 3)
         self.assertEqual(array[4], 5)
 
     def test_single_expression(self):
         dataset = xr.Dataset({'var': ('x', [1, 2, 3, 4, 5])})
-        array = CalculatedArray(dataset, "var * 5", [])
+        array = CalculatedArray(dataset, "var * 5", ['x'])
         self.assertEqual(array[0], 5)
         self.assertEqual(array[2], 15)
         self.assertEqual(array[4], 25)
@@ -127,7 +127,7 @@ class TestCalculatedArray(unittest.TestCase):
             'var': ('x', [1, 2, 3, 4, 5]),
             'var2': ('x', [5, 4, 3, 2, 1]),
         })
-        array = CalculatedArray(dataset, "var + var2", [])
+        array = CalculatedArray(dataset, "var + var2", ['x'])
         self.assertEqual(array[0], 6)
         self.assertEqual(array[2], 6)
         self.assertEqual(array[4], 6)
@@ -139,11 +139,11 @@ class TestCalculatedArray(unittest.TestCase):
             'var3': (('x', 'y'), [[5, 6], [7, 8]]),
             'var4': (('y', 'x'), [[9, 10], [11, 12]]),
         })
-        array = CalculatedArray(dataset, "var + var2", [])
+        array = CalculatedArray(dataset, "var + var2", ['x'])
         self.assertIsNan(array[0])
-        array = CalculatedArray(dataset, "var3 + var4", [])
+        array = CalculatedArray(dataset, "var3 + var4", ['x'])
         self.assertIsNan(array[0, 0])
-        array = CalculatedArray(dataset, "var + var3", [])
+        array = CalculatedArray(dataset, "var + var3", ['x', 'y'])
         self.assertEqual(array[0, 0], 6)
         self.assertEqual(array[0, 1], 7)
         self.assertEqual(array[1, 0], 9)

@@ -109,7 +109,7 @@ export default class Class4Window extends React.Component {
                     state={this.state.forecast}
                     def=''
                     url={
-                      "/api/class4/forecasts/" + this.props.class4id
+                      "/api/v1.0/class4/forecasts/" + this.props.class4id
                     }
                     title={_("Forecast")}
                     onUpdate={this.onLocalUpdate}
@@ -132,7 +132,7 @@ export default class Class4Window extends React.Component {
                     state={this.state.models}
                     multiple
                     onUpdate={this.onLocalUpdate}
-                    url={"/api/class4/models/" + this.props.class4id}
+                    url={"/api/v1.0/class4/models/" + this.props.class4id}
                     title={_("Additional Models")} />
                   <ComboBox
                     key='error'

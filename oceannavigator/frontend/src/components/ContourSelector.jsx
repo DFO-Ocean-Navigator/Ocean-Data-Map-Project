@@ -70,7 +70,7 @@ export default class ContourSelector extends React.Component {
         <div className='sub' style={{"display": (this.props.state.variable == "none" || this.props.state.variable == "") ? "none" : "block"}}>
           <SelectBox key='hatch' id='hatch' state={this.props.state.hatch} onUpdate={this.onUpdate} title={_("Crosshatch")}></SelectBox>
           <div style={{"display": this.props.state.hatch ? "none" : "block"}}>
-            <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def='' onUpdate={this.onUpdate} url='/api/colormaps/' title={_("Colourmap")}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>
+            <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def='' onUpdate={this.onUpdate} url='/api/v1.0/colormaps/' title={_("Colourmap")}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>
           </div>
           <SelectBox key='legend' id='legend' state={this.props.state.legend} onUpdate={this.onUpdate} title={_("Show Legend")}></SelectBox>
           <h1>{_("Levels")}</h1>

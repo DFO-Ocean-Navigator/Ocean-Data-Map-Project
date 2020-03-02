@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import functools
+from typing import Union
 
 import metpy.calc
 import numpy as np
@@ -62,26 +63,100 @@ def __calc_pressure(depth, latitude):
     except TypeError:
         pressure = seawater.pres(depth, latitude)
 
-    return pressure
+    return np.array(pressure)
 
 
-def sspeed(depth, latitude, temperature, salinity):
+def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
+
+    if type(depth) is not np.ndarray:
+        depth = np.array(depth)
+
+    if type(latitude) is not np.ndarray:
+        latitude = np.array(latitude)
+
+    if type(temperature) is not np.ndarray:
+        temperature = np.array(temperature)
+
+    if type(salinity) is not np.ndarray:
+        salinity = np.array(salinity)
+
+    return depth, latitude, temperature, salinity
+
+
+def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
+
+    # Mask out NaN values to prevent an exception blow-up.
+    masked = np.ma.masked_array(data, np.isnan(data))
+
+    return np.argmin(masked, axis=depth_axis)
+
+
+def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
+    # Mask out NaN values to prevent an exception blow-up.
+    masked = np.ma.masked_array(data, np.isnan(data))
+
+    return np.argmax(masked, axis=depth_axis)
+
+
+def oxygensaturation(temperature: np.ndarray,
+                     salinity: np.ndarray) -> np.ndarray:
+    """
+    Calculate the solubility (saturation) of 
+    Oxygen (O2) in seawater.
+
+    Required Arguments:
+
+    * temperature: temperature values in Celsius.
+    * salinity: salinity values.
+    """
+
+    return seawater.satO2(salinity, temperature)
+
+
+def nitrogensaturation(temperature: np.ndarray,
+                       salinity: np.ndarray) -> np.ndarray:
+    """
+    Calculate the solubility (saturation) of 
+    Nitrogen (N2) in seawater.
+
+    Required Arguments:
+
+    * temperature: temperature values in Celsius.
+    * salinity: salinity values.
+    """
+
+    return seawater.satN2(salinity, temperature)
+
+
+def sspeed(depth: Union[np.ndarray, xr.Variable],
+           latitude: np.ndarray,
+           temperature: np.ndarray,
+           salinity: np.ndarray) -> np.ndarray:
     """
     Calculates the speed of sound.
 
-    Parameters:
-    depth: The depth(s) in meters
-    latitude: The latitude(s) in degrees North
-    temperature: The temperatures(s) in Celsius
-    salinity: The salinity (unitless)
+    Required Arguments:
+
+    * depth: The depth(s) in meters
+    * latitude: The latitude(s) in degrees North
+    * temperature: The temperatures(s) in Celsius
+    * salinity: The salinity (unitless)
     """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
     press = __calc_pressure(depth, latitude)
+
+    if salinity.shape != press.shape:
+        # pad array shape to match otherwise seawater freaks out
+        press = press[..., np.newaxis]
 
     speed = seawater.svel(salinity, temperature, press)
     return np.array(speed)
 
 
-def density(depth, latitude, temperature, salinity):
+def density(depth, latitude, temperature, salinity) -> np.ndarray:
     """
     Calculates the density of sea water.
 
@@ -98,7 +173,7 @@ def density(depth, latitude, temperature, salinity):
     return np.array(density)
 
 
-def heatcap(depth, latitude, temperature, salinity):
+def heatcap(depth, latitude, temperature, salinity) -> np.ndarray:
     """
     Calculates the heat capacity of sea water.
 
@@ -115,21 +190,80 @@ def heatcap(depth, latitude, temperature, salinity):
     return np.array(heatcap)
 
 
-def tempgradient(depth, latitude, temperature, salinity):
+def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     """
     Calculates the adiabatic temp gradient of sea water.
 
-    Parameters:
-    depth: The depth(s) in meters
-    latitude: The latitude(s) in degrees North
-    temperature: The temperatures(s) in Celsius
-    salinity: The salinity (unitless)
+    Required Arguments:
+        * depth: Depth in meters
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
     """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
 
     press = __calc_pressure(depth, latitude)
 
     tempgradient = seawater.adtg(salinity, temperature, press)
     return np.array(tempgradient)
+
+
+def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
+    """
+    Find and return the depth of the maximum value of the speed
+    of sound ABOVE the deep sound channel.
+
+    Required Arguments:
+        * depth: Depth in meters
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
+    """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
+    sound_speed = sspeed(depth, latitude, temperature, salinity)
+
+    min_indices = __find_depth_index_of_min_value(sound_speed)
+
+    # Mask out values below deep sound channel
+    mask = min_indices.ravel()[..., np.newaxis] < np.arange(
+        sound_speed.shape[0])
+    mask = mask.T.reshape(sound_speed.shape)
+
+    sound_speed[mask] = np.nan
+
+    # Find sonic layer depth indices
+    max_indices = __find_depth_index_of_max_value(sound_speed)
+
+    return depth[max_indices]
+
+
+def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
+    """
+    Find and return the depth of the minimum value of the
+    speed of sound.
+
+    https://en.wikipedia.org/wiki/SOFAR_channel
+
+     Required Arguments:
+        * depth: Depth in meters
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
+    """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
+    sound_speed = sspeed(depth, latitude, temperature, salinity)
+
+    min_indices = __find_depth_index_of_min_value(sound_speed)
+
+    return depth[min_indices]
 
 
 def _metpy(func, data, lat, lon, dim):
@@ -289,7 +423,7 @@ def geostrophic_x(h, lat, lon):
         if dim_order == "yx":
             dy, dx = kwargs['deltas']
         else:
-            dx, dy = kwgard['deltas']
+            dx, dy = kwargs['deltas']
 
         return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
                                            dim_order=kwargs['dim_order'])

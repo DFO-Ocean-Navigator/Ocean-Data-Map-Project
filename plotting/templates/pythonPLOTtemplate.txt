@@ -17,7 +17,7 @@ def requestFile():
 
 
    # Assemble full request
-   base_url = "http://navigator.oceansdata.ca/plot/?"
+   base_url = "http://navigator.oceansdata.ca/api/v1.0/plot/?"
    url = base_url + urlencode({{"query": json.dumps(query)}}) + "&dpi=" + str(dpi)
    print(url)
 

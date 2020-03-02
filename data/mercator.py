@@ -23,8 +23,6 @@ class Mercator(CalculatedData):
     def __init__(self, url, **kwargs):
         self.latvar = None
         self.lonvar = None
-        self.__latsort = None
-        self.__lonsort = None
 
         super(Mercator, self).__init__(url, **kwargs)
 
@@ -34,8 +32,6 @@ class Mercator(CalculatedData):
         if not self._meta_only:
             if self.latvar is None:
                 self.latvar, self.lonvar = self.latlon_variables
-                self.__latsort = np.argsort(self.latvar[:])
-                self.__lonsort = np.argsort(np.mod(self.lonvar[:] + 360, 360))
 
         return self
 
