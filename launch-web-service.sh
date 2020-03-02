@@ -3,12 +3,12 @@ HOST_IP=`ip addr show | egrep "e(th|np)" | grep inet | awk '{print $2}' | sed -e
 
 PORT=5000
 
-nc -zv 0.0.0.0 $PORT > /dev/null
+nc -zv 0.0.0.0 $PORT > /dev/null 2>&1
 RES=$?
 
 while  [ $((RES)) -eq 0 ] ; do
 	PORT=$((PORT+1))
-	nc -zv 0.0.0.0 $PORT > /dev/null
+	nc -zv 0.0.0.0 $PORT > /dev/null 2>&1
 	RES=$?
 done
 
