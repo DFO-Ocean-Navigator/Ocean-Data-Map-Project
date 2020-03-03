@@ -16,11 +16,14 @@ import time
 import yaml
 import utils
 
+from dimension_config import (open_config, exempt_tests)
 from test_area_index import draw_area
 from test_line_index import draw_map
 from test_point_index import draw_point
 from test_temperature import find_temperature_bar
 
+config_file = open_config('test_results.yaml')
+test = config_file['Test results']
 def construct_interface():
     """
 
@@ -34,7 +37,7 @@ def construct_interface():
     utils.navigator_webpage()
     #Contruct option box for available tests
     option = gui.confirm("Select prefered UI test", 'UI test options', 
-                        ['All', 'Temperature bar', 'Point index', 'Line index', 'Area index'])
+                        ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
 
     def all():
         find_temperature_bar()
@@ -46,16 +49,20 @@ def construct_interface():
         all()
     elif option == 'Temperature bar':
         time.sleep(sleep)
-        find_temperature_bar()
-    elif option == 'Point index':
+        result = find_temperature_bar()
+        exempt_tests(option, result)
+    elif option == 'Point Index':
         time.sleep(sleep)
-        draw_point()
-    elif option == 'Line index':
+        result = draw_point()
+        exempt_tests(option, result)
+    elif option == 'Line Index':
         time.sleep(sleep)
-        draw_map()    
-    elif option == 'Area index':
+        result = draw_map()
+        exempt_tests(option, result)  
+    elif option == 'Area Index':
         time.sleep(sleep)
-        draw_area()     
+        result = draw_area()
+        exempt_tests(option, result)     
 
 
 def main():
