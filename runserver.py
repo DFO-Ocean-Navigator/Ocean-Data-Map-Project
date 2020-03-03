@@ -1,4 +1,4 @@
-#!env python
+#!/usr/bin/env python
 
 from oceannavigator import create_app
 
