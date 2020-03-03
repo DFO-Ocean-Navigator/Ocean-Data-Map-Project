@@ -29,7 +29,7 @@
     "font-awesome": "^4.7.0",
     "i18next": "^8.4.2",
     "i18next-browser-languagedetector": "^2.0.0",
-    "jquery": "~3.2.1",
+    "jquery": "~3.4.1",
     "jquery-ui": "^1.12.1",
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "ol": "~5.3.3",
