@@ -49,26 +49,29 @@ export default class CoordInputPanel extends React.Component {
     return (
       <div className="coordInputPanel">
         <Panel
-          header={this.props.header}
           bsStyle="primary"
-          collapsible
           defaultExpanded
         >
-          <Form inline>
-            <ControlLabel>{_("Latitude")}: </ControlLabel>
-            <FormControl
-              type="text"
-              placeholder="0.0000"
-              onChange={e => this.onChange(e.target, DataInput.LATITUDE)}
-            />
-            <br />
-            <ControlLabel>{_("Longtitude")}: </ControlLabel>
-            <FormControl
-              type="text"
-              placeholder="0.0000"
-              onChange={e => this.onChange(e.target, DataInput.LONGTITUDE)}
-            />
-          </Form>
+          <Panel.Heading>{this.props.header}</Panel.Heading>
+          <Panel.Collapse>
+            <Panel.Body>
+              <Form inline>
+                <ControlLabel>{_("Latitude")}: </ControlLabel>
+                <FormControl
+                  type="text"
+                  placeholder="0.0000"
+                  onChange={e => this.onChange(e.target, DataInput.LATITUDE)}
+                />
+                <br />
+                <ControlLabel>{_("Longtitude")}: </ControlLabel>
+                <FormControl
+                  type="text"
+                  placeholder="0.0000"
+                  onChange={e => this.onChange(e.target, DataInput.LONGTITUDE)}
+                />
+              </Form>
+            </Panel.Body>
+          </Panel.Collapse>
         </Panel>
       </div>
     );
