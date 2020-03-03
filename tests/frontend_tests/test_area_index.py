@@ -12,15 +12,23 @@ of the user interface of the navigator.
 import pyautogui as gui
 import time
 import yaml
-from dimension_config import open_config
+
+from dimension_config import (open_config, write_to_config)
 from utils import (navigator_webpage, 
                    retry_location_test, move_et_click)
 
+
+# Open configuration file
 
 config = open_config()
 dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
+
+# Open test configuration
+
+test_config = open_config('test_results.yaml')
+test = test_config['Test results']
 
 # Set default sleep time
 sleep = 5
@@ -38,6 +46,7 @@ def draw_area():
     so firefox and the navigator page are open.
     """
     sleep = 1.7
+    result = None
     # Navigate to Point icon
     time.sleep(sleep)
     # Calculate area icon position
@@ -72,18 +81,22 @@ def draw_area():
         gui.alert(text='Area index not found!', title='UI test', button='OK', timeout=box_timeout)
         # Retry the test in case of slow network connection
         retry_location_test(paths['area_index'], 'Area Index')
+        result = 'Test Failed'
     else:
         gui.alert(text='Area UI test complete!', title='UI test', button='Close', timeout=box_timeout)
-
+        result = 'Test Complete'
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
+    test['Area Index test'] = result
+    write_to_config(test_config, 'test_results.yaml')
+    return result
 
 
 def main():
     navigator_webpage()
-    draw_area()
+    test = draw_area()
 
 if __name__ == '__main__':
     main()

@@ -12,10 +12,13 @@ of the user interface of the navigator.
 import pyautogui as gui
 import time
 import yaml
-from dimension_config import open_config
+
+from dimension_config import (open_config, write_to_config)
 from utils import (navigator_webpage, 
                       retry_location_test, move_et_click)
 
+
+#Open configuration file
 
 config = open_config()
 dimension = config['location']
@@ -27,6 +30,10 @@ sleep = 5
 plot_render_sleep = 10
 box_timeout = 2500
 
+# Open test configuration
+
+test_config = open_config('test_results.yaml')
+test = test_config['Test results']
 
 def draw_point():
     """
@@ -38,6 +45,7 @@ def draw_point():
     so firefox and the navigator page are open.
     """
     sleep = 1.7
+    result = None
     # Navigate to Point
     time.sleep(sleep)
     move_et_click(dimension['point_position'])
@@ -57,15 +65,18 @@ def draw_point():
         gui.alert(text='Point index not found!', title='Map point', button='OK', timeout=box_timeout)
         # Retry the test in case of slow network connection
         retry_location_test(paths['point_index'], 'Map point')
+        result = 'Test Failed'
     else:
         time.sleep(0)
         gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
-
+        result = 'Test Completed'
+    test['Point Index test'] = result
+    write_to_config(test_config, 'test_results.yaml')
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-
+    return result
 
 def main():
     navigator_webpage()
