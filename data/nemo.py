@@ -37,7 +37,6 @@ class Nemo(Model):
         self._dataset = self.nc_data.dataset
         if not self._meta_only:
             self.time_variable = self.nc_data.time_variable
-            ## TODO: Figure out how to expose cached timestamps re: test_timestamps()
             self.timestamps = self.nc_data.timestamps
         return self
 

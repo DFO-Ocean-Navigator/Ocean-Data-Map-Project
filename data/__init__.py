@@ -7,33 +7,33 @@ from utils.decorators import hashable_lru
 
 @hashable_lru
 def open_dataset(dataset, **kwargs):
-    """
-    Opens a dataset.
+    """Open a dataset.
 
-    Determines the type of model the dataset is from and opens the appropriate
-    data object (Nemo, Mercator, Fvcom).
+    Creates a CalculatedData (derived from NetCDFData) instance to handle dataset file
+    access and calculation layer operations.
+    Then, determines the type of model the dataset is from and returns the appropriate
+    Model-derived instance (Nemo, Mercator, Fvcom) with the calculation layer instance
+    as an attribute.
 
-    Note: the returned dataset object will be LRU-cached internally so frequent calls
+    Note: the returned model object will be LRU-cached internally so frequent calls
     to open the "same" dataset will have minimal overhead.
 
     Params:
-        * dataset -- Either a string URL for the dataset, or a DatasetConfig object
+        * dataset -- Either a DatasetConfig object, or a string URL for the dataset
 
-    TODO: Not accurate - fix; see routes/api_v1_0.py:118 open_dataset(config, meta_only=True)
-    Required Keyword Arguments:
+    Optional Keyword Arguments:
         * variable {str or list} -- String or list of strings of variable keys to be loaded
             (e.g. 'votemper' or ['votemper', 'vosaline']).
         * timestamp {int} -- Integer value of date/time for requested data (e.g. 2128723200).
             When loading a range of timestamps, this argument serves as the starting time.
-
-    Optional Keywork Arguments:
         * endtime {int} -- Integer value of date/time. This argument is only used when
             loading a range of timestamps, and should hold the ending time.
         * nearest_timestamp {bool} -- When true, open_dataset will assume the given
             starttime (and endtime) do not exactly correspond to a timestamp integer
             in the dataset, and will perform a binary search to find the nearest timestamp
             that is less-than-or-equal-to the given starttime (and endtime).
-        * meta_only {bool} --
+        * meta_only {bool} -- Skip some dataset access operations in order to speed up
+            response.
     """
 
     if not dataset:
@@ -59,7 +59,6 @@ def open_dataset(dataset, **kwargs):
     except AttributeError:
         pass
 
-    ## TODO: Eventually we need to decide whether to create NetCDFData or future CSVData, GribData, S100Data
     nc_data = CalculatedData(url, **args)
     if not args["meta_only"]:
         # Get required NC files from database and add to args

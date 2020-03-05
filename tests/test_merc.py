@@ -198,7 +198,6 @@ class TestMercator(unittest.TestCase):
                 [0, 10, 25, 50, 100, 200, 500, 1000]
             )
             self.assertTrue(np.ma.is_masked(p[0]))
-            ## TODO: Need to verify these expected values
             self.assertAlmostEqual(p[1], 298.43, places=2)
             self.assertAlmostEqual(p[4], 294.37, places=2)
             self.assertAlmostEqual(p[7], 277.46, places=2)

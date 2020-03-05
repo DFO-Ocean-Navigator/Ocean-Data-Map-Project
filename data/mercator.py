@@ -33,7 +33,6 @@ class Mercator(Model):
 
         if not self._meta_only:
             self.time_variable = self.nc_data.time_variable
-            ## TODO: Figure out how to expose cached timestamps re: test_timestamps()
             self.timestamps = self.nc_data.timestamps
             if self.latvar is None:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
