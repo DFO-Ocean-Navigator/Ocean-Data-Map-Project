@@ -85,6 +85,35 @@ def retry_location_test(test_index, ui_test):
     gui.click(dimension['close_index'])
     time.sleep(.30)
 
+def test_profile(test_index, ui_test, location):
+    """
+
+    Function retries image location. There could
+    be cases where there is a slow internet connection
+    
+    Assumption, user ran the temperature bar test
+    so firefox and the navigator page are open.
+    """
+    result = None
+    gui.alert('Moving on...', 'Test', timeout=box_timeout)
+    time.sleep(.30)
+    move_et_click(location)
+    # Additional 5 seconds
+    time.sleep(10)
+    # Find expected plot
+    image_loc = gui.locateCenterOnScreen(
+        test_index, confidence=0.3, grayscale=True)
+
+    if image_loc is None:
+        gui.alert(text='Index failed time test!', title='{}'.format(ui_test), button='OK', timeout=box_timeout)
+        result = 'Test Failed'
+    else:
+        time.sleep(0)
+        gui.alert(text='UI test complete!', title='{}'.format(ui_test), button='Close', timeout=box_timeout)
+        result = 'Test Completed'
+    # Close index sub-tab
+    
+    return result
 
 def main():
     navigator_webpage()
