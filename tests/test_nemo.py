@@ -91,10 +91,6 @@ class TestNemo(unittest.TestCase):
 
             self.assertEqual(time_var.attrs["title"], "Time")
 
-    ## TODO: Need to write this test.
-    def test_get_path(self):
-        assert False
-
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:

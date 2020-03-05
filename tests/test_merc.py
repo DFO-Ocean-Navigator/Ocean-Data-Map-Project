@@ -97,10 +97,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(time_var.attrs["standard_name"], "time")
             self.assertEqual(time_var.attrs["long_name"], "Validity time")
 
-    ## TODO: Need to write this test.
-    def test_get_path(self):
-        assert False
-
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
