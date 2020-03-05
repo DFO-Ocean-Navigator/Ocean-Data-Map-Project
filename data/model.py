@@ -11,9 +11,7 @@ class Model(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, nc_data):
-        self.interp: str = nc_data.interp
-        self.radius: int = nc_data.radius
-        self.neighbours: int = nc_data.neighbours
+        self.nc_data = nc_data
 
     @property
     @abc.abstractmethod
@@ -52,9 +50,9 @@ class Model(metaclass=abc.ABCMeta):
         latitude = area[0, :].ravel()
         longitude = area[1, :].ravel()
 
-        self.interp = interp
-        self.radius = radius
-        self.neighbours = neighbours
+        self.nc_data.interp = interp
+        self.nc_data.radius = radius
+        self.nc_data.neighbours = neighbours
 
         if return_depth:
             a, d = self.get_point(

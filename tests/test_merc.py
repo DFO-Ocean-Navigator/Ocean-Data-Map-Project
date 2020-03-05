@@ -167,18 +167,17 @@ class TestMercator(unittest.TestCase):
                 )
             )
 
-            ## TODO: Need to figure out what expected values should be
             r = ds.get_area(a, 0, 2119651200, 'votemper', "gaussian", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 301.285, places=3)
+            self.assertAlmostEqual(r[5, 5], 300.619, places=3)
 
             r = ds.get_area(a, 0, 2119651200, 'votemper', "bilinear", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 301.269, places=3)
+            self.assertAlmostEqual(r[5, 5], 300.621, places=3)
 
             r = ds.get_area(a, 0, 2119651200, 'votemper', "nearest", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 301.28986, places=5)
+            self.assertAlmostEqual(r[5, 5], 300.6172, places=4)
 
             r = ds.get_area(a, 0, 2119651200, 'votemper', "inverse", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 301.2795, places=4)
+            self.assertAlmostEqual(r[5, 5], 300.6188, places=4)
 
     def test_get_path_profile(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
