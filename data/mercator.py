@@ -220,7 +220,7 @@ class Mercator(CalculatedData):
             indices = edges[1, 1, :]
 
             if hasattr(time, "__len__"):
-                data_in = var[time, :, miny:maxy, minx:maxx]
+                data_in = var[time, :, miny:maxy, minx:maxx].values
                 data_in = data_in.reshape(
                     [data_in.shape[0], data_in.shape[1], -1])
                 data = []
