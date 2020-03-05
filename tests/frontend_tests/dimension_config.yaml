@@ -1,4 +1,16 @@
 location:
+  CTD_Profile: !!python/tuple
+  - 221
+  - 237
+  Sound_Speed: !!python/tuple
+  - 472
+  - 237
+  T/S_Diagram: !!python/tuple
+  - 339
+  - 237
+  Virtual_Mooring: !!python/tuple
+  - 796
+  - 237
   close_index: !!python/tuple
   - 1096
   - 138

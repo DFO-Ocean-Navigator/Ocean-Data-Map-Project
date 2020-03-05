@@ -14,8 +14,8 @@ import time
 import yaml
 
 from dimension_config import (open_config, write_to_config)
-from utils import (navigator_webpage, 
-                      retry_location_test, move_et_click)
+from utils import (navigator_webpage, test_profile, 
+                   retry_location_test, move_et_click)
 
 
 #Open configuration file
@@ -29,11 +29,6 @@ address = config['web_addresses']
 sleep = 5
 plot_render_sleep = 10
 box_timeout = 2500
-
-# Open test configuration
-
-test_config = open_config('test_results.yaml')
-test = test_config['Test results']
 
 def draw_point():
     """
@@ -70,13 +65,19 @@ def draw_point():
         time.sleep(0)
         gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
         result = 'Test Completed'
-    test['Point Index test'] = result
-    write_to_config(test_config, 'test_results.yaml')
+
+    point_tests(paths['point_index'])
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
     return result
+
+def point_tests(test_compare):
+    ctd_profile = test_profile(test_compare, 'CTD Profile test', dimension['CTD_Profile'])
+    ts_diagram = test_profile(test_compare, 'T/S Diagram test', dimension['T/S_Diagram'])
+    sound_speed = test_profile(test_compare, 'sound Speed profile', dimension['Sound_Speed'])
+    virtual_mooring = test_profile(test_compare, 'Virtual_Mooring', dimension['Virtual_Mooring'])
 
 def main():
     navigator_webpage()
