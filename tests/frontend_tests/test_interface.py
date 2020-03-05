@@ -16,14 +16,16 @@ import time
 import yaml
 import utils
 
-from dimension_config import (open_config, exempt_tests)
+from dimension_config import (open_config, exempt_tests, write_to_config)
 from test_area_index import draw_area
 from test_line_index import draw_map
 from test_point_index import draw_point
 from test_temperature import find_temperature_bar
 
+# Open result log configuration file
 config_file = open_config('test_results.yaml')
 test = config_file['Test results']
+
 def construct_interface():
     """
 
@@ -40,10 +42,15 @@ def construct_interface():
                         ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
 
     def all():
-        find_temperature_bar()
-        draw_point()
-        draw_map()
-        draw_area()
+        temp_test = find_temperature_bar()
+        point_test = draw_point()
+        map_test = draw_map()
+        area_test = draw_area()
+        test['Temperature bar test'] = temp_test
+        test['Point Index test'] = point_test
+        test['Area Index test'] = area_test
+        test['Line Index test'] = map_test
+        write_to_config(config_file, 'test_results.yaml')
 
     if option == 'All':
         all()

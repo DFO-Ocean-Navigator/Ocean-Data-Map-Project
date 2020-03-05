@@ -91,9 +91,12 @@ def update_config_file(header=None, key=None, value=None):
     write_to_config(config)
 
 def main():
-    #update_config_file('location', 'map_icon', (696, 145))
+    update_config_file('location', 'CTD_Profile', (221, 237))
+    update_config_file('location', 'T/S_Diagram', (339, 237))
+    update_config_file('location', 'Sound_Speed', (472, 237))
+    update_config_file('location', 'Virtual_Mooring', (796, 237))
     #result_config()
-    exempt_tests()
+    #exempt_tests()
 
 if '__main__' == __name__:
     main()

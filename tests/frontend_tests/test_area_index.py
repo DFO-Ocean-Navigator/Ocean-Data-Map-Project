@@ -25,11 +25,6 @@ dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
 
-# Open test configuration
-
-test_config = open_config('test_results.yaml')
-test = test_config['Test results']
-
 # Set default sleep time
 sleep = 5
 plot_render_sleep = 10
@@ -84,13 +79,11 @@ def draw_area():
         result = 'Test Failed'
     else:
         gui.alert(text='Area UI test complete!', title='UI test', button='Close', timeout=box_timeout)
-        result = 'Test Complete'
+        result = 'Test Completed'
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-    test['Area Index test'] = result
-    write_to_config(test_config, 'test_results.yaml')
     return result
 
 

@@ -29,11 +29,6 @@ sleep = 5
 plot_render_sleep = 10
 box_timeout = 2500
 
-# Open test configuration
-
-test_config = open_config('test_results.yaml')
-test = test_config['Test results']
-
 def find_temperature_bar():
     """
 
@@ -57,8 +52,6 @@ def find_temperature_bar():
         gui.click(button='right', x=image_loc.x, y=image_loc.y)
         gui.alert(text='Temperature bar check complete!', title='Temperature bar', button='Close', timeout=box_timeout)
         result = 'Test Completed'
-    test['Temperature test'] = result
-    write_to_config(test_config, 'test_results.yaml')
     return result
 
 def main():
