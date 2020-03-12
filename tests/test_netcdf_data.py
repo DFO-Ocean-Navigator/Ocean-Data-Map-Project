@@ -123,7 +123,6 @@ class TestNetCDFData(unittest.TestCase):
             date_formatted = nc_data.convert_to_timestamp(
                 "2014-05-17T00:00:00Z, 2014-06-16T12:00:00Z"
             )
-            ## TODO: Should there really be a leading space???
             expected = {" 2014-06-16T12:00:00Z": 1, "2014-05-17T00:00:00Z": 0}
             self.assertEqual(date_formatted, expected)
 
