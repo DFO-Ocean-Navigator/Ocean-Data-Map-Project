@@ -67,6 +67,6 @@ def open_dataset(dataset, **kwargs):
 
     if 'longitude' in dimension_list or 'latitude' in dimension_list:
         return Mercator(nc_data)
-    elif 'siglay' in dimension_list:
+    if 'siglay' in dimension_list:
         return Fvcom(nc_data)
     return Nemo(nc_data)
