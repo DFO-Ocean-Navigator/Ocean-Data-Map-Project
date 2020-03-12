@@ -33,12 +33,11 @@ def navigator_webpage():
     *reduce duplicated codes. 
     
     """
-    # Find the firefox pin in task bar
-    gui.moveTo(dimension['firefox_icon'])
-    #Right click for a new window
-    gui.click(button='right')
-    gui.moveTo(dimension['new_firefox_window'])
-    gui.click()
+    # Start firefox
+    gui.press('winleft')
+    time.sleep(1)
+    gui.typewrite('firefox', interval=0.08)
+    gui.press('enter')
     time.sleep(sleep)
     # Go to Firefox search
     gui.moveTo(dimension['firefox_search'])
@@ -85,7 +84,7 @@ def retry_location_test(test_index, ui_test):
     gui.click(dimension['close_index'])
     time.sleep(.30)
 
-def test_profile(test_index, ui_test, location):
+def test_profile(test_index, ui_test, location, log):
     """
 
     Function retries image location. There could
@@ -106,13 +105,13 @@ def test_profile(test_index, ui_test, location):
 
     if image_loc is None:
         gui.alert(text='Index failed time test!', title='{}'.format(ui_test), button='OK', timeout=box_timeout)
-        result = 'Test Failed'
+        result = 'Index failed time(10 seconds) test'
     else:
         time.sleep(0)
         gui.alert(text='UI test complete!', title='{}'.format(ui_test), button='Close', timeout=box_timeout)
         result = 'Test Completed'
     # Close index sub-tab
-    
+    log[ui_test] = result
     return result
 
 def main():

@@ -25,6 +25,13 @@ dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
 
+# Results
+
+line_index_results = {
+    'Profile' : None,
+    'Hovmoller Diagram test' : None,
+}
+
 # Set default sleep time
 sleep = 5
 plot_render_sleep = 10
@@ -76,16 +83,18 @@ def draw_map():
         gui.alert(text='Line UI test complete!', title='UI test', button='Close', timeout=box_timeout)
         result = 'Test Completed'
 
+    line_index_results['Profile'] = result
     #Hovmoller Diagram test
-    point_tests(paths['line_index'])
+    point_tests(paths['line_index'], line_index_results)
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-    return result
+    return line_index_results
 
-def point_tests(test_compare):
-    hovmoller_diagram = test_profile(test_compare, 'Hovmoller Diagram test', dimension['CTD_Profile'])
+def point_tests(test_compare, log):
+    hovmoller_diagram = test_profile(test_compare, 
+                        'Hovmoller Diagram test', dimension['CTD_Profile'], log)
 
 
 def main():

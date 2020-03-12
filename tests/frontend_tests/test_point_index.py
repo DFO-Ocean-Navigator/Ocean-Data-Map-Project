@@ -24,6 +24,13 @@ config = open_config()
 dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
+point_index_results = {
+    'Profile' : None,
+    'CTD Profile test' : None,
+    'T/S Diagram test' : None,
+    'Sound Speed profile' : None,
+    'Virtual_Mooring' : None
+}
 
 # Set default sleep time
 sleep = 5
@@ -65,19 +72,20 @@ def draw_point():
         time.sleep(0)
         gui.alert(text='Point UI test complete!', title='Map point', button='Close', timeout=box_timeout)
         result = 'Test Completed'
-
-    point_tests(paths['point_index'])
+    point_index_results['Profile'] = result
+    point_tests(paths['point_index'], point_index_results)
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-    return result
+    return point_index_results
 
-def point_tests(test_compare):
-    ctd_profile = test_profile(test_compare, 'CTD Profile test', dimension['CTD_Profile'])
-    ts_diagram = test_profile(test_compare, 'T/S Diagram test', dimension['T/S_Diagram'])
-    sound_speed = test_profile(test_compare, 'sound Speed profile', dimension['Sound_Speed'])
-    virtual_mooring = test_profile(test_compare, 'Virtual_Mooring', dimension['Virtual_Mooring'])
+def point_tests(test_compare, log):
+    ctd_profile = test_profile(test_compare, 'CTD Profile test', dimension['CTD_Profile'], log)
+    ts_diagram = test_profile(test_compare, 'T/S Diagram test', dimension['T/S_Diagram'], log)
+    sound_speed = test_profile(test_compare, 'Sound Speed profile', dimension['Sound_Speed'], log)
+    virtual_mooring = test_profile(test_compare, 'Virtual_Mooring', dimension['Virtual_Mooring'], log)
+    
 
 def main():
     navigator_webpage()
