@@ -341,8 +341,7 @@ class Fvcom(Model):
                 dep = res_d[depth]
 
             return res, dep
-        else:
-            return res
+        return res
 
     def __get_depths(self, variable, timestamp, min_i, max_i):
         var = self.nc_data.get_dataset_variable(variable)
