@@ -312,7 +312,7 @@ def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: 
     **All Components Must be Included**
     """
 
-    
+
     config = DatasetConfig(dataset)
     with open_dataset(config) as ds:
         date = ds.convert_to_timestamp(time)
@@ -333,7 +333,7 @@ def class4_query_v1_0(q: str, class4_id: str):
     <string:q>         : forecasts / models (Data Request)
     <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
 
-    Returns a list of class4 datapoints for a given day 
+    Returns a list of class4 datapoints for a given day
     """
 
     if not class4_id:
@@ -411,9 +411,9 @@ def stats_v1_0():
                     "A Query must be specified in the form /stats/?query='...' ")
             # Retrieves Query as JSON based on Request Method
             query = json.loads(args.get('query'))
-    
+
         dataset = query.get('dataset')  # Retrieves dataset from query
-    
+
         data = areastats(dataset, query)
         return Response(data, status=200, mimetype='application/json')
 
@@ -434,7 +434,7 @@ def subset_query_v1_0():
     time_range = args['time'].split(',')
     variables = args['variables'].split(',')
     with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
-        working_dir, subset_filename = dataset.subset(args)
+        working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
@@ -669,7 +669,7 @@ def query_id_v1_0(q: str, q_id: str):
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
 
     <string:q>    : Type of Data (areas, class4, drifters, observation)
-    <string:q_id> : 
+    <string:q_id> :
 
     """
     if q == 'areas':
@@ -698,7 +698,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
-    <string:file_id>    : 
+    <string:file_id>    :
 
     **All components must be included**
     **Used Primarily by WebPage**
@@ -895,7 +895,7 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
-        
+
     img = plotting.tile.bathymetry(projection, x, y, zoom, {})
     return _cache_and_send_img(img, f)
 
