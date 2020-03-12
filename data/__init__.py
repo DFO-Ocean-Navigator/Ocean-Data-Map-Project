@@ -63,7 +63,7 @@ def open_dataset(dataset, **kwargs):
 
     dimension_list = nc_data.dimensions
     if not dimension_list:
-        raise RuntimeError("Dataset not supported: %s." % url)
+        raise RuntimeError(f"Dataset not supported: {url}.")
 
     if 'longitude' in dimension_list or 'latitude' in dimension_list:
         return Mercator(nc_data)
