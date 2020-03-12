@@ -25,6 +25,13 @@ dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
 
+# Results
+
+area_index_results = {
+    'Profile' : None,
+    'Statistics' : 'Not tested',
+}
+
 # Set default sleep time
 sleep = 5
 plot_render_sleep = 10
@@ -80,11 +87,13 @@ def draw_area():
     else:
         gui.alert(text='Area UI test complete!', title='UI test', button='Close', timeout=box_timeout)
         result = 'Test Completed'
+    
+    area_index_results['Profile'] = result
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-    return result
+    return area_index_results
 
 
 def main():
