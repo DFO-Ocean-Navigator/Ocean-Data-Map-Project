@@ -123,7 +123,7 @@ class NetCDFData(Data):
 
     def timestamp_to_iso_8601(self, timestamp: Union[int, List]):
         """Converts a given timestamp (e.g. 2031436800) or list of timestamps
-        into the corresponding time index(es) for the time dimension.
+        into corresponding ISO-8601 formatted datetime(s).
 
         Arguments:
             timestamp {int or list} -- Raw timestamp(s).
@@ -139,7 +139,7 @@ class NetCDFData(Data):
         return result if len(result) > 1 else result[0]
 
     def convert_to_timestamp(self, date: str):
-        """ Converts ISO 8601 Extended date, to the corresponding dataset time index.
+        """Converts ISO 8601 Extended date, to the corresponding dataset time index.
         """
 
         # Time is in ISO 8601 Extended format
