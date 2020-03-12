@@ -215,7 +215,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_subset_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -226,7 +226,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_map_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -238,7 +238,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_transect_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -288,7 +288,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_profile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -419,7 +419,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_tile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
