@@ -101,8 +101,7 @@ class NetCDFData(Data):
                 return self.dataset.variables[c]
             except KeyError:
                 continue
-        else:
-            raise KeyError(f"None of {candidates} were found in {self.dataset}")
+        raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
     def timestamp_to_time_index(self, timestamp: Union[int, List]):
         """Converts a given timestamp (e.g. 2031436800) or list of timestamps
