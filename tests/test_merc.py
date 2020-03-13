@@ -38,7 +38,6 @@ class TestMercator(unittest.TestCase):
     def test_open_not_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
-            self.assertIsNotNone(ds.timestamps)
             self.assertIsNotNone(ds.latvar)
             self.assertIsNotNone(ds.lonvar)
 
@@ -132,17 +131,6 @@ class TestMercator(unittest.TestCase):
                 ds.get_point(13.01, -149.0, 'bottom', 2119651200, 'votemper'),
                 273.95, places=2
             )
-
-    def test_timestamps(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            self.assertEqual(len(ds.timestamps), 1)
-            self.assertEqual(ds.timestamps[0],
-                             datetime.datetime(2017, 3, 3, 0, 0, 0, 0,
-                                               pytz.UTC))
-            # List is immutable
-            with self.assertRaises(ValueError):
-                ds.timestamps[0] = 0
 
     def test_get_area(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')

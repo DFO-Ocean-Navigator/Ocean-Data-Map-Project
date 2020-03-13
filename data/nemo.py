@@ -26,16 +26,12 @@ class Nemo(Model):
         self.__lonsort = None
         self.nc_data = nc_data
         self._dataset = nc_data.dataset
-        self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
         self.timestamp_to_time_index = nc_data.timestamp_to_time_index
-        self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
         self._dataset = self.nc_data.dataset
-        if not self._meta_only:
-            self.timestamps = self.nc_data.timestamps
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

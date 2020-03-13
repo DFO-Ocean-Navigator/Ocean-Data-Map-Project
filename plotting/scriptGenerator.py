@@ -20,7 +20,7 @@ def time_query_conversion(dataset, index):
     config = DatasetConfig(dataset)
     with open_dataset(config) as ds:
         try:
-            date = ds.timestamps[index]
+            date = ds.nc_data.timestamps[index]
             return date.replace(tzinfo=pytz.UTC).isoformat()
         except IndexError:
             return ClientError("Timestamp does not exist")

@@ -24,14 +24,12 @@ class Mercator(Model):
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
         self.timestamp_to_time_index = nc_data.timestamp_to_time_index
-        self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
         self._dataset = self.nc_data.dataset
 
         if not self._meta_only:
-            self.timestamps = self.nc_data.timestamps
             if self.latvar is None:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
 

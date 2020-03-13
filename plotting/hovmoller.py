@@ -162,7 +162,7 @@ class HovmollerPlotter(LinePlotter):
 
                 self.compare['variable_unit'] = variable_units[0]
                 self.compare['data'] = value
-                self.compare['times'] = dataset.timestamps[self.compare['starttime']                                                           : self.compare['endtime'] + 1]
+                self.compare['times'] = dataset.nc_data.timestamps[self.compare['starttime']: self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(
                     self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()

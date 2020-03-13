@@ -426,8 +426,8 @@ class Plotter(metaclass=ABCMeta):
         return output
 
     def fix_startend_times(self, dataset, starttime, endtime):
-        starttime = np.clip(starttime, 0, len(dataset.timestamps) - 1)
-        endtime = np.clip(endtime, 0, len(dataset.timestamps) - 1)
+        starttime = np.clip(starttime, 0, len(dataset.nc_data.timestamps) - 1)
+        endtime = np.clip(endtime, 0, len(dataset.nc_data.timestamps) - 1)
 
         if starttime > endtime:
             starttime = endtime - 1
