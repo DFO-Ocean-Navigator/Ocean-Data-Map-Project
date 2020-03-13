@@ -29,14 +29,12 @@ class Nemo(Model):
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
         self.timestamp_to_time_index = nc_data.timestamp_to_time_index
-        self.time_variable = None
         self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
         self._dataset = self.nc_data.dataset
         if not self._meta_only:
-            self.time_variable = self.nc_data.time_variable
             self.timestamps = self.nc_data.timestamps
         return self
 

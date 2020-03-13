@@ -30,7 +30,6 @@ class Fvcom(Model):
         super().__init__(nc_data)
         self.nc_data = nc_data
         self.variables = nc_data.variables
-        self.time_variable = None
         self._kdt: KDTree = [None, None]
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
 
@@ -63,7 +62,7 @@ class Fvcom(Model):
             [int] -- Time index.
         """
 
-        time_var = self.time_variable
+        time_var = self.nc_data.time_variable
 
         # https: // stackoverflow.com/a/41022847/2231969
         # We use 1.e-7 since the default 1.e-5 doesn't provide enough precision

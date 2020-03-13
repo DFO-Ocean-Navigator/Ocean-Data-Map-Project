@@ -38,7 +38,6 @@ class TestNemo(unittest.TestCase):
     def test_open_not_meta_only(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
-            self.assertIsNotNone(ds.time_variable)
             self.assertIsNotNone(ds.timestamps)
 
     def test_depths(self):
@@ -83,13 +82,6 @@ class TestNemo(unittest.TestCase):
             idx = ds.timestamp_to_time_index(2031436800)
 
             self.assertEqual(idx, 0)
-
-    def test_time_variable(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            time_var = ds.time_variable
-
-            self.assertEqual(time_var.attrs["title"], "Time")
 
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')

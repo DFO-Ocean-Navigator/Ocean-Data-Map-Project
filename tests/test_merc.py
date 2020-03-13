@@ -38,7 +38,6 @@ class TestMercator(unittest.TestCase):
     def test_open_not_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
-            self.assertIsNotNone(ds.time_variable)
             self.assertIsNotNone(ds.timestamps)
             self.assertIsNotNone(ds.latvar)
             self.assertIsNotNone(ds.lonvar)
@@ -88,14 +87,6 @@ class TestMercator(unittest.TestCase):
             idx = ds.timestamp_to_time_index(2119651200)
 
             self.assertEqual(idx, 0)
-
-    def test_time_variable(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            time_var = ds.time_variable
-
-            self.assertEqual(time_var.attrs["standard_name"], "time")
-            self.assertEqual(time_var.attrs["long_name"], "Validity time")
 
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
