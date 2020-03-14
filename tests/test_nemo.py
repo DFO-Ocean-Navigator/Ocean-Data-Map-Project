@@ -22,8 +22,6 @@ class TestNemo(unittest.TestCase):
     def test_init(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         ds = Nemo(nc_data)
-        self.assertIsNone(ds.latvar)
-        self.assertIsNone(ds.lonvar)
         self.assertIs(ds.nc_data, nc_data)
         self.assertEqual(ds.variables, nc_data.variables)
 

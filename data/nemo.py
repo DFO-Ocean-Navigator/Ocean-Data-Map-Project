@@ -20,10 +20,6 @@ class Nemo(Model):
 
     def __init__(self, nc_data: Union[CalculatedData, NetCDFData]) -> None:
         super().__init__(nc_data)
-        self.latvar = None
-        self.lonvar = None
-        self.__latsort = None
-        self.__lonsort = None
         self.nc_data = nc_data
         self.variables = nc_data.variables
 
