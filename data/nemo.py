@@ -27,7 +27,6 @@ class Nemo(Model):
         self.nc_data = nc_data
         self._dataset = nc_data.dataset
         self.variables = nc_data.variables
-        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
 
     def __enter__(self):
         self.nc_data.__enter__()
@@ -213,7 +212,7 @@ class Nemo(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -268,7 +267,7 @@ class Nemo(Model):
         # Get xarray.Variable
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
 
         if depth == 'bottom':
@@ -354,7 +353,7 @@ class Nemo(Model):
             raise APIError(
                 "This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
 
-        time_index = self.timestamp_to_time_index(timestamp)
+        time_index = self.nc_data.timestamp_to_time_index(timestamp)
 
         latvar, lonvar = self.__latlon_vars(variable)
 

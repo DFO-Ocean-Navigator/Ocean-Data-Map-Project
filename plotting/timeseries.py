@@ -109,8 +109,8 @@ class TimeseriesPlotter(PointPlotter):
                 if factor != 1.0:
                     point_data[idx] = np.multiply(point_data[idx], factor)
 
-            starttime_idx = dataset.timestamp_to_time_index(self.starttime)
-            endtime_idx = dataset.timestamp_to_time_index(self.endtime)
+            starttime_idx = dataset.nc_data.timestamp_to_time_index(self.starttime)
+            endtime_idx = dataset.nc_data.timestamp_to_time_index(self.endtime)
             times = dataset.nc_data.timestamps[starttime_idx: endtime_idx + 1]
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]

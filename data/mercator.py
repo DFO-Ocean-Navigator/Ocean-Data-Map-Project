@@ -23,7 +23,6 @@ class Mercator(Model):
         self._dataset = nc_data.dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
-        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
 
     def __enter__(self):
         self.nc_data.__enter__()
@@ -167,7 +166,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -222,7 +221,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -312,7 +311,7 @@ class Mercator(Model):
         if len(var.shape) != 4:
             raise APIError("This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)

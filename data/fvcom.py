@@ -274,7 +274,7 @@ class Fvcom(Model):
             longitude = np.array([longitude])
 
         var = self.nc_data.get_dataset_variable(variable)
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
         if depth == 'bottom':
@@ -294,7 +294,7 @@ class Fvcom(Model):
     def get_point(self, latitude, longitude, depth, timestamp, variable,
                   return_depth=False):
         var = self.nc_data.get_dataset_variable(variable)
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
         min_i, max_i, radius = self.__bounding_box(
@@ -344,7 +344,7 @@ class Fvcom(Model):
 
     def __get_depths(self, variable, timestamp, min_i, max_i):
         var = self.nc_data.get_dataset_variable(variable)
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if 'nele' in var.dimensions:
             # First, find indicies to cover the nodes
@@ -410,7 +410,7 @@ class Fvcom(Model):
 
     def get_profile(self, latitude, longitude, timestamp, variable):
         latvar, lonvar = self.__latlon_vars(variable)
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         min_i, max_i, radius = self.__bounding_box(
             latitude, longitude,

@@ -28,7 +28,6 @@ class TestMercator(unittest.TestCase):
         self.assertIs(ds._dataset, nc_data.dataset)
         self.assertIs(ds._meta_only, nc_data.meta_only)
         self.assertEqual(ds.variables, nc_data.variables)
-        self.assertEqual(ds.timestamp_to_time_index, nc_data.timestamp_to_time_index)
 
     def test_open_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc', **{"meta_only": True})
@@ -79,13 +78,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(variables['votemper'].unit, 'Kelvin')
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ['time', 'depth', 'latitude', 'longitude']))
-
-    def test_timestamp_to_time_index(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            idx = ds.timestamp_to_time_index(2119651200)
-
-            self.assertEqual(idx, 0)
 
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
