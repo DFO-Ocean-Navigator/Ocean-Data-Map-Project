@@ -61,7 +61,7 @@ class Mercator(Model):
 
     def __bounding_box(self, lat, lon, n=10):
 
-        y, x, _ = find_nearest_grid_point(lat, lon, self.nc_data.dataset, self.latvar, self.lonvar, n)
+        y, x, _ = find_nearest_grid_point(lat, lon, self.latvar, self.lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)

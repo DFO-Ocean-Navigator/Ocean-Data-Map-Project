@@ -58,7 +58,7 @@ class Nemo(Model):
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
         """Computes and returns points bounding lat, lon.
         """
-        y, x, d = find_nearest_grid_point(lat, lon, self.nc_data.dataset, latvar, lonvar, n)
+        y, x, d = find_nearest_grid_point(lat, lon, latvar, lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
