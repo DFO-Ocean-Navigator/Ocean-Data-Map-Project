@@ -20,13 +20,11 @@ class Mercator(Model):
         self.latvar = None
         self.lonvar = None
         self.nc_data = nc_data
-        self._dataset = nc_data.dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
 
     def __enter__(self):
         self.nc_data.__enter__()
-        self._dataset = self.nc_data.dataset
 
         if not self._meta_only:
             if self.latvar is None:
@@ -45,7 +43,7 @@ class Mercator(Model):
             var = None
             for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in self._dataset.coords.keys():
+                if v in self.nc_data.dataset.coords:
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
@@ -63,7 +61,7 @@ class Mercator(Model):
 
     def __bounding_box(self, lat, lon, n=10):
 
-        y, x, _ = find_nearest_grid_point(lat, lon, self._dataset, self.latvar, self.lonvar, n)
+        y, x, _ = find_nearest_grid_point(lat, lon, self.nc_data.dataset, self.latvar, self.lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)

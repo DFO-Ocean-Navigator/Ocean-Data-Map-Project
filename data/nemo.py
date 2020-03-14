@@ -25,12 +25,10 @@ class Nemo(Model):
         self.__latsort = None
         self.__lonsort = None
         self.nc_data = nc_data
-        self._dataset = nc_data.dataset
         self.variables = nc_data.variables
 
     def __enter__(self):
         self.nc_data.__enter__()
-        self._dataset = self.nc_data.dataset
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -45,7 +43,7 @@ class Nemo(Model):
             # Look through possible dimension names
             for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in self._dataset.coords.keys():
+                if v in self.nc_data.dataset.coords:
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
@@ -64,7 +62,7 @@ class Nemo(Model):
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
         """Computes and returns points bounding lat, lon.
         """
-        y, x, d = find_nearest_grid_point(lat, lon, self._dataset, latvar, lonvar, n)
+        y, x, d = find_nearest_grid_point(lat, lon, self.nc_data.dataset, latvar, lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -171,11 +169,11 @@ class Nemo(Model):
                 if p[0] in coordinates:
                     return (
                         self.nc_data.get_dataset_variable(p[0]),
-                        self.nc_data.get_dataset_variable(p[1]) # Check this
+                        self.nc_data.get_dataset_variable(p[1])  # Check this
                     )
         else:
             for p in pairs:
-                if p[0] in self._dataset.variables:
+                if p[0] in self.nc_data.dataset.variables:
                     return (
                         self.nc_data.get_dataset_variable(p[0]),
                         self.nc_data.get_dataset_variable(p[1])

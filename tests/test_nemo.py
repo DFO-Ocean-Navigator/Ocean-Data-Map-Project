@@ -25,13 +25,7 @@ class TestNemo(unittest.TestCase):
         self.assertIsNone(ds.latvar)
         self.assertIsNone(ds.lonvar)
         self.assertIs(ds.nc_data, nc_data)
-        self.assertIs(ds._dataset, nc_data.dataset)
         self.assertEqual(ds.variables, nc_data.variables)
-
-    def test_enter(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            self.assertIs(ds._dataset, nc_data.dataset)
 
     def test_depths(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
