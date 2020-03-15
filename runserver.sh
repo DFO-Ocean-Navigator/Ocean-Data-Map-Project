@@ -6,6 +6,6 @@
 
 [[ x"$1" == x"" ]] && PORT=5000 || PORT=$1
 
-NUMBER_PROCS=$(cat /proc/cpuinfo | awk /processor/'{processor++} END {print processor}')
+NUMBER_PROCS=$(awk /processor/'{processor++} END {print processor}' < /proc/cpuinfo)
 
 gunicorn -w $((NUMBER_PROCS)) -t 300 --graceful-timeout 300 --preload -b 0.0.0.0:$((PORT)) --reload "oceannavigator:create_app()" $2
