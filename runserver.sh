@@ -5,4 +5,7 @@
 #                                       Argument not required.
 
 [[ x"$1" == x"" ]] && PORT=5000 || PORT=$1
-gunicorn -w 4 -t 90 --graceful-timeout 90 --preload -b 0.0.0.0:$((PORT)) --reload "oceannavigator:create_app()" $2
+
+NUMBER_PROCS=$(cat /proc/cpuinfo | awk /processor/'{processor++} END {print processor}')
+
+gunicorn -w $((NUMBER_PROCS)) -t 300 --graceful-timeout 300 --preload -b 0.0.0.0:$((PORT)) --reload "oceannavigator:create_app()" $2
