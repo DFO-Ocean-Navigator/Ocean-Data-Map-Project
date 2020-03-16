@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 import datetime
 import os
-import re
+import sqlite3
 import uuid
 import warnings
 import zipfile
+from typing import List, Dict, Union
 
-import cftime
 import dateutil.parser
 import geopy
 import netCDF4
@@ -15,57 +13,68 @@ import numpy as np
 import pandas
 import pint
 import pyresample
-import xarray as xr
+import xarray
+import xarray.core.variable
 from cachetools import TTLCache
 from flask_babel import format_date
 
 import data.calculated
+import data.utils
 from data.data import Data
 from data.nearest_grid_point import find_nearest_grid_point
 from data.sqlite_database import SQLiteDatabase
-from data.utils import time_index_to_datetime
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
-from utils.errors import ServerError
 
 
 class NetCDFData(Data):
     """Handles reading of netcdf files.
-        Parent class of Nemo, Mercator, and Fvcom classes.
+
+       Injected as attribute into Model classes like Nemo, Mercator, Fvcom.
     """
 
-    def __init__(self, url: str, **kwargs):
-        self._dataset: [xr.core.dataset.Dataset, netCDF4.Dataset] = None
+    def __init__(self, url: str, **kwargs: Dict) -> None:
+        super().__init__(url)
+        self.meta_only: bool = kwargs.get('meta_only', False)
+        self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._nc_files: list = kwargs.get('nc_files')
-        self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url')
-        self._time_variable: xr.IndexVariable = None
-        self._meta_only: bool = kwargs.get('meta_only', False)
+        self._nc_files: list = []
+        self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url', "")
+        self._time_variable: xarray.IndexVariable = None
         self._dataset_open: bool = False
-        self._dataset_key: str = kwargs.get('dataset_key')
-        self._dataset_config: DatasetConfig = DatasetConfig(
-            self._dataset_key) if self._dataset_key else None
-
-        super(NetCDFData, self).__init__(url)
+        self._dataset_key: str = kwargs.get('dataset_key', "")
+        self._dataset_config: DatasetConfig = (
+            DatasetConfig(self._dataset_key) if self._dataset_key else None
+        )
 
     def __enter__(self):
-        if not self._meta_only:
+        if not self.meta_only:
             # Don't decode times since we do it anyways.
             decode_times = False
 
             if self._nc_files:
-                self._dataset = xr.open_mfdataset(
-                    self._nc_files, decode_times=decode_times)
+                try:
+                    self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
+                except xarray.core.variable.MissingDimensionsError:
+                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                    # duplication issue, so fall back to using netCDF4.Dataset()
+                    self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
-                self._dataset = xr.open_dataset(
-                    self.url, decode_times=decode_times)
+                try:
+                    self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                except xarray.core.variable.MissingDimensionsError:
+                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                    # duplication issue, so fall back to using netCDF4.Dataset()
+                    self.dataset = netCDF4.Dataset(self.url)
 
             if self._grid_angle_file_url:
-                angle_file = xr.open_mfdataset(
-                    self._grid_angle_file_url, drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key])
-                self._dataset = self._dataset.merge(angle_file)
+                angle_file = xarray.open_mfdataset(
+                    self._grid_angle_file_url,
+                    drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+                )
+                self.dataset = self.dataset.merge(angle_file)
                 angle_file.close()
 
             self._dataset_open = True
@@ -74,11 +83,8 @@ class NetCDFData(Data):
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self._dataset_open:
-            self._dataset.close()
+            self.dataset.close()
             self._dataset_open = False
-
-    def __resample(self, lat_in, lon_in, lat_out, lon_out, var):
-        pass
 
     def __find_variable(self, candidates: list):
         """Finds a matching variable in the dataset given a list
@@ -91,21 +97,21 @@ class NetCDFData(Data):
             xArray.DataArray -- the corresponding variable's DataArray
         """
         for c in candidates:
-            if c in self._dataset.variables.keys():
-                return self._dataset.variables[c]
+            try:
+                return self.dataset.variables[c]
+            except KeyError:
+                continue
+        raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
-        raise KeyError("None of ", candidates,
-                       " were found in ", self._dataset)
-
-    def timestamp_to_time_index(self, timestamp):
-        """Converts a given timestamp (e.g. 2031436800) into the corresponding
-        time index(es) for the time dimension.
+    def timestamp_to_time_index(self, timestamp: Union[int, List]):
+        """Converts a given timestamp (e.g. 2031436800) or list of timestamps
+        into the corresponding time index(es) for the time dimension.
 
         Arguments:
             timestamp {int or list} -- Raw timestamp(s).
 
         Returns:
-            [int or list] -- Time index(es).
+            [int or ndarray] -- Time index(es).
         """
 
         time_var = self.time_variable.astype(np.int)
@@ -114,19 +120,26 @@ class NetCDFData(Data):
 
         return result if result.shape[0] > 1 else result[0]
 
-    def timestamp_to_iso_8601(self, timestamp):
+    def timestamp_to_iso_8601(self, timestamp: Union[int, List]):
+        """Converts a given timestamp (e.g. 2031436800) or list of timestamps
+        into corresponding ISO-8601 formatted datetime(s).
+
+        Arguments:
+            timestamp {int or list} -- Raw timestamp(s).
+
+        Returns:
+            [int or list] -- Time index(es).
+        """
 
         time_var = self.time_variable
 
-        result = time_index_to_datetime(timestamp, time_var.attrs['units'])
+        result = data.utils.time_index_to_datetime(timestamp, time_var.attrs['units'])
 
         return result if len(result) > 1 else result[0]
 
-    """
-        Converts ISO 8601 Extended date, to the corresponding dataset time index
-    """
-
     def convert_to_timestamp(self, date: str):
+        """Converts ISO 8601 Extended date, to the corresponding dataset time index.
+        """
 
         # Time is in ISO 8601 Extended format
         # Get time index from dataset
@@ -149,12 +162,10 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
 
-    """
-        Subsets a netcdf file with all depths
-    """
 
     def subset(self, query):
-
+        """ Subsets a netcdf file with all depths
+        """
         # Ensure we have an output folder that will be cleaned by tmpreaper
         if not os.path.isdir("/tmp/subset"):
             os.makedirs("/tmp/subset")
@@ -213,25 +224,25 @@ class NetCDFData(Data):
             return None
 
         # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", list(self._dataset.variables.keys()))
-        lon_var = find_variable("lon", list(self._dataset.variables.keys()))
+        lat_var = find_variable("lat", list(self.dataset.variables.keys()))
+        lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable(
-            "depth", list(self._dataset.variables.keys()))
+            "depth", list(self.dataset.variables.keys()))
 
         # self.get_dataset_variable should be used below instead of
-        # self._dataset.variables[...] because self._dataset.variables[...]
+        # self.dataset.variables[...] because self.dataset.variables[...]
         # will go directly to the underlying dataset and will not handle
         # calculated variables.
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self._dataset,
+                bottom_left[0], bottom_left[1], self.dataset,
                 self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self._dataset, self.get_dataset_variable(
+                top_right[0], top_right[1], self.dataset, self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
 
@@ -253,7 +264,7 @@ class NetCDFData(Data):
             p1 = geopy.Point([85.0, 180.0])
 
         # Get timestamp
-        time_var = find_variable("time", list(self._dataset.variables.keys()))
+        time_var = find_variable("time", list(self.dataset.variables.keys()))
         timestamp = str(format_date(pandas.to_datetime(np.float64(
             self.get_dataset_variable(time_var)[time_range[0]].values)), "yyyyMMdd"))
         endtimestamp = ""
@@ -266,7 +277,7 @@ class NetCDFData(Data):
         lon_coord = self._dataset_config.lon_var_key
 
         # Do subset along coordinates
-        subset = self._dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
+        subset = self.dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
 
         # Select requested time (time range if applicable)
         if apply_time_range:
@@ -488,12 +499,10 @@ class NetCDFData(Data):
 
         return working_dir, filename+".nc"
 
-    """
-        Interpolates data given input and output definitions
-        and the selected interpolation algorithm.
-    """
-
-    def _interpolate(self, input_def, output_def, data):
+    def interpolate(self, input_def, output_def, data):
+        """ Interpolates data given input and output definitions
+            and the selected interpolation algorithm.
+        """
 
         # Ignore pyresample warnings
         with warnings.catch_warnings():
@@ -545,7 +554,7 @@ class NetCDFData(Data):
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing
-            the time dimension in self._dataset
+            the time dimension in self.dataset
         """
 
         if self._time_variable is not None:
@@ -560,7 +569,7 @@ class NetCDFData(Data):
         """Finds the lat and lon variable arrays in the dataset.
 
         Returns:
-            list -- list containing the xarray.DataArray's for latitude and 
+            list -- list containing the xarray.DataArray's for latitude and
             longitude.
         """
         return (
@@ -569,7 +578,27 @@ class NetCDFData(Data):
         )
 
     @property
-    def depth_dimensions(self):
+    def dimensions(self) -> List[str]:
+        """Return a list of the dimensions in the dataset.
+        """
+        if self.url.endswith(".sqlite3"):
+            try:
+                with SQLiteDatabase(self.url) as db:
+                    dimension_list = db.get_all_dimensions()
+            except sqlite3.OperationalError:
+                pass
+            return dimension_list
+
+        # Open dataset (can't use xarray here since it doesn't like FVCOM files)
+        try:
+            with netCDF4.Dataset(self.url) as ds:
+                dimension_list = [dim for dim in ds.dimensions]
+        except FileNotFoundError:
+            dimension_list = []
+        return dimension_list
+
+    @property
+    def depth_dimensions(self) -> List[str]:
         """
         Returns the possible names of the depth dimension in the dataset
         """
@@ -580,11 +609,11 @@ class NetCDFData(Data):
         """
         Returns the value of a given variable name from the dataset
         """
-        return self._dataset.variables[key]
+        return self.dataset.variables[key]
 
     @property
-    def variables(self):
-        """Returns a list of all data variables and their 
+    def variables(self) -> VariableList:
+        """Returns a list of all data variables and their
         attributes in the dataset.
 
         Returns:
@@ -594,13 +623,63 @@ class NetCDFData(Data):
         # Check if variable list has been created yet.
         # This saves approx 3 lookups per tile, and
         # over a dozen when a new dataset is loaded.
-        if self._variable_list == None:
+        if self._variable_list is not None:
+            return self._variable_list
 
+        if self.url.endswith(".sqlite3"):
             with SQLiteDatabase(self.url) as db:
-
                 self._variable_list = db.get_data_variables()  # Cache the list for later
+                return self._variable_list
+        try:
+            with xarray.open_dataset(self.url, decode_times=False) as ds:
+                self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
+            return self._variable_list
+        except xarray.core.variable.MissingDimensionsError:
+            # xarray won't open FVCOM files due to dimension/coordinate/variable label
+            # duplication issue, so fall back to using netCDF4.Dataset()
+            with netCDF4.Dataset(self.url) as ds:
+                self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
+            return self._variable_list
 
-        return self._variable_list
+    @staticmethod
+    def _get_xarray_data_variables(ds):
+        result = []
+        required_attrs = {"long_name", "units"}
+        for var in ds.data_vars:
+            if set(ds[var].attrs).intersection(required_attrs) != required_attrs:
+                continue
+            result.append(
+                Variable(
+                    var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                    tuple([dim for dim in ds.dims]),
+                    # Use .get() here to provide None if variable metadata lacks
+                    # valid_min or valid_max
+                    ds[var].attrs.get("valid_min"), ds[var].attrs.get("valid_max"))
+            )
+        return VariableList(result)
+
+    @staticmethod
+    def _get_netcdf4_data_variables(ds):
+        result = []
+        required_attrs = {"long_name", "units"}
+        for var in ds.variables:
+            if set(ds[var].ncattrs()).intersection(required_attrs) != required_attrs:
+                continue
+            try:
+                valid_min = ds[var].getncattr("valid_min")
+            except AttributeError:
+                valid_min = None
+            try:
+                valid_max = ds[var].getncattr("valid_max")
+            except AttributeError:
+                valid_max = None
+            result.append(
+                Variable(
+                    var, ds[var].getncattr("long_name"), ds[var].getncattr("units"),
+                    tuple([dim for dim in ds.dimensions]),
+                    valid_min, valid_max)
+            )
+        return VariableList(result)
 
     @property
     def timestamps(self):
@@ -617,9 +696,95 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            time_list = time_index_to_datetime(var.values, var.attrs['units'])
+            time_list = data.utils.time_index_to_datetime(var.values, var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
+
+    def get_nc_file_list(self, datasetconfig, **kwargs):
+        try:
+            if not datasetconfig.url.endswith(".sqlite3"):
+                # This method is only applicable to SQLite-indexed datasets
+                return
+        except AttributeError:
+            # Probably a file path dataset config for which this method is also not applicable
+            return
+
+        with SQLiteDatabase(self.url) as db:
+
+            try:
+                variable = kwargs['variable']
+            except KeyError:
+                raise RuntimeError(
+                    "Opening a dataset via sqlite requires the 'variable' keyword argument.")
+            if not isinstance(variable, list):
+                variable = [variable]
+
+            calculated_variables = datasetconfig.calculated_variables
+            if variable[0] in calculated_variables:
+                equation = calculated_variables[variable[0]]['equation']
+
+                variable = data.utils.get_data_vars_from_equation(
+                    equation, [v.key for v in db.get_data_variables()])
+
+            try:
+                timestamp = self.__get_requested_timestamps(
+                    db, variable[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
+            except KeyError:
+                raise RuntimeError(
+                    "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
+
+            if not timestamp:
+                raise RuntimeError("Error finding timestamp(s) in database.")
+
+            file_list = db.get_netcdf_files(timestamp, variable)
+
+            if not file_list:
+                raise RuntimeError("NetCDF file list is empty.")
+
+            self._nc_files = file_list
+
+    def __get_requested_timestamps(self, db: SQLiteDatabase, variable: str, timestamp, endtime,
+                                   nearest_timestamp) -> List[int]:
+
+        # We assume timestamp and/or endtime have been converted
+        # to the same time units as the requested dataset. Otherwise
+        # this won't work.
+        if nearest_timestamp:
+            all_timestamps = db.get_timestamps(variable)
+
+            start = data.utils.find_le(all_timestamps, timestamp)
+            if not endtime:
+                return [start]
+
+            end = data.utils.find_le(all_timestamps, endtime)
+            return db.get_timestamp_range(start, end, variable)
+
+        if timestamp > 0 and endtime is None:
+            # We've received a specific timestamp (e.g. 21100345)
+            if not isinstance(timestamp, list):
+                return [timestamp]
+            return timestamp
+
+        if timestamp < 0 and endtime is None:
+            all_timestamps = db.get_timestamps(variable)
+            return [all_timestamps[timestamp]]
+
+        if timestamp > 0 and endtime > 0:
+            # We've received a request for a time range
+            # with specific timestamps given
+            return db.get_timestamp_range(
+                timestamp, endtime, variable)
+
+        # Otherwise assume negative values are indices into timestamp list
+        all_timestamps = db.get_timestamps(variable)
+        len_timestamps = len(all_timestamps)
+        if timestamp < 0 and endtime > 0:
+            idx = data.utils.roll_time(timestamp, len_timestamps)
+            return db.get_timestamp_range(all_timestamps[idx], endtime, variable)
+
+        if timestamp > 0 and endtime < 0:
+            idx = data.utils.roll_time(endtime, len_timestamps)
+            return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)

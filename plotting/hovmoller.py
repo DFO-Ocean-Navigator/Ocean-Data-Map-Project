@@ -102,7 +102,7 @@ class HovmollerPlotter(LinePlotter):
 
             self.variable_unit = variable_units[0]
             self.data = value
-            self.iso_timestamps = dataset.timestamp_to_iso_8601(time)
+            self.iso_timestamps = dataset.nc_data.timestamp_to_iso_8601(time)
             self.data = np.multiply(self.data, scale_factors[0])
             self.data = self.data.transpose()
 
@@ -323,7 +323,7 @@ class HovmollerPlotter(LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        
+
         c = plt.pcolormesh(self.distance,
                             times,
                             data,

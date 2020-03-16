@@ -62,7 +62,7 @@ class TimeseriesPlotter(PointPlotter):
             var = self.variables[0]
             if self.depth != 'all' and self.depth != 'bottom' and \
                 (set(dataset.variables[var].dimensions) &
-                    set(dataset.depth_dimensions)):
+                    set(dataset.nc_data.depth_dimensions)):
                 self.depth_label = " at %d m" % (
                     np.round(dataset.depths[self.depth])
                 )
@@ -73,7 +73,7 @@ class TimeseriesPlotter(PointPlotter):
                 self.depth_label = ''
 
             if not (set(dataset.variables[var].dimensions) &
-                    set(dataset.depth_dimensions)):
+                    set(dataset.nc_data.depth_dimensions)):
                 self.depth = 0
 
             times = None

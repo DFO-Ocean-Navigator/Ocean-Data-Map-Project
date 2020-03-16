@@ -189,7 +189,7 @@ class TestAPIv1(unittest.TestCase):
 
         res = self.app.get('/api/v1.0/data/giops_real/votemper/2212704000/0/60,-29.json')
         self.assertEqual(res.status_code, 200)
-    
+
 
     @unittest.skip("Skipping api/class4.. needs re-write")
     def test_class4_query_endpoint(self):
@@ -209,15 +209,15 @@ class TestAPIv1(unittest.TestCase):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        
+
         res = self.app.get(self.apiLinks["stats"])
         self.assertEqual(res.status_code, 200)
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_subset_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        
+
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
@@ -226,7 +226,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_map_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -238,7 +238,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_transect_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -256,7 +256,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        # timeseries (point, virtual mooring) 
+        # timeseries (point, virtual mooring)
         # returns IndexError: index 0 is out of bounds for axis 0 with size 0
         res = self.app.get(self.apiLinks["plot_timeseries"])
         self.assertEqual(res.status_code, 200)
@@ -288,7 +288,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_profile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -320,7 +320,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        # observation (point, Observation) 
+        # observation (point, Observation)
         # returns RuntimeError: Opening a dataset via sqlite requires the 'timestamp' keyword argument.
         res = self.app.get(self.apiLinks["plot_observation"])
         self.assertEqual(res.status_code, 200)
@@ -419,7 +419,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_tile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val

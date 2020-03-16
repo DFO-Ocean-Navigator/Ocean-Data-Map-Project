@@ -45,7 +45,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         with open_dataset(self.dataset_config, timestamp=self.time, variable=[temp_var_key, sal_var_key]) as ds:
 
-            self.iso_timestamp = ds.timestamp_to_iso_8601(self.time)
+            self.iso_timestamp = ds.nc_data.timestamp_to_iso_8601(self.time)
 
             self.__load_temp_sal(ds, self.time, temp_var_key, sal_var_key)
 

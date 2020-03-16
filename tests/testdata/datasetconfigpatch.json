@@ -26,5 +26,13 @@
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }
+    },
+
+    "nemo_sqlite3": {
+        "enabled": 1,
+        "url": "tests/testdata/databases/test-nemo.sqlite3",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
     }
 }
