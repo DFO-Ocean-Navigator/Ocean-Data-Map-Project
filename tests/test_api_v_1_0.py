@@ -405,19 +405,6 @@ class TestAPIv1(unittest.TestCase):
         for i in range(6):
             self.assertEqual(res[i].status_code, 200)
 
-
-    # not used anywhere in front end returns RuntimeError: Opening a dataset via sqlite requires the 'variable' keyword argument.
-    @unittest.skip("Skipping api/timestamp_for_date.. needs fixing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_timestamp_for_date_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        res = self.app.get('/api/v1.0/timestamp/giops/2057094000/giops')
-        self.assertEqual(res.status_code, 200)
-
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_tile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
