@@ -2,8 +2,9 @@
 
 import unittest
 
-from data.observational import *
-import data.observational.queries as q
+from data.observational import (
+    init_db, create_tables, db, Platform, DataType, queries as q
+)
 
 import pandas as pd
 import numpy as np
@@ -129,4 +130,3 @@ class TestObservationalQueries(unittest.TestCase):
 
         self.assertEqual(np.unique(array[:, 0]), 1)
         self.assertEqual(np.unique(array[0, 1]), Platform.Type.drifter)
-

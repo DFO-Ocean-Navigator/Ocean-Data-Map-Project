@@ -12,4 +12,3 @@ class DataType(db.Model):
             f'DataType(key="{self.key}", name="{self.name}", '
             f'unit="{self.unit}")'
         )
-
