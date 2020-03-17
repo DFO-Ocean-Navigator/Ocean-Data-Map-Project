@@ -63,10 +63,10 @@ class TestObservationalQueries(unittest.TestCase):
         results = q.get_platform_variable_track(db.session(), p, "sst",
                                                 quantum="day")
         self.assertEqual(len(results), 5)
-        False and self.assertAlmostEqual(
-            results[0],
-            (59.66719818119993, -17.491199493400014,
-             datetime.datetime(2018, 2, 2, 15, 57, 52), 9.0))
+        self.assertAlmostEqual(
+            results[0][0],
+            59.68256664277501
+        )
         results = q.get_platform_variable_track(db.session(), p, "sst", quantum="year")
         self.assertEqual(len(results), 1)
 

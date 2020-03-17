@@ -12,8 +12,9 @@ def __db_funcs() -> Dict[str, Callable]:
     Mapping of dialect-specific database functions
     """
     dialect = db.engine.dialect.name
+    funcs = {}
     if dialect == "sqlite":
-        return {
+        funcs = {
             'year': lambda v: db.func.strftime("%Y", v),
             'month': lambda v: db.func.strftime("%Y%m", v),
             'week': lambda v: db.func.strftime("%Y%W", v),
@@ -25,7 +26,7 @@ def __db_funcs() -> Dict[str, Callable]:
                 "unixepoch"),
         }
     elif dialect == "mysql":
-        return {
+        funcs = {
             'year': lambda v: db.func.date_format(v, "%Y"),
             'month': lambda v: db.func.date_format(v, "%Y%m"),
             'week': lambda v: db.func.date_format(v, "%Y%U"),
@@ -38,6 +39,8 @@ def __db_funcs() -> Dict[str, Callable]:
         }
     else:
         raise RuntimeError(f"Dialect {db.engine.dialect} is unknown")
+
+    return funcs
 
 def get_platform_tracks(
     session : db.Session,
@@ -297,10 +300,10 @@ def __get_bounding_latlon(lat, lon, distance):
 
         else:
             # a pole is within the distance
-            minLat = max(minLat, -math.pi/2.);
-            maxLat = min(maxLat, math.pi/2.);
-            minLon = -math.pi;
-            maxLon = math.pi;
+            minLat = max(minLat, -math.pi/2.)
+            maxLat = min(maxLat, math.pi/2.)
+            minLon = -math.pi
+            maxLon = math.pi
 
     return (math.degrees(minLat), math.degrees(maxLat),
             math.degrees(minLon), math.degrees(maxLon))

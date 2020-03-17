@@ -49,4 +49,3 @@ class PlatformMetadata(db.Model):
             f'platform_id={self.platform_id}'
             ')'
         )
-

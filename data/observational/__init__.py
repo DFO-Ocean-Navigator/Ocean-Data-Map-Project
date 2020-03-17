@@ -22,4 +22,3 @@ from .orm.platform import Platform, PlatformMetadata
 from .orm.station import Station
 from .orm.sample import Sample
 from .orm.datatype import DataType
-
