@@ -75,8 +75,8 @@ class Stats:
                 time = int(self.time)
 
             if time < 0:
-                time += len(dataset.timestamps)
-            time = np.clip(time, 0, len(dataset.timestamps) - 1)
+                time += len(dataset.nc_data.timestamps)
+            time = np.clip(time, 0, len(dataset.nc_data.timestamps) - 1)
 
             depth = 0
             depthm = 0

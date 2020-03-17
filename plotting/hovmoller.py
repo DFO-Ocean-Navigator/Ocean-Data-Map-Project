@@ -61,12 +61,12 @@ class HovmollerPlotter(LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
 
-            time_var = dataset.time_variable
+            time_var = dataset.nc_data.time_variable
             if self.starttime > 0:
-                self.starttime = dataset.timestamp_to_time_index(
+                self.starttime = dataset.nc_data.timestamp_to_time_index(
                     self.starttime)
             if self.endtime > 0:
-                self.endtime = dataset.timestamp_to_time_index(self.endtime)
+                self.endtime = dataset.nc_data.timestamp_to_time_index(self.endtime)
 
             time = time_var[slice(min(self.starttime, self.endtime), max(
                 self.starttime, self.endtime) + 1)].values
@@ -162,7 +162,7 @@ class HovmollerPlotter(LinePlotter):
 
                 self.compare['variable_unit'] = variable_units[0]
                 self.compare['data'] = value
-                self.compare['times'] = dataset.timestamps[self.compare['starttime']                                                           : self.compare['endtime'] + 1]
+                self.compare['times'] = dataset.nc_data.timestamps[self.compare['starttime']: self.compare['endtime'] + 1]
                 self.compare['data'] = np.multiply(
                     self.compare['data'], scale_factors[0])
                 self.compare['data'] = self.compare['data'].transpose()

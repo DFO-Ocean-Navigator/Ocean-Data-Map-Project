@@ -20,24 +20,11 @@ class Nemo(Model):
 
     def __init__(self, nc_data: Union[CalculatedData, NetCDFData]) -> None:
         super().__init__(nc_data)
-        self.latvar = None
-        self.lonvar = None
-        self.__latsort = None
-        self.__lonsort = None
         self.nc_data = nc_data
-        self._dataset = nc_data.dataset
-        self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
-        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
-        self.time_variable = None
-        self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
-        self._dataset = self.nc_data.dataset
-        if not self._meta_only:
-            self.time_variable = self.nc_data.time_variable
-            self.timestamps = self.nc_data.timestamps
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -52,7 +39,7 @@ class Nemo(Model):
             # Look through possible dimension names
             for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in self._dataset.coords.keys():
+                if v in self.nc_data.dataset.coords:
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
@@ -71,7 +58,7 @@ class Nemo(Model):
     def __bounding_box(self, lat, lon, latvar, lonvar, n=10):
         """Computes and returns points bounding lat, lon.
         """
-        y, x, d = find_nearest_grid_point(lat, lon, self._dataset, latvar, lonvar, n)
+        y, x, d = find_nearest_grid_point(lat, lon, latvar, lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -178,11 +165,11 @@ class Nemo(Model):
                 if p[0] in coordinates:
                     return (
                         self.nc_data.get_dataset_variable(p[0]),
-                        self.nc_data.get_dataset_variable(p[1]) # Check this
+                        self.nc_data.get_dataset_variable(p[1])  # Check this
                     )
         else:
             for p in pairs:
-                if p[0] in self._dataset.variables:
+                if p[0] in self.nc_data.dataset.variables:
                     return (
                         self.nc_data.get_dataset_variable(p[0]),
                         self.nc_data.get_dataset_variable(p[1])
@@ -219,7 +206,7 @@ class Nemo(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -274,7 +261,7 @@ class Nemo(Model):
         # Get xarray.Variable
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
 
         if depth == 'bottom':
@@ -360,7 +347,7 @@ class Nemo(Model):
             raise APIError(
                 "This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
 
-        time_index = self.timestamp_to_time_index(timestamp)
+        time_index = self.nc_data.timestamp_to_time_index(timestamp)
 
         latvar, lonvar = self.__latlon_vars(variable)
 

@@ -808,10 +808,10 @@ def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
     old_config = DatasetConfig(old_dataset)
     new_config = DatasetConfig(new_dataset)
     with open_dataset(old_config) as ds:
-        timestamp = ds.timestamps[date]
+        timestamp = ds.nc_data.timestamps[date]
 
     with open_dataset(new_config) as ds:
-        timestamps = ds.timestamps
+        timestamps = ds.nc_data.timestamps
 
     diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
     idx = np.where(diffs <= 0)[0]

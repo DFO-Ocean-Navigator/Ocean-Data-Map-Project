@@ -22,24 +22,8 @@ class TestNemo(unittest.TestCase):
     def test_init(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         ds = Nemo(nc_data)
-        self.assertIsNone(ds.latvar)
-        self.assertIsNone(ds.lonvar)
         self.assertIs(ds.nc_data, nc_data)
-        self.assertIs(ds._dataset, nc_data.dataset)
-        self.assertIs(ds._meta_only, nc_data.meta_only)
         self.assertEqual(ds.variables, nc_data.variables)
-        self.assertEqual(ds.timestamp_to_time_index, nc_data.timestamp_to_time_index)
-
-    def test_open_meta_only(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc', **{"meta_only": True})
-        with Nemo(nc_data) as ds:
-            self.assertIs(ds._dataset, nc_data.dataset)
-
-    def test_open_not_meta_only(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            self.assertIsNotNone(ds.time_variable)
-            self.assertIsNotNone(ds.timestamps)
 
     def test_depths(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
@@ -76,20 +60,6 @@ class TestNemo(unittest.TestCase):
             self.assertEqual(variables['votemper'].unit, 'Kelvins')
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ["deptht", "time_counter", "y", "x"]))
-
-    def test_timestamp_to_time_index(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            idx = ds.timestamp_to_time_index(2031436800)
-
-            self.assertEqual(idx, 0)
-
-    def test_time_variable(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            time_var = ds.time_variable
-
-            self.assertEqual(time_var.attrs["title"], "Time")
 
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
@@ -197,14 +167,3 @@ class TestNemo(unittest.TestCase):
 
             self.assertNotEqual(r[0, 0], r[1, 0])
             self.assertTrue(np.ma.is_masked(r[1, 49]))
-
-    def test_timestamps(self):
-        nc_data = NetCDFData('tests/testdata/nemo_test.nc')
-        with Nemo(nc_data) as ds:
-            self.assertEqual(len(ds.timestamps), 2)
-            self.assertEqual(ds.timestamps[0],
-                             datetime.datetime(2014, 5, 17, 0, 0, 0, 0,
-                                               pytz.UTC))
-            # List is immutable
-            with self.assertRaises(ValueError):
-                ds.timestamps[0] = 0

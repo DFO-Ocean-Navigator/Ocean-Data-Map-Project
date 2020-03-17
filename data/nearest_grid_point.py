@@ -15,9 +15,7 @@ import numpy as np
 from pykdtree.kdtree import KDTree
 
 
-def find_nearest_grid_point(
-        lat, lon, dataset, latvar, lonvar, n=1
-):
+def find_nearest_grid_point(lat, lon, latvar, lonvar, n=1):
     """Find the nearest grid point to a given lat/lon pair.
 
     Parameters
@@ -26,8 +24,6 @@ def find_nearest_grid_point(
         Latitude value at which to find the nearest grid point.
     lon : float
         Longitude value at which to find the nearest grid point.
-    dataset : xarray.Dataset
-        An xarray Dataset containing the mesh variables.
     latvar : xarray.DataArray
         DataArray corresponding to latitude variable.
     lonVar : xarray.DataArray
