@@ -40,7 +40,7 @@ class DatasetConfig():
     @property
     def url(self) -> str:
         """
-        Returns the THREDDS url to the given dataset
+        Returns the url to the given dataset (sqlite, OpenDAP, etc.)
         """
         return self._get_attribute("url")
 
@@ -57,12 +57,15 @@ class DatasetConfig():
 
     @property
     def time_dim_units(self) -> str:
+        """
+        Returns units of the time dimension
+        """
         return self._get_attribute("time_dim_units")
 
     @property
     def climatology(self) -> str:
         """
-        Returns the THREDDS climatology URL for a dataset
+        Returns the climatology URL for a dataset (sqlite, OpenDAP, etc.)
         """
         return self._get_attribute("climatology")
 
@@ -82,6 +85,9 @@ class DatasetConfig():
 
     @property
     def grid_angle_file_url(self):
+        """
+        Returns the url to the grid angle file for this dataset's model.
+        """
         return self._get_attribute("grid_angle_file_url")
 
     @property
@@ -151,6 +157,9 @@ class DatasetConfig():
 
     @property
     def vector_variables(self) -> dict:
+        """
+        Returns any magnitude variables.
+        """
         variables = {}
         for key,data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
