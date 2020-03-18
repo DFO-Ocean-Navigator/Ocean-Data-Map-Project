@@ -710,7 +710,7 @@ class NetCDFData(Data):
 
         return self.__timestamp_cache.get("timestamps")
 
-    def get_nc_file_list(self, datasetconfig, **kwargs):
+    def get_nc_file_list(self, datasetconfig: DatasetConfig, **kwargs: dict) -> Union[List, None]:
         try:
             if not datasetconfig.url.endswith(".sqlite3"):
                 # This method is only applicable to SQLite-indexed datasets

@@ -3,15 +3,16 @@
 import json
 import os
 import re
+from typing import Union
 
 from flask import current_app
 
 
-class DatasetConfig():
+class DatasetConfig:
     """Access class for the dataset configuration"""
     __config = None
 
-    def __init__(self, dataset: str):
+    def __init__(self, dataset: str) -> None:
         self._config = DatasetConfig._get_dataset_config()[dataset]
         self._dataset_key: str = dataset
 
@@ -34,7 +35,7 @@ class DatasetConfig():
 
         return DatasetConfig.__config
 
-    def _get_attribute(self, key: str) -> str:
+    def _get_attribute(self, key: str) -> Union[str, dict]:
         return self._config.get(key) if not None else ""
 
     @property
@@ -92,18 +93,18 @@ class DatasetConfig():
         return self._get_attribute("help")
 
     @property
-    def grid_angle_file_url(self):
+    def grid_angle_file_url(self) -> str:
         """
         Returns the url to the grid angle file for this dataset's model.
         """
         return self._get_attribute("grid_angle_file_url")
 
     @property
-    def lat_var_key(self):
+    def lat_var_key(self) -> str:
         return self._get_attribute("lat_var_key")
 
     @property
-    def lon_var_key(self):
+    def lon_var_key(self) -> str:
         return self._get_attribute("lon_var_key")
 
     @property
@@ -200,19 +201,20 @@ class DatasetConfig():
         """
         return self._VariableGetter(self)
 
-    class _VariableGetter():
-        def __init__(self, datasetconfig):
+    class _VariableGetter:
+        def __init__(self, datasetconfig) -> None:
             self._config = datasetconfig
 
         def __getitem__(self, key):
             return VariableConfig(self._config, key)
 
-class VariableConfig():
+
+class VariableConfig:
     """
     Access class for an individual variable's portion of the datasetconfig.
     """
 
-    def __init__(self, datasetconfig, variable):
+    def __init__(self, datasetconfig, variable) -> None:
         """
         Parameters:
         datasetconfig -- the parent DatasetConfig object
