@@ -239,8 +239,12 @@ class TestNetCDFData(unittest.TestCase):
             file_list = nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertEqual(nc_data._nc_files, [])
 
-    def test_get_nc_file_list_no_dataset_config_url(self):
-        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_get_nc_file_list_no_dataset_config_url(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        kwargs = {"dataset_key": "giops_no_url"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
             nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertEqual(nc_data._nc_files, [])
 
