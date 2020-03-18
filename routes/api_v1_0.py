@@ -1,7 +1,6 @@
 import base64
 import datetime
 import gzip
-import hashlib
 import json
 import os
 import shutil
