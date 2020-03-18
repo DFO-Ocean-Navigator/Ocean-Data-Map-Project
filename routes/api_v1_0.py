@@ -766,14 +766,17 @@ def timestamps():
         raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
 
-    vals = []
-    with SQLiteDatabase(config.url) as db:
-        if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
-                                                    [v.key for v in db.get_data_variables()])
-            vals = db.get_timestamps(data_vars[0])
-        else:
-            vals = db.get_timestamps(variable)
+    if config.url.endswith(".sqlite3"):
+        with SQLiteDatabase(config.url) as db:
+            if variable in config.calculated_variables:
+                data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
+                                                        [v.key for v in db.get_data_variables()])
+                vals = db.get_timestamps(data_vars[0])
+            else:
+                vals = db.get_timestamps(variable)
+    else:
+        with open_dataset(config, variable=variable) as ds:
+            vals = list(map(int, ds.nc_data.time_variable.values))
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []

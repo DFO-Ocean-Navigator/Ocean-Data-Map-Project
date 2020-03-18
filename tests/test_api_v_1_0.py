@@ -84,11 +84,25 @@ class TestAPIv1(unittest.TestCase):
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     @patch('data.sqlite_database.SQLiteDatabase.get_timestamps')
-    def test_timestamps_endpoint(self, patch_get_all_timestamps, patch_get_data_variables, patch_get_dataset_config):
+    def test_timestamps_endpoint_sqlite(self, patch_get_all_timestamps, patch_get_data_variables, patch_get_dataset_config):
 
         patch_get_all_timestamps.return_value = sorted(
             [2031436800, 2034072000])
         patch_get_data_variables.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get(
+            '/api/v1.0/timestamps/?dataset=nemo_sqlite3&variable=votemper')
+
+        self.assertEqual(res.status_code, 200)
+
+        res_data = self.__get_response_data(res)
+        self.assertEqual(len(res_data), 2)
+        self.assertEqual(res_data[0]['id'], 2031436800)
+        self.assertEqual(res_data[0]['value'], '2014-05-17T00:00:00+00:00')
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_timestamps_endpoint_xarray(self, patch_get_dataset_config):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         res = self.app.get(

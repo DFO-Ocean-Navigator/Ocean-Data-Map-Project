@@ -45,6 +45,14 @@ class DatasetConfig():
         return self._get_attribute("url")
 
     @property
+    def geo_ref(self) -> dict:
+        """
+        Returns the dict of information about the ERDDAP dataset that provides the mapping of
+        grid index to lat/lon for the given dataset.
+        """
+        return self._get_attribute("geo_ref")
+
+    @property
     def key(self) -> str:
         return self._dataset_key
 

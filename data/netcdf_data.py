@@ -63,7 +63,15 @@ class NetCDFData(Data):
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 try:
-                    self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                    if not getattr(self._dataset_config, "geo_ref", {}):
+                        self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                    else:
+                        fields = xarray.open_dataset(self.url, decode_times=decode_times)
+                        drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
+                        geo_refs = xarray.open_dataset(
+                            self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+                        )
+                        self.dataset = fields.merge(geo_refs)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
