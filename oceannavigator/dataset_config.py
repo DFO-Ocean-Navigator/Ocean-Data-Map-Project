@@ -263,7 +263,7 @@ class VariableConfig:
     def quantum(self) -> str:
         """
         Returns the quantum (time scale) for the variable as defined in dataset config file
-        
+
         Returns:
             str -- variable quantum
         """
@@ -274,7 +274,7 @@ class VariableConfig:
 
         return quantum
 
-    
+
     @property
     def unit(self) -> str:
         """
@@ -316,7 +316,7 @@ class VariableConfig:
         """
         Returns variable scale factor from dataset config file
         """
-        
+
         try:
             scale_factor = self.__get_attribute("scale_factor")
         except KeyError:

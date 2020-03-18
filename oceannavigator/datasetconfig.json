@@ -451,7 +451,7 @@
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>                 <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2013)</li>                 <li>Variables Available:                     <ul>                         <li>Eastward Velocity</li>                         <li>Ice Concentration</li>                         <li>Northward Velocity</li>                         <li>Salinity</li>                         <li>Sea Ice Eastward Velocity</li>                         <li>Sea Ice Northward Velocity</li>                         <li>Sea Ice Thickness</li>                         <li>Sea Ice Velocity</li>                         <li>Sea Surface Height</li>                         <li>Sea Water Velocity</li>                         <li>Temperature</li>                     </ul>                 </li>             </ul>",
         "name": "GLORYS v3",
         "quantum": "month",
-        "type": "historical",   
+        "type": "historical",
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
         "url": "/data/db/climatology-glorysv3.sqlite3",
         "variables": {
@@ -554,7 +554,7 @@
         "help": "Global Ocean Reanalysis and Simulation -&nbsp;             <a href=\\\"https://www.mercator-ocean.fr/wp-content/uploads/2015/08/FS-GLORYS2V3_EN.pdf\\\" target=\\\"_new\\\">System Sheet</a>             <ul>                 <li>Global Coverage</li>                 <li>1/4° Mercator grid</li>                 <li>75 vertical z-levels</li>                 <li>Available as monthly averages (January 1993&ndash;December 2014)</li>             </ul>",
         "name": "GLORYS v4",
         "quantum": "month",
-        "type": "historical",      
+        "type": "historical",
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/GLORYSV4.sqlite3",
         "variables": {
@@ -754,7 +754,7 @@
         "url": "/data/db/glorys4_climatology.sqlite3",
         "name": "GLORYS v4 Climatology",
         "quantum": "month",
-        "type": "historical",       
+        "type": "historical",
         "enabled": true,
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
         "climatology": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/glorys4/aggregated.ncml",
@@ -781,7 +781,7 @@
         "help": "Global Ocean Reanalysis and Simulation             <ul>             <li>Global Coverage</li>             <li>1/4° Mercator grid</li>             <li>75 vertical z-levels</li>             <li>Computed from the monthly averages January 1993&ndash;December 2013</li>             <li>Variables Available:                 <ul>                     <li>Eastward Velocity</li>                     <li>Ice Concentration</li>                     <li>Northward Velocity</li>                     <li>Salinity</li>                     <li>Sea Ice Eastward Velocity</li>                     <li>Sea Ice Northward Velocity</li>                     <li>Sea Ice Thickness</li>                     <li>Sea Ice Velocity</li>                     <li>Sea Surface Height</li>                     <li>Sea Water Velocity</li>                     <li>Temperature</li>                 </ul>             </li>             </ul>",
         "name": "GLORYSV3 Climatology",
         "quantum": "month",
-        "type": "historical",    
+        "type": "historical",
         "time_dim_units": "seconds since 1991-12-04 00:00:00",
         "url": "/home/buildadm/ocean-nav/db/GLORYSV3-Climatology.sqlite3",
         "variables": {
@@ -904,7 +904,7 @@
         "help": "Combination of Levitus98 and PHC 2.1             <ul>             <li>Global Coverage</li>             <li>Tri-polar ORCA grid 1/4° resolution (ORCA025), &lt; 15km in Arctic</li>             <li>50 vertical z-levels</li>             <li>Variables Available:                 <ul>                     <li>Salinity</li>                     <li>Water Temperature</li>                 </ul>             </li>             </ul>",
         "name": "World Ocean Atlas Climatology",
         "quantum": "month",
-        "type": "historical",        
+        "type": "historical",
         "time_dim_units": "seconds since 1950-01-01 00: 00: 00",
         "url": "http://navigator.oceansdata.ca:8080/thredds/dodsC/climatology/Levitus98_PHC21/aggregated.ncml",
         "variables": {
