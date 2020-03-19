@@ -27,10 +27,10 @@ class TimeseriesPlotter(PointPlotter):
     def parse_query(self, query):
         super(TimeseriesPlotter, self).parse_query(query)
 
-        depth = 0
         qdepth = query.get('depth')
         if isinstance(qdepth, list):
             qdepth = qdepth[0]
+        depth = qdepth
 
         if qdepth and hasattr(qdepth, "__len__") and len(qdepth) > 0:
             if qdepth == 'all':
@@ -43,25 +43,21 @@ class TimeseriesPlotter(PointPlotter):
         self.depth = depth
 
     def load_data(self):
+        
         with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.starttime, endtime=self.endtime) as dataset:
             self.load_misc(dataset, self.variables)
-            #self.fix_startend_times(dataset, self.starttime, self.endtime)
 
-            if len(self.variables) == 1:
-                self.variable_unit = self.dataset_config.variable[
-                    dataset.variables[self.variables[0]]
-                ].unit
-                self.variable_name = self.dataset_config.variable[
-                    dataset.variables[self.variables[0]]
-                ].name
-            else:
-                self.variable_name = self.get_vector_variable_name(dataset,
-                                                                   self.variables)
-                self.variable_unit = self.get_vector_variable_unit(dataset,
-                                                                   self.variables)
-            var = self.variables[0]
+            variable = self.variables[0]
+
+            self.variable_unit = self.dataset_config.variable[
+                dataset.variables[variable]
+            ].unit
+            self.variable_name = self.dataset_config.variable[
+                dataset.variables[variable]
+            ].name
+            
             if self.depth != 'all' and self.depth != 'bottom' and \
-                (set(dataset.variables[var].dimensions) &
+                (set(dataset.variables[variable].dimensions) &
                     set(dataset.nc_data.depth_dimensions)):
                 self.depth_label = " at %d m" % (
                     np.round(dataset.depths[self.depth])
@@ -72,36 +68,34 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 self.depth_label = ''
 
-            if not (set(dataset.variables[var].dimensions) &
+            # Override depth request if requested variable has no depth (i.e. surface only)
+            if not (set(dataset.variables[variable].dimensions) &
                     set(dataset.nc_data.depth_dimensions)):
                 self.depth = 0
 
-            times = None
             point_data = []
+            dep = []
             for p in self.points:
                 data = []
-                for v in self.variables:
-                    if self.depth == 'all':
-                        d, dep = dataset.get_timeseries_profile(
-                            float(p[0]),
-                            float(p[1]),
-                            self.starttime,
-                            self.endtime,
-                            v
-                        )
-                    else:
-                        d, dep = dataset.get_timeseries_point(
-                            float(p[0]),
-                            float(p[1]),
-                            self.depth,
-                            self.starttime,
-                            self.endtime,
-                            v,
-                            return_depth=True
-                        )
-
-                    data.append(d)
-
+                if self.depth == 'all':
+                    d, dep = dataset.get_timeseries_profile(
+                        float(p[0]),
+                        float(p[1]),
+                        self.starttime,
+                        self.endtime,
+                        variable
+                    )
+                else:
+                    d, dep = dataset.get_timeseries_point(
+                        float(p[0]),
+                        float(p[1]),
+                        self.depth,
+                        self.starttime,
+                        self.endtime,
+                        variable,
+                        return_depth=True
+                    )
+                data.append(d)
                 point_data.append(np.ma.array(data))
 
             point_data = np.ma.array(point_data)
@@ -115,13 +109,11 @@ class TimeseriesPlotter(PointPlotter):
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
 
-            # depths = dataset.depths
-            depths = dep
-
-            if point_data.shape[1] == 2:
+            if 'mag' in variable:
                 # Under the current API this indicates that velocity data is being
                 # loaded. Save each velocity component (X and Y) for possible CSV
                 # export later.
+                """
                 self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
 
                 point_data = np.ma.expand_dims(
@@ -129,15 +121,18 @@ class TimeseriesPlotter(PointPlotter):
                         point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
                     ), 1
                 )
+                """
 
             self.times = times
             self.data = point_data
-            self.depths = depths
+            self.depths = dep
             self.depth_unit = "m"
+
 
     def csv(self):
         header = [
-            ['Dataset', self.dataset_name],
+            ['Dataset', self.dataset_config.name],
+            ['Attribution', self.dataset_config.attribution]
         ]
 
         columns = [
@@ -161,7 +156,7 @@ class TimeseriesPlotter(PointPlotter):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
-                    ["Depth", "%d%s" % (np.round(self.depths[self.depth]),
+                    ["Depth", "%.4f%s" % (self.depths,
                                         self.depth_unit)]
                 )
 
@@ -253,22 +248,12 @@ class TimeseriesPlotter(PointPlotter):
         return super(TimeseriesPlotter, self).csv(header, columns, data)
 
     def plot(self):
-        if len(self.variables) > 1:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin = 0
-                vmax = self.data.max()
-                if self.cmap is None:
-                    self.cmap = colormap.colormaps.get('speed')
+        if self.scale:
+            vmin = self.scale[0]
+            vmax = self.scale[1]
         else:
-            if self.scale:
-                vmin = self.scale[0]
-                vmax = self.scale[1]
-            else:
-                vmin, vmax = utils.normalize_scale(self.data,
-                                                   self.dataset_config.variable[self.variables[0]])
+            vmin, vmax = utils.normalize_scale(self.data,
+                                                self.dataset_config.variable[self.variables[0]])
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
@@ -352,10 +337,10 @@ class TimeseriesPlotter(PointPlotter):
                                            [x[1] for x in self.points]]))  # Longitudes
 
             plt.subplot(gs[:, subplot])
-            plt.plot_date(
-                datenum, self.data[:, 0, :].transpose(), '-', figure=fig)
-            plt.ylabel("%s (%s)" % (self.variable_name.title(),
-                                    utils.mathtext(self.variable_unit)), fontsize=14)
+            plt.plot_date(datenum, np.squeeze(self.data), fmt='-', figure=fig, xdate=True)
+            plt.ylabel(
+                f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
+                fontsize=14)
             plt.ylim(vmin, vmax)
 
             # Title

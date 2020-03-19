@@ -143,8 +143,8 @@ class TransectPlotter(LinePlotter):
                     dataset.get_path(
                         self.points,
                         0,
-                        self.time,
                         self.surface,
+                        self.time
                     )
                 vc = self.dataset_config.variable[dataset.variables[self.surface]]
                 surface_unit = vc.unit
