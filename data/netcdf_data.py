@@ -56,7 +56,11 @@ class NetCDFData(Data):
 
             if self._nc_files:
                 try:
-                    self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
+                    self.dataset = xarray.open_mfdataset(
+                        self._nc_files,
+                        decode_times=decode_times,
+                        chunks=200,
+                    )
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
