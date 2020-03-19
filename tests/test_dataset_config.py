@@ -16,12 +16,16 @@ class TestUtil(unittest.TestCase):
             "key": {
                 "enabled": True,
                 "url": "my_url",
+                "geo_ref": {
+                    "url": "my_geo_ref_url",
+                    "drop_variables": ["bathymetry"],
+                },
                 "climatology": "my_climatology",
                 "name": "my_name",
                 "help": "my_help",
                 "quantum": "my_quantum",
                 "type": "my_type",
-                "grid_angle_file_url": "my_url",
+                "grid_angle_file_url": "my_grid_angle_file_url",
                 "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
@@ -39,12 +43,14 @@ class TestUtil(unittest.TestCase):
 
         result = DatasetConfig("key")
         self.assertEqual(result.url, "my_url")
+        self.assertEqual(result.geo_ref["url"], "my_geo_ref_url")
+        self.assertEqual(result.geo_ref["drop_variables"], ["bathymetry"])
         self.assertEqual(result.key, "key")
         self.assertEqual(result.climatology, "my_climatology")
         self.assertEqual(result.name, "my_name")
         self.assertEqual(result.help, "my_help")
         self.assertEqual(result.quantum, "my_quantum")
-        self.assertEqual(result.grid_angle_file_url, "my_url")
+        self.assertEqual(result.grid_angle_file_url, "my_grid_angle_file_url")
         self.assertEqual(result.type, "my_type")
         self.assertEqual(result.time_dim_units, "my_time_units")
         self.assertEqual(result.lat_var_key, "my_lat")

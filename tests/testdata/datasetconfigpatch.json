@@ -2,7 +2,18 @@
     "giops": {
         "enabled": 1,
         "url": "tests/testdata/nemo_test.nc",
-        "grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "quantum": "day",
+        "name": "GIOPS",
+        "help": "help",
+        "attribution": "attrib",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
+    },
+
+    "giops_no_url": {
+        "enabled": 1,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "quantum": "day",
         "name": "GIOPS",
@@ -31,8 +42,28 @@
     "nemo_sqlite3": {
         "enabled": 1,
         "url": "tests/testdata/databases/test-nemo.sqlite3",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
+    },
+
+    "salishseacast_ssh": {
+        "enabled": true,
+        "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSgSurfaceTracerFields1hV19-05",
+        "geo_ref": {
+            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV17-02",
+            "drop_variables": ["bathymetry"]
+        },
+        "name": "SalishSeaCast Sea Surface Height",
+        "quantum": "hour",
+        "type": "historical",
+        "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "attribution": "UBC-MOAD",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "variables": {
+            "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
         }
     }
 }

@@ -70,6 +70,39 @@ class TestNetCDFData(unittest.TestCase):
             self.assertIsInstance(nc_data.dataset, netCDF4.Dataset)
             self.assertTrue(nc_data._dataset_open)
 
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_enter_no_geo_ref(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        kwargs = {"dataset_key": "giops"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+            self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_enter_geo_ref(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        kwargs = {"dataset_key": "salishseacast_ssh"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+            self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+            self.assertIn("latitude", nc_data.dataset.variables)
+            self.assertNotIn("bathymetry", nc_data.dataset.variables)
+
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_enter_geo_ref_no_drop_variables(self, patch_get_dataset_config):
+        geo_ref = self.patch_dataset_config_ret_val["salishseacast_ssh"]["geo_ref"]
+        with patch.dict(geo_ref, {"url": geo_ref["url"], "drop_variables": []}):
+            patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+            kwargs = {"dataset_key": "salishseacast_ssh"}
+            with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+                self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+                self.assertTrue(nc_data._dataset_open)
+                self.assertIn("latitude", nc_data.dataset.variables)
+                self.assertIn("bathymetry", nc_data.dataset.variables)
+
     @unittest.skip(
         "Some incompatibility between tests/testdata/nemo_test.nc and "
         "tests/testdata/nemo_grid_angle.nc results in "
@@ -206,8 +239,12 @@ class TestNetCDFData(unittest.TestCase):
             file_list = nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertEqual(nc_data._nc_files, [])
 
-    def test_get_nc_file_list_no_dataset_config_url(self):
-        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_get_nc_file_list_no_dataset_config_url(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        kwargs = {"dataset_key": "giops_no_url"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
             nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertEqual(nc_data._nc_files, [])
 
