@@ -1209,5 +1209,35 @@
         "variables": {
             "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
         }
+    },
+    "salishseacast_3d_biology": {
+        "enabled": true,
+        "name": "SalishSeaCast 3D Biology",
+        "envtype": ["ocean"],
+        "type": "historical",
+        "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DBiologyFields1hV19-05",
+        "geo_ref": {
+            "url": "/data/grids/salishsea/geo_reference_201702.nc",
+            "drop_variables": ["bathymetry"]
+        },
+        "quantum": "hour",
+        "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
+        "attribution": "Mesoscale Ocean & Atmosphere Dynamics Group (MOAD), Earth, Ocean & Atmopspheric Sciences (EOAS), University of British Columbia",
+        "help": "",
+        "variables": {
+            "ammonium": { "name":  "Ammonium Concentration", "unit":  "mmol m-3", "scale":  [0, 5] },
+            "biogenic_silicon": { "name":  "Biogenic Silicon Concentration", "unit":  "mmol m-3", "scale":  [0, 70] },
+            "ciliates": { "name":  "Mesodinium rubrum Concentration as Nitrogen", "unit":  "mmol m-3", "scale":  [0, 10] },
+            "diatoms": { "name":  "Diatoms Concentration as Nitrogen", "unit":  "mmol m-3", "scale":  [0, 20] },
+            "dissolved_organic_nitrogen": { "name":  "Dissolved Organic Nitrogen Concentration", "unit":  "mmol m-3", "scale":  [0, 10] },
+            "flagellates": { "name":  "Flagellates Concentration as Nitrogen", "unit":  "mmol m-3", "scale":  [0, 128] },
+            "mesozooplankton": { "name":  "Mesozooplankton Concentration as Nitrogen", "unit":  "mmol m-3", "scale":  [0, 128] },
+            "microzooplankton": { "name":  "Microzooplankton Concentration as Nitrogen", "unit":  "mmol m-3", "scale":  [0, 100] },
+            "nitrate": { "name":  "Nitrate Concentration", "unit":  "mmol m-3", "scale":  [0, 40] },
+            "particulate_organic_nitrogen": { "name":  "Particulate Organic Nitrogen Concentration", "unit":  "mmol m-3", "scale":  [0, 10] },
+            "silicon": { "name":  "Silicon Concentration", "unit":  "mmol m-3", "scale":  [0, 70] }
+        }
     }
 }
