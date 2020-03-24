@@ -31,9 +31,12 @@ def make_colormap(seq):
 
 
 def find_colormap(name):
-    for key in list(colormaps.keys()):
-        if re.search(key, name, re.I):
-            return colormaps[key]
+    try:
+        return colormaps[name.lower()]
+    except KeyError:
+        for key in colormaps:
+            if re.search(key, name, re.I):
+                return colormaps[key]
     return colormaps['mercator']
 
 
