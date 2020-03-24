@@ -527,8 +527,8 @@ def get_point_data(dataset, variable, time, depth, location):
                 location[0],
                 location[1],
                 depth,
-                time,
-                v
+                v,
+                time
             )
             variable_name = dsc.variable[ds.variables[v]].name
             variable_unit = dsc.variable[ds.variables[v]].unit

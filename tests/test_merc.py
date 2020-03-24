@@ -77,16 +77,16 @@ class TestMercator(unittest.TestCase):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.0, -149.0, 0, 2119651200, 'votemper'),
+                ds.get_point(13.0, -149.0, 0, 'votemper', 2119651200),
                 298.426, places=3
             )
             self.assertAlmostEqual(
-                ds.get_point(47.0, -47.0, 0, 2119651200, 'votemper'),
+                ds.get_point(47.0, -47.0, 0, 'votemper', 2119651200),
                 273.66, places=2
             )
 
             p = ds.get_point([13.0, 47.0], [-149.0, -47.0], 0,
-                            2119651200, 'votemper')
+                            'votemper', 2119651200)
             self.assertAlmostEqual(p[0], 298.426, places=3)
             self.assertAlmostEqual(p[1], 273.66, places=2)
 
@@ -105,7 +105,7 @@ class TestMercator(unittest.TestCase):
     def test_get_profile(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
-            p, d = ds.get_profile(13.0, -149.0, 2119651200, 'votemper')
+            p, d = ds.get_profile(13.0, -149.0, 'votemper', 2119651200)
             self.assertAlmostEqual(p[0], 298.426, places=3)
             self.assertAlmostEqual(p[10], 298.426, places=3)
             self.assertTrue(np.ma.is_masked(p[49]))
@@ -114,7 +114,7 @@ class TestMercator(unittest.TestCase):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.01, -149.0, 'bottom', 2119651200, 'votemper'),
+                ds.get_point(13.01, -149.0, 'bottom', 'votemper', 2119651200),
                 273.95, places=2
             )
 
