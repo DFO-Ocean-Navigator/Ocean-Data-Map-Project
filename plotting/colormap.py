@@ -43,7 +43,10 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'ammonium concentration': cmocean.cm.matter,
     'nitrogen': cmocean.cm.balance,
+    'dissolved organic nitrogen concentration': cmocean.cm.amp,
+    'particulate organic nitrogen concentration': cmocean.cm.amp,
     'depth': cmocean.cm.deep,
     'deep': cmocean.cm.deep,
     'partial pressure': cmocean.cm.matter,
@@ -71,12 +74,20 @@ colormaps = {
         np.loadtxt(os.path.join(data_dir, 'phosphate.txt'))),
     'nitrate': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'nitrate.txt'))),
+    'nitrate concentration': cmocean.cm.tempo,
     'ice': cmocean.cm.ice,
     'phytoplankton': cmocean.cm.deep_r,
+    'diatoms concentration as nitrogen': cmocean.cm.algae,
+    'flagellates concentration as nitrogen': cmocean.cm.algae,
+    'mesodinium rubrum concentration as nitrogen': cmocean.cm.algae,
+    'mesozooplankton concentration as nitrogen': cmocean.cm.algae,
+    'microzooplankton concentration as nitrogen': cmocean.cm.algae,
     'silicate': make_colormap([
         _c('#ffffff'),
         _c('#57a6bd'),
     ]),
+    'silicon concentration': cmocean.cm.turbid,
+    'biogenic silicon concentration': cmocean.cm.turbid,
     'ph': make_colormap([
         _c('#ED1B26'),
         _c('#F46432'), 0.1, _c('#F46432'),
@@ -168,21 +179,32 @@ colormaps['wind'] = colormaps['velocity']
 # Babel so that they'll end up in the translation list.
 # If the gettext calls were in the definition of colormap_names, they'd get
 # executed before the user's locale is known and would always be in English.
+gettext('Ammonium Concentration')
 gettext('Anomaly')
 gettext('Bathymetry')
+gettext('Biogenic Silicon Concentration')
 gettext('Chlorophyll')
-gettext('Sea Surface Height (Free Surface)')
+gettext('Diatoms Concentration as Nitrogen')
+gettext('Dissolved Organic Nitrogen Concentration')
+gettext('Flagellates Concentration as Nitrogen')
 gettext('Greyscale')
 gettext('Ice')
 gettext('Iron')
 gettext('Mercator Ocean Current')
 gettext('Mercator')
+gettext('Mesodinium rubrum Concentration as Nitrogen')
+gettext('Mesozooplankton Concentration as Nitrogen')
+gettext('Microzooplankton Concentration as Nitrogen')
 gettext('Nitrate')
+gettext('Nitrate Concentration')
 gettext('Oxygen')
+gettext('Particulate Organic Nitrogen Concentration')
 gettext('Phosphate')
 gettext('Phytoplankton')
 gettext('Salinity')
+gettext('Sea Surface Height (Free Surface)')
 gettext('Silicate')
+gettext('Silicon Concentration')
 gettext('Speed')
 gettext('Temperature')
 gettext('Velocity')
@@ -198,6 +220,7 @@ gettext('Deep')
 gettext('Balance')
 
 colormap_names = {
+    'ammonium concentration': 'Ammonium Concentration',
     'balance': 'Balance',
     'anomaly': 'Anomaly',
     'bathymetry': 'Bathymetry',
@@ -209,11 +232,21 @@ colormap_names = {
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
     'nitrate': 'Nitrate',
+    'nitrate concentration': 'Nitrate Concentration',
+    'dissolved organic nitrogen concentration': 'Dissolved Organic Nitrogen Concentration',
+    'particulate organic nitrogen concentration': 'Particulate Organic Nitrogen Concentration',
     'oxygen': 'Oxygen',
     'phosphate': 'Phosphate',
     'phytoplankton': 'Phytoplankton',
+    'diatoms concentration as nitrogen': 'Diatoms Concentration as Nitrogen',
+    'flagellates concentration as nitrogen': 'Flagellates Concentration as Nitrogen',
+    'mesodinium rubrum concentration as nitrogen': 'Mesodinium rubrum Concentration as Nitrogen',
+    'mesozooplankton concentration as nitrogen': 'Mesozooplankton Concentration as Nitrogen',
+    'microzooplankton concentration as nitrogen': 'Microzooplankton Concentration as Nitrogen',
     'salinity': 'Salinity',
     'silicate': 'Silicate',
+    'silicon concentration': 'Silicon Concentration',
+    'biogenic silicon concentration': 'Biogenic Silicon Concentration',
     'speed': 'Speed',
     'temperature': 'Temperature',
     'velocity': 'Velocity',
@@ -240,7 +273,7 @@ def get_colormap_names():
 def plot_colormaps():
     fig, axes = plt.subplots(
         nrows=len(colormap_names),
-        figsize=(8, 0.3 * len(colormap_names))
+        figsize=(11, 0.3 * len(colormap_names))
     )
     fig.subplots_adjust(top=0.925, bottom=0.01, left=0.01, right=0.6)
 
