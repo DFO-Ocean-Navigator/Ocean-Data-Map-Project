@@ -454,7 +454,7 @@ def geostrophic_y(h, lat, lon):
         if dim_order == "yx":
             dy, dx = kwargs['deltas']
         else:
-            dx, dy = kwgard['deltas']
+            dx, dy = kwargs['deltas']
 
         return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
                                            dim_order=kwargs['dim_order'])
