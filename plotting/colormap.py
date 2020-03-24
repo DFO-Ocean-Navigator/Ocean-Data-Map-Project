@@ -299,7 +299,7 @@ if __name__ == '__main__':
     import matplotlib.cm
     import sys
 
-    for k, v in list(colormaps.items()):
+    for k, v in colormaps.items():
         matplotlib.cm.register_cmap(name=k, cmap=v)
 
     maps = [i for i in colormaps]
