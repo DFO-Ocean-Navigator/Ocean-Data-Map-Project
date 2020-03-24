@@ -6,7 +6,6 @@ import plotting.colormap
 
 
 class TestColormap(unittest.TestCase):
-
     def test_find_colormap_explicit(self):
         cmap = plotting.colormap.find_colormap("Nitrate Concentration")
         self.assertEqual(cmap, plotting.colormap.colormaps["nitrate concentration"])
@@ -18,4 +17,3 @@ class TestColormap(unittest.TestCase):
     def test_find_colormap_default(self):
         cmap = plotting.colormap.find_colormap("foo")
         self.assertEqual(cmap, plotting.colormap.colormaps["mercator"])
-
