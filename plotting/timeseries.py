@@ -74,11 +74,11 @@ class TimeseriesPlotter(PointPlotter):
                 self.depth = 0
 
             point_data = []
-            dep = []
+            depths = []
             for p in self.points:
                 data = []
                 if self.depth == 'all':
-                    d, dep = dataset.get_timeseries_profile(
+                    d, depths = dataset.get_timeseries_profile(
                         float(p[0]),
                         float(p[1]),
                         self.starttime,
@@ -86,7 +86,7 @@ class TimeseriesPlotter(PointPlotter):
                         variable
                     )
                 else:
-                    d, dep = dataset.get_timeseries_point(
+                    d, depths = dataset.get_timeseries_point(
                         float(p[0]),
                         float(p[1]),
                         self.depth,
