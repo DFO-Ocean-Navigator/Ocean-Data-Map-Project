@@ -56,8 +56,8 @@ class PointPlotter(Plotter):
                 prof, d = dataset.get_profile(
                     float(p[0]),
                     float(p[1]),
-                    time,
-                    v
+                    v,
+                    time
                 )
                 data.append(prof)
                 depths.append(d)

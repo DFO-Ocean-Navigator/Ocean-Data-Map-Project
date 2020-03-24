@@ -80,7 +80,7 @@ def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
     if type(salinity) is not np.ndarray:
         salinity = np.array(salinity)
 
-    return depth, latitude, temperature, salinity
+    return depth, latitude, np.squeeze(temperature), np.squeeze(salinity)
 
 
 def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
@@ -153,7 +153,7 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
         press = press[..., np.newaxis]
 
     speed = seawater.svel(salinity, temperature, press)
-    return np.array(speed)
+    return np.squeeze(speed)
 
 
 def density(depth, latitude, temperature, salinity) -> np.ndarray:

@@ -9,7 +9,6 @@ import pytz
 from cachetools import TTLCache
 from pykdtree.kdtree import KDTree
 
-import data.geo as geo
 from data.calculated import CalculatedData
 from data.model import Model
 from data.netcdf_data import NetCDFData
@@ -246,24 +245,6 @@ class Fvcom(Model):
             output = output.reshape(origshape[1:])
 
         return np.squeeze(output)
-
-    def get_path(self, path, depth, time, variable, numpoints=100, times=None, return_depth=False):
-        if times is None:
-            if hasattr(time, "__len__"):
-                times = self.nc_data.timestamp_to_iso_8601(time)
-            else:
-                times = None
-        distances, times, lat, lon, bearings = \
-            geo.path_to_points(path, numpoints, times=times)
-
-        if return_depth:
-            result, dep = self.get_point(lat, lon, depth, time, variable,
-                                         return_depth=return_depth)
-            return np.array([lat, lon]), distances, times, result, dep
-        else:
-            result = self.get_point(lat, lon, depth, time, variable,
-                                    return_depth=return_depth)
-            return np.array([lat, lon]), distances, times, result
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
         min_i, max_i, radius = self.__bounding_box(

@@ -65,7 +65,7 @@ class TestNemo(unittest.TestCase):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.0, -149.0, 0, 2031436800, 'votemper'),
+                ds.get_point(13.0, -149.0, 0, 'votemper', 2031436800),
                 299.17, places=2
             )
 
@@ -84,7 +84,7 @@ class TestNemo(unittest.TestCase):
     def test_get_profile(self):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
-            p, d = ds.get_profile(13.0, -149.0, 2031436800, 'votemper')
+            p, d = ds.get_profile(13.0, -149.0, 'votemper', 2031436800)
             self.assertAlmostEqual(p[0], 299.17, places=2)
             self.assertAlmostEqual(p[10], 299.15, places=2)
             self.assertAlmostEqual(p[20], 296.466766, places=6)
@@ -109,7 +109,7 @@ class TestNemo(unittest.TestCase):
         nc_data = NetCDFData('tests/testdata/nemo_test.nc')
         with Nemo(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.0, -149.0, 'bottom', 2031436800, 'votemper'),
+                ds.get_point(13.0, -149.0, 'bottom', 'votemper', 2031436800),
                 274.13, places=2
             )
 

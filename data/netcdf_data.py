@@ -56,14 +56,26 @@ class NetCDFData(Data):
 
             if self._nc_files:
                 try:
-                    self.dataset = xarray.open_mfdataset(self._nc_files, decode_times=decode_times)
+                    self.dataset = xarray.open_mfdataset(
+                        self._nc_files,
+                        decode_times=decode_times,
+                        chunks=200,
+                    )
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 try:
-                    self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                    if not getattr(self._dataset_config, "geo_ref", {}):
+                        self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
+                    else:
+                        fields = xarray.open_dataset(self.url, decode_times=decode_times)
+                        drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
+                        geo_refs = xarray.open_dataset(
+                            self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+                        )
+                        self.dataset = fields.merge(geo_refs)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
@@ -103,6 +115,33 @@ class NetCDFData(Data):
                 continue
         raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
+    def make_time_slice(self, starttime: int, endtime: Union[int, None] = None) -> slice:
+        """Converts given start and/or end timestamp values (e.g. 60442857)
+        into a slice object that captures the corresponding time
+        indices such that [starttime, starttime] OR [starttime, endtime].
+
+        Required Arguments:
+
+            * starttime {int} -- The starting timestamp.
+        
+        Optional Arguments:    
+
+            * endtime {int or None} -- The ending timestamp to create
+                an inclusive range. Default is None.
+
+        Returns:
+        
+            * slice instance representing the requested time range.
+        """
+        
+        starttime_idx = self.timestamp_to_time_index(starttime)
+
+        if endtime is not None:
+            endtime_idx = self.timestamp_to_time_index(endtime)
+            return slice(starttime_idx, endtime_idx + 1)
+
+        return slice(starttime_idx, starttime_idx + 1)
+    
     def timestamp_to_time_index(self, timestamp: Union[int, List]):
         """Converts a given timestamp (e.g. 2031436800) or list of timestamps
         into the corresponding time index(es) for the time dimension.
@@ -114,7 +153,7 @@ class NetCDFData(Data):
             [int or ndarray] -- Time index(es).
         """
 
-        time_var = self.time_variable.astype(np.int)
+        time_var = np.sort(self.time_variable.astype(np.int))
 
         result = np.nonzero(np.isin(time_var, timestamp))[0]
 
@@ -695,14 +734,14 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            time_list = data.utils.time_index_to_datetime(var.values, var.attrs['units'])
+            time_list = data.utils.time_index_to_datetime(np.sort(var), var.attrs['units'])
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
 
-    def get_nc_file_list(self, datasetconfig, **kwargs):
+    def get_nc_file_list(self, datasetconfig: DatasetConfig, **kwargs: dict) -> Union[List, None]:
         try:
             if not datasetconfig.url.endswith(".sqlite3"):
                 # This method is only applicable to SQLite-indexed datasets
