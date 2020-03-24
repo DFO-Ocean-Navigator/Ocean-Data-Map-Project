@@ -125,7 +125,7 @@ class TimeseriesPlotter(PointPlotter):
 
             self.times = times
             self.data = point_data
-            self.depths = dep
+            self.depths = depths
             self.depth_unit = "m"
 
 
