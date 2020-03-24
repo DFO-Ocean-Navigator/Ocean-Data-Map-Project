@@ -757,19 +757,15 @@ class NetCDFData(Data):
             except KeyError:
                 raise RuntimeError(
                     "Opening a dataset via sqlite requires the 'variable' keyword argument.")
-            if not isinstance(variable, list):
-                variable = [variable]
+            if not isinstance(variable, set):
+                variable = set(variable)
 
             calculated_variables = datasetconfig.calculated_variables
-            if variable[0] in calculated_variables:
-                equation = calculated_variables[variable[0]]['equation']
-
-                variable = data.utils.get_data_vars_from_equation(
-                    equation, [v.key for v in db.get_data_variables()])
+            variables_to_load = self.__get_variables_to_load(db, variable, calculated_variables)
 
             try:
                 timestamp = self.__get_requested_timestamps(
-                    db, variable[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
+                    db, variables_to_load[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
             except KeyError:
                 raise RuntimeError(
                     "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
@@ -777,12 +773,26 @@ class NetCDFData(Data):
             if not timestamp:
                 raise RuntimeError("Error finding timestamp(s) in database.")
 
-            file_list = db.get_netcdf_files(timestamp, variable)
-
+            file_list = db.get_netcdf_files(timestamp, variables_to_load)
             if not file_list:
                 raise RuntimeError("NetCDF file list is empty.")
 
             self._nc_files = file_list
+    
+    def __get_variables_to_load(self, db: SQLiteDatabase, variable: set,
+                                    calculated_variables: dict) -> List[str]:
+        
+        calc_var_keys = set(calculated_variables)
+        variables_to_load = variable.difference(calc_var_keys)
+        requested_calculated_variables = variable & calc_var_keys
+        if requested_calculated_variables:
+            for rcv in requested_calculated_variables:
+                equation = calculated_variables[rcv]['equation']
+
+                variables_to_load.update(data.utils.get_data_vars_from_equation(
+                    equation, [v.key for v in db.get_data_variables()]))
+
+        return list(variables_to_load)
 
     def __get_requested_timestamps(self, db: SQLiteDatabase, variable: str, timestamp, endtime,
                                    nearest_timestamp) -> List[int]:
