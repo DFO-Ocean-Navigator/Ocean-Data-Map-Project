@@ -153,7 +153,7 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
         press = press[..., np.newaxis]
 
     speed = seawater.svel(salinity, temperature, press)
-    return np.array(speed)
+    return np.squeeze(speed)
 
 
 def density(depth, latitude, temperature, salinity) -> np.ndarray:
