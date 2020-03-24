@@ -793,35 +793,6 @@ def timestamps():
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
-def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
-    """
-    API Format: /api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
-
-    <string:old_dataset> : Previous dataset used
-    <int:date>           : Date of desired data - Can be found using /api/timestamps/?datasets='...'
-    <string:new_dataset> : Dataset to extract data - Can be found using /api/datasets
-
-    **Used when changing datasets.**
-    """
-
-    old_config = DatasetConfig(old_dataset)
-    new_config = DatasetConfig(new_dataset)
-    with open_dataset(old_config) as ds:
-        timestamp = ds.timestamps[date]
-
-    with open_dataset(new_config) as ds:
-        timestamps = ds.timestamps
-
-    diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
-    idx = np.where(diffs <= 0)[0]
-    res = 0
-    if len(idx) > 0:
-        res = idx.max().item()  # https://stackoverflow.com/a/11389998/2231969
-
-    return Response(json.dumps(res), status=200, mimetype='application/json')
-
-
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
 def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
     """

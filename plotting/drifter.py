@@ -119,30 +119,30 @@ class DrifterPlotter(Plotter):
 
             try:
                 model_start = np.where(
-                    dataset.timestamps <= self.times[self.start]
+                    dataset.nc_data.timestamps <= self.times[self.start]
                 )[0][-1]
             except IndexError:
                 model_start = 0
 
             model_start -= 1
-            model_start = np.clip(model_start, 0, len(dataset.timestamps) - 1)
+            model_start = np.clip(model_start, 0, len(dataset.nc_data.timestamps) - 1)
 
             try:
                 model_end = np.where(
-                    dataset.timestamps >= self.times[self.end]
+                    dataset.nc_data.timestamps >= self.times[self.end]
                 )[0][0]
             except IndexError:
-                model_end = len(dataset.timestamps) - 1
+                model_end = len(dataset.nc_data.timestamps) - 1
 
             model_end += 1
             model_end = np.clip(
                 model_end,
                 model_start,
-                len(dataset.timestamps) - 1
+                len(dataset.nc_data.timestamps) - 1
             )
 
             model_times = [time.mktime(
-                t.timetuple()) for t in dataset.timestamps[model_start:model_end + 1]]
+                t.timetuple()) for t in dataset.nc_data.timestamps[model_start:model_end + 1]]
             output_times = [time.mktime(t.timetuple())
                             for t in self.times[self.start:self.end + 1]]
             d = []

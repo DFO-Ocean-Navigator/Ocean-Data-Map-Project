@@ -20,20 +20,13 @@ class Mercator(Model):
         self.latvar = None
         self.lonvar = None
         self.nc_data = nc_data
-        self._dataset = nc_data.dataset
         self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
-        self.timestamp_to_time_index = nc_data.timestamp_to_time_index
-        self.time_variable = None
-        self.timestamps = None
 
     def __enter__(self):
         self.nc_data.__enter__()
-        self._dataset = self.nc_data.dataset
 
         if not self._meta_only:
-            self.time_variable = self.nc_data.time_variable
-            self.timestamps = self.nc_data.timestamps
             if self.latvar is None:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
 
@@ -50,7 +43,7 @@ class Mercator(Model):
             var = None
             for v in self.nc_data.depth_dimensions:
                 # Depth is usually a "coordinate" variable
-                if v in self._dataset.coords.keys():
+                if v in self.nc_data.dataset.coords:
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
@@ -68,7 +61,7 @@ class Mercator(Model):
 
     def __bounding_box(self, lat, lon, n=10):
 
-        y, x, _ = find_nearest_grid_point(lat, lon, self._dataset, self.latvar, self.lonvar, n)
+        y, x, _ = find_nearest_grid_point(lat, lon, self.latvar, self.lonvar, n)
 
         def fix_limits(data, limit):
             mx = np.amax(data)
@@ -171,7 +164,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -226,7 +219,7 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -316,7 +309,7 @@ class Mercator(Model):
         if len(var.shape) != 4:
             raise APIError("This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
 
-        time = self.timestamp_to_time_index(timestamp)
+        time = self.nc_data.timestamp_to_time_index(timestamp)
 
         miny, maxy, minx, maxx, radius = self.__bounding_box(
             latitude, longitude, 10)

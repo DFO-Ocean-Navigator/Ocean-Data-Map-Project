@@ -237,12 +237,11 @@ class NetCDFData(Data):
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self.dataset,
-                self.get_dataset_variable(
+                bottom_left[0], bottom_left[1], self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self.dataset, self.get_dataset_variable(
+                top_right[0], top_right[1], self.get_dataset_variable(
                     lat_var), self.get_dataset_variable(lon_var)
             )
 

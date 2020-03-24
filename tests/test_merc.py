@@ -25,21 +25,12 @@ class TestMercator(unittest.TestCase):
         self.assertIsNone(ds.latvar)
         self.assertIsNone(ds.lonvar)
         self.assertIs(ds.nc_data, nc_data)
-        self.assertIs(ds._dataset, nc_data.dataset)
         self.assertIs(ds._meta_only, nc_data.meta_only)
         self.assertEqual(ds.variables, nc_data.variables)
-        self.assertEqual(ds.timestamp_to_time_index, nc_data.timestamp_to_time_index)
 
-    def test_open_meta_only(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc', **{"meta_only": True})
-        with Mercator(nc_data) as ds:
-            self.assertIs(ds._dataset, nc_data.dataset)
-
-    def test_open_not_meta_only(self):
+    def test_enter_not_meta_only(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
-            self.assertIsNotNone(ds.time_variable)
-            self.assertIsNotNone(ds.timestamps)
             self.assertIsNotNone(ds.latvar)
             self.assertIsNotNone(ds.lonvar)
 
@@ -81,21 +72,6 @@ class TestMercator(unittest.TestCase):
             self.assertEqual(variables['votemper'].unit, 'Kelvin')
             self.assertEqual(sorted(variables['votemper'].dimensions), sorted(
                 ['time', 'depth', 'latitude', 'longitude']))
-
-    def test_timestamp_to_time_index(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            idx = ds.timestamp_to_time_index(2119651200)
-
-            self.assertEqual(idx, 0)
-
-    def test_time_variable(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            time_var = ds.time_variable
-
-            self.assertEqual(time_var.attrs["standard_name"], "time")
-            self.assertEqual(time_var.attrs["long_name"], "Validity time")
 
     def test_get_point(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
@@ -141,17 +117,6 @@ class TestMercator(unittest.TestCase):
                 ds.get_point(13.01, -149.0, 'bottom', 2119651200, 'votemper'),
                 273.95, places=2
             )
-
-    def test_timestamps(self):
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            self.assertEqual(len(ds.timestamps), 1)
-            self.assertEqual(ds.timestamps[0],
-                             datetime.datetime(2017, 3, 3, 0, 0, 0, 0,
-                                               pytz.UTC))
-            # List is immutable
-            with self.assertRaises(ValueError):
-                ds.timestamps[0] = 0
 
     def test_get_area(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
