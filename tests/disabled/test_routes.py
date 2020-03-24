@@ -115,11 +115,8 @@ class TestRoutes(unittest.TestCase):
         self.assertEqual(result[0]['id'], 'none')
         self.assertEqual(result[1]['id'], 'rnd')
 
-    @mock.patch("plotting.colormap.get_colormap_names")
+    @mock.patch.dict("plotting.colormap.colormap_names", {'colormap1': 'COLORMAP1'})
     def test_colormaps(self, m):
-        m.return_value = {
-            'colormap1': 'COLORMAP1',
-        }
         resp = self.app.get('/api/colormaps/')
         self.assertEquals(resp.status_code, 200)
         self.assertEquals(resp.mimetype, 'application/json')

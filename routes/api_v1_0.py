@@ -611,7 +611,7 @@ def colormaps_v1_0():
             'id': i,
             'value': n
         }
-        for i, n in list(plotting.colormap.get_colormap_names().items())
+        for i, n in plotting.colormap.colormap_names.items()
     ], key=lambda k: k['value'])
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
