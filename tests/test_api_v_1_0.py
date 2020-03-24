@@ -148,6 +148,9 @@ class TestAPIv1(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
 
+        res_data = self.__get_response_data(res)
+        self.assertIn({'id': 'temperature', 'value': 'Temperature'}, res_data)
+
     def test_colormaps_image_endpoint(self):
         res = self.app.get('/api/v1.0/colormaps.png')
 
