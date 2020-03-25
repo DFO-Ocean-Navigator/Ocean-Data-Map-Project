@@ -1239,5 +1239,26 @@
             "particulate_organic_nitrogen": { "name":  "Particulate Organic Nitrogen Concentration", "unit":  "mmol m-3", "scale":  [0, 10] },
             "silicon": { "name":  "Silicon Concentration", "unit":  "mmol m-3", "scale":  [0, 70] }
         }
+    },
+    "salishseacast_3d_tracers": {
+        "enabled": true,
+        "name": "SalishSeaCast 3D Salinity & Temperature",
+        "envtype": ["ocean"],
+        "type": "historical",
+        "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DTracerFields1hV19-05",
+        "geo_ref": {
+            "url": "/data/grids/salishsea/geo_reference_201702.nc",
+            "drop_variables": ["bathymetry"]
+        },
+        "quantum": "hour",
+        "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
+        "attribution": "Mesoscale Ocean & Atmosphere Dynamics Group (MOAD), Earth, Ocean & Atmopspheric Sciences (EOAS), University of British Columbia",
+        "help": "&nbsp; SalishSeaCast NEMO Model - <a href=\"https://salishsea.eos.ubc.ca/nemo/\" target=\"_new\">https://salishsea.eos.ubc.ca/nemo/</a> \n<p>\n3d salinity and water temperature field values averaged over 1 hour intervals from SalishSeaCast NEMO model runs with physics, biology and chemistry. The values are calculated for the surface of the model grid that includes Juan de Fuca Strait, the Strait of Georgia, Puget Sound, and Johnstone Strait on the coasts of Washington State and British Columbia. The time values are UTC. They are the centre of the intervals over which the calculated model results are averaged.\n</p>\n<p>\nMore information about this dataset, a web interface and an API for it, can be found on the SalishSeaCast ERDDAP server at\n<a href=\"https://salishsea.eos.ubc.ca/erddap/info/ubcSSg3DTracerFields1hV19-05/index.html\"\" target=\"_new\">https://salishsea.eos.ubc.ca/erddap/info/ubcSSg3DTracerFields1hV19-05/index.html</a>,\nor by contacting <a href=\"sallen@eoas.ubc.ca\">Dr. Susan Allen</a>.\n</p>\n<p>\nIf you use this dataset in your research,\nplease reference it with wording similar to the example below,\nand include citations of the publications below.\nInclusion of the date(s) when you downloaded the dataset,\nand the dataset id help to ensure reproducibility of your work.\n</p>\n<p>\nReference wording:\n</p>\n<blockquote>\nSea surface height fields from the SalishSeaCast model\n(Soontiens et al, 2016; Soontiens and Allen, 2017)\nwere downloaded from their ERDDAP server\n(https://salishsea.eos.ubc.ca/erddap/)\non DATE from dataset ubcSSgSurfaceTracerFields1hV19-05.\n</blockquote>\n<p>Citations:</p>\n<ul>\n  <li>\n    Soontiens, N., Allen, S., Latornell, D., Le Souef, K., Machuca, I., Paquin, J.-P., Lu, Y., Thompson, K., Korabel, V., 2016. Storm surges in the Strait of Georgia simulated with a regional model. Atmosphere-Ocean 54 1-21. \n    <a href=\"https://dx.doi.org/10.1080/07055900.2015.1108899\" target=\"_new\">https://dx.doi.org/10.1080/07055900.2015.1108899</a> \n  </li>\n  <li>\n    Soontiens, N. and Allen, S., 2017. Modelling sensitivities to mixing and advection in a sill-basin estuarine system. Ocean Modelling, 112, 17-32. \n    <a href=\"https://dx.doi.org/10.1016/j.ocemod.2017.02.008\">https://dx.doi.org/10.1016/j.ocemod.2017.02.008</a>\n  </li>\n</ul>\n<p>\n  The SalishSeaCast project is supported by:\n</p>\n<ul>\n  <li>The Marine Environmental Observation Prediction &\nResponse network (MEOPAR)</li>\n  <li>Ocean Networks Canada (ONC)</li>\n  <li>Compute Canada</li>\n</ul>\n<p>\nThe Salish Sea MEOPAR NEMO model results are copyright by the Salish Sea MEOPAR Project Contributors and The University of British Columbia. They are licensed under the Apache License, Version 2.0. https://www.apache.org/licenses/LICENSE-2.0\n</p>",
+        "variables": {
+            "salinity": { "name":  "Salinity", "unit":  "PSU", "scale":  [0, 34], "equation": "salinity * 35 / 35.16504", "dims": ["time", "depth", "gridY", "gridX"] },
+            "temperature": { "name":  "Conservative Temperature", "unit":  "Celcius", "scale":  [4, 20] }
+        }
     }
 }
