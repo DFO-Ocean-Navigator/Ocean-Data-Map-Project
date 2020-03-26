@@ -757,8 +757,11 @@ class NetCDFData(Data):
             except KeyError:
                 raise RuntimeError(
                     "Opening a dataset via sqlite requires the 'variable' keyword argument.")
-            if not isinstance(variable, set):
-                variable = set(variable)
+            if isinstance(variable, str):
+                variable = { variable }
+            else:
+                if not isinstance(variable, set):
+                    variable = set(variable)
 
             calculated_variables = datasetconfig.calculated_variables
             variables_to_load = self.__get_variables_to_load(db, variable, calculated_variables)
