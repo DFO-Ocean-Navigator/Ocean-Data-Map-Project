@@ -265,7 +265,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_transect"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/timeseries.. blame nabil")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_timeseries_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -274,11 +273,20 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # timeseries (point, virtual mooring)
-        # returns IndexError: index 0 is out of bounds for axis 0 with size 0
         res = self.app.get(self.apiLinks["plot_timeseries"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/ts.. returning error")
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        # timeseries (point, virtual mooring)
+        res = self.app.get(self.apiLinks["plot_timeseries_all_depths"])
+        self.assertEqual(res.status_code, 200)
+
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_ts_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -287,7 +295,6 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # ts (point, T/S Plot)
-        # KeyError: 'vosaline'
         res = self.app.get(self.apiLinks["plot_ts"])
         self.assertEqual(res.status_code, 200)
 
@@ -301,7 +308,7 @@ class TestAPIv1(unittest.TestCase):
 
         # sound (point, Speed of Sound)
         # IndexError: list index out of range
-        res = self.app.get(self.apiLinks[plot_sound])
+        res = self.app.get(self.apiLinks["plot_sound"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
