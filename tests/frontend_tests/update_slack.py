@@ -6,6 +6,7 @@ Write test results to slack channel ui_tests
 
 """
 
+from datetime import datetime
 import os
 import slack
 
@@ -20,18 +21,18 @@ from dimension_config import open_config
 def log_to_channel(log_file):
     config = open_config(log_file)
     message = config['Test results']
-
+    test_date = datetime.now()
+    test_date = test_date.strftime("%A, %d. %B %Y %H:%M:%S")
     list_result = []
     for tests in message:
         if type(message[tests]) is str:
-            result_format = '{} : {}'.format(tests, message[tests])
+            result_format = f'[{test_date}] {tests} : {message[tests]}'
             result_index = index(result_format)
             list_result.append(result_index)
             continue
 
         for result in message[tests]:
-            result_format = '{} - {} : {}'.format(
-                tests, result, message[tests][result])
+            result_format = f'[{test_date}] {tests} - {result} : {message[tests][result]}.'
             result_index = index(result_format)
             list_result.append(result_index)
 
