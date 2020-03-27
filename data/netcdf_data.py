@@ -82,7 +82,7 @@ class NetCDFData(Data):
                     self.dataset = netCDF4.Dataset(self.url)
 
             if self._grid_angle_file_url:
-                angle_file = xarray.open_mfdataset(
+                angle_file = xarray.open_dataset(
                     self._grid_angle_file_url,
                     drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
                 )
