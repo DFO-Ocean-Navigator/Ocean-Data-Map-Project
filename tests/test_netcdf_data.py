@@ -84,7 +84,7 @@ class TestNetCDFData(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         kwargs = {"dataset_key": "salishseacast_ssh"}
-        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+        with NetCDFData("tests/testdata/salishseacast_ssh_test.nc", **kwargs) as nc_data:
             self.assertIsInstance(nc_data.dataset, xarray.Dataset)
             self.assertTrue(nc_data._dataset_open)
             self.assertIn("latitude", nc_data.dataset.variables)
