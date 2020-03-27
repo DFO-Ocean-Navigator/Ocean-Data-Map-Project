@@ -103,19 +103,20 @@ class TestNetCDFData(unittest.TestCase):
                 self.assertIn("latitude", nc_data.dataset.variables)
                 self.assertIn("bathymetry", nc_data.dataset.variables)
 
-    @unittest.skip(
-        "Some incompatibility between tests/testdata/nemo_test.nc and "
-        "tests/testdata/nemo_grid_angle.nc results in "
-        "ValueError: arguments without labels along dimension 'x' cannot be aligned "
-        "because they have different dimension sizes: {1442, 101}"
-    )
-    def test_enter_grid_angle_file(self):
-        kwargs = {"grid_angle_file_url": "tests/testdata/nemo_grid_angle.nc"}
-        nc_data = NetCDFData("tests/testdata/nemo_test.nc", **kwargs)
-        nc_data._dataset_config = Mock(lat_var_key="nav_lat", lon_var_key="nav_lon")
-        nc_data.__enter__()
-        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
-        self.assertTrue(nc_data._dataset_open)
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_enter_grid_angle_file(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        kwargs = {
+            "dataset_key": "salishseacast_ssh",
+            "grid_angle_file_url": "tests/testdata/grid_angle_salishsea_201702.nc",
+        }
+        with NetCDFData("tests/testdata/salishseacast_ssh_test.nc", **kwargs) as nc_data:
+            self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+            self.assertIn("alpha", nc_data.dataset.variables)
+            self.assertIn("cos_alpha", nc_data.dataset.variables)
+            self.assertIn("sin_alpha", nc_data.dataset.variables)
 
     def test_exit(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
