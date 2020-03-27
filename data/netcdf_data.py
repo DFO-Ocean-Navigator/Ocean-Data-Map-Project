@@ -67,19 +67,18 @@ class NetCDFData(Data):
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 try:
-                    if not getattr(self._dataset_config, "geo_ref", {}):
-                        self.dataset = xarray.open_dataset(self.url, decode_times=decode_times)
-                    else:
-                        fields = xarray.open_dataset(self.url, decode_times=decode_times)
-                        drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
-                        geo_refs = xarray.open_dataset(
-                            self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
-                        )
-                        self.dataset = fields.merge(geo_refs)
+                    fields = xarray.open_dataset(self.url, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
-                    self.dataset = netCDF4.Dataset(self.url)
+                    fields = netCDF4.Dataset(self.url)
+                if getattr(self._dataset_config, "geo_ref", {}):
+                    drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
+                    geo_refs = xarray.open_dataset(
+                        self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+                    )
+                    fields = fields.merge(geo_refs)
+                self.dataset = fields
 
             if self._grid_angle_file_url:
                 angle_file = xarray.open_dataset(
@@ -123,17 +122,17 @@ class NetCDFData(Data):
         Required Arguments:
 
             * starttime {int} -- The starting timestamp.
-        
-        Optional Arguments:    
+
+        Optional Arguments:
 
             * endtime {int or None} -- The ending timestamp to create
                 an inclusive range. Default is None.
 
         Returns:
-        
+
             * slice instance representing the requested time range.
         """
-        
+
         starttime_idx = self.timestamp_to_time_index(starttime)
 
         if endtime is not None:
@@ -141,7 +140,7 @@ class NetCDFData(Data):
             return slice(starttime_idx, endtime_idx + 1)
 
         return slice(starttime_idx, starttime_idx + 1)
-    
+
     def timestamp_to_time_index(self, timestamp: Union[int, List]):
         """Converts a given timestamp (e.g. 2031436800) or list of timestamps
         into the corresponding time index(es) for the time dimension.
@@ -781,10 +780,10 @@ class NetCDFData(Data):
                 raise RuntimeError("NetCDF file list is empty.")
 
             self._nc_files = file_list
-    
+
     def __get_variables_to_load(self, db: SQLiteDatabase, variable: set,
                                     calculated_variables: dict) -> List[str]:
-        
+
         calc_var_keys = set(calculated_variables)
         variables_to_load = variable.difference(calc_var_keys)
         requested_calculated_variables = variable & calc_var_keys
