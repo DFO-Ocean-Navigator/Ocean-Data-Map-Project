@@ -1080,13 +1080,10 @@ def observation_track_v1_0(query: str):
         **params
     )
 
-    if len(coordinates) == 0:
-        coordinates = [[0, 0, 0, 0]]
-
-    df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
-    df['id'] = df.id.astype(int)
-
     if len(coordinates) > 1:
+        df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
+        df['id'] = df.id.astype(int)
+
         for p_id in (df.id.value_counts() > 1).index.values:
             d = { 
                 'type': "Feature",
