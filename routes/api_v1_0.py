@@ -30,7 +30,7 @@ import data.observational.queries as ob_queries
 from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
-from plotting.track import TrackPlotter
+from plotting.drifter import DrifterPlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
@@ -203,7 +203,6 @@ def variables_query_v1_0():
     return jsonify(data)
 
 
-'''
 @bp_v1_0.route('/api/v1.0/observationvariables/')
 def obs_vars_query_v1():
     data = []
@@ -212,7 +211,6 @@ def obs_vars_query_v1():
 
     resp = jsonify(data)
     return resp
-'''
 
 
 @bp_v1_0.route('/api/v1.0/depth/')
@@ -537,8 +535,8 @@ def plot_v1_0():
         plotter = HovmollerPlotter(dataset, query, **options)
     elif plottype == 'observation':
         plotter = ObservationPlotter(dataset, query, **options)
-    elif plottype == 'track':
-        plotter = TrackPlotter(dataset, query, **options)
+    elif plottype == 'drifter':
+        plotter = DrifterPlotter(dataset, query, **options)
     elif plottype == 'class4':
         plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
@@ -932,7 +930,6 @@ def observation_datatypes_v1_0():
 
     **Used in ObservationSelector**
     """
-    resp.cache_control.max_age = max_age
     data = [
         {
             'id': dt.key,
@@ -941,7 +938,6 @@ def observation_datatypes_v1_0():
         for dt in ob_queries.get_datatypes(DB.session)
     ]
     resp = jsonify(data)
-    resp.cache_control.max_age = max_age
     return resp
 
 @bp_v1_0.route('/api/v1.0/observation/meta_keys/<string:platform_types>.json')
@@ -955,10 +951,8 @@ def observation_keys_v1_0(platform_types: str):
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
     data = ob_queries.get_meta_keys(DB.session, platform_types.split(','))
     resp = jsonify(data)
-    resp.cache_control.max_age = max_age
     return resp
 
 @bp_v1_0.route('/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json')
@@ -973,12 +967,10 @@ def observation_values_v1_0(platform_types: str, key: str):
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
     data = ob_queries.get_meta_values(
         DB.session, platform_types.split(','), key
     )
     resp = jsonify(data)
-    resp.cache_control.max_age = max_age
     return resp
 
 @bp_v1_0.route('/api/v1.0/observation/tracktime/<string:platform_id>.json')
@@ -992,7 +984,6 @@ def observation_tracktime_v1_0(platform_id: str):
 
     **Used in TrackWindow**
     """
-    max_age = 86400
     platform = DB.session.query(Platform).get(platform_id)
     data = DB.session.query(
         DB.func.min(Station.time),
@@ -1002,7 +993,6 @@ def observation_tracktime_v1_0(platform_id: str):
         'min': data[0].isoformat(),
         'max': data[1].isoformat(),
     })
-    resp.cache_control.max_age = max_age
     return resp
 
 
@@ -1295,7 +1285,6 @@ def observation_variables_v1_0(query: str):
     ]
 
     resp = jsonify(data)
-    resp.cache_control.max_age = max_age
     return resp
 
 
