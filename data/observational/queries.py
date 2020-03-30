@@ -42,6 +42,83 @@ def __db_funcs() -> Dict[str, Callable]:
 
     return funcs
 
+def get_platforms(
+    session : db.Session,
+    minlat : Optional[float]=None,
+    maxlat : Optional[float]=None,
+    minlon : Optional[float]=None,
+    maxlon : Optional[float]=None,
+    latitude : Optional[float]=None,
+    longitude : Optional[float]=None,
+    radius : Optional[float]=None,
+    starttime : Optional[datetime.datetime]=None,
+    endtime : Optional[datetime.datetime]=None,
+    platform_types : Optional[List[Platform.Type]]=None,
+    meta_key : Optional[str]=None,
+    meta_value : Optional[str]=None,
+) -> List[Platform]:
+    """
+    Gets a list of Platforms that have at least one station matching the query
+    """
+    query = session.query(Platform).join(Station)
+
+    query = __add_platform_filters(
+        query,
+        platform_types=platform_types,
+        meta_key=meta_key,
+        meta_value=meta_value
+    )
+
+    if latitude and longitude and radius:
+        minlat, maxlat, minlon, maxlon = __get_bounding_latlon(
+            latitude, longitude, radius
+        )
+
+    query = __add_station_filters(
+        query,
+        minlat=minlat,
+        maxlat=maxlat,
+        minlon=minlon,
+        maxlon=maxlon,
+        starttime=starttime,
+        endtime=endtime,
+    )
+
+    if latitude and longitude and radius:
+        radDist = radius / EARTH_RADIUS
+        radLat = math.radians(latitude)
+        radLon = math.radians(longitude)
+
+        if db.engine.dialect.name == 'sqlite':
+            rc = db.engine.raw_connection()
+
+            # SQLite doesn't do trig, so we'll add the functions via Python
+            # It won't be as quick as doing the comparison in the database, but
+            # SQLite should only be used for testing purposes
+            rc.create_function("sin", 1, math.sin)
+            rc.create_function("cos", 1, math.cos)
+            rc.create_function("radians", 1, math.radians)
+            rc.create_function("acos", 1, math.acos)
+
+        query = query.filter(
+            db.func.acos(
+                (
+                    math.sin(radLat) *
+                    db.func.sin(db.func.radians(Station.latitude))
+                ) +
+                (
+                    math.cos(radLat) *
+                    db.func.cos(db.func.radians(Station.latitude)) *
+                    db.func.cos(
+                        db.func.radians(Station.longitude) -
+                        radLon
+                    )
+                )
+            ) <= radDist
+        )
+
+    return query.distinct().all()
+
 def get_platform_tracks(
     session : db.Session,
     quantum : str="hour",
@@ -54,6 +131,7 @@ def get_platform_tracks(
     platform_types : Optional[List[Platform.Type]]=None,
     meta_key : Optional[str]=None,
     meta_value : Optional[str]=None,
+    platforms : Optional[List[Platform]]=None,
 ) -> List[Tuple[int, Enum, float, float]]:
     """
     Gets a list of platform, platform_type, longitude, latitude tuples, given
@@ -75,6 +153,9 @@ def get_platform_tracks(
         meta_key=meta_key,
         meta_value=meta_value
     )
+
+    if platforms:
+        query = query.filter(Platform.id.in_([p.id for p in platforms]))
 
     query = __add_station_filters(
         query,

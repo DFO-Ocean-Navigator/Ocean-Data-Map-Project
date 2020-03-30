@@ -973,6 +973,29 @@ def observation_values_v1_0(platform_types: str, key: str):
     resp = jsonify(data)
     return resp
 
+@bp_v1_0.route('/api/v1.0/observation/tracktime/<string:platform_id>.json')
+def observation_tracktime_v1_0(platform_id: str):
+    """
+    API Format: /api/v1.0/observation/tracktime/<string:platform_id>.json
+
+    <string:platform_id> : Platform ID
+
+    Queries the min and max times for the track
+
+    **Used in TrackWindow**
+    """
+    platform = DB.session.query(Platform).get(platform_id)
+    data = DB.session.query(
+        DB.func.min(Station.time),
+        DB.func.max(Station.time),
+    ).filter(Station.platform == platform).one()
+    resp = jsonify({
+        'min': data[0].isoformat(),
+        'max': data[1].isoformat(),
+    })
+    return resp
+
+
 @bp_v1_0.route('/api/v1.0/observation/track/<string:query>.json')
 def observation_track_v1_0(query: str):
     """
@@ -1019,7 +1042,6 @@ def observation_track_v1_0(query: str):
         else:
             params[MAPPING[k]] = float(v)
 
-    checkpoly = False
     if 'area' in query_dict:
         area = json.loads(query_dict.get('area'))
         if len(area) > 1:
@@ -1029,13 +1051,20 @@ def observation_track_v1_0(query: str):
             params['minlon'] = min(lons)
             params['maxlat'] = max(lats)
             params['maxlon'] = max(lons)
-            poly = Polygon(LinearRing(area))
-            checkpoly = True
         else:
             params['latitude'] = area[0][0]
             params['longitude'] = area[0][1]
             params['radius'] = float(query_dict.get('radius', 10))
-            with_radius = True
+
+        platforms = ob_queries.get_platforms(DB.session, **params)
+        for param in [
+            'minlat', 'maxlat', 'minlon', 'maxlon', 'latitude', 'longitude',
+            'radius'
+        ]:
+            if param in params:
+                del params[param]
+
+        params['platforms'] = platforms
 
     coordinates = ob_queries.get_platform_tracks(
         DB.session,
@@ -1178,19 +1207,17 @@ def observation_point_v1_0(query: str):
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/meta/<string:query>.json')
-def observation_meta_v1_0(query: str):
+@bp_v1_0.route('/api/v1.0/observation/meta.json')
+def observation_meta_v1_0():
     """
-    API Format: /api/v1.0/observation/meta/<string:query>.json
-
-    <string:query> : A key=value pair, where key is either station or platform
-    and value is the id
+    API Format: /api/v1.0/observation/meta.json
 
     Observational query for all the metadata for a platform or station
 
     **Used in Map for the observational tooltip**
     """
-    key, identifier = query.split('=')
+    key = request.args.get("type", "platform")
+    identifier = request.args.get("id", "0")
     max_age = 86400
     data = {}
     if key == 'station':
