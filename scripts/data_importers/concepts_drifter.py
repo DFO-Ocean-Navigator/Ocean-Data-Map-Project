@@ -83,7 +83,7 @@ def main(uri: str, filename: str):
 
                 for c in columns:
                     value = row[c]
-                    if type(value) is pd.Timestamp:
+                    if isinstance(value, pd.Timestamp):
                         value = value.value / 10 ** 9
 
                     if np.isfinite(value):
@@ -103,7 +103,7 @@ def main(uri: str, filename: str):
 
             # If there are any samples that haven't been committed yet, do so
             # now.
-            if len(samples) > 0:
+            if samples:
                 data.observational.db.session.bulk_save_objects(samples)
                 data.observational.db.session.commit()
                 samples = []
