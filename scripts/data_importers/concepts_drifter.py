@@ -35,9 +35,9 @@ def main(uri: str, filename: str):
     else:
         filenames = [filename]
 
-    for filename in filenames:
-        print(filename)
-        with xr.open_dataset(filename) as ds:
+    for fname in filenames:
+        print(fname)
+        with xr.open_dataset(fname) as ds:
             df = ds.to_dataframe().drop(['wmo', 'deployment', 'imei'], axis=1)
             columns = list(filter(lambda c: c in DATATYPE_MAPPING, df.columns))
 

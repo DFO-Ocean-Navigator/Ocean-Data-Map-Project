@@ -42,8 +42,8 @@ def main(uri: str, filename: str):
     else:
         filenames = [filename]
 
-    for filename in filenames:
-        print(filename)
+    for fname in fname:
+        print(fname)
         # We're only loading Temperature and Salinity from these files, so
         # we'll just make sure the DataTypes are in the db now.
         if DataType.query.get('sea_water_temperature') is None:
@@ -64,7 +64,7 @@ def main(uri: str, filename: str):
 
         data.observational.db.session.commit()
 
-        with xr.open_dataset(filename) as ds:
+        with xr.open_dataset(fname) as ds:
             ds['TIME'] = ds.JULD.to_index().to_datetimeindex()
             ds['TIME'] = ds.TIME.swap_dims({'TIME': 'N_PROF'})
             depth = seawater.dpth(

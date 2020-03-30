@@ -27,13 +27,13 @@ def main(uri: str, filename: str):
     else:
         filenames = [filename]
 
-    for filename in filenames:
-        print(filename)
-        with xr.open_dataset(filename) as ds:
+    for fname in filenames:
+        print(fname)
+        with xr.open_dataset(fname) as ds:
             if len(datatype_map) == 0:
                 # Generate the DataTypes; only consider variables that have depth
                 for var in filter(
-                    lambda x: 'level' in ds[x].coords,
+                    lambda x, dataset=ds: 'level' in dataset[x].coords,
                     [d for d in ds.data_vars]
                 ):
                     dt = DataType.query.get(ds[var].standard_name)

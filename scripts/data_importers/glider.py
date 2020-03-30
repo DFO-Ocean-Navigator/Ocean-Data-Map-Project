@@ -27,9 +27,9 @@ def main(uri: str, filename: str):
         filenames = [filename]
 
     datatype_map = {}
-    for filename in filenames:
-        print(filename)
-        with xr.open_dataset(filename) as ds:
+    for fname in filenames:
+        print(fname)
+        with xr.open_dataset(fname) as ds:
             variables = [v for v in VARIABLES if v in ds.variables]
             df = ds[
                 ['TIME', 'LATITUDE', 'LONGITUDE', 'PRES', *variables]

@@ -42,9 +42,9 @@ def main(uri: str, filename: str):
     else:
         filenames = [filename]
 
-    for filename in filenames:
-        print(filename)
-        with xr.open_dataset(filename) as ds:
+    for fname in filenames:
+        print(fname)
+        with xr.open_dataset(fname) as ds:
             times = pd.to_datetime(ds.JULD.values)
 
             for f in META_FIELDS:
