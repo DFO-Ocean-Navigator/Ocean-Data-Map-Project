@@ -979,7 +979,7 @@ def observation_values_v1_0(platform_types: str, key: str):
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/tracktime/<string:platform_id>.json')
+@bp_v1_0.route('/api/v1.0/observation/tracktimerange/<string:platform_id>.json')
 def observation_tracktime_v1_0(platform_id: str):
     """
     API Format: /api/v1.0/observation/tracktime/<string:platform_id>.json
