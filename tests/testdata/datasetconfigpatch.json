@@ -61,8 +61,8 @@
         "type": "historical",
         "time_dim_units": "seconds since 1970-01-01 00:00:00",
         "attribution": "UBC-MOAD",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
         "variables": {
             "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
         }
