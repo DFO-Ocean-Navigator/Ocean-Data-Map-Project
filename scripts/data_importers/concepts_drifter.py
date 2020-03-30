@@ -41,7 +41,6 @@ def main(uri: str, filename: str):
             df = ds.to_dataframe().drop(['wmo', 'deployment', 'imei'], axis=1)
             columns = list(filter(lambda c: c in DATATYPE_MAPPING, df.columns))
 
-            row = df.iloc[0]
             dt_map = {}
             for c in columns:
                 # First check our local cache for the DataType object, if

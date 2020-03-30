@@ -1,9 +1,7 @@
 #!env python
 
-import numpy as np
 import xarray as xr
 import pandas as pd
-import datetime
 import seawater
 import defopt
 import os

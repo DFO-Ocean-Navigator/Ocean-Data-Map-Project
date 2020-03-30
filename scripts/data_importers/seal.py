@@ -5,7 +5,6 @@ import pandas as pd
 import xarray as xr
 import defopt
 import seawater
-import datetime
 import os
 import glob
 import data.observational
@@ -34,8 +33,6 @@ def main(uri: str, filename: str):
     """
     data.observational.init_db(uri, echo=False)
     data.observational.create_tables()
-
-    session = data.observational.db.session
 
     if os.path.isdir(filename):
         filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
