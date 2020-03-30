@@ -14,33 +14,31 @@ cache file used from within the Ocean Navigator code.
 import argparse
 import datetime
 import fcntl
+import glob
 import logging
 import os.path
 import sys
 import time
+
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-from ftplib import FTP
 
 
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()
 
 
-def list_class4_files(class4_ftp_url):
-    ftpSite = FTP(class4_ftp_url)
-    ftpSite.login("anonymous","anonymous")
-    thisYear = datetime.datetime.now().year
+def list_class4_files(class4_path):
     files = []
     result = []
-    for i in range(2011, thisYear + 1):
-        fullList = ftpSite.nlst("/class4/" + str(i))
-        for filename in fullList:
-            if ("_GIOPS_" in filename) and ("profile.nc" in filename):
-                files.append(filename[13:-3])
+    
+    for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
+        if f.endswith('profile.nc') and ('GIOPS' in f):
+            files.append(f[18:-3])
+
+
     for names in files:
         value = names
         date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
@@ -56,33 +54,28 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config_file', required=True,
                         type=argparse.FileType('rb'),
-                        help='Name of Ocean Navigator configuration file')
+                        help='Name of Ocean Navigator configuration file.')
     opts = parser.parse_args()
 
     config = {}
-    log.info('Loading Ocean Navigator configuration from file %s ...',
-             opts.config_file.name)
+    log.info(f"Attempting to load Ocean Navigator configuration from file {opts.config_file.name}...")
     try:
         exec(compile(opts.config_file.read(), opts.config_file.name, 'exec'),
              config)
     except IOError:
-        log.error('Unable to load configuration file %s',
-                  opts.config_file.name)
+        log.error(f"Error: Unable to load configuration file {opts.config_file.name}.")
         sys.exit(1)
 
-    if 'CLASS4_FTP' not in config:
-        log.error(('FTP server for Class4 files not found in configuration '
-                   'file'))
+    if 'CLASS4_PATH' not in config:
+        log.error("Error: CLASS4_PATH entry not found in config file.")
         sys.exit(1)
 
     if 'CACHE_DIR' not in config:
-        log.error(('Cache directory specification not found in configuration '
-                   'file'))
+        log.error('Cache directory specification not found in configuration file')
         sys.exit(1)
 
-    log.info('Generating list of Class4 files from FTP site %s ...',
-             config['CLASS4_FTP'])
-    class4_files = list_class4_files(config['CLASS4_FTP'])
+    log.info(f"Generating list of Class4 files from {config['CLASS4_PATH']}...")
+    class4_files = list_class4_files(config['CLASS4_PATH'])
 
     output_file_name = os.path.join(config['CACHE_DIR'], 'class4_files.pickle')
     try:
