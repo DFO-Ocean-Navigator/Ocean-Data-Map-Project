@@ -127,7 +127,7 @@ class Nemo(Model):
         if len(origshape) == 4:
             # un-collapse time and depth axes and
             # move axes back to original positions.
-            output = output.reshape((
+            output = np.rollaxis(output, -1).reshape((
                 origshape[0], # time
                 origshape[1], # depth
                 output.shape[0], # lat
