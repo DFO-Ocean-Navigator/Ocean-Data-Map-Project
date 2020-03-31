@@ -1,4 +1,4 @@
-#!env python
+#!/usr/bin/env python
 
 import numpy as np
 import xarray as xr
