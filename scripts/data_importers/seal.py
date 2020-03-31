@@ -39,7 +39,7 @@ def main(uri: str, filename: str):
     else:
         filenames = [filename]
 
-    for fname in fname:
+    for fname in filenames:
         print(fname)
         # We're only loading Temperature and Salinity from these files, so
         # we'll just make sure the DataTypes are in the db now.
