@@ -213,13 +213,23 @@
             }
 
         }
-    }
-    .ol-popup {
-    }
 
-    
+        table {
+            font-size: 75%;
+            tr {
+                td {
+                    text-align: left;
+                    &:first-child:after {
+                        content: ':';
+                        margin-right: 1em;
+                    }
+                }
 
-    .ol-popup:before {
+                &:nth-child(even) {
+                    background-color: #f0f0f0;
+                }
+            }
+        }
     }
 
     .ol-attribution {

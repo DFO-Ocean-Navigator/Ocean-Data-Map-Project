@@ -123,10 +123,11 @@ class Model(metaclass=abc.ABCMeta):
         )
         return numpy.reshape(a, area.shape[1:])
 
-    def get_path_profile(self, path, time, variable, numpoints=100):
+    def get_path_profile(self, path, variable, starttime, endtime=None, numpoints=100):
         distances, times, lat, lon, bearings = geo.path_to_points(path, numpoints)
 
-        result, depth = self.get_profile(lat, lon, variable, time)
+        result, depth = self.get_profile(lat, lon, variable, starttime,
+                                         endtime=endtime)
 
         return numpy.array([lat, lon]), distances, result.transpose(), depth
 

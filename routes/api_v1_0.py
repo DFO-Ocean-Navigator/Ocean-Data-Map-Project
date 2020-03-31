@@ -30,7 +30,7 @@ import data.observational.queries as ob_queries
 from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
-from plotting.drifter import DrifterPlotter
+from plotting.track import TrackPlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
@@ -535,8 +535,8 @@ def plot_v1_0():
         plotter = HovmollerPlotter(dataset, query, **options)
     elif plottype == 'observation':
         plotter = ObservationPlotter(dataset, query, **options)
-    elif plottype == 'drifter':
-        plotter = DrifterPlotter(dataset, query, **options)
+    elif plottype == 'track':
+        plotter = TrackPlotter(dataset, query, **options)
     elif plottype == 'class4':
         plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':

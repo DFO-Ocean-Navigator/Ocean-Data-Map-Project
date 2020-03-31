@@ -89,9 +89,9 @@ class TransectPlotter(LinePlotter):
                     self.points, 100
                 )
                 transect_pts, distance, x, dep = dataset.get_path_profile(
-                    self.points, self.time, self.variables[0], 100)
+                    self.points, self.variables[0], self.time, numpoints=100)
                 transect_pts, distance, y, dep = dataset.get_path_profile(
-                    self.points, self.time, self.variables[1], 100)
+                    self.points, self.variables[1], self.time, numpoints=100)
 
                 # Calculate vector components
                 x = np.multiply(x, scale_factors[0])
@@ -107,7 +107,7 @@ class TransectPlotter(LinePlotter):
             else:
                 # Get data for one variable
                 transect_pts, distance, value, dep = dataset.get_path_profile(
-                    self.points, self.time, self.variables[0])
+                    self.points, self.variables[0], self.time)
 
                 value = np.multiply(value, scale_factors[0])
 
@@ -201,8 +201,9 @@ class TransectPlotter(LinePlotter):
 
                     climate_points, climate_distance, climate_data, cdep = \
                         dataset.get_path_profile(self.points,
-                                                 self.compare['time'],
-                                                 self.compare['variables'][0])
+                                                 self.compare['variables'][0],
+                                                 self.compare['time']
+                                                )
 
                     self.compare['unit'] = dataset.variables[self.compare['variables'][0]].unit
                     self.__fill_invalid_shift(climate_data)
@@ -232,16 +233,16 @@ class TransectPlotter(LinePlotter):
                     climate_pts, climate_distance, climate_x, cdep = \
                         dataset.get_path_profile(
                             self.points,
-                            self.compare['time'],
                             self.compare['variables'][0],
-                            100
+                            self.compare['time'],
+                            numpoints=100
                         )
                     climate_pts, climate_distance, climate_y, cdep = \
                         dataset.get_path_profile(
                             self.points,
-                            self.compare['time'],
                             self.compare['variables'][0],
-                            100
+                            self.compare['time'],
+                            numpoints=100
                         )
 
                     climate_distances, ctimes, clat, clon, bearings = \

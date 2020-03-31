@@ -31,13 +31,10 @@ export default class MapToolbar extends React.Component {
       class4Files: {},
       parser: null,
       showDriftersSelect: false,
-      showObservationSelect: false,
       showPointCoordModal: false,
       showLineCoordModal: false,
       showAreaCoordModal: false,
       observationSelection: {
-        ship:[],
-        trip:[]
       },
       drifterList: [],
     };
@@ -50,6 +47,7 @@ export default class MapToolbar extends React.Component {
     this.areaSelect = this.areaSelect.bind(this);
     this.class4ButtonHandler = this.class4ButtonHandler.bind(this);
     this.class4Select = this.class4Select.bind(this);
+    this.observationSelectMenu = this.observationSelectMenu.bind(this);
     this.drifterSelect = this.drifterSelect.bind(this);
     this.setDrifterSelection = this.setDrifterSelection.bind(this);
     this.observationSelection = this.observationSelection.bind(this);
@@ -179,9 +177,6 @@ export default class MapToolbar extends React.Component {
       case "draw":
         this.props.action("point");
         break;
-      case "observation":
-        this.setState({showObservationSelect: true,});
-        break;
       case "coordinates":
         this.props.updateState("plotEnabled", true);
         this.setState({showPointCoordModal: true,});
@@ -192,23 +187,17 @@ export default class MapToolbar extends React.Component {
     }
   }
 
-  // Point -> Observation button
   observationSelect(selection) {
-    let result = "";
-    if (selection.ship.length > 0) {
-      result += "ship:";
-      result += selection.ship.join(",");
+    let type = selection['type'];
+    delete selection['type'];
+    let result = Object.keys(selection).map(function(key) {
+      return `${key}=${selection[key]}`;
+    }).join(';');
+    if (type == "track") {
+      this.props.action("show", "observation_tracks", result);
+    } else {
+      this.props.action("show", "observation_points", result);
     }
-
-    if (selection.trip.length > 0) {
-      if (selection.ship.length > 0) {
-        result += ";";
-      }
-
-      result += "trip:";
-      result += selection.trip.join(",");
-    }
-    this.props.action("show", "observations", result);
   }
 
   // When an option is clicked in the Line dropdown button
@@ -229,6 +218,32 @@ export default class MapToolbar extends React.Component {
       default:
         this.props.action("show", "lines", key);
         break;
+    }
+  }
+
+  observationSelectMenu(key) {
+    switch(key) {
+      case 'drifters':
+        this.observationSelect({
+          start_date: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().slice(0, 10),
+          end_date: new Date().toISOString().slice(0, 10),
+          type: "track",
+          quantum: "day",
+          platform_type: ["drifter"],
+        });
+
+        return;
+      case 'point':
+        this.props.action("obs_point");
+        break;
+      case 'area':
+        this.props.action("obs_area");
+        break;
+      case 'all':
+        this.props.updateState('showObservationSelect', true);
+        break;
+      default:
+        console.log("ObservationSelect: Unknown key: ", key);
     }
   }
 
@@ -579,11 +594,6 @@ export default class MapToolbar extends React.Component {
               {pointFiles}
               <MenuItem divider />
               <MenuItem
-                eventKey='observation'
-                key='observation'
-              ><Icon icon='list'/> {_("Observations…")}</MenuItem>
-              <MenuItem divider />
-              <MenuItem
                 eventKey='coordinates'
                 key='coordinates'
               ><Icon icon="keyboard-o" /> {_("Enter Coordinate(s)")}</MenuItem>
@@ -654,7 +664,32 @@ export default class MapToolbar extends React.Component {
                 <div ref={(d) => this.class4div = d}/>
               </MenuItem>
             </NavDropdown>
+            <NavDropdown
+              id="observation"
+              name="observation"
+              title={<span><Icon icon="eye" /> {_("Observations")}</span>}
+              onSelect={this.observationSelectMenu}
+            >
+              <MenuItem
+                key="drifters"
+                eventKey="drifters"
+              >Show Active Drifters</MenuItem>
+              <MenuItem divider />
+              <MenuItem
+                key="all"
+                eventKey="all"
+              >All</MenuItem>
+              <MenuItem
+                key="area"
+                eventKey="area"
+              >Select Area</MenuItem>
+              <MenuItem
+                key="point"
+                eventKey="point"
+              >Select Point</MenuItem>
+            </NavDropdown>
 
+            {/*
             <NavDropdown
               name="drifter"
               id="drifter"
@@ -683,6 +718,7 @@ export default class MapToolbar extends React.Component {
                 key='select'
               ><Icon icon='list'/> {_("Select…")}</MenuItem>
             </NavDropdown>
+            */}
 
             <NavItem 
               name="plot"
@@ -879,8 +915,8 @@ export default class MapToolbar extends React.Component {
         </Modal>
 
         <Modal
-          show={this.state.showObservationSelect}
-          onHide={() => this.setState({showObservationSelect: false})}
+          show={this.props.showObservationSelect}
+          onHide={() => this.props.updateState('showObservationSelect', false)}
           dialogClassName="observation-modal">
           <Modal.Header closeButton>
             <Modal.Title>{_("Select Observations")}</Modal.Title>
@@ -889,17 +925,18 @@ export default class MapToolbar extends React.Component {
             <ObservationSelector
               select={this.observationSelection}
               state={this.state.observationSelection}
+              area={this.props.observationArea}
             />
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={() => this.setState({showObservationSelect: false})}
+              onClick={() => this.props.updateState('showObservationSelect', false)}
             ><Icon icon="close" /> {_("Close")}</Button>
             <Button
               bsStyle="primary"
               onClick={function() {
                 this.observationSelect(this.state.observationSelection);
-                this.setState({showObservationSelect: false});
+                this.props.updateState('showObservationSelect', false);
               }.bind(this)}
             ><Icon icon="check" /> {_("Apply")}</Button>
           </Modal.Footer>
@@ -917,4 +954,6 @@ MapToolbar.propTypes = {
   action: PropTypes.func,
   toggleOptionsSidebar: PropTypes.func,
   updateLanguage: PropTypes.func,
+  showObservationSelect: PropTypes.bool,
+  observationArea: PropTypes.array,
 };
