@@ -5,12 +5,15 @@ import json
 import os
 import shutil
 import sqlite3
+import pandas as pd
 from io import BytesIO
 
 import numpy as np
 from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
                    send_file, send_from_directory)
 from PIL import Image
+from dateutil.parser import parse as dateparse
+from shapely.geometry import Polygon, LinearRing, Point
 
 import data.class4 as class4
 import plotting.colormap
@@ -21,6 +24,9 @@ from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
+from data.observational import db as DB
+from data.observational import Station, Platform, Sample, DataType
+import data.observational.queries as ob_queries
 from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
@@ -913,6 +919,380 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         with open(requestf, 'wb') as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
+
+
+@bp_v1_0.route('/api/v1.0/observation/datatypes.json')
+def observation_datatypes_v1_0():
+    """
+    API Format: /api/v1.0/observation/datatypes.json
+
+    Returns the list of observational data types
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = [
+        {
+            'id': dt.key,
+            'value': dt.name,
+        }
+        for dt in ob_queries.get_datatypes(DB.session)
+    ]
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta_keys/<string:platform_types>.json')
+def observation_keys_v1_0(platform_types: str):
+    """
+    API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
+
+    <string:platform_types> : Comma seperated list of platform types
+
+    Gets the set of metadata keys for a list of platform types
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = ob_queries.get_meta_keys(DB.session, platform_types.split(','))
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json')
+def observation_values_v1_0(platform_types: str, key: str):
+    """
+    API Format: /api/v1.0/observation/meta_values/<string:platform_types>.json
+
+    <string:platform_types> : Comma seperated list of platform types
+    <string:key> : Metadata key
+
+    Gets the set of metadata values for a list of platform types and key
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = ob_queries.get_meta_values(
+        DB.session, platform_types.split(','), key
+    )
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/tracktimerange/<string:platform_id>.json')
+def observation_tracktime_v1_0(platform_id: str):
+    """
+    API Format: /api/v1.0/observation/tracktime/<string:platform_id>.json
+
+    <string:platform_id> : Platform ID
+
+    Queries the min and max times for the track
+
+    **Used in TrackWindow**
+    """
+    max_age = 86400
+    platform = DB.session.query(Platform).get(platform_id)
+    data = DB.session.query(
+        DB.func.min(Station.time),
+        DB.func.max(Station.time),
+    ).filter(Station.platform == platform).one()
+    resp = jsonify({
+        'min': data[0].isoformat(),
+        'max': data[1].isoformat(),
+    })
+    resp.cache_control.max_age = max_age
+    return resp
+
+
+@bp_v1_0.route('/api/v1.0/observation/track/<string:query>.json')
+def observation_track_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/track/<string:query>.json
+
+    <string:query> : List of key=value pairs, seperated by ;
+        valid query keys are: start_date, end_date, datatype, platform_type,
+            meta_key, meta_value, mindepth, maxdepth, area, radius, quantum
+
+    Observational query for tracks
+
+    **Used in ObservationSelector**
+    """
+    query_dict = {
+        key: value
+        for key, value in [ q.split('=') for q in query.split(';')]
+    }
+    data = []
+    max_age = 86400
+    params = {}
+
+    MAPPING = {
+        'start_date': 'starttime',
+        'end_date': 'endtime',
+        'platform_type': 'platform_types',
+        'meta_key': 'meta_key',
+        'meta_value': 'meta_value',
+    }
+    for k,v in query_dict.items():
+        if k not in MAPPING:
+            continue
+
+        if k in ['start_date', 'end_date']:
+            params[MAPPING[k]] = dateparse(v)
+        elif k in ['datatype', 'meta_key', 'meta_value']:
+            if k == 'meta_key' and v == 'Any':
+                continue
+            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+                continue
+
+            params[MAPPING[k]] = v
+        elif k == 'platform_type':
+            params[MAPPING[k]] = v.split(',')
+        else:
+            params[MAPPING[k]] = float(v)
+
+    if 'area' in query_dict:
+        area = json.loads(query_dict.get('area'))
+        if len(area) > 1:
+            lats = [c[0] for c in area]
+            lons = [c[1] for c in area]
+            params['minlat'] = min(lats)
+            params['minlon'] = min(lons)
+            params['maxlat'] = max(lats)
+            params['maxlon'] = max(lons)
+        else:
+            params['latitude'] = area[0][0]
+            params['longitude'] = area[0][1]
+            params['radius'] = float(query_dict.get('radius', 10))
+
+        platforms = ob_queries.get_platforms(DB.session, **params)
+        for param in [
+            'minlat', 'maxlat', 'minlon', 'maxlon', 'latitude', 'longitude',
+            'radius'
+        ]:
+            if param in params:
+                del params[param]
+
+        params['platforms'] = platforms
+
+    coordinates = ob_queries.get_platform_tracks(
+        DB.session,
+        query_dict.get("quantum", "day"),
+        **params
+    )
+
+    if len(coordinates) > 1:
+        df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
+        df['id'] = df.id.astype(int)
+
+        vc = df.id.value_counts()
+        for p_id in vc.where(vc > 1).dropna().index:
+            d = { 
+                'type': "Feature",
+                'geometry': {
+                    'type': "LineString",
+                    'coordinates': df[['lon', 'lat']][df.id ==
+                                                    p_id].values.tolist()
+                },
+                'properties': {
+                    'id': int(p_id),
+                    'type': df.type[df.id == p_id].values[0].name,
+                    'class': 'observation',
+                }
+            }
+            data.append(d)
+
+    result = {
+        'type': "FeatureCollection",
+        'features': data,
+    }
+    resp = jsonify(result)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/point/<string:query>.json')
+def observation_point_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/point/<string:query>.json
+
+    <string:query> : List of key=value pairs, seperated by ;
+        valid query keys are: start_date, end_date, datatype, platform_type,
+            meta_key, meta_value, mindepth, maxdepth, area, radius
+
+    Observational query for points
+
+    **Used in ObservationSelector**
+    """
+    query_dict = {
+        key: value
+        for key, value in [ q.split('=') for q in query.split(';')]
+    }
+    data = []
+    max_age = 86400
+    params = {}
+    MAPPING = {
+        'start_date': 'starttime',
+        'end_date': 'endtime',
+        'datatype': 'variable',
+        'platform_type': 'platform_types',
+        'meta_key': 'meta_key',
+        'meta_value': 'meta_value',
+        'mindepth': 'mindepth',
+        'maxdepth': 'maxdepth',
+    }
+    for k,v in query_dict.items():
+        if k not in MAPPING:
+            continue
+
+        if k in ['start_date', 'end_date']:
+            params[MAPPING[k]] = dateparse(v)
+        elif k in ['datatype', 'meta_key', 'meta_value']:
+            if k == 'meta_key' and v == 'Any':
+                continue
+            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+                continue
+
+            params[MAPPING[k]] = v
+        elif k == 'platform_type':
+            params[MAPPING[k]] = v.split(',')
+        else:
+            params[MAPPING[k]] = float(v)
+
+    checkpoly = False
+    with_radius = False
+    if 'area' in query_dict:
+        area = json.loads(query_dict.get('area'))
+        if len(area) > 1:
+            lats = [c[0] for c in area]
+            lons = [c[1] for c in area]
+            params['minlat'] = min(lats)
+            params['minlon'] = min(lons)
+            params['maxlat'] = max(lats)
+            params['maxlon'] = max(lons)
+            poly = Polygon(LinearRing(area))
+            checkpoly = True
+        else:
+            params['latitude'] = area[0][0]
+            params['longitude'] = area[0][1]
+            params['radius'] = float(query_dict.get('radius', 10))
+            with_radius = True
+
+    if with_radius:
+        stations = ob_queries.get_stations_radius(session=DB.session, **params)
+    else:
+        stations = ob_queries.get_stations(session=DB.session, **params)
+
+    if len(stations) > 500:
+        stations = stations[::round(len(stations)/500)]
+
+    for s in stations:
+        if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
+            continue
+
+        d = { 
+            'type': "Feature",
+            'geometry': {
+                'type': "Point",
+                'coordinates': [s.longitude, s.latitude]
+            },
+            'properties': {
+                'type': s.platform.type.name,
+                'id': s.id,
+                'class': 'observation',
+            }
+        }
+        if s.name:
+            d['properties']['name'] = s.name
+
+        data.append(d)
+
+    result = {
+        'type': "FeatureCollection",
+        'features': data,
+    }
+    resp = jsonify(result)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta.json')
+def observation_meta_v1_0():
+    """
+    API Format: /api/v1.0/observation/meta.json
+
+    Observational query for all the metadata for a platform or station
+
+    **Used in Map for the observational tooltip**
+    """
+    key = request.args.get("type", "platform")
+    identifier = request.args.get("id", "0")
+    max_age = 86400
+    data = {}
+    if key == 'station':
+        station = DB.session.query(Station).get(identifier)
+        data['Time'] = station.time.isoformat(' ')
+        if station.name:
+            data['Station Name'] = station.name
+
+        platform = station.platform
+        
+    elif key == 'platform':
+        platform = DB.session.query(Platform).get(identifier)
+    else:
+        raise FAILURE
+
+    data.update(platform.attrs)
+    data['Platform Type'] = platform.type.name
+    data = { k: data[k] for k in sorted(data) }
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/variables/<string:query>.json')
+def observation_variables_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/variables/<string:query>.json
+
+    <string:query> : A key=value pair, where key is either station or platform
+    and value is the id
+
+    Observational query for variables for a platform or station
+
+    **Used in PointWindow for the observational variable selection**
+    """
+    key, identifier = query.split('=')
+    data = []
+    max_age = 86400
+    if key == 'station':
+        station = DB.session.query(Station).get(identifier)
+    elif key == 'platform':
+        platform = DB.session.query(Platform).get(identifier)
+        station = DB.session.query(Station).filter(
+            Station.platform == platform
+        ).first()
+    else:
+        raise FAILURE
+
+    datatype_keys = [
+        k[0]
+        for k in DB.session.query(
+            DB.func.distinct(Sample.datatype_key)
+        ).filter(Sample.station == station).all()
+    ]
+
+    datatypes = DB.session.query(
+        DataType
+    ).filter(DataType.key.in_(datatype_keys)).order_by(DataType.key).all()
+
+    data = [
+        {
+            'id': idx,
+            'value': dt.name,
+        }
+        for idx, dt in enumerate(datatypes)
+    ]
+
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
 
 
 @bp_v1_0.after_request

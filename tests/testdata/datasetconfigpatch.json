@@ -30,12 +30,13 @@
         "name": "GIOPS Forecast 3D - Polar Stereographic",
         "quantum": "day",
         "type": "forecast",
-        "lat_var_key": "yc",
-        "lon_var_key": "xc",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
+            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] }
         }
     },
 

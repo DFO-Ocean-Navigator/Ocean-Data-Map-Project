@@ -5,6 +5,7 @@ from flask_compress import Compress
 from flask_babel import Babel
 from sys import argv
 from .dataset_config import DatasetConfig
+from data.observational import db
 
 babel = Babel()
 
@@ -18,6 +19,7 @@ def create_app(testing = False):
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
     app.testing = testing
+    db.init_app(app)
 
     datasetConfig = argv[-1]
     if '.json' in datasetConfig:
