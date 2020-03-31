@@ -1,7 +1,6 @@
 import datetime
 import time
 
-import cftime
 import dateutil.parser
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -10,9 +9,7 @@ import numpy as np
 import pytz
 from geopy.distance import distance
 import visvalingamwyatt as vw
-from flask import current_app
 from flask_babel import gettext
-from netCDF4 import Dataset, chartostring
 from scipy.interpolate import interp1d
 
 import plotting.utils as utils
@@ -37,7 +34,7 @@ class TrackPlotter(Plotter):
         self.latlon = query.get('latlon') is None or bool(query.get('latlon'))
 
         track = query.get('track')
-        if isinstance(track, str) or isinstance(track, str):
+        if isinstance(track, str):
             tracks = track.split(',')
         else:
             tracks = track
@@ -45,7 +42,7 @@ class TrackPlotter(Plotter):
         self.platform = tracks[0]
 
         trackvariable = query.get('trackvariable')
-        if isinstance(trackvariable, str) or isinstance(trackvariable, str):
+        if isinstance(trackvariable, str):
             trackvariables = trackvariable.split(',')
         else:
             trackvariables = trackvariable
@@ -93,7 +90,6 @@ class TrackPlotter(Plotter):
         d = np.array(d)
 
         self.points = d[0, :, 1:3].astype(float)
-        utc = pytz.UTC
         add_tz_utc = np.vectorize(lambda x: x.replace(tzinfo=pytz.UTC))
         self.times = add_tz_utc(d[0, :, 0])
         self.data = d[:, :, 4].astype(float)

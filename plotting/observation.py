@@ -2,16 +2,12 @@ import numbers
 import re
 from textwrap import wrap
 
-import cftime
 import dateutil.parser
 import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import pytz
-import datetime
-from flask import current_app
 from flask_babel import format_datetime, gettext
-from netCDF4 import Dataset
 
 from data import open_dataset
 from data.utils import datetime_to_timestamp
@@ -19,7 +15,7 @@ from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
 
-from data.observational import *
+from data.observational import db, Station, Station, Sample, DataType
 
 class ObservationPlotter(PointPlotter):
 

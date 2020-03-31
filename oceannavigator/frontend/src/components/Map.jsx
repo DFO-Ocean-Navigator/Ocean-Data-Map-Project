@@ -378,22 +378,6 @@ export default class Map extends React.PureComponent {
                 break;
             }
             return new olstyle.Style({image: image});
-            return new olstyle.Style({
-              stroke: new olstyle.Stroke({
-                color: "#ff0000",
-                width: SmartPhone.isAny() ? 8 : 4,
-              }),
-              image: new olstyle.Circle({
-                radius: SmartPhone.isAny() ? 6 : 4,
-                fill: new olstyle.Fill({
-                  color: "#ff0000",
-                }),
-                stroke: new olstyle.Stroke({
-                  color: "#000000",
-                  width: 1
-                }),
-              }),
-            });
           } else {
 
             switch (feat.get("type")) {

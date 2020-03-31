@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider, { Range } from 'rc-slider';
-import {Panel, Button, FormGroup, Radio} from "react-bootstrap";
+import {Panel, FormGroup, Radio} from "react-bootstrap";
 import Toggle from 'react-bootstrap-toggle';
 import deepEqual from 'deep-equal';
 import Autosuggest from 'react-autosuggest';
@@ -95,7 +95,7 @@ export default class ObservationSelector extends React.Component {
       // Auto set quantum
       let end = this.state.endDate.getTime() / (1000 * 60 * 60 * 24);
       let start = this.state.startDate.getTime() / (1000 * 60 * 60 * 24);
-      let quantum = this.state.quantum;
+      let quantum;
       if (end - start <= 31) {
         quantum = 'day';
       } else if (end - start <= 200) {
@@ -222,9 +222,6 @@ export default class ObservationSelector extends React.Component {
 
   render() {
     const keys = this.state.meta_keys.map(function(o) {
-      return { id: o, value: o, };
-    });
-    const values = this.state.meta_values.map(function(o) {
       return { id: o, value: o, };
     });
     function onSuggestionsFetchRequested(evt) {
