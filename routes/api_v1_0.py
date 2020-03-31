@@ -1084,7 +1084,8 @@ def observation_track_v1_0(query: str):
         df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
         df['id'] = df.id.astype(int)
 
-        for p_id in (df.id.value_counts() > 1).index.values:
+        vc = df.id.value_counts()
+        for p_id in vc.where(vc > 1).dropna().index:
             d = { 
                 'type': "Feature",
                 'geometry': {
@@ -1200,7 +1201,7 @@ def observation_point_v1_0(query: str):
             }
         }
         if s.name:
-            p['properties']['name'] = s.name
+            d['properties']['name'] = s.name
 
         data.append(d)
 
