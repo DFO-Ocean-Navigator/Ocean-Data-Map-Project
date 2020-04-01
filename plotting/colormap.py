@@ -60,11 +60,14 @@ colormaps = {
     'bathymetry': cmocean.cm.deep,
     'salinity': cmocean.cm.haline,
     'speed': cmocean.cm.speed,
+    'speed of current': cmocean.cm.speed,
     'freesurface': cmocean.cm.balance,
     'free surface': cmocean.cm.balance,
     'surface height': cmocean.cm.balance,
     'surface elevation': cmocean.cm.balance,
     'velocity': cmocean.cm.delta,
+    'eastward current': cmocean.cm.delta,
+    'northward current': cmocean.cm.delta,
     'waveheight': cmocean.cm.amp,
     'waveperiod': cmocean.cm.tempo,
     'chlorophyll': cmocean.cm.algae,
@@ -186,6 +189,7 @@ gettext('Biogenic Silicon Concentration')
 gettext('Chlorophyll')
 gettext('Diatoms Concentration as Nitrogen')
 gettext('Dissolved Organic Nitrogen Concentration')
+gettext('Eastward Current')
 gettext('Flagellates Concentration as Nitrogen')
 gettext('Greyscale')
 gettext('Ice')
@@ -197,6 +201,7 @@ gettext('Mesozooplankton Concentration as Nitrogen')
 gettext('Microzooplankton Concentration as Nitrogen')
 gettext('Nitrate')
 gettext('Nitrate Concentration')
+gettext('Northward Current')
 gettext('Oxygen')
 gettext('Particulate Organic Nitrogen Concentration')
 gettext('Phosphate')
@@ -206,6 +211,7 @@ gettext('Sea Surface Height (Free Surface)')
 gettext('Silicate')
 gettext('Silicon Concentration')
 gettext('Speed')
+gettext('Speed of Current')
 gettext('Temperature')
 gettext('Velocity')
 gettext('Wave Height')
@@ -248,8 +254,11 @@ colormap_names = {
     'silicon concentration': 'Silicon Concentration',
     'biogenic silicon concentration': 'Biogenic Silicon Concentration',
     'speed': 'Speed',
+    'speed of current': 'Speed of Current',
     'temperature': 'Temperature',
     'velocity': 'Velocity',
+    'eastward current': 'Eastward Current',
+    'northward current': 'Northward Current',
     'waveheight': 'Wave Height',
     'waveperiod': 'Wave Period',
     'thermal': 'Thermal',
