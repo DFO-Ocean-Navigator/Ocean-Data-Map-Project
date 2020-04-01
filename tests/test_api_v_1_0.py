@@ -209,8 +209,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
 
-    @unittest.skip("Skipping api/class4.. needs re-write")
-    def test_class4_query_endpoint(self):
+    def test_class4_models_endpoint(self):
         res = self.app.get('/api/v1.0/class4/models/class4_20190102_GIOPS_CONCEPTS_2.3_profile/')
         self.assertEqual(res.status_code, 200)
 
