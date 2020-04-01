@@ -237,7 +237,7 @@ class VariableConfig:
             self._variable = attrdict()
         else:
             self._variable = variable
-            self._key = variable.key.lower()
+            self._key = variable.key
 
     def __get_attribute(self, attr):
         return self._config._get_attribute("variables")[self._key].get(attr)
