@@ -67,7 +67,12 @@ class NetCDFData(Data):
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 try:
-                    fields = xarray.open_dataset(self.url, decode_times=decode_times)
+                    # Handle list of URLs for staggered grid velocity field datasets
+                    url = self.url if isinstance(self.url, list) else [self.url]
+                    # This will raise a FutureWarning for xarray>=0.12.2.
+                    # That warning should be resolvable by changing to:
+                    # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                    fields = xarray.open_mfdataset(url, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
@@ -618,9 +623,12 @@ class NetCDFData(Data):
     def dimensions(self) -> List[str]:
         """Return a list of the dimensions in the dataset.
         """
-        if self.url.endswith(".sqlite3"):
+        # Handle possible list of URLs for staggered grid velocity field datasets
+        url = self.url if not isinstance(self.url, list) else self.url[0]
+
+        if url.endswith(".sqlite3"):
             try:
-                with SQLiteDatabase(self.url) as db:
+                with SQLiteDatabase(url) as db:
                     dimension_list = db.get_all_dimensions()
             except sqlite3.OperationalError:
                 pass
@@ -628,7 +636,7 @@ class NetCDFData(Data):
 
         # Open dataset (can't use xarray here since it doesn't like FVCOM files)
         try:
-            with netCDF4.Dataset(self.url) as ds:
+            with netCDF4.Dataset(url) as ds:
                 dimension_list = [dim for dim in ds.dimensions]
         except FileNotFoundError:
             dimension_list = []
@@ -663,12 +671,19 @@ class NetCDFData(Data):
         if self._variable_list is not None:
             return self._variable_list
 
-        if self.url.endswith(".sqlite3"):
-            with SQLiteDatabase(self.url) as db:
+        # Handle possible list of URLs for staggered grid velocity field datasets
+        url = self.url if not isinstance(self.url, list) else self.url[0]
+        if url.endswith(".sqlite3"):
+            with SQLiteDatabase(url) as db:
                 self._variable_list = db.get_data_variables()  # Cache the list for later
                 return self._variable_list
         try:
-            with xarray.open_dataset(self.url, decode_times=False) as ds:
+            # Handle possible list of URLs for staggered grid velocity field datasets
+            url = self.url if isinstance(self.url, list) else [self.url]
+            # This will raise a FutureWarning for xarray>=0.12.2.
+            # That warning should be resolvable by changing to:
+            # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
+            with xarray.open_mfdataset(url, decode_times=False) as ds:
                 self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
             return self._variable_list
         except xarray.core.variable.MissingDimensionsError:

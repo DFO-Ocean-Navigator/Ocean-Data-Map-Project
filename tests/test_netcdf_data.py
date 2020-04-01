@@ -71,6 +71,21 @@ class TestNetCDFData(unittest.TestCase):
             self.assertTrue(nc_data._dataset_open)
 
     @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_enter_url_list(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        urls = [
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV19-05",
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV19-05"
+        ]
+        kwargs = {"dataset_key": "salishseacast_currents"}
+        with NetCDFData(urls, **kwargs) as nc_data:
+            self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+            self.assertTrue(nc_data._dataset_open)
+            self.assertIn("uVelocity", nc_data.dataset.variables)
+            self.assertIn("vVelocity", nc_data.dataset.variables)
+
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
     def test_enter_no_geo_ref(self, patch_get_dataset_config):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
