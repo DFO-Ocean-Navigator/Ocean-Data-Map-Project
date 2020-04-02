@@ -56,6 +56,40 @@ def magnitude(a, b):
     return np.sqrt(a ** 2 + b ** 2)
 
 
+def unstaggered_speed(u_vel, v_vel, x_dim_index, y_dim_index):
+    """Calculate the speed of seawater current from u and v velocity component
+    array that are on the u and v points of an Akawara-C staggered grid;
+    see https://en.wikipedia.org/wiki/Arakawa_grids
+
+    To correctly calculate the speed of the current, the velocity components have to be
+    "unstaggered" by interpolating their values to the T-grid points at the centres of the
+    grid cells. Here that is accomplished by averaging u(i-1) and u(i) values to get u values
+    at the T-points. Likewise, v(j-1) and v(j) values are averaged to get v values at the T-points.
+
+    With those arrays of unstaggered values, the speed of the current is calculated as the
+    element-wise magnitude of u and v:
+      np.sqrt(u ** 2 + v ** 2)
+    See: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
+
+    Paramters:
+    u_vel: ndarray
+    v_vel: ndarray
+    x_dim_index: float
+    y_dim_index: float
+
+    Returns:
+        ndarray -- speed of current
+    """
+    # The vel(t, z, y, x) arrays have been sliced to vel(t, y, x) by the time they get here,
+    # so we subtract 1 from the dimension index values passed in from the datasetconfig.json
+    # equation.
+    x_dim = u_vel.dims[int(x_dim_index) - 1]
+    y_dim = v_vel.dims[int(y_dim_index) - 1]
+    u_t_grid = (u_vel + u_vel.shift({x_dim: 1})) / 2
+    v_t_grid = (v_vel + v_vel.shift({y_dim: 1})) / 2
+    return numpy.sqrt(u_t_grid**2 + v_t_grid**2)
+
+
 def __calc_pressure(depth, latitude):
     pressure = []
     try:
@@ -101,7 +135,7 @@ def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarra
 def oxygensaturation(temperature: np.ndarray,
                      salinity: np.ndarray) -> np.ndarray:
     """
-    Calculate the solubility (saturation) of 
+    Calculate the solubility (saturation) of
     Oxygen (O2) in seawater.
 
     Required Arguments:
@@ -116,7 +150,7 @@ def oxygensaturation(temperature: np.ndarray,
 def nitrogensaturation(temperature: np.ndarray,
                        salinity: np.ndarray) -> np.ndarray:
     """
-    Calculate the solubility (saturation) of 
+    Calculate the solubility (saturation) of
     Nitrogen (N2) in seawater.
 
     Required Arguments:
