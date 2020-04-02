@@ -8,13 +8,14 @@ This module contains functions for different tests
 of the user interface of the navigator.
 """
 
-
+import copy
+from datetime import datetime
 import pyautogui as gui
 import time
 import yaml
 
 from dimension_config import (open_config, write_to_config)
-from utils import (navigator_webpage, test_profile, 
+from utils import (navigator_webpage, test_profile, get_time, 
                    retry_location_test, move_et_click)
 
 
@@ -24,18 +25,22 @@ config = open_config()
 dimension = config['location']
 paths = config['paths']
 address = config['web_addresses']
+duration = config['duration']
 
-# Results
+# Log results to dictionary
 
 line_index_results = {
     'Profile' : None,
     'Hovmoller Diagram test' : None,
 }
+line_index_times = copy.deepcopy(line_index_results)
 
 # Set default sleep time
-sleep = 5
-plot_render_sleep = 10
-box_timeout = 2500
+
+sleep = duration['sleep']
+plot_render_sleep = duration['plot_render']
+box_timeout = duration['box_timeout']
+
 
 def draw_map():
     """
@@ -77,24 +82,24 @@ def draw_map():
     if image_loc is None:
         gui.alert(text='Line index not found!', title='UI test', button='OK', timeout=box_timeout)
         # Retry the test in case of slow network connection
-        retry_location_test(paths['line_index'], 'Line Index')
-        result = 'Test Failed'
+        result = retry_location_test(paths['line_index'], 'Line Index')
     else:
         gui.alert(text='Line UI test complete!', title='UI test', button='Close', timeout=box_timeout)
         result = 'Test Completed'
 
     line_index_results['Profile'] = result
+    line_index_times['Profile'] = get_time()
     #Hovmoller Diagram test
-    point_tests(paths['line_index'], line_index_results)
+    point_tests(paths['hovmoller_diagram'], line_index_results, line_index_times)
     # Close index sub-tab
     time.sleep(.30)
     gui.click(dimension['close_index'])
     time.sleep(.30)
-    return line_index_results
+    return line_index_results, line_index_times
 
-def point_tests(test_compare, log):
+def point_tests(test_compare, log_result, log_time):
     hovmoller_diagram = test_profile(test_compare, 
-                        'Hovmoller Diagram test', dimension['CTD_Profile'], log)
+                        'Hovmoller Diagram test', dimension['CTD_Profile'], log_result, log_time)
 
 
 def main():
