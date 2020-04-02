@@ -522,14 +522,13 @@ def get_point_data(dataset, variable, time, depth, location):
     units = []
     dsc = DatasetConfig(dataset)
     with open_dataset(dsc) as ds:
-        timestamp = ds.timestamps[time]
         for v in variables:
             d = ds.get_point(
                 location[0],
                 location[1],
                 depth,
-                time,
-                v
+                v,
+                time
             )
             variable_name = dsc.variable[ds.variables[v]].name
             variable_unit = dsc.variable[ds.variables[v]].unit
@@ -539,7 +538,7 @@ def get_point_data(dataset, variable, time, depth, location):
             units.append(variable_unit)
 
     result = {
-        'value': ['%s' % float('%.4g' % f) for f in data],
+        'value': [f'{float(f):.4g}' for f in data],
         'location': [round(f, 4) for f in location],
         'name': names,
         'units': units,

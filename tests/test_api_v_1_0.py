@@ -2,7 +2,8 @@
 
 import json
 import unittest
-from unittest.mock import patch
+import datetime
+from unittest.mock import patch, PropertyMock, MagicMock
 
 from data.variable import Variable
 from data.variable_list import VariableList
@@ -84,11 +85,25 @@ class TestAPIv1(unittest.TestCase):
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     @patch('data.sqlite_database.SQLiteDatabase.get_timestamps')
-    def test_timestamps_endpoint(self, patch_get_all_timestamps, patch_get_data_variables, patch_get_dataset_config):
+    def test_timestamps_endpoint_sqlite(self, patch_get_all_timestamps, patch_get_data_variables, patch_get_dataset_config):
 
         patch_get_all_timestamps.return_value = sorted(
             [2031436800, 2034072000])
         patch_get_data_variables.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get(
+            '/api/v1.0/timestamps/?dataset=nemo_sqlite3&variable=votemper')
+
+        self.assertEqual(res.status_code, 200)
+
+        res_data = self.__get_response_data(res)
+        self.assertEqual(len(res_data), 2)
+        self.assertEqual(res_data[0]['id'], 2031436800)
+        self.assertEqual(res_data[0]['value'], '2014-05-17T00:00:00+00:00')
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_timestamps_endpoint_xarray(self, patch_get_dataset_config):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         res = self.app.get(
@@ -133,6 +148,9 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get('/api/v1.0/colormaps/')
 
         self.assertEqual(res.status_code, 200)
+
+        res_data = self.__get_response_data(res)
+        self.assertIn({'id': 'temperature', 'value': 'Temperature'}, res_data)
 
     def test_colormaps_image_endpoint(self):
         res = self.app.get('/api/v1.0/colormaps.png')
@@ -189,10 +207,9 @@ class TestAPIv1(unittest.TestCase):
 
         res = self.app.get('/api/v1.0/data/giops_real/votemper/2212704000/0/60,-29.json')
         self.assertEqual(res.status_code, 200)
-    
 
-    @unittest.skip("Skipping api/class4.. needs re-write")
-    def test_class4_query_endpoint(self):
+
+    def test_class4_models_endpoint(self):
         res = self.app.get('/api/v1.0/class4/models/class4_20190102_GIOPS_CONCEPTS_2.3_profile/')
         self.assertEqual(res.status_code, 200)
 
@@ -209,15 +226,15 @@ class TestAPIv1(unittest.TestCase):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        
+
         res = self.app.get(self.apiLinks["stats"])
         self.assertEqual(res.status_code, 200)
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_subset_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        
+
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
@@ -226,7 +243,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_map_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -238,7 +255,7 @@ class TestAPIv1(unittest.TestCase):
 
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_transect_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -248,7 +265,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_transect"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/timeseries.. blame nabil")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_timeseries_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -256,12 +272,21 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        # timeseries (point, virtual mooring) 
-        # returns IndexError: index 0 is out of bounds for axis 0 with size 0
+        # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/ts.. returning error")
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        # timeseries (point, virtual mooring)
+        res = self.app.get(self.apiLinks["plot_timeseries_all_depths"])
+        self.assertEqual(res.status_code, 200)
+
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_ts_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -270,7 +295,6 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # ts (point, T/S Plot)
-        # KeyError: 'vosaline'
         res = self.app.get(self.apiLinks["plot_ts"])
         self.assertEqual(res.status_code, 200)
 
@@ -284,11 +308,11 @@ class TestAPIv1(unittest.TestCase):
 
         # sound (point, Speed of Sound)
         # IndexError: list index out of range
-        res = self.app.get(self.apiLinks[plot_sound])
+        res = self.app.get(self.apiLinks["plot_sound"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_plot_profile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -320,7 +344,7 @@ class TestAPIv1(unittest.TestCase):
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
-        # observation (point, Observation) 
+        # observation (point, Observation)
         # returns RuntimeError: Opening a dataset via sqlite requires the 'timestamp' keyword argument.
         res = self.app.get(self.apiLinks["plot_observation"])
         self.assertEqual(res.status_code, 200)
@@ -405,21 +429,8 @@ class TestAPIv1(unittest.TestCase):
         for i in range(6):
             self.assertEqual(res[i].status_code, 200)
 
-
-    # not used anywhere in front end returns RuntimeError: Opening a dataset via sqlite requires the 'variable' keyword argument.
-    @unittest.skip("Skipping api/timestamp_for_date.. needs fixing")
     @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_timestamp_for_date_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        res = self.app.get('/api/v1.0/timestamp/giops/2057094000/giops')
-        self.assertEqual(res.status_code, 200)
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
     def test_tile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
@@ -458,6 +469,158 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get('/api/v1.0/mbt/EPSG:3857/lands/7/105/77')
         self.assertEqual(res.status_code, 200)
 
+    @patch('data.observational.queries.get_datatypes')
+    def test_observation_datatypes(self, patch_get_datatypes):
+        patch_get_datatypes.return_value = [
+            PropertyMock(key='mykey')
+        ]
+        patch_get_datatypes.return_value[0].name = 'myname'
+        res = self.app.get(self.apiLinks["observation_datatypes"])
+        
+        self.assertEqual(res.status_code, 200)
+        data = self.__get_response_data(res)
+        self.assertDictEqual(data[0], {'id': 'mykey', 'value': 'myname'})
+
+    @patch('data.observational.db.session')
+    @patch('data.observational.queries.get_meta_keys')
+    def test_observation_meta_keys(self, patch_get_meta_keys, patch_session):
+        patch_get_meta_keys.return_value = [
+            'this is a test'
+        ]
+        res = self.app.get(self.apiLinks["observation_meta_keys"])
+        
+        self.assertEqual(res.status_code, 200)
+        patch_get_meta_keys.assert_called_with(patch_session, ['platform_type'])
+        data = self.__get_response_data(res)
+        self.assertEqual(data[0], 'this is a test')
+
+    @patch('data.observational.db.session')
+    @patch('data.observational.queries.get_meta_values')
+    def test_observation_meta_values(self, patch_get_meta_values, patch_session):
+        patch_get_meta_values.return_value = [
+            'this is a test'
+        ]
+        res = self.app.get(self.apiLinks["observation_meta_values"])
+        
+        self.assertEqual(res.status_code, 200)
+        patch_get_meta_values.assert_called_with(
+            patch_session, ['platform_type'], 'key'
+        )
+        data = self.__get_response_data(res)
+        self.assertEqual(data[0], 'this is a test')
+
+    @patch('data.observational.db.session')
+    @patch('data.observational.queries.get_platform_tracks')
+    def test_observation_track(self, patch_get_platform_tracks, patch_session):
+        typ = PropertyMock()
+        typ.name = 'none'
+        patch_get_platform_tracks.return_value = [
+            [ 0, typ, 0, 0 ],
+            [ 0, typ, 1, 1 ],
+            [ 1, typ, 0, 0 ],
+        ]
+        res = self.app.get(self.apiLinks["observation_track"])
+        
+        self.assertEqual(res.status_code, 200)
+        patch_get_platform_tracks.assert_called_with(
+            patch_session, "day", platform_types=['none']
+        )
+        data = self.__get_response_data(res)
+        self.assertEqual(len(data['features']), 1)
+        self.assertIn([0, 0], data['features'][0]['geometry']['coordinates'])
+
+    @patch('data.observational.db.session')
+    @patch('data.observational.queries.get_stations')
+    def test_observation_track(self, patch_get_stations, patch_session):
+        platform_type = PropertyMock()
+        platform_type.name = "platform_type"
+        station = PropertyMock(
+            platform=PropertyMock(type=platform_type),
+            latitude=0,
+            longitude=0,
+            id=0,
+        )
+        station.name = 'myname'
+        patch_get_stations.return_value = [ station ]
+        res = self.app.get(self.apiLinks["observation_point"])
+        
+        self.assertEqual(res.status_code, 200)
+        patch_get_stations.assert_called_with(
+            session=patch_session, platform_types=['none']
+        )
+        data = self.__get_response_data(res)
+        self.assertEqual(len(data['features']), 1)
+        self.assertEqual([0, 0], data['features'][0]['geometry']['coordinates'])
+
+    @patch('data.observational.db.session.query')
+    def test_observation_variables(self, patch_query):
+        query_return = MagicMock()
+        filter_return = MagicMock()
+        order_return = MagicMock()
+        patch_query.return_value = query_return
+        query_return.filter = MagicMock(return_value=filter_return)
+        filter_return.order_by = MagicMock(return_value=order_return)
+
+        variable0 = PropertyMock()
+        variable0.name = 'variable0'
+        variable1 = PropertyMock()
+        variable1.name = 'variable1'
+        order_return.all = MagicMock(return_value=[variable0, variable1])
+        
+        res = self.app.get(self.apiLinks["observation_variables"])
+        self.assertEqual(res.status_code, 200)
+        data = self.__get_response_data(res)
+        self.assertEqual(len(data), 2)
+        self.assertDictEqual(data[0], {'id': 0, 'value': 'variable0'})
+        self.assertDictEqual(data[1], {'id': 1, 'value': 'variable1'})
+
+    @patch('data.observational.db.session.query')
+    def test_observation_tracktimerange(self, patch_query):
+        query_return = MagicMock()
+        filter_return = MagicMock()
+        patch_query.return_value = query_return
+        query_return.filter = MagicMock(return_value=filter_return)
+        filter_return.one = MagicMock(return_value=[
+            datetime.datetime(2010, 1, 1),
+            datetime.datetime(2020, 1, 1),
+        ])
+
+        res = self.app.get(self.apiLinks["observation_tracktimerange"])
+        self.assertEqual(res.status_code, 200)
+        data = self.__get_response_data(res)
+        self.assertEqual(data['min'], "2010-01-01T00:00:00")
+        self.assertEqual(data['max'], "2020-01-01T00:00:00")
+
+    @patch('data.observational.db.session.query')
+    def test_observation_meta(self, patch_query):
+        query_return = MagicMock()
+        patch_query.return_value = query_return
+        platform = PropertyMock(
+            attrs={
+                'attr0': 'attribute0',
+                'attr1': 'attribute1',
+            },
+            type=PropertyMock()
+        )
+        platform.type.name = 'platform_type'
+        query_return.get = MagicMock()
+        query_return.get.return_value = platform
+
+
+        res = self.app.get(self.apiLinks["observation_meta"], query_string={
+            'type': 'platform',
+            'id': 123,
+        })
+        data = self.__get_response_data(res)
+        query_return.get.assert_called_with('123')
+        self.assertDictEqual(
+            data,
+            {
+                'Platform Type': 'platform_type',
+                'attr0': 'attribute0',
+                'attr1': 'attribute1'
+            }
+        )
 
 if __name__ == '__main__':
     unittest.main()

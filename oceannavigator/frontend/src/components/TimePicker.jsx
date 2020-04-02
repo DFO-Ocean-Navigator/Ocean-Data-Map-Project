@@ -94,6 +94,13 @@ export default class TimePicker extends React.Component {
       max = this.getPrevTimestamp(parseInt(props.max));
     }
 
+    if (!min) {
+      min = data[0].id;
+    }
+    if (!max) {
+      max = data[data.length - 1].id;
+    }
+
     return [min, max];
   }
 
@@ -255,14 +262,14 @@ export default class TimePicker extends React.Component {
     if (this.props.quantum === "hour") {
       var times = [];
       d = $(this.refs.picker).datepicker("getDate");
-      const isodatestr = dateFormat(d, "yyyy-mm-dd");
+      const isodatestr = dateFormat(d, "yyyy-mm-dd", true);
 
       for (let i = 0; i < this.state.data.length; ++i) {
         if (this.state.data[i].value.indexOf(isodatestr) === 0) {
           if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
             times.unshift({
               id: this.state.data[i].id,
-              value: dateFormat(this.state.data[i].value, "HH:MM")
+              value: dateFormat(this.state.data[i].value, "HH:MM", true)
             });
           }
         }

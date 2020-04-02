@@ -40,39 +40,44 @@ export default class MapInputs extends React.Component {
     const inputs = [
       <Panel
         key='left_map_panel'
-        collapsible
         defaultExpanded
-        header={this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
         bsStyle='primary'
       >
-        <DatasetSelector
-          id='dataset_0'
-          state={this.props.state}
-          onUpdate={this.props.changeHandler}
-          depth={true}
-        />
-        <Range
-          id='scale'
-          state={this.props.state.scale}
-          setDefaultScale={this.props.state.setDefaultScale}
-          def=''
-          onUpdate={this.props.changeHandler}
-          onSubmit={this.props.changeHandler}
-          title={_("Variable Range")}
-          autourl={"/api/v1.0/range/" +
-                  this.props.state.dataset + "/" + 
-                  this.props.state.variable + "/" +
-                  this.props.options.interpType + "/" +
-                  this.props.options.interpRadius + "/" +
-                  this.props.options.interpNeighbours + "/" +
-                  this.props.state.projection + "/" +
-                  this.props.state.extent.join(",") + "/" +
-                  this.props.state.depth + "/" +
-                  this.props.state.time +  ".json"
-          }
-          dataset_compare={this.props.state.dataset_compare}
-          default_scale={this.props.state.variable_scale}
-        ></Range>
+        <Panel.Heading>
+          {this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        </Panel.Heading>
+        <Panel.Collapse>
+          <Panel.Body>
+            <DatasetSelector
+              id='dataset_0'
+              state={this.props.state}
+              onUpdate={this.props.changeHandler}
+              depth={true}
+            />
+            <Range
+              id='scale'
+              state={this.props.state.scale}
+              setDefaultScale={this.props.state.setDefaultScale}
+              def=''
+              onUpdate={this.props.changeHandler}
+              onSubmit={this.props.changeHandler}
+              title={_("Variable Range")}
+              autourl={"/api/v1.0/range/" +
+                      this.props.state.dataset + "/" + 
+                      this.props.state.variable + "/" +
+                      this.props.options.interpType + "/" +
+                      this.props.options.interpRadius + "/" +
+                      this.props.options.interpNeighbours + "/" +
+                      this.props.state.projection + "/" +
+                      this.props.state.extent.join(",") + "/" +
+                      this.props.state.depth + "/" +
+                      this.props.state.time +  ".json"
+              }
+              dataset_compare={this.props.state.dataset_compare}
+              default_scale={this.props.state.variable_scale}
+            ></Range>
+          </Panel.Body>
+        </Panel.Collapse>
       </Panel>
     ];
 
@@ -81,38 +86,41 @@ export default class MapInputs extends React.Component {
       inputs.push(
         <Panel
           key='right_map_panel'
-          collapsible
           defaultExpanded
-          header={_("Right Map")}
           bsStyle='primary'
         >
-          <DatasetSelector 
-            id='dataset_1'
-            state={this.props.state.dataset_1}
-            onUpdate={this.props.changeHandler}
-            depth={true}
-          />
-          <Range
-            key='scale_1'
-            id='scale_1'
-            state={this.props.state.scale_1}
-            setDefaultScale={this.props.state.setDefaultScale}
-            def=''
-            onUpdate={this.props.changeHandler}
-            title={_("Variable Range")}
-            autourl={"/api/v1.0/range/" +
-                    this.props.state.dataset_1.dataset + "/" +
-                    this.props.state.dataset_1.variable + "/" +
-                    this.props.options.interpType + "/" +
-                    this.props.options.interpRadius + "/" +
-                    this.props.options.interpNeighbours + "/" +
-                    this.props.state.projection + "/" +
-                    this.props.state.extent.join(",") + "/" +
-                    this.props.state.dataset_1.depth + "/" +
-                    this.props.state.dataset_1.time + ".json"
-            }
-            default_scale={this.props.state.dataset_1.variable_scale}
-          ></Range>
+          <Panel.Heading>{_("Right Map")}</Panel.Heading>
+          <Panel.Collapse>
+            <Panel.Body>
+              <DatasetSelector 
+                id='dataset_1'
+                state={this.props.state.dataset_1}
+                onUpdate={this.props.changeHandler}
+                depth={true}
+              />
+              <Range
+                key='scale_1'
+                id='scale_1'
+                state={this.props.state.scale_1}
+                setDefaultScale={this.props.state.setDefaultScale}
+                def=''
+                onUpdate={this.props.changeHandler}
+                title={_("Variable Range")}
+                autourl={"/api/v1.0/range/" +
+                        this.props.state.dataset_1.dataset + "/" +
+                        this.props.state.dataset_1.variable + "/" +
+                        this.props.options.interpType + "/" +
+                        this.props.options.interpRadius + "/" +
+                        this.props.options.interpNeighbours + "/" +
+                        this.props.state.projection + "/" +
+                        this.props.state.extent.join(",") + "/" +
+                        this.props.state.dataset_1.depth + "/" +
+                        this.props.state.dataset_1.time + ".json"
+                }
+                default_scale={this.props.state.dataset_1.variable_scale}
+              ></Range>
+            </Panel.Body>
+          </Panel.Collapse>
         </Panel>
       );
     }
@@ -132,45 +140,48 @@ export default class MapInputs extends React.Component {
           {/* Creates the Data Selection Tab */}
           <Tab eventKey={1} title={<span><Icon icon="table"/> <span>{_("Data Selection")}</span></span>}>
             <Panel
-              collapsible
               defaultExpanded
-              header={_("Data Comparison")}
               bsStyle='primary'
             >
-              <Row>
-                <Col xs={9}>
+              <Panel.Heading>{_("Data Comparison")}</Panel.Heading>
+              <Panel.Collapse>
+                <Panel.Body>
+                  <Row>
+                    <Col xs={9}>
+                      <SelectBox
+                        id='dataset_compare'
+                        state={this.props.state.dataset_compare}
+                        onUpdate={this.props.changeHandler}
+                        title={_("Compare Datasets")}
+                      />
+                    </Col>
+                    <Col xs={3}>
+                      <Button 
+                        bsStyle="link"
+                        key='show_help'
+                        id='show_help'
+                        onClick={this.props.showHelp}
+                      >
+                        {_("Help")}
+                      </Button>
+                    </Col>
+                  </Row>
                   <SelectBox
-                    id='dataset_compare'
-                    state={this.props.state.dataset_compare}
+                    id='syncRanges'
                     onUpdate={this.props.changeHandler}
-                    title={_("Compare Datasets")}
+                    title={_("Sync Variable Ranges")}
+                    style={{display: this.props.state.dataset_compare ? "block" : "none"}}
                   />
-                </Col>
-                <Col xs={3}>
-                  <Button 
-                    bsStyle="link"
-                    key='show_help'
-                    id='show_help'
-                    onClick={this.props.showHelp}
+                  <Button
+                    bsStyle="default"
+                    block
+                    style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+                    onClick={this.props.swapViews}
                   >
-                    {_("Help")}
+                    {_("Swap Views")}
                   </Button>
-                </Col>
-              </Row>
-              <SelectBox
-                id='syncRanges'
-                onUpdate={this.props.changeHandler}
-                title={_("Sync Variable Ranges")}
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
-              />
-              <Button
-                bsStyle="default"
-                block
-                style={{display: this.props.state.dataset_compare ? "block" : "none"}}
-                onClick={this.props.swapViews}
-              >
-                {_("Swap Views")}
-              </Button>
+                </Panel.Body>
+              </Panel.Collapse>
             </Panel>
             
             {inputs  /* Renders Side Panel */}
@@ -181,46 +192,49 @@ export default class MapInputs extends React.Component {
           <Tab eventKey={2} title={<span><Icon icon="gear"/> <span>{_("Settings")}</span></span>}>
 
             <Panel    //Settings Panel
-              collapsible
               defaultExpanded
               header={_("Map")} 
               bsStyle='primary' 
             >
-              <ComboBox   //Projection Drop Down - Hardcoded
-                id='projection'
-                state={this.props.state.projection}
-                onUpdate={this.props.changeHandler}
-                data={[
-                  { id: "EPSG:3857", value: _("Global") },
-                  { id: "EPSG:32661", value: _("Arctic") },
-                  { id: "EPSG:3031", value: _("Antarctic") },
-                ]}
-                title={_("Projection")}
-              />
-              <ComboBox   //Basemap Drop Down - Hardcoded
-                id='basemap'
-                state={this.props.state.basemap}
-                onUpdate={this.props.changeHandler}
-                data={[
-                  {
-                    id: "topo",
-                    value: _("ETOPO1 Topography"),
-                    attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
-                  },
-                  {
-                    id: "ocean",
-                    value: _("Esri Ocean Basemap"),
-                    attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
-                  },
-                  {
-                    id: "world",
-                    value: _("Esri World Imagery"),
-                    attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
-                  },
-                ]}
-                title={_("Basemap")}
-              />
-              
+              <Panel.Heading>{_("Map")}</Panel.Heading>
+              <Panel.Collapse>
+                <Panel.Body>
+                  <ComboBox   //Projection Drop Down - Hardcoded
+                    id='projection'
+                    state={this.props.state.projection}
+                    onUpdate={this.props.changeHandler}
+                    data={[
+                      { id: "EPSG:3857", value: _("Global") },
+                      { id: "EPSG:32661", value: _("Arctic") },
+                      { id: "EPSG:3031", value: _("Antarctic") },
+                    ]}
+                    title={_("Projection")}
+                  />
+                  <ComboBox   //Basemap Drop Down - Hardcoded
+                    id='basemap'
+                    state={this.props.state.basemap}
+                    onUpdate={this.props.changeHandler}
+                    data={[
+                      {
+                        id: "topo",
+                        value: _("ETOPO1 Topography"),
+                        attribution: "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce."
+                      },
+                      {
+                        id: "ocean",
+                        value: _("Esri Ocean Basemap"),
+                        attribution: "Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri."
+                      },
+                      {
+                        id: "world",
+                        value: _("Esri World Imagery"),
+                        attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
+                      },
+                    ]}
+                    title={_("Basemap")}
+                  />
+                </Panel.Body>
+              </Panel.Collapse>
             </Panel>
 
             <Options

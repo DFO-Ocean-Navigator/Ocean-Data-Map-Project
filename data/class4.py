@@ -1,32 +1,29 @@
-#!/usr/bin/env python
-
 import datetime
 import fcntl
+import glob
 import os
 import pickle as pickle
 import time
-from ftplib import FTP
+from typing import List
 
 import cftime
 import numpy as np
 import pyproj
+import xarray as xr
 from flask import current_app
-from netCDF4 import Dataset, chartostring
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 
 
 def __list_class4_files_slowly():
-    ftpSite = FTP(current_app.config['CLASS4_FTP'])
-    ftpSite.login("anonymous", "anonymous")
-    thisYear = datetime.datetime.now().year
+    class4_path = current_app.config['CLASS4_PATH']
     files = []
     result = []
-    for i in range(2011, thisYear + 1):
-        fullList = ftpSite.nlst("/class4/" + str(i))
-        for filename in fullList:
-            if ("_GIOPS_" in filename) and ("profile.nc" in filename):
-                files.append(filename[13:-3])
+
+    for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
+        if f.endswith('profile.nc') and ('GIOPS' in f):
+            files.append(f[18:-3])
+
     for names in files:
         value = names
         date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
@@ -51,10 +48,10 @@ def list_class4_files():
     try:
         fp = open(cache_file_name, 'rb')
     except IOError as e:
-        msg = ('Warning: Unable to open cache list of Class 4 files: %s\n'
-               'Falling back to slow method for generating the list of '
-               'Class 4 files on the fly')
-        msg = msg % (str(e),)
+        msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
+               Falling back to slow method for generating the list of 
+               Class 4 files on the fly.
+               """
         print(msg)
         return __list_class4_files_slowly()
 
@@ -83,9 +80,10 @@ def list_class4_files():
         result = pickle.load(fp)
         fcntl.lockf(fp, fcntl.LOCK_UN)
     else:
-        msg = ('Warning: Unable to acquire read lock on cache file\n'
-               'Falling back to slow method for generating list of Class 4 '
-               'files on the fly')
+        msg = """"Warning: Unable to acquire read lock on Class 4 cache file.
+               Falling back to slow method for generating the list of 
+               Class 4 files on the fly.
+               """
         print(msg)
         result = __list_class4_files_slowly()
     fp.close()
@@ -95,12 +93,12 @@ def list_class4_files():
 
 def list_class4(d):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_URL"] % (d[7:11], d)
+    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
 
-    with Dataset(dataset_url, 'r') as ds:
+    with xr.open_dataset(dataset_url) as ds:
         lat = ds['latitude'][:]
         lon = ds['longitude'][:]
-        ids = list(map(str.strip, chartostring(ds['id'][:])))
+        ids = np.char.decode(ds['id'][:].values, 'UTF-8')
         rmse = []
 
         for i in range(0, lat.shape[0]):
@@ -113,7 +111,6 @@ def list_class4(d):
     rmse_norm = rmse / maxval
 
     loc = list(zip(lat, lon))
-
     points = []
     for idx, ll in enumerate(loc):
         if np.ma.is_masked(rmse[idx]):
@@ -143,7 +140,7 @@ def get_view_from_extent(extent):
 
 def class4(class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_URL"] % (
+    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
         class4_id[7:11], class4_id)
 
     proj = pyproj.Proj(init=projection)
@@ -154,11 +151,10 @@ def class4(class4_id, projection, resolution, extent):
     lon = []
     point_id = []
     identifiers = []
-    with Dataset(dataset_url, 'r') as ds:
+    with xr.open_dataset(dataset_url) as ds:
         lat_in = ds['latitude'][:]
         lon_in = ds['longitude'][:]
-        ids = list(map(str.strip, chartostring(ds['id'][:])))
-
+        ids = np.char.decode(ds['id'][:].values, 'UTF-8')
         for i in range(0, lat_in.shape[0]):
             x, y = proj(lon_in[i], lat_in[i])
             p = Point(y, x)
@@ -207,9 +203,9 @@ def class4(class4_id, projection, resolution, extent):
 
 def list_class4_forecasts(class4_id):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_URL"] % (
+    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
         class4_id[7:11], class4_id)
-    with Dataset(dataset_url, 'r') as ds:
+    with xr.open_dataset(dataset_url) as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
                          cftime.utime(var.units).num2date(var[:])]
@@ -231,22 +227,28 @@ def list_class4_forecasts(class4_id):
     return res
 
 
-def list_class4_models(class4_id):
-    ftpSite = FTP(current_app.config['CLASS4_FTP'])
-    ftpSite.login("anonymous", "anonymous")
-    thisYear = datetime.datetime.now().year
-    files = []
-    for i in range(2011, thisYear + 1):
-        fullList = ftpSite.nlst("/class4/" + str(i))
-        for filename in fullList:
-            if "profile.nc" in filename:
-                files.append(filename[13:-3])
+def list_class4_models(class4_id: str) -> List[dict]:
+    """Get list of all ocean models for a given class4 id.
+
+    Arguments:
+
+        * `class4_id` -- {str} Class4 ID (e.g. `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
+
+    Returns:
+
+        List of dictionaries with `id` and `value` fields.
+    """
+
+    path = current_app.config["CLASS4_PATH"]
     result = []
-    for filenames in files:
-        model = filenames.split("_")[2]
+    
+    # file pattern globbing != regex
+    for f in glob.iglob(f"{path}/{class4_id[7:11]}/{class4_id[:15]}*_profile.nc"):
+        model = f.split("_")[2] # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
         if model != "GIOPS":
             result.append({
-                'value': model,
-                'id': filenames
+                'id': os.path.basename(f)[:-3], # chop off .nc extension
+                'value': model
             })
+
     return result

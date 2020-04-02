@@ -169,173 +169,183 @@ export default class LineWindow extends React.Component {
     const global = (<Panel 
       key='global_settings'
       id='global_settings'
-      collapsible
       defaultExpanded
-      header={_("Global Settings")}
       bsStyle='primary'
     >
-      <Row>
-        <Col xs={9}>
-          <SelectBox
-            id='dataset_compare'
-            key='dataset_compare'
-            state={this.props.dataset_compare}
-            onUpdate={this.props.onUpdate}
-            title={_("Compare Datasets")}
-          />
-        </Col>
-        <Col xs={3}>
-          <Button 
-            bsStyle="link"
-            key='show_help'
-            id='show_help'
-            onClick={this.props.showHelp}
+      <Panel.Heading>{_("Global Settings")}</Panel.Heading>
+      <Panel.Collapse>
+        <Panel.Body>
+          <Row>
+            <Col xs={9}>
+              <SelectBox
+                id='dataset_compare'
+                key='dataset_compare'
+                state={this.props.dataset_compare}
+                onUpdate={this.props.onUpdate}
+                title={_("Compare Datasets")}
+              />
+            </Col>
+            <Col xs={3}>
+              <Button 
+                bsStyle="link"
+                key='show_help'
+                id='show_help'
+                onClick={this.props.showHelp}
+              >
+                {_("Help")}
+              </Button>
+            </Col>
+          </Row>
+          <Button
+            key='swap_views'
+            id='swap_views'
+            bsStyle="default"
+            block
+            style={{display: this.props.dataset_compare ? "block" : "none"}}
+            onClick={this.props.swapViews}
           >
-            {_("Help")}
+            {_("Swap Views")}
           </Button>
-        </Col>
-      </Row>
-      <Button
-        key='swap_views'
-        id='swap_views'
-        bsStyle="default"
-        block
-        style={{display: this.props.dataset_compare ? "block" : "none"}}
-        onClick={this.props.swapViews}
-      >
-        {_("Swap Views")}
-      </Button>
-      
-      {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
-      <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
-      >
-        <Range
-          auto
-          key='scale_diff'
-          id='scale_diff'
-          state={this.state.scale_diff}
-          def={""}
-          onUpdate={this.onLocalUpdate}
-          title={_("Diff. Variable Range")}
-        />
-      </div>
+          
+          {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
+          <div
+            style={{display: this.props.dataset_compare &&
+                            this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+          >
+            <Range
+              auto
+              key='scale_diff'
+              id='scale_diff'
+              state={this.state.scale_diff}
+              def={""}
+              onUpdate={this.onLocalUpdate}
+              title={_("Diff. Variable Range")}
+            />
+          </div>
 
-      <SelectBox
-        key='showmap'
-        id='showmap'
-        state={this.state.showmap}
-        onUpdate={this.onLocalUpdate}
-        title={_("Show Map Location")}
-      >
-        {_("showmap_help")}
-      </SelectBox>
-        
-      <ImageSize
-        key='size'
-        id='size'
-        state={this.state.size}
-        onUpdate={this.onLocalUpdate}
-        title={_("Saved Image Size")}
-      />
-      <CustomPlotLabels
-        key='title'
-        id='title'
-        title={_("Plot Title")}
-        updatePlotTitle={this.updatePlotTitle}
-        plotTitle={this.state.plotTitles[this.state.selected - 1]}
-      ></CustomPlotLabels>
+          <SelectBox
+            key='showmap'
+            id='showmap'
+            state={this.state.showmap}
+            onUpdate={this.onLocalUpdate}
+            title={_("Show Map Location")}
+          >
+            {_("showmap_help")}
+          </SelectBox>
+            
+          <ImageSize
+            key='size'
+            id='size'
+            state={this.state.size}
+            onUpdate={this.onLocalUpdate}
+            title={_("Saved Image Size")}
+          />
+          <CustomPlotLabels
+            key='title'
+            id='title'
+            title={_("Plot Title")}
+            updatePlotTitle={this.updatePlotTitle}
+            plotTitle={this.state.plotTitles[this.state.selected - 1]}
+          ></CustomPlotLabels>
+        </Panel.Body>
+      </Panel.Collapse>
     </Panel>);
 
     const transectSettings = <Panel
       key='transect_settings'
       id='transect_settings'
-      collapsible
       defaultExpanded
-      header={_("Transect Settings")}
       bsStyle='primary'
     >
-      <ComboBox
-        key='surfacevariable'
-        id='surfacevariable'
-        state={this.state.surfacevariable}
-        onUpdate={this.onLocalUpdate}
-        title={_("Surface Variable")}
-        url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
-      >{_("surfacevariable_help")}</ComboBox>
+      <Panel.Heading>{_("Transect Settings")}</Panel.Heading>
+      <Panel.Collapse>
+        <Panel.Body>
+          <ComboBox
+            key='surfacevariable'
+            id='surfacevariable'
+            state={this.state.surfacevariable}
+            onUpdate={this.onLocalUpdate}
+            title={_("Surface Variable")}
+            url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
+          >{_("surfacevariable_help")}</ComboBox>
 
-      <NumberBox
-        key='linearthresh'
-        id='linearthresh'
-        state={this.state.linearthresh}
-        onUpdate={this.onLocalUpdate}
-        title={_("Linear Threshold")}
-      >{_("linearthresh_help")}</NumberBox>
+          <NumberBox
+            key='linearthresh'
+            id='linearthresh'
+            state={this.state.linearthresh}
+            onUpdate={this.onLocalUpdate}
+            title={_("Linear Threshold")}
+          >{_("linearthresh_help")}</NumberBox>
 
-      <DepthLimit
-        key='depth_limit'
-        id='depth_limit'
-        state={this.state.depth_limit}
-        onUpdate={this.onLocalUpdate}
-      />
+          <DepthLimit
+            key='depth_limit'
+            id='depth_limit'
+            state={this.state.depth_limit}
+            onUpdate={this.onLocalUpdate}
+          />
 
-      <div
-        style={{display: this.props.dataset_compare &&
-                         this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
-        <ComboBox
-          key='colormap_diff'
-          id='colormap_diff'
-          state={this.state.colormap_diff}
-          def='default'
-          onUpdate={this.onLocalUpdate}
-          url='/api/v1.0/colormaps/'
-          title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-        </ComboBox>
-      </div>
-
+          <div
+            style={{display: this.props.dataset_compare &&
+                            this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
+            <ComboBox
+              key='colormap_diff'
+              id='colormap_diff'
+              state={this.state.colormap_diff}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/v1.0/colormaps/'
+              title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>
+          </div>
+        </Panel.Body>
+      </Panel.Collapse>
     </Panel>;
     
     const dataset = <Panel 
       key='left_map'
       id='left_map'
-      collapsible
       defaultExpanded
-      header={this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
       bsStyle='primary'
     >
-      <DatasetSelector
-        key='dataset_0'
-        id='dataset_0'
-        state={this.props.dataset_0}
-        onUpdate={this.props.onUpdate}
-        depth={this.state.selected == 2}
-        variables={this.state.selected == 2 ? "all" : "3d"}
-        time={this.state.selected == 2 ? "range" : "single"}
-        line={true}
-        updateSelectedPlots={this.updateSelectedPlots}
-        compare={this.props.dataset_compare}
-      />
+      <Panel.Heading>
+        {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      </Panel.Heading>
+      <Panel.Collapse>
+        <Panel.Body>
+          <DatasetSelector
+            key='dataset_0'
+            id='dataset_0'
+            state={this.props.dataset_0}
+            onUpdate={this.props.onUpdate}
+            depth={this.state.selected == 2}
+            variables={this.state.selected == 2 ? "all" : "3d"}
+            time={this.state.selected == 2 ? "range" : "single"}
+            line={true}
+            updateSelectedPlots={this.updateSelectedPlots}
+            compare={this.props.dataset_compare}
+          />
 
-      <Range
-        auto
-        key='scale'
-        id='scale'
-        state={this.state.scale}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        title={_("Variable Range")}
-      />
+          <Range
+            auto
+            key='scale'
+            id='scale'
+            state={this.state.scale}
+            def={""}
+            onUpdate={this.onLocalUpdate}
+            title={_("Variable Range")}
+          />
 
-      <ComboBox
-        key='colormap'
-        id='colormap'
-        state={this.state.colormap}
-        def='default'
-        onUpdate={this.onLocalUpdate}
-        url='/api/v1.0/colormaps/'
-        title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-      </ComboBox>
+          <ComboBox
+            key='colormap'
+            id='colormap'
+            state={this.state.colormap}
+            def='default'
+            onUpdate={this.onLocalUpdate}
+            url='/api/v1.0/colormaps/'
+            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+          </ComboBox>
+        </Panel.Body>
+      </Panel.Collapse>
     </Panel>;
     
     const compare_dataset = 
@@ -344,38 +354,41 @@ export default class LineWindow extends React.Component {
       <Panel 
         key='right_map'
         id='right_map'
-        collapsible
         defaultExpanded
-        header={_("Right Map")}
         bsStyle='primary'
       >
-        <DatasetSelector
-          key='dataset_1'
-          id='dataset_1'
-          state={this.props.dataset_1}
-          onUpdate={this.props.onUpdate}
-          depth={this.state.selected == 2}
-          variables={this.state.selected == 2 ? "all" : "3d"}
-          time={this.state.selected == 2 ? "range" : "single"}
-        />
-        <Range
-          auto
-          key='scale_1'
-          id='scale_1'
-          state={this.state.scale_1}
-          def={""}
-          onUpdate={this.onLocalUpdate}
-          title={_("Variable Range")}
-        />
-        <ComboBox
-          key='colormap_right'
-          id='colormap_right'
-          state={this.state.colormap_right}
-          def='default'
-          onUpdate={this.onLocalUpdate}
-          url='/api/v1.0/colormaps/'
-          title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
-        </ComboBox>
+        <Panel.Heading>{_("Right Map")}</Panel.Heading>
+        <Panel.Collapse>
+          <Panel.Body>
+            <DatasetSelector
+              key='dataset_1'
+              id='dataset_1'
+              state={this.props.dataset_1}
+              onUpdate={this.props.onUpdate}
+              depth={this.state.selected == 2}
+              variables={this.state.selected == 2 ? "all" : "3d"}
+              time={this.state.selected == 2 ? "range" : "single"}
+            />
+            <Range
+              auto
+              key='scale_1'
+              id='scale_1'
+              state={this.state.scale_1}
+              def={""}
+              onUpdate={this.onLocalUpdate}
+              title={_("Variable Range")}
+            />
+            <ComboBox
+              key='colormap_right'
+              id='colormap_right'
+              state={this.state.colormap_right}
+              def='default'
+              onUpdate={this.onLocalUpdate}
+              url='/api/v1.0/colormaps/'
+              title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            </ComboBox>
+          </Panel.Body>
+        </Panel.Collapse>
       </Panel>
       
     </div>;

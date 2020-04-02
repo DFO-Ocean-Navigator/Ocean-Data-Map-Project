@@ -56,7 +56,7 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 13,
+  "EPSG:3857": 16,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };

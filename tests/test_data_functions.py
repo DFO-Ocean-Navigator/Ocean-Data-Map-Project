@@ -45,3 +45,7 @@ class TestDataFunctions(unittest.TestCase):
     def test_deepsoundchannel(self):
         self.assertEqual(funcs.deepsoundchannel(xr.Variable(
             data=[0], dims=['depth']), [45], [0.5], [32]), 0)
+
+    def test_soniclayerdepth(self):
+        self.assertEqual(funcs.soniclayerdepth(xr.Variable(
+            data=[0], dims=['depth']), [45], [0.5], [32]), 0)

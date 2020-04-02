@@ -38,7 +38,7 @@ class SQLiteDatabase:
     def __flatten_list(self, some_list: list) -> list:
         return list(itertools.chain(*some_list))
 
-    def get_netcdf_files(self, timestamp: list, variable: list) -> List[str]:
+    def get_netcdf_files(self, timestamp: List[int], variable: List[str]) -> List[str]:
         """Retrieves the netCDF files that are mapped to the given timestamp(s) and variable.
 
         Arguments:
@@ -63,7 +63,6 @@ class SQLiteDatabase:
             variable = ?
             AND timestamp = ?;
         """
-
         for ts in timestamp:
             for v in variable:
                 self.c.execute(query, (v, ts))
@@ -151,11 +150,11 @@ class SQLiteDatabase:
 
         return result[0] if result else ""
 
-    def get_timestamps(self, variable: str) -> List[str]:
+    def get_timestamps(self, variable: str) -> List[int]:
         """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
 
         Arguments:
-            * variable: Key of the variable of interest (e.g. votemper)
+            * variable -- {str} Key of the variable of interest (e.g. votemper)
 
         Returns:
             * [list] -- List of all raw netCDF timestamps for this database. Your problem to convert them to Datetime objects.
@@ -177,7 +176,6 @@ class SQLiteDatabase:
                 variable = ?
             ORDER BY
                 timestamp ASC;
-
             """, (variable, )
         )
 

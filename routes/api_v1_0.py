@@ -1,17 +1,19 @@
 import base64
 import datetime
 import gzip
-import hashlib
 import json
 import os
 import shutil
 import sqlite3
+import pandas as pd
 from io import BytesIO
 
 import numpy as np
 from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
                    send_file, send_from_directory)
 from PIL import Image
+from dateutil.parser import parse as dateparse
+from shapely.geometry import Polygon, LinearRing, Point
 
 import data.class4 as class4
 import plotting.colormap
@@ -22,6 +24,9 @@ from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
+from data.observational import db as DB
+from data.observational import Station, Platform, Sample, DataType
+import data.observational.queries as ob_queries
 from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
@@ -312,7 +317,7 @@ def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: 
     **All Components Must be Included**
     """
 
-    
+
     config = DatasetConfig(dataset)
     with open_dataset(config) as ds:
         date = ds.convert_to_timestamp(time)
@@ -333,7 +338,7 @@ def class4_query_v1_0(q: str, class4_id: str):
     <string:q>         : forecasts / models (Data Request)
     <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
 
-    Returns a list of class4 datapoints for a given day 
+    Returns a list of class4 datapoints for a given day
     """
 
     if not class4_id:
@@ -411,9 +416,9 @@ def stats_v1_0():
                     "A Query must be specified in the form /stats/?query='...' ")
             # Retrieves Query as JSON based on Request Method
             query = json.loads(args.get('query'))
-    
+
         dataset = query.get('dataset')  # Retrieves dataset from query
-    
+
         data = areastats(dataset, query)
         return Response(data, status=200, mimetype='application/json')
 
@@ -434,7 +439,7 @@ def subset_query_v1_0():
     time_range = args['time'].split(',')
     variables = args['variables'].split(',')
     with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
-        working_dir, subset_filename = dataset.subset(args)
+        working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
@@ -612,7 +617,7 @@ def colormaps_v1_0():
             'id': i,
             'value': n
         }
-        for i, n in list(plotting.colormap.get_colormap_names().items())
+        for i, n in plotting.colormap.colormap_names.items()
     ], key=lambda k: k['value'])
     data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
 
@@ -669,7 +674,7 @@ def query_id_v1_0(q: str, q_id: str):
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
 
     <string:q>    : Type of Data (areas, class4, drifters, observation)
-    <string:q_id> : 
+    <string:q_id> :
 
     """
     if q == 'areas':
@@ -698,7 +703,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
-    <string:file_id>    : 
+    <string:file_id>    :
 
     **All components must be included**
     **Used Primarily by WebPage**
@@ -766,14 +771,17 @@ def timestamps():
         raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
 
-    vals = []
-    with SQLiteDatabase(config.url) as db:
-        if variable in config.calculated_variables:
-            data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
-                                                    [v.key for v in db.get_data_variables()])
-            vals = db.get_timestamps(data_vars[0])
-        else:
-            vals = db.get_timestamps(variable)
+    if config.url.endswith(".sqlite3"):
+        with SQLiteDatabase(config.url) as db:
+            if variable in config.calculated_variables:
+                data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
+                                                        [v.key for v in db.get_data_variables()])
+                vals = db.get_timestamps(data_vars[0])
+            else:
+                vals = db.get_timestamps(variable)
+    else:
+        with open_dataset(config, variable=variable) as ds:
+            vals = list(map(int, ds.nc_data.time_variable.values))
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
@@ -791,35 +799,6 @@ def timestamps():
 
     resp = Response(js, status=200, mimetype='application/json')
     return resp
-
-
-@bp_v1_0.route('/api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>')
-def timestamp_for_date_v1_0(old_dataset: str, date: int, new_dataset: str):
-    """
-    API Format: /api/v1.0/timestamp/<string:old_dataset>/<int:date>/<string:new_dataset>
-
-    <string:old_dataset> : Previous dataset used
-    <int:date>           : Date of desired data - Can be found using /api/timestamps/?datasets='...'
-    <string:new_dataset> : Dataset to extract data - Can be found using /api/datasets
-
-    **Used when changing datasets.**
-    """
-
-    old_config = DatasetConfig(old_dataset)
-    new_config = DatasetConfig(new_dataset)
-    with open_dataset(old_config) as ds:
-        timestamp = ds.timestamps[date]
-
-    with open_dataset(new_config) as ds:
-        timestamps = ds.timestamps
-
-    diffs = np.vectorize(lambda x: x.total_seconds())(timestamps - timestamp)
-    idx = np.where(diffs <= 0)[0]
-    res = 0
-    if len(idx) > 0:
-        res = idx.max().item()  # https://stackoverflow.com/a/11389998/2231969
-
-    return Response(json.dumps(res), status=200, mimetype='application/json')
 
 
 @bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
@@ -895,7 +874,7 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
 
     if os.path.isfile(f):
         return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
-        
+
     img = plotting.tile.bathymetry(projection, x, y, zoom, {})
     return _cache_and_send_img(img, f)
 
@@ -912,6 +891,9 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
 
     # Send blank tile if conditions aren't met
     if (zoom < 7) or (projection != "EPSG:3857"):
+        return send_file(shape_file_dir + "/blank.mbt")
+
+    if (zoom > 11) and (tiletype == "bath"):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
@@ -939,11 +921,390 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     return send_file(requestf)
 
 
+@bp_v1_0.route('/api/v1.0/observation/datatypes.json')
+def observation_datatypes_v1_0():
+    """
+    API Format: /api/v1.0/observation/datatypes.json
+
+    Returns the list of observational data types
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = [
+        {
+            'id': dt.key,
+            'value': dt.name,
+        }
+        for dt in ob_queries.get_datatypes(DB.session)
+    ]
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta_keys/<string:platform_types>.json')
+def observation_keys_v1_0(platform_types: str):
+    """
+    API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
+
+    <string:platform_types> : Comma seperated list of platform types
+
+    Gets the set of metadata keys for a list of platform types
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = ob_queries.get_meta_keys(DB.session, platform_types.split(','))
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json')
+def observation_values_v1_0(platform_types: str, key: str):
+    """
+    API Format: /api/v1.0/observation/meta_values/<string:platform_types>.json
+
+    <string:platform_types> : Comma seperated list of platform types
+    <string:key> : Metadata key
+
+    Gets the set of metadata values for a list of platform types and key
+
+    **Used in ObservationSelector**
+    """
+    max_age = 86400
+    data = ob_queries.get_meta_values(
+        DB.session, platform_types.split(','), key
+    )
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/tracktimerange/<string:platform_id>.json')
+def observation_tracktime_v1_0(platform_id: str):
+    """
+    API Format: /api/v1.0/observation/tracktime/<string:platform_id>.json
+
+    <string:platform_id> : Platform ID
+
+    Queries the min and max times for the track
+
+    **Used in TrackWindow**
+    """
+    max_age = 86400
+    platform = DB.session.query(Platform).get(platform_id)
+    data = DB.session.query(
+        DB.func.min(Station.time),
+        DB.func.max(Station.time),
+    ).filter(Station.platform == platform).one()
+    resp = jsonify({
+        'min': data[0].isoformat(),
+        'max': data[1].isoformat(),
+    })
+    resp.cache_control.max_age = max_age
+    return resp
+
+
+@bp_v1_0.route('/api/v1.0/observation/track/<string:query>.json')
+def observation_track_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/track/<string:query>.json
+
+    <string:query> : List of key=value pairs, seperated by ;
+        valid query keys are: start_date, end_date, datatype, platform_type,
+            meta_key, meta_value, mindepth, maxdepth, area, radius, quantum
+
+    Observational query for tracks
+
+    **Used in ObservationSelector**
+    """
+    query_dict = {
+        key: value
+        for key, value in [ q.split('=') for q in query.split(';')]
+    }
+    data = []
+    max_age = 86400
+    params = {}
+
+    MAPPING = {
+        'start_date': 'starttime',
+        'end_date': 'endtime',
+        'platform_type': 'platform_types',
+        'meta_key': 'meta_key',
+        'meta_value': 'meta_value',
+    }
+    for k,v in query_dict.items():
+        if k not in MAPPING:
+            continue
+
+        if k in ['start_date', 'end_date']:
+            params[MAPPING[k]] = dateparse(v)
+        elif k in ['datatype', 'meta_key', 'meta_value']:
+            if k == 'meta_key' and v == 'Any':
+                continue
+            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+                continue
+
+            params[MAPPING[k]] = v
+        elif k == 'platform_type':
+            params[MAPPING[k]] = v.split(',')
+        else:
+            params[MAPPING[k]] = float(v)
+
+    if 'area' in query_dict:
+        area = json.loads(query_dict.get('area'))
+        if len(area) > 1:
+            lats = [c[0] for c in area]
+            lons = [c[1] for c in area]
+            params['minlat'] = min(lats)
+            params['minlon'] = min(lons)
+            params['maxlat'] = max(lats)
+            params['maxlon'] = max(lons)
+        else:
+            params['latitude'] = area[0][0]
+            params['longitude'] = area[0][1]
+            params['radius'] = float(query_dict.get('radius', 10))
+
+        platforms = ob_queries.get_platforms(DB.session, **params)
+        for param in [
+            'minlat', 'maxlat', 'minlon', 'maxlon', 'latitude', 'longitude',
+            'radius'
+        ]:
+            if param in params:
+                del params[param]
+
+        params['platforms'] = platforms
+
+    coordinates = ob_queries.get_platform_tracks(
+        DB.session,
+        query_dict.get("quantum", "day"),
+        **params
+    )
+
+    if len(coordinates) > 1:
+        df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
+        df['id'] = df.id.astype(int)
+
+        vc = df.id.value_counts()
+        for p_id in vc.where(vc > 1).dropna().index:
+            d = { 
+                'type': "Feature",
+                'geometry': {
+                    'type': "LineString",
+                    'coordinates': df[['lon', 'lat']][df.id ==
+                                                    p_id].values.tolist()
+                },
+                'properties': {
+                    'id': int(p_id),
+                    'type': df.type[df.id == p_id].values[0].name,
+                    'class': 'observation',
+                }
+            }
+            data.append(d)
+
+    result = {
+        'type': "FeatureCollection",
+        'features': data,
+    }
+    resp = jsonify(result)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/point/<string:query>.json')
+def observation_point_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/point/<string:query>.json
+
+    <string:query> : List of key=value pairs, seperated by ;
+        valid query keys are: start_date, end_date, datatype, platform_type,
+            meta_key, meta_value, mindepth, maxdepth, area, radius
+
+    Observational query for points
+
+    **Used in ObservationSelector**
+    """
+    query_dict = {
+        key: value
+        for key, value in [ q.split('=') for q in query.split(';')]
+    }
+    data = []
+    max_age = 86400
+    params = {}
+    MAPPING = {
+        'start_date': 'starttime',
+        'end_date': 'endtime',
+        'datatype': 'variable',
+        'platform_type': 'platform_types',
+        'meta_key': 'meta_key',
+        'meta_value': 'meta_value',
+        'mindepth': 'mindepth',
+        'maxdepth': 'maxdepth',
+    }
+    for k,v in query_dict.items():
+        if k not in MAPPING:
+            continue
+
+        if k in ['start_date', 'end_date']:
+            params[MAPPING[k]] = dateparse(v)
+        elif k in ['datatype', 'meta_key', 'meta_value']:
+            if k == 'meta_key' and v == 'Any':
+                continue
+            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+                continue
+
+            params[MAPPING[k]] = v
+        elif k == 'platform_type':
+            params[MAPPING[k]] = v.split(',')
+        else:
+            params[MAPPING[k]] = float(v)
+
+    checkpoly = False
+    with_radius = False
+    if 'area' in query_dict:
+        area = json.loads(query_dict.get('area'))
+        if len(area) > 1:
+            lats = [c[0] for c in area]
+            lons = [c[1] for c in area]
+            params['minlat'] = min(lats)
+            params['minlon'] = min(lons)
+            params['maxlat'] = max(lats)
+            params['maxlon'] = max(lons)
+            poly = Polygon(LinearRing(area))
+            checkpoly = True
+        else:
+            params['latitude'] = area[0][0]
+            params['longitude'] = area[0][1]
+            params['radius'] = float(query_dict.get('radius', 10))
+            with_radius = True
+
+    if with_radius:
+        stations = ob_queries.get_stations_radius(session=DB.session, **params)
+    else:
+        stations = ob_queries.get_stations(session=DB.session, **params)
+
+    if len(stations) > 500:
+        stations = stations[::round(len(stations)/500)]
+
+    for s in stations:
+        if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
+            continue
+
+        d = { 
+            'type': "Feature",
+            'geometry': {
+                'type': "Point",
+                'coordinates': [s.longitude, s.latitude]
+            },
+            'properties': {
+                'type': s.platform.type.name,
+                'id': s.id,
+                'class': 'observation',
+            }
+        }
+        if s.name:
+            d['properties']['name'] = s.name
+
+        data.append(d)
+
+    result = {
+        'type': "FeatureCollection",
+        'features': data,
+    }
+    resp = jsonify(result)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/meta.json')
+def observation_meta_v1_0():
+    """
+    API Format: /api/v1.0/observation/meta.json
+
+    Observational query for all the metadata for a platform or station
+
+    **Used in Map for the observational tooltip**
+    """
+    key = request.args.get("type", "platform")
+    identifier = request.args.get("id", "0")
+    max_age = 86400
+    data = {}
+    if key == 'station':
+        station = DB.session.query(Station).get(identifier)
+        data['Time'] = station.time.isoformat(' ')
+        if station.name:
+            data['Station Name'] = station.name
+
+        platform = station.platform
+        
+    elif key == 'platform':
+        platform = DB.session.query(Platform).get(identifier)
+    else:
+        raise FAILURE
+
+    data.update(platform.attrs)
+    data['Platform Type'] = platform.type.name
+    data = { k: data[k] for k in sorted(data) }
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+@bp_v1_0.route('/api/v1.0/observation/variables/<string:query>.json')
+def observation_variables_v1_0(query: str):
+    """
+    API Format: /api/v1.0/observation/variables/<string:query>.json
+
+    <string:query> : A key=value pair, where key is either station or platform
+    and value is the id
+
+    Observational query for variables for a platform or station
+
+    **Used in PointWindow for the observational variable selection**
+    """
+    key, identifier = query.split('=')
+    data = []
+    max_age = 86400
+    if key == 'station':
+        station = DB.session.query(Station).get(identifier)
+    elif key == 'platform':
+        platform = DB.session.query(Platform).get(identifier)
+        station = DB.session.query(Station).filter(
+            Station.platform == platform
+        ).first()
+    else:
+        raise FAILURE
+
+    datatype_keys = [
+        k[0]
+        for k in DB.session.query(
+            DB.func.distinct(Sample.datatype_key)
+        ).filter(Sample.station == station).all()
+    ]
+
+    datatypes = DB.session.query(
+        DataType
+    ).filter(DataType.key.in_(datatype_keys)).order_by(DataType.key).all()
+
+    data = [
+        {
+            'id': idx,
+            'value': dt.name,
+        }
+        for idx, dt in enumerate(datatypes)
+    ]
+
+    resp = jsonify(data)
+    resp.cache_control.max_age = max_age
+    return resp
+
+
 @bp_v1_0.after_request
 def after_request(response):
+    # https://flask.palletsprojects.com/en/1.1.x/security/
+
     header = response.headers
     # Relying on iptables to keep this safe
     header['Access-Control-Allow-Origin'] = '*'
+    header['X-XSS-Protection'] = '1; mode=block'
+    header['X-Frame-Options'] = 'SAMEORIGIN'
+
     return response
 
 

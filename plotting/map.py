@@ -340,7 +340,7 @@ class MapPlotter(Plotter):
 
             self.contour_data = contour_data
 
-            self.timestamp = dataset.timestamp_to_iso_8601(self.time)
+            self.timestamp = dataset.nc_data.timestamp_to_iso_8601(self.time)
 
         if self.compare:
             self.variable_name += " Difference"

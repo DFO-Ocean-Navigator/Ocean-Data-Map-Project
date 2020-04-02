@@ -61,13 +61,13 @@ class TransectPlotter(LinePlotter):
 
             for idx, v in enumerate(self.variables):
                 var = dataset.variables[v]
-                if not (set(var.dimensions) & set(dataset.depth_dimensions)):
+                if not (set(var.dimensions) & set(dataset.nc_data.depth_dimensions)):
                     for potential in dataset.variables:
                         if potential in self.variables:
                             continue
                         pot = dataset.variables[potential]
                         if (set(pot.dimensions) &
-                                set(dataset.depth_dimensions)):
+                                set(dataset.nc_data.depth_dimensions)):
                             if len(pot.dimensions) > 3:
                                 self.variables[idx] = potential.key
 
@@ -122,7 +122,7 @@ class TransectPlotter(LinePlotter):
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(variable_names[0])
 
-            self.iso_timestamp = dataset.timestamp_to_iso_8601(self.time)
+            self.iso_timestamp = dataset.nc_data.timestamp_to_iso_8601(self.time)
 
             self.depth = dep
             self.depth_unit = "m"
@@ -143,8 +143,8 @@ class TransectPlotter(LinePlotter):
                     dataset.get_path(
                         self.points,
                         0,
-                        self.time,
                         self.surface,
+                        self.time
                     )
                 vc = self.dataset_config.variable[dataset.variables[self.surface]]
                 surface_unit = vc.unit
@@ -181,7 +181,7 @@ class TransectPlotter(LinePlotter):
             self.compare_config = DatasetConfig(self.compare['dataset'])
             self.compare['time'] = int(self.compare['time'])
             with open_dataset(self.compare_config, timestamp=self.compare['time'], variable=self.compare['variables']) as dataset:
-                self.compare['iso_timestamp'] = dataset.timestamp_to_iso_8601(
+                self.compare['iso_timestamp'] = dataset.nc_data.timestamp_to_iso_8601(
                     self.compare['time'])
 
                 # 1 variable
@@ -528,7 +528,7 @@ class TransectPlotter(LinePlotter):
             if self.surface:
                 self.__add_surface_plot(divider)
 
-        
+
         def find_minmax(scale, data):
             """
                 Finds and returns the correct min/max values for the variable scale

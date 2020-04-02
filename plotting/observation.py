@@ -67,7 +67,7 @@ class ObservationPlotter(PointPlotter):
                                for o in self.observation]
 
         with open_dataset(self.dataset_config, variable=self.variables) as dataset:
-            ts = dataset.timestamps
+            ts = dataset.nc_data.timestamps
 
             observation_times = []
             timestamps = []

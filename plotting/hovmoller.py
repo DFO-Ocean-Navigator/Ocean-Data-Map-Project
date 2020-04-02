@@ -1,5 +1,3 @@
-# vim: set fileencoding=utf-8 :
-
 import re
 
 import matplotlib.gridspec as gridspec
@@ -61,50 +59,24 @@ class HovmollerPlotter(LinePlotter):
             self.depth, self.depth_value, self.depth_unit = find_depth(
                 self.depth, len(dataset.depths) - 1, dataset)
 
-            time_var = dataset.time_variable
-            if self.starttime > 0:
-                self.starttime = dataset.timestamp_to_time_index(
-                    self.starttime)
-            if self.endtime > 0:
-                self.endtime = dataset.timestamp_to_time_index(self.endtime)
-
-            time = time_var[slice(min(self.starttime, self.endtime), max(
-                self.starttime, self.endtime) + 1)].values
-
-            if len(self.variables) > 1:
-                v = []
-                for name in self.variables:
-                    self.path_points, self.distance, t, value = dataset.get_path(
-                        self.points,
-                        self.depth,
-                        time,
-                        name
-                    )
-                    v.append(value ** 2)
-
-                value = np.sqrt(np.ma.sum(v, axis=0))
-
-                self.variable_name = self.get_vector_variable_name(dataset,
-                                                                   self.variables)
-            else:
-                self.path_points, self.distance, t, value = dataset.get_path(
-                    self.points,
-                    self.depth,
-                    time,
-                    self.variables[0]
-                )
-                self.variable_name = self.get_variable_names(
-                    dataset, self.variables)[0]
+            self.path_points, self.distance, times, data = dataset.get_path(
+                self.points,
+                self.depth,
+                self.variables[0],
+                self.starttime,
+                self.endtime,
+                tile_time=False
+            )
+            self.variable_name = self.get_variable_names(
+                dataset, self.variables)[0]
 
             variable_units = self.get_variable_units(dataset, self.variables)
             scale_factors = self.get_variable_scale_factors(
                 dataset, self.variables)
 
             self.variable_unit = variable_units[0]
-            self.data = value
-            self.iso_timestamps = dataset.timestamp_to_iso_8601(time)
-            self.data = np.multiply(self.data, scale_factors[0])
-            self.data = self.data.transpose()
+            self.data = np.multiply(data, scale_factors[0]).T
+            self.iso_timestamps = times
 
             # Get colourmap
             if self.cmap is None:
@@ -113,39 +85,20 @@ class HovmollerPlotter(LinePlotter):
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
             compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config, variable=self.compare['variables']) as dataset:
+            with open_dataset(compare_config, timestamp=self.compare['starttime'], endtime=self.compare['endtime'], variable=self.compare['variables']) as dataset:
                 self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(
                     self.compare['depth'], len(dataset.depths) - 1, dataset)
 
-                self.fix_startend_times(
-                    dataset, self.compare['starttime'], self.compare['endtime'])
-                time = list(
-                    range(self.compare['starttime'], self.compare['endtime'] + 1))
-
-                if len(self.compare['variables']) > 1:
-                    v = []
-                    for name in self.compare['variables']:
-                        path, distance, t, value = dataset.get_path(
-                            self.points,
-                            self.compare['depth'],
-                            time,
-                            name
-                        )
-                        v.append(value ** 2)
-
-                    value = np.sqrt(np.ma.sum(v, axis=0))
-                    self.compare['variable_name'] = \
-                        self.get_vector_variable_name(dataset,
-                                                      self.compare['variables'])
-                else:
-                    path, distance, t, value = dataset.get_path(
-                        self.points,
-                        self.compare['depth'],
-                        time,
-                        self.compare['variables'][0]
-                    )
-                    self.compare['variable_name'] = self.get_variable_names(
-                        dataset, self.compare['variables'])[0]
+                path, distance, times, data = dataset.get_path(
+                    self.points,
+                    self.compare['depth'],
+                    self.compare['variables'][0],
+                    self.compare['starttime'],
+                    self.compare['endtime'],
+                    tile_time=False
+                )
+                self.compare['variable_name'] = self.get_variable_names(
+                    dataset, self.compare['variables'])[0]
 
                 # Colourmap
                 if (self.compare['colormap'] == 'default'):
@@ -161,17 +114,8 @@ class HovmollerPlotter(LinePlotter):
                     dataset, self.compare['variables'])
 
                 self.compare['variable_unit'] = variable_units[0]
-                self.compare['data'] = value
-                self.compare['times'] = dataset.timestamps[self.compare['starttime']                                                           : self.compare['endtime'] + 1]
-                self.compare['data'] = np.multiply(
-                    self.compare['data'], scale_factors[0])
-                self.compare['data'] = self.compare['data'].transpose()
-
-                # Comparison over different time ranges makes no sense
-                if self.starttime != self.compare['starttime'] or\
-                        self.endtime != self.compare['endtime']:
-                    raise ClientError(gettext(
-                        "Please ensure the Start Time and End Time for the Left and Right maps are identical."))
+                self.compare['data'] = np.multiply(data, scale_factors[0]).T
+                self.compare['times'] = times
 
     # Render Hovmoller graph(s)
     def plot(self):
@@ -323,7 +267,7 @@ class HovmollerPlotter(LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        
+
         c = plt.pcolormesh(self.distance,
                             times,
                             data,

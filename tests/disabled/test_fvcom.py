@@ -38,18 +38,6 @@ class TestFvcom(unittest.TestCase):
             self.assertEqual(variables['h'].unit, 'm')
             self.assertEqual(variables['h'].dimensions, ["node"])
 
-    def test_timestamp_to_time_index(self):
-        with Fvcom('tests/testdata/fvcom_test.nc') as n:
-            idx = n.timestamp_to_time_index(57209.043)
-
-            self.assertEqual(idx, 1)
-
-    def test_timestamp_to_time_index(self):
-        with Fvcom('tests/testdata/fvcom_test.nc') as n:
-            idx = n.timestamp_to_time_index(57209.043)
-
-            self.assertEqual(idx, 1)
-
     def test_get_point(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
             data, depth = n.get_point(45.3, -64.0, 0, 0, 'temp',
@@ -71,7 +59,7 @@ class TestFvcom(unittest.TestCase):
 
     def test_get_profile(self):
         with Fvcom('tests/testdata/fvcom_test.nc') as n:
-            p, d = n.get_profile(45.3, -64.0, 0, 'temp')
+            p, d = n.get_profile(45.3, -64.0, 'temp', 0)
             self.assertAlmostEqual(p[0], 6.78, places=2)
             self.assertAlmostEqual(p[10], 6.78, places=2)
 
