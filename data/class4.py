@@ -4,6 +4,7 @@ import glob
 import os
 import pickle as pickle
 import time
+from typing import List
 
 import cftime
 import numpy as np
@@ -226,22 +227,28 @@ def list_class4_forecasts(class4_id):
     return res
 
 
-def list_class4_models(class4_id):
-    ftpSite = FTP(current_app.config['CLASS4_FTP'])
-    ftpSite.login("anonymous", "anonymous")
-    thisYear = datetime.datetime.now().year
-    files = []
-    for i in range(2011, thisYear + 1):
-        fullList = ftpSite.nlst("/class4/" + str(i))
-        for filename in fullList:
-            if "profile.nc" in filename:
-                files.append(filename[13:-3])
+def list_class4_models(class4_id: str) -> List[dict]:
+    """Get list of all ocean models for a given class4 id.
+
+    Arguments:
+
+        * `class4_id` -- {str} Class4 ID (e.g. `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
+
+    Returns:
+
+        List of dictionaries with `id` and `value` fields.
+    """
+
+    path = current_app.config["CLASS4_PATH"]
     result = []
-    for filenames in files:
-        model = filenames.split("_")[2]
+    
+    # file pattern globbing != regex
+    for f in glob.iglob(f"{path}/{class4_id[7:11]}/{class4_id[:15]}*_profile.nc"):
+        model = f.split("_")[2] # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
         if model != "GIOPS":
             result.append({
-                'value': model,
-                'id': filenames
+                'id': os.path.basename(f)[:-3], # chop off .nc extension
+                'value': model
             })
+
     return result
