@@ -2,6 +2,7 @@
 #
 # Author: Clyde Clements
 # Created: 2018-03-12
+# MOdified: Samuel Babalola
 #
 # Usage:
 #   ./install_pyenv.sh dir_name
@@ -70,13 +71,10 @@ conda update --yes --name base conda
 conda install --yes \
   python=3.6 \
   matplotlib=2.0.2 numpy=1.12.1 pandas=0.20.2 scipy=0.19.0 \
-  basemap=1.2.0 basemap-data-hires=1.1.0 \
   libnetcdf=4.4.1 netcdf4=1.2.4 hdf4=4.2.12 hdf5=1.8.17 xarray=0.9.6 \
-  f90nml=0.21 geopy=1.11.0 seawater=3.3.4 \
   pykdtree=1.2.2 pyyaml=3.12 python-dateutil=2.6.0 \
   docutils
 pip install defopt==4.0.1
-pip install imageio
 pip install pyautogui
 pip install opencv-python
 pip install slack
