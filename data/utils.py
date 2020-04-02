@@ -92,12 +92,7 @@ def time_index_to_datetime(timestamps, time_units: str):
     if not isinstance(timestamps, list):
         timestamps = [timestamps]
 
-    t = cftime.utime(time_units)
-
-    result = list(map(
-        lambda time: t.num2date(time).replace(tzinfo=pytz.UTC),
-        timestamps
-    ))
+    result = [cftime.num2date(timestamp, time_units).replace(tzinfo=pytz.UTC) for timestamp in timestamps]
 
     if isinstance(result[0], list):
         return list(itertools.chain(*result))
