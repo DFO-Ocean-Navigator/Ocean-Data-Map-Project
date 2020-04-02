@@ -10,7 +10,8 @@ than all. (There will be an option to run all the
 tests as well).
 """
 
-
+import argparse
+from datetime import datetime
 import pyautogui as gui
 import time
 import yaml
@@ -21,12 +22,14 @@ from test_area_index import draw_area
 from test_line_index import draw_map
 from test_point_index import draw_point
 from test_temperature import find_temperature_bar
+import update_slack
 
 # Open result log configuration file
 config_file = open_config('test_results.yaml')
 test = config_file['Test results']
+config_time = config_file['Test time']
 
-def construct_interface():
+def construct_interface(run_option):
     """
 
     Function to construct user interface for tests
@@ -37,43 +40,62 @@ def construct_interface():
     screenWidth, screenHeight = gui.size()
     # Go to ocean navigator web page
     utils.navigator_webpage()
+    time.sleep(6)
     #Contruct option box for available tests
-    option = gui.confirm("Select prefered UI test", 'UI test options', 
-                        ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
+    #option = gui.confirm("Select prefered UI test", 'UI test options', 
+    #                    ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
 
     def all():
-        temp_test = find_temperature_bar()
-        point_test = draw_point()
-        map_test = draw_map()
-        area_test = draw_area()
+        temp_test, temp_time = find_temperature_bar()
+        time.sleep(sleep)
+        point_test, point_times = draw_point()
+        time.sleep(sleep)
+        map_test, line_times = draw_map()
+        time.sleep(sleep)
+        area_test, area_time = draw_area()
         test['Temperature bar test'] = temp_test
+        config_time['Temperature bar test'] = temp_time
         test['Point Index test'] = point_test
+        config_time['Point Index test'] = point_times
         test['Area Index test'] = area_test
+        config_time['Area Index test'] = area_time
         test['Line Index test'] = map_test
+        config_time['Line Index test'] = line_times
         write_to_config(config_file, 'test_results.yaml')
 
-    if option == 'All':
+    if run_option == 'All' or run_option == None:
         all()
-    elif option == 'Temperature bar':
+    elif run_option == 'Temperature_bar':
         time.sleep(sleep)
-        result = find_temperature_bar()
-        exempt_tests(option, result)
-    elif option == 'Point Index':
+        result, times = find_temperature_bar()
+        option = split_option(run_option)
+        exempt_tests(option, result, times)
+    elif run_option == 'Point_Index':
         time.sleep(sleep)
-        result = draw_point()
-        exempt_tests(option, result)
-    elif option == 'Line Index':
+        result, times = draw_point()
+        option = split_option(run_option)
+        exempt_tests(option, result, times)
+    elif run_option == 'Line_Index':
         time.sleep(sleep)
-        result = draw_map()
-        exempt_tests(option, result)  
-    elif option == 'Area Index':
+        result, times = draw_map()
+        option = split_option(run_option)
+        exempt_tests(option, result, times)  
+    elif run_option == 'Area_Index':
         time.sleep(sleep)
-        result = draw_area()
-        exempt_tests(option, result)     
+        result, times = draw_area()
+        option = split_option(run_option)
+        exempt_tests(option, result, times)     
 
+def split_option(option):
+    option = option.split("_")
+    return '{} {}'.format(option[0], option[1]) 
 
 def main():
-    construct_interface()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("run_option", action="store", default=None)
+    config = parser.parse_args()
+    construct_interface(config.run_option)
+    #update_slack.main()
 
 if __name__ == '__main__':
     main()

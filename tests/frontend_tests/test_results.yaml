@@ -1,14 +1,20 @@
 Test results:
-  Area Index test:
-    Profile: Test Completed
-    Statistics: Not tested
-  Line Index test:
-    Hovmoller Diagram test: Index failed time(10 seconds) test
-    Profile: Test Completed
+  Area Index test: Not Tested.
+  Line Index test: Not Tested.
   Point Index test:
-    CTD Profile test: Index failed time(10 seconds) test
     Profile: Test Completed
-    Sound Speed profile: Index failed time(10 seconds) test
-    T/S Diagram test: Index failed time(10 seconds) test
+    CTD Profile test: Index failed time(10 seconds) test
+    T/S Diagram test: Test Completed
+    Sound Speed profile: Test Completed
     Virtual_Mooring: Index failed time(10 seconds) test
-  Temperature bar test: Test Completed
+  Temperature bar test: Not Tested.
+Test time:
+  Area Index test: Not Tested.
+  Line Index test: Not Tested.
+  Point Index test:
+    Profile: Thursday, 02. April 2020 12:13:54
+    CTD Profile test: Thursday, 02. April 2020 12:14:11
+    T/S Diagram test: Thursday, 02. April 2020 12:14:27
+    Sound Speed profile: Thursday, 02. April 2020 12:14:44
+    Virtual_Mooring: Thursday, 02. April 2020 12:15:01
+  Temperature bar test: Not Tested.
