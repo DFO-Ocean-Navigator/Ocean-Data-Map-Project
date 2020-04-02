@@ -47,16 +47,19 @@ def result_config():
     return config
 
 
-def exempt_tests(current_test=None, test_result=None, test_file='test_results.yaml'):
+def exempt_tests(current_test=None, test_result=None, test_times=None, test_file='test_results.yaml'):
     # Open configuration file
     test_config = open_config(test_file)
     tests = test_config['Test results']
+    times = test_config['Test time']
     for test in tests:
         test1 = test.replace(" test", "")
         if test1 == current_test:
             tests[test] = test_result
+            times[test] = test_times
         else:
             tests[test] = 'Not Tested.'
+            times[test] = 'Not Tested.'
     write_to_config(test_config, 'test_results.yaml')
 
 
@@ -70,7 +73,7 @@ def open_config(config_file='dimension_config.yaml'):
 def write_to_config(file, config_file='dimension_config.yaml'):
     # write to extisting config file
     with open(config_file, 'w') as f:
-        yaml.dump(file, f, default_flow_style=False)
+        yaml.dump(file, f, default_flow_style=False, sort_keys=False)
 
 
 def update_config_file(header=None, key=None, value=None):
@@ -94,7 +97,7 @@ def main():
     #update_config_file('location', 'T/S_Diagram', (339, 237))
     #update_config_file('location', 'Sound_Speed', (472, 237))
     #update_config_file('location', 'Virtual_Mooring', (796, 237))
-    result_config()
+    open_config()
     # exempt_tests()
 
 

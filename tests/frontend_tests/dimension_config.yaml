@@ -43,5 +43,10 @@ paths:
   line_index: locate_onscreen/line_index.png
   point_index: locate_onscreen/point_index.png
   test_temperature: locate_onscreen/temp.png
+  hovmoller_diagram: locate_onscreen/hovmoller.png
 web_addresses:
   ocean_navigator: navigator.oceansdata.ca/public/
+duration:
+  plot_render: 15
+  sleep: 6
+  box_timeout: 2500
