@@ -1284,7 +1284,7 @@
         "variables": {
             "uVelocity": { "name":  "Eastward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
             "vVelocity": { "name":  "Northward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
-            "current_speed": { "name":  "Speed of Current", "unit": "m/s", "scale":  [0, 8], "equation": "unstaggered_speed(uVelocity, vVelocity, 3, 2)", "dims": ["time", "depth", "gridY", "gridX"] }
+            "current_speed": { "name":  "Speed of Current", "unit": "m/s", "scale":  [0, 8], "equation": "unstaggered_speed(uVelocity, vVelocity)", "dims": ["time", "depth", "gridY", "gridX"] }
         }
     }
 }

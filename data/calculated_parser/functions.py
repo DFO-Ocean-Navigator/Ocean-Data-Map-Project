@@ -56,7 +56,7 @@ def magnitude(a, b):
     return np.sqrt(a ** 2 + b ** 2)
 
 
-def unstaggered_speed(u_vel, v_vel, x_dim_index, y_dim_index):
+def unstaggered_speed(u_vel, v_vel):
     """Calculate the speed of seawater current from u and v velocity component
     array that are on the u and v points of an Akawara-C staggered grid;
     see https://en.wikipedia.org/wiki/Arakawa_grids
@@ -71,20 +71,21 @@ def unstaggered_speed(u_vel, v_vel, x_dim_index, y_dim_index):
       np.sqrt(u ** 2 + v ** 2)
     See: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
 
+    We assume that the dimension order of the velocity component arrays is (t, depth, y, x)
+    or (t, y, x). So, we can pick out the dimensions that we need to shift along to average the
+    velocity components to the T-points by indexing to the appropriate one of the final two
+    dimensions to get its name.
+
     Paramters:
     u_vel: ndarray
     v_vel: ndarray
-    x_dim_index: float
-    y_dim_index: float
 
     Returns:
         ndarray -- speed of current
     """
-    # The vel(t, z, y, x) arrays have been sliced to vel(t, y, x) by the time they get here,
-    # so we subtract 1 from the dimension index values passed in from the datasetconfig.json
-    # equation.
-    x_dim = u_vel.dims[int(x_dim_index) - 1]
-    y_dim = v_vel.dims[int(y_dim_index) - 1]
+    # Use indices here rather than hard coding dimension name strings.
+    x_dim = u_vel.dims[-1]
+    y_dim = v_vel.dims[-2]
     u_t_grid = (u_vel + u_vel.shift({x_dim: 1})) / 2
     v_t_grid = (v_vel + v_vel.shift({y_dim: 1})) / 2
     return numpy.sqrt(u_t_grid**2 + v_t_grid**2)
