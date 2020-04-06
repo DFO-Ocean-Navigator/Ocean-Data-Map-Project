@@ -28,7 +28,6 @@ export default class TrackWindow extends React.Component {
     if (this.props.obs_query) {
       let pairs = this.props.obs_query.split(';').map(x => x.split('='));
       let dict = pairs.reduce(function(d, p) {d[p[0]] = p[1]; return d}, {});
-      console.log(dict);
       this.state['starttime'] = new Date(dict.start_date);
       this.state['endtime'] = new Date(dict.end_date);
       this.state['track_quantum'] = dict.quantum;

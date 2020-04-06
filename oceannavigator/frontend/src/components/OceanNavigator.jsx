@@ -213,6 +213,7 @@ export default class OceanNavigator extends React.Component {
           if (!value) {
             newState['observationArea'] = [];
           }
+          break;
       }
 
     }

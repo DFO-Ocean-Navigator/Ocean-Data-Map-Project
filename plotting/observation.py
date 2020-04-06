@@ -15,7 +15,7 @@ from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
 
-from data.observational import db, Station, Station, Sample, DataType
+from data.observational import db, Station, Sample, DataType
 
 class ObservationPlotter(PointPlotter):
 

@@ -224,8 +224,10 @@ export default class MapToolbar extends React.Component {
   observationSelectMenu(key) {
     switch(key) {
       case 'drifters':
+        let today = new Date();
+        let start = new Date(new Date().setDate(today.getDate() - 30));
         this.observationSelect({
-          start_date: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().slice(0, 10),
+          start_date: start.toISOString().slice(0, 10),
           end_date: new Date().toISOString().slice(0, 10),
           type: "track",
           quantum: "day",
@@ -673,52 +675,21 @@ export default class MapToolbar extends React.Component {
               <MenuItem
                 key="drifters"
                 eventKey="drifters"
-              >Show Active Drifters</MenuItem>
+              >{_("Show Active Drifters")}</MenuItem>
               <MenuItem divider />
               <MenuItem
                 key="all"
                 eventKey="all"
-              >All</MenuItem>
+              >{_("All")}</MenuItem>
               <MenuItem
                 key="area"
                 eventKey="area"
-              >Select Area</MenuItem>
+              >{_("Select Area")}</MenuItem>
               <MenuItem
                 key="point"
                 eventKey="point"
-              >Select Point</MenuItem>
+              >{_("Select Point")}</MenuItem>
             </NavDropdown>
-
-            {/*
-            <NavDropdown
-              name="drifter"
-              id="drifter"
-              title={<span><Icon icon="tint" /> {_("Drifters")}</span>}
-              onSelect={this.drifterSelect}
-            >
-              <MenuItem
-                eventKey='all'
-                key='all'
-              >{_("All")}</MenuItem>
-              <MenuItem
-                eventKey='active'
-                key='active'
-              >{_("Active")}</MenuItem>
-              <MenuItem
-                eventKey='not responding'
-                key='not responding'
-              >{_("Not Responding")}</MenuItem>
-              <MenuItem
-                eventKey='inactive'
-                key='inactive'
-              >{_("Inactive")}</MenuItem>
-              <MenuItem divider />
-              <MenuItem
-                eventKey='select'
-                key='select'
-              ><Icon icon='list'/> {_("Select…")}</MenuItem>
-            </NavDropdown>
-            */}
 
             <NavItem 
               name="plot"
