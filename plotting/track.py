@@ -25,12 +25,12 @@ class TrackPlotter(Plotter):
 
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "track"
-        super(TrackPlotter, self).__init__(dataset_name, query, **kwargs)
+        super().__init__(dataset_name, query, **kwargs)
         self.size: str = '11x5'
         self.model_depths = None
 
     def parse_query(self, query):
-        super(TrackPlotter, self).parse_query(query)
+        super().parse_query(query)
         self.latlon = query.get('latlon') is None or bool(query.get('latlon'))
 
         track = query.get('track')
@@ -407,7 +407,7 @@ class TrackPlotter(Plotter):
             )
         )
         fig.tight_layout(pad=3, w_pad=4)
-        return super(TrackPlotter, self).plot(fig)
+        return super().plot(fig)
 
     def csv(self):
         header = [
@@ -438,4 +438,4 @@ class TrackPlotter(Plotter):
 
             data.append(entry)
 
-        return super(TrackPlotter, self).csv(header, columns, data)
+        return super().csv(header, columns, data)
