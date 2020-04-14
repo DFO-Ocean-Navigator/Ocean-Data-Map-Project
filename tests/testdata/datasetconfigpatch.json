@@ -61,10 +61,32 @@
         "type": "historical",
         "time_dim_units": "seconds since 1970-01-01 00:00:00",
         "attribution": "UBC-MOAD",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
         "variables": {
             "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
+        }
+    },
+    "salishseacast_currents": {
+        "enabled": true,
+        "name": "SalishSeaCast 3D Currents",
+        "type": "historical",
+        "url": [
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV19-05",
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV19-05"
+        ],
+        "geo_ref": {
+            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV17-02",
+            "drop_variables": ["bathymetry"]
+        },
+        "quantum": "hour",
+        "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
+        "attribution": "UBC-MOAD",
+        "variables": {
+            "uVelocity": { "name":  "Eastward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
+            "vVelocity": { "name":  "Northward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" }
         }
     }
 }
