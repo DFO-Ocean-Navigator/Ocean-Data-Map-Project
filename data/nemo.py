@@ -320,7 +320,7 @@ class Nemo(Model):
         # We expect the following shape (time, depth, lat, lon)
         if len(var.shape) != 4:
             raise APIError(
-                "This plot requires a depth dimension. This dataset doesn't have a depth dimension.")
+                f"This plot requires a depth dimension. This variable ({variable}) doesn't have a depth dimension.")
 
         time_slice = self.nc_data.make_time_slice(starttime, endtime)
 
