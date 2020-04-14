@@ -289,6 +289,17 @@ class TestAPIv1(unittest.TestCase):
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        # timeseries (point, virtual mooring)
+        res = self.app.get(self.apiLinks["plot_timeseries_bottom"])
+        self.assertEqual(res.status_code, 200)
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_ts_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
