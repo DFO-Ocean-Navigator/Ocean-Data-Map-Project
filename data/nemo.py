@@ -261,26 +261,15 @@ class Nemo(Model):
             depths = edges[1, 0, :]
             indices = edges[1, 1, :]
 
-            if endtime is not None:
-                data_in = var[time, :, miny:maxy, minx:maxx]
-                data_in = data_in.values.reshape(
-                    [data_in.shape[0], data_in.shape[1], -1])
-                data = []
-                for i, t in enumerate(time):
-                    di = np.ma.MaskedArray(np.zeros(data_in.shape[-1]),
-                                           mask=True,
-                                           dtype=data_in.dtype)
-                    di[indices] = data_in[i, depths, indices]
-                    data.append(di)
-                data = np.ma.array(data).reshape([len(time), d.shape[-2],
-                                                  d.shape[-1]])
-            else:
-                data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
-                                         mask=True,
-                                         dtype=d.dtype)
+            data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                                        mask=True,
+                                        dtype=d.dtype)
 
-                data[np.unravel_index(indices, data.shape)] = \
-                    reshaped[depths, indices]
+            data[np.unravel_index(indices, data.shape)] = \
+                reshaped[depths, indices]
+
+             # Roll time axis back to the front
+            data = np.rollaxis(data, 2, 0)
 
             res = self.__resample(
                 latvar[miny:maxy, minx:maxx],
@@ -290,15 +279,17 @@ class Nemo(Model):
             )
 
             if return_depth:
-                d = self.depths[depths]
-                d = np.zeros(data.shape)
-                d[np.unravel_index(indices, d.shape)] = self.depths[depths]
+                depth_values = np.ma.MaskedArray(np.zeros(d.shape[1:]),
+                                      mask=True,
+                                      dtype=self.depths.dtype)
+
+                depth_values[np.unravel_index(indices, depth_values.shape)] = self.depths[depths]
 
                 dep = self.__resample(
                     latvar[miny:maxy, minx:maxx],
                     lonvar[miny:maxy, minx:maxx],
                     latitude, longitude,
-                    np.reshape(d, data.shape),
+                    np.reshape(depth_values, data.shape)
                 )
 
         else:
