@@ -5,18 +5,15 @@ import time
 import xml.etree.ElementTree as ET
 from operator import itemgetter
 
-import cftime
 import numpy as np
 import pyproj
 from flask import current_app
-from netCDF4 import Dataset, chartostring
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import LinearRing
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
-from thredds_crawler.crawl import Crawl
 
 
 def list_kml_files(subdir):
