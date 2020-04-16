@@ -253,6 +253,15 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_map"])
         self.assertEqual(res.status_code, 200)
 
+        res = self.app.get(self.apiLinks["plot_map_quiver_len_mag"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_map_quiver_no_mag"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_map_quiver_color_mag"])
+        self.assertEqual(res.status_code, 200)
+
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
@@ -263,6 +272,12 @@ class TestAPIv1(unittest.TestCase):
 
         # transect (line)
         res = self.app.get(self.apiLinks["plot_transect"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_transect_depth_limit"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_transect_csv"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -285,6 +300,17 @@ class TestAPIv1(unittest.TestCase):
 
         # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries_all_depths"])
+        self.assertEqual(res.status_code, 200)
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        # timeseries (point, virtual mooring)
+        res = self.app.get(self.apiLinks["plot_timeseries_bottom"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -322,7 +348,9 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_profile"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/hovmoller.. returning error")
+        res = self.app.get(self.apiLinks["plot_profile_multi_variable"])
+        self.assertEqual(res.status_code, 200)
+
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_hovmoller_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -331,12 +359,13 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # hovmoller (line, Hovmöller Diagram)
-        # TypeError: object of type 'datetime.datetime' has no len()
-        # possibly a problem with how mant timestamps are in giops_test
         res = self.app.get(self.apiLinks["plot_hovmoller"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/hovmoller.. returning error")
+        res = self.app.get(self.apiLinks["plot_hovmoller_bottom"])
+        self.assertEqual(res.status_code, 200)
+
+    @unittest.skip("Skipping api/plot/observation.. returning error")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_observation_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
