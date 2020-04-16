@@ -36,7 +36,10 @@
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
-            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] }
+            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
+            "vozocrtx": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vomecrty": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"] }
         }
     },
 
