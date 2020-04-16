@@ -47,7 +47,7 @@ export default class PointWindow extends React.Component {
       starttime: Math.max(props.time - 24, 0),
       variables: [],
       variable: [props.variable],
-      observation_variable: [7],
+      observation_variable: [0],
       size: "10x7",
       dpi: 144,
       plotTitles: Array(7).fill(""),
@@ -391,7 +391,7 @@ export default class PointWindow extends React.Component {
           key='observation_variable'
           id='observation_variable'
           state={this.state.observation_variable}
-          url='/api/v1.0/observationvariables/'
+          url={`/api/v1.0/observation/variables/station=${this.props.point[0][2]}.json`}
           title={_("Observation Variable")}
           multiple
           onUpdate={this.onLocalUpdate}

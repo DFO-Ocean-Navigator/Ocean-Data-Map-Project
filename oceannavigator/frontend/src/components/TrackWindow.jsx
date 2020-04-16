@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
-export default class DrifterWindow extends React.Component {
+export default class TrackWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -16,13 +16,22 @@ export default class DrifterWindow extends React.Component {
       showmap: true,
       variable: props.variable.indexOf(",") == -1 ? [props.variable] : props.variable.split(","),
       latlon: false,
-      buoyvariable: ["sst"],
+      trackvariable: [0],
       starttime: null,
       endtime: null,
       size: "10x7",
       dpi: 72,
       depth: 0,
+      track_quantum: 'month'
     };
+
+    if (this.props.obs_query) {
+      let pairs = this.props.obs_query.split(';').map(x => x.split('='));
+      let dict = pairs.reduce(function(d, p) {d[p[0]] = p[1]; return d}, {});
+      this.state['starttime'] = new Date(dict.start_date);
+      this.state['endtime'] = new Date(dict.end_date);
+      this.state['track_quantum'] = dict.quantum;
+    }
 
     if (props.init != null) {
       $.extend(this.state, props.init);
@@ -34,15 +43,13 @@ export default class DrifterWindow extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: `/api/v1.0/drifters/time/${this.props.drifter}`,
+      url: `/api/v1.0/observation/tracktimerange/${this.props.track}.json`,
       dataType: "json",
       cache: true,
       success: function(data) {
         this.setState({
           mindate: new Date(data.min),
           maxdate: new Date(data.max),
-          starttime: new Date(data.min),
-          endtime: new Date(data.max),
         });
       }.bind(this),
       error: function(xhr, status, err) {
@@ -82,7 +89,7 @@ export default class DrifterWindow extends React.Component {
 
   render() {
     _("Dataset");
-    _("Buoy Variable");
+    _("Observed Variable");
     _("Variable");
     _("Show Map");
     _("Show Latitude/Longitude Plots");
@@ -98,16 +105,16 @@ export default class DrifterWindow extends React.Component {
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
-    var buoyvariable = <ComboBox
-      key='buoyvariable'
-      id='buoyvariable'
+    var trackvariable = <ComboBox
+      key='trackvariable'
+      id='trackvariable'
       multiple
-      state={this.state.buoyvariable}
+      state={this.state.trackvariable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/drifters/vars/" + this.props.drifter}
-      title={_("Buoy Variable")}
-    ><h1>Buoy Variable</h1></ComboBox>;
+      url={`/api/v1.0/observation/variables/platform=${this.props.track[0]}.json`}
+      title={_("Observed Variable")}
+    ><h1>Track Variable</h1></ComboBox>;
     var variable = <ComboBox
       key='variable'
       id='variable'
@@ -150,6 +157,21 @@ export default class DrifterWindow extends React.Component {
       min={this.state.starttime}
       max={this.state.maxdate}
     />;
+    var track_quantum = <ComboBox
+      key='track_quantum'
+      id='track_quantum'
+      state={this.state.track_quantum}
+      data={[
+        {id: 'minute', value: 'Minute'},
+        {id: 'hour', value: 'Hour'},
+        {id: 'day', value: 'Day'},
+        {id: 'week', value: 'Week'},
+        {id: 'month', value: 'Month'},
+        {id: 'year', value: 'Year'},
+      ]}
+      title='Track Simplification'
+      onUpdate={this.onLocalUpdate}
+    />;
     var size = <ImageSize
       key='size'
       id='size'
@@ -177,15 +199,16 @@ export default class DrifterWindow extends React.Component {
       quantum: this.props.quantum,
       scale: this.state.scale,
       name: this.props.name,
-      type: "drifter",
-      drifter: this.props.drifter,
+      type: "track",
+      track: this.props.track,
       showmap: this.state.showmap,
       variable: this.state.variable,
       latlon: this.state.latlon,
-      buoyvariable: this.state.buoyvariable,
+      trackvariable: this.state.trackvariable,
       size: this.state.size,
       dpi: this.state.dpi,
       depth: this.state.depth,
+      track_quantum: this.state.track_quantum,
     };
     if (this.state.starttime) {
       if (plot_query.starttime instanceof Date) {
@@ -197,12 +220,12 @@ export default class DrifterWindow extends React.Component {
       }
     }
     inputs = [
-      dataset, showmap, latlon, starttime, endtime, buoyvariable, variable,
-      depth, size
+      dataset, showmap, latlon, starttime, endtime, track_quantum,
+      trackvariable, variable, depth, size
     ];
 
     return (
-      <div className='DrifterWindow Window'>
+      <div className='TrackWindow Window'>
         <div className='content'>
           <div className='inputs'>
             {inputs}
@@ -220,13 +243,14 @@ export default class DrifterWindow extends React.Component {
 }
 
 //***********************************************************************
-DrifterWindow.propTypes = {
+TrackWindow.propTypes = {
   generatePermLink: PropTypes.func,
-  drifter: PropTypes.array,
+  track: PropTypes.array,
   quantum: PropTypes.string,
   dataset: PropTypes.string,
   onUpdate: PropTypes.func,
   init: PropTypes.object,
   variable: PropTypes.string,
   action: PropTypes.func,
+  obs_query: PropTypes.string
 };

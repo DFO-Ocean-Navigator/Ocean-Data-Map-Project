@@ -35,7 +35,7 @@ div.input {
         width: 100%;
     }
 
-    input:not([type='checkbox']) {
+    input:not([type='checkbox']):not([type='radio']) {
         width: 100%;
     }
 
