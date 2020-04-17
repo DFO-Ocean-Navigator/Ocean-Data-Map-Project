@@ -3,6 +3,7 @@ import datetime
 import re
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -333,7 +334,7 @@ class Plotter(metaclass=ABCMeta):
 
             return (buf.getvalue(), self.mime, self.filename)
 
-    def get_variable_names(self, dataset, variables):
+    def get_variable_names(self, dataset, variables: List[str]) -> List[str]:
         """Returns a list of names for the variables.
 
         Parameters:
