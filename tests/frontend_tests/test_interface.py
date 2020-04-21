@@ -29,20 +29,22 @@ config_file = open_config('test_results.yaml')
 test = config_file['Test results']
 config_time = config_file['Test time']
 
+
 def construct_interface(run_option):
     """
 
     Function to construct user interface for tests
     certain options will be available for user. 
-    
+
     """
     sleep = 2
     screenWidth, screenHeight = gui.size()
     # Go to ocean navigator web page
     utils.navigator_webpage()
     time.sleep(6)
-    #Contruct option box for available tests
-    #option = gui.confirm("Select prefered UI test", 'UI test options', 
+    utils.clear_cache()
+    # Contruct option box for available tests
+    # option = gui.confirm("Select prefered UI test", 'UI test options',
     #                    ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
 
     def all():
@@ -79,23 +81,26 @@ def construct_interface(run_option):
         time.sleep(sleep)
         result, times = draw_map()
         option = split_option(run_option)
-        exempt_tests(option, result, times)  
+        exempt_tests(option, result, times)
     elif run_option == 'Area_Index':
         time.sleep(sleep)
         result, times = draw_area()
         option = split_option(run_option)
-        exempt_tests(option, result, times)     
+        exempt_tests(option, result, times)
+
 
 def split_option(option):
     option = option.split("_")
-    return '{} {}'.format(option[0], option[1]) 
+    return '{} {}'.format(option[0], option[1])
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("run_option", action="store", default=None)
     config = parser.parse_args()
     construct_interface(config.run_option)
-    #update_slack.main()
+    # update_slack.main()
+
 
 if __name__ == '__main__':
     main()
