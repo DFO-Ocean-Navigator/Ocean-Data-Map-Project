@@ -13,5 +13,5 @@ url <- base_url + URLencode(query) + "&dpi=" + toString(dpi)
 print(url)
 
 
-print("Downloading file and exiting..)
+print("Downloading file and exiting...")
 download.file(url, fname, wget)
