@@ -337,7 +337,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
         depth, latitude, temperature, salinity)
 
-    # Use masked array to quickly enable/disable data (see bwloe)
+    # Use masked array to quickly enable/disable data (see below)
     sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
@@ -354,8 +354,8 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
         0 # apply along depth axis
     )
 
-    # Flip the mask since we actually want to examine the values BELOW the deep
-    # sound channel.
+    # Flip the mask since we actually want to examine the values BELOW the sonic
+    # layer depth.
     sound_speed.mask = ~sound_speed.mask
 
     # Find Deep Sound Channel Bottom
