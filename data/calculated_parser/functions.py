@@ -120,15 +120,24 @@ def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
 
 def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
 
-    # Mask out NaN values to prevent an exception blow-up.
-    masked = np.ma.masked_array(data, np.isnan(data))
+    if not np.ma.is_masked(data):
+        # Mask out NaN values to prevent an exception blow-up.
+        masked = np.ma.masked_array(data, np.isnan(data))
+        # TODO: could we use a .view() here instead of copying stuff?
+    else:
+        masked = data
 
     return np.argmin(masked, axis=depth_axis)
 
 
 def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-    # Mask out NaN values to prevent an exception blow-up.
-    masked = np.ma.masked_array(data, np.isnan(data))
+    
+    if not np.ma.is_masked(data):
+        # Mask out NaN values to prevent an exception blow-up.
+        masked = np.ma.masked_array(data, np.isnan(data))
+        # TODO: could we use a .view() here instead of copying stuff?
+    else:
+        masked = data
 
     return np.argmax(masked, axis=depth_axis)
 
@@ -244,6 +253,30 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     tempgradient = seawater.adtg(salinity, temperature, press)
     return np.array(tempgradient)
 
+def __get_soniclayerdepth_mask(soundspeed: np.ndarray, min_depth_indices: np.ndarray) -> np.ndarray:  
+    """
+    Create mask which masks out values BELOW deep sound channel.
+    """
+
+    mask = min_depth_indices.ravel()[..., np.newaxis] < np.arange(
+        soundspeed.shape[0])
+
+    return  mask.T.reshape(soundspeed.shape)
+
+
+def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray) -> np.ndarray:
+
+    min_indices = __find_depth_index_of_min_value(soundspeed)
+
+    mask = __get_soniclayerdepth_mask(soundspeed, min_indices)
+
+    soundspeed[mask] = np.nan
+
+    # Find sonic layer depth indices
+    max_indices = __find_depth_index_of_max_value(soundspeed)
+
+    return depth[max_indices]
+
 
 def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
     """
@@ -262,19 +295,7 @@ def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
 
-    min_indices = __find_depth_index_of_min_value(sound_speed)
-
-    # Mask out values below deep sound channel
-    mask = min_indices.ravel()[..., np.newaxis] < np.arange(
-        sound_speed.shape[0])
-    mask = mask.T.reshape(sound_speed.shape)
-
-    sound_speed[mask] = np.nan
-
-    # Find sonic layer depth indices
-    max_indices = __find_depth_index_of_max_value(sound_speed)
-
-    return depth[max_indices]
+    return __soniclayerdepth_from_sound_speed(sound_speed, depth)
 
 
 def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
@@ -299,6 +320,57 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
     return depth[min_indices]
+
+
+def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
+    """
+    Find and return the deep sound channel bottom (the second depth where
+    the speed of sound is equal to the speed at the sonic layer depth).
+
+    Note: Nearest Neighbou interpolation is used to find the depth value
+          with closest sound speed value to the sonic layer depth.
+
+    Required Arguments:
+        * depth: Depth in meters
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
+    """
+
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
+    # Use masked array to quickly enable/disable data (see below)
+    sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
+
+    min_indices = __find_depth_index_of_min_value(sound_speed)
+    
+    sound_speed.mask = __get_soniclayerdepth_mask(sound_speed, min_indices)
+
+    # Find sonic layer depth indices
+    max_indices = __find_depth_index_of_max_value(sound_speed)
+
+    # Extract sound speed values for later comparison.
+    sound_speed_values_at_sonic_layer_depth = np.squeeze(
+        np.take_along_axis(
+            sound_speed,
+            max_indices[np.newaxis, :], # pad to equate number of dims to sound_speed
+            0 # apply along depth axis
+        )
+    )
+
+    # Flip the mask since we actually want to examine the values BELOW the sonic
+    # layer depth.
+    sound_speed.mask = ~sound_speed.mask
+
+    # Nearest neighbour
+    # numpy broadcasting handles subtraction between 3D and 2D arrays
+    min_difference = np.abs(
+            sound_speed - sound_speed_values_at_sonic_layer_depth
+        ).argmin(axis=0) # We can use argmin here because the fill_value of the masked arrays is np.nan
+
+    # Finito...LOOK MOM! NO LOOPS!!!
+    return depth[min_difference]
 
 
 def _metpy(func, data, lat, lon, dim):
