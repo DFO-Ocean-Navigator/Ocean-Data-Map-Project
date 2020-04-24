@@ -37,17 +37,19 @@ def construct_interface(run_option):
     certain options will be available for user. 
 
     """
-    sleep = 2
+    sleep = 3
     screenWidth, screenHeight = gui.size()
     # Go to ocean navigator web page
     utils.navigator_webpage()
-    time.sleep(6)
+    time.sleep(15)
     utils.clear_cache()
+    time.sleep(10)
     # Contruct option box for available tests
     # option = gui.confirm("Select prefered UI test", 'UI test options',
     #                    ['All', 'Temperature bar', 'Point Index', 'Line Index', 'Area Index'])
 
     def all():
+        time.sleep(sleep)
         temp_test, temp_time = find_temperature_bar()
         time.sleep(sleep)
         point_test, point_times = draw_point()
@@ -99,7 +101,7 @@ def main():
     parser.add_argument("run_option", action="store", default=None)
     config = parser.parse_args()
     construct_interface(config.run_option)
-    # update_slack.main()
+    #update_slack.main()
 
 
 if __name__ == '__main__':
