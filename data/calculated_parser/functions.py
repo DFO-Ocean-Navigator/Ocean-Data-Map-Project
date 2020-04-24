@@ -325,7 +325,10 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
 def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
     """
     Find and return the deep sound channel bottom (the second depth where
-    the speed of sound id equal to the speed at the sonic layer depth).
+    the speed of sound is equal to the speed at the sonic layer depth).
+
+    Note: Nearest Neighbou interpolation is used to find the depth value
+          with closest sound speed value to the sonic layer depth.
 
     Required Arguments:
         * depth: Depth in meters
@@ -348,29 +351,26 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     max_indices = __find_depth_index_of_max_value(sound_speed)
 
     # Extract sound speed values for later comparison.
-    sound_speed_values_at_sonic_layer_depth = np.take_along_axis(
-        sound_speed,
-        max_indices[np.newaxis, :], # pad to equate number of dims to sound_speed
-        0 # apply along depth axis
+    sound_speed_values_at_sonic_layer_depth = np.squeeze(
+        np.take_along_axis(
+            sound_speed,
+            max_indices[np.newaxis, :], # pad to equate number of dims to sound_speed
+            0 # apply along depth axis
+        )
     )
 
     # Flip the mask since we actually want to examine the values BELOW the sonic
     # layer depth.
     sound_speed.mask = ~sound_speed.mask
 
-    # Find Deep Sound Channel Bottom
-    dscb_values = np.isclose(sound_speed, sound_speed_values_at_sonic_layer_depth)
-
-    # Now use the boolean array held in dscb_values as a mask over sound_speed.
-    # True indicates a close value. Since we want the "close" values to be visible
-    # through the mask, flip the result of np.isclose.
-    sound_speed.mask = ~dscb_values.data
-
-    # Now get our depth indices
-    max_indices = __find_depth_index_of_max_value(sound_speed)
+    # Nearest neighbour
+    # numpy broadcasting handles subtraction between 3D and 2D arrays
+    min_difference = np.abs(
+            sound_speed - sound_speed_values_at_sonic_layer_depth
+        ).argmin(axis=0) # We can use argmin here because the fill_value of the masked arrays is np.nan
 
     # Finito...LOOK MOM! NO LOOPS!!!
-    return depth[max_indices]
+    return depth[min_difference]
 
 
 def _metpy(func, data, lat, lon, dim):
