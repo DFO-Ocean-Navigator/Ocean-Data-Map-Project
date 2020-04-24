@@ -212,23 +212,32 @@ def get_platform_variable_track(
     platform : Platform,
     variable : str,
     quantum : str="hour",
+    depth_quantum : float=1.,
     starttime : Optional[datetime.datetime]=None,
     endtime : Optional[datetime.datetime]=None
-) -> List[Tuple[float, float]]:
+) -> List[Tuple[datetime.datetime, float, float, float, float]]:
     funcs = __db_funcs()
 
     query = session.query(
+        funcs['avgtime'](Station.time),
         db.func.avg(Station.latitude),
         db.func.avg(Station.longitude),
-        funcs['avgtime'](Station.time),
+        db.func.round(Sample.depth / depth_quantum) * depth_quantum,
         db.func.avg(Sample.value)
-    ).filter(Station.platform == platform, Sample.datatype_key ==
-             variable).join(Station.samples)
+    ).filter(
+        Station.platform == platform,
+        Sample.datatype_key == variable
+    ).join(Station.samples)
 
     if quantum not in ["year", "month", "week", "day", "hour", "minute"]:
         raise ValueError(f"Quantum {quantum} is unknown")
 
-    query = query.group_by(funcs[quantum](Station.time))
+    query = query.order_by(
+        Station.time
+    ).group_by(
+        funcs[quantum](Station.time),
+        db.func.round(Sample.depth / depth_quantum) * depth_quantum,
+    )
 
     if starttime:
         query = query.filter(Station.time >= starttime)
@@ -236,7 +245,7 @@ def get_platform_variable_track(
     if endtime:
         query = query.filter(Station.time <= endtime)
 
-    return query.order_by(funcs[quantum](Station.time)).all()
+    return query.all()
 
 def __add_sample_filters(
     query,

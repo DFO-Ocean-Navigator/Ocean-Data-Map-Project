@@ -30,7 +30,7 @@ import data.observational.queries as ob_queries
 from flask_babel import gettext
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
-from plotting.drifter import DrifterPlotter
+from plotting.track import TrackPlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
@@ -203,16 +203,6 @@ def variables_query_v1_0():
     return jsonify(data)
 
 
-@bp_v1_0.route('/api/v1.0/observationvariables/')
-def obs_vars_query_v1():
-    data = []
-    for idx, v in enumerate(utils.misc.observation_vars()):
-        data.append({'id': idx, 'value': v})
-
-    resp = jsonify(data)
-    return resp
-
-
 @bp_v1_0.route('/api/v1.0/depth/')
 def depth_query_v1_0():
     """
@@ -354,31 +344,6 @@ def class4_query_v1_0(q: str, class4_id: str):
 
     resp = jsonify(pts)
     resp.cache_control.max_age = 86400
-    return resp
-
-
-@bp_v1_0.route('/api/v1.0/drifters/<string:q>/<string:drifter_id>')
-def drifter_query_v1_0(q: str, drifter_id: str):
-    """
-    API Format: /api/v1.0/drifters/<string:q>/<string:drifter_id>
-
-    <string:q>          : vars / time (Data Request)
-    <string:drifter_id> : ID of Drifter of Interest - Options can be found using /api/
-
-    Vars - Returns a list of Variables applicable to the specified drifter
-    Time - Returns the max and min time of the specified drifter
-    }
-    """
-
-    if q == 'vars':
-        pts = utils.misc.drifters_vars(drifter_id)
-    elif q == 'time':
-        pts = utils.misc.drifters_time(drifter_id)
-    else:
-        raise FAILURE
-
-    resp = jsonify(pts)
-    resp.cache_control.max_age = 3600
     return resp
 
 
@@ -535,8 +500,8 @@ def plot_v1_0():
         plotter = HovmollerPlotter(dataset, query, **options)
     elif plottype == 'observation':
         plotter = ObservationPlotter(dataset, query, **options)
-    elif plottype == 'drifter':
-        plotter = DrifterPlotter(dataset, query, **options)
+    elif plottype == 'track':
+        plotter = TrackPlotter(dataset, query, **options)
     elif plottype == 'class4':
         plotter = Class4Plotter(dataset, query, **options)
     elif plottype == 'stick':
@@ -673,7 +638,7 @@ def query_id_v1_0(q: str, q_id: str):
     """
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
 
-    <string:q>    : Type of Data (areas, class4, drifters, observation)
+    <string:q>    : Type of Data (areas, class4)
     <string:q_id> :
 
     """
@@ -681,13 +646,9 @@ def query_id_v1_0(q: str, q_id: str):
         data = utils.misc.list_areas(q_id)
     elif q == 'class4':
         data = class4.list_class4(q_id)
-    elif q == 'drifters' and q_id == 'meta':
-        data = utils.misc.drifter_meta()
-    elif q == 'observation' and q_id == 'meta':
-        data = utils.misc.observation_meta()
     else:
         raise APIError(
-            "The Specified Parameter is Invalid - Must be one of (areas, class4, drifters, observation)")
+            "The Specified Parameter is Invalid - Must be one of (areas, class4)")
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
@@ -699,7 +660,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     """
     API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
 
-    <string:q>          : Type of data (points, lines, areas, class4, drifters, observations)
+    <string:q>          : Type of data (points, lines, areas, class4)
     <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
@@ -723,13 +684,6 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
             file_id, projection, resolution, extent)
     elif q == 'class4':
         data = class4.class4(
-            file_id, projection, resolution, extent)
-    elif q == 'drifters':
-        data = utils.misc.drifters(
-            file_id, projection, resolution, extent)
-        max_age = 3600
-    elif q == 'observations':
-        data = utils.misc.observations(
             file_id, projection, resolution, extent)
     else:
         raise FAILURE
@@ -771,8 +725,10 @@ def timestamps():
         raise APIError("Please specify a variable via ?variable=variable_name")
     variable = args.get("variable")
 
-    if config.url.endswith(".sqlite3"):
-        with SQLiteDatabase(config.url) as db:
+    # Handle possible list of URLs for staggered grid velocity field datasets
+    url = config.url if not isinstance(config.url, list) else config.url[0]
+    if url.endswith(".sqlite3"):
+        with SQLiteDatabase(url) as db:
             if variable in config.calculated_variables:
                 data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
                                                         [v.key for v in db.get_data_variables()])
@@ -780,7 +736,7 @@ def timestamps():
             else:
                 vals = db.get_timestamps(variable)
     else:
-        with open_dataset(config, variable=variable) as ds:
+        with open_dataset(url, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
@@ -982,7 +938,7 @@ def observation_values_v1_0(platform_types: str, key: str):
 @bp_v1_0.route('/api/v1.0/observation/tracktimerange/<string:platform_id>.json')
 def observation_tracktime_v1_0(platform_id: str):
     """
-    API Format: /api/v1.0/observation/tracktime/<string:platform_id>.json
+    API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
 
     <string:platform_id> : Platform ID
 

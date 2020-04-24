@@ -138,13 +138,13 @@ def _map_plot(points, path=True, quiver=True):
             np.arange(
                 round(minlat),
                 round(maxlat),
-                round(lat_d / 1.5)
+                round(max(lat_d / 1.5, (maxlat - minlat)/5))
             ), labels=[0, 1, 0, 0])
         m.drawmeridians(
             np.arange(
                 round(minlon),
                 round(maxlon),
-                round(lon_d / 1.5)
+                round(max(lon_d / 1.5, (maxlon - minlon)/5))
             ), labels=[0, 0, 0, 1])
     except:
         raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")

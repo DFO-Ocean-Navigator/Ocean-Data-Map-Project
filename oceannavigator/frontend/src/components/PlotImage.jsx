@@ -259,15 +259,16 @@ export default class PlotImage extends React.PureComponent {
           };
         }
         break;
-      case "drifter":
+      case "track":
         query.variable = q.variable;
         query.depth = q.depth;
-        query.drifter = q.drifter;
+        query.track = q.track;
         query.showmap = q.showmap;
         query.latlon = q.latlon;
-        query.buoyvariable = q.buoyvariable;
+        query.trackvariable = q.trackvariable;
         query.starttime = q.starttime;
         query.endtime = q.endtime;
+        query.track_quantum = q.track_quantum;
         break;
       case "class4":
         query.class4id = q.class4id;

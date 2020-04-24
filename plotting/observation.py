@@ -2,21 +2,20 @@ import numbers
 import re
 from textwrap import wrap
 
-import cftime
 import dateutil.parser
 import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import pytz
-from flask import current_app
 from flask_babel import format_datetime, gettext
-from netCDF4 import Dataset
 
 from data import open_dataset
+from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
 
+from data.observational import db, Station, Sample, DataType
 
 class ObservationPlotter(PointPlotter):
 
@@ -28,57 +27,91 @@ class ObservationPlotter(PointPlotter):
         if isinstance(self.observation[0], numbers.Number):
             self.observation_variable_names = []
             self.observation_variable_units = []
-            with Dataset(current_app.config["OBSERVATION_AGG_URL"], 'r') as ds:
-                t = cftime.utime(ds['time'].units)
-                for idx, o in enumerate(self.observation):
-                    observation = {}
-                    ts = t.num2date(ds['time'][o]).replace(tzinfo=pytz.UTC)
-                    observation['time'] = ts.isoformat()
-                    observation['longitude'] = ds['lon'][o]
-                    observation['latitude'] = ds['lat'][o]
 
-                    observation['depth'] = ds['z'][:]
-                    observation['depthunit'] = ds['z'].units
+            self.data = []
+            self.timestamps = []
+            self.observation_times = []
+            self.names = []
+            for idx, o in enumerate(self.observation):
+                station = db.session.query(Station).get(o)
+                observation = {
+                    'time': station.time.isoformat(),
+                    'longitude': station.longitude,
+                    'latitude': station.latitude,
+                }
+                self.observation_time = station.time
+                self.observation_times.append(station.time)
 
-                    observation['datatypes'] = []
-                    data = []
-                    for v in sorted(ds.variables):
-                        if v in ['z', 'lat', 'lon', 'profile', 'time']:
-                            continue
-                        var = ds[v]
-                        if var.datatype == '|S1':
-                            continue
+                if station.name:
+                    self.names.append(station.name)
+                else:
+                    self.names.append(
+                        f"({station.latitude:.4f}, {station.longitude:.4f})"
+                    )
+                datatype_keys = [
+                    k[0]
+                    for k in db.session.query(
+                        db.func.distinct(Sample.datatype_key)
+                    ).filter(Sample.station == station).all()
+                ]
 
-                        observation['datatypes'].append("%s [%s]" % (
-                            var.long_name,
-                            var.units
-                        ))
-                        data.append(var[o, :])
+                datatypes = db.session.query(
+                    DataType
+                ).filter(
+                    DataType.key.in_(datatype_keys)
+                ).order_by(DataType.key).all()
 
-                        if idx == 0:
-                            self.observation_variable_names.append(
-                                var.long_name)
-                            self.observation_variable_units.append(var.units)
+                observation['datatypes'] = [
+                    f"{dt.name} [{dt.unit}]"
+                    for dt in datatypes
+                ]
 
-                    observation['data'] = np.ma.array(data).transpose()
-                    self.observation[idx] = observation
+                data = []
+                for dt in datatypes:
+                    data.append(
+                        db.session.query(
+                            Sample.depth, Sample.value
+                        ).filter(
+                            Sample.station == station,
+                            Sample.datatype == dt
+                        ).all()
+                    )
+
+                    if idx == 0:
+                        self.observation_variable_names.append(dt.name)
+                        self.observation_variable_units.append(dt.unit)
+
+                observation['data'] = np.ma.array(data)#.transpose()
+                self.observation[idx] = observation
 
                 self.points = [[o['latitude'], o['longitude']]
                                for o in self.observation]
 
-        with open_dataset(self.dataset_config, variable=self.variables) as dataset:
+        cftime = datetime_to_timestamp(
+            station.time,
+            self.dataset_config.time_dim_units
+        )
+
+        with open_dataset(
+            self.dataset_config,
+            variable=self.variables,
+            timestamp=int(cftime),
+            nearest_timestamp=True,
+        ) as dataset:
             ts = dataset.nc_data.timestamps
 
             observation_times = []
             timestamps = []
             for o in self.observation:
-                observation_time = dateutil.parser.parse(o['time'])
+                observation_time = dateutil.parser.parse(o['time']).replace(
+                    tzinfo=pytz.UTC
+                )
                 observation_times.append(observation_time)
 
                 deltas = [
-                    (x.replace(tzinfo=pytz.UTC) -
-                     observation_time).total_seconds()
-                    for x in ts]
+                    (x - observation_time).total_seconds()
+                    for x in ts
+                ]
 
                 time = np.abs(deltas).argmin()
                 timestamp = ts[time]
@@ -92,7 +125,12 @@ class ObservationPlotter(PointPlotter):
                 Please select another variable.") + str(e))
 
             point_data, self.depths = self.get_data(
-                dataset, self.variables, time)
+                dataset, self.variables,
+                datetime_to_timestamp(
+                    timestamps[0],
+                    self.dataset_config.time_dim_units
+                )
+            )
             point_data = np.ma.array(point_data)
 
             point_data = self.apply_scale_factors(point_data)
@@ -146,15 +184,20 @@ class ObservationPlotter(PointPlotter):
 
         ureg = pint.UnitRegistry()
         ax_idx = -1
-        udepth = ureg.parse_expression(self.observation[0]['depthunit'])
         axis_map = {}
         unit_map = {}
         for idx in self.observation_variable:
             ax_idx += 1
             for d in data:
+                if d.shape[1] == 1:
+                    style = '.'
+                else:
+                    style = '-'
+
                 ax[ax_idx].plot(
-                    d[:, idx],
-                    self.observation[0]['depth'] * udepth.to(ureg.meter)
+                    d[idx, :, 1],
+                    d[idx, :, 0],
+                    style
                 )
             ax[ax_idx].xaxis.set_label_position('top')
             ax[ax_idx].xaxis.set_ticks_position('top')

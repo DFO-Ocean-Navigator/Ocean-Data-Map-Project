@@ -184,10 +184,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks['generatescript'])
         self.assertEqual(res.status_code, 200)
 
-    def test_observationvariables_endpoint(self):
-        res = self.app.get('/api/v1.0/observationvariables/')
-        self.assertEqual(res.status_code, 200)
-
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_range_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -213,10 +209,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get('/api/v1.0/class4/models/class4_20190102_GIOPS_CONCEPTS_2.3_profile/')
         self.assertEqual(res.status_code, 200)
 
-
-    def test_drifter_query_endpoint(self):
-        res = self.app.get('/api/v1.0/drifters/vars/300234062853860')
-        self.assertEqual(res.status_code, 200)
 
     # RuntimeError: Opening a dataset via sqlite requires the 'variable' keyword argument.
     @unittest.skip("Skipping api/stats.. needs re-write")
@@ -253,6 +245,15 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_map"])
         self.assertEqual(res.status_code, 200)
 
+        res = self.app.get(self.apiLinks["plot_map_quiver_len_mag"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_map_quiver_no_mag"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_map_quiver_color_mag"])
+        self.assertEqual(res.status_code, 200)
+
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.netcdf_data.NetCDFData._get_xarray_data_variables')
@@ -263,6 +264,12 @@ class TestAPIv1(unittest.TestCase):
 
         # transect (line)
         res = self.app.get(self.apiLinks["plot_transect"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_transect_depth_limit"])
+        self.assertEqual(res.status_code, 200)
+
+        res = self.app.get(self.apiLinks["plot_transect_csv"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -285,6 +292,17 @@ class TestAPIv1(unittest.TestCase):
 
         # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries_all_depths"])
+        self.assertEqual(res.status_code, 200)
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        # timeseries (point, virtual mooring)
+        res = self.app.get(self.apiLinks["plot_timeseries_bottom"])
         self.assertEqual(res.status_code, 200)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -322,7 +340,9 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_profile"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/hovmoller.. returning error")
+        res = self.app.get(self.apiLinks["plot_profile_multi_variable"])
+        self.assertEqual(res.status_code, 200)
+
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_hovmoller_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -331,12 +351,13 @@ class TestAPIv1(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         # hovmoller (line, Hovmöller Diagram)
-        # TypeError: object of type 'datetime.datetime' has no len()
-        # possibly a problem with how mant timestamps are in giops_test
         res = self.app.get(self.apiLinks["plot_hovmoller"])
         self.assertEqual(res.status_code, 200)
 
-    @unittest.skip("Skipping api/plot/hovmoller.. returning error")
+        res = self.app.get(self.apiLinks["plot_hovmoller_bottom"])
+        self.assertEqual(res.status_code, 200)
+
+    @unittest.skip("Skipping api/plot/observation.. returning error")
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_plot_observation_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -349,19 +370,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_observation"])
         self.assertEqual(res.status_code, 200)
 
-
-    @unittest.skip("Skipping api/plot/drifter.. explaination in definition..")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_plot_drifter_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        # drifter returns AttributeError: 'NoneType' object has no attribute 'replace'
-        # or, can also return IndexError: index 0 is out of bounds for axis 0 with size 0
-        res = self.app.get(self.apiLinks[plot_drifter])
-        self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/stickplot.. explaination in definition..")
     @patch.object(DatasetConfig, "_get_dataset_config")
@@ -403,10 +411,6 @@ class TestAPIv1(unittest.TestCase):
 
         res.append(self.app.get('/api/v1.0/class4/class4_20200102_GIOPS_CONCEPTS_3.0_profile.json'))
 
-        res.append(self.app.get('/api/v1.0/drifters/meta.json'))
-
-        res.append(self.app.get('/api/v1.0/observation/meta.json'))
-
         for i in range(4):
             self.assertEqual(res[i].status_code, 200)
 
@@ -421,10 +425,6 @@ class TestAPIv1(unittest.TestCase):
         res.append(self.app.get('/api/v1.0/areas/EPSG:3857/9784/-15938038,1751325,4803914,12220141/AZMP_NL_Region_Analysis_Areas.json'))
         # class4
         res.append(self.app.get('/api/v1.0/class4/EPSG:3857/9784/-15938038,1751325,4803914,12220141/class4_20200101_GIOPS_CONCEPTS_3.0_profile.json'))
-        # drifters
-        res.append(self.app.get('/api/v1.0/drifters/EPSG:3857/9784/-15938038,1751325,4803914,12220141/active.json'))
-        # observations
-        res.append(self.app.get('/api/v1.0/observations/EPSG:3857/9784/-15938038,1751325,4803914,12220141/ship:Pearkes;trip:003.json'))
 
         for i in range(6):
             self.assertEqual(res[i].status_code, 200)

@@ -25,6 +25,7 @@ import plotting.colormap as colormap
 import plotting.overlays as overlays
 import plotting.utils as utils
 from data import open_dataset
+from data.utils import get_data_vars_from_equation
 from oceannavigator import DatasetConfig
 from plotting.plotter import Plotter
 from utils.errors import ClientError, ServerError
@@ -36,10 +37,13 @@ class MapPlotter(Plotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = 'map'
 
-        super(MapPlotter, self).__init__(dataset_name, query, **kwargs)
+        super().__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
-        super(MapPlotter, self).parse_query(query)
+        super().parse_query(query)
+
+        if len(self.variables) > 1:
+            raise ClientError(f"MapPlotter only supports 1 variable. Received multiple: {self.variables}")
 
         self.projection = query.get('projection')
 
@@ -96,6 +100,11 @@ class MapPlotter(Plotter):
         self.quiver = query.get('quiver')
 
         self.contour = query.get('contour')
+
+    def __load_quiver(self) -> bool:
+        return self.quiver is not None and \
+               self.quiver['variable'] and \
+               self.quiver['variable'] != 'none'
 
     def load_data(self):
         distance = VincentyDistance()
@@ -184,36 +193,24 @@ class MapPlotter(Plotter):
             gridx = int(500 / self.basemap.aspect)
 
         self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
+        variables_to_load = self.variables[:] # we don't want to change self,variables so copy it
+        if self.__load_quiver():
+            variables_to_load.append(self.quiver['variable'])
 
-        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.time) as dataset:
+        with open_dataset(self.dataset_config, variable=variables_to_load, timestamp=self.time) as dataset:
 
-            if len(self.variables) > 1:
-                self.variable_unit = self.get_vector_variable_unit(
-                    dataset, self.variables
-                )
-                self.variable_name = self.get_vector_variable_name(
-                    dataset, self.variables
-                )
-                scale_factor = self.get_vector_variable_scale_factor(
-                    dataset, self.variables
-                )
-            else:
-                self.variable_unit = self.get_variable_units(
-                    dataset, self.variables
-                )[0]
-                self.variable_name = self.get_variable_names(
-                    dataset,
-                    self.variables
-                )[0]
-                scale_factor = self.get_variable_scale_factors(
-                    dataset, self.variables
-                )[0]
+            self.variable_unit = self.get_variable_units(
+                dataset, self.variables
+            )[0]
+            self.variable_name = self.get_variable_names(
+                dataset, self.variables
+            )[0]
+            scale_factor = self.get_variable_scale_factors(
+                dataset, self.variables
+            )[0]
 
             if self.cmap is None:
-                if len(self.variables) == 1:
-                    self.cmap = colormap.find_colormap(self.variable_name)
-                else:
-                    self.cmap = colormap.colormaps.get('speed')
+                self.cmap = colormap.find_colormap(self.variable_name)
 
             if self.depth == 'bottom':
                 depth_value_map = 'Bottom'
@@ -224,31 +221,28 @@ class MapPlotter(Plotter):
                 depth_value_map = depth_value
 
             data = []
-            allvars = []
-            for v in self.variables:
-                var = dataset.variables[v]
-                allvars.append(v)
-                if self.filetype in ['csv', 'odv', 'txt']:
-                    d, depth_value_map = dataset.get_area(
-                        np.array([self.latitude, self.longitude]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                        return_depth=True
-                    )
-                else:
-                    d = dataset.get_area(
-                        np.array([self.latitude, self.longitude]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours
-                    )
+            var = dataset.variables[self.variables[0]]
+            if self.filetype in ['csv', 'odv', 'txt']:
+                d, depth_value_map = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    self.variables[0],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                    return_depth=True
+                )
+            else:
+                d = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    self.variables[0],
+                    self.interp,
+                    self.radius,
+                    self.neighbours
+                )
 
                 d = np.multiply(d, scale_factor)
 
@@ -262,9 +256,6 @@ class MapPlotter(Plotter):
                         self.depth_label = " at " + \
                             str(int(np.round(depth_value_map))) + " m"
 
-            if len(data) == 2:
-                data[0] = np.sqrt(data[0] ** 2 + data[1] ** 2)
-
             self.data = data[0]
 
             quiver_data = []
@@ -272,48 +263,85 @@ class MapPlotter(Plotter):
             # will only be used for CSV export.
             quiver_data_fullgrid = []
 
-            if self.quiver is not None and \
-                self.quiver['variable'] != '' and \
-                    self.quiver['variable'] != 'none':
-                for v in self.quiver['variable'].split(','):
-                    allvars.append(v)
-                    var = dataset.variables[v]
-                    quiver_unit = self.dataset_config.variable[var].unit
-                    quiver_name = self.dataset_config.variable[var].name
-                    quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
-                    d = dataset.get_area(
-                        np.array([quiver_lat, quiver_lon]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                    )
-                    quiver_data.append(d)
-                    # Get the quiver data on the same grid as the main
-                    # variable.
-                    d = dataset.get_area(
-                        np.array([self.latitude, self.longitude]),
-                        self.depth,
-                        self.time,
-                        v,
-                        self.interp,
-                        self.radius,
-                        self.neighbours,
-                    )
-                    quiver_data_fullgrid.append(d)
-
-                self.quiver_name = self.get_vector_variable_name(
-                    dataset, self.quiver['variable'].split(',')
+            if self.__load_quiver():
+                var = dataset.variables[self.quiver['variable']]
+                quiver_unit = self.dataset_config.variable[var].unit
+                quiver_name = self.dataset_config.variable[var].name
+                quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
+                
+                data_vars = list(set(self.dataset_config.variables) - set(self.dataset_config.calculated_variables))
+                component_vars = get_data_vars_from_equation(self.dataset_config.calculated_variables[var.key]['equation'],
+                                                            data_vars)
+                
+                # Expect component vars to be [x_variable, y_variable]
+                x_vals = dataset.get_area(
+                    np.array([quiver_lat, quiver_lon]),
+                    self.depth,
+                    self.time,
+                    component_vars[0],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
                 )
+                quiver_data.append(x_vals)
+
+                y_vals = dataset.get_area(
+                    np.array([quiver_lat, quiver_lon]),
+                    self.depth,
+                    self.time,
+                    component_vars[1],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                )
+                quiver_data.append(y_vals)
+                
+                mag_data = dataset.get_area(
+                    np.array([quiver_lat, quiver_lon]),
+                    self.depth,
+                    self.time,
+                    self.quiver['variable'],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                )
+                self.quiver_magnitude = mag_data
+
+                # Get the quiver data on the same grid as the main
+                # variable.
+                x_vals = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    component_vars[0],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                )
+                quiver_data_fullgrid.append(x_vals)
+
+                y_vals = dataset.get_area(
+                    np.array([self.latitude, self.longitude]),
+                    self.depth,
+                    self.time,
+                    component_vars[1],
+                    self.interp,
+                    self.radius,
+                    self.neighbours,
+                )
+                quiver_data_fullgrid.append(y_vals)
+
+                self.quiver_name = self.get_variable_names(
+                    dataset,
+                    [self.quiver['variable']]
+                )[0]
                 self.quiver_longitude = quiver_lon
                 self.quiver_latitude = quiver_lat
                 self.quiver_unit = quiver_unit
             self.quiver_data = quiver_data
             self.quiver_data_fullgrid = quiver_data_fullgrid
 
-            if all([len(dataset.variables[v].dimensions) == 3 for v in allvars]):
+            if all([dataset.variables[v].is_surface_only() for v in variables_to_load]):
                 self.depth = 0
 
             contour_data = []
@@ -360,13 +388,10 @@ class MapPlotter(Plotter):
                     )
                     data.append(d)
 
-                if len(data) == 2:
-                    data = np.sqrt(data[0] ** 2 + data[1] ** 2)
-                else:
-                    data = data[0]
+                
+                data = data[0]
 
                 self.data -= data
-
         # Load bathymetry data
         self.bathymetry = overlays.bathymetry(
             self.basemap,
@@ -376,7 +401,7 @@ class MapPlotter(Plotter):
         )
 
         if self.depth != 'bottom' and self.depth != 0:
-            if len(quiver_data) > 0:
+            if quiver_data:
                 quiver_bathymetry = overlays.bathymetry(
                     self.basemap, quiver_lat, quiver_lon)
 
@@ -459,12 +484,7 @@ class MapPlotter(Plotter):
     def csv(self):
         # If the user has selected the display of quiver data in the browser,
         # then also export that data in the CSV file.
-        if self.quiver is not None and \
-            self.quiver['variable'] != '' and \
-                self.quiver['variable'] != 'none':
-            have_quiver = True
-        else:
-            have_quiver = False
+        have_quiver = self.__load_quiver()
 
         header = [
             ['Dataset', self.dataset_name],
@@ -583,7 +603,7 @@ class MapPlotter(Plotter):
             vmax = self.scale[1]
         else:
             vmin, vmax = utils.normalize_scale(self.data,
-                                               self.dataset_config.variable[",".join(self.variables)])
+                                               self.dataset_config.variable[f"{self.variables[0]}"])
 
         c = self.basemap.imshow(
             self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)
@@ -596,11 +616,10 @@ class MapPlotter(Plotter):
                                                       returnxy=True)
             qx = np.ma.masked_where(np.ma.getmask(self.quiver_data[0]), qx)
             qy = np.ma.masked_where(np.ma.getmask(self.quiver_data[1]), qy)
-            quiver_mag = np.sqrt(qx ** 2 + qy ** 2)
 
             if self.quiver['magnitude'] != 'length':
-                qx = qx / quiver_mag
-                qy = qy / quiver_mag
+                qx = qx / self.quiver_magnitude
+                qy = qy / self.quiver_magnitude
                 qscale = 50
             else:
                 qscale = None
@@ -614,7 +633,7 @@ class MapPlotter(Plotter):
                 q = self.basemap.quiver(
                     x, y,
                     qx, qy,
-                    quiver_mag,
+                    self.quiver_magnitude,
                     width=0.0035,
                     headaxislength=4, headlength=4,
                     scale=qscale,
@@ -632,7 +651,7 @@ class MapPlotter(Plotter):
                 )
 
             if self.quiver['magnitude'] == 'length':
-                unit_length = np.mean(quiver_mag) * 2
+                unit_length = np.mean(self.quiver_magnitude) * 2
                 unit_length = np.round(unit_length,
                                        -int(np.floor(np.log10(unit_length))))
                 if unit_length >= 1:

@@ -1,6 +1,5 @@
 import React from "react";
 import {Alert, Button} from "react-bootstrap";
-import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 
@@ -24,10 +23,9 @@ export default class WarningBar extends React.PureComponent {
     if(this.state.show){
       return (
         <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
-              Please note we have found a bug related to velocity representation on the Ocean Navigator
-              (in particular with direction). We are working on a correction.
-              You may <Button bsStyle="link" onClick={this.props.showWarningInfo}>click here</Button>
-              for further detail. 
+              New Feature: New observational datasets are now available.
+              Please report any issues<Button bsStyle="link" href='https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/labels/observations' target="_blank">here</Button>.
+              They will be corrected in a future release. 
         </Alert>
       );
     }
@@ -35,9 +33,3 @@ export default class WarningBar extends React.PureComponent {
     return(<div></div>);
   }
 }
-
-//***********************************************************************
-WarningBar.propTypes = {
-  showWarningInfo: PropTypes.func,
-};
-

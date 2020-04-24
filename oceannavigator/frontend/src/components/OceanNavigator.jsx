@@ -5,7 +5,7 @@ import MapToolbar from "./MapToolbar.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
-import DrifterWindow from "./DrifterWindow.jsx";
+import TrackWindow from "./TrackWindow.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
@@ -13,6 +13,7 @@ import {Button, Modal} from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
+import WarningBar from "./WarningBar.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -77,6 +78,8 @@ export default class OceanNavigator extends React.Component {
         topoShadedRelief: false,    // Show hill shading (relief mapping) on topography
         bathymetry: true,           // Show bathymetry contours
       },
+      showObservationSelect: false,
+      observationArea: [],
     };
 
     this.mapComponent = null;
@@ -93,8 +96,8 @@ export default class OceanNavigator extends React.Component {
         console.error(err);
       }
       let url = window.location.origin;
-      if (window.location.path != undefined) {
-        url += window.location.path;
+      if (window.location.pathname != undefined) {
+        url += window.location.pathname;
       }
       window.history.replaceState(null, null, url);
     }
@@ -206,6 +209,12 @@ export default class OceanNavigator extends React.Component {
           }
           newState = value;
           break;
+
+        case "showObservationSelect":
+          if (!value) {
+            newState['observationArea'] = [];
+          }
+          break;
       }
 
     }
@@ -314,6 +323,27 @@ export default class OceanNavigator extends React.Component {
 
   action(name, arg, arg2, arg3) {
     switch(name) {
+      case "obs_point":
+        // Enable point selection in both maps
+        this.mapComponent.obs_point();
+        if (this.mapComponent2) {
+          this.mapComponent2.obs_point();
+        }
+        break;
+      case "obs_area":
+        if (typeof(arg) === "object") {
+          this.setState({
+            observationArea: arg,
+            showObservationSelect: true,
+          });
+        } else {
+          // Enable point selection in both maps
+          this.mapComponent.obs_area();
+          if (this.mapComponent2) {
+            this.mapComponent2.obs_area();
+          }
+        }
+        break;
       case "point":
         if (typeof(arg) === "object") {
           // The EnterPoint component correctly orders the coordinate
@@ -401,16 +431,16 @@ export default class OceanNavigator extends React.Component {
           }
         }
         break;
-      case "drifter":
+      case "track":
         this.setState({
-          drifter: arg,
-          modal: "drifter",
+          track: arg,
+          modal: "track",
           names: arg,
         });
         ReactGA.event({
-          category: "DrifterPlot",
+          category: "TrackPlot",
           action: "click",
-          label: "DrifterPlot"
+          label: "TrackPlot"
         });
         this.showModal();
         break;
@@ -595,12 +625,12 @@ export default class OceanNavigator extends React.Component {
 
         modalTitle = "";
         break;
-      case "drifter":
+      case "track":
         modalContent = (
-          <DrifterWindow
+          <TrackWindow
             dataset={this.state.dataset}
             quantum={this.state.dataset_quantum}
-            drifter={this.state.drifter}
+            track={this.state.track}
             variable={this.state.variable}
             scale={this.state.scale}
             names={this.state.names}
@@ -608,6 +638,7 @@ export default class OceanNavigator extends React.Component {
             onUpdate={this.updateState}
             init={this.state.subquery}
             action={this.action}
+            obs_query={this.state.vectorid}
           />
         );
 
@@ -693,7 +724,10 @@ export default class OceanNavigator extends React.Component {
             toggleSidebar={this.toggleSidebar}
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             updateLanguage={this.updateLanguage}
+            showObservationSelect={this.state.showObservationSelect}
+            observationArea={this.state.observationArea}
           />
+          <WarningBar />
           {map}
         </div>
 
