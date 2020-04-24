@@ -8,10 +8,10 @@ dpi <- 144
 fname <- "script_template_" + toString(query["dataset"]) + "_" + toString(query["{var}"]) + ".png"
 
 gsub("[\r\n]", "", query)
-base_url <- "http://navigator.oceansdata.ca/plot/?"
+base_url <- "http://navigator.oceansdata.ca/api/v1.0/plot/?"
 url <- base_url + URLencode(query) + "&dpi=" + toString(dpi)
 print(url)
 
 
-print("Downloading file and exiting..)
+print("Downloading file and exiting...")
 download.file(url, fname, wget)
