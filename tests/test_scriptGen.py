@@ -1,5 +1,5 @@
 import ast
-from plotting.scriptGenerator import time_query_conversion, generatePython, generateR
+from plotting.scriptGenerator import generatePython, generateR
 from oceannavigator import create_app
 import hashlib
 import json
