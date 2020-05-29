@@ -6,6 +6,7 @@
 ## Contents
 * Overview
 * Development
+* Automate CLASS4 pickle generation
 
 ---
 
@@ -126,3 +127,7 @@ Javascript is a dynamically-typed language so it's super important to have clear
 
 ### Coding Style (Python)
 Coming soon...
+
+## Automate CLASS4 pickle generation
+
+In order to generate the class4.pickle file daily. You should create a crontab entry for the user account hosting the Ocean Navigator instance. Use the command `crontab -e` to add the string `@daily ${HOME}/Ocean-Data-Map-Project/bin/launch-pickle.sh`. Then once a day at midnight the script launch-pickle.sh will index all the CLASS4 files.
