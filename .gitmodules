@@ -1,0 +1,4 @@
+[submodule "oceannavigator/configs"]
+	path = oceannavigator/configs
+	url = https://github.com/DFO-Ocean-Navigator/configurations.git
+	branch = master
