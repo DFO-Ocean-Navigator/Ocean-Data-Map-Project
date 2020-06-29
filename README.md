@@ -53,8 +53,9 @@ Run this one-shot-install script:
 	* `yarn run dev`
 * There's also a linter available: `yarn run lint`.
 * For production use the command: 
-        * `rm -rf oceannavigator/frontend`
-        * `yarn run build`
+	* `rm -r oceannavigator/frontend`
+	* `cd oceannavigator/frontend`
+	* `yarn run build`
 
 ### SQLite3 backend
 Since we're now using a home-grown indexing solution, as such there is now no "server" to host the files through a URL (at the moment). You also need to install the dependencies for the [netcdf indexing tool](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper). Then, download a released binary for Linux systems [here](https://github.com/DFO-Ocean-Navigator/netcdf-timestamp-mapper/releases). You should go through the README for basic setup and usage details.
