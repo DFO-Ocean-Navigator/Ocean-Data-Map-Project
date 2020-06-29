@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-HOST_IP=$(ip addr show | grep -E "e(th|np)" | grep inet | awk '{print $2}' | sed -e 's/\/[0-9]*//')
+HOST_IP=$(ip addr show | grep -E "e(th|np|ns)" | grep inet | awk '{print $2}' | sed -e 's/\/[0-9]*//')
 
 PORT=5000
 
