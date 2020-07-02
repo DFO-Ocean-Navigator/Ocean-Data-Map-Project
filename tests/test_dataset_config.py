@@ -68,9 +68,13 @@ class TestUtil(unittest.TestCase):
                 "variables": {
                     "magmyvar": {
                         "name": "my_variable",
+                        "east_vector_component": "u",
+                        "north_vector_component": "v",
                     },
                     "magnitudemyvar": {
                         "name": "my_variable",
+                        "east_vector_component": "u",
+                        "north_vector_component": "v",
                     }
                 }
             },
@@ -80,6 +84,8 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(len(DatasetConfig("key").vector_variables), 2)
         result = DatasetConfig("key").variable["magmyvar"]
         self.assertEqual(result.name, "my_variable")
+        self.assertEqual(result.east_vector_component, "u")
+        self.assertEqual(result.north_vector_component, "v")
         self.assertEqual(result.unit, "Unknown")
 
     @patch.object(DatasetConfig, "_get_dataset_config")

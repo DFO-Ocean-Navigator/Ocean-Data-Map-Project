@@ -25,7 +25,6 @@ import plotting.colormap as colormap
 import plotting.overlays as overlays
 import plotting.utils as utils
 from data import open_dataset
-from data.utils import get_data_vars_from_equation
 from oceannavigator import DatasetConfig
 from plotting.plotter import Plotter
 from utils.errors import ClientError, ServerError
@@ -267,18 +266,15 @@ class MapPlotter(Plotter):
                 var = dataset.variables[self.quiver['variable']]
                 quiver_unit = self.dataset_config.variable[var].unit
                 quiver_name = self.dataset_config.variable[var].name
+                quiver_x_var = self.dataset_config.variable[var].east_vector_component
+                quiver_y_var = self.dataset_config.variable[var].north_vector_component
                 quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
                 
-                data_vars = list(set(self.dataset_config.variables) - set(self.dataset_config.calculated_variables))
-                component_vars = get_data_vars_from_equation(self.dataset_config.calculated_variables[var.key]['equation'],
-                                                            data_vars)
-                
-                # Expect component vars to be [x_variable, y_variable]
                 x_vals = dataset.get_area(
                     np.array([quiver_lat, quiver_lon]),
                     self.depth,
                     self.time,
-                    component_vars[0],
+                    quiver_x_var,
                     self.interp,
                     self.radius,
                     self.neighbours,
@@ -289,7 +285,7 @@ class MapPlotter(Plotter):
                     np.array([quiver_lat, quiver_lon]),
                     self.depth,
                     self.time,
-                    component_vars[1],
+                    quiver_y_var,
                     self.interp,
                     self.radius,
                     self.neighbours,
@@ -313,7 +309,7 @@ class MapPlotter(Plotter):
                     np.array([self.latitude, self.longitude]),
                     self.depth,
                     self.time,
-                    component_vars[0],
+                    quiver_x_var,
                     self.interp,
                     self.radius,
                     self.neighbours,
@@ -324,7 +320,7 @@ class MapPlotter(Plotter):
                     np.array([self.latitude, self.longitude]),
                     self.depth,
                     self.time,
-                    component_vars[1],
+                    quiver_y_var,
                     self.interp,
                     self.radius,
                     self.neighbours,
