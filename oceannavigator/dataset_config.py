@@ -210,8 +210,8 @@ class DatasetConfig:
                 variable_name = key.key
             if variable_name in self._config.vector_variables:
                 return VectorVariableConfig(self._config, key)
-            else:
-                return VariableConfig(self._config, key)
+            
+            return VariableConfig(self._config, key)
 
 
 class VariableConfig:
