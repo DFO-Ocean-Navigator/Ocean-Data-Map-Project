@@ -204,6 +204,13 @@ class DatasetConfig:
             self._config = datasetconfig
 
         def __getitem__(self, key):
+            if isinstance(key, str):
+                variable_name = key
+            else:
+                variable_name = key.key
+            if variable_name in self._config.vector_variables:
+                return VectorVariableConfig(self._config, key)
+            
             return VariableConfig(self._config, key)
 
 
@@ -356,3 +363,53 @@ class VariableConfig:
             return from_config in ['true', 'True'] or from_config == True
         except KeyError:
             return False
+
+
+class VectorVariableConfig(VariableConfig):
+    """
+    Access class for a vector variable's portion of the datasetconfig.
+    """
+
+    def __init__(self, datasetconfig, variable) -> None:
+        """
+        Parameters:
+        datasetconfig -- the parent DatasetConfig object
+        variable -- either the string key for the variable, or the
+                    xarray/netcdf4 Variable object
+        """
+        super().__init__(datasetconfig, variable)
+
+    def __get_attribute(self, attr):
+        return self._config._get_attribute("variables")[self._key].get(attr)
+
+
+    @property
+    def east_vector_component(self) -> str:
+        """
+        Returns the east_vector_component for the variable if defined in dataset config file
+
+        Returns:
+            str -- east_vector_component name
+        """
+        try:
+            east_vector_component = self.__get_attribute("east_vector_component")
+        except KeyError:
+            east_vector_component = None
+
+        return east_vector_component
+
+
+    @property
+    def north_vector_component(self) -> str:
+        """
+        Returns the north_vector_component for the variable if defined in dataset config file
+
+        Returns:
+            str -- north_vector_component name
+        """
+        try:
+            north_vector_component = self.__get_attribute("north_vector_component")
+        except KeyError:
+            north_vector_component = None
+
+        return north_vector_component
