@@ -593,6 +593,8 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                                                            output_def, radius_of_influence=float(self.radius), nprocs=8)
 
+        raise ValueError(f"Unknown interpolation method {self.interp}.")                                               
+
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing

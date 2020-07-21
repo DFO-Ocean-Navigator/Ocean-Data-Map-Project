@@ -192,3 +192,5 @@ class TestMercator(unittest.TestCase):
 
             self.assertNotEqual(r[0, 0], r[1, 0])
             self.assertTrue(np.ma.is_masked(r[1, 49]))
+
+    # TODO: get some mercator data with surface variable to test raise on get_profile

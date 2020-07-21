@@ -283,3 +283,15 @@ class TestNetCDFData(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 kwargs = {"variable": "votemper"}
                 nc_data.get_nc_file_list(nc_data._dataset_config, **kwargs)
+
+    def test_get_dataset_variable_raises_on_unknown_variable(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            with self.assertRaises(KeyError):
+                nc_data.get_dataset_variable('fake_variable')
+
+    def test_interpolate_raises_on_unknown_interp_method(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            nc_data.interp = "fake_method"
+            with self.assertRaises(ValueError):
+                nc_data.interpolate(None, None, None)
+
