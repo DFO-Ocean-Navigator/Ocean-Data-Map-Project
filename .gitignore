@@ -90,3 +90,6 @@ ENV/
 
 .vscode/*
 *.code-workspace
+
+*.out
+data/calculated_parser/parsetab.py
