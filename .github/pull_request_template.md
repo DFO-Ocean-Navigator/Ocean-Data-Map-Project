@@ -16,5 +16,5 @@
 
 _Hint_ To run all python unit tests run the following command from the root repository directory:
 ```sh
-python -m unittest `find tests -name "*.py" | grep -v disabled`
+bash run_python_tests.sh
 ```
