@@ -243,17 +243,17 @@ class MapPlotter(Plotter):
                     self.neighbours
                 )
 
-                d = np.multiply(d, scale_factor)
+            d = np.multiply(d, scale_factor)
 
-                data.append(d)
-                if self.filetype not in ['csv', 'odv', 'txt']:
-                    if len(var.dimensions) == 3:
-                        self.depth_label = ""
-                    elif self.depth == 'bottom':
-                        self.depth_label = " at Bottom"
-                    else:
-                        self.depth_label = " at " + \
-                            str(int(np.round(depth_value_map))) + " m"
+            data.append(d)
+            if self.filetype not in ['csv', 'odv', 'txt']:
+                if len(var.dimensions) == 3:
+                    self.depth_label = ""
+                elif self.depth == 'bottom':
+                    self.depth_label = " at Bottom"
+                else:
+                    self.depth_label = " at " + \
+                        str(int(np.round(depth_value_map))) + " m"    
 
             self.data = data[0]
 
