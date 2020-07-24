@@ -245,6 +245,9 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_map"])
         self.assertEqual(res.status_code, 200)
 
+        res = self.app.get(self.apiLinks["plot_map_csv"])
+        self.assertEqual(res.status_code, 200)
+
         res = self.app.get(self.apiLinks["plot_map_quiver_len_mag"])
         self.assertEqual(res.status_code, 200)
 

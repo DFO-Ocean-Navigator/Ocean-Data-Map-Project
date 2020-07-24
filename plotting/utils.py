@@ -18,6 +18,9 @@ def get_filename(plot_type, dataset_name, extension):
 
 
 def get_mimetype(filetype: str):
+    if filetype:
+        filetype = filetype.lower()
+
     if filetype == 'png':
         mime = 'image/png'
     elif filetype == 'jpeg':
