@@ -9,6 +9,7 @@ from data.nemo import Nemo
 from data.netcdf_data import NetCDFData
 from data.variable import Variable
 from data.variable_list import VariableList
+from utils.errors import APIError
 
 
 class TestNemo(unittest.TestCase):
@@ -168,3 +169,9 @@ class TestNemo(unittest.TestCase):
 
             self.assertNotEqual(r[0, 0], r[1, 0])
             self.assertTrue(np.ma.is_masked(r[1, 49]))
+
+    def test_get_profile_raises_when_surface_variable_requested(self):
+        nc_data = NetCDFData('tests/testdata/salishseacast_ssh_test.nc')
+        with Nemo(nc_data) as ds:
+            with self.assertRaises(APIError):
+                ds.get_profile(None, None, 'ssh', None, None)
