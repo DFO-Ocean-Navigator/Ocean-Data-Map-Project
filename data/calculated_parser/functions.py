@@ -253,6 +253,7 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     tempgradient = seawater.adtg(salinity, temperature, press)
     return np.array(tempgradient)
 
+
 def __get_soniclayerdepth_mask(soundspeed: np.ndarray, min_depth_indices: np.ndarray) -> np.ndarray:  
     """
     Create mask which masks out values BELOW deep sound channel.
@@ -274,8 +275,15 @@ def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray
 
     # Find sonic layer depth indices
     max_indices = __find_depth_index_of_max_value(soundspeed)
+    
+    data = depth[max_indices]
 
-    return depth[max_indices]
+    # Mask out surface depths, since sonic layer depth cannot physically
+    # be present at the surface. Using np.nan  will make the main map have
+    # transparent spots when the surface is masked out.
+    data[data == depth[0]] = np.nan
+
+    return data
 
 
 def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
@@ -319,7 +327,13 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
-    return depth[min_indices]
+    data = depth[min_indices]
+
+    # Mask out depth values above 500 meters since deep sound
+    # channel cannot occour above this in general.
+    data[data < 500] = np.nan
+
+    return data
 
 
 def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
