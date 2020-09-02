@@ -42,6 +42,7 @@ class NetCDFData(Data):
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
         self._nc_files: list = []
         self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url', "")
+        self._bathymetry_file_url: str = kwargs.get('bathymetry_file_url', "")
         self._time_variable: xarray.IndexVariable = None
         self._dataset_open: bool = False
         self._dataset_key: str = kwargs.get('dataset_key', "")
@@ -92,6 +93,11 @@ class NetCDFData(Data):
                 )
                 self.dataset = self.dataset.merge(angle_file)
                 angle_file.close()
+
+            if self._bathymetry_file_url:
+                bathy_file = xarray.open_dataset(self._bathymetry_file_url)
+                self.dataset = self.dataset.merge(bathy_file)
+                bathy_file.close()
 
             self._dataset_open = True
 
