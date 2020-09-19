@@ -12,7 +12,6 @@ https://repo.anaconda.com/pkgs/main/linux-64/freeglut-3.0.0-hf484d3e_5.conda
 https://conda.anaconda.org/conda-forge/linux-64/jpeg-9c-h14c3975_1001.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/libglu-9.0.0-hf484d3e_1.conda
 https://repo.anaconda.com/pkgs/main/linux-64/ncurses-6.1-he6710b0_1.conda
-https://conda.anaconda.org/anaconda/linux-64/openssl-1.1.1-h7b6447c_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/zlib-1.2.11-h7b6447c_3.conda
 https://repo.anaconda.com/pkgs/main/linux-64/hdf4-4.2.13-h3ca952b_2.conda
 https://conda.anaconda.org/conda-forge/linux-64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2
