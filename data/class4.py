@@ -22,7 +22,7 @@ def __list_class4_files_slowly():
 
     for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
         if f.endswith('profile.nc') and ('GIOPS' in f):
-            files.append(f[18:-3])
+            files.append(os.path.splitext(os.path.basename(f))[0])
 
     for names in files:
         value = names
