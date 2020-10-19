@@ -243,11 +243,11 @@ def list_class4_models(class4_id: str) -> List[dict]:
     result = []
     
     # file pattern globbing != regex
-    for f in glob.iglob(f"{path}/{class4_id[7:11]}/{class4_id[:15]}*_profile.nc"):
+    for f in glob.iglob(f"{path}/{class4_id[8:16]}/{class4_id[:16]}*_profile.nc"):
         model = f.split("_")[2] # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
         if model != "GIOPS":
             result.append({
-                'id': os.path.basename(f)[:-3], # chop off .nc extension
+                'id': os.path.splitext(os.path.basename(f))[0], # chop off .nc extension
                 'value': model
             })
 
