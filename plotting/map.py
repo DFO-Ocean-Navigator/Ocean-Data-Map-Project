@@ -3,7 +3,6 @@ import os
 import tempfile
 from textwrap import wrap
 
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import osr
