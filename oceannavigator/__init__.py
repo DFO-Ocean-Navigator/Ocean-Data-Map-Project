@@ -32,7 +32,7 @@ def create_app(testing = False):
         app.config['datasetConfig'] = datasetConfig
     else:
         app.config['datasetConfig'] = "datasetconfig.json"
-    
+
     @app.route('/public/')
     def public_index():
         res = send_file('frontend/public/index.html')
