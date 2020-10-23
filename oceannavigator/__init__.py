@@ -4,6 +4,9 @@ from flask import Flask, request, send_file
 from flask_compress import Compress
 from flask_babel import Babel
 from sys import argv
+
+# Although DatasetConfig is not used in this module, this import is absolutely necessary
+# because it is how the rest of the app gets access to DatasetConfig
 from .dataset_config import DatasetConfig
 from data.observational import db
 
