@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 
 from flask import Flask, request, send_file
