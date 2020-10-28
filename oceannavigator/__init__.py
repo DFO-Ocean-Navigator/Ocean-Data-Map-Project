@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+import logging
+from sys import argv
 
 from flask import Flask, request, send_file
 from flask_compress import Compress
 from flask_babel import Babel
-from sys import argv
+
+# Although DatasetConfig is not used in this module, this import is absolutely necessary
+# because it is how the rest of the app gets access to DatasetConfig
 from .dataset_config import DatasetConfig
 from data.observational import db
 
@@ -19,6 +22,10 @@ def create_app(testing = False):
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
     app.testing = testing
+    # Customize Flask debug logger message format
+    app.logger.handlers[0].setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s',
+        datefmt="%Y-%m-%d %H:%M:%S"))
     db.init_app(app)
 
     datasetConfig = argv[-1]
@@ -26,7 +33,7 @@ def create_app(testing = False):
         app.config['datasetConfig'] = datasetConfig
     else:
         app.config['datasetConfig'] = "datasetconfig.json"
-    
+
     @app.route('/public/')
     def public_index():
         res = send_file('frontend/public/index.html')
