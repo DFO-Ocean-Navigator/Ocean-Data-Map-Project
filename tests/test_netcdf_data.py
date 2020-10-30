@@ -178,6 +178,28 @@ class TestNetCDFData(unittest.TestCase):
             expected = {" 2014-06-16T12:00:00Z": 1, "2014-05-17T00:00:00Z": 0}
             self.assertEqual(date_formatted, expected)
 
+    @patch("data.netcdf_data.format_date")
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_subset_issue769_1d_lons_lats(self, patch_get_dataset_config, patch_format_date):
+        """Confirm that the 1d lons and lats arrays condition that causes subset()
+        to raise a ValueError has been fixed.
+        """
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+        # Avoid the need for a Flask app context because format_date is from flask_babel
+        patch_format_date.return_value = 19700101
+        kwargs = {"dataset_key": "mercator_test"}
+        with NetCDFData("tests/testdata/mercator_test.nc", **kwargs) as nc_data:
+            query = dict(
+                [('output_format', 'NETCDF3_NC'),
+                 ('dataset_name', 'mercator_test'),
+                 ('variables', 'votemper'),
+                 ('min_range', '-79.0,2.0'),
+                 ('max_range', '-78.0,3.0'),
+                 ('time', '2119651200,2119651200'),
+                 ('should_zip', '0')])
+            nc_data.subset(query)
+            # No assertion because the fixed code doesn't raise an exception
+
     def test_mercator_latlon_variables(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
             lat, lon = nc_data.latlon_variables

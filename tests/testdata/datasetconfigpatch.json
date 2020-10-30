@@ -91,5 +91,16 @@
             "uVelocity": { "name":  "Eastward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
             "vVelocity": { "name":  "Northward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" }
         }
+    },
+
+    "mercator_test": {
+        "enabled": 1,
+        "url": "tests/testdata/mercator_test.nc",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+        }
     }
 }

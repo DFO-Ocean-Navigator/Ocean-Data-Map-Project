@@ -397,6 +397,8 @@ class NetCDFData(Data):
             XI_mg, YI_mg = np.meshgrid(XI, YI)
 
             # Define input/output grid definitions
+            if lon_vals.ndim == 1:
+                lon_vals, lat_vals = np.meshgrid(lon_vals, lat_vals)
             input_def = pyresample.geometry.SwathDefinition(
                 lons=lon_vals, lats=lat_vals)
             output_def = pyresample.geometry.SwathDefinition(
