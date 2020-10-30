@@ -70,6 +70,7 @@
             "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
         }
     },
+
     "salishseacast_currents": {
         "enabled": true,
         "name": "SalishSeaCast 3D Currents",
