@@ -397,6 +397,8 @@ class NetCDFData(Data):
             XI_mg, YI_mg = np.meshgrid(XI, YI)
 
             # Define input/output grid definitions
+            if lon_vals.ndim == 1:
+                lon_vals, lat_vals = np.meshgrid(lon_vals, lat_vals)
             input_def = pyresample.geometry.SwathDefinition(
                 lons=lon_vals, lats=lat_vals)
             output_def = pyresample.geometry.SwathDefinition(
@@ -593,7 +595,7 @@ class NetCDFData(Data):
                 return pyresample.kd_tree.resample_nearest(input_def, data,
                                                            output_def, radius_of_influence=float(self.radius), nprocs=8)
 
-        raise ValueError(f"Unknown interpolation method {self.interp}.")                                               
+        raise ValueError(f"Unknown interpolation method {self.interp}.")
 
     @property
     def time_variable(self):
