@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 from flask_babel import format_date, format_datetime
-from PIL import Image
 
 import plotting.colormap as colormap
 import plotting.utils as utils
