@@ -4,6 +4,8 @@ from sys import argv
 from flask import Flask, request, send_file
 from flask_compress import Compress
 from flask_babel import Babel
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 # Although DatasetConfig is not used in this module, this import is absolutely necessary
 # because it is how the rest of the app gets access to DatasetConfig
@@ -17,6 +19,8 @@ def config_blueprints(app):
     app.register_blueprint(bp_v1_0)
 
 def create_app(testing = False):
+    # Sentry DSN URL will be read from SENTRY_DSN environment variable
+    sentry_sdk.init(integrations=[FlaskIntegration()], traces_sample_rate=1.0)
     app = Flask(__name__, static_url_path='', static_folder='frontend')
     app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
