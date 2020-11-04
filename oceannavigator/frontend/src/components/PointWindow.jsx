@@ -42,7 +42,7 @@ export default class PointWindow extends React.Component {
       selected: TabEnum.PROFILE,
       scale: props.scale + ",auto",
       depth: props.depth,
-      showmap: true,
+      showmap: false,
       colormap: "default",
       starttime: Math.max(props.time - 24, 0),
       variables: [],

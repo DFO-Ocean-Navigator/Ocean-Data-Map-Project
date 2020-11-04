@@ -17,7 +17,7 @@ export default class Class4Window extends React.Component {
 
     this.state = {
       forecast: "best",
-      showmap: true,
+      showmap: false,
       climatology: false,
       error: "none",
       size: "10x7",
