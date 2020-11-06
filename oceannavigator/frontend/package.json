@@ -35,7 +35,7 @@
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "js-yaml": "^3.13.1",
     "ol": "~5.3.3",
-    "papaparse": "^4.3.3",
+    "papaparse": "^5.2.0",
     "proj4": "~2.4.3",
     "prop-types": "^15.5.10",
     "rc-slider": "^9.2.2",
@@ -49,7 +49,8 @@
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "yargs-parser": "^13.1.2"
   },
   "devDependencies": {
     "babel-polyfill": "^6.26.0",
