@@ -4,7 +4,7 @@ import sqlite3
 import uuid
 import warnings
 import zipfile
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Set, Tuple
 
 import dateutil.parser
 import geopy
@@ -315,11 +315,10 @@ class NetCDFData(Data):
                 self.get_dataset_variable(time_var)[time_range[1]].values)), "yyyyMMdd"))
 
         dataset_name = query.get('dataset_name')
-        lat_coord = self._dataset_config.lat_var_key
-        lon_coord = self._dataset_config.lon_var_key
+        y_coord, x_coord = self.yx_dimensions
 
         # Do subset along coordinates
-        subset = self.dataset.isel(**{lat_coord: y_slice, lon_coord: x_slice})
+        subset = self.dataset.isel(**{y_coord: y_slice, x_coord: x_slice})
 
         # Select requested time (time range if applicable)
         if apply_time_range:
@@ -345,8 +344,8 @@ class NetCDFData(Data):
                 subset = subset.assign(**{variable:
                                           self.get_dataset_variable(variable).isel(**{
                                               time_var: time_slice,
-                                              lat_coord: y_slice,
-                                              lon_coord: x_slice
+                                              y_coord: y_slice,
+                                              x_coord: x_slice
                                           })})
 
         output_format = query.get('output_format')
@@ -653,6 +652,45 @@ class NetCDFData(Data):
         """
 
         return ['depth', 'deptht', 'z']
+
+    @property
+    def y_dimensions(self) -> Set[str]:
+        """
+        Possible names of the y dimension in the dataset.
+        """
+
+        return {'y', 'yc', 'latitude', 'gridY'}
+
+    @property
+    def x_dimensions(self) -> Set[str]:
+        """
+        Possible names of the x dimension in the dataset.
+        """
+
+        return {'x', 'xc', 'longitude', 'gridX'}
+
+    @property
+    def yx_dimensions(self) -> Tuple[str, str]:
+        """
+        Names of the y and x dimensions in the dataset.
+        """
+        dims = set(self.dimensions)
+
+        y_dim = self.y_dimensions.intersection(dims)
+        try:
+            y_dim = y_dim.pop()
+        except KeyError:
+            raise ValueError(
+                f"None of {self.y_dimensions} were found in dataset's dimensions {dims}.") from KeyError
+
+        x_dim = self.x_dimensions.intersection(dims)
+        try:
+            x_dim = x_dim.pop()
+        except KeyError:
+            raise ValueError(
+                f"None of {self.x_dimensions} were found in dataset's dimensions {dims}.") from KeyError
+
+        return y_dim, x_dim
 
     def get_dataset_variable(self, key: str):
         """
