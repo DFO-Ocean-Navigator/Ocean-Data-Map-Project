@@ -200,6 +200,28 @@ class TestNetCDFData(unittest.TestCase):
             nc_data.subset(query)
             # No assertion because the fixed code doesn't raise an exception
 
+    @patch("data.netcdf_data.format_date")
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_subset_issue769_dims_do_not_exist(self, patch_get_dataset_config, patch_format_date):
+        """Confirm that the unknown dimensions arrays names condition that causes subset()
+        to raise a ValueError has been fixed.
+        """
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+        # Avoid the need for a Flask app context because format_date is from flask_babel
+        patch_format_date.return_value = 19700101
+        kwargs = {"dataset_key": "giops"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+            query = dict(
+                [('output_format', 'NETCDF3_NC'),
+                 ('dataset_name', 'giops'),
+                 ('variables', 'votemper'),
+                 ('min_range', '1.0,-160.0'),
+                 ('max_range', '2.0,-161.0'),
+                 ('time', '2031436800,2031436800'),
+                 ('should_zip', '0')])
+            nc_data.subset(query)
+            # No assertion because the fixed code doesn't raise an exception
+
     def test_mercator_latlon_variables(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
             lat, lon = nc_data.latlon_variables
@@ -254,6 +276,20 @@ class TestNetCDFData(unittest.TestCase):
             self.assertIsNone(nc_data._variable_list)
             variables = nc_data.variables
             self.assertEqual(nc_data._variable_list, variables)
+
+    def test_y_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertEqual({'y', 'yc', 'latitude', 'gridY'}, nc_data.y_dimensions)
+
+    def test_x_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertEqual({'x', 'xc', 'longitude', 'gridX'}, nc_data.x_dimensions)
+
+    def test_yx_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            y_coord, x_coord = nc_data.yx_dimensions
+            self.assertEqual("y", y_coord)
+            self.assertEqual("x", x_coord)
 
     def test_timestamps(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
