@@ -48,6 +48,13 @@ class TestNetCDFData(unittest.TestCase):
         self.assertIsInstance(nc_data.dataset, xarray.Dataset)
         self.assertTrue(nc_data._dataset_open)
 
+    def test_enter_nc_files_list_zarr(self):  
+        nc_data = NetCDFData("tests/testdata/giops_test.zarr")
+        nc_data.url = ["tests/testdata/giops_test.zarr"]
+        nc_data.__enter__()
+        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+        self.assertTrue(nc_data._dataset_open)
+
     @unittest.skip(
         "Format of tests/testdata/fvcom_tests.nc causes "
         "ValueError: MFNetCDF4 only works with NETCDF3_* and NETCDF4_CLASSIC formatted files, "

@@ -6,6 +6,7 @@ import warnings
 import zipfile
 from typing import List, Dict, Union, Set, Tuple
 
+import itertools
 import dateutil.parser
 import geopy
 import netCDF4
@@ -72,6 +73,12 @@ class NetCDFData(Data):
                     # This will raise a FutureWarning for xarray>=0.12.2.
                     # That warning should be resolvable by changing to:
                     # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                    if(url[0].endswith(".zarr")):
+                        ds_zarr = xarray.open_zarr(url[0], decode_times=decode_times)
+                        self.dataset = ds_zarr
+                        self._dataset_open = True
+                        return self
+                    
                     fields = xarray.open_mfdataset(url, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
@@ -636,6 +643,14 @@ class NetCDFData(Data):
             except sqlite3.OperationalError:
                 pass
             return dimension_list
+        
+        elif url.endswith(".zarr"):
+            try:
+                ds = xarray.open_zarr(url)
+                dimension_list = [dim for dim in ds.dims]
+            except KeyError:
+                pass
+            return dimension_list
 
         # Open dataset (can't use xarray here since it doesn't like FVCOM files)
         try:
@@ -719,6 +734,25 @@ class NetCDFData(Data):
             with SQLiteDatabase(url) as db:
                 self._variable_list = db.get_data_variables()  # Cache the list for later
                 return self._variable_list
+        
+        elif url.endswith(".zarr"):
+            ds_zarr = xarray.open_zarr(url)
+            data_var = [dv for dv in ds_zarr.drop(["latitude_longitude"]).data_vars]
+            var_list =[]
+            for var in data_var:
+                row=(var,ds_zarr.variables[var].attrs['units'],ds_zarr.variables[var].attrs['long_name'],
+                          ds_zarr.variables[var].attrs['valid_min'],ds_zarr.variables[var].attrs['valid_max'])
+
+                name = row[0]
+                units = row[1] if row[1] else None
+                long_name = row[2] if row[2] else name
+                valid_min = row[3] if row[3] != 1.17549e-38 else None
+                valid_max = row[4] if row[4] != 3.40282e+38 else None
+
+                var_list.append(Variable(name, long_name, units, list(itertools.chain(*[ds_zarr[name].dims])), valid_min, valid_max))
+            self._variable_list = var_list
+            return self._variable_list
+
         try:
             # Handle possible list of URLs for staggered grid velocity field datasets
             url = self.url if isinstance(self.url, list) else [self.url]

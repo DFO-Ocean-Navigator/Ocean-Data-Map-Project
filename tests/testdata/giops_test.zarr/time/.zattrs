@@ -1,0 +1,7 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "time"
+    ],
+    "calendar": "proleptic_gregorian",
+    "units": "seconds since 1950-01-01"
+}

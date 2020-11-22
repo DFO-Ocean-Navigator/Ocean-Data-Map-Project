@@ -1,0 +1,19 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "time",
+        "depth",
+        "latitude",
+        "longitude"
+    ],
+    "cell_methods": "time: mean (interval: 24 hours)",
+    "grid_mapping": "latitude_longitude",
+    "long_name": "Sea water salinity",
+    "nomvar": "SALW",
+    "short_name": "vosaline",
+    "standard_name": "sea_water_salinity",
+    "stdoffset": 0.0,
+    "stdscale": 1.0,
+    "units": "1e-3",
+    "valid_max": 45.0,
+    "valid_min": 0.0
+}
