@@ -17,7 +17,7 @@ export default class Class4Window extends React.Component {
 
     this.state = {
       forecast: "best",
-      showmap: true,
+      showmap: false,
       climatology: false,
       error: "none",
       size: "10x7",
@@ -43,11 +43,11 @@ export default class Class4Window extends React.Component {
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
-     
+
       let newState = {};
       if (typeof(key) === "string") {
         newState[key] = value;
-      } 
+      }
       else {
         for (let i = 0; i < key.length; ++i) {
           newState[key[i]] = value[i];
@@ -96,7 +96,7 @@ export default class Class4Window extends React.Component {
       <div className='Class4Window Window'>
         <Row>
           <Col lg={2}>
-            <Panel 
+            <Panel
               defaultExpanded
               bsStyle='primary'
             >
