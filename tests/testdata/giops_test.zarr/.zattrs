@@ -1,9 +1,0 @@
-{
-    "Conventions": "CF-1.6",
-    "contact": "production-info@ec.gc.ca",
-    "creation_date": "2020-Feb-12 04:49:42 UTC",
-    "institution": "The Canadian Centre for Meteorological and Environmental Prediction",
-    "product_version": "GIOPS_7.1.0_F3",
-    "source": "Global Ice Ocean Prediction System version 7.1.0",
-    "title": "Time-averaged sea ice and ocean forecast fields"
-}
