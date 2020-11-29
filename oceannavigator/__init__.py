@@ -1,4 +1,5 @@
 import logging
+import os
 from sys import argv
 
 from flask import Flask, request, send_file
@@ -20,7 +21,11 @@ def config_blueprints(app):
 
 def create_app(testing = False):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
-    sentry_sdk.init(integrations=[FlaskIntegration()], traces_sample_rate=1.0)
+    sentry_sdk.init(
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+        environment=os.getenv("SENTRY_ENV"),
+    )
     app = Flask(__name__, static_url_path='', static_folder='frontend')
     app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
