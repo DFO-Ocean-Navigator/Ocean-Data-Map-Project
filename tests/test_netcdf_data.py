@@ -11,6 +11,7 @@ import numpy
 import pytz
 import xarray
 import os
+import shutil
 
 from data.netcdf_data import NetCDFData
 
@@ -19,6 +20,33 @@ class TestNetCDFData(unittest.TestCase):
     def setUp(self):
         with open('tests/testdata/datasetconfigpatch.json') as dataPatch:
             self.patch_dataset_config_ret_val = json.load(dataPatch)
+        
+        ds = xarray.Dataset({
+            "votemper": xarray.DataArray(
+                            data   = numpy.random.rand(4,4,4,4),   
+                            dims   = ['depth', 'latitude', 'longitude', 'time'],
+                
+                            coords = { "depth": (["depth"], [4.94025e-01, 1.54138e+00, 2.64567e+00, 3.81949e+00]),
+                                    "latitude": (["latitude"], [-80. , -79.8, 89.6,  89.8]),
+                                    "longitude": (["longitude"], [2.000e-01, 4.000e-01, 3.594e+02, 3.598e+02]),
+                                    "time": (["time"], [2.211494e+09, 2.211581e+09, 2.211667e+09, 2.211754e+09]),
+                                },
+                            attrs  = {
+                                "units" : "Kelvin",
+                                "long_name" : "Sea water potential temperature",
+                                "valid_min" : 173.0,
+                                "valid_max" : 373.0,
+                                }
+                            ),
+                    }
+        )
+    
+        if not (os.path.exists("tests/testdata/giops_test.zarr")):
+            ds.to_zarr("tests/testdata/giops_test.zarr")
+    
+    def tearDown(self):
+        if (os.path.exists("tests/testdata/giops_test.zarr")):
+            shutil.rmtree("tests/testdata/giops_test.zarr")
 
     def test_init(self):
         nc_data = NetCDFData("tests/testdata/nemo_test.nc")
@@ -50,31 +78,8 @@ class TestNetCDFData(unittest.TestCase):
         self.assertTrue(nc_data._dataset_open)
 
     def test_enter_zarr_file(self):
-        ds = xarray.Dataset({
-            "votemper": xarray.DataArray(
-                            data   = numpy.random.rand(4,4,4,4),   
-                            dims   = ['depth', 'latitude', 'longitude', 'time'],
-                
-                            coords = { "depth": (["depth"], [4.94025e-01, 1.54138e+00, 2.64567e+00, 3.81949e+00]),
-                                    "latitude": (["latitude"], [-80. , -79.8, 89.6,  89.8]),
-                                    "longitude": (["longitude"], [2.000e-01, 4.000e-01, 3.594e+02, 3.598e+02]),
-                                    "time": (["time"], [2.211494e+09, 2.211581e+09, 2.211667e+09, 2.211754e+09]),
-                                },
-                            attrs  = {
-                                "units" : "Kelvin",
-                                "long_name" : "Sea water potential temperature",
-                                "valid_min" : 173.0,
-                                "valid_max" : 373.0,
-                                }
-                            ),
-                    }
-        )
-    
-        if not (os.path.exists("tests/testdata/giops_test.zarr")):
-            ds.to_zarr("tests/testdata/giops_test.zarr")
-
         nc_data = NetCDFData("tests/testdata/giops_test.zarr")
-        nc_data.url = ["tests/testdata/giops_test.zarr"]
+        nc_data.url = "tests/testdata/giops_test.zarr"
         nc_data.__enter__()
         self.assertIsInstance(nc_data.dataset, xarray.Dataset)
         self.assertTrue(nc_data._dataset_open)

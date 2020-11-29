@@ -6,7 +6,6 @@ import warnings
 import zipfile
 from typing import List, Dict, Union, Set, Tuple
 
-import itertools
 import dateutil.parser
 import geopy
 import netCDF4
@@ -54,7 +53,6 @@ class NetCDFData(Data):
         if not self.meta_only:
             # Don't decode times since we do it anyways.
             decode_times = False
-            url = self.url if not isinstance(self.url, list) else self.url[0]
 
             if self._nc_files:
                 try:
@@ -68,8 +66,8 @@ class NetCDFData(Data):
                     # duplication issue, so fall back to using netCDF4.Dataset()
                     self.dataset = netCDF4.MFDataset(self._nc_files)
 
-            elif (url.endswith(".zarr")):
-                ds_zarr = xarray.open_zarr(url, decode_times=decode_times)
+            elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
+                ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
                 self.dataset = ds_zarr
 
             else:
@@ -739,10 +737,10 @@ class NetCDFData(Data):
                 name = var
                 units = ds_zarr.variables[var].attrs['units'] if ds_zarr.variables[var].attrs['units'] else None
                 long_name = ds_zarr.variables[var].attrs['long_name'] if ds_zarr.variables[var].attrs['long_name'] else name
-                valid_min = ds_zarr.variables[var].attrs['valid_min'] if ds_zarr.variables[var].attrs['valid_min'] != 1.17549e-38 else None
-                valid_max = ds_zarr.variables[var].attrs['valid_max'] if ds_zarr.variables[var].attrs['valid_max'] != 3.40282e+38 else None
+                valid_min = ds_zarr.variables[var].attrs['valid_min'] if ds_zarr.variables[var].attrs['valid_min'] else None
+                valid_max = ds_zarr.variables[var].attrs['valid_max'] if ds_zarr.variables[var].attrs['valid_max'] else None
 
-                var_list.append(Variable(name, long_name, units, list(itertools.chain(*[ds_zarr[name].dims])), valid_min, valid_max))
+                var_list.append(Variable(name, long_name, units, list(ds_zarr[name].dims), valid_min, valid_max))
             
             self._variable_list = var_list
             
