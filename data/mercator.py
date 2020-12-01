@@ -46,6 +46,7 @@ class Mercator(Model):
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
+            self.__depths = var.values if var is not None else np.array([0])
 
             if var is not None:
                 ureg = UnitRegistry()
