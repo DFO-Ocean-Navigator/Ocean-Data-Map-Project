@@ -76,7 +76,7 @@ class Mercator(Model):
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         var = np.squeeze(var)
-        
+
         origshape = var.shape
 
         data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(lat_in,

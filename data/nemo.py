@@ -80,7 +80,7 @@ class Nemo(Model):
         """ Resamples data given lat/lon inputs and outputs
         """
         var = np.squeeze(var)
-        
+
         origshape = var.shape
 
         data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(lat_in,
