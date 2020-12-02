@@ -42,12 +42,7 @@ class Nemo(Model):
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
-            if var is not None:
-                ureg = UnitRegistry()
-                unit = ureg.parse_units(var.attrs['units'].lower())
-                self.__depths = ureg.Quantity(var.values, unit).to(ureg.meters).magnitude
-            else:
-                self.__depths = np.array([0])
+            self.__depths = var.values if var is not None else np.array([0])
 
             # Make immutable
             self.__depths.setflags(write=False)
@@ -85,7 +80,7 @@ class Nemo(Model):
         """ Resamples data given lat/lon inputs and outputs
         """
         var = np.squeeze(var)
-        
+
         origshape = var.shape
 
         data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(lat_in,

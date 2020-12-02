@@ -46,15 +46,10 @@ class Mercator(Model):
                     # Get DataArray for depth
                     var = self.nc_data.get_dataset_variable(v)
                     break
+            self.__depths = var.values if var is not None else np.array([0])
 
-            if var is not None:
-                ureg = UnitRegistry()
-                unit = ureg.parse_units(var.attrs['units'].lower())
-                self.__depths = ureg.Quantity(var[:].values, unit).to(ureg.meters).magnitude
-            else:
-                self.__depths = np.array([0])
-
-            self.__depths.flags.writeable = False
+            # Make immutable
+            self.__depths.setflags(write=False)
 
         return self.__depths
 
@@ -81,7 +76,7 @@ class Mercator(Model):
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         var = np.squeeze(var)
-        
+
         origshape = var.shape
 
         data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(lat_in,
