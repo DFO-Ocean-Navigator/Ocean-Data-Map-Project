@@ -2,7 +2,6 @@ from typing import Union
 
 import numpy as np
 import pyresample
-from pint import UnitRegistry
 
 from data.calculated import CalculatedData
 from data.model import Model
