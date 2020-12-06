@@ -23,7 +23,7 @@ def create_app(testing = False):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
-        traces_sample_rate=1.0,
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_RATE", 0)),
         environment=os.getenv("SENTRY_ENV"),
     )
     app = Flask(__name__, static_url_path='', static_folder='frontend')
