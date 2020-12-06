@@ -759,7 +759,7 @@ class NetCDFData(Data):
                 # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
                 with xarray.open_mfdataset(url, decode_times=False) as ds:
                     self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
-                return self._variable_list
+                
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable label
                 # duplication issue, so fall back to using netCDF4.Dataset()
