@@ -240,14 +240,16 @@ def list_class4_models(class4_id: str) -> List[dict]:
     """
 
     path = current_app.config["CLASS4_PATH"]
+    yyyymmdd = class4_id[7:15]
+    yyyy = yyyymmdd[:4]
+
     result = []
-    
     # file pattern globbing != regex
-    for f in glob.iglob(f"{path}/{class4_id[7:15]}/*_profile.nc"):
-        model = f.split("_")[2] # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
+    for f in glob.iglob(f"{path}/{yyyy}/{yyyymmdd}/*_profile.nc"):
+        model = f.split("_")[2]  # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
         if model != "GIOPS":
             result.append({
-                'id': os.path.splitext(os.path.basename(f))[0], # chop off .nc extension
+                'id': os.path.splitext(os.path.basename(f))[0],  # chop off .nc extension
                 'value': model
             })
 
