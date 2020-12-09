@@ -4,6 +4,7 @@ import glob
 import os
 import pickle as pickle
 import time
+from pathlib import Path
 from typing import List
 
 import cftime
@@ -239,15 +240,17 @@ def list_class4_models(class4_id: str) -> List[dict]:
         List of dictionaries with `id` and `value` fields.
     """
 
-    path = current_app.config["CLASS4_PATH"]
+    yyyymmdd = class4_id[7:15]
+    yyyy = yyyymmdd[:4]
+    path = Path(current_app.config["CLASS4_PATH"], yyyy, yyyymmdd)
+
     result = []
-    
     # file pattern globbing != regex
-    for f in glob.iglob(f"{path}/{class4_id[7:15]}/*_profile.nc"):
-        model = f.split("_")[2] # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile
+    for f in path.glob("*_profile.nc"):
+        model = f.name.split("_")[2]  # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile.nc
         if model != "GIOPS":
             result.append({
-                'id': os.path.splitext(os.path.basename(f))[0], # chop off .nc extension
+                'id': f.stem,  # chop off .nc extension
                 'value': model
             })
 
