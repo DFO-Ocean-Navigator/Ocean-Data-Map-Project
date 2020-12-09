@@ -71,13 +71,18 @@ class NetCDFData(Data):
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
                     # duplication issue, so fall back to using netCDF4.Dataset()
                     self.dataset = netCDF4.MFDataset(self._nc_files)
+
+            elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
+                ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
+                self.dataset = ds_zarr
+
             else:
                 try:
                     # Handle list of URLs for staggered grid velocity field datasets
                     url = self.url if isinstance(self.url, list) else [self.url]
                     # This will raise a FutureWarning for xarray>=0.12.2.
                     # That warning should be resolvable by changing to:
-                    # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                    # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)                    
                     fields = xarray.open_mfdataset(url, decode_times=decode_times)
                 except xarray.core.variable.MissingDimensionsError:
                     # xarray won't open FVCOM files due to dimension/coordinate/variable label
@@ -641,14 +646,19 @@ class NetCDFData(Data):
                     dimension_list = db.get_all_dimensions()
             except sqlite3.OperationalError:
                 pass
-            return dimension_list
-
+        
+        elif url.endswith(".zarr"):
+            ds = xarray.open_zarr(url)
+            dimension_list = list(ds.dims)
+            
         # Open dataset (can't use xarray here since it doesn't like FVCOM files)
-        try:
-            with netCDF4.Dataset(url) as ds:
-                dimension_list = [dim for dim in ds.dimensions]
-        except FileNotFoundError:
-            dimension_list = []
+        else:
+            try:
+                with netCDF4.Dataset(url) as ds:
+                    dimension_list = [dim for dim in ds.dimensions]
+            except FileNotFoundError:
+                dimension_list = []
+        
         return dimension_list
 
     @property
@@ -724,22 +734,39 @@ class NetCDFData(Data):
         if url.endswith(".sqlite3"):
             with SQLiteDatabase(url) as db:
                 self._variable_list = db.get_data_variables()  # Cache the list for later
-                return self._variable_list
-        try:
-            # Handle possible list of URLs for staggered grid velocity field datasets
-            url = self.url if isinstance(self.url, list) else [self.url]
-            # This will raise a FutureWarning for xarray>=0.12.2.
-            # That warning should be resolvable by changing to:
-            # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
-            with xarray.open_mfdataset(url, decode_times=False) as ds:
-                self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
-            return self._variable_list
-        except xarray.core.variable.MissingDimensionsError:
-            # xarray won't open FVCOM files due to dimension/coordinate/variable label
-            # duplication issue, so fall back to using netCDF4.Dataset()
-            with netCDF4.Dataset(self.url) as ds:
-                self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
-            return self._variable_list
+        
+        elif url.endswith(".zarr"):
+            ds_zarr = xarray.open_zarr(url)
+            var_list =[]
+            for var in list(ds_zarr.data_vars):
+
+                name = var
+                units = ds_zarr.variables[var].attrs['units'] if ds_zarr.variables[var].attrs['units'] else None
+                long_name = ds_zarr.variables[var].attrs['long_name'] if ds_zarr.variables[var].attrs['long_name'] else name
+                valid_min = ds_zarr.variables[var].attrs['valid_min'] if ds_zarr.variables[var].attrs['valid_min'] else None
+                valid_max = ds_zarr.variables[var].attrs['valid_max'] if ds_zarr.variables[var].attrs['valid_max'] else None
+
+                var_list.append(Variable(name, long_name, units, list(ds_zarr[name].dims), valid_min, valid_max))
+            
+            self._variable_list = var_list
+            
+        else:
+            try:
+                # Handle possible list of URLs for staggered grid velocity field datasets
+                url = self.url if isinstance(self.url, list) else [self.url]
+                # This will raise a FutureWarning for xarray>=0.12.2.
+                # That warning should be resolvable by changing to:
+                # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
+                with xarray.open_mfdataset(url, decode_times=False) as ds:
+                    self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
+                
+            except xarray.core.variable.MissingDimensionsError:
+                # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                # duplication issue, so fall back to using netCDF4.Dataset()
+                with netCDF4.Dataset(self.url) as ds:
+                    self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
+        
+        return self._variable_list
 
     @staticmethod
     def _get_xarray_data_variables(ds):
