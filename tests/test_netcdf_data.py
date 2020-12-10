@@ -295,7 +295,7 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].valid_max, 373.0)
     
     def test_zarr_xarray_variables(self):
-        with NetCDFData("testdata/giops_test.zarr") as nc_data:
+        with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
             variables = nc_data.variables
 
             self.assertEqual(variables[0].key, "votemper")
@@ -308,7 +308,7 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].valid_max, 373.0)
     
     def test_zarr_xarray_dimensions(self):
-        with NetCDFData("testdata/giops_test.zarr") as nc_data:
+        with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
             dimensions = nc_data.dimensions
             self.assertEqual(dimensions, ['depth', 'latitude', 'longitude', 'time'])
 
