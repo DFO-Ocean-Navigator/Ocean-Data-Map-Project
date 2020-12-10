@@ -44,14 +44,14 @@ class TestListClass4Forecasts(unittest.TestCase):
         self.test_data = Path("testdata")
         self.class4_test_data = Path("class4/2020/")
         (self.test_data/self.class4_test_data).mkdir(parents=True)
-        (self.test_data / self.class4_test_data / "class4_20201208_GIOPS_CONCEPTS_3.0_profile.nc").touch()
+        (self.test_data / self.class4_test_data / "class4_20201209_GIOPS_CONCEPTS_3.0_profile.nc").touch()
 
     def tearDown(self):
         shutil.rmtree(self.test_data/self.class4_test_data.parents[1])
 
     def test_list_class4_forecasts(self):
         app.config["CLASS4_FNAME_PATTERN"] = f"{self.test_data/self.class4_test_data.parents[0]}/%s/%s.nc"
-        class4_id = "class4_20201208_GIOPS_CONCEPTS_3.0_profile_541"
+        class4_id = "class4_20201209_GIOPS_CONCEPTS_3.0_profile_541"
         with app.app_context():
-            with self.assertRaises(FileNotFoundError):
-                res = data.class4.list_class4_forecasts(class4_id)
+            result = data.class4.list_class4_forecasts(class4_id)
+        self.assertEqual(result, [{"id": "best", "name": "Best Estimate"}])

@@ -202,30 +202,39 @@ def class4(class4_id, projection, resolution, extent):
     return result
 
 
-def list_class4_forecasts(class4_id):
-    # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+def list_class4_forecasts(class4_id: str) -> List[dict]:
+    """Get list of all forecasts for a given class4 id.
+
+    Arguments:
+
+        * `class4_id` -- {str} Class4 ID (e.g. `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
+
+    Returns:
+
+        List of dictionaries with `id` and `name` fields.
+    """
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11], class4_id)
+        class4_id[7:11], class4_id.rsplit('_', maxsplit=1)[0])
     with xr.open_dataset(dataset_url) as ds:
         var = ds['modeljuld']
         forecast_date = [d.strftime("%d %B %Y") for d in
                          cftime.utime(var.units).num2date(var[:])]
 
-    res = [{
+    result = [{
         'id': 'best',
         'name': 'Best Estimate',
     }]
 
     if len(set(forecast_date)) > 1:
         for idx, date in enumerate(forecast_date):
-            if res[-1]['name'] == date:
+            if result[-1]['name'] == date:
                 continue
-            res.append({
+            result.append({
                 'id': idx,
                 'name': date
             })
 
-    return res
+    return result
 
 
 def list_class4_models(class4_id: str) -> List[dict]:
