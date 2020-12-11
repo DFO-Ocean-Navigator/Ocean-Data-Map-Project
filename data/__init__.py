@@ -53,6 +53,7 @@ def open_dataset(dataset, **kwargs):
         "calculated": calculated_vars,
         "meta_only": kwargs.get("meta_only", False),
         "grid_angle_file_url": getattr(dataset, "grid_angle_file_url", ""),
+        "bathymetry_file_url": getattr(dataset, "bathymetry_file_url", ""),
         "dataset_key": getattr(dataset, "key", ""),
     }
 
