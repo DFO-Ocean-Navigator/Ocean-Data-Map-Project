@@ -1,11 +1,12 @@
 """Unit tests for data.class4 module.
 """
 import unittest
-from pathlib import Path
-
 import os
-
+from pathlib import Path
 import shutil
+
+import numpy
+import xarray
 
 import data.class4
 import oceannavigator
@@ -43,15 +44,22 @@ class TestListClass4Forecasts(unittest.TestCase):
     def setUp(self):
         self.test_data = Path("testdata")
         self.class4_test_data = Path("class4/2020/")
-        (self.test_data/self.class4_test_data).mkdir(parents=True)
-        (self.test_data / self.class4_test_data / "class4_20201209_GIOPS_CONCEPTS_3.0_profile.nc").touch()
+        (self.test_data/self.class4_test_data).mkdir(parents=True, exist_ok=True)
+        modeljuld = xarray.DataArray(
+            numpy.array([25915.5]*10),
+            attrs={"units": "Days since 1950-01-01 00:00:00 utc"}
+        )
+        xarray.Dataset({"modeljuld": modeljuld}).to_netcdf(
+            self.test_data / self.class4_test_data / "class4_20201214_GIOPS_CONCEPTS_3.0_profile.nc",
+        )
+
 
     def tearDown(self):
         shutil.rmtree(self.test_data/self.class4_test_data.parents[1])
 
-    def test_list_class4_forecasts(self):
+    def test_list_class4_forecasts_1_forecast_date(self):
         app.config["CLASS4_FNAME_PATTERN"] = f"{self.test_data/self.class4_test_data.parents[0]}/%s/%s.nc"
-        class4_id = "class4_20201209_GIOPS_CONCEPTS_3.0_profile_541"
+        class4_id = "class4_20201214_GIOPS_CONCEPTS_3.0_profile_541"
         with app.app_context():
             result = data.class4.list_class4_forecasts(class4_id)
         self.assertEqual(result, [{"id": "best", "name": "Best Estimate"}])

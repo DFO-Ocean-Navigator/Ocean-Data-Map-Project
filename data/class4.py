@@ -215,10 +215,10 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
     """
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
         class4_id[7:11], class4_id.rsplit('_', maxsplit=1)[0])
-    with xr.open_dataset(dataset_url) as ds:
-        var = ds['modeljuld']
-        forecast_date = [d.strftime("%d %B %Y") for d in
-                         cftime.utime(var.units).num2date(var[:])]
+    with xr.open_dataset(dataset_url, decode_times=False) as ds:
+        forecast_date = [
+            f"{d:%d %B %Y}" for d in cftime.utime(ds.modeljuld.units).num2date(ds.modeljuld)
+        ]
 
     result = [{
         'id': 'best',
