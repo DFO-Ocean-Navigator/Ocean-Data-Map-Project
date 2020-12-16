@@ -3,13 +3,15 @@
 import datetime
 import json
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import cftime
 import netCDF4
 import numpy
 import pytz
 import xarray
+import os
+import shutil
 
 from data.netcdf_data import NetCDFData
 
@@ -18,6 +20,33 @@ class TestNetCDFData(unittest.TestCase):
     def setUp(self):
         with open('tests/testdata/datasetconfigpatch.json') as dataPatch:
             self.patch_dataset_config_ret_val = json.load(dataPatch)
+        
+        ds = xarray.Dataset({
+            "votemper": xarray.DataArray(
+                            data   = numpy.random.rand(4,4,4,4),   
+                            dims   = ['depth', 'latitude', 'longitude', 'time'],
+                
+                            coords = { "depth": (["depth"], [4.94025e-01, 1.54138e+00, 2.64567e+00, 3.81949e+00]),
+                                    "latitude": (["latitude"], [-80. , -79.8, 89.6,  89.8]),
+                                    "longitude": (["longitude"], [2.000e-01, 4.000e-01, 3.594e+02, 3.598e+02]),
+                                    "time": (["time"], [2.211494e+09, 2.211581e+09, 2.211667e+09, 2.211754e+09]),
+                                },
+                            attrs  = {
+                                "units" : "Kelvin",
+                                "long_name" : "Sea water potential temperature",
+                                "valid_min" : 173.0,
+                                "valid_max" : 373.0,
+                                }
+                            ),
+                    }
+        )
+    
+        if not (os.path.exists("tests/testdata/giops_test.zarr")):
+            ds.to_zarr("tests/testdata/giops_test.zarr")
+    
+    def tearDown(self):
+        if (os.path.exists("tests/testdata/giops_test.zarr")):
+            shutil.rmtree("tests/testdata/giops_test.zarr")
 
     def test_init(self):
         nc_data = NetCDFData("tests/testdata/nemo_test.nc")
@@ -44,6 +73,13 @@ class TestNetCDFData(unittest.TestCase):
     def test_enter_nc_files_list(self):
         nc_data = NetCDFData("tests/testdata/nemo_test.nc")
         nc_data._nc_files = ["tests/testdata/nemo_test.nc"]
+        nc_data.__enter__()
+        self.assertIsInstance(nc_data.dataset, xarray.Dataset)
+        self.assertTrue(nc_data._dataset_open)
+
+    def test_enter_zarr_file(self):
+        nc_data = NetCDFData("tests/testdata/giops_test.zarr")
+        nc_data.url = "tests/testdata/giops_test.zarr"
         nc_data.__enter__()
         self.assertIsInstance(nc_data.dataset, xarray.Dataset)
         self.assertTrue(nc_data._dataset_open)
@@ -178,6 +214,50 @@ class TestNetCDFData(unittest.TestCase):
             expected = {" 2014-06-16T12:00:00Z": 1, "2014-05-17T00:00:00Z": 0}
             self.assertEqual(date_formatted, expected)
 
+    @patch("data.netcdf_data.format_date")
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_subset_issue769_1d_lons_lats(self, patch_get_dataset_config, patch_format_date):
+        """Confirm that the 1d lons and lats arrays condition that causes subset()
+        to raise a ValueError has been fixed.
+        """
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+        # Avoid the need for a Flask app context because format_date is from flask_babel
+        patch_format_date.return_value = 19700101
+        kwargs = {"dataset_key": "mercator_test"}
+        with NetCDFData("tests/testdata/mercator_test.nc", **kwargs) as nc_data:
+            query = dict(
+                [('output_format', 'NETCDF3_NC'),
+                 ('dataset_name', 'mercator_test'),
+                 ('variables', 'votemper'),
+                 ('min_range', '-79.0,2.0'),
+                 ('max_range', '-78.0,3.0'),
+                 ('time', '2119651200,2119651200'),
+                 ('should_zip', '0')])
+            nc_data.subset(query)
+            # No assertion because the fixed code doesn't raise an exception
+
+    @patch("data.netcdf_data.format_date")
+    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
+    def test_subset_issue769_dims_do_not_exist(self, patch_get_dataset_config, patch_format_date):
+        """Confirm that the unknown dimensions arrays names condition that causes subset()
+        to raise a ValueError has been fixed.
+        """
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+        # Avoid the need for a Flask app context because format_date is from flask_babel
+        patch_format_date.return_value = 19700101
+        kwargs = {"dataset_key": "giops"}
+        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
+            query = dict(
+                [('output_format', 'NETCDF3_NC'),
+                 ('dataset_name', 'giops'),
+                 ('variables', 'votemper'),
+                 ('min_range', '1.0,-160.0'),
+                 ('max_range', '2.0,-161.0'),
+                 ('time', '2031436800,2031436800'),
+                 ('should_zip', '0')])
+            nc_data.subset(query)
+            # No assertion because the fixed code doesn't raise an exception
+
     def test_mercator_latlon_variables(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
             lat, lon = nc_data.latlon_variables
@@ -213,6 +293,24 @@ class TestNetCDFData(unittest.TestCase):
             )
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
+    
+    def test_zarr_xarray_variables(self):
+        with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
+            variables = nc_data.variables
+
+            self.assertEqual(variables[0].key, "votemper")
+            self.assertEqual(variables[0].name, "Sea water potential temperature")
+            self.assertEqual(variables[0].unit, "Kelvin")
+            self.assertEqual(
+                variables[0].dimensions, ['depth', 'latitude', 'longitude', 'time']
+            )
+            self.assertEqual(variables[0].valid_min, 173.0)
+            self.assertEqual(variables[0].valid_max, 373.0)
+    
+    def test_zarr_xarray_dimensions(self):
+        with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
+            dimensions = nc_data.dimensions
+            self.assertEqual(dimensions, ['depth', 'latitude', 'longitude', 'time'])
 
     def test_fvcom_variables(self):
         with NetCDFData("tests/testdata/fvcom_test.nc") as nc_data:
@@ -232,6 +330,20 @@ class TestNetCDFData(unittest.TestCase):
             self.assertIsNone(nc_data._variable_list)
             variables = nc_data.variables
             self.assertEqual(nc_data._variable_list, variables)
+
+    def test_y_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertEqual({'y', 'yc', 'latitude', 'gridY'}, nc_data.y_dimensions)
+
+    def test_x_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            self.assertEqual({'x', 'xc', 'longitude', 'gridX'}, nc_data.x_dimensions)
+
+    def test_yx_dimensions(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            y_coord, x_coord = nc_data.yx_dimensions
+            self.assertEqual("y", y_coord)
+            self.assertEqual("x", x_coord)
 
     def test_timestamps(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:

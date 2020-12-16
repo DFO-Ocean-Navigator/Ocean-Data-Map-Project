@@ -37,12 +37,12 @@ export default class PointWindow extends React.Component {
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
-    
+
     this.state = {
       selected: TabEnum.PROFILE,
       scale: props.scale + ",auto",
       depth: props.depth,
-      showmap: true,
+      showmap: false,
       colormap: "default",
       starttime: Math.max(props.time - 24, 0),
       variables: [],
@@ -90,7 +90,7 @@ export default class PointWindow extends React.Component {
       }
       if (this.state.scale.indexOf("auto") !== -1) {
         state.scale = props.scale + ",auto";
-      } 
+      }
       else {
         state.scale = props.scale;
       }
@@ -109,7 +109,7 @@ export default class PointWindow extends React.Component {
       url: "/api/v1.0/variables/?dataset=" + dataset,
       dataType: "json",
       cache: true,
-  
+
       success: function(data) {
         if (this._mounted) {
           const vars = data.map(function(d) {
@@ -119,7 +119,7 @@ export default class PointWindow extends React.Component {
           if (vars.indexOf(this.props.variable.split(",")[0]) === -1) {
             this.props.onUpdate("variable", vars[0]);
           }
-          
+
           this.setState({
             variables: data.map(function(d) {
               return d.id;
@@ -127,7 +127,7 @@ export default class PointWindow extends React.Component {
           });
         }
       }.bind(this),
-  
+
       error: function(xhr, status, err) {
         if (this._mounted) {
           console.error(this.props.url, status, err.toString());
@@ -151,7 +151,7 @@ export default class PointWindow extends React.Component {
 
       if (typeof(key) === "string") {
         newState[key] = value;
-      } 
+      }
       else {
         for (let i = 0; i < key.length; i++) {
           newState[key[i]] = value[i];
@@ -243,7 +243,7 @@ export default class PointWindow extends React.Component {
             onUpdate={this.onLocalUpdate}
             title={_("Show Location")}>{_("showmap_help")}
           </SelectBox>
-          
+
           <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
             <LocationInput
               key='point'
@@ -253,7 +253,7 @@ export default class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
             />
           </div>
-          
+
           <ImageSize
             key='size'
             id='size'
@@ -314,7 +314,7 @@ export default class PointWindow extends React.Component {
         onUpdate={this.props.onUpdate}
         min={this.state.starttime}
       /> </div> : null;
-    
+
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
     const depthVariableScale = showDepthVariableScale ? <div>
@@ -326,7 +326,7 @@ export default class PointWindow extends React.Component {
         onUpdate={this.onLocalUpdate}
         url={"/api/v1.0/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
         title={_("Depth")}></ComboBox>
-      
+
       <ComboBox
         key='variable'
         id='variable'
@@ -366,12 +366,12 @@ export default class PointWindow extends React.Component {
         def={""}
         onUpdate={this.onLocalUpdate}
         url={"/api/v1.0/depth/?variable=" + this.state.variable + "&dataset=" + this.props.dataset}
-        title={_("Depth")}></ComboBox> 
+        title={_("Depth")}></ComboBox>
     </div> : null;
-  
-    
+
+
     // Create Variable dropdown for Profile and Observation
-    const showProfileVariable = this.state.selected == TabEnum.PROFILE || 
+    const showProfileVariable = this.state.selected == TabEnum.PROFILE ||
                                 this.state.selected == TabEnum.OBSERVATION;
     const profilevariable = showProfileVariable ? <ComboBox
       key='variable'
@@ -396,7 +396,7 @@ export default class PointWindow extends React.Component {
           multiple
           onUpdate={this.onLocalUpdate}
         />;
-      } 
+      }
       else {
         observation_data = this.props.point[0][2].datatypes.map(
           function (o, i) {
@@ -436,7 +436,7 @@ export default class PointWindow extends React.Component {
         plot_query.variable = this.state.variable;
         inputs = [global, time, profilevariable];
         break;
-      
+
       case TabEnum.CTD:
         plot_query.type = "profile";
         plot_query.time = this.props.time;
@@ -453,7 +453,7 @@ export default class PointWindow extends React.Component {
         }
         inputs = [global, time];
         break;
-    
+
       case TabEnum.TS:
         plot_query.type = "ts";
         plot_query.time = this.props.time;
@@ -463,7 +463,7 @@ export default class PointWindow extends React.Component {
 
         inputs = [global, time];
         break;
-      
+
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
@@ -474,11 +474,11 @@ export default class PointWindow extends React.Component {
         plot_query.observation = this.props.point.map(function (o) {
           return o[2];
         });
-        
+
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.variable;
         inputs = [global, observation_variable, profilevariable];
-        
+
         break;
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
@@ -521,7 +521,7 @@ export default class PointWindow extends React.Component {
     // and Salinity. This is used to enable/disable some tabs.
     const hasTempSalinity =
     ( this.state.variables.indexOf("votemper") !== -1 ||
-      this.state.variables.indexOf("temp") !== -1) && 
+      this.state.variables.indexOf("temp") !== -1) &&
     ( this.state.variables.indexOf("vosaline") !== -1 ||
       this.state.variables.indexOf("salinity") !== -1);
 

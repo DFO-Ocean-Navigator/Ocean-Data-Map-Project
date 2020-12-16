@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 from flask_babel import format_date, format_datetime
-from PIL import Image
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -243,14 +242,6 @@ class Plotter(metaclass=ABCMeta):
                 pad_inches=0.5
             )
             plt.close(fig)
-
-            if self.filetype == 'png':
-                buf.seek(0)
-                im = Image.open(buf)
-                with contextlib.closing(BytesIO()) as buf2:
-                    im.save(buf2, format='PNG', optimize=True)
-                    buf2.seek(0)
-                    return (buf2.getvalue(), self.mime, self.filename)
 
             buf.seek(0)
             return (buf.getvalue(), self.mime, self.filename)

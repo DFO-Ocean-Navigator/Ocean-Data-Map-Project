@@ -98,6 +98,13 @@ class DatasetConfig:
         return self._get_attribute("grid_angle_file_url")
 
     @property
+    def bathymetry_file_url(self) -> str:
+        """
+        Returns the url to the model bathymetry file.
+        """
+        return self._get_attribute("bathymetry_file_url")
+
+    @property
     def lat_var_key(self) -> str:
         return self._get_attribute("lat_var_key")
 
