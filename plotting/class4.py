@@ -156,9 +156,7 @@ class Class4Plotter(Plotter):
                 plt.legend(self.ids, loc='best')
 
         plot_label = ""
-        giops_name = gettext("Model")
-        if len(self.additional_model_names) > 0:
-            giops_name = "GIOPS"
+        giops_name = "GIOPS"
 
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
