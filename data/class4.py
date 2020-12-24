@@ -82,12 +82,12 @@ def list_class4(d):
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
 
     with xr.open_dataset(dataset_url) as ds:
-        lat = ds['latitude'][:]
-        lon = ds['longitude'][:]
+        lats = ds['latitude'][:]
+        lons = ds['longitude'][:]
         ids = np.char.decode(ds['id'][:].values, 'UTF-8')
         rmse = []
 
-        for i in range(0, lat.shape[0]):
+        for i in range(0, lats.shape[0]):
             best = ds['best_estimate'][i, 0, :]
             obsv = ds['observation'][i, 0, :]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
@@ -96,15 +96,14 @@ def list_class4(d):
     maxval = rmse.mean() + 2 * rmse.std()
     rmse_norm = rmse / maxval
 
-    loc = list(zip(lat, lon))
     points = []
-    for idx, ll in enumerate(loc):
+    for idx, (lat, lon) in enumerate(zip(lats, lons)):
         if np.ma.is_masked(rmse[idx]):
             continue
         points.append({
-            'name': "%s" % ids[idx],
-            'loc': "%f,%f" % ll,
-            'id': "%s/%d" % (d, idx),
+            'name': f"{ids[idx]}",
+            'loc': f"{lat.item():.6f},{lon.item():.6f}",
+            'id': f"{d}/{idx}",
             'rmse': float(rmse[idx]),
             'rmse_norm': float(rmse_norm[idx]),
         })
@@ -170,8 +169,8 @@ def class4(class4_id, projection, resolution, extent):
                 'coordinates': ll,
             },
             'properties': {
-                'name': "%s" % identifiers[idx],
-                'id': "%s/%d" % (class4_id, point_id[idx]),
+                'name': f"{identifiers[idx]}",
+                'id': f"{class4_id}/{point_id[idx]}",
                 'error': float(rmse[idx]),
                 'error_norm': float(rmse_norm[idx]),
                 'type': 'class4',

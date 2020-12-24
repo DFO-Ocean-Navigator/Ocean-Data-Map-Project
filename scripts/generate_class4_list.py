@@ -45,8 +45,7 @@ def main():
     config = {}
     log.info(f"Attempting to load Ocean Navigator configuration from file {opts.config_file.name}...")
     try:
-        exec(compile(opts.config_file.read(), opts.config_file.name, 'exec'),
-             config)
+        exec(compile(opts.config_file.read(), opts.config_file.name, 'exec'), config)
     except IOError:
         log.error(f"Error: Unable to load configuration file {opts.config_file.name}.")
         sys.exit(1)
@@ -66,11 +65,10 @@ def main():
     try:
         output_file = open(output_file_name, 'wb')
     except IOError:
-        log.error('Unable to open output file %s', output_file_name)
+        log.error(f"Unable to open output file {output_file_name}")
         sys.exit(1)
 
-    log.info('Obtaining exclusive lock on output file %s ...',
-             output_file_name)
+    log.info(f"Obtaining exclusive lock on output file {output_file_name }...")
     # Make at most "max_tries" attempts to acquire the lock.
     num_tries, max_tries = 0, 10
     attempt_lock, lock_acquired = True, False
@@ -89,7 +87,7 @@ def main():
             attempt_lock = False
 
     if not lock_acquired:
-        log.error('Unable to acquire lock on output file %s', output_file_name)
+        log.error(f"Unable to acquire lock on output file {output_file_name}")
         sys.exit(1)
 
     log.info('Writing list of Class4 files to output file ...')
@@ -99,7 +97,7 @@ def main():
     try:
         fcntl.lockf(output_file, fcntl.LOCK_UN)
     except IOError:
-        log.error('Unable to release lock on output file %s', output_file_name)
+        log.error(f"Unable to release lock on output file {output_file_name}")
         sys.exit(1)
     finally:
         output_file.close()
