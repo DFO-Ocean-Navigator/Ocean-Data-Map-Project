@@ -93,11 +93,7 @@ def main():
         sys.exit(1)
 
     log.info('Writing list of Class4 files to output file ...')
-    try:
-        pickle.dump(class4_files, output_file)
-    except Exception:
-        log.error('Unable to dump to output file %s', output_file_name)
-        sys.exit(1)
+    pickle.dump(class4_files, output_file)
 
     log.info('Releasing lock on output file ...')
     try:
