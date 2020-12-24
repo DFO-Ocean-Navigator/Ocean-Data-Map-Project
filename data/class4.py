@@ -40,8 +40,8 @@ def list_class4_files():
     # currently *writing* to the cache file, first acquire a shared lock (i.e.,
     # a read lock) on the file. We make at most "max_tries" attempts to acquire
     # the lock.
-    max_tries = 10
-    num_tries = 0
+    num_tries, max_tries = 0, 10
+    attempt_lock, lock_acquired = True, False
     attempt_lock = True
     while attempt_lock:
         try:

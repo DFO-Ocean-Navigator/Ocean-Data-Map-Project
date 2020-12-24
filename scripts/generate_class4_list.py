@@ -72,9 +72,8 @@ def main():
     log.info('Obtaining exclusive lock on output file %s ...',
              output_file_name)
     # Make at most "max_tries" attempts to acquire the lock.
-    max_tries = 10
-    num_tries = 0
-    attempt_lock = True
+    num_tries, max_tries = 0, 10
+    attempt_lock, lock_acquired = True, False
     while attempt_lock:
         try:
             fcntl.lockf(output_file, fcntl.LOCK_EX)
