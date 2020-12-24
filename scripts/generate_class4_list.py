@@ -14,16 +14,11 @@ cache file used from within the Ocean Navigator code.
 import argparse
 import datetime
 import fcntl
-import glob
 import logging
-import os.path
+from pathlib import Path
+import pickle
 import sys
 import time
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -31,22 +26,14 @@ log = logging.getLogger()
 
 
 def list_class4_files(class4_path):
-    files = []
-    result = []
-    
-    for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
-        if f.endswith('profile.nc') and ('GIOPS' in f):
-            files.append(os.path.splitext(os.path.basename(f))[0])
-
-
-    for names in files:
-        value = names
-        date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
-        result.append({
-            'name': date.strftime("%Y-%m-%d"),
-            'id': value
-        })
-
+    files = {f for f in Path(class4_path).glob("**/*GIOPS*profile.nc")}
+    result = [
+        {
+            "name": datetime.datetime.strptime(class4_id.split("_")[1], "%Y%m%d").strftime("%Y-%m-%d"),
+            "id": class4_id
+        }
+        for class4_id in sorted((f.stem for f in files), reverse=True)
+    ]
     return result
 
 
@@ -77,7 +64,7 @@ def main():
     log.info(f"Generating list of Class4 files from {config['CLASS4_PATH']}...")
     class4_files = list_class4_files(config['CLASS4_PATH'])
 
-    output_file_name = os.path.join(config['CACHE_DIR'], 'class4_files.pickle')
+    output_file_name = Path(config['CACHE_DIR'], 'class4_files.pickle')
     try:
         output_file = open(output_file_name, 'wb')
     except IOError:

@@ -1,6 +1,4 @@
-import datetime
 import fcntl
-import glob
 import os
 import pickle as pickle
 import time
@@ -15,25 +13,7 @@ from flask import current_app
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 
-
-def __list_class4_files_slowly():
-    class4_path = current_app.config['CLASS4_PATH']
-    files = []
-    result = []
-
-    for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
-        if f.endswith('profile.nc') and ('GIOPS' in f):
-            files.append(os.path.splitext(os.path.basename(f))[0])
-
-    for names in files:
-        value = names
-        date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
-        result.append({
-            'name': date.strftime("%Y-%m-%d"),
-            'id': value
-        })
-
-    return result
+from scripts import generate_class4_list
 
 
 def list_class4_files():
@@ -54,7 +34,7 @@ def list_class4_files():
                Class 4 files on the fly.
                """
         print(msg)
-        return __list_class4_files_slowly()
+        return _list_class4_files_slowly()
 
     # We need to read from the cache file. To ensure another process is not
     # currently *writing* to the cache file, first acquire a shared lock (i.e.,
@@ -86,10 +66,15 @@ def list_class4_files():
                Class 4 files on the fly.
                """
         print(msg)
-        result = __list_class4_files_slowly()
+        result = _list_class4_files_slowly()
     fp.close()
 
     return result
+
+
+def _list_class4_files_slowly():
+    class4_path = current_app.config['CLASS4_PATH']
+    return generate_class4_list.list_class4_files(class4_path)
 
 
 def list_class4(d):
