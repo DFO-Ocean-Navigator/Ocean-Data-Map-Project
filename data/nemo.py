@@ -167,9 +167,11 @@ class Nemo(Model):
         raise LookupError("Cannot find latitude & longitude variables")
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
+        
         latvar, lonvar = self.__latlon_vars(variable)
+
         miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, latvar, lonvar, 10)
+            latitude, longitude, latvar, lonvar)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -177,7 +179,7 @@ class Nemo(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.nc_data.timestamp_to_time_index(timestamp)
+        time_idx = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -208,10 +210,9 @@ class Nemo(Model):
                     reshaped[depths, indices]
         else:
             if len(var.shape) == 4:
-                data = var[time, depth, miny:maxy, minx:maxx]
+                data = var[time_idx, depth, miny:maxy, minx:maxx]
             else:
-                data = var[time, miny:maxy, minx:maxx]
-
+                data = var[time_idx, miny:maxy, minx:maxx]
         return (
             latvar[miny:maxy, minx:maxx],
             lonvar[miny:maxy, minx:maxx],

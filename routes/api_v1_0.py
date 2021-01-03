@@ -11,6 +11,7 @@ from io import BytesIO
 import numpy as np
 from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
                    send_file, send_from_directory)
+import geojson
 from PIL import Image
 from dateutil.parser import parse as dateparse
 from shapely.geometry import Polygon, LinearRing, Point
@@ -299,6 +300,59 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
     })
     resp.cache_control.max_age = MAX_CACHE
     return resp
+
+@bp_v1_0.route('/api/v1.0/get_data/')
+def data_v1_0():
+    """
+    """
+
+    supported_geom_types = frozenset({'point', 'line', 'area'})
+    supported_result_formats = frozenset({'geojson'})
+
+    args = request.args
+
+    if 'dataset' not in args:
+        raise APIError("Please specify a dataset using &dataset=...")
+    if 'variable' not in args:
+        raise APIError("Please specify a variable using &variable=...")
+    if 'time' not in args:
+        raise APIError("Please specify a timestamp using &time-...")
+    if 'depth' not in args:
+        raise APIError("Please specify a depth using &depth=...")
+    if 'geometry_type' not in args:
+        raise APIError("Please specify the geometry_type using &geometry_type=...")
+    if 'result_format' not in args:
+        raise APIError("Please specify a result_format using &result_format=...")
+
+    dataset = args.get('dataset')
+    variable = args.get('variable')
+    time = args.get('time')
+    depth = args.get('depth')
+    geometry_type = args.get('geometry_type')
+    result_format = args.get('result_format')
+
+    if geometry_type not in supported_geom_types:
+        raise APIError(f"Unknown geometry_type given. Must be one of {supported_geom_types}.")
+    if result_format not in supported_result_formats:
+        raise APIError(f"Unkown result_format given. Must be one of {supported_result_formats}.")
+
+    config = DatasetConfig(dataset)
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
+        if geometry_type == 'point':
+            raise APIError("Not implemented! Sorry...")
+        if geometry_type == 'line':
+            raise APIError("Not implemented! Sorry...")
+        if geometry_type == 'area':
+            lats = [float(args.get('min_lat')), float(args.get('max_lat'))]
+            lons = [float(args.get('min_lon')), float(args.get('max_lon'))]
+            data = ds.get_raw_point(lats, lons, depth, time, variable)
+
+    if result_format == 'geojson':
+        features = [geojson.Feature(geometry=geojson.Point((v['lat'], v['lon'])), properties={}) for v in data]
+
+        collection = geojson.FeatureCollection(features)
+
+        return collection
 
 
 @bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')

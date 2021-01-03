@@ -137,7 +137,8 @@ class Mercator(Model):
 
         var = self.nc_data.get_dataset_variable(variable)
 
-        time = self.nc_data.timestamp_to_time_index(timestamp)
+        print(var)
+        time_idx = self.nc_data.timestamp_to_time_index(timestamp)
 
         if depth == 'bottom':
             if hasattr(time, "__len__"):
@@ -168,9 +169,9 @@ class Mercator(Model):
                     reshaped[depths, indices]
         else:
             if len(var.shape) == 4:
-                data = var[time, depth, miny:maxy, minx:maxx]
+                data = var[time_idx, depth, miny:maxy, minx:maxx]
             else:
-                data = var[time, miny:maxy, minx:maxx]
+                data = var[time_idx, miny:maxy, minx:maxx]
 
         lat_out, lon_out = np.meshgrid(self.latvar[miny:maxy],
                                        self.lonvar[minx:maxx])

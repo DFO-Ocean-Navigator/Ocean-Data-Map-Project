@@ -31,5 +31,6 @@
     "observation_track": "/api/v1.0/observation/track/platform_type=none.json",
     "observation_point": "/api/v1.0/observation/point/platform_type=none.json",
     "observation_meta": "/api/v1.0/observation/meta.json",
-    "observation_variables": "/api/v1.0/observation/variables/station=0.json"
+    "observation_variables": "/api/v1.0/observation/variables/station=0.json",
+    "get_data": "/api/v1.0/get_data/"
 }

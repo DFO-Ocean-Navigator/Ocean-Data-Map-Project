@@ -8,7 +8,6 @@ from unittest.mock import patch, PropertyMock, MagicMock
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
-from utils.errors import APIError
 
 app = create_app(testing=True)
 
@@ -33,7 +32,7 @@ class TestAPIv1(unittest.TestCase):
     def __get_response_data(self, resp):
         return json.loads(resp.get_data(as_text=True))
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
+        @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_variables_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
 
@@ -626,6 +625,26 @@ class TestAPIv1(unittest.TestCase):
                 'attr1': 'attribute1'
             }
         )
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
+    def test_get_data_with_geojson(self, patch_get_data_vars, patch_get_dataset_config):
+        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
+        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+
+        res = self.app.get(self.apiLinks['get_data'], query_string={
+            "variable": "votemper",
+            "depth": 0,
+            "dataset": "giops_real",
+            "geometry_type": "area",
+            "result_format": "geojson",
+            "min_lat": 58,
+            "max_lat": 60,
+            "min_lon": 311,
+            "max_lon": 315,
+            "time": 2212704000,
+        })
+        data = self.__get_response_data(res)
 
 if __name__ == '__main__':
     unittest.main()
