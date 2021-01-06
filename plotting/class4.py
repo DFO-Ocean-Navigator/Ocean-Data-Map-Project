@@ -156,9 +156,7 @@ class Class4Plotter(Plotter):
                 plt.legend(self.ids, loc='best')
 
         plot_label = ""
-        giops_name = gettext("Model")
-        if len(self.additional_model_names) > 0:
-            giops_name = "GIOPS"
+        giops_name = "GIOPS"
 
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
@@ -167,10 +165,7 @@ class Class4Plotter(Plotter):
             handles = []
             legend = []
             for i in range(0, len(self.forecast_data)):
-                if len(self.ids) > 1:
-                    id_label = self.ids[i] + " "
-                else:
-                    id_label = ""
+                id_label = f"{self.ids[i]} " if len(self.ids) > 1 else ""
 
                 form = '-'
                 if self.observed_data[i, idx, :].count() < 3:
@@ -185,8 +180,7 @@ class Class4Plotter(Plotter):
                             self.depths[i],
                             form
                         ))
-                        legend.append(
-                            "%s %s" % (id_label, gettext("Observed")))
+                        legend.append(f"{id_label} {gettext('Observed')}")
 
                         data = self.climatology_data
                     else:
@@ -200,27 +194,23 @@ class Class4Plotter(Plotter):
                         self.depths[i],
                         form
                     ))
-                    legend.append(
-                        "%s %s" % (id_label, giops_name))
+                    legend.append(f"{id_label} {giops_name}")
 
-                    for j, m in enumerate(self.additional_model_names):
+                    for j, model_name in enumerate(self.additional_model_names):
                         handles.append(plt.plot(
                             self.additional_model_data[j, i, idx, :] -
                             data[i, idx, :],
                             self.depths[i],
                             form
                         ))
-                        legend.append(
-                            "%s %s" % (id_label, m))
+                        legend.append(f"{id_label} {model_name}")
 
                     if self.error == 'observation' and self.climatology:
                         handles.append(plt.plot(
                             self.climatology_data[i, idx, :] -
                             self.observed_data[i, idx, :],
                             self.depths[i], form))
-                        legend.append(
-                            "%s %s" % (
-                                id_label, gettext("Climatology")))
+                        legend.append(f"{id_label} {gettext('Climatology')}")
                     lim = np.abs(plt.xlim()).max()
                     plt.xlim([-lim, lim])
                 else:
@@ -230,8 +220,8 @@ class Class4Plotter(Plotter):
                     legend.append("%s %s" % (id_label, gettext("Observed")))
                     handles.append(plt.plot(self.forecast_data[i, idx, :],
                                             self.depths[i], form))
-                    legend.append("%s %s" % (id_label, giops_name))
-                    for j, m in enumerate(self.additional_model_names):
+                    legend.append(f"{id_label} {giops_name}")
+                    for j, model_name in enumerate(self.additional_model_names):
                         handles.append(
                             plt.plot(
                                 self.additional_model_data[j, i, idx, :],
@@ -239,24 +229,21 @@ class Class4Plotter(Plotter):
                                 form
                             )
                         )
-                        legend.append("%s %s" % (id_label, m))
+                        legend.append(f"{id_label} {model_name}")
 
                     if self.climatology:
                         handles.append(
                             plt.plot(self.climatology_data[i, idx, :],
                                      self.depths[i], form))
-                        legend.append("%s %s" % (id_label,
-                                                 gettext("Climatology")))
+                        legend.append(f"{id_label} {gettext('Climatology')}")
 
             plt.xlim([np.floor(plt.xlim()[0]), np.ceil(plt.xlim()[1])])
 
             plt.gca().xaxis.set_label_position('top')
             plt.gca().xaxis.set_ticks_position('top')
-            plt.xlabel("%s (%s)" %
-                       (v, utils.mathtext(self.variable_units[idx])), fontsize=14)
+            plt.xlabel(f"{v} ({utils.mathtext(self.variable_units[idx])})", fontsize=14)
             plt.gca().invert_yaxis()
-            plt.ylabel(gettext("Depth (%s)") %
-                       utils.mathtext(self.depth_unit), fontsize=14)
+            plt.ylabel(gettext(f"Depth ({utils.mathtext(self.depth_unit)})"), fontsize=14)
             plt.grid(True)
 
         leg = fig.legend(
@@ -265,14 +252,9 @@ class Class4Plotter(Plotter):
         for legobj in leg.legendHandles:
             legobj.set_linewidth(4.0)
 
-        names = ["%s (%0.2f, %0.2f)" % x for x in zip(self.ids,
-                                                      self.latitude,
-                                                      self.longitude)]
-
-        plt.suptitle("%s\n%s" % (
-            "\n".join(wrap(", ".join(names), 60)),
-            plot_label
-        ), fontsize=15)
+        names = ["{} ({:0.2f}, {:0.2f})".format(*x) for x in zip(self.ids, self.latitude, self.longitude)]
+        wrapped_names = "\n".join(wrap(", ".join(names), 60))
+        plt.suptitle(f"{wrapped_names}\n{plot_label}", fontsize=15)
         fig.tight_layout(pad=3, w_pad=4)
         fig.subplots_adjust(top=0.85)
 
