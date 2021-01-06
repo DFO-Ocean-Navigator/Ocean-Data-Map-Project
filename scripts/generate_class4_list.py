@@ -1,12 +1,9 @@
 """
-Generate a list of Class 4 files and save it to a cache file.
+Generate an index of Class 4 files and save it as a Python pickle cache file.
 
-Author: Clyde Clements
-Created: 2017-10-02
-
-This script generates the list of Class 4 files by crawling the THREDDS URL of
-the associated catalog. It is intended to be run from a cron job and its output
-cache file used from within the Ocean Navigator code.
+This script generates an index of Class 4 files by globbing the Class 4 storage tree
+in search of GIOPS Class 4 profile files. It is intended to be run from a cron job
+and its output cache file used from within the Ocean Navigator code.
 """
 
 import argparse
