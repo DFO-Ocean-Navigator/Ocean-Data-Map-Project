@@ -45,8 +45,8 @@ The main display uses the OpenLayers mapping API to allow the user to pan around
 ## Development
 
 ### Local Installation
-Run this one-shot-install script:
-[https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/Installer_Linux.sh](https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/Installer_Linux.sh)
+The instructions for performing a local installation of the Ocean Data Map Project are available at:
+[https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/README.md](https://github.com/DFO-Ocean-Navigator/Navigator-Installer/blob/master/README.md)
 
 * While altering Javascript code, it can be actively transpiled using:
 	* `cd oceannavigator/frontend`
