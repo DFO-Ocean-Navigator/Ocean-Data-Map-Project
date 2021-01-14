@@ -340,6 +340,10 @@ class TestNetCDFData(unittest.TestCase):
         nc_data = NetCDFData("tests/testdata/databases/Historical.sqlite3")
         self.assertEqual(['y', 'x', 'time_counter', 'axis_nbounds', 'depthv'], nc_data.dimensions)
 
+    def test_dimensions_url_list(self):
+        nc_data = NetCDFData(["tests/testdata/nemo_test.nc", "tests/testdata/nemo_grid_angle.nc"])
+        self.assertEqual(['deptht', 'time_counter', 'x', 'y'], nc_data.dimensions)
+
     def test_variable_list_cached(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             self.assertIsNone(nc_data._variable_list)

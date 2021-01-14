@@ -34,7 +34,7 @@ class NetCDFData(Data):
        Injected as attribute into Model classes like Nemo, Mercator, Fvcom.
     """
 
-    def __init__(self, url: str, **kwargs: Dict) -> None:
+    def __init__(self, url: Union[str, list], **kwargs: Dict) -> None:
         super().__init__(url)
         self.meta_only: bool = kwargs.get('meta_only', False)
         self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
