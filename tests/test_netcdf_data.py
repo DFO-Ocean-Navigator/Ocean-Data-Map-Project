@@ -293,7 +293,11 @@ class TestNetCDFData(unittest.TestCase):
             )
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
-    
+
+    def test_xarray_dimensions(self):
+        nc_data = NetCDFData("tests/testdata/mercator_test.nc")
+        self.assertEqual(['time', 'depth', 'latitude', 'longitude'], nc_data.dimensions)
+
     def test_zarr_xarray_variables(self):
         with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
             variables = nc_data.variables
@@ -308,9 +312,8 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].valid_max, 373.0)
     
     def test_zarr_xarray_dimensions(self):
-        with NetCDFData("tests/testdata/giops_test.zarr") as nc_data:
-            dimensions = nc_data.dimensions
-            self.assertEqual(dimensions, ['depth', 'latitude', 'longitude', 'time'])
+        nc_data = NetCDFData("tests/testdata/giops_test.zarr")
+        self.assertEqual(['depth', 'latitude', 'longitude', 'time'], nc_data.dimensions)
 
     def test_fvcom_variables(self):
         with NetCDFData("tests/testdata/fvcom_test.nc") as nc_data:
@@ -324,6 +327,18 @@ class TestNetCDFData(unittest.TestCase):
             )
             self.assertIsNone(variables[3].valid_min)
             self.assertIsNone(variables[3].valid_max)
+
+    def test_fvcom_dimensions(self):
+        nc_data = NetCDFData("tests/testdata/fvcom_test.nc")
+        self.assertEqual(["time", "maxStrlen64", "node", "siglay"], nc_data.dimensions)
+
+    def test_fvcom_dimensions_file_not_found(self):
+        nc_data = NetCDFData("tests/testdata/not_fvcom_test.nc")
+        self.assertEqual([], nc_data.dimensions)
+
+    def test_sqlite3_dimensions(self):
+        nc_data = NetCDFData("tests/testdata/databases/Historical.sqlite3")
+        self.assertEqual(['y', 'x', 'time_counter', 'axis_nbounds', 'depthv'], nc_data.dimensions)
 
     def test_variable_list_cached(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
