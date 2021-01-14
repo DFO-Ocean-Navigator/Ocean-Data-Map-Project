@@ -651,8 +651,8 @@ class NetCDFData(Data):
                 with SQLiteDatabase(url) as db:
                     dimension_list = db.get_all_dimensions()
             except sqlite3.OperationalError:
-                pass
-        
+                dimension_list = []
+
         elif url.endswith(".zarr"):
             ds = xarray.open_zarr(url)
             dimension_list = list(ds.dims)
