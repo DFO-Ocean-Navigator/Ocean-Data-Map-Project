@@ -20,12 +20,12 @@ class TestNetCDFData(unittest.TestCase):
     def setUp(self):
         with open('tests/testdata/datasetconfigpatch.json') as dataPatch:
             self.patch_dataset_config_ret_val = json.load(dataPatch)
-        
+
         ds = xarray.Dataset({
             "votemper": xarray.DataArray(
-                            data   = numpy.random.rand(4,4,4,4),   
+                            data   = numpy.random.rand(4,4,4,4),
                             dims   = ['depth', 'latitude', 'longitude', 'time'],
-                
+
                             coords = { "depth": (["depth"], [4.94025e-01, 1.54138e+00, 2.64567e+00, 3.81949e+00]),
                                     "latitude": (["latitude"], [-80. , -79.8, 89.6,  89.8]),
                                     "longitude": (["longitude"], [2.000e-01, 4.000e-01, 3.594e+02, 3.598e+02]),
@@ -40,10 +40,10 @@ class TestNetCDFData(unittest.TestCase):
                             ),
                     }
         )
-    
+
         if not (os.path.exists("tests/testdata/giops_test.zarr")):
             ds.to_zarr("tests/testdata/giops_test.zarr")
-    
+
     def tearDown(self):
         if (os.path.exists("tests/testdata/giops_test.zarr")):
             shutil.rmtree("tests/testdata/giops_test.zarr")
@@ -310,7 +310,7 @@ class TestNetCDFData(unittest.TestCase):
             )
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
-    
+
     def test_zarr_xarray_dimensions(self):
         nc_data = NetCDFData("tests/testdata/giops_test.zarr")
         self.assertEqual(['depth', 'latitude', 'longitude', 'time'], nc_data.dimensions)
