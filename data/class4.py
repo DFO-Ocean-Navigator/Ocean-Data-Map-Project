@@ -1,6 +1,4 @@
-import datetime
 import fcntl
-import glob
 import os
 import pickle as pickle
 import time
@@ -15,25 +13,7 @@ from flask import current_app
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 
-
-def __list_class4_files_slowly():
-    class4_path = current_app.config['CLASS4_PATH']
-    files = []
-    result = []
-
-    for f in glob.iglob(f"{class4_path}/**/*.nc", recursive=True):
-        if f.endswith('profile.nc') and ('GIOPS' in f):
-            files.append(os.path.splitext(os.path.basename(f))[0])
-
-    for names in files:
-        value = names
-        date = datetime.datetime.strptime(value.split("_")[1], "%Y%m%d")
-        result.append({
-            'name': date.strftime("%Y-%m-%d"),
-            'id': value
-        })
-
-    return result
+from scripts import generate_class4_list
 
 
 def list_class4_files():
@@ -54,14 +34,14 @@ def list_class4_files():
                Class 4 files on the fly.
                """
         print(msg)
-        return __list_class4_files_slowly()
+        return _list_class4_files_slowly()
 
     # We need to read from the cache file. To ensure another process is not
     # currently *writing* to the cache file, first acquire a shared lock (i.e.,
     # a read lock) on the file. We make at most "max_tries" attempts to acquire
     # the lock.
-    max_tries = 10
-    num_tries = 0
+    num_tries, max_tries = 0, 10
+    attempt_lock, lock_acquired = True, False
     attempt_lock = True
     while attempt_lock:
         try:
@@ -86,10 +66,15 @@ def list_class4_files():
                Class 4 files on the fly.
                """
         print(msg)
-        result = __list_class4_files_slowly()
+        result = _list_class4_files_slowly()
     fp.close()
 
     return result
+
+
+def _list_class4_files_slowly():
+    class4_path = current_app.config['CLASS4_PATH']
+    return generate_class4_list.list_class4_files(class4_path)
 
 
 def list_class4(d):
@@ -97,12 +82,12 @@ def list_class4(d):
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
 
     with xr.open_dataset(dataset_url) as ds:
-        lat = ds['latitude'][:]
-        lon = ds['longitude'][:]
+        lats = ds['latitude'][:]
+        lons = ds['longitude'][:]
         ids = np.char.decode(ds['id'][:].values, 'UTF-8')
         rmse = []
 
-        for i in range(0, lat.shape[0]):
+        for i in range(0, lats.shape[0]):
             best = ds['best_estimate'][i, 0, :]
             obsv = ds['observation'][i, 0, :]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
@@ -111,15 +96,14 @@ def list_class4(d):
     maxval = rmse.mean() + 2 * rmse.std()
     rmse_norm = rmse / maxval
 
-    loc = list(zip(lat, lon))
     points = []
-    for idx, ll in enumerate(loc):
+    for idx, (lat, lon) in enumerate(zip(lats, lons)):
         if np.ma.is_masked(rmse[idx]):
             continue
         points.append({
-            'name': "%s" % ids[idx],
-            'loc': "%f,%f" % ll,
-            'id': "%s/%d" % (d, idx),
+            'name': f"{ids[idx]}",
+            'loc': f"{lat.item():.6f},{lon.item():.6f}",
+            'id': f"{d}/{idx}",
             'rmse': float(rmse[idx]),
             'rmse_norm': float(rmse_norm[idx]),
         })
@@ -185,8 +169,8 @@ def class4(class4_id, projection, resolution, extent):
                 'coordinates': ll,
             },
             'properties': {
-                'name': "%s" % identifiers[idx],
-                'id': "%s/%d" % (class4_id, point_id[idx]),
+                'name': f"{identifiers[idx]}",
+                'id': f"{class4_id}/{point_id[idx]}",
                 'error': float(rmse[idx]),
                 'error_norm': float(rmse_norm[idx]),
                 'type': 'class4',
