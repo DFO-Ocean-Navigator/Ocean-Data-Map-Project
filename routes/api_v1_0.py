@@ -744,7 +744,7 @@ def timestamps():
             else:
                 vals = db.get_timestamps(variable)
     else:
-        with open_dataset(url, variable=variable) as ds:
+        with open_dataset(config, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 

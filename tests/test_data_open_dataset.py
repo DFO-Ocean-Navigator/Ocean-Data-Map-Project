@@ -24,10 +24,25 @@ class TestOpenDataset(unittest.TestCase):
         with self.assertRaises(ValueError):
             open_dataset(config)
 
-    @patch.object(data.calculated, "CalculatedData")
-    def test_open_dataset_bad_dim_list_raises(self, patch_calculated_data):
-        with self.assertRaises(RuntimeError):
-            open_dataset("tests/testdata/does_not_exist.nc", meta_only=True)
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_open_dataset_no_model_class_raises(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = {
+            "giops": {"url": "tests/testdata/mercator_test.nc", "variables": {}}
+        }
+        config = DatasetConfig("giops")
+
+        with self.assertRaises(ValueError):
+            open_dataset(config)
+
+    @patch.object(DatasetConfig, "_get_dataset_config")
+    def test_open_dataset_bad_model_class_raises(self, patch_get_dataset_config):
+        patch_get_dataset_config.return_value = {
+            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Foo", "variables": {}}
+        }
+        config = DatasetConfig("giops")
+
+        with self.assertRaises(ValueError):
+            open_dataset(config)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
@@ -35,7 +50,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -48,7 +63,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -61,7 +76,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/nemo_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/nemo_test.nc", "model_class": "Nemo", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -74,7 +89,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/nemo_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/nemo_test.nc", "model_class": "Nemo", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -87,7 +102,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/fvcom_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/fvcom_test.nc", "model_class": "Fvcom", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -100,7 +115,7 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/fvcom_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/fvcom_test.nc", "model_class": "Fvcom", "variables": {}}
         }
         config = DatasetConfig("giops")
 
@@ -113,7 +128,7 @@ class TestOpenDataset(unittest.TestCase):
         open_dataset.cache_clear()  # clear the cache from other test runs
 
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "variables": {}}
+            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
         }
         config = DatasetConfig("giops")
 

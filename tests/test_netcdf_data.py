@@ -57,12 +57,12 @@ class TestNetCDFData(unittest.TestCase):
         self.assertFalse(nc_data.meta_only)
         self.assertIsNone(nc_data.dataset)
         self.assertIsNone(nc_data._variable_list)
-        self.assertEqual(nc_data._nc_files, [])
         self.assertEqual(nc_data._grid_angle_file_url, "")
         self.assertIsNone(nc_data._time_variable)
         self.assertFalse(nc_data._dataset_open)
         self.assertEqual(nc_data._dataset_key, "")
         self.assertIsNone(nc_data._dataset_config)
+        self.assertIsNone(nc_data._nc_files)
 
     def test_enter_meta_only(self):
         kwargs = {"meta_only": True}
@@ -391,7 +391,7 @@ class TestNetCDFData(unittest.TestCase):
         kwargs = {"dataset_key": "giops"}
         with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
             file_list = nc_data.get_nc_file_list(nc_data._dataset_config)
-            self.assertEqual(nc_data._nc_files, [])
+            self.assertIsNone(nc_data._nc_files)
 
     @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
     def test_get_nc_file_list_no_dataset_config_url(self, patch_get_dataset_config):
@@ -400,24 +400,7 @@ class TestNetCDFData(unittest.TestCase):
         kwargs = {"dataset_key": "giops_no_url"}
         with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
             nc_data.get_nc_file_list(nc_data._dataset_config)
-            self.assertEqual(nc_data._nc_files, [])
-
-    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
-    def test_get_nc_file_no_variable_kwarg_raises(self, patch_get_dataset_config):
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        with NetCDFData("tests/testdata/nemo_test.nc", **{"dataset_key": "nemo_sqlite3"}) as nc_data:
-            with self.assertRaises(RuntimeError):
-                nc_data.get_nc_file_list(nc_data._dataset_config)
-
-    @patch("data.netcdf_data.DatasetConfig._get_dataset_config")
-    def test_get_nc_file_no_timestep_kwarg_raises(self, patch_get_dataset_config):
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        with NetCDFData("tests/testdata/nemo_test.nc", **{"dataset_key": "nemo_sqlite3"}) as nc_data:
-            with self.assertRaises(RuntimeError):
-                kwargs = {"variable": "votemper"}
-                nc_data.get_nc_file_list(nc_data._dataset_config, **kwargs)
+            self.assertIsNone(nc_data._nc_files)
 
     def test_get_dataset_variable_raises_on_unknown_variable(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:

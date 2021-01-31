@@ -40,7 +40,6 @@ class NetCDFData(Data):
         self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._nc_files: list = []
         self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url', "")
         self._bathymetry_file_url: str = kwargs.get('bathymetry_file_url', "")
         self._time_variable: xarray.IndexVariable = None
@@ -49,6 +48,7 @@ class NetCDFData(Data):
         self._dataset_config: DatasetConfig = (
             DatasetConfig(self._dataset_key) if self._dataset_key else None
         )
+        self._nc_files: Union[List, None] = self.get_nc_file_list(self._dataset_config, **kwargs)
 
     def __enter__(self):
         if not self.meta_only:
@@ -845,28 +845,19 @@ class NetCDFData(Data):
             # Probably a file path dataset config for which this method is also not applicable
             return
 
+        try:
+            variables = kwargs['variable']
+        except KeyError:
+            variables = datasetconfig.variables[0]
+        variables = {variables} if isinstance(variables, str) else set(variables)
+        calculated_variables = datasetconfig.calculated_variables
         with SQLiteDatabase(self.url) as db:
+            variables_to_load = self.__get_variables_to_load(db, variables, calculated_variables)
 
-            try:
-                variable = kwargs['variable']
-            except KeyError:
-                raise RuntimeError(
-                    "Opening a dataset via sqlite requires the 'variable' keyword argument.")
-            if isinstance(variable, str):
-                variable = { variable }
-            else:
-                if not isinstance(variable, set):
-                    variable = set(variable)
-
-            calculated_variables = datasetconfig.calculated_variables
-            variables_to_load = self.__get_variables_to_load(db, variable, calculated_variables)
-
-            try:
-                timestamp = self.__get_requested_timestamps(
-                    db, variables_to_load[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
-            except KeyError:
-                raise RuntimeError(
-                    "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
+            timestamp = self.__get_requested_timestamps(
+                db, variables_to_load[0], kwargs.get('timestamp', -1),
+                kwargs.get('endtime'), kwargs.get('nearest_timestamp', False)
+            )
 
             if not timestamp:
                 raise RuntimeError("Error finding timestamp(s) in database.")
@@ -875,7 +866,7 @@ class NetCDFData(Data):
             if not file_list:
                 raise RuntimeError("NetCDF file list is empty.")
 
-            self._nc_files = file_list
+            return file_list
 
     def __get_variables_to_load(self, db: SQLiteDatabase, variable: set,
                                     calculated_variables: dict) -> List[str]:
