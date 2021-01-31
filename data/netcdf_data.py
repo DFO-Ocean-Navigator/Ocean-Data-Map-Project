@@ -641,31 +641,11 @@ class NetCDFData(Data):
 
     @property
     def dimensions(self) -> List[str]:
-        """Return a list of the dimensions in the dataset.
-        """
-        # Handle possible list of URLs for staggered grid velocity field datasets
-        url = self.url if not isinstance(self.url, list) else self.url[0]
-
-        if url.endswith(".sqlite3"):
-            try:
-                with SQLiteDatabase(url) as db:
-                    dimension_list = db.get_all_dimensions()
-            except sqlite3.OperationalError:
-                dimension_list = []
-
-        elif url.endswith(".zarr"):
-            ds = xarray.open_zarr(url)
-            dimension_list = list(ds.dims)
-
-        # Open dataset (can't use xarray here since it doesn't like FVCOM files)
-        else:
-            try:
-                with netCDF4.Dataset(url) as ds:
-                    dimension_list = [dim for dim in ds.dimensions]
-            except FileNotFoundError:
-                dimension_list = []
-
-        return dimension_list
+        try:
+            return list(self.dataset.dims)
+        except AttributeError:
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions property
+            return [dim for dim in self.dataset.dimensions]
 
     @property
     def depth_dimensions(self) -> List[str]:
