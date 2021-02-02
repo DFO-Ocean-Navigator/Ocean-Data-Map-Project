@@ -1,9 +1,7 @@
-import datetime
 import unittest
 from unittest.mock import patch
 
 import numpy as np
-import pytz
 
 from data.mercator import Mercator
 from data.netcdf_data import NetCDFData
