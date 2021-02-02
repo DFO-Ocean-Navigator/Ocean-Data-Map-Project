@@ -32,8 +32,6 @@ def open_dataset(dataset, **kwargs):
             starttime (and endtime) do not exactly correspond to a timestamp integer
             in the dataset, and will perform a binary search to find the nearest timestamp
             that is less-than-or-equal-to the given starttime (and endtime).
-        * meta_only {bool} -- Skip some dataset access operations in order to speed up
-            response.
     """
     MODEL_CLASSES = {
         "mercator": Mercator,
@@ -62,7 +60,6 @@ def open_dataset(dataset, **kwargs):
     kwargs.update(
         {
             "calculated": calculated_vars,
-            "meta_only": kwargs.get("meta_only", False),
             "grid_angle_file_url": getattr(dataset, "grid_angle_file_url", ""),
             "bathymetry_file_url": getattr(dataset, "bathymetry_file_url", ""),
             "dataset_key": getattr(dataset, "key", ""),

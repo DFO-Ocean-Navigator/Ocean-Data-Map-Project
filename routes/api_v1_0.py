@@ -194,7 +194,7 @@ def variables_query_v1_0():
                 'scale': config.variable[variable].scale,
             })
     else:
-        with open_dataset(config, meta_only=True) as ds:
+        with open_dataset(config) as ds:
             for v in ds.variables:
                 if ('3d_only' in args) and v.is_surface_only():
                     continue

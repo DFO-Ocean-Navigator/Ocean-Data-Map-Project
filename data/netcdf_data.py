@@ -36,7 +36,6 @@ class NetCDFData(Data):
 
     def __init__(self, url: Union[str, list], **kwargs: Dict) -> None:
         super().__init__(url)
-        self.meta_only: bool = kwargs.get('meta_only', False)
         self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
@@ -51,66 +50,65 @@ class NetCDFData(Data):
         self._nc_files: Union[List, None] = self.get_nc_file_list(self._dataset_config, **kwargs)
 
     def __enter__(self):
-        if not self.meta_only:
-            # Don't decode times since we do it anyways.
-            decode_times = False
+        # Don't decode times since we do it anyways.
+        decode_times = False
 
-            if self._nc_files:
-                try:
-                    if len(self._nc_files) > 1:
-                        self.dataset = xarray.open_mfdataset(
-                            self._nc_files,
-                            decode_times=decode_times,
-                            chunks=200,
-                        )
-                    else:
-                        self.dataset = xarray.open_dataset(
-                            self._nc_files[0],
-                            decode_times=decode_times,
-                        )
-                except xarray.core.variable.MissingDimensionsError:
-                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                    # duplication issue, so fall back to using netCDF4.Dataset()
-                    self.dataset = netCDF4.MFDataset(self._nc_files)
-
-            elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
-                ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
-                self.dataset = ds_zarr
-
-            else:
-                try:
-                    # Handle list of URLs for staggered grid velocity field datasets
-                    url = self.url if isinstance(self.url, list) else [self.url]
-                    # This will raise a FutureWarning for xarray>=0.12.2.
-                    # That warning should be resolvable by changing to:
-                    # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
-                    fields = xarray.open_mfdataset(url, decode_times=decode_times)
-                except xarray.core.variable.MissingDimensionsError:
-                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                    # duplication issue, so fall back to using netCDF4.Dataset()
-                    fields = netCDF4.Dataset(self.url)
-                if getattr(self._dataset_config, "geo_ref", {}):
-                    drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
-                    geo_refs = xarray.open_dataset(
-                        self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+        if self._nc_files:
+            try:
+                if len(self._nc_files) > 1:
+                    self.dataset = xarray.open_mfdataset(
+                        self._nc_files,
+                        decode_times=decode_times,
+                        chunks=200,
                     )
-                    fields = fields.merge(geo_refs)
-                self.dataset = fields
+                else:
+                    self.dataset = xarray.open_dataset(
+                        self._nc_files[0],
+                        decode_times=decode_times,
+                    )
+            except xarray.core.variable.MissingDimensionsError:
+                # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                # duplication issue, so fall back to using netCDF4.Dataset()
+                self.dataset = netCDF4.MFDataset(self._nc_files)
 
-            if self._grid_angle_file_url:
-                angle_file = xarray.open_dataset(
-                    self._grid_angle_file_url,
-                    drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+        elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
+            ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
+            self.dataset = ds_zarr
+
+        else:
+            try:
+                # Handle list of URLs for staggered grid velocity field datasets
+                url = self.url if isinstance(self.url, list) else [self.url]
+                # This will raise a FutureWarning for xarray>=0.12.2.
+                # That warning should be resolvable by changing to:
+                # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                fields = xarray.open_mfdataset(url, decode_times=decode_times)
+            except xarray.core.variable.MissingDimensionsError:
+                # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                # duplication issue, so fall back to using netCDF4.Dataset()
+                fields = netCDF4.Dataset(self.url)
+            if getattr(self._dataset_config, "geo_ref", {}):
+                drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
+                geo_refs = xarray.open_dataset(
+                    self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
                 )
-                self.dataset = self.dataset.merge(angle_file)
-                angle_file.close()
+                fields = fields.merge(geo_refs)
+            self.dataset = fields
 
-            if self._bathymetry_file_url:
-                bathy_file = xarray.open_dataset(self._bathymetry_file_url)
-                self.dataset = self.dataset.merge(bathy_file)
-                bathy_file.close()
+        if self._grid_angle_file_url:
+            angle_file = xarray.open_dataset(
+                self._grid_angle_file_url,
+                drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+            )
+            self.dataset = self.dataset.merge(angle_file)
+            angle_file.close()
 
-            self._dataset_open = True
+        if self._bathymetry_file_url:
+            bathy_file = xarray.open_dataset(self._bathymetry_file_url)
+            self.dataset = self.dataset.merge(bathy_file)
+            bathy_file.close()
+
+        self._dataset_open = True
 
         return self
 

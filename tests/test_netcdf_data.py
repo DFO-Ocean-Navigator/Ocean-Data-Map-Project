@@ -54,7 +54,6 @@ class TestNetCDFData(unittest.TestCase):
         self.assertEqual(nc_data.interp, "gaussian")
         self.assertEqual(nc_data.radius, 25000)
         self.assertEqual(nc_data.neighbours, 10)
-        self.assertFalse(nc_data.meta_only)
         self.assertIsNone(nc_data.dataset)
         self.assertIsNone(nc_data._variable_list)
         self.assertEqual(nc_data._grid_angle_file_url, "")
@@ -63,12 +62,6 @@ class TestNetCDFData(unittest.TestCase):
         self.assertEqual(nc_data._dataset_key, "")
         self.assertIsNone(nc_data._dataset_config)
         self.assertIsNone(nc_data._nc_files)
-
-    def test_enter_meta_only(self):
-        kwargs = {"meta_only": True}
-        with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
-            self.assertFalse(nc_data._dataset_open)
-            self.assertIsNone(nc_data.dataset)
 
     def test_enter_nc_files_list(self):
         nc_data = NetCDFData("tests/testdata/nemo_test.nc")

@@ -46,19 +46,6 @@ class TestOpenDataset(unittest.TestCase):
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
-    def test_open_dataset_meta_only_returns_mercator_object(
-        self, patch_calculated_data, patch_get_dataset_config
-    ):
-        patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
-        }
-        config = DatasetConfig("giops")
-
-        with open_dataset(config, meta_only=True) as ds:
-            self.assertTrue(isinstance(ds, Mercator))
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch.object(data.calculated, "CalculatedData")
     def test_open_dataset_returns_mercator_object(
         self, patch_calculated_data, patch_get_dataset_config
     ):
@@ -72,19 +59,6 @@ class TestOpenDataset(unittest.TestCase):
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
-    def test_open_dataset_meta_only_returns_nemo_object(
-        self, patch_calculated_data, patch_get_dataset_config
-    ):
-        patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/nemo_test.nc", "model_class": "Nemo", "variables": {}}
-        }
-        config = DatasetConfig("giops")
-
-        with open_dataset(config, meta_only=True) as ds:
-            self.assertTrue(isinstance(ds, Nemo))
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch.object(data.calculated, "CalculatedData")
     def test_open_dataset_returns_nemo_object(
         self, patch_calculated_data, patch_get_dataset_config
     ):
@@ -95,19 +69,6 @@ class TestOpenDataset(unittest.TestCase):
 
         with open_dataset(config) as ds:
             self.assertTrue(isinstance(ds, Nemo))
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch.object(data.calculated, "CalculatedData")
-    def test_open_dataset_meta_only_returns_fvcom_object(
-        self, patch_calculated_data, patch_get_dataset_config
-    ):
-        patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/fvcom_test.nc", "model_class": "Fvcom", "variables": {}}
-        }
-        config = DatasetConfig("giops")
-
-        with open_dataset(config, meta_only=True) as ds:
-            self.assertTrue(isinstance(ds, Fvcom))
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch.object(data.calculated, "CalculatedData")
