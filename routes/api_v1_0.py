@@ -1050,7 +1050,7 @@ def observation_track_v1_0(query: str):
 
         vc = df.id.value_counts()
         for p_id in vc.where(vc > 1).dropna().index:
-            d = { 
+            d = {
                 'type': "Feature",
                 'geometry': {
                     'type': "LineString",
@@ -1152,7 +1152,7 @@ def observation_point_v1_0(query: str):
         if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
             continue
 
-        d = { 
+        d = {
             'type': "Feature",
             'geometry': {
                 'type': "Point",
@@ -1197,7 +1197,7 @@ def observation_meta_v1_0():
             data['Station Name'] = station.name
 
         platform = station.platform
-        
+
     elif key == 'platform':
         platform = DB.session.query(Platform).get(identifier)
     else:
