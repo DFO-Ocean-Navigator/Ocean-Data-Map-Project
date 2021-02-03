@@ -139,7 +139,7 @@ def class4(class4_id, projection, resolution, extent):
     with xr.open_dataset(dataset_url) as ds:
         lat_in = ds['latitude'][:]
         lon_in = ds['longitude'][:]
-        ids = np.char.decode(ds['id'][:].values, 'UTF-8')
+        ids = np.char.decode(ds['id'].astype('|S8').values, 'UTF-8')
         for i in range(0, lat_in.shape[0]):
             x, y = proj(lon_in[i], lat_in[i])
             p = Point(y, x)
