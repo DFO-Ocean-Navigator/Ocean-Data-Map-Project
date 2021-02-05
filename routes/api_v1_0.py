@@ -437,7 +437,6 @@ def plot_v1_0():
     **Not all components of query are required
     """
 
-    args = None
     if request.method == 'GET':
         args = request.args
     else:
@@ -464,32 +463,11 @@ def plot_v1_0():
     dataset = query.get('dataset')
     plottype = query.get('type')
 
-    """
-    if 'station' in query:
-        station = query.get('station')
-
-        def wrapdeg(num):   #Ensures the lat and lon are between -180 and 180deg
-            num = num % 360
-            if num > 180:
-                num = num - 360
-            return num
-
-        for index in range(0, len(station)):
-            if station[index][0] >= 0:
-                station[index][0] = wrapdeg(station[index][0])
-            else:
-                station[index][0] = wrapdeg(station[index][0])
-
-            if station[index][1] >= 0:
-                station[index][1] = wrapdeg(station[index][1])
-            else:
-                station[index][1] = wrapdeg(station[index][1])
-    """
-
-    options = {}
-    options['format'] = fmt
-    options['size'] = args.get('size', '15x9')
-    options['dpi'] = args.get('dpi', 72)
+    options = {
+        'format': fmt,
+        'size': args.get('size', '15x9'),
+        'dpi': args.get('dpi', 72)
+    }
 
     # Determine which plotter we need.
     if plottype == 'map':
@@ -517,8 +495,6 @@ def plot_v1_0():
     else:
         raise APIError(
             "You Have Not Selected a Plot Type - Please Review your Query")
-
-    filename = 'png'
 
     if 'data' in request.args:
         data = plotter.prepare_plot()
@@ -802,10 +778,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
         Generates topographical tiles
     """
 
-    if shaded_relief == "true":
-        bShaded_relief = True
-    else:
-        bShaded_relief = False
+    bShaded_relief = shaded_relief == "true"
 
     shape_file_dir = current_app.config['SHAPE_FILE_DIR']
 
@@ -871,7 +844,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)
     tile = selector.fetchone()
-    if tile == None:
+    if tile is None:
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
@@ -1290,8 +1263,7 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
             if age_hours > cache_time:
                 os.remove(f)
                 return False
-            else:
-                return True
+            return True
         else:
             return True
     else:
