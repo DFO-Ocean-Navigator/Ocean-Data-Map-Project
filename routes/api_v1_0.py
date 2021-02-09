@@ -72,6 +72,14 @@ def info_v1_0():
         "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
 
 
+@bp_v1_0.route('/api/test-sentry')
+def test_sentry():
+    # Hit this endpoint to confirm that exception and transaction logging to Sentry are
+    # operating correctly; a transaction should appear in the appropriate project at:
+    # https://sentry.io/organizations/dfo-ocean-navigator/performance/
+    raise APIError("This is the Ocean Navigator API Sentry integration test endpoint.")
+
+
 @bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
 def generateScript(query: str, lang: str, scriptType: str):
 

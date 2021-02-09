@@ -711,7 +711,6 @@ export default class AreaWindow extends React.Component {
           onSelect={this.onTabChange}
         >
           <NavItem eventKey={1}>{_("Map")}</NavItem>
-          <NavItem eventKey={2}>{_("Statistics")}</NavItem>
         </Nav>
         <Row>
           <Col lg={2}>
