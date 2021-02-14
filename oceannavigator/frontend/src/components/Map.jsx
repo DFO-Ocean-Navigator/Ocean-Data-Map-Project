@@ -1164,6 +1164,16 @@ export default class Map extends React.PureComponent {
     this.map.addInteraction(draw);
   }
 
+  setZIndices(basemapIdx, dataIdx) {
+    this.layer_basemap.setZIndex(basemapIdx);
+    this.layer_data.setZIndex(dataIdx);
+    this.layer_landshapes.setZIndex(2);
+    this.layer_bath.setZIndex(3);
+    this.layer_bathshapes.setZIndex(4);
+    this.layer_vector.setZIndex(5);
+    this.layer_obsDraw.setZIndex(6);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
@@ -1273,11 +1283,14 @@ export default class Map extends React.PureComponent {
       this.map.getLayers().setAt(0, this.layer_basemap);
 
       if (this.props.state.basemap === "chs") {
+
+        this.setZIndices(1, 0);
+
         this.layer_bathshapes.setSource(null);
         this.layer_landshapes.setSource(null);
       }
-      else {
-        // Update Hi-res bath layer
+      else {       // Update Hi-res bath layer
+        this.setZIndices(0, 1);
         this.layer_bathshapes.setSource(
           new olsource.VectorTile({
             format: new olformat.MVT(),
