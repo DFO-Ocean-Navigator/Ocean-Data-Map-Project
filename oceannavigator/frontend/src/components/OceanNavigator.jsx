@@ -77,6 +77,7 @@ export default class OceanNavigator extends React.Component {
         mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
         topoShadedRelief: false,    // Show hill shading (relief mapping) on topography
         bathymetry: true,           // Show bathymetry contours
+        bathyContour: 'etopo1',
       },
       showObservationSelect: false,
       observationArea: [],
@@ -171,6 +172,7 @@ export default class OceanNavigator extends React.Component {
     options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity;
     options.bathymetry = newOptions.bathymetry;
     options.topoShadedRelief = newOptions.topoShadedRelief;
+    options.bathyContour = newOptions.bathyContour;
 
     this.setState({options});
   }
