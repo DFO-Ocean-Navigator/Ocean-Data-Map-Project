@@ -123,6 +123,15 @@ export default class OceanNavigator extends React.Component {
     this.updateScale = this.updateScale.bind(this);
     this.get_variables_promise = this.get_variables_promise.bind(this);
     this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
+    // Setting the starttime and time variable default value
+    const time_promise = this.get_timestamp_promise("giops_day", "votemper");
+      $.when(time_promise).done(function(time) {
+        let newTime = time[time.length-1].id;
+        let newStarttime = time[0].id;
+        this.state.time = newTime;
+        this.state.starttime = newStarttime;
+        this.setState(state);
+      }.bind(this));
   }
   
   //Updates the page language upon user request
@@ -272,16 +281,18 @@ export default class OceanNavigator extends React.Component {
 
 
       let newTime = 0;
+      let newStarttime = 0;
       const time_promise = this.get_timestamp_promise(dataset, newVariable);
       $.when(time_promise).done(function(time) {
         newTime = time[time.length-1].id;
-
+        newStarttime = time[0].id;
         if (state === undefined) {
           state = {};
         }
         state.dataset = dataset;
         state.variable = newVariable;
         state.time = newTime;
+        state.starttime = newStarttime;
         state.busy = false;
 
         this.setState(state);
