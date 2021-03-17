@@ -18,13 +18,15 @@ class Mercator(Model):
         self.latvar = None
         self.lonvar = None
         self.nc_data = nc_data
+        self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
 
     def __enter__(self):
         self.nc_data.__enter__()
 
-        if self.latvar is None:
-            self.latvar, self.lonvar = self.nc_data.latlon_variables
+        if not self._meta_only:
+            if self.latvar is None:
+                self.latvar, self.lonvar = self.nc_data.latlon_variables
 
         return self
 
