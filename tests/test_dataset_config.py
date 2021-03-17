@@ -27,6 +27,7 @@ class TestUtil(unittest.TestCase):
                 "type": "my_type",
                 "grid_angle_file_url": "my_grid_angle_file_url",
                 "bathymetry_file_url": "my_bathy_file_url.nc",
+                "model_class": "my_model_class",
                 "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
                 "cache": "123",
@@ -53,6 +54,7 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(result.quantum, "my_quantum")
         self.assertEqual(result.grid_angle_file_url, "my_grid_angle_file_url")
         self.assertEqual(result.bathymetry_file_url, "my_bathy_file_url.nc")
+        self.assertEqual(result.model_class, "my_model_class")
         self.assertEqual(result.type, "my_type")
         self.assertEqual(result.time_dim_units, "my_time_units")
         self.assertEqual(result.lat_var_key, "my_lat")
