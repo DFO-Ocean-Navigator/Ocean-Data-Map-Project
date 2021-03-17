@@ -128,9 +128,7 @@ export default class OceanNavigator extends React.Component {
       $.when(time_promise).done(function(time) {
         let newTime = time[time.length-1].id;
         let newStarttime = time[0].id;
-        this.state.time = newTime;
-        this.state.starttime = newStarttime;
-        this.setState(state);
+        this.setState({time:newTime,starttime:newStarttime});
       }.bind(this));
   }
   
