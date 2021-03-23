@@ -326,22 +326,6 @@ class VariableConfig:
             return [0, 100]
 
     @property
-    def scale_factor(self) -> float:
-        """
-        Returns variable scale factor from dataset config file
-        """
-
-        try:
-            scale_factor = self.__get_attribute("scale_factor")
-        except KeyError:
-            scale_factor = None
-
-        if scale_factor is not None:
-            return scale_factor
-        else:
-            return 1.0
-
-    @property
     def is_hidden(self) -> bool:
         """
         Is the given variable marked as hidden in the dataset config file

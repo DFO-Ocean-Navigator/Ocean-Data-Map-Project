@@ -75,8 +75,6 @@ class TransectPlotter(LinePlotter):
 
             variable_names = self.get_variable_names(dataset, self.variables)
             variable_units = self.get_variable_units(dataset, self.variables)
-            scale_factors = self.get_variable_scale_factors(
-                dataset, self.variables)
 
             # Load data sent from primary/Left Map
             if len(self.variables) > 1:
@@ -88,14 +86,11 @@ class TransectPlotter(LinePlotter):
                 distances, times, lat, lon, bearings = geo.path_to_points(
                     self.points, 100
                 )
+                # Calculate vector components
                 transect_pts, distance, x, dep = dataset.get_path_profile(
                     self.points, self.variables[0], self.time, numpoints=100)
                 transect_pts, distance, y, dep = dataset.get_path_profile(
                     self.points, self.variables[1], self.time, numpoints=100)
-
-                # Calculate vector components
-                x = np.multiply(x, scale_factors[0])
-                y = np.multiply(y, scale_factors[1])
 
                 r = np.radians(np.subtract(90, bearings))
                 theta = np.arctan2(y, x) - r
@@ -108,8 +103,6 @@ class TransectPlotter(LinePlotter):
                 # Get data for one variable
                 transect_pts, distance, value, dep = dataset.get_path_profile(
                     self.points, self.variables[0], self.time)
-
-                value = np.multiply(value, scale_factors[0])
 
             if len(self.variables) == 2:
                 variable_names = [self.get_vector_variable_name(dataset,
@@ -149,7 +142,6 @@ class TransectPlotter(LinePlotter):
                 vc = self.dataset_config.variable[dataset.variables[self.surface]]
                 surface_unit = vc.unit
                 surface_name = vc.name
-                surface_factor = vc.scale_factor
                 surface_value = np.multiply(surface_value, surface_factor)
 
                 self.surface_data = {

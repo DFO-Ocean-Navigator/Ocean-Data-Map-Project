@@ -34,10 +34,6 @@ class TemperatureSalinityPlotter(PointPlotter):
         self.load_misc(dataset, [temp_var, sal_var])
         self.data = data
 
-        for idx, factor in enumerate(self.scale_factors):
-            if factor != 1.0:
-                data[:, idx, :] = np.multiply(data[:, idx, :], factor)
-
     def load_data(self):
         variables = self.dataset_config.variables
         temp_var_key = self.__find_var_key(variables, r'^(.*temp.*|thetao.*)$')

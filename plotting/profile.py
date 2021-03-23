@@ -30,7 +30,6 @@ class ProfilePlotter(PointPlotter):
 
             point_data, point_depths = self.get_data(
                 ds, self.variables, self.time)
-            point_data = self.apply_scale_factors(point_data)
 
             self.iso_timestamp = ds.nc_data.timestamp_to_iso_8601(self.time)
 
