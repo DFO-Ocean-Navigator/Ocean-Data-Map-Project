@@ -123,6 +123,7 @@ export default class OceanNavigator extends React.Component {
     this.updateScale = this.updateScale.bind(this);
     this.get_variables_promise = this.get_variables_promise.bind(this);
     this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
+    this.setStartTime = this.setStartTime.bind(this);
     // Setting the starttime and time variable default value
     const time_promise = this.get_timestamp_promise("giops_day", "votemper");
       $.when(time_promise).done(function(time) {
@@ -262,12 +263,19 @@ export default class OceanNavigator extends React.Component {
       variable
     ).promise();
   }
+  setStartTime(time){
+    if (time.length > 24)
+      return time[time.length-25].id;
+    else
+      return time[0].id;
+  }
 
   changeDataset(dataset, state) {
     // Busy modal
     this.setState({
       busy: true,
     });
+    
 
     // When dataset changes, so does time & variable list
     const var_promise = this.get_variables_promise(dataset);
@@ -286,10 +294,7 @@ export default class OceanNavigator extends React.Component {
       $.when(time_promise).done(function(time) {
         newTime = time[time.length-1].id;
         // check the length of the timestamp array and set the start time according to that
-        if (time.length > 24)
-          newStarttime = time[time.length-25].id;
-        else
-          newStarttime = time[0].id;
+        newStarttime = this.setStartTime(time);
         if (state === undefined) {
           state = {};
         }
