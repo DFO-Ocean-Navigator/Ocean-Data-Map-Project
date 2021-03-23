@@ -44,7 +44,8 @@ export default class PointWindow extends React.Component {
       depth: props.depth,
       showmap: false,
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
+      //starttime: Math.max(props.time - 24, 0),
+      starttime: props.starttime,
       variables: [],
       variable: [props.variable],
       observation_variable: [0],
@@ -52,6 +53,8 @@ export default class PointWindow extends React.Component {
       dpi: 144,
       plotTitles: Array(7).fill(""),
     };
+    //console.log("State [Starttime] "+this.state.starttime);
+    //console.log("Props [Time] "+ props.starttime);
 
     if (props.init !== null) {
       $.extend(this.state, props.init);
