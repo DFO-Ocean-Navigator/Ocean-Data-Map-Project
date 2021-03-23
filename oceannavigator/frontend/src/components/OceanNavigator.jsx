@@ -293,7 +293,6 @@ export default class OceanNavigator extends React.Component {
       const time_promise = this.get_timestamp_promise(dataset, newVariable);
       $.when(time_promise).done(function(time) {
         newTime = time[time.length-1].id;
-        // check the length of the timestamp array and set the start time according to that
         newStarttime = this.setStartTime(time);
         if (state === undefined) {
           state = {};
