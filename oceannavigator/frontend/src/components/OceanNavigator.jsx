@@ -124,15 +124,6 @@ export default class OceanNavigator extends React.Component {
     this.get_variables_promise = this.get_variables_promise.bind(this);
     this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
-    // Setting the starttime and time variable default value
-    const time_promise = this.get_timestamp_promise("giops_day", "votemper");
-      $.when(time_promise).done(function(time) {
-        let newTime = time[time.length-1].id;
-        let newStarttime = time[0].id;
-        this.state.time = newTime;
-        this.state.starttime = newStarttime;
-        this.setState(state);
-      }.bind(this));
   }
   
   //Updates the page language upon user request
@@ -524,6 +515,15 @@ export default class OceanNavigator extends React.Component {
     } else {
       window.history.back();
     }
+  }
+  componentDidMount(){
+    // Setting the starttime and time variable default value
+    const time_promise = this.get_timestamp_promise("giops_day", "votemper");
+      $.when(time_promise).done(function(time) {
+        const newTime = time[time.length-1].id;
+        const newStarttime = time[0].id;
+        this.setState({time: newTime, starttime: newStarttime});
+      }.bind(this));
   }
 
   componentDidUpdate(prevProps, prevState) {
