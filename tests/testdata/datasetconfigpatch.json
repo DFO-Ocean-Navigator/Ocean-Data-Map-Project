@@ -3,6 +3,7 @@
         "enabled": 1,
         "url": "tests/testdata/nemo_test.nc",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Mercator",
         "quantum": "day",
         "name": "GIOPS",
         "help": "help",
@@ -15,6 +16,7 @@
     "giops_no_url": {
         "enabled": 1,
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Mercator",
         "quantum": "day",
         "name": "GIOPS",
         "help": "help",
@@ -28,6 +30,7 @@
         "enabled": 1,
         "url": "tests/testdata/giops_test.nc",
         "name": "GIOPS Forecast 3D - Polar Stereographic",
+        "model_class": "Mercator",
         "quantum": "day",
         "type": "forecast",
         "lat_var_key": "latitude",
@@ -47,6 +50,7 @@
         "enabled": 1,
         "url": "tests/testdata/databases/test-nemo.sqlite3",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Nemo",
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }
@@ -63,6 +67,7 @@
         "quantum": "hour",
         "type": "historical",
         "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "model_class": "Nemo",
         "attribution": "UBC-MOAD",
         "lat_var_key": "nav_lat",
         "lon_var_key": "nav_lon",
@@ -85,6 +90,7 @@
         },
         "quantum": "hour",
         "time_dim_units": "seconds since 1970-01-01 00:00:00",
+        "model_class": "Nemo",
         "lat_var_key": "nav_lat",
         "lon_var_key": "nav_lon",
         "attribution": "UBC-MOAD",
@@ -98,6 +104,7 @@
         "enabled": 1,
         "url": "tests/testdata/mercator_test.nc",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Mercator",
         "lat_var_key": "latitude",
         "lon_var_key": "longitude",
         "variables": {

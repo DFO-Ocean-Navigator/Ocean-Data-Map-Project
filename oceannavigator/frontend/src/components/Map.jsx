@@ -863,6 +863,21 @@ export default class Map extends React.PureComponent {
             ],
           })
         });
+      case "chs":
+        return new ollayer.Tile({
+          source: new olsource.TileWMS({
+            url: "https://gisp.dfo-mpo.gc.ca/arcgis/rest/services/CHS/ENC_MaritimeChartService/MapServer/exts/MaritimeChartService/WMSServer",
+            params: {
+              'LAYERS': '1:1'
+            },
+            projection: "EPSG:3857",
+            attributions: [
+              new olcontrol.Attribution({
+                html: attribution,
+              })
+            ],
+          })
+        });
     }
   }
 
@@ -1149,6 +1164,16 @@ export default class Map extends React.PureComponent {
     this.map.addInteraction(draw);
   }
 
+  setZIndices(basemapIdx, dataIdx) {
+    this.layer_basemap.setZIndex(basemapIdx);
+    this.layer_data.setZIndex(dataIdx);
+    this.layer_landshapes.setZIndex(2);
+    this.layer_bath.setZIndex(3);
+    this.layer_bathshapes.setZIndex(4);
+    this.layer_vector.setZIndex(5);
+    this.layer_obsDraw.setZIndex(6);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
@@ -1256,6 +1281,36 @@ export default class Map extends React.PureComponent {
         this.props.state.basemap_attribution
       );
       this.map.getLayers().setAt(0, this.layer_basemap);
+
+      if (this.props.state.basemap === "chs") {
+
+        this.setZIndices(1, 0);
+
+        this.layer_bathshapes.setSource(null);
+        this.layer_landshapes.setSource(null);
+      }
+      else {       // Update Hi-res bath layer
+        this.setZIndices(0, 1);
+        this.layer_bathshapes.setSource(
+          new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          })
+        );
+
+        // Update Hi-res land layer
+        this.layer_landshapes.setSource(
+          new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+            projection: this.props.state.projection,
+          })
+        );
+      }
     }
 
     for (let prop of ["projection", "dataset", "variable", "depth", "time"]) {

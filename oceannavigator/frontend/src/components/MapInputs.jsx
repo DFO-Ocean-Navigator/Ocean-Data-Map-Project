@@ -230,6 +230,11 @@ export default class MapInputs extends React.Component {
                         value: _("Esri World Imagery"),
                         attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
                       },
+                      {
+                        id: "chs",
+                        value: _("Maritime Chart Service"),
+                        attribution: "Government of Canada"
+                      }
                     ]}
                     title={_("Basemap")}
                   />
