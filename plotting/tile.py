@@ -189,17 +189,12 @@ def plot(projection, x, y, z, args):
         vc = config.variable[dataset.variables[variable[0]]]
         variable_name = vc.name
         variable_unit = vc.unit
-        scale_factor = vc.scale_factor
         cmap = colormap.find_colormap(variable_name)
 
         if depth != 'bottom':
             depthm = dataset.depths[depth]
         else:
             depthm = 0
-
-    if scale_factor != 1.0:
-        for idx, val in enumerate(data):
-            data[idx] = np.multiply(val, scale_factor)
 
     if len(data) == 1:
         data = data[0]
