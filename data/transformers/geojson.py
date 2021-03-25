@@ -5,14 +5,10 @@ from data.utils import trunc
 from geojson import Feature, FeatureCollection, Point
 
 
-class WrongNumberOfDimensionsError(ValueError):
-    pass
-
-
 def data_array_to_geojson(data_array: xr.DataArray, lat_key: str, lon_key: str) -> FeatureCollection:
     """
     Converts a given xarray.DataArray, along with lat and lon keys to a geojson.FeatureCollection (subclass of dict).
-    
+
     A FeatureCollection is really just a list of geojson.Feature classes.
     Each Feature contains a geojson.Point, and a `properties` dict which holds arbitrary attributes
     of interest for a Point. In the case of this function, each Feature has the following properties:
@@ -34,23 +30,18 @@ def data_array_to_geojson(data_array: xr.DataArray, lat_key: str, lon_key: str) 
         FeatureCollection -- the transformed collection of geojson features.
     """
 
-    dictionary = data_array.to_dict()
-    data = trunc(np.array(dictionary['data']).squeeze())
-    attributes = dictionary['attrs']
+    if data_array.ndim != 2:
+        raise ValueError(f"Data is not a 2D field: {data_array.shape}")
 
-    if len(data.shape) != 2:
-        raise WrongNumberOfDimensionsError(
-            f"Data is not a 2D field: {data.shape}")
+    # Need to ensure that data values are 64-bit floats (i.e. Python builtin float) because
+    # that's the only type of float that json will serialize without a custom serializer.
+    # Floats from netCDF4 datasets are often 32-bit.
+    data = trunc(data_array.data.astype(float))
 
-    points = [Point(t) for t in list(zip(
-        dictionary['coords'][lat_key]['data'],
-        dictionary['coords'][lon_key]['data']
-    ))]
-
-    num_lats = len(list(dictionary['coords'][lat_key]['data']))
+    points = (Point(t) for t in zip(data_array[lat_key].data, data_array[lon_key].data))
     features = [Feature(
-        geometry=points[i],
-        properties={**attributes, **{'data': data[i, i]}}
-    ) for i in range(num_lats)]
-
+        geometry=pt,
+        properties={**data_array.attrs, **{'data': data[i, i]}})
+        for i, pt in enumerate(points)
+    ]
     return FeatureCollection(features)
