@@ -123,6 +123,7 @@ export default class OceanNavigator extends React.Component {
     this.updateScale = this.updateScale.bind(this);
     this.get_variables_promise = this.get_variables_promise.bind(this);
     this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
+    this.setStartTime = this.setStartTime.bind(this);
   }
   
   //Updates the page language upon user request
@@ -253,12 +254,19 @@ export default class OceanNavigator extends React.Component {
       variable
     ).promise();
   }
+  setStartTime(time){
+    if (time.length > 24)
+      return time[time.length-25].id;
+    else
+      return time[0].id;
+  }
 
   changeDataset(dataset, state) {
     // Busy modal
     this.setState({
       busy: true,
     });
+    
 
     // When dataset changes, so does time & variable list
     const var_promise = this.get_variables_promise(dataset);
@@ -272,16 +280,18 @@ export default class OceanNavigator extends React.Component {
 
 
       let newTime = 0;
+      let newStarttime = 0;
       const time_promise = this.get_timestamp_promise(dataset, newVariable);
       $.when(time_promise).done(function(time) {
         newTime = time[time.length-1].id;
-
+        newStarttime = this.setStartTime(time);
         if (state === undefined) {
           state = {};
         }
         state.dataset = dataset;
         state.variable = newVariable;
         state.time = newTime;
+        state.starttime = newStarttime;
         state.busy = false;
 
         this.setState(state);
@@ -505,6 +515,15 @@ export default class OceanNavigator extends React.Component {
     } else {
       window.history.back();
     }
+  }
+  componentDidMount(){
+    // Setting the starttime and time variable default value
+    const time_promise = this.get_timestamp_promise("giops_day", "votemper");
+      $.when(time_promise).done(function(time) {
+        const newTime = time[time.length-1].id;
+        const newStarttime = time[0].id;
+        this.setState({time: newTime, starttime: newStarttime});
+      }.bind(this));
   }
 
   componentDidUpdate(prevProps, prevState) {
