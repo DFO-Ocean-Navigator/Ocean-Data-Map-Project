@@ -10,6 +10,7 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
+import scipy as sp
 
 _ureg = UnitRegistry()
 
@@ -409,20 +410,15 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     return dscb - bathy
 
 
-def calculate_del_C(depth,latitude,temperature, salinity, freq_cutoff):
+def calculate_del_C(depth,soundspeed, freq_cutoff):
     """
      Calculate ΔC from a given sound profile and freq cutoff
      Required Arguments:
         * depth: The depth(s) in meters
-        * latitude: The latitude(s) in degrees North
-        * temperature: The temperatures(s) in Celsius
-        * salinity: The salinity (unitless)
+        * soundspeed: Speed of sound in m/s
         * freq_cutoff: Desired frequency cutoff in Hz
-     Returns the value of ΔC, which will later be used inside the 
+     Returns the value of ΔC
     """
-    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity)
-    
-    soundspeed = sspeed(depth, latitude, temperature, salinity);
     print(soundspeed.shape)
     # Getting Cmin from the sound speed profile
     first_local_minimum = sp.find_peaks(-soundspeed)[0][0]
@@ -441,7 +437,7 @@ def calculate_del_C(depth,latitude,temperature, salinity, freq_cutoff):
     delC = float(Cmin/final_denom)
     return delC
 
-def detect_potential_sub_surface_channel_v3(depth, latitude,temperature, salinity, freq_cutoff = 2755.03 )-> bool:
+def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutoff = 1561.1 )-> bool:
     """
      Detect if there is sub-surface channel. 
      Required Arguments:
@@ -450,13 +446,14 @@ def detect_potential_sub_surface_channel_v3(depth, latitude,temperature, salinit
      Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
     """
     has_PSSC = 0
-    del_C = calculate_del_C(depth,latitude,temperature, salinity, freq_cutoff)
+    sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
+    del_C = calculate_del_C(depth,sound_speed, freq_cutoff)
     # Trimming the profile considering the depth above 1000m
     depth = depth[depth<1000]
-    sspeed = sspeed[0:(len(depth))]
+    sound_speed = sound_speed[0:(len(depth))]
     # detecting the local minima and local maxima for the sound speed profile
-    local_minima = sp.find_peaks(-sspeed)[0] # get the index array of local minima
-    local_maxima = sp.find_peaks(sspeed)[0] # get the index array of local maxima
+    local_minima = sp.find_peaks(-sound_speed)[0] # get the index array of local minima
+    local_maxima = sp.find_peaks(sound_speed)[0] # get the index array of local maxima
     if len(local_minima)>=2: #if there are 2 or more minima
         p1 = 0 # surface
         p2 = local_minima[0] #first minimum
