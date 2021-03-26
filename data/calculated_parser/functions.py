@@ -408,6 +408,85 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     # Actually do the math.
     return dscb - bathy
 
+
+def calculate_del_C(depth,latitude,temperature, salinity, freq_cutoff):
+    """
+     Calculate ΔC from a given sound profile and freq cutoff
+     Required Arguments:
+        * depth: The depth(s) in meters
+        * latitude: The latitude(s) in degrees North
+        * temperature: The temperatures(s) in Celsius
+        * salinity: The salinity (unitless)
+        * freq_cutoff: Desired frequency cutoff in Hz
+     Returns the value of ΔC, which will later be used inside the 
+    """
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity)
+    
+    soundspeed = sspeed(depth, latitude, temperature, salinity);
+    print(soundspeed.shape)
+    # Getting Cmin from the sound speed profile
+    first_local_minimum = sp.find_peaks(-soundspeed)[0][0]
+    Cmin = soundspeed[first_local_minimum]
+    #Calculating del_Z
+    local_maximum = sp.find_peaks(soundspeed)[0][0]
+    channel_start_depth = depth[local_maximum]
+    channel_end_depth = np.interp(soundspeed[local_maximum], soundspeed, depth) 
+    del_Z = channel_end_depth - channel_start_depth
+    # print(channel_start_depth)
+    # Final calculation of delC
+    numerator = freq_cutoff * del_Z
+    denominator = 0.2652 * Cmin
+    final_denom = numerator/denominator
+    final_denom =np.power(final_denom,2)
+    delC = float(Cmin/final_denom)
+    return delC
+
+def detect_potential_sub_surface_channel_v3(depth, latitude,temperature, salinity, freq_cutoff = 2755.03 )-> bool:
+    """
+     Detect if there is sub-surface channel. 
+     Required Arguments:
+        * depth: Depth in meters
+        * sspeed: Sound speed in m/s
+     Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
+    """
+    has_PSSC = 0
+    del_C = calculate_del_C(depth,latitude,temperature, salinity, freq_cutoff)
+    # Trimming the profile considering the depth above 1000m
+    depth = depth[depth<1000]
+    sspeed = sspeed[0:(len(depth))]
+    # detecting the local minima and local maxima for the sound speed profile
+    local_minima = sp.find_peaks(-sspeed)[0] # get the index array of local minima
+    local_maxima = sp.find_peaks(sspeed)[0] # get the index array of local maxima
+    if len(local_minima)>=2: #if there are 2 or more minima
+        p1 = 0 # surface
+        p2 = local_minima[0] #first minimum
+        if len(local_maxima)>=2: # if there are more than one maxima
+            p1 = local_maxima[0] #first maximum
+            p3 = local_maxima[1] #second maximum
+        else: #only one local maximum
+            p3 =  local_maxima[0] 
+            if p3 < p2: # the only one maxima is higher in the water column than the minima
+                has_PSSC=0
+        # print("p1 p2 p3 : " +str(p1)+" "+str(p2)+" "+str(p3))
+        p1_sound_speed = sound_speed[p1]
+        p2_sound_speed = sound_speed[p2]
+        p3_sound_speed = sound_speed[p3]
+    
+        c1 = abs(p1_sound_speed-p2_sound_speed) 
+        c2 = abs(p3_sound_speed-p2_sound_speed)
+        #print("c1 = "+ str(c1) +"m/s")
+        #print("c2 = "+ str(c2) +"m/s")
+    
+        if c1> del_C and c2> del_C: # Changing this comparison to check with the calculated ΔC
+            has_PSSC =1
+        else:
+            has_PSSC =0
+    else:
+        has_PSSC =0 
+    #print(local_minima)
+    #print(local_maxima)
+    return has_PSSC
+
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
 
