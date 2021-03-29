@@ -1,5 +1,5 @@
 import React from "react";
-import {Row, FormControl, ControlLabel, Col, Panel, Button} from "react-bootstrap";
+import { Row, FormControl, ControlLabel, Col, Panel, Button } from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 import Icon from "./Icon.jsx";
 import SelectBox from "./SelectBox.jsx";
@@ -18,6 +18,7 @@ export default class Options extends React.Component {
       interpNeighbours: props.options.interpNeighbours,
       // Map
       bathymetry: props.options.bathymetry,
+      bathyContour: props.options.bathyContour,
       mapBathymetryOpacity: props.options.mapBathymetryOpacity,
       topoShadedRelief: props.options.topoShadedRelief,
     };
@@ -30,18 +31,18 @@ export default class Options extends React.Component {
 
     newOptions[key] = value;
 
-    this.setState({options: newOptions});
+    this.setState({ options: newOptions });
   }
 
   render() {
-   
+
     return (
       <div>
         <Panel
           defaultExpanded
           bsStyle='primary'
         >
-          <Panel.Heading>{_(" Colour Interpolation")}</Panel.Heading>
+          <Panel.Heading>{_("Colour Interpolation")}</Panel.Heading>
           <Panel.Collapse>
             <Panel.Body>
               <Row>
@@ -66,11 +67,11 @@ export default class Options extends React.Component {
                   <ControlLabel>{_("Sampling Radius (km)")}</ControlLabel>
                 </Col>
                 <Col md={8}>
-                  <NumericInput 
+                  <NumericInput
                     min={5}
                     max={100}
                     value={this.state.interpRadius}
-                    onChange={value => this.updateOptions("interpRadius", value) }
+                    onChange={value => this.updateOptions("interpRadius", value)}
                   />
                 </Col>
               </Row>
@@ -94,21 +95,31 @@ export default class Options extends React.Component {
                   className="center-block"
                   onClick={e => this.props.updateOptions(this.state)}
                 >
-                  <Icon icon="check"/> 
+                  <Icon icon="check" />
                   {_("Apply")}
                 </Button>
               </Row>
             </Panel.Body>
           </Panel.Collapse>
         </Panel>
-      
+
         <Panel
           defaultExpanded
           bsStyle='primary'
         >
-          <Panel.Heading>{_("Map")}</Panel.Heading>
+          <Panel.Heading>{_("Bathymetry")}</Panel.Heading>
           <Panel.Collapse>
             <Panel.Body>
+              <Row>
+                <Col md={12}>
+                  <SelectBox
+                    id='bathymetry'
+                    state={this.state.bathymetry}
+                    onUpdate={(e, val) => { this.setState({ "bathymetry": val, }); }}
+                    title={_("Show Bathymetry Contours")}
+                  />
+                </Col>
+              </Row>
               <Row>
                 <Col md={4}>
                   <ControlLabel>{_("Bathemetry Opacity")}</ControlLabel>
@@ -120,22 +131,34 @@ export default class Options extends React.Component {
                     step={0.05}
                     precision={2}
                     value={this.state.mapBathymetryOpacity}
-                    onChange={value => this.updateOptions("mapBathymetryOpacity", value)}
+                    onChange={val => { this.setState({ "mapBathymetryOpacity": val, }); }}
                   />
                 </Col>
               </Row>
-              <SelectBox
-                id='bathymetry'
-                state={this.state.bathymetry}
-                onUpdate={(e, val) => {this.setState({"bathymetry": val,});} }
-                title={_("Show Bathymetry Contours")}
-              />
-              <SelectBox
-                id='topoShadedRelief'
-                state={this.state.topoShadedRelief}
-                onUpdate={(e, val) => {this.setState({"topoShadedRelief": val,});}}
-                title={_("Topography Shaded Relief")}
-              />
+              <Row>
+                <Col md={4}>
+                  <ControlLabel>{_("Bathymetry Layer")}</ControlLabel>
+                </Col>
+                <Col md={8}>
+                  <FormControl
+                    componentClass="select"
+                    onChange={event => { this.setState({ "bathyContour": event.target.value, }); }}
+                    value={this.state.bathyContour}
+                  >
+                    <option value="etopo1">{_("ETOPO1")}</option>
+                  </FormControl>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={12}>
+                  <SelectBox
+                    id='topoShadedRelief'
+                    state={this.state.topoShadedRelief}
+                    onUpdate={(e, val) => { this.setState({ "topoShadedRelief": val, }); }}
+                    title={_("Topography Shaded Relief")}
+                  />
+                </Col>
+              </Row>
               <Row>
                 <br />
                 <Button
@@ -143,7 +166,7 @@ export default class Options extends React.Component {
                   className="center-block"
                   onClick={e => this.props.updateOptions(this.state)}
                 >
-                  <Icon icon="check"/> 
+                  <Icon icon="check" />
                   {_("Apply")}
                 </Button>
               </Row>
