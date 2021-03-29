@@ -32,9 +32,12 @@ def open_dataset(dataset, **kwargs):
             starttime (and endtime) do not exactly correspond to a timestamp integer
             in the dataset, and will perform a binary search to find the nearest timestamp
             that is less-than-or-equal-to the given starttime (and endtime).
-        * meta_only {bool} -- Skip some dataset access operations in order to speed up
-            response.
     """
+    MODEL_CLASSES = {
+        "mercator": Mercator,
+        "nemo": Nemo,
+        "fvcom": Fvcom,
+    }
 
     if not dataset:
         raise ValueError("Unknown dataset.")
@@ -49,25 +52,19 @@ def open_dataset(dataset, **kwargs):
     if url is None:
         raise ValueError("Dataset url is None.")
 
-    args = {
-        "calculated": calculated_vars,
-        "meta_only": kwargs.get("meta_only", False),
-        "grid_angle_file_url": getattr(dataset, "grid_angle_file_url", ""),
-        "bathymetry_file_url": getattr(dataset, "bathymetry_file_url", ""),
-        "dataset_key": getattr(dataset, "key", ""),
-    }
+    try:
+        model_class = MODEL_CLASSES[getattr(dataset, "model_class", "").lower()]
+    except (AttributeError, KeyError):
+        raise ValueError(f"Missing or unrecongized model_class attribute in config for dataset {dataset}")
 
-    nc_data = CalculatedData(url, **args)
-    if not args["meta_only"]:
-        # Get required NC files from database and add to args
-        nc_data.get_nc_file_list(dataset, **kwargs)
+    kwargs.update(
+        {
+            "calculated": calculated_vars,
+            "grid_angle_file_url": getattr(dataset, "grid_angle_file_url", ""),
+            "bathymetry_file_url": getattr(dataset, "bathymetry_file_url", ""),
+            "dataset_key": getattr(dataset, "key", ""),
+        }
+    )
 
-    dimension_list = nc_data.dimensions
-    if not dimension_list:
-        raise RuntimeError(f"Dataset not supported: {url}.")
-
-    if 'longitude' in dimension_list or 'latitude' in dimension_list:
-        return Mercator(nc_data)
-    if 'siglay' in dimension_list:
-        return Fvcom(nc_data)
-    return Nemo(nc_data)
+    nc_data = CalculatedData(url, **kwargs)
+    return model_class(nc_data)

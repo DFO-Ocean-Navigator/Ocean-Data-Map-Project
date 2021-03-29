@@ -105,6 +105,10 @@ class DatasetConfig:
         return self._get_attribute("bathymetry_file_url")
 
     @property
+    def model_class(self) -> str:
+        return self._get_attribute("model_class")
+
+    @property
     def lat_var_key(self) -> str:
         return self._get_attribute("lat_var_key")
 
@@ -324,22 +328,6 @@ class VariableConfig:
             return [self._variable.valid_min, self._variable.valid_max]
         else:
             return [0, 100]
-
-    @property
-    def scale_factor(self) -> float:
-        """
-        Returns variable scale factor from dataset config file
-        """
-
-        try:
-            scale_factor = self.__get_attribute("scale_factor")
-        except KeyError:
-            scale_factor = None
-
-        if scale_factor is not None:
-            return scale_factor
-        else:
-            return 1.0
 
     @property
     def is_hidden(self) -> bool:

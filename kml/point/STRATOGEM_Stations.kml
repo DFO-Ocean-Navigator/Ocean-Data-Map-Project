@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>STRATOGEM_Stations.kml</name>
+	<Folder>
+		<name>STRATOGEM Stations</name>
+		<Placemark><name>S1</name><Point><coordinates>-123.25416666666666,48.916666666666664</coordinates></Point></Placemark>
+		<Placemark><name>S2-1</name><Point><coordinates>-123.4875,48.98</coordinates></Point></Placemark>
+		<Placemark><name>S2-2</name><Point><coordinates>-123.425,49.025</coordinates></Point></Placemark>
+		<Placemark><name>S2-3</name><Point><coordinates>-123.35,49.083333333333336</coordinates></Point></Placemark>
+		<Placemark><name>S3</name><Point><coordinates>-123.55833333333334,49.125</coordinates></Point></Placemark>		
+		<Placemark><name>S4-1</name><Point><coordinates>-123.74833333333333,49.25</coordinates></Point></Placemark>	
+		<Placemark><name>S4-2</name><Point><coordinates>-123.58333333333333,49.233333333333334</coordinates></Point></Placemark>	
+		<Placemark><name>S4-3</name><Point><coordinates>-123.38333333333334,49.25</coordinates></Point></Placemark>	
+		<Placemark><name>S5</name><Point><coordinates>-123.85,49.358333333333334</coordinates></Point></Placemark>						
+	</Folder>
+</Document>
+</kml>

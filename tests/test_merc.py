@@ -1,9 +1,7 @@
-import datetime
 import unittest
 from unittest.mock import patch
 
 import numpy as np
-import pytz
 
 from data.mercator import Mercator
 from data.netcdf_data import NetCDFData
@@ -25,10 +23,9 @@ class TestMercator(unittest.TestCase):
         self.assertIsNone(ds.latvar)
         self.assertIsNone(ds.lonvar)
         self.assertIs(ds.nc_data, nc_data)
-        self.assertIs(ds._meta_only, nc_data.meta_only)
         self.assertEqual(ds.variables, nc_data.variables)
 
-    def test_enter_not_meta_only(self):
+    def test_enter(self):
         nc_data = NetCDFData('tests/testdata/mercator_test.nc')
         with Mercator(nc_data) as ds:
             self.assertIsNotNone(ds.latvar)
@@ -47,15 +44,6 @@ class TestMercator(unittest.TestCase):
                 4833.29, 5274.78, 5727.92],
                 dtype=np.float32)
             np.testing.assert_array_equal(ds.depths, expected)
-
-    @patch("tests.test_merc.NetCDFData")
-    def test_no_depth_variable(self, patch_netcdfdata):
-        # This is a hack to trigger the no depth variable edge case
-        patch_netcdfdata.depth_dimensions.return_value = []
-
-        nc_data = NetCDFData('tests/testdata/mercator_test.nc')
-        with Mercator(nc_data) as ds:
-            np.testing.assert_array_equal(ds.depths, np.array([0]))
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_variables(self, mock_query_func):

@@ -71,11 +71,9 @@ class HovmollerPlotter(LinePlotter):
                 dataset, self.variables)[0]
 
             variable_units = self.get_variable_units(dataset, self.variables)
-            scale_factors = self.get_variable_scale_factors(
-                dataset, self.variables)
 
             self.variable_unit = variable_units[0]
-            self.data = np.multiply(data, scale_factors[0]).T
+            self.data = data.T
             self.iso_timestamps = times
 
             # Get colourmap
@@ -110,11 +108,9 @@ class HovmollerPlotter(LinePlotter):
 
                 variable_units = self.get_variable_units(
                     dataset, self.compare['variables'])
-                scale_factors = self.get_variable_scale_factors(
-                    dataset, self.compare['variables'])
 
                 self.compare['variable_unit'] = variable_units[0]
-                self.compare['data'] = np.multiply(data, scale_factors[0]).T
+                self.compare['data'] = data.T
                 self.compare['times'] = times
 
     # Render Hovmoller graph(s)

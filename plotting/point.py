@@ -83,13 +83,6 @@ class PointPlotter(Plotter):
 
         return data
 
-    def apply_scale_factors(self, data):
-        for idx, factor in enumerate(self.scale_factors):
-            if factor != 1.0:
-                data[idx] = np.multiply(data[idx], factor)
-
-        return data
-
     @property
     def figuresize(self):
         figuresize = list(map(float, self.size.split("x")))
