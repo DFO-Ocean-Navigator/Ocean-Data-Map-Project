@@ -103,6 +103,7 @@ https://navigator.oceansdata.ca/pkgs/libnetcdf-4.6.2-hbdf4f91_1001.tar.bz2
 https://navigator.oceansdata.ca/pkgs/locket-0.2.0-py_2.tar.bz2
 https://navigator.oceansdata.ca/pkgs/lxml-4.2.2-py36_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/markupsafe-1.0-py36_0.tar.bz2
+https://conda.anaconda.org/conda-forge/noarch/marshmallow-3.11.1-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/monotonic-1.5-py_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/msgpack-python-0.6.1-py36h6bb024c_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/mysqlclient-1.4.6-py36he6710b0_0.conda
@@ -130,7 +131,7 @@ https://conda.anaconda.org/conda-forge/noarch/typing_extensions-3.7.4.3-py_0.tar
 https://navigator.oceansdata.ca/pkgs/uwsgi-2.0.18-py36h4472670_1.tar.bz2
 https://navigator.oceansdata.ca/pkgs/werkzeug-0.14.1-py_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/babel-2.7.0-py_0.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/certifi-2020.12.5-py36h5fab9bb_0.tar.bz2
+https://conda.anaconda.org/conda-forge/linux-64/certifi-2020.12.5-py36h5fab9bb_1.tar.bz2
 https://navigator.oceansdata.ca/pkgs/cffi-1.11.5-py36_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/cftime-1.0.1-py36h3010b51_1001.tar.bz2
 https://navigator.oceansdata.ca/pkgs/configobj-5.0.6-py_0.tar.bz2
