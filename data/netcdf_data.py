@@ -1,6 +1,5 @@
 import datetime
 import os
-import sqlite3
 import uuid
 import warnings
 import zipfile
@@ -34,13 +33,11 @@ class NetCDFData(Data):
        Injected as attribute into Model classes like Nemo, Mercator, Fvcom.
     """
 
-    def __init__(self, url: str, **kwargs: Dict) -> None:
+    def __init__(self, url: Union[str, list], **kwargs: Dict) -> None:
         super().__init__(url)
-        self.meta_only: bool = kwargs.get('meta_only', False)
         self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._nc_files: list = []
         self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url', "")
         self._bathymetry_file_url: str = kwargs.get('bathymetry_file_url', "")
         self._time_variable: xarray.IndexVariable = None
@@ -49,68 +46,68 @@ class NetCDFData(Data):
         self._dataset_config: DatasetConfig = (
             DatasetConfig(self._dataset_key) if self._dataset_key else None
         )
+        self._nc_files: Union[List, None] = self.get_nc_file_list(self._dataset_config, **kwargs)
 
     def __enter__(self):
-        if not self.meta_only:
-            # Don't decode times since we do it anyways.
-            decode_times = False
+        # Don't decode times since we do it anyways.
+        decode_times = False
 
-            if self._nc_files:
-                try:
-                    if len(self._nc_files) > 1:
-                        self.dataset = xarray.open_mfdataset(
-                            self._nc_files,
-                            decode_times=decode_times,
-                            chunks=200,
-                        )
-                    else:
-                        self.dataset = xarray.open_dataset(
-                            self._nc_files[0],
-                            decode_times=decode_times,
-                        )
-                except xarray.core.variable.MissingDimensionsError:
-                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                    # duplication issue, so fall back to using netCDF4.Dataset()
-                    self.dataset = netCDF4.MFDataset(self._nc_files)
-
-            elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
-                ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
-                self.dataset = ds_zarr
-
-            else:
-                try:
-                    # Handle list of URLs for staggered grid velocity field datasets
-                    url = self.url if isinstance(self.url, list) else [self.url]
-                    # This will raise a FutureWarning for xarray>=0.12.2.
-                    # That warning should be resolvable by changing to:
-                    # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)                    
-                    fields = xarray.open_mfdataset(url, decode_times=decode_times)
-                except xarray.core.variable.MissingDimensionsError:
-                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                    # duplication issue, so fall back to using netCDF4.Dataset()
-                    fields = netCDF4.Dataset(self.url)
-                if getattr(self._dataset_config, "geo_ref", {}):
-                    drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
-                    geo_refs = xarray.open_dataset(
-                        self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+        if self._nc_files:
+            try:
+                if len(self._nc_files) > 1:
+                    self.dataset = xarray.open_mfdataset(
+                        self._nc_files,
+                        decode_times=decode_times,
+                        chunks=200,
                     )
-                    fields = fields.merge(geo_refs)
-                self.dataset = fields
+                else:
+                    self.dataset = xarray.open_dataset(
+                        self._nc_files[0],
+                        decode_times=decode_times,
+                    )
+            except xarray.core.variable.MissingDimensionsError:
+                # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                # duplication issue, so fall back to using netCDF4.Dataset()
+                self.dataset = netCDF4.MFDataset(self._nc_files)
 
-            if self._grid_angle_file_url:
-                angle_file = xarray.open_dataset(
-                    self._grid_angle_file_url,
-                    drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+        elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
+            ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
+            self.dataset = ds_zarr
+
+        else:
+            try:
+                # Handle list of URLs for staggered grid velocity field datasets
+                url = self.url if isinstance(self.url, list) else [self.url]
+                # This will raise a FutureWarning for xarray>=0.12.2.
+                # That warning should be resolvable by changing to:
+                # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                fields = xarray.open_mfdataset(url, decode_times=decode_times)
+            except xarray.core.variable.MissingDimensionsError:
+                # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                # duplication issue, so fall back to using netCDF4.Dataset()
+                fields = netCDF4.Dataset(self.url)
+            if getattr(self._dataset_config, "geo_ref", {}):
+                drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
+                geo_refs = xarray.open_dataset(
+                    self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
                 )
-                self.dataset = self.dataset.merge(angle_file)
-                angle_file.close()
+                fields = fields.merge(geo_refs)
+            self.dataset = fields
 
-            if self._bathymetry_file_url:
-                bathy_file = xarray.open_dataset(self._bathymetry_file_url)
-                self.dataset = self.dataset.merge(bathy_file)
-                bathy_file.close()
+        if self._grid_angle_file_url:
+            angle_file = xarray.open_dataset(
+                self._grid_angle_file_url,
+                drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+            )
+            self.dataset = self.dataset.merge(angle_file)
+            angle_file.close()
 
-            self._dataset_open = True
+        if self._bathymetry_file_url:
+            bathy_file = xarray.open_dataset(self._bathymetry_file_url)
+            self.dataset = self.dataset.merge(bathy_file)
+            bathy_file.close()
+
+        self._dataset_open = True
 
         return self
 
@@ -641,31 +638,11 @@ class NetCDFData(Data):
 
     @property
     def dimensions(self) -> List[str]:
-        """Return a list of the dimensions in the dataset.
-        """
-        # Handle possible list of URLs for staggered grid velocity field datasets
-        url = self.url if not isinstance(self.url, list) else self.url[0]
-
-        if url.endswith(".sqlite3"):
-            try:
-                with SQLiteDatabase(url) as db:
-                    dimension_list = db.get_all_dimensions()
-            except sqlite3.OperationalError:
-                pass
-        
-        elif url.endswith(".zarr"):
-            ds = xarray.open_zarr(url)
-            dimension_list = list(ds.dims)
-            
-        # Open dataset (can't use xarray here since it doesn't like FVCOM files)
-        else:
-            try:
-                with netCDF4.Dataset(url) as ds:
-                    dimension_list = [dim for dim in ds.dimensions]
-            except FileNotFoundError:
-                dimension_list = []
-        
-        return dimension_list
+        try:
+            return list(self.dataset.dims)
+        except AttributeError:
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions property
+            return [dim for dim in self.dataset.dimensions]
 
     @property
     def depth_dimensions(self) -> List[str]:
@@ -740,7 +717,7 @@ class NetCDFData(Data):
         if url.endswith(".sqlite3"):
             with SQLiteDatabase(url) as db:
                 self._variable_list = db.get_data_variables()  # Cache the list for later
-        
+
         elif url.endswith(".zarr"):
             ds_zarr = xarray.open_zarr(url)
             var_list =[]
@@ -753,9 +730,9 @@ class NetCDFData(Data):
                 valid_max = ds_zarr.variables[var].attrs['valid_max'] if ds_zarr.variables[var].attrs['valid_max'] else None
 
                 var_list.append(Variable(name, long_name, units, list(ds_zarr[name].dims), valid_min, valid_max))
-            
+
             self._variable_list = var_list
-            
+
         else:
             try:
                 # Handle possible list of URLs for staggered grid velocity field datasets
@@ -765,13 +742,13 @@ class NetCDFData(Data):
                 # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
                 with xarray.open_mfdataset(url, decode_times=False) as ds:
                     self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
-                
+
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable label
                 # duplication issue, so fall back to using netCDF4.Dataset()
                 with netCDF4.Dataset(self.url) as ds:
                     self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
-        
+
         return self._variable_list
 
     @staticmethod
@@ -845,28 +822,19 @@ class NetCDFData(Data):
             # Probably a file path dataset config for which this method is also not applicable
             return
 
+        try:
+            variables = kwargs['variable']
+        except KeyError:
+            variables = datasetconfig.variables[0]
+        variables = {variables} if isinstance(variables, str) else set(variables)
+        calculated_variables = datasetconfig.calculated_variables
         with SQLiteDatabase(self.url) as db:
+            variables_to_load = self.__get_variables_to_load(db, variables, calculated_variables)
 
-            try:
-                variable = kwargs['variable']
-            except KeyError:
-                raise RuntimeError(
-                    "Opening a dataset via sqlite requires the 'variable' keyword argument.")
-            if isinstance(variable, str):
-                variable = { variable }
-            else:
-                if not isinstance(variable, set):
-                    variable = set(variable)
-
-            calculated_variables = datasetconfig.calculated_variables
-            variables_to_load = self.__get_variables_to_load(db, variable, calculated_variables)
-
-            try:
-                timestamp = self.__get_requested_timestamps(
-                    db, variables_to_load[0], kwargs['timestamp'], kwargs.get('endtime'), kwargs.get('nearest_timestamp', False))
-            except KeyError:
-                raise RuntimeError(
-                    "Opening a dataset via sqlite requires the 'timestamp' keyword argument.")
+            timestamp = self.__get_requested_timestamps(
+                db, variables_to_load[0], kwargs.get('timestamp', -1),
+                kwargs.get('endtime'), kwargs.get('nearest_timestamp', False)
+            )
 
             if not timestamp:
                 raise RuntimeError("Error finding timestamp(s) in database.")
@@ -875,7 +843,7 @@ class NetCDFData(Data):
             if not file_list:
                 raise RuntimeError("NetCDF file list is empty.")
 
-            self._nc_files = file_list
+            return file_list
 
     def __get_variables_to_load(self, db: SQLiteDatabase, variable: set,
                                     calculated_variables: dict) -> List[str]:

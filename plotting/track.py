@@ -209,17 +209,12 @@ class TrackPlotter(Plotter):
 
                 variable_units = []
                 variable_names = []
-                scale_factors = []
                 cmaps = []
                 for v in self.variables:
                     vc = self.dataset_config.variable[v]
                     variable_units.append(vc.unit)
                     variable_names.append(vc.name)
-                    scale_factors.append(vc.scale_factor)
                     cmaps.append(colormap.find_colormap(vc.name))
-
-                for idx, sf in enumerate(scale_factors):
-                    model_data[idx, :] = np.multiply(model_data[idx, :], sf)
 
                 self.model_data = model_data
                 self.model_dist = model_dist
