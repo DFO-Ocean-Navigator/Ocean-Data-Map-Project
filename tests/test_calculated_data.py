@@ -113,6 +113,14 @@ class CalculatedImpl(CalculatedData):
 
 class TestCalculatedArray(unittest.TestCase):
 
+    def test_attrs(self):
+        attrs = { "my_attr": 420 }
+
+        dataset = xr.Dataset()
+        array = CalculatedArray(dataset, "3 * 5", [], attrs)
+        self.assertEqual(array[:].attrs, attrs)
+        self.assertEqual(array.attrs, attrs)
+
     def test_static(self):
         dataset = xr.Dataset()
         array = CalculatedArray(dataset, "3 * 5", [])
