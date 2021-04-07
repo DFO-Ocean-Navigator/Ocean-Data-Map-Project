@@ -298,12 +298,10 @@ def bathymetry(projection, x, y, z, args):
 
     LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
 
-    normalized = matplotlib.colors.LogNorm(vmin=1, vmax=6000)(LEVELS)
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
         'transparent_gray',
         [(0, 0, 0, 1), (0, 0, 0, 0.5)]
     )
-    colors = cmap(normalized)
 
     fig = plt.figure()
     fig.set_size_inches(4, 4)
@@ -311,11 +309,9 @@ def bathymetry(projection, x, y, z, args):
     ax.set_axis_off()
     fig.add_axes(ax)
 
-    for i, l in enumerate(LEVELS):
-        contours = measure.find_contours(data, l)
-
-        for n, contour in enumerate(contours):
-            ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
+    ax.contour(data, levels=LEVELS, 
+               norm=matplotlib.colors.LogNorm(vmin=1, vmax=6000),
+               cmap=cmap)
 
     plt.xlim([0, 255])
     plt.ylim([0, 255])
