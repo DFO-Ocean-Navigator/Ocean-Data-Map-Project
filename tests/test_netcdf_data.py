@@ -379,6 +379,12 @@ class TestNetCDFData(unittest.TestCase):
             nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertIsNone(nc_data._nc_files)
 
+    def test_get_dataset_variable_returns_dataarray(self):
+        with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
+            res = nc_data.get_dataset_variable('votemper')
+
+            self.assertEqual(xarray.DataArray, type(res))
+
     def test_get_dataset_variable_raises_on_unknown_variable(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             with self.assertRaises(KeyError):
