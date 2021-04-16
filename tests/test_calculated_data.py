@@ -22,6 +22,7 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
+            self.assertEqual(xr.DataArray, type(v))
             self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875)
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
