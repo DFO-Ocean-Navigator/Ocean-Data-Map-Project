@@ -358,6 +358,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     # Use masked array to quickly enable/disable data (see below)
     sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
 
+
     min_indices = __find_depth_index_of_min_value(sound_speed)
     
     sound_speed.mask = __get_soniclayerdepth_mask(sound_speed, min_indices)
@@ -409,80 +410,103 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     # Actually do the math.
     return dscb - bathy
 
-
-def calculate_del_C(depth,soundspeed, freq_cutoff):
+def calculate_del_C(depth,soundspeed,minima,maxima,freq_cutoff):
     """
      Calculate ΔC from a given sound profile and freq cutoff
      Required Arguments:
         * depth: The depth(s) in meters
         * soundspeed: Speed of sound in m/s
+        * minima: Minima ndarray of Speed of sound, which contains the index where the minima occurs
+        * maxima: Maxima ndarray of Speed of sound,  which contains the index where the maxima occurs
         * freq_cutoff: Desired frequency cutoff in Hz
-     Returns the value of ΔC
+     Returns the value of ΔC, which will later be used inside the PSSC detection method
     """
-    print(soundspeed.shape)
     # Getting Cmin from the sound speed profile
-    first_local_minimum = sp.find_peaks(-soundspeed)[0][0]
-    Cmin = soundspeed[first_local_minimum]
-    #Calculating del_Z
-    local_maximum = sp.find_peaks(soundspeed)[0][0]
-    channel_start_depth = depth[local_maximum]
-    channel_end_depth = np.interp(soundspeed[local_maximum], soundspeed, depth) 
-    del_Z = channel_end_depth - channel_start_depth
-    # print(channel_start_depth)
-    # Final calculation of delC
+    first_minimum = np.empty_like(minima, dtype='int64')
+    # TODO: need to look at alternative for the following operation
+    it = np.nditer(minima,flags=['refs_ok','multi_index'])
+    for x in it:
+        array_size = x.tolist().size
+        first_minimum[it.multi_index]= x.tolist()[0] if array_size>0 else -1
+    Cmin = np.squeeze(np.take_along_axis(soundspeed, first_minimum[np.newaxis,:, :], axis=0))
+    Cmin[first_minimum==-1] = np.nan
+    #calculating delZ
+    first_maximum = np.empty_like(maxima, dtype='int64')
+    it = np.nditer(maxima,flags=['refs_ok','multi_index'])
+    for x in it:
+        array_size = x.tolist().size
+        first_maximum[it.multi_index] =x.tolist()[0] if array_size>0 else -1 
+    channel_start_depth = depth[first_maximum]
+    channel_start_depth[first_maximum==-1] = np.nan
+    Cmax = np.squeeze(np.take_along_axis(soundspeed, first_maximum[np.newaxis,:, :], axis=0))
+    Cmax[first_minimum==-1] = np.nan
+    #channel_end_depth = np.apply_along_axis(np.interp,0, Cmax,soundspeed,depth) 
+    channel_end_depth = np.empty_like(Cmax,dtype='float')
+    it = np.nditer(Cmax,flags=['refs_ok','multi_index'])
+    for x in it:
+        channel_end_depth[it.multi_index] = np.interp(x, soundspeed[:,it.multi_index[0], it.multi_index[1]],depth)
+    del_Z = channel_end_depth-channel_start_depth
     numerator = freq_cutoff * del_Z
     denominator = 0.2652 * Cmin
-    final_denom = numerator/denominator
-    final_denom =np.power(final_denom,2)
-    delC = float(Cmin/final_denom)
+    final_denom = numerator/denominator 
+    final_denom = np.power(final_denom,2)
+    delC = Cmin/final_denom
+    #print(delC)
     return delC
 
-def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutoff = 1561.1 )-> bool:
+def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutoff = 2755.03 )-> np.ndarray:  
     """
      Detect if there is sub-surface channel. 
      Required Arguments:
         * depth: Depth in meters
-        * sspeed: Sound speed in m/s
+        * latitude: Latitude in degrees North
+        * temperature: Temperatures in Celsius
+        * salinity: Salinity
+        * freq_cutoff: Desired frequency cutoff in Hz
      Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
     """
-    has_PSSC = 0
-    sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
-    del_C = calculate_del_C(depth,sound_speed, freq_cutoff)
     # Trimming the profile considering the depth above 1000m
     depth = depth[depth<1000]
-    sound_speed = sound_speed[0:(len(depth))]
-    # detecting the local minima and local maxima for the sound speed profile
-    local_minima = sp.find_peaks(-sound_speed)[0] # get the index array of local minima
-    local_maxima = sp.find_peaks(sound_speed)[0] # get the index array of local maxima
-    if len(local_minima)>=2: #if there are 2 or more minima
-        p1 = 0 # surface
-        p2 = local_minima[0] #first minimum
-        if len(local_maxima)>=2: # if there are more than one maxima
-            p1 = local_maxima[0] #first maximum
-            p3 = local_maxima[1] #second maximum
-        else: #only one local maximum
-            p3 =  local_maxima[0] 
-            if p3 < p2: # the only one maxima is higher in the water column than the minima
-                has_PSSC=0
-        # print("p1 p2 p3 : " +str(p1)+" "+str(p2)+" "+str(p3))
-        p1_sound_speed = sound_speed[p1]
-        p2_sound_speed = sound_speed[p2]
-        p3_sound_speed = sound_speed[p3]
+    depth_length = len(depth)
+    temp = temperature[:,0:depth_length,:,:]
+    sal =  salinity[:,0:depth_length,:,:]
+    sound_speed = sspeed(depth, latitude, temp, sal)
+    minima = np.apply_along_axis(sp.find_peaks,0,-sound_speed)[0] 
+    maxima = np.apply_along_axis(sp.find_peaks,0, sound_speed)[0]
+    delC = calculate_del_C(depth,sound_speed,minima,maxima, freq_cutoff)
+    hasPSSC = np.empty_like(minima, dtype='bool')
     
-        c1 = abs(p1_sound_speed-p2_sound_speed) 
-        c2 = abs(p3_sound_speed-p2_sound_speed)
-        #print("c1 = "+ str(c1) +"m/s")
-        #print("c2 = "+ str(c2) +"m/s")
-    
-        if c1> del_C and c2> del_C: # Changing this comparison to check with the calculated ΔC
-            has_PSSC =1
+    it = np.nditer(minima,flags=['refs_ok','multi_index'])
+    for minima_array in it:
+        minima_list = minima_array.tolist()
+        maxima_list = maxima[it.multi_index].tolist()
+        #print(iterator.multi_index)
+        if len(minima_list)>=2:
+            p1 = 0
+            p2 = minima[it.multi_index].tolist()[0]
+            if len(maxima_list) >=2:
+                p1 = maxima_list[0]
+                p3 = maxima_list[1]
+            else:
+                p3= maxima_list[0]
+            if p3 < p2: #if the only maximum is higher in the water column than the minima
+                hasPSSC[it.multi_index]=0
+            else:
+                p1_sound_speed = sound_speed[p1,it.multi_index[0], it.multi_index[1]]
+                p2_sound_speed = sound_speed[p2,it.multi_index[0], it.multi_index[1]]
+                p3_sound_speed = sound_speed[p3,it.multi_index[0], it.multi_index[1]]
+                
+                c1 = abs(p1_sound_speed-p2_sound_speed) 
+                c2 = abs(p3_sound_speed-p2_sound_speed)
+                
+                if c1> delC[it.multi_index] and c2> delC[it.multi_index]: 
+                    hasPSSC[it.multi_index]= 1
+                else:
+                    hasPSSC[it.multi_index]= 0
         else:
-            has_PSSC =0
-    else:
-        has_PSSC =0 
-    #print(local_minima)
-    #print(local_maxima)
-    return has_PSSC
+            hasPSSC[it.multi_index] = 0
+                                                        
+    return hasPSSC
 
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
