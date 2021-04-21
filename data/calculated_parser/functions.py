@@ -11,6 +11,7 @@ import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
 import scipy as sp
+import scipy.signal as spsignal
 
 _ureg = UnitRegistry()
 
@@ -465,22 +466,24 @@ def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutof
         * freq_cutoff: Desired frequency cutoff in Hz
      Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
     """
+    depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
+        depth, latitude, temperature, salinity)
+
     # Trimming the profile considering the depth above 1000m
     depth = depth[depth<1000]
     depth_length = len(depth)
-    temp = temperature[:,0:depth_length,:,:]
-    sal =  salinity[:,0:depth_length,:,:]
+    temp = temperature[0:depth_length,:,:]
+    sal =  salinity[0:depth_length,:,:]
     sound_speed = sspeed(depth, latitude, temp, sal)
-    minima = np.apply_along_axis(sp.find_peaks,0,-sound_speed)[0] 
-    maxima = np.apply_along_axis(sp.find_peaks,0, sound_speed)[0]
+    minima = np.apply_along_axis(spsignal.find_peaks,0,-sound_speed)[0] 
+    maxima = np.apply_along_axis(spsignal.find_peaks,0, sound_speed)[0]
     delC = calculate_del_C(depth,sound_speed,minima,maxima, freq_cutoff)
-    hasPSSC = np.empty_like(minima, dtype='bool')
+    hasPSSC = np.empty_like(minima, dtype='float')
     
     it = np.nditer(minima,flags=['refs_ok','multi_index'])
     for minima_array in it:
         minima_list = minima_array.tolist()
         maxima_list = maxima[it.multi_index].tolist()
-        #print(iterator.multi_index)
         if len(minima_list)>=2:
             p1 = 0
             p2 = minima[it.multi_index].tolist()[0]
