@@ -44,7 +44,7 @@ export default class PointWindow extends React.Component {
       depth: props.depth,
       showmap: false,
       colormap: "default",
-      starttime: Math.max(props.time - 24, 0),
+      starttime: props.starttime,
       variables: [],
       variable: [props.variable],
       observation_variable: [0],

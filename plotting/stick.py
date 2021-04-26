@@ -57,11 +57,6 @@ class StickPlotter(PointPlotter):
             point_data = np.ma.array(point_data)
             point_depth = np.ma.array(point_depth)
 
-            for idx, factor in enumerate(self.scale_factors):
-                if factor != 1.0:
-                    point_data[:, idx] = np.multiply(
-                        point_data[:, idx], factor)
-
         self.data = self.subtract_other(point_data)
         self.data_depth = point_depth
         self.timestamp = timestamp

@@ -26,14 +26,14 @@ const X_IMAGE = require("../images/x.png");
 
 var app = {};
 const COLORS = [
-  [ 0, 0, 255 ],
-  [ 0, 128, 0 ],
-  [ 255, 0, 0 ],
-  [ 0, 255, 255 ],
-  [ 255, 0, 255 ],
-  [ 255, 255, 0 ],
-  [ 0, 0, 0 ],
-  [ 255, 255, 255 ],
+  [0, 0, 255],
+  [0, 128, 0],
+  [255, 0, 0],
+  [0, 255, 255],
+  [255, 0, 255],
+  [255, 255, 0],
+  [0, 0, 0],
+  [255, 255, 255],
 ];
 
 let CURRENT_PROJ = "EPSG:3857";
@@ -65,7 +65,7 @@ const MAX_ZOOM = {
 var drifter_color = {};
 
 // Reset Pan button
-app.ResetPanButton = function(opt_options) {
+app.ResetPanButton = function (opt_options) {
   const options = opt_options || {};
 
   const button = document.createElement("button");
@@ -73,7 +73,7 @@ app.ResetPanButton = function(opt_options) {
   button.setAttribute("title", "Reset Map Location");
 
   const this_ = this;
-  const handleResetPan = function() {
+  const handleResetPan = function () {
     // Move to center of map according to correct projection
     this_.getMap().getView().setCenter(DEF_CENTER[CURRENT_PROJ]);
   };
@@ -93,7 +93,7 @@ app.ResetPanButton = function(opt_options) {
 ol.inherits(app.ResetPanButton, olcontrol.Control);
 
 // Variable scale legend
-app.ScaleViewer = function(opt_options) {
+app.ScaleViewer = function (opt_options) {
   const options = opt_options || {};
 
   const scale = document.createElement("img");
@@ -143,10 +143,10 @@ export default class Map extends React.PureComponent {
     this._mounted = false;
 
     this.state = {
-      location: [0,90]
+      location: [0, 90]
     };
 
-    this.loader = function(extent, resolution, projection) {
+    this.loader = function (extent, resolution, projection) {
       if (this.props.state.vectortype) {
         let url = "";
         switch (this.props.state.vectortype) {
@@ -160,15 +160,15 @@ export default class Map extends React.PureComponent {
             break;
           default:
             url = `/api/v1.0/${this.props.state.vectortype}` +
-            `/${projection.getCode()}` +
-            `/${Math.round(resolution)}` +
-            `/${extent.map(function (i) { return Math.round(i);})}` +
-            `/${this.props.state.vectorid}.json`
+              `/${projection.getCode()}` +
+              `/${Math.round(resolution)}` +
+              `/${extent.map(function (i) { return Math.round(i); })}` +
+              `/${this.props.state.vectorid}.json`
             break;
         }
         $.ajax({
           url: url,
-          success: function(response) {
+          success: function (response) {
             var features = (new olformat.GeoJSON()).readFeatures(response, {
               featureProjection: this.props.state.projection,
             });
@@ -197,7 +197,7 @@ export default class Map extends React.PureComponent {
             }
             this.vectorSource.addFeatures(featToAdd);
           }.bind(this),
-          error: function() {
+          error: function () {
             console.error("Error!");
           }
         });
@@ -214,16 +214,16 @@ export default class Map extends React.PureComponent {
     });
 
     this.vectorTileGrid = new oltilegrid.createXYZ({
-      tileSize:512,
+      tileSize: 512,
       maxZoom: MAX_ZOOM[this.props.state.projection]
     }),
 
-    // Basemap layer
-    this.layer_basemap = this.getBasemap(
-      this.props.state.basemap,
-      this.props.state.projection,
-      this.props.state.basemap_attribution
-    );
+      // Basemap layer
+      this.layer_basemap = this.getBasemap(
+        this.props.state.basemap,
+        this.props.state.projection,
+        this.props.state.basemap_attribution
+      );
 
     // Data layer
     this.layer_data = new ollayer.Tile(
@@ -258,10 +258,10 @@ export default class Map extends React.PureComponent {
           stroke: new olstyle.Stroke({
             color: 'rgba(0, 0, 0, 1)'
           }),
-				  fill: new olstyle.Fill({
-					  color: 'white'
-            })
-          }),
+          fill: new olstyle.Fill({
+            color: 'white'
+          })
+        }),
         source: new olsource.VectorTile({
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
@@ -272,22 +272,22 @@ export default class Map extends React.PureComponent {
       });
 
     // MBTiles Bathymetry shapes (high res)
-      this.layer_bathshapes = new ollayer.VectorTile(
-        {
-          opacity: this.props.options.mapBathymetryOpacity,
-          visible: this.props.options.bathymetry,
-          style: new olstyle.Style({
-            stroke: new olstyle.Stroke({
-              color: 'rgba(0, 0, 0, 1)'
-            })
-          }),
-          source: new olsource.VectorTile({
-            format: new olformat.MVT(),
-            tileGrid: this.vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
-          }),
-        });
+    this.layer_bathshapes = new ollayer.VectorTile(
+      {
+        opacity: this.props.options.mapBathymetryOpacity,
+        visible: this.props.options.bathymetry,
+        style: new olstyle.Style({
+          stroke: new olstyle.Stroke({
+            color: 'rgba(0, 0, 0, 1)'
+          })
+        }),
+        source: new olsource.VectorTile({
+          format: new olformat.MVT(),
+          tileGrid: this.vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+        }),
+      });
 
     this.layer_obsDraw = new ollayer.Vector({
       source: this.obsDrawSource,
@@ -296,7 +296,7 @@ export default class Map extends React.PureComponent {
     this.layer_vector = new ollayer.Vector(
       {
         source: this.vectorSource,
-        style: function(feat, res) {
+        style: function (feat, res) {
 
           if (feat.get("class") == "observation") {
             if (feat.getGeometry() instanceof olgeom.LineString) {
@@ -377,7 +377,7 @@ export default class Map extends React.PureComponent {
                 });
                 break;
             }
-            return new olstyle.Style({image: image});
+            return new olstyle.Style({ image: image });
           } else {
 
             switch (feat.get("type")) {
@@ -527,18 +527,18 @@ export default class Map extends React.PureComponent {
         new olcontrol.FullScreen(),
         new olcontrol.MousePosition({
           projection: "EPSG:4326",
-          coordinateFormat: function(c) {
+          coordinateFormat: function (c) {
             return "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>";
           }
         }),
         new ol.Graticule({
-          strokeStyle: new olstyle.Stroke({color: "rgba(128, 128, 128, 0.9)", lineDash: [0.5, 4]})
+          strokeStyle: new olstyle.Stroke({ color: "rgba(128, 128, 128, 0.9)", lineDash: [0.5, 4] })
         }),
       ])
     });
     this.map.on("moveend", this.refreshFeatures.bind(this));
-    this.map.on("moveend", function() {
-      const c = olproj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function(c) {return c.toFixed(4);});
+    this.map.on("moveend", function () {
+      const c = olproj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function (c) { return c.toFixed(4); });
       this.props.updateState("center", c);
       this.props.updateState("zoom", this.mapView.getZoom());
       const extent = this.mapView.calculateExtent(this.map.getSize());
@@ -571,10 +571,10 @@ export default class Map extends React.PureComponent {
     //this.mapView.on("change:center", this.constrainPan.bind(this));
     this.map.setView(this.mapView);
 
-    this.map.on("pointermove", function(e) {
+    this.map.on("pointermove", function (e) {
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
-        function(feature, layer) {
+        function (feature, layer) {
           return feature;
         }
       );
@@ -593,8 +593,8 @@ export default class Map extends React.PureComponent {
           }
           $.ajax({
             url: '/api/v1.0/observation/meta.json',
-            data: {type: type, id: feature.get("id")},
-            success: function(response) {
+            data: { type: type, id: feature.get("id") },
+            success: function (response) {
               this.overlay.setPosition(e.coordinate);
               feature.set("meta", ReactDOMServer.renderToString(
                 <table>
@@ -665,7 +665,7 @@ export default class Map extends React.PureComponent {
     */
 
     var select = new olinteraction.Select({
-      style: function(feat, res) {
+      style: function (feat, res) {
         if (feat.get("type") == "area") {
           return [
             new olstyle.Style({
@@ -703,8 +703,8 @@ export default class Map extends React.PureComponent {
           });
         }
       }.bind(this),
-      filter: function(feature) {
-        return this.vectorSource.forEachFeature(function(f) {
+      filter: function (feature) {
+        return this.vectorSource.forEachFeature(function (f) {
           if (f == feature) {
             return true;
           }
@@ -719,7 +719,7 @@ export default class Map extends React.PureComponent {
     });
     this.map.addInteraction(dragBox);
 
-    const pushSelection = function() {
+    const pushSelection = function () {
       var t = undefined;
       var content = [];
       var names = [];
@@ -734,7 +734,7 @@ export default class Map extends React.PureComponent {
             content.push([c[1], c[0], feature.get("id")]);
           }
         } else if (feature.get("type") != null) {
-          switch(feature.get("type")) {
+          switch (feature.get("type")) {
             case "class4":
               // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
               const class4id = feature.get("id").replace("/", "_");
@@ -745,7 +745,7 @@ export default class Map extends React.PureComponent {
               content.push([c[1], c[0], feature.get("observation")]);
               break;
             case "line":
-              content.push(feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function(o) {
+              content.push(feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function (o) {
                 return [o[1], o[0]];
               }));
               break;
@@ -756,7 +756,7 @@ export default class Map extends React.PureComponent {
               if (feature.get("key")) {
                 content.push(feature.get("key"));
               } else {
-                var points = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function(o) {
+                var points = feature.getGeometry().clone().transform(this.props.state.projection, "EPSG:4326").getCoordinates().map(function (o) {
                   return o.map(function (p) { return [p[1], p[0]]; });
                 });
                 var area = {
@@ -782,7 +782,7 @@ export default class Map extends React.PureComponent {
 
     }.bind(this);
 
-    select.on("select", function(e) {
+    select.on("select", function (e) {
       if (e.selected.length > 0 &&
         (e.selected[0].line || e.selected[0].drifter)
       ) {
@@ -800,11 +800,11 @@ export default class Map extends React.PureComponent {
       this.infoOverlay.setPosition(undefined);
     }.bind(this));
 
-    dragBox.on("boxend", function() {
+    dragBox.on("boxend", function () {
       var extent = dragBox.getGeometry().getExtent();
       this.vectorSource.forEachFeatureIntersectingExtent(
         extent,
-        function(feature) {
+        function (feature) {
           this.selectedFeatures.push(feature);
         }.bind(this)
       );
@@ -814,14 +814,14 @@ export default class Map extends React.PureComponent {
     }.bind(this));
 
     // clear selection when drawing a new box and when clicking on the map
-    dragBox.on("boxstart", function() {
+    dragBox.on("boxstart", function () {
       this.selectedFeatures.clear();
       this.props.updateState("plotEnabled", false);
     }.bind(this));
   }
 
   getBasemap(source, projection, attribution) {
-    switch(source) {
+    switch (source) {
       case "topo":
         const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
 
@@ -883,7 +883,7 @@ export default class Map extends React.PureComponent {
 
   componentWillMount() {
     // Renders a map drawing from the data saved in a permalink
-    if (typeof(this.props.state.modal) === "string") {
+    if (typeof (this.props.state.modal) === "string") {
       switch (this.props.state.modal) {
         case "point":
           this.add(this.props.state.modal, this.props.state[this.props.state.modal]);
@@ -918,13 +918,13 @@ export default class Map extends React.PureComponent {
     });
     this.map.addOverlay(this.infoOverlay);
 
-    this.infoPopupCloser.onclick = function() {
+    this.infoPopupCloser.onclick = function () {
       this.infoOverlay.setPosition(undefined);
       this.infoPopupCloser.blur();
       return false;
     }.bind(this);
 
-    this.infoPopupLauncher.onclick = function() {
+    this.infoPopupLauncher.onclick = function () {
       this.infoOverlay.setPosition(undefined);
       this.infoPopupLauncher.blur();
       this.props.action("point", this.state.location);
@@ -956,7 +956,7 @@ export default class Map extends React.PureComponent {
       coll: interactions,
       ret: false,
     };
-    interactions.forEach(function(e, i, a) {
+    interactions.forEach(function (e, i, a) {
       if (e instanceof olinteraction.Draw) {
         stat.coll.remove(e);
         if (e.get("type") === type) {
@@ -991,7 +991,7 @@ export default class Map extends React.PureComponent {
       type: "Point",
     });
     draw.set("type", "Point");
-    draw.on("drawend", function(e) {
+    draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
@@ -1003,7 +1003,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function() { this.controlDoubleClickZoom(true); this.obsDrawSource.clear()}.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
         251
       );
     }.bind(this));
@@ -1023,12 +1023,12 @@ export default class Map extends React.PureComponent {
       type: "Polygon"
     });
     draw.set("type", "Polygon");
-    draw.on("drawend", function(e) {
+    draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection,"EPSG:4326");
+          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
@@ -1045,7 +1045,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function() { this.controlDoubleClickZoom(true); this.obsDrawSource.clear()}.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
         251
       );
     }.bind(this));
@@ -1066,7 +1066,7 @@ export default class Map extends React.PureComponent {
       type: "Point",
     });
     draw.set("type", "Point");
-    draw.on("drawend", function(e) {
+    draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
@@ -1078,7 +1078,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function() { this.controlDoubleClickZoom(true); }.bind(this),
+        function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
     }.bind(this));
@@ -1098,12 +1098,12 @@ export default class Map extends React.PureComponent {
       type: "LineString"
     });
     draw.set("type", "LineString");
-    draw.on("drawend", function(e) {
+    draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates().map(
         function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection,"EPSG:4326");
+          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
@@ -1115,7 +1115,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function() { this.controlDoubleClickZoom(true); }.bind(this),
+        function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
     }.bind(this));
@@ -1135,12 +1135,12 @@ export default class Map extends React.PureComponent {
       type: "Polygon"
     });
     draw.set("type", "Polygon");
-    draw.on("drawend", function(e) {
+    draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates()[0].map(
         function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection,"EPSG:4326");
+          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
           return [lonlat[1], lonlat[0]];
         }.bind(this)
       );
@@ -1157,7 +1157,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function() {this.controlDoubleClickZoom(true); }.bind(this),
+        function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
     }.bind(this));
@@ -1174,21 +1174,68 @@ export default class Map extends React.PureComponent {
     this.layer_obsDraw.setZIndex(6);
   }
 
+  shouldUpdateScaleViewer(currentDataset, prevDataset,
+                          currentVariable, prevVariable,
+                           currentScale, prevScale)
+  {
+    return (currentDataset !== prevDataset)
+          || (currentVariable !== prevVariable)
+          || (currentScale !== prevScale);
+  }
+
+  updateScaleViewer(currentDataset, currentVariable, currentScale) {
+    if (this.scaleViewer != null) {
+      this.map.removeControl(this.scaleViewer);
+    }
+    this.scaleViewer = new app.ScaleViewer({
+      image: (
+        `/api/v1.0/scale/${currentDataset}` +
+        `/${currentVariable}` +
+        `/${currentScale}.png`
+      )
+    });
+    this.map.addControl(this.scaleViewer);
+  }
+
+  shouldUpdateBathymetryLayer(currentProj, prevProj,
+                              currentBathy, prevBathy)
+  {
+    return (currentProj !== prevProj) || (currentBathy !== prevBathy);
+  }
+
+  updateBathymetryLayer(currentProj, currentBathy) {
+    let source = null;
+    switch (currentBathy) {
+      case "etopo1":
+      default:
+        source = new olsource.XYZ({
+          url: (
+            `/api/v1.0/tiles/bath/${currentBathy}` +
+            "/{z}/{x}/{y}.png"
+          ),
+          projection: currentProj,
+        })
+        break;
+    }
+
+    this.layer_bath.setSource(source);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
     props.url = "/api/v1.0/tiles" +
-                `/${this.props.options.interpType}` +
-                `/${this.props.options.interpRadius}` +
-                `/${this.props.options.interpNeighbours}` +
-                `/${this.props.state.projection}` +
-                `/${this.props.state.dataset}` +
-                `/${this.props.state.variable}` +
-                `/${this.props.state.time}` +
-                `/${this.props.state.depth}` +
-                `/${this.props.scale}` +
-                "/{z}/{x}/{y}.png";
+      `/${this.props.options.interpType}` +
+      `/${this.props.options.interpRadius}` +
+      `/${this.props.options.interpNeighbours}` +
+      `/${this.props.state.projection}` +
+      `/${this.props.state.dataset}` +
+      `/${this.props.state.variable}` +
+      `/${this.props.state.time}` +
+      `/${this.props.state.depth}` +
+      `/${this.props.scale}` +
+      "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
       new olcontrol.Attribution({
@@ -1202,18 +1249,25 @@ export default class Map extends React.PureComponent {
 
     datalayer.setSource(newSource);
 
-    // Update colour scale
-    if (this.scaleViewer != null) {
-      this.map.removeControl(this.scaleViewer);
+    if (this.shouldUpdateScaleViewer(this.props.state.dataset,
+                                     prevProps.state.dataset,
+                                     this.props.state.variable,
+                                     prevProps.state.variable,
+                                     this.props.scale,
+                                     prevProps.scale))
+    {
+      this.updateScaleViewer(this.props.state.dataset, this.props.state.variable, this.props.state.scale);
     }
-    this.scaleViewer = new app.ScaleViewer({
-      image: (
-        `/api/v1.0/scale/${this.props.state.dataset}` +
-        `/${this.props.state.variable}` +
-        `/${this.props.scale}.png`
-      )
-    });
-    this.map.addControl(this.scaleViewer);
+
+    if (this.shouldUpdateBathymetryLayer(this.props.state.projection,
+                                         prevProps.state.projection,
+                                         this.props.options.bathyContour,
+                                         prevProps.options.bathyContour))
+    {
+      this.updateBathymetryLayer(this.props.state.projection, this.props.options.bathyContour);
+    }
+
+
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
       this.layer_basemap = this.getBasemap(
@@ -1233,17 +1287,6 @@ export default class Map extends React.PureComponent {
         minZoom: MIN_ZOOM[this.props.state.projection],
         maxZoom: MAX_ZOOM[this.props.state.projection],
       });
-
-      // Update bathymetry
-      this.layer_bath.setSource(
-        new olsource.XYZ({
-          url: (
-            `/api/v1.0/tiles/bath/${this.props.state.projection}` +
-            "/{z}/{x}/{y}.png"
-          ),
-          projection: this.props.state.projection,
-        })
-      );
 
       // Update Hi-res bath layer
       this.layer_bathshapes.setSource(
@@ -1272,8 +1315,8 @@ export default class Map extends React.PureComponent {
     }
 
     if (prevProps.state.basemap != this.props.state.basemap ||
-        prevProps.state.basemap_attribution != this.props.state.basemap_attribution ||
-        prevProps.options.topoShadedRelief != this.props.options.topoShadedRelief
+      prevProps.state.basemap_attribution != this.props.state.basemap_attribution ||
+      prevProps.options.topoShadedRelief != this.props.options.topoShadedRelief
     ) {
       this.layer_basemap = this.getBasemap(
         this.props.state.basemap,
@@ -1333,7 +1376,7 @@ export default class Map extends React.PureComponent {
     if (this.vectorSource.getState() == "ready") {
       var dorefresh = this.vectorSource.forEachFeatureIntersectingExtent(
         extent,
-        function(f) {
+        function (f) {
           return f.get("resolution") > Math.round(resolution);
         }
       );
@@ -1390,7 +1433,7 @@ export default class Map extends React.PureComponent {
 
     var geom;
     var feat;
-    switch(type) {
+    switch (type) {
       case "point":
         this.props.updateState("point", data);
         this.props.updateState("modal", "point");
@@ -1460,7 +1503,7 @@ export default class Map extends React.PureComponent {
     }
 
     const viewExtent = this.map.getView().calculateExtent(this.map.getSize());
-    if (!olextent.containsExtent(viewExtent, this.vectorSource.getExtent()) ) {
+    if (!olextent.containsExtent(viewExtent, this.vectorSource.getExtent())) {
       this.map.getView().fit(this.vectorSource.getExtent(), this.map.getSize());
     }
   }
@@ -1478,10 +1521,10 @@ export default class Map extends React.PureComponent {
           ref={(c) => this.infoPopup = c}
         >
           <div className={"balloonClose"}>
-            <a href="#"  title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+            <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
           </div>
           <div className={"balloonLaunch"}>
-            <a href="#" style={{right:"5px", top:"20px"}} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+            <a href="#" style={{ right: "5px", top: "20px" }} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
           </div>
 
           <div ref={(c) => this.infoPopupContent = c}></div>

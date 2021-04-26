@@ -5,7 +5,7 @@ import itertools
 import json
 import re
 from bisect import bisect_left, bisect_right
-from typing import List
+from typing import List, Union
 
 import cftime
 import numpy as np
@@ -114,3 +114,14 @@ class DateTimeEncoder(json.JSONEncoder):
             return o.isoformat()
 
         return json.JSONEncoder.default(self, o)
+
+
+def trunc(values: Union[np.float, np.ndarray], num_decimals: int = 3) -> Union[np.float, np.ndarray]:
+    """
+    Truncates the floating-point value(s) to `num_decimals` places.
+
+    Robbed from:
+    https://stackoverflow.com/a/46020635/2231969
+    """
+    ten_to_the_power_of = 10**num_decimals
+    return np.trunc(values*ten_to_the_power_of) / ten_to_the_power_of

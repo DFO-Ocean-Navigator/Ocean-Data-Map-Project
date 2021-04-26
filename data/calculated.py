@@ -59,7 +59,7 @@ class CalculatedData(NetCDFData):
                                    attrs,
                                    self.url)
         else:
-            return self.dataset.variables[key]
+            return super().get_dataset_variable(key)
 
     @property
     def variables(self):

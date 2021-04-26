@@ -691,11 +691,11 @@ class NetCDFData(Data):
 
         return y_dim, x_dim
 
-    def get_dataset_variable(self, key: str):
+    def get_dataset_variable(self, key: str) -> xarray.DataArray:
         """
-        Returns the value of a given variable name from the dataset
+        Returns the xarray.DataArray for a given variable key
         """
-        return self.dataset.variables[key]
+        return self.dataset[key]
 
     @property
     def variables(self) -> VariableList:

@@ -133,8 +133,6 @@ class ObservationPlotter(PointPlotter):
             )
             point_data = np.ma.array(point_data)
 
-            point_data = self.apply_scale_factors(point_data)
-
         self.data = point_data
         self.observation_time = observation_time
         self.observation_times = observation_times
