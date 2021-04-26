@@ -10,7 +10,6 @@ import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-import scipy as sp
 import scipy.signal as spsignal
 
 _ureg = UnitRegistry()
