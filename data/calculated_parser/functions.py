@@ -410,7 +410,7 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     # Actually do the math.
     return dscb - bathy
 
-def calculate_del_C(depth,soundspeed,minima,maxima,freq_cutoff):
+def calculate_del_C(depth:np.ndarray,soundspeed:np.ndarray,minima:np.ndarray,maxima:np.ndarray,freq_cutoff:float) -> np.ndarray:
     """
      Calculate ΔC from a given sound profile and freq cutoff
      Required Arguments:
