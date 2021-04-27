@@ -477,7 +477,7 @@ def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutof
     minima = np.apply_along_axis(spsignal.find_peaks,0,-sound_speed)[0] 
     maxima = np.apply_along_axis(spsignal.find_peaks,0, sound_speed)[0]
     delC = calculate_del_C(depth,sound_speed,minima,maxima, freq_cutoff)
-    hasPSSC = np.empty_like(minima, dtype='float')
+    hasPSSC = np.zeros_like(minima, dtype='float')
     
     it = np.nditer(minima,flags=['refs_ok','multi_index'])
     for minima_array in it:
@@ -491,9 +491,7 @@ def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutof
                 p3 = maxima_list[1]
             else:
                 p3= maxima_list[0]
-            if p3 < p2: #if the only maximum is higher in the water column than the minima
-                hasPSSC[it.multi_index]=0
-            else:
+            if p3 > p2: #if the only maximum is not higher in the water column than the minima
                 p1_sound_speed = sound_speed[p1,it.multi_index[0], it.multi_index[1]]
                 p2_sound_speed = sound_speed[p2,it.multi_index[0], it.multi_index[1]]
                 p3_sound_speed = sound_speed[p3,it.multi_index[0], it.multi_index[1]]
@@ -503,10 +501,6 @@ def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutof
                 
                 if c1> delC[it.multi_index] and c2> delC[it.multi_index]: 
                     hasPSSC[it.multi_index]= 1
-                else:
-                    hasPSSC[it.multi_index]= 0
-        else:
-            hasPSSC[it.multi_index] = 0
                                                         
     return hasPSSC
 
