@@ -21,7 +21,6 @@ def list_kml_files(subdir):
 
     files = []
     for f in os.listdir(DIR):
-        print(f)
         name = None
         if not f.endswith(".kml"):
             continue
