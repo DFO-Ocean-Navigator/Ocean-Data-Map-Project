@@ -1,4 +1,3 @@
-import numpy as np
 import xarray as xr
 from data.utils import trunc
 
@@ -16,7 +15,6 @@ def data_array_to_geojson(data_array: xr.DataArray, lat_key: str, lon_key: str) 
     * The data value corresponding to a lat/lon pair (e.g. salinity or temperature)
     * A copy of the `attribs` field held in the data_array (yes there's lots of duplication...blame the geojson spec).
 
-
     Important notes:
 
     * All data values are truncated to 3 decimal places.
@@ -33,15 +31,23 @@ def data_array_to_geojson(data_array: xr.DataArray, lat_key: str, lon_key: str) 
     if data_array.ndim != 2:
         raise ValueError(f"Data is not a 2D field: {data_array.shape}")
 
+
     # Need to ensure that data values are 64-bit floats (i.e. Python builtin float) because
     # that's the only type of float that json will serialize without a custom serializer.
     # Floats from netCDF4 datasets are often 32-bit.
-    data = trunc(data_array.data.astype(float))
+    data = trunc(data_array).astype(float)
 
-    points = (Point(t) for t in zip(data_array[lat_key].data, data_array[lon_key].data))
+    attribs = { 
+        'units': data_array.attrs['units'],
+        'long_name': data_array.attrs['long_name'],
+        'short_name': data_array.attrs['short_name']
+     }
+
+    # Convert coord variables to list so that each value is auto-converted to a python float
+    points = (Point(t) for t in zip(data_array[lat_key].data.tolist(), data_array[lon_key].data.tolist()))
     features = [Feature(
         geometry=pt,
-        properties={**data_array.attrs, **{'data': data[i, i]}})
+        properties={**attribs, **{'data': data[i, i].item()}}) # Call .item() cuz the scalar values are wrapped in some kind of array
         for i, pt in enumerate(points)
     ]
     return FeatureCollection(features)

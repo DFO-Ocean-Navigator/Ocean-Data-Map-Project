@@ -5,32 +5,32 @@ import json
 import os
 import shutil
 import sqlite3
-import pandas as pd
 from io import BytesIO
 
-import numpy as np
-from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
-                   send_file, send_from_directory)
-from PIL import Image
-from dateutil.parser import parse as dateparse
-from shapely.geometry import Polygon, LinearRing, Point
-
 import data.class4 as class4
+import data.observational.queries as ob_queries
+import geojson
+import numpy as np
+import pandas as pd
 import plotting.colormap
 import plotting.scale
 import plotting.tile
 import utils.misc
 from data import open_dataset
+from data.observational import DataType, Platform, Sample, Station
+from data.observational import db as DB
 from data.sqlite_database import SQLiteDatabase
+from data.transformers.geojson import data_array_to_geojson
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
-from data.observational import db as DB
-from data.observational import Station, Platform, Sample, DataType
-import data.observational.queries as ob_queries
+from dateutil.parser import parse as dateparse
+from flask import (Blueprint, Response, abort, current_app, jsonify, request,
+                   send_file, send_from_directory)
 from flask_babel import gettext
+from marshmallow.exceptions import ValidationError
 from oceannavigator import DatasetConfig
+from PIL import Image
 from plotting.class4 import Class4Plotter
-from plotting.track import TrackPlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
@@ -40,9 +40,13 @@ from plotting.sound import SoundSpeedPlotter
 from plotting.stats import stats as areastats
 from plotting.stick import StickPlotter
 from plotting.timeseries import TimeseriesPlotter
+from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
+from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
+
+from .schemas import GetDataSchema
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -301,31 +305,40 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
-def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+@bp_v1_0.route('/api/v1.0/data/', methods=['GET'])
+def get_data_v1_0():
     """
-    API Format: /api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
+    Returns a geojson representation of requested model data.
 
-    <string:dataset>  : Dataset to extract data - Can be found using /api/v1.0/datasets
-    <string:variable> : Type of data to retrieve - found using /api/v1.0/variables/?dataset='...'
-    <int:time>        : Time retrieved data was gathered/modeled
-    <string:depth>    : Water Depth - found using /api/v1.0/depth/?dataset='...'
-    <string:location> : Location of the data you want to retrieve (Lat, Long)
+    API Format: GET /api/v1.0/data?...
 
-    **All Components Must be Included**
+    Required params:
+    * dataset: dataset key (e.g. giops_day)
+    * variable: variable key (e.g. votemper)
+    * time: time index (e.g. 0)
+    * depth: depth index (e.g. 49)
+    * geometry_type: the "shape" of the data being requested
     """
 
+    try:
+        result = GetDataSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    config = DatasetConfig(dataset)
-    with open_dataset(config) as ds:
-        date = ds.convert_to_timestamp(time)
-        data = utils.misc.get_point_data(
-            dataset, variable, date, depth,
-            list(map(float, location.split(",")))
+    config = DatasetConfig(result['dataset'])
+    
+    with open_dataset(config, variable=result['variable'], timestamp=result['time']) as ds:
+        return jsonify(
+            geojson.dumps(
+                data_array_to_geojson(
+                    ds.nc_data.get_dataset_variable(result['variable'])[result['time'], result['depth'], :, :],
+                    config.lat_var_key,
+                    config.lon_var_key
+                ),
+                allow_nan=True
+            )
         )
-        resp = jsonify(data)
-        resp.cache_control.max_age = 2
-        return resp
+            
 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')

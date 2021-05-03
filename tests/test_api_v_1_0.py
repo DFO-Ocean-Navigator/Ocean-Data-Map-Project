@@ -8,7 +8,6 @@ from unittest.mock import patch, PropertyMock, MagicMock
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
-from utils.errors import APIError
 
 app = create_app(testing=True)
 
