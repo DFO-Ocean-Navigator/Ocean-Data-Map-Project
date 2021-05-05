@@ -26,7 +26,7 @@ def list_kml_files(subdir):
             continue
         try:
             root = ET.parse(DIR + "/" + f).getroot()
-        except:
+        except ET.ParseError:
             continue
         nsmap = root.tag.split("}", 1)[0] + "}"
         for folder in root.iter(nsmap + "Folder"):
