@@ -169,7 +169,7 @@ colormaps = {
         _c('#000000')
     ]),
     'potential sub surface channel': mcolors.ListedColormap(
-        ['#9F3822','#082A81']
+        ['#ecf0f1','#f57732']
         ),
     'thermal': cmocean.cm.thermal,
     'neo_sst': mcolors.ListedColormap(
