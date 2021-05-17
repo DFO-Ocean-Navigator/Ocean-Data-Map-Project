@@ -110,6 +110,37 @@ class TimeseriesPlotter(PointPlotter):
                 # Under the current API this indicates that velocity data is being
                 # loaded. Save each velocity component (X and Y) for possible CSV
                 # export later.
+
+                velocity_variables = ['vozocrtx', 'vomecrty']
+
+                velocity_point_data = []
+                velocity_depths = []
+                for vel_variable in velocity_variables:
+                    for p in self.points:
+                        velocity_data = []
+                        if self.depth == 'all':
+                            d, depths = dataset.get_timeseries_profile(
+                                float(p[0]),
+                                float(p[1]),
+                                self.starttime,
+                                self.endtime,
+                                vel_variable
+                            )
+                        else:
+                            d, velocity_depths = dataset.get_timeseries_point(
+                                float(p[0]),
+                                float(p[1]),
+                                self.depth,
+                                self.starttime,
+                                self.endtime,
+                                vel_variable,
+                                return_depth=True
+                            )
+                    velocity_data.append(d)
+                    velocity_point_data.append(np.ma.array(velocity_data))
+
+                    self.quiver_data = velocity_point_data
+
                 """
                 self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
 
@@ -137,23 +168,25 @@ class TimeseriesPlotter(PointPlotter):
             "Longitude",
             "Time",
         ]
+        
+        have_quiver = hasattr(self, 'quiver_data')
 
-        if len(self.variables) > 1:
-            # Under the current API this indicates that velocity has been
-            # selected, which actually is derived from two variables: X and Y
-            # velocities. As such, the CSV export will also include X and Y
-            # velocity components (pulled from the quiver_data attribute) and
-            # bearing information (to be calculated below).
-            have_quiver = hasattr(self, 'quiver_data')
-        else:
-            have_quiver = False
+        # if len(self.variables) > 1:
+        #     # Under the current API this indicates that velocity has been
+        #     # selected, which actually is derived from two variables: X and Y
+        #     # velocities. As such, the CSV export will also include X and Y
+        #     # velocity components (pulled from the quiver_data attribute) and
+        #     # bearing information (to be calculated below).
+        #     have_quiver = hasattr(self, 'quiver_data')
+        # else:
+        #     have_quiver = False
 
         if self.depth != 'all':
             if isinstance(self.depth, str) or isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
-                    ["Depth", "%.4f%s" % (self.depths,
+                    ["Depth", "%.4f%s" % (self.depth,
                                         self.depth_unit)]
                 )
 
@@ -161,10 +194,12 @@ class TimeseriesPlotter(PointPlotter):
                                         self.variable_unit))
             if have_quiver:
                 columns.extend([
-                    "%s (%s)" % (self.variable_names[0],
-                                 self.variable_units[0]),
-                    "%s (%s)" % (self.variable_names[1],
-                                 self.variable_units[1]),
+                    # "%s (%s)" % (self.variable_names[0],
+                    #              self.variable_units[0]),
+                    # "%s (%s)" % (self.variable_names[1],
+                    #              self.variable_units[1]),
+                    " Water East Velocity (m/s)",
+                    " Water North Velocity (m/s)",
                     "Bearing (degrees clockwise positive from North)"
                 ])
         else:
@@ -177,8 +212,10 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 header_text = "%s (%s) %s (%s) %s (%s) %s" % (
                     self.variable_name, self.variable_unit,
-                    self.variable_names[0], self.variable_units[0],
-                    self.variable_names[1], self.variable_units[1],
+                    # self.variable_names[0], self.variable_units[0],
+                    # self.variable_names[1], self.variable_units[1],
+                    " Water East Velocity", "(m/s)",
+                    " Water North Velocity", "(m/s)",
                     "Bearing (degrees clockwise positive from North)"
                 )
                 header.append(["Variables", header_text])
