@@ -3,7 +3,6 @@
 import itertools
 import re
 import sqlite3
-import numpy as np
 from typing import List
 
 from data.variable import Variable
@@ -51,7 +50,6 @@ class SQLiteDatabase:
         """
 
         file_list = []
-        timestamp_list = []
 
         query = """
         SELECT
@@ -69,16 +67,9 @@ class SQLiteDatabase:
             for v in variable:
                 self.c.execute(query, (v, ts))
                 file_list.append(self.__flatten_list(self.c.fetchall()))
-                timestamp_list.append(str(ts))
 
-        # check if list is properly ordered if it contains multiple nc files:
-        if len(timestamp_list) > 1:       
-            file_list = [f for _,f in sorted(zip(timestamp_list,file_list))]
-
-        # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
-            file_list = list(set(self.__flatten_list(file_list)))
-
-        return file_list 
+        # funky way to remove duplicates while preserving order: https://stackoverflow.com/a/39835527
+        return list(dict.fromkeys(self.__flatten_list(file_list))) 
 
     def get_all_dimensions(self) -> List[str]:
         """Returns a list of all the dimensions in the Dimensions table.
