@@ -137,13 +137,14 @@ proj3031.setExtent([
 export default class Map extends React.PureComponent {
   constructor(props) {
     super(props);
-
+    
     this._drawing = false;
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
 
     this.state = {
-      location: [0, 90]
+      location: [0, 90],
+      quiverVariableJSON: null,
     };
 
     this.loader = function (extent, resolution, projection) {
@@ -218,12 +219,12 @@ export default class Map extends React.PureComponent {
       maxZoom: MAX_ZOOM[this.props.state.projection]
     }),
 
-      // Basemap layer
-      this.layer_basemap = this.getBasemap(
-        this.props.state.basemap,
-        this.props.state.projection,
-        this.props.state.basemap_attribution
-      );
+    // Basemap layer
+    this.layer_basemap = this.getBasemap(
+      this.props.state.basemap,
+      this.props.state.projection,
+      this.props.state.basemap_attribution
+    );
 
     // Data layer
     this.layer_data = new ollayer.Tile(
@@ -236,7 +237,7 @@ export default class Map extends React.PureComponent {
             })
           ],
         }),
-      });
+    });
 
     // Bathymetry layer
     this.layer_bath = new ollayer.Tile(
@@ -248,7 +249,7 @@ export default class Map extends React.PureComponent {
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
         preload: 7,
-      });
+    });
 
     // MBTiles Land shapes (high res)
     this.layer_landshapes = new ollayer.VectorTile(
@@ -269,7 +270,7 @@ export default class Map extends React.PureComponent {
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
         }),
-      });
+    });
 
     // MBTiles Bathymetry shapes (high res)
     this.layer_bathshapes = new ollayer.VectorTile(
@@ -287,7 +288,7 @@ export default class Map extends React.PureComponent {
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
         }),
-      });
+    });
 
     this.layer_obsDraw = new ollayer.Vector({
       source: this.obsDrawSource,
@@ -1543,4 +1544,5 @@ Map.propTypes = {
   action: PropTypes.func,
   partner: PropTypes.object,
   options: PropTypes.object,
+  quiverVariable: PropTypes.string,
 };

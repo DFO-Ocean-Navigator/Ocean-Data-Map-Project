@@ -53,6 +53,8 @@ export default class MapInputs extends React.Component {
               state={this.props.state}
               onUpdate={this.props.changeHandler}
               depth={true}
+              availableDatasets={this.props.availableDatasets}
+              datasetVariables={this.props.datasetVariables}
             />
             <Range
               id='scale'
@@ -278,4 +280,6 @@ MapInputs.propTypes = {
   showHelp: PropTypes.func,
   options: PropTypes.object,
   updateOptions: PropTypes.func,
+  availableDatasets: PropTypes.arrayOf(PropTypes.object),
+  datasetVariables: PropTypes.arrayOf(PropTypes.object)
 };
