@@ -15,8 +15,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -93,3 +91,4 @@ ENV/
 
 *.out
 data/calculated_parser/parsetab.py
+node_modules/
