@@ -358,7 +358,15 @@ class VariableConfig:
             return from_config in ['true', 'True'] or from_config == True
         except KeyError:
             return False
-
+    @property
+    def interpolation(self) -> dict:
+        """
+        """
+        try:
+            interp_config = self.__get_attribute("interpolation")
+            return interp_config
+        except KeyError:
+            return None
 
 class VectorVariableConfig(VariableConfig):
     """

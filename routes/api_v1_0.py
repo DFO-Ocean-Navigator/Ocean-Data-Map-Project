@@ -196,6 +196,7 @@ def variables_query_v1_0():
                 'id': variable,
                 'value': config.variable[variable].name,
                 'scale': config.variable[variable].scale,
+                'interp':config.variable[variable].interpolation
             })
     else:
         with open_dataset(config) as ds:
@@ -207,7 +208,8 @@ def variables_query_v1_0():
                     data.append({
                                 'id': v.key,
                                 'value': config.variable[v].name,
-                                'scale': config.variable[v].scale
+                                'scale': config.variable[v].scale,
+                                'interp':config.variable[v].interpolation
                                 })
 
     data = sorted(data, key=lambda k: k['value'])
