@@ -6,11 +6,11 @@ from typing import Union
 import metpy.calc
 import numpy as np
 import numpy.ma
+import scipy.signal as spsignal
 import seawater
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
-import scipy.signal as spsignal
 
 _ureg = UnitRegistry()
 
@@ -57,23 +57,23 @@ def magnitude(a, b):
     return np.sqrt(a ** 2 + b ** 2)
 
 
-def bearing(east_vel: np.ndarray, north_vel: np.ndarray) -> np.ndarray:
+def bearing(east_vel: xr.DataArray, north_vel: xr.DataArray) -> xr.DataArray:
     """
     Calculates the bearing (degrees clockwise positive from North) from
     component East and North vectors.
 
     Returns:
-        np.ndarray -- bearing of east_vel and north_vel
+        xr.DataArray -- bearing of east_vel and north_vel
     """
-
-    east_vel = np.squeeze(east_vel.values)
-    north_vel = np.squeeze(north_vel.values)
+    
+    east_vel = np.squeeze(east_vel)
+    north_vel = np.squeeze(north_vel)
 
     bearing = np.arctan2(east_vel, north_vel)
     bearing = np.pi / 2.0 - bearing
 
     negative_bearings = np.nonzero(bearing < 0)
-    bearing[negative_bearings] += 2 * np.pi
+    bearing.values[negative_bearings] += 2 * np.pi
     
     bearing *= 180.0 / np.pi
 
@@ -84,7 +84,7 @@ def bearing(east_vel: np.ndarray, north_vel: np.ndarray) -> np.ndarray:
                 np.abs(north_vel) < 10e-6
             )
         )
-    bearing[inds] = np.nan
+    bearing.values[inds] = np.nan
 
     return bearing
 

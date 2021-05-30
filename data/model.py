@@ -106,8 +106,12 @@ class Model(metaclass=abc.ABCMeta):
         neighbours,
         return_depth=False,
     ):
-        latitude = area[0, :].ravel()
-        longitude = area[1, :].ravel()
+        try:
+            latitude = area[0, :].ravel() # do we really need this slicing `:` BS?
+            longitude = area[1, :].ravel()
+        except IndexError:
+            latitude = area[0].ravel()
+            longitude = area[1].ravel()
 
         self.nc_data.interp = interp
         self.nc_data.radius = radius

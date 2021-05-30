@@ -19,6 +19,7 @@ const DATA_ELEMS = [
   "depth",
   "time",
   "starttime",
+  "quiverVariable",
 ];
 
 export default class DatasetSelector extends React.Component {
@@ -141,6 +142,7 @@ export default class DatasetSelector extends React.Component {
         return variable.id.includes("mag") && variable.id.includes("vel");
       })
     }
+    quiverVariables.unshift({ id: 'none', value: 'None' });
 
     return (
       <div className='DatasetSelector'>
@@ -168,9 +170,11 @@ export default class DatasetSelector extends React.Component {
 
         <SelectBox
           id="dataset-selector-quiver-selector"
+          name="quiverVariable"
           label={_("Quiver Variable")}
           placeholder={_("Quiver Variable")}
           options={quiverVariables}
+          onChange={this.onUpdate}
         />
 
         {this.props.depth && <ComboBox

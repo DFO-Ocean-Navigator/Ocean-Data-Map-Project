@@ -43,6 +43,7 @@ export default class OceanNavigator extends React.Component {
       datasetVariables: [],
       dataset: "giops_day",
       variable: "votemper",
+      quiverVariable: "none",
       quantum: "day",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
@@ -725,6 +726,7 @@ export default class OceanNavigator extends React.Component {
           partner={this.mapComponent2}
           scale={this.state.scale}
           options={this.state.options}
+          quiverVariable={this.state.quiverVariable}
         />
         <Map
           ref={(m) => this.mapComponent2 = m}
@@ -745,6 +747,7 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         scale={this.state.scale}
         options={this.state.options}
+        quiverVariable={this.state.quiverVariable}
       />;
     }
 

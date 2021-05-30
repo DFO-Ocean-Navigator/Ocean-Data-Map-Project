@@ -32,8 +32,9 @@ export default class SelectBox extends React.Component {
                 <ControlLabel>{this.props.label}</ControlLabel>
                 <FormControl
                     componentClass="select"
+                    name={this.props.name}
                     placeholder={disabled ? _("Loading...") : this.props.placeholder}
-                    onChange={this.props.onChange}
+                    onChange={ (e) => this.props.onChange(e.target.name, e.target.value) }
                     disabled={disabled}
                     value={this.props.selected}
                 >

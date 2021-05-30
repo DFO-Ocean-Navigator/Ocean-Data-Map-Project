@@ -57,7 +57,7 @@ class NetCDFData(Data):
                 if len(self._nc_files) > 1:
                     self.dataset = xarray.open_mfdataset(
                         self._nc_files,
-                        decode_times=decode_times,
+                        decode_times=decode_times
                     )
                 else:
                     self.dataset = xarray.open_dataset(
@@ -621,11 +621,11 @@ class NetCDFData(Data):
         return self._time_variable
 
     @property
-    def latlon_variables(self):
+    def latlon_variables(self) -> tuple:
         """Finds the lat and lon variable arrays in the dataset.
 
         Returns:
-            list -- list containing the xarray.DataArray's for latitude and
+            tuple -- tuple containing the xarray.DataArray's for latitude and
             longitude.
         """
         return (

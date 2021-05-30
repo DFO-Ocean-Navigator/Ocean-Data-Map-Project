@@ -38,7 +38,7 @@
     "jquery-ui": "^1.12.1",
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "js-yaml": "^3.13.1",
-    "ol": "~5.3.3",
+    "ol": "^6.5.0",
     "papaparse": "^5.2.0",
     "proj4": "~2.4.3",
     "prop-types": "^15.5.10",
