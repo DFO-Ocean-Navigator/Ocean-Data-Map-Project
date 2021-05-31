@@ -67,7 +67,6 @@ export default class ComboBox extends React.Component {
       // Get index of selected option
       if (e.target.selectedIndex != -1) {
         const dataset = e.target.options[e.target.selectedIndex].dataset;
-
         // Construct keys and their associative value to be sent to 
         // OceanNavigator state
         for (let key in dataset) {
@@ -79,6 +78,18 @@ export default class ComboBox extends React.Component {
           values.push(dataset[key]);
         }
       }
+      //Check if this is a combobox is for variable
+      if(this.props.id === "variable"){
+        const variableConfig = this.state.data[e.target.selectedIndex];
+        if(variableConfig.interp !== null){
+          keys.push("options");
+          values.push(variableConfig.interp);
+          console.log(keys);
+          console.log(values);
+        }
+
+      }
+
       // Update OceanNavigator state
       this.props.onUpdate(keys, values);
     }

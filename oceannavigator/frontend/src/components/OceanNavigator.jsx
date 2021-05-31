@@ -229,6 +229,11 @@ export default class OceanNavigator extends React.Component {
               newState.time = value[i];
             }
             break;
+          case "options":
+            let newOptions = this.state.options;
+            Object.assign(newOptions,value[i]);
+            newState["options"] = newOptions;
+            break;
           default:
             newState[key[i]] = value[i];
         }
