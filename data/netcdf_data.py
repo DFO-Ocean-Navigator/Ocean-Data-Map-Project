@@ -604,7 +604,6 @@ class NetCDFData(Data):
 
             # Nearest-neighbour interpolation (junk)
             elif self.interp == "nearest":
-
                 return np.ma.asarray(pyresample.kd_tree.resample_nearest(input_def, data,
                                                            output_def, radius_of_influence=float(self.radius), nprocs=8))
 
