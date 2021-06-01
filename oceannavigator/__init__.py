@@ -2,24 +2,30 @@ import logging
 import os
 from sys import argv
 
-from flask import Flask, request, send_file
-from flask_compress import Compress
-from flask_babel import Babel
+import dask
 import sentry_sdk
+from data.observational import db
+from flask import Flask, request, send_file
+from flask_babel import Babel
+from flask_compress import Compress
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 # Although DatasetConfig is not used in this module, this import is absolutely necessary
 # because it is how the rest of the app gets access to DatasetConfig
 from .dataset_config import DatasetConfig
-from data.observational import db
 
 babel = Babel()
 
-def config_blueprints(app):
+def config_blueprints(app) -> None:
     from routes.api_v1_0 import bp_v1_0
     app.register_blueprint(bp_v1_0)
 
-def create_app(testing = False):
+def config_dask(app) -> None:
+    dask.config.set(scheduler=app.config.get('DASK_SCHEDULER', 'processes'))
+    dask.config.set(num_workers=app.config.get('DASK_NUM_WORKERS', 4))
+    dask.config.set({"multiprocessing.context": app.config.get('DASK_MULTIPROCESSING_CONTEXT', 'spawn') })
+
+def create_app(testing: bool = False):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
@@ -47,6 +53,8 @@ def create_app(testing = False):
     def public_index():
         res = send_file('frontend/public/index.html')
         return res
+
+    config_dask(app)
 
     config_blueprints(app)
 

@@ -58,7 +58,6 @@ class NetCDFData(Data):
                     self.dataset = xarray.open_mfdataset(
                         self._nc_files,
                         decode_times=decode_times,
-                        chunks=200,
                     )
                 else:
                     self.dataset = xarray.open_dataset(
@@ -569,8 +568,7 @@ class NetCDFData(Data):
             # Interpolation with gaussian weighting
             if self.interp == "gaussian":
                 return pyresample.kd_tree.resample_gauss(input_def, data,
-                                                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                                                         nprocs=8)
+                                                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None)
 
             # Bilinear weighting
             elif self.interp == "bilinear":
