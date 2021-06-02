@@ -108,9 +108,9 @@ class TimeseriesPlotter(PointPlotter):
             
             if 'mag' in variable and self.depth != 'all':
                 # Under the current API this indicates that velocity data is being
-                # loaded. Save each velocity component (X and Y) for possible CSV
-                # export later. Only provides velocity components for a single
-                # depth. 
+                # loaded. Save each velocity vectorcomponent (X and Y) for possible 
+                # CSV export later. Currently, we only provide velocity components 
+                # for a single depth. 
 
                 vector_variables = [
                     self.dataset_config.vector_variables[variable]['east_vector_component'],
@@ -164,7 +164,7 @@ class TimeseriesPlotter(PointPlotter):
         have_quiver = hasattr(self, 'quiver_data')
 
         if self.depth != 'all':
-            if isinstance(self.depth, str) or isinstance(self.depth, str):
+            if isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
