@@ -105,26 +105,46 @@ class TimeseriesPlotter(PointPlotter):
             times = dataset.nc_data.timestamps[starttime_idx: endtime_idx + 1]
             if self.query.get('dataset_quantum') == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
-
-            if 'mag' in variable:
+            
+            if 'mag' in variable and self.depth != 'all':
                 # Under the current API this indicates that velocity data is being
-                # loaded. Save each velocity component (X and Y) for possible CSV
-                # export later.
-                """
-                self.quiver_data = [point_data[:, 0, :], point_data[:, 1, :]]
+                # loaded. Save each velocity vectorcomponent (X and Y) for possible 
+                # CSV export later. Currently, we only provide velocity components 
+                # for a single depth. 
 
-                point_data = np.ma.expand_dims(
-                    np.sqrt(
-                        point_data[:, 0, :] ** 2 + point_data[:, 1, :] ** 2
-                    ), 1
-                )
-                """
+                vector_variables = [
+                    self.dataset_config.vector_variables[variable]['east_vector_component'],
+                    self.dataset_config.vector_variables[variable]['north_vector_component']
+                ]
+
+                self.vector_variable_names = self.get_variable_names(dataset, vector_variables)
+                self.vector_variable_units = self.get_variable_units(dataset, vector_variables)
+                                
+                d = []
+                vector_point_data = []
+                for vv in vector_variables:
+                    for p in self.points:
+                        vector_data = []
+                        
+                        d,_ = dataset.get_timeseries_point(
+                            float(p[0]),
+                            float(p[1]),
+                            self.depth,
+                            self.starttime,
+                            self.endtime,
+                            vv,
+                            return_depth=True
+                        )
+                    
+                    vector_data.append(d)
+                    vector_point_data.append(np.ma.array(vector_data))
+                
+                self.quiver_data = vector_point_data
 
             self.times = times
             self.data = point_data
             self.depths = depths
             self.depth_unit = "m"
-
 
     def csv(self):
         header = [
@@ -137,23 +157,18 @@ class TimeseriesPlotter(PointPlotter):
             "Longitude",
             "Time",
         ]
-
-        if len(self.variables) > 1:
-            # Under the current API this indicates that velocity has been
-            # selected, which actually is derived from two variables: X and Y
-            # velocities. As such, the CSV export will also include X and Y
-            # velocity components (pulled from the quiver_data attribute) and
-            # bearing information (to be calculated below).
-            have_quiver = hasattr(self, 'quiver_data')
-        else:
-            have_quiver = False
+        
+        # Check to see if the quiver attribute is present. If so the CSV export will 
+        # also include X and Y velocity components (pulled from the quiver_data attribute) 
+        # and bearing information (to be calculated below).
+        have_quiver = hasattr(self, 'quiver_data')
 
         if self.depth != 'all':
-            if isinstance(self.depth, str) or isinstance(self.depth, str):
+            if isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
                 header.append(
-                    ["Depth", "%.4f%s" % (self.depths,
+                    ["Depth", "%.4f%s" % (self.depth,
                                         self.depth_unit)]
                 )
 
@@ -161,10 +176,10 @@ class TimeseriesPlotter(PointPlotter):
                                         self.variable_unit))
             if have_quiver:
                 columns.extend([
-                    "%s (%s)" % (self.variable_names[0],
-                                 self.variable_units[0]),
-                    "%s (%s)" % (self.variable_names[1],
-                                 self.variable_units[1]),
+                    "%s (%s)" % (self.vector_variable_names[0],
+                                 self.vector_variable_units[0]),
+                    "%s (%s)" % (self.vector_variable_names[1],
+                                 self.vector_variable_units[1]),
                     "Bearing (degrees clockwise positive from North)"
                 ])
         else:
@@ -177,13 +192,15 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 header_text = "%s (%s) %s (%s) %s (%s) %s" % (
                     self.variable_name, self.variable_unit,
-                    self.variable_names[0], self.variable_units[0],
-                    self.variable_names[1], self.variable_units[1],
+                    self.vector_variable_names[0], self.vector_variable_units[0],
+                    self.vector_variable_names[1], self.vector_variable_units[1],
                     "Bearing (degrees clockwise positive from North)"
                 )
                 header.append(["Variables", header_text])
-                for var_name in [self.variable_name, self.variable_names[0],
-                                 self.variable_names[1], "Bearing"]:
+                for var_name in [self.variable_name, 
+                                 self.vector_variable_names[0], 
+                                 self.vector_variable_names[1],
+                                 "Bearing"]:
                     for dep in self.depths[:max_dep_idx + 1]:
                         columns.append(
                             "%s at %d%s" % (
