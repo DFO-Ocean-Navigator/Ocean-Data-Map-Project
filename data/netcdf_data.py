@@ -58,7 +58,6 @@ class NetCDFData(Data):
                     self.dataset = xarray.open_mfdataset(
                         self._nc_files,
                         decode_times=decode_times,
-                        chunks=200,
                     )
                 else:
                     self.dataset = xarray.open_dataset(
