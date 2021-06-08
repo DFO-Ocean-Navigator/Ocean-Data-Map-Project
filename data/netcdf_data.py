@@ -569,8 +569,7 @@ class NetCDFData(Data):
             # Interpolation with gaussian weighting
             if self.interp == "gaussian":
                 return pyresample.kd_tree.resample_gauss(input_def, data,
-                                                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None,
-                                                         nprocs=8)
+                                                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None)
 
             # Bilinear weighting
             elif self.interp == "bilinear":
@@ -585,7 +584,7 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_custom(input_def, data,
                                                           output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                                                          weight_funcs=weight, nprocs=8)
+                                                          weight_funcs=weight)
 
             # Inverse-square weighting
             elif self.interp == "inverse":
@@ -600,12 +599,12 @@ class NetCDFData(Data):
 
                 return pyresample.kd_tree.resample_custom(input_def, data,
                                                           output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                                                          weight_funcs=weight, nprocs=8)
+                                                          weight_funcs=weight)
 
             # Nearest-neighbour interpolation (junk)
             elif self.interp == "nearest":
                 return np.ma.asarray(pyresample.kd_tree.resample_nearest(input_def, data,
-                                                           output_def, radius_of_influence=float(self.radius), nprocs=8))
+                                                           output_def, radius_of_influence=float(self.radius)))
 
         raise ValueError(f"Unknown interpolation method {self.interp}.")
 
