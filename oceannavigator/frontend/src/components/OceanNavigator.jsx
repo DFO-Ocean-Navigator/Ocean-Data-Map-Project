@@ -223,6 +223,7 @@ export default class OceanNavigator extends React.Component {
     }
     else {
       for (let i = 0; i < key.length; ++i) {
+        console.log(key[i]);
         switch(key[i]) {
           case "time":
             if (value[i] !== undefined) {
@@ -232,7 +233,8 @@ export default class OceanNavigator extends React.Component {
           case "options":
             let newOptions = this.state.options;
             Object.assign(newOptions,value[i]);
-            newState["options"] = newOptions;
+            newState.options = newOptions;
+            console.log(newState);
             break;
           default:
             newState[key[i]] = value[i];
@@ -240,6 +242,8 @@ export default class OceanNavigator extends React.Component {
       }
     }
     this.setState(newState);
+    console.log("NewSTATE ---");
+    console.log(this.state);
   }
 
   updateScale(key, value) {
