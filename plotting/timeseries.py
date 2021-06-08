@@ -126,7 +126,7 @@ class TimeseriesPlotter(PointPlotter):
                     for p in self.points:
                         vector_data = []
                         
-                        d,_ = dataset.get_timeseries_point(
+                        d, _ = dataset.get_timeseries_point(
                             float(p[0]),
                             float(p[1]),
                             self.depth,
@@ -161,7 +161,7 @@ class TimeseriesPlotter(PointPlotter):
         # Check to see if the quiver attribute is present. If so the CSV export will 
         # also include X and Y velocity components (pulled from the quiver_data attribute) 
         # and bearing information (to be calculated below).
-        have_quiver = hasattr(self, 'quiver_data')
+        has_quiver = hasattr(self, 'quiver_data')
 
         if self.depth != 'all':
             if isinstance(self.depth, str):
@@ -174,7 +174,7 @@ class TimeseriesPlotter(PointPlotter):
 
             columns.append("%s (%s)" % (self.variable_name,
                                         self.variable_unit))
-            if have_quiver:
+            if has_quiver:
                 columns.extend([
                     "%s (%s)" % (self.vector_variable_names[0],
                                  self.vector_variable_units[0]),
@@ -184,7 +184,7 @@ class TimeseriesPlotter(PointPlotter):
                 ])
         else:
             max_dep_idx = np.where(~self.data[:, 0, 0, :].mask)[1].max()
-            if not have_quiver:
+            if not has_quiver:
                 header.append(["Variable", "%s (%s)" % (self.variable_name,
                                                         self.variable_unit)])
                 for dep in self.depths[:max_dep_idx + 1]:
@@ -198,8 +198,7 @@ class TimeseriesPlotter(PointPlotter):
                 )
                 header.append(["Variables", header_text])
                 for var_name in [self.variable_name, 
-                                 self.vector_variable_names[0], 
-                                 self.vector_variable_names[1],
+                                 *self.vector_variable_names, 
                                  "Bearing"]:
                     for dep in self.depths[:max_dep_idx + 1]:
                         columns.append(
@@ -208,7 +207,7 @@ class TimeseriesPlotter(PointPlotter):
                             )
                         )
 
-        if have_quiver:
+        if has_quiver:
             # Calculate bearings.
             bearing = np.arctan2(self.quiver_data[1][:],
                                  self.quiver_data[0][:])
@@ -238,7 +237,7 @@ class TimeseriesPlotter(PointPlotter):
                 if self.depth == 'all':
                     entry.extend(
                         ["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
-                    if have_quiver:
+                    if has_quiver:
                         entry.extend(
                             ["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
                         entry.extend(
@@ -247,7 +246,7 @@ class TimeseriesPlotter(PointPlotter):
                             ["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
-                    if have_quiver:
+                    if has_quiver:
                         entry.extend([
                             "%0.3f" % self.quiver_data[0][p, t],
                             "%0.3f" % self.quiver_data[1][p, t],
