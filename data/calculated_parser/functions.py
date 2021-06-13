@@ -52,9 +52,41 @@ def magnitude(a, b):
     b: ndarray
 
     Returns:
-        ndarray -- magnitude of a and b
+        np.ndarray -- magnitude of a and b
     """
     return np.sqrt(a ** 2 + b ** 2)
+
+
+def bearing(east_vel: np.ndarray, north_vel: np.ndarray) -> np.ndarray:
+    """
+    Calculates the bearing (degrees clockwise positive from North) from
+    component East and North vectors.
+
+    Returns:
+        np.ndarray -- bearing of east_vel and north_vel
+    """
+
+    east_vel = np.squeeze(east_vel.values)
+    north_vel = np.squeeze(north_vel.values)
+
+    bearing = np.arctan2(east_vel, north_vel)
+    bearing = np.pi / 2.0 - bearing
+
+    negative_bearings = np.nonzero(bearing < 0)
+    bearing[negative_bearings] += 2 * np.pi
+    
+    bearing *= 180.0 / np.pi
+
+    # Deal with undefined angles (where velocity is 0 or very close)
+    inds = np.where(
+            np.logical_and(
+                np.abs(east_vel) < 10e-6,
+                np.abs(north_vel) < 10e-6
+            )
+        )
+    bearing[inds] = np.nan
+
+    return bearing
 
 
 def unstaggered_speed(u_vel, v_vel):
