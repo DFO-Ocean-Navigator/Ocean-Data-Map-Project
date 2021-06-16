@@ -81,11 +81,8 @@ export default class ComboBox extends React.Component {
       //Check if this is a combobox is for variable
       if(this.props.id === "variable"){
         const variableConfig = this.state.data[e.target.selectedIndex];
-        if(variableConfig.interp !== null){
-          keys.push("options");
-          values.push(variableConfig.interp);
-        }
-
+        keys.push("options");
+        values.push(variableConfig.interp);
       }
 
       // Update OceanNavigator state
