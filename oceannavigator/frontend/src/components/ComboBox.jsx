@@ -84,8 +84,6 @@ export default class ComboBox extends React.Component {
         if(variableConfig.interp !== null){
           keys.push("options");
           values.push(variableConfig.interp);
-          console.log(keys);
-          console.log(values);
         }
 
       }

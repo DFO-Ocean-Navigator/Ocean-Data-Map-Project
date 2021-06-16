@@ -34,7 +34,7 @@ export default class DatasetSelector extends React.Component {
     this.props.onUpdate("setDefaultScale", true);
     this.onUpdate(key, value);
     if(Array.isArray(key)){
-      if ("options" in key){
+      if (key.includes("options")){
         this.props.onUpdateOptions(value[key.indexOf("options")]); 
       }
     }
