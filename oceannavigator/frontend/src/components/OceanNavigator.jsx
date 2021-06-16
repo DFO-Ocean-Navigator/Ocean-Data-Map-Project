@@ -242,8 +242,6 @@ export default class OceanNavigator extends React.Component {
       }
     }
     this.setState(newState);
-    console.log("NewSTATE ---");
-    console.log(this.state);
   }
 
   updateScale(key, value) {
