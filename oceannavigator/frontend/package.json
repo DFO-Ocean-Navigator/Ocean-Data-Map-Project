@@ -21,6 +21,7 @@
     "babel-preset-react-optimize": "1.0.1",
     "bootstrap": "^3.3.7",
     "bower": "^1.8.8",
+    "css-what": "^5.0.1",
     "dateformat": "^2.0.0",
     "deep-equal": "^2.0.1",
     "detect-browser": "^1.7.0",
@@ -30,6 +31,7 @@
     "font-awesome": "^4.7.0",
     "i18next": "^8.4.2",
     "i18next-browser-languagedetector": "^2.0.0",
+    "is-svg": "^4.2.2",
     "jquery": "~3.5.0",
     "jquery-ui": "^1.12.1",
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
@@ -49,7 +51,9 @@
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
-    "webfontloader": "^1.6.28"
+    "trim-newlines": "^3.0.1",
+    "webfontloader": "^1.6.28",
+    "yargs-parser": "^5.0.0-security.0"
   },
   "devDependencies": {
     "babel-polyfill": "^6.26.0",
