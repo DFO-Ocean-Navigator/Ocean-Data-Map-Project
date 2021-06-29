@@ -40,26 +40,16 @@ export default class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
+      const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
       if (language == "pythonPlot") {
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "PLOT/";
+        var url = window.location.origin + "/api/v1.0/generatescript/?query=" + query + "&lang=python" + "&scriptType=PLOT";
       } else if (language == "rPlot") {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/" + "PLOT/";
-      } else {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        if (language == "pythonCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "CSV/";
-        } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url +
-          `&save&format=csv&size=${this.props.query.size}` +
-          `&dpi=${this.props.query.dpi}` + "/r/" + "CSV/";
-        }
-      
+        var url = window.location.origin + "/api/v1.0/generatescript/?query=" +query+ "&lang=r" + "&scriptType=PLOT";
+      } else if (language == "pythonCSV") {
+        var url = window.location.origin + "/api/v1.0/generatescript/?query=" + query + "&lang=python" +"&scriptType=CSV";
+      } else if (language == "rCSV") {
+        var url = window.location.origin + "/api/v1.0/generatescript/?query=" + query+ "&lang=r" + "&scriptType=CSV";
       }
-    
     window.location.href = url;
   }
 
