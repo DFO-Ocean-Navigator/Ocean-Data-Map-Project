@@ -25,7 +25,7 @@ const SmartPhone = require("detect-mobile-browser")(false);
 const X_IMAGE = require("../images/x.png");
 
 // CHS S111 standard arrows for quiver layer
-const I0 = require("../images/s111/I0.svg");
+const I0 = require("../images/s111/I0.svg"); // lgtm [js/unused-local-variable]
 const I1 = require("../images/s111/I1.svg");
 const I2 = require("../images/s111/I2.svg");
 const I3 = require("../images/s111/I3.svg");

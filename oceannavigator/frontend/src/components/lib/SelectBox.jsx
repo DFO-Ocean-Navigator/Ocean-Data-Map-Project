@@ -3,7 +3,7 @@ import { FormGroup, ControlLabel, FormControl } from "react-bootstrap";
 import PropTypes from "prop-types";
 const fastEqual = require('fast-deep-equal/es6/react');
 
-const i18n = require("../../i18n.js");
+const i18n = require("../../i18n.js"); // lgtm [js/unused-local-variable]
 
 export default class SelectBox extends React.Component {
     shouldComponentUpdate(nextProps) {
