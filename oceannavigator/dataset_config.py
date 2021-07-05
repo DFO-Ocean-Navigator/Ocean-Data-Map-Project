@@ -361,6 +361,7 @@ class VariableConfig:
     @property
     def interpolation(self) -> dict:
         """
+        This will contain the variable specific interpolation config from the datasetconfig file
         """
         try:
             interp_config = self.__get_attribute("interpolation")
