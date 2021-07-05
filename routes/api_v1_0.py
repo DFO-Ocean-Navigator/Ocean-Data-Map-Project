@@ -106,7 +106,7 @@ def generateScript():
     elif lang == "r":
         b = generateR(query, scriptType)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='API_script_'+scriptType+'.r', mimetype='application/x-python')
+                         attachment_filename='API_script_'+scriptType+'.r', mimetype='text/plain')
 
     return resp
 
