@@ -40,27 +40,29 @@ export default class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
-      if (language == "pythonPlot") {
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "PLOT/";
-      } else if (language == "rPlot") {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/" + "PLOT/";
-      } else {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        if (language == "pythonCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "CSV/";
-        } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url +
-          `&save&format=csv&size=${this.props.query.size}` +
-          `&dpi=${this.props.query.dpi}` + "/r/" + "CSV/";
-        }
-      
+      const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
+      let scriptLang = null;
+      let scriptType = null;
+      switch(language){
+        case "pythonPlot":
+          scriptLang = "python";
+          scriptType = "PLOT";
+          break;
+        case "rPlot":
+          scriptLang = "r";
+          scriptType = "PLOT";
+          break;
+        case "pythonCSV":
+          scriptLang = "python";
+          scriptType = "CSV"
+          break;
+        case "rCSV":
+          scriptLang = "r";
+          scriptType = "CSV"
+          break;
       }
-    
-    window.location.href = url;
+      const url = `${window.location.origin}/api/v1.0/generatescript/?query=${query}&lang=${scriptLang}&scriptType=${scriptType}`;
+      window.location.href = url;
   }
 
   componentDidMount() {

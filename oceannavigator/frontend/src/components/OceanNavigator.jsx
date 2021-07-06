@@ -91,6 +91,8 @@ export default class OceanNavigator extends React.Component {
     this.mapComponent = null;
     this.mapComponent2 = null;
 
+    this.prevOptions = this.state.options;
+
     const preload = new Image();
     preload.src = LOADING_IMAGE;
 
@@ -171,14 +173,21 @@ export default class OceanNavigator extends React.Component {
   }
 
   updateOptions(newOptions) {
-    let options = Object.assign({}, this.state.options);
-    options.interpType = newOptions.interpType;
-    options.interpRadius = newOptions.interpRadius;
-    options.interpNeighbours = newOptions.interpNeighbours;
-    options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity;
-    options.bathymetry = newOptions.bathymetry;
-    options.topoShadedRelief = newOptions.topoShadedRelief;
-    options.bathyContour = newOptions.bathyContour;
+    let options = null;
+    if (newOptions == null) {
+      options = this.prevOptions;
+    }
+    else {
+      options = Object.assign({}, this.state.options);
+      this.prevOptions = this.state.options;
+      options.interpType = newOptions.interpType ? newOptions.interpType : options.interpType;
+      options.interpRadius = newOptions.interpRadius ? newOptions.interpRadius : options.interpRadius;
+      options.interpNeighbours = newOptions.interpNeighbours ? newOptions.interpNeighbours : options.interpNeighbours;
+      options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity ? newOptions.mapBathymetryOpacity : options.mapBathymetryOpacity;
+      options.bathymetry = newOptions.bathymetry ? newOptions.bathymetry : options.bathymetry;
+      options.topoShadedRelief = newOptions.topoShadedRelief ? newOptions.topoShadedRelief : options.topoShadedRelief;
+      options.bathyContour = newOptions.bathyContour ? newOptions.bathyContour : options.bathyContour;
+    }
 
     this.setState({options});
   }

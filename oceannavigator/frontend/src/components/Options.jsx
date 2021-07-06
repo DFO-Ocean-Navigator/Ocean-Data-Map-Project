@@ -53,7 +53,7 @@ export default class Options extends React.Component {
                   <FormControl
                     componentClass="select"
                     onChange={event => this.updateOptions("interpType", event.target.value)}
-                    value={this.state.interpType}
+                    value={this.props.options.interpType}
                   >
                     <option value="gaussian">{_("Gaussian Weighting (Default)")}</option>
                     <option value="bilinear">{_("Bilinear")}</option>

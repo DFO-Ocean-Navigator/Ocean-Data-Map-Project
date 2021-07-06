@@ -84,18 +84,29 @@ def test_sentry():
     raise APIError("This is the Ocean Navigator API Sentry integration test endpoint.")
 
 
-@bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
-def generateScript(query: str, lang: str, scriptType: str):
+@bp_v1_0.route("/api/v1.0/generatescript/")
+def generateScript():
+    """
+    API Format: /api/v1.0/generatescript/?query='...'&lang='...'&scriptType='...'
 
+    query(JSON): Will contain the URI encoded JSON query object for the api script
+    lang (string) : Language of the requested API script (python/r)
+    scriptType (string): Type of requested script (PLOT/CSV)
+    **Query must be written in JSON and converted to encodedURI**
+    """
+    args = request.args
+    query = args.get("query")
+    lang = args.get("lang")
+    scriptType = args.get("scriptType")
     if lang == "python":
         b = generatePython(query, scriptType)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.py', mimetype='application/x-python')
+                         attachment_filename='API_script_'+scriptType+'.py', mimetype='application/x-python')
 
     elif lang == "r":
         b = generateR(query, scriptType)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.r', mimetype='application/x-python')
+                         attachment_filename='API_script_'+scriptType+'.r', mimetype='text/plain')
 
     return resp
 
@@ -196,6 +207,7 @@ def variables_query_v1_0():
                 'id': variable,
                 'value': config.variable[variable].name,
                 'scale': config.variable[variable].scale,
+                'interp':config.variable[variable].interpolation
             })
     else:
         with open_dataset(config) as ds:
@@ -207,7 +219,8 @@ def variables_query_v1_0():
                     data.append({
                                 'id': v.key,
                                 'value': config.variable[v].name,
-                                'scale': config.variable[v].scale
+                                'scale': config.variable[v].scale,
+                                'interp':config.variable[v].interpolation
                                 })
 
     data = sorted(data, key=lambda k: k['value'])

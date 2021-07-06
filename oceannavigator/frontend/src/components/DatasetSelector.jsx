@@ -34,6 +34,11 @@ export default class DatasetSelector extends React.Component {
   variableUpdate(key, value) {
     this.props.onUpdate("setDefaultScale", true);
     this.onUpdate(key, value);
+    if(Array.isArray(key)){
+      if (key.includes("options")){
+        this.props.onUpdateOptions(value[key.indexOf("options")]); 
+      }
+    }
   }
 
   onUpdate(key, value) {
@@ -50,7 +55,6 @@ export default class DatasetSelector extends React.Component {
         newState[key[i]] = value[i];
       }
     }
-
     this.props.onUpdate(this.props.id, newState);
   }
 
