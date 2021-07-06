@@ -10,10 +10,9 @@ import PropTypes from "prop-types";
 const i18n = require("../i18n.js");
 
 export default class ComboBox extends React.Component {
-  constructor(props) {
-
+  constructor(props) {   
     super(props);
-    
+
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
 

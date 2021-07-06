@@ -15,6 +15,8 @@ import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import WarningBar from "./WarningBar.jsx";
 
+import { GetDatasetsPromise, GetVariablesPromise } from "../remote/OceanNavigator.js";
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const LOADING_IMAGE = require("../images/bar_loader.gif");
@@ -33,12 +35,15 @@ function formatLatLon(latitude, longitude) {
 export default class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
-    
+
     ReactGA.ga("send", "pageview");
 
     this.state = {
+      availableDatasets: [],
+      datasetVariables: [],
       dataset: "giops_day",
       variable: "votemper",
+      quiverVariable: "none",
       quantum: "day",
       variable_scale: [-5,30], // Default variable range for left/Main Map
       depth: 0,
@@ -527,14 +532,32 @@ export default class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
-  componentDidMount(){
+  componentDidMount() {
+    GetDatasetsPromise().then(result => {
+      this.setState({
+        availableDatasets: result.data,
+      });
+    },
+    error => {
+      console.error(error);
+    });
+
+    GetVariablesPromise(this.state.dataset).then(result => {
+      this.setState({
+        datasetVariables: result.data,
+      });
+    },
+    error => {
+      console.error(error);
+    });
+    
     // Setting the starttime and time variable default value
     const time_promise = this.get_timestamp_promise("giops_day", "votemper");
-      $.when(time_promise).done(function(time) {
-        const newTime = time[time.length-1].id;
-        const newStarttime = time[0].id;
-        this.setState({time: newTime, starttime: newStarttime});
-      }.bind(this));
+    $.when(time_promise).done(function(time) {
+      const newTime = time[time.length-1].id;
+      const newStarttime = time[0].id;
+      this.setState({time: newTime, starttime: newStarttime});
+    }.bind(this));
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -712,6 +735,7 @@ export default class OceanNavigator extends React.Component {
           partner={this.mapComponent2}
           scale={this.state.scale}
           options={this.state.options}
+          quiverVariable={this.state.quiverVariable}
         />
         <Map
           ref={(m) => this.mapComponent2 = m}
@@ -732,6 +756,7 @@ export default class OceanNavigator extends React.Component {
         updateState={this.updateState}
         scale={this.state.scale}
         options={this.state.options}
+        quiverVariable={this.state.quiverVariable}
       />;
     }
 
@@ -744,6 +769,8 @@ export default class OceanNavigator extends React.Component {
           showHelp={this.toggleCompareHelp}
           options={this.state.options}
           updateOptions={this.updateOptions}
+          availableDatasets={this.state.availableDatasets}
+          datasetVariables={this.state.datasetVariables}
         />
         <div className={contentClassName}>
           <MapToolbar

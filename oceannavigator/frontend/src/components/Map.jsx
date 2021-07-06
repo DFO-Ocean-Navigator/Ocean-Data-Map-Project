@@ -24,6 +24,26 @@ const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
 const X_IMAGE = require("../images/x.png");
 
+// CHS S111 standard arrows for quiver layer
+const I0 = require("../images/s111/I0.svg"); // lgtm [js/unused-local-variable]
+const I1 = require("../images/s111/I1.svg");
+const I2 = require("../images/s111/I2.svg");
+const I3 = require("../images/s111/I3.svg");
+const I4 = require("../images/s111/I4.svg");
+const I5 = require("../images/s111/I5.svg");
+const I6 = require("../images/s111/I6.svg");
+const I7 = require("../images/s111/I7.svg");
+const I8 = require("../images/s111/I8.svg");
+const I9 = require("../images/s111/I9.svg");
+
+function knotsToMetersPerSecond(knots) {
+  return knots * 0.514444;
+}
+
+function deg2rad(deg) {
+  return deg * Math.PI/180.0;
+}
+
 var app = {};
 const COLORS = [
   [0, 0, 255],
@@ -64,6 +84,11 @@ const MAX_ZOOM = {
 
 var drifter_color = {};
 
+const ol_ext_inherits = function(child, parent) {
+  child.prototype = Object.create(parent.prototype);
+  child.prototype.constructor = child;
+};
+
 // Reset Pan button
 app.ResetPanButton = function (opt_options) {
   const options = opt_options || {};
@@ -90,7 +115,7 @@ app.ResetPanButton = function (opt_options) {
     target: options.target,
   });
 };
-ol.inherits(app.ResetPanButton, olcontrol.Control);
+ol_ext_inherits(app.ResetPanButton, olcontrol.Control);
 
 // Variable scale legend
 app.ScaleViewer = function (opt_options) {
@@ -110,7 +135,7 @@ app.ScaleViewer = function (opt_options) {
     target: options.target,
   });
 };
-ol.inherits(app.ScaleViewer, olcontrol.Control);
+ol_ext_inherits(app.ScaleViewer, olcontrol.Control);
 
 proj4.defs("EPSG:32661", "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
 proj4.defs("EPSG:3031", "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
@@ -137,13 +162,13 @@ proj3031.setExtent([
 export default class Map extends React.PureComponent {
   constructor(props) {
     super(props);
-
+    
     this._drawing = false;
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
 
     this.state = {
-      location: [0, 90]
+      location: [0, 90],
     };
 
     this.loader = function (extent, resolution, projection) {
@@ -218,12 +243,12 @@ export default class Map extends React.PureComponent {
       maxZoom: MAX_ZOOM[this.props.state.projection]
     }),
 
-      // Basemap layer
-      this.layer_basemap = this.getBasemap(
-        this.props.state.basemap,
-        this.props.state.projection,
-        this.props.state.basemap_attribution
-      );
+    // Basemap layer
+    this.layer_basemap = this.getBasemap(
+      this.props.state.basemap,
+      this.props.state.projection,
+      this.props.state.basemap_attribution
+    );
 
     // Data layer
     this.layer_data = new ollayer.Tile(
@@ -236,7 +261,7 @@ export default class Map extends React.PureComponent {
             })
           ],
         }),
-      });
+    });
 
     // Bathymetry layer
     this.layer_bath = new ollayer.Tile(
@@ -248,7 +273,7 @@ export default class Map extends React.PureComponent {
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
         preload: 7,
-      });
+    });
 
     // MBTiles Land shapes (high res)
     this.layer_landshapes = new ollayer.VectorTile(
@@ -269,7 +294,7 @@ export default class Map extends React.PureComponent {
           url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
           projection: this.props.state.projection,
         }),
-      });
+    });
 
     // MBTiles Bathymetry shapes (high res)
     this.layer_bathshapes = new ollayer.VectorTile(
@@ -287,7 +312,7 @@ export default class Map extends React.PureComponent {
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
         }),
-      });
+    });
 
     this.layer_obsDraw = new ollayer.Vector({
       source: this.obsDrawSource,
@@ -503,7 +528,117 @@ export default class Map extends React.PureComponent {
           }
 
         }.bind(this),
-      });
+    });
+
+    const anchor = [0.5, 0.5];
+    this.layer_quiver = new ollayer.Vector(
+      {
+        source: null, // set source during update function below
+        style: function(feature, resolution) {
+          const velocity = parseFloat(feature.get("data"));
+          const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
+          if (velocity < knotsToMetersPerSecond(0.5)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.3,
+                src: I1,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(1.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.35,
+                src: I2,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(2.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.35,
+                src: I3,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(3.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.4,
+                src: I4,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(5.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.5,
+                src: I5,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(7.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.7,
+                src: I6,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(10.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.75,
+                src: I7,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else if (velocity < knotsToMetersPerSecond(13.0)) {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 0.9,
+                src: I8,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+          else {
+            return new olstyle.Style({
+              image: new olstyle.Icon({
+                scale: 1.0,
+                src: I9,
+                opacity: 1,
+                anchor: anchor,
+                rotation: rotationRads
+              })
+            })
+          }
+        }
+      }
+    );
 
     // Construct our map
     this.map = new ol.Map({
@@ -515,6 +650,7 @@ export default class Map extends React.PureComponent {
         this.layer_bathshapes,
         this.layer_vector,
         this.layer_obsDraw,
+        this.layer_quiver,
       ],
       controls: olcontrol.defaults({
         zoom: true,
@@ -578,9 +714,20 @@ export default class Map extends React.PureComponent {
           return feature;
         }
       );
-      if (feature && feature.name) {
+      if (feature && feature.get("name")) {
         this.overlay.setPosition(e.coordinate);
-        this.popupElement.innerHTML = feature.name;
+        if (feature.get("data")) {
+          this.popupElement.innerHTML = ReactDOMServer.renderToString(
+            <table>
+              <tr><td>Variable</td><td>{feature.get("name")}</td></tr>
+              <tr><td>Data</td><td>{feature.get("data")}</td></tr>
+              <tr><td>Units</td><td>{feature.get("units")}</td></tr>
+              <tr><td>Bearing (+ve deg clockwise N)</td><td>{feature.get("bearing")}</td></tr>
+            </table>
+          );
+        } else {
+          this.popupElement.innerHTML = feature.get("name");
+        }
         $(this.map.getTarget()).css("cursor", "pointer");
       } else if (feature && feature.get("class") == "observation") {
         if (feature.get("meta")) {
@@ -610,10 +757,6 @@ export default class Map extends React.PureComponent {
           });
         }
         // this.popupElement.innerHTML = feature.get("name");
-        $(this.map.getTarget()).css("cursor", "pointer");
-      } else if (feature && feature.get("name")) {
-        this.overlay.setPosition(e.coordinate);
-        this.popupElement.innerHTML = feature.get("name");
         $(this.map.getTarget()).css("cursor", "pointer");
       } else {
         this.overlay.setPosition(undefined);
@@ -1172,6 +1315,7 @@ export default class Map extends React.PureComponent {
     this.layer_bathshapes.setZIndex(4);
     this.layer_vector.setZIndex(5);
     this.layer_obsDraw.setZIndex(6);
+    this.layer_quiver.setZIndex(100);
   }
 
   shouldUpdateScaleViewer(currentDataset, prevDataset,
@@ -1221,6 +1365,35 @@ export default class Map extends React.PureComponent {
     this.layer_bath.setSource(source);
   }
 
+  shouldUpdateQuiverLayer(currentDataset, prevDataset,
+                          currentQuiverVariable, prevQuiverVariable,
+                          currentDepth, prevDepth,
+                          currentTime, prevTime) {
+    return (currentDataset !== prevDataset) ||
+           (currentQuiverVariable !== prevQuiverVariable) ||
+           (currentDepth !== prevDepth) ||
+           (currentTime !== prevTime);
+  }
+
+  updateQuiverLayer(currentDataset, currentQuiverVariable, currentDepth, currentTime) {
+    
+    let source = null;
+    if (currentQuiverVariable !== 'none') {
+      source = new olsource.Vector(
+        {
+          url: `/api/v1.0/data?dataset=${currentDataset}&variable=${currentQuiverVariable}&time=${currentTime}&depth=${currentDepth}&geometry_type=area`,
+          format: new olformat.GeoJSON(
+            { 
+              featureProjection: olproj.get("EPSG:3857"),
+              dataProjection: olproj.get("EPSG:4326")
+            }
+          )
+        }
+      );
+    }   
+    this.layer_quiver.setSource(source);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
@@ -1265,6 +1438,21 @@ export default class Map extends React.PureComponent {
                                          prevProps.options.bathyContour))
     {
       this.updateBathymetryLayer(this.props.state.projection, this.props.options.bathyContour);
+    }
+
+    if (this.shouldUpdateQuiverLayer(this.props.state.dataset,
+                                     prevProps.state.dataset,
+                                     this.props.quiverVariable,
+                                     prevProps.quiverVariable,
+                                     this.props.state.depth,
+                                     prevProps.state.depth,
+                                     this.props.state.time,
+                                     prevProps.state.time)) 
+    {
+      this.updateQuiverLayer(this.props.state.dataset,
+                             this.props.quiverVariable,
+                             this.props.state.depth,
+                             this.props.state.time);
     }
 
 
@@ -1543,4 +1731,5 @@ Map.propTypes = {
   action: PropTypes.func,
   partner: PropTypes.object,
   options: PropTypes.object,
+  quiverVariable: PropTypes.string,
 };

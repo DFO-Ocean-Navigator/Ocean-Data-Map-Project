@@ -338,20 +338,54 @@ def get_data_v1_0():
     except ValidationError as e:
         abort(400, str(e))
 
+    cached_file_name = os.path.join(
+        current_app.config['CACHE_DIR'],
+        "data",
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson"
+        )
+    
+    if os.path.isfile(cached_file_name):
+        print(f"Using cached {cached_file_name}")
+        with open(cached_file_name, 'r') as f:
+            send_file(f, 'application/json')
+
     config = DatasetConfig(result['dataset'])
     
     with open_dataset(config, variable=result['variable'], timestamp=result['time']) as ds:
-        return jsonify(
-            geojson.dumps(
-                data_array_to_geojson(
-                    ds.nc_data.get_dataset_variable(result['variable'])[result['time'], result['depth'], :, :],
-                    config.lat_var_key,
-                    config.lon_var_key
-                ),
-                allow_nan=True
+
+        lat_var, lon_var = ds.nc_data.latlon_variables
+
+        lat_slice = slice(0, lat_var.size, 8)
+        lon_slice = slice(0, lon_var.size, 8)
+
+        time_index = ds.nc_data.timestamp_to_time_index(result['time'])
+        
+        data = ds \
+                .nc_data \
+                .get_dataset_variable(result['variable'])[time_index, result['depth'], lat_slice, lon_slice]
+        
+        bearings = None
+        if 'mag' in result['variable']:
+            with open_dataset(config, variable='bearing', timestamp=result['time']) as ds_bearing:
+                bearings = ds_bearing \
+                                .nc_data \
+                                .get_dataset_variable('bearing')[time_index, result['depth'], lat_slice, lon_slice]
+                                
+        d = data_array_to_geojson(
+                data,
+                bearings, # this is a hack
+                lat_var[lat_slice],
+                lon_var[lon_slice]
             )
+
+        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
+        with open(cached_file_name, 'w', encoding='utf-8') as f:
+            geojson.dump(d, f)
+        
+
+        return jsonify(
+           d
         )
-            
 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')

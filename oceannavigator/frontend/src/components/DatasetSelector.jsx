@@ -5,6 +5,7 @@ import ComboBox from "./ComboBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 import VelocitySelector from "./VelocitySelector.jsx";
+import SelectBox from "./lib/SelectBox.jsx";
 
 const i18n = require("../i18n.js");
 
@@ -18,11 +19,11 @@ const DATA_ELEMS = [
   "depth",
   "time",
   "starttime",
+  "quiverVariable",
 ];
 
 export default class DatasetSelector extends React.Component {
   constructor(props) {
-
     super(props);
 
     // Function bindings
@@ -62,6 +63,7 @@ export default class DatasetSelector extends React.Component {
     _("Variable");
     _("Depth");
     _("Time (UTC)");
+    _("Quiver Variable");
 
     let variables = "";
     switch (this.props.variables) {
@@ -138,6 +140,14 @@ export default class DatasetSelector extends React.Component {
       ];  
     }
 
+    let quiverVariables = [];
+    if (this.props.datasetVariables) {
+      quiverVariables = this.props.datasetVariables.filter((variable) => {
+        return variable.id.includes("mag") && variable.id.includes("vel");
+      })
+    }
+    quiverVariables.unshift({ id: 'none', value: 'None' });
+
     return (
       <div className='DatasetSelector'>
 
@@ -161,6 +171,15 @@ export default class DatasetSelector extends React.Component {
         ><h1>{_("Variable")}</h1></ComboBox>
 
         {velocity_selector}
+
+        <SelectBox
+          id="dataset-selector-quiver-selector"
+          name="quiverVariable"
+          label={_("Quiver Variable")}
+          placeholder={_("Quiver Variable")}
+          options={quiverVariables}
+          onChange={this.onUpdate}
+        />
 
         {this.props.depth && <ComboBox
           id='depth'
@@ -198,4 +217,6 @@ DatasetSelector.propTypes = {
   line: PropTypes.bool,
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
+  availableDatasets: PropTypes.arrayOf(PropTypes.object),
+  datasetVariables: PropTypes.arrayOf(PropTypes.object)
 };
