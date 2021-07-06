@@ -52,6 +52,7 @@ export default class MapInputs extends React.Component {
               id='dataset_0'
               state={this.props.state}
               onUpdate={this.props.changeHandler}
+              onUpdateOptions={this.props.updateOptions}
               depth={true}
             />
             <Range
