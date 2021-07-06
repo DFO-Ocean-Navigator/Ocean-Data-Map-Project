@@ -55,7 +55,7 @@
     "react-numeric-input": "^2.2.3",
     "trim-newlines": "^3.0.1",
     "webfontloader": "^1.6.28",
-    "yargs-parser": "^5.0.0-security.0"
+    "yargs-parser": "^13.1.2"
   },
   "devDependencies": {
     "babel-polyfill": "^6.26.0",
