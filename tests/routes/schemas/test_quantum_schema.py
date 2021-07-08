@@ -1,7 +1,6 @@
-"""Unit tests for routes.schemas.get_data_schema
+"""Unit tests for routes.schemas.quantum_schema
 """
 import unittest
-from operator import le
 
 from routes.schemas.quantum_schema import QuantumSchema
 

@@ -46,7 +46,7 @@ from plotting.ts import TemperatureSalinityPlotter
 from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import GetDataSchema, QuantumSchema
+from .schemas import DepthSchema, GetDataSchema, QuantumSchema
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -240,15 +240,13 @@ def depth_query_v1_0():
         Response -- Response object containing all depths available for the given variable as a JSON array.
     """
 
-    args = request.args
+    try:
+        result = DepthSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset using &dataset='...'")
-    if 'variable' not in args:
-        raise APIError("Please specify a variable using &variable='...' ")
-
-    dataset = args.get('dataset')
-    variable = args.get('variable')
+    dataset = result['dataset']
+    variable = result['variable']
 
     config = DatasetConfig(dataset)
 
@@ -260,7 +258,7 @@ def depth_query_v1_0():
         v = ds.variables[variable]
 
         if v.has_depth():
-            if str(args.get('all')).lower() in ['true', 'yes', 'on']:
+            if result['all'].lower() in ['true', 'yes', 'on']:
                 data.append(
                     {'id': 'all', 'value': gettext('All Depths')})
 
