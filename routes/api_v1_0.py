@@ -46,7 +46,8 @@ from plotting.ts import TemperatureSalinityPlotter
 from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import DepthSchema, GetDataSchema, QuantumSchema
+from .schemas import (DepthSchema, GetDataSchema, QuantumSchema,
+                      TimestampsSchema)
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -232,7 +233,7 @@ def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
 
-    Required Arguments:
+    Required parameters:
     * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
     * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
 
@@ -747,24 +748,20 @@ def timestamps():
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
 
-    Raises:
-        APIError: if dataset or variable is not specified in the request
-
     Returns:
         Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
         dataset and variable.
     """
 
-    args = request.args
-    if "dataset" not in args:
-        raise APIError("Please specify a dataset via ?dataset=dataset_name")
+    try:
+        result = TimestampsSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    dataset = args.get("dataset")
+    dataset = result['dataset']
+    variable = result['variable']
+
     config = DatasetConfig(dataset)
-
-    if "variable" not in args:
-        raise APIError("Please specify a variable via ?variable=variable_name")
-    variable = args.get("variable")
 
     # Handle possible list of URLs for staggered grid velocity field datasets
     url = config.url if not isinstance(config.url, list) else config.url[0]
