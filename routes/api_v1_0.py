@@ -46,7 +46,7 @@ from plotting.ts import TemperatureSalinityPlotter
 from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import GetDataSchema
+from .schemas import GetDataSchema, QuantumSchema
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -153,20 +153,19 @@ def quantum_query_v1_0():
 
     API Format: /api/v1.0/quantum/
 
-    Raises:
-        APIError: If `dataset` is not present in API arguments.
+    Required parameters:
+    * dataset       : Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
 
     Returns:
         Response -- Response object containing the dataset quantum string as JSON.
     """
 
-    args = request.args
+    try:
+        result = QuantumSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset Using ?dataset='...' ")
-
-    dataset = args.get('dataset')
-    config = DatasetConfig(dataset)
+    config = DatasetConfig(result['dataset'])
 
     quantum = config.quantum
 
