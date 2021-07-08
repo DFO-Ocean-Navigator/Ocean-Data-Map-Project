@@ -259,9 +259,10 @@ def depth_query_v1_0():
         v = ds.variables[variable]
 
         if v.has_depth():
-            if result['all'].lower() in ['true', 'yes', 'on']:
-                data.append(
-                    {'id': 'all', 'value': gettext('All Depths')})
+            if 'all' in result.keys():
+                if result['all'].lower() in ['true', 'yes', 'on']:
+                    data.append(
+                        {'id': 'all', 'value': gettext('All Depths')})
 
             for idx, value in enumerate(np.round(ds.depths)):
                 data.append({
