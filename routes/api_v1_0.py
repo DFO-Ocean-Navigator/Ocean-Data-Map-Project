@@ -46,8 +46,8 @@ from plotting.ts import TemperatureSalinityPlotter
 from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import (DepthSchema, GetDataSchema, QuantumSchema,
-                      TimestampsSchema)
+from .schemas import (DepthSchema, GenerateScriptSchema, GetDataSchema,
+                      QuantumSchema, TimestampsSchema)
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -95,19 +95,25 @@ def generateScript():
     scriptType (string): Type of requested script (PLOT/CSV)
     **Query must be written in JSON and converted to encodedURI**
     """
-    args = request.args
-    query = args.get("query")
-    lang = args.get("lang")
-    scriptType = args.get("scriptType")
+    
+    try:
+        result = GenerateScriptSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    lang = result['lang']
+    query = result['query']
+    script_type = result['scriptType']
+
     if lang == "python":
-        b = generatePython(query, scriptType)
+        b = generatePython(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='API_script_'+scriptType+'.py', mimetype='application/x-python')
+                         attachment_filename=f"API_script_{script_type}.py", mimetype='application/x-python')
 
     elif lang == "r":
-        b = generateR(query, scriptType)
+        b = generateR(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='API_script_'+scriptType+'.r', mimetype='text/plain')
+                         attachment_filename=f"API_script_{script_type}.r", mimetype='text/plain')
 
     return resp
 
