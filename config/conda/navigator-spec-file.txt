@@ -172,7 +172,7 @@ https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-napoleon-0.7-py_0.ta
 https://conda.anaconda.org/conda-forge/noarch/typing_inspect-0.6.0-pyh9f0ad1d_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/defopt-6.0.1-py36h9f0ad1d_1.tar.bz2
 https://navigator.oceansdata.ca/pkgs/gdal-2.3.3-py36hf242f0b_1.tar.bz2
-https://repo.anaconda.com/pkgs/main/linux-64/gunicorn-20.0.4-py36_0.conda
+https://conda.anaconda.org/conda-forge/linux-64/gunicorn-20.1.0-py36h5fab9bb_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/jinja2-2.10.1-py_0.tar.bz2
 https://navigator.oceansdata.ca/pkgs/matplotlib-base-3.1.0-py36hfd891ef_1.tar.bz2
 https://navigator.oceansdata.ca/pkgs/netcdf4-1.5.1.2-py36had58050_0.tar.bz2
