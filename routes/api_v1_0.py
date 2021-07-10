@@ -46,7 +46,8 @@ from plotting.ts import TemperatureSalinityPlotter
 from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import GetDataSchema
+from .schemas import (DepthSchema, GenerateScriptSchema, GetDataSchema,
+                      QuantumSchema, TimestampsSchema)
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -94,19 +95,25 @@ def generateScript():
     scriptType (string): Type of requested script (PLOT/CSV)
     **Query must be written in JSON and converted to encodedURI**
     """
-    args = request.args
-    query = args.get("query")
-    lang = args.get("lang")
-    scriptType = args.get("scriptType")
+    
+    try:
+        result = GenerateScriptSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    lang = result['lang']
+    query = result['query']
+    script_type = result['scriptType']
+
     if lang == "python":
-        b = generatePython(query, scriptType)
+        b = generatePython(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='API_script_'+scriptType+'.py', mimetype='application/x-python')
+                         attachment_filename=f"API_script_{script_type}.py", mimetype='application/x-python')
 
     elif lang == "r":
-        b = generateR(query, scriptType)
+        b = generateR(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='API_script_'+scriptType+'.r', mimetype='text/plain')
+                         attachment_filename=f"API_script_{script_type}.r", mimetype='text/plain')
 
     return resp
 
@@ -153,20 +160,19 @@ def quantum_query_v1_0():
 
     API Format: /api/v1.0/quantum/
 
-    Raises:
-        APIError: If `dataset` is not present in API arguments.
+    Required parameters:
+    * dataset       : Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
 
     Returns:
         Response -- Response object containing the dataset quantum string as JSON.
     """
 
-    args = request.args
+    try:
+        result = QuantumSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset Using ?dataset='...' ")
-
-    dataset = args.get('dataset')
-    config = DatasetConfig(dataset)
+    config = DatasetConfig(result['dataset'])
 
     quantum = config.quantum
 
@@ -233,7 +239,7 @@ def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
 
-    Required Arguments:
+    Required parameters:
     * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
     * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
 
@@ -241,15 +247,13 @@ def depth_query_v1_0():
         Response -- Response object containing all depths available for the given variable as a JSON array.
     """
 
-    args = request.args
+    try:
+        result = DepthSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset using &dataset='...'")
-    if 'variable' not in args:
-        raise APIError("Please specify a variable using &variable='...' ")
-
-    dataset = args.get('dataset')
-    variable = args.get('variable')
+    dataset = result['dataset']
+    variable = result['variable']
 
     config = DatasetConfig(dataset)
 
@@ -261,9 +265,10 @@ def depth_query_v1_0():
         v = ds.variables[variable]
 
         if v.has_depth():
-            if str(args.get('all')).lower() in ['true', 'yes', 'on']:
-                data.append(
-                    {'id': 'all', 'value': gettext('All Depths')})
+            if 'all' in result.keys():
+                if result['all'].lower() in ['true', 'yes', 'on']:
+                    data.append(
+                        {'id': 'all', 'value': gettext('All Depths')})
 
             for idx, value in enumerate(np.round(ds.depths)):
                 data.append({
@@ -750,24 +755,20 @@ def timestamps():
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
 
-    Raises:
-        APIError: if dataset or variable is not specified in the request
-
     Returns:
         Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
         dataset and variable.
     """
 
-    args = request.args
-    if "dataset" not in args:
-        raise APIError("Please specify a dataset via ?dataset=dataset_name")
+    try:
+        result = TimestampsSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    dataset = args.get("dataset")
+    dataset = result['dataset']
+    variable = result['variable']
+
     config = DatasetConfig(dataset)
-
-    if "variable" not in args:
-        raise APIError("Please specify a variable via ?variable=variable_name")
-    variable = args.get("variable")
 
     # Handle possible list of URLs for staggered grid velocity field datasets
     url = config.url if not isinstance(config.url, list) else config.url[0]
