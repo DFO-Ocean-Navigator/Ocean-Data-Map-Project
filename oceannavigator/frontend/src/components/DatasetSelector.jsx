@@ -172,15 +172,6 @@ export default class DatasetSelector extends React.Component {
 
         {velocity_selector}
 
-        <SelectBox
-          id="dataset-selector-quiver-selector"
-          name="quiverVariable"
-          label={_("Quiver Variable")}
-          placeholder={_("Quiver Variable")}
-          options={quiverVariables}
-          onChange={this.onUpdate}
-        />
-
         {this.props.depth && <ComboBox
           id='depth'
           state={this.props.state.depth}
