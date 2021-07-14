@@ -4,8 +4,8 @@ library(jsonlite)
 query <- '{q}'
 
 dpi <- 144
-
-fname <- paste("ONAV_","PLOT",".png", sep="")
+queryObj <- fromJSON(query)
+fname <- paste("ONAV_PLOT_", queryObj["dataset"],"_", queryObj["variable"],".png", sep="")
 
 gsub("[\r\n]", "", query)
 base_url <- "http://navigator.oceansdata.ca/api/v1.0/plot/?"
