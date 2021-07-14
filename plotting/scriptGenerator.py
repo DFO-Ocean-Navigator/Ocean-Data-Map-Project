@@ -25,7 +25,7 @@ def generatePython(url, scriptType: str) -> BytesIO:
         if scriptType == "PLOT":
             template = template.format(q = query, var = var)
         else:
-            template = template.format(q = query)
+            template = template.format(q = query, var = var)
 
         finalScript = BytesIO()
         finalScript.write(bytes(template,'utf-8'))
