@@ -5,13 +5,13 @@ query <- '{q}'
 
 dpi <- 144
 
-fname <- "script_template_" + toString(query["dataset"]) + "_" + toString(query["{var}"]) + ".png"
+fname <- paste("ONAV_","PLOT",".png", sep="")
 
 gsub("[\r\n]", "", query)
 base_url <- "http://navigator.oceansdata.ca/api/v1.0/plot/?"
-url <- base_url + URLencode(query) + "&dpi=" + toString(dpi)
+url <- paste(base_url,"&query=",URLencode(query),"&dpi=",toString(dpi), sep="")
 print(url)
 
 
 print("Downloading file and exiting...")
-download.file(url, fname, wget)
+download.file(url, fname, method="libcurl")
