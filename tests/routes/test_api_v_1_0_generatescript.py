@@ -27,7 +27,6 @@ class TestApiv10GenerateScript(unittest.TestCase):
         
             self.assertEqual(res.status_code, 200)
 
-    @unittest.skip('Missing CSV template for R...')
     def test_generatescript_endpoint_for_csv_script_type(self) -> None:
 
         for l in self.langs:
