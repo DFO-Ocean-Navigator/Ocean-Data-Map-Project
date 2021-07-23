@@ -264,7 +264,7 @@ export default class OceanNavigator extends React.Component {
   get_timestamp_promise(dataset, variable) {
 
     return $.ajax(
-      "/api/v1.0/timestamps/?dataset=" +
+        "/api/v1.0/timestamps/?dataset=" +
       dataset +
       "&variable=" +
       variable
@@ -315,7 +315,7 @@ export default class OceanNavigator extends React.Component {
 
     }.bind(this));
 
-/*
+    /*
     const time_promise = $.ajax(
       "/api/timestamp/" +
       this.state.dataset + "/" +
@@ -623,8 +623,8 @@ export default class OceanNavigator extends React.Component {
           />
         );
         modalTitle = formatLatLon(
-          this.state.point[0][0],
-          this.state.point[0][1]
+            this.state.point[0][0],
+            this.state.point[0][1]
         );
         break;
       case "line":

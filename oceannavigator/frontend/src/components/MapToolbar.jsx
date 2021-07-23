@@ -375,10 +375,10 @@ export default class MapToolbar extends React.Component {
           });
 
           this.props.action(
-            "add",
-            this.state.parser,
-            points,
-            this.state.parsedFile
+              "add",
+              this.state.parser,
+              points,
+              this.state.parsedFile
           );
         }.bind(this),
       });

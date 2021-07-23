@@ -340,7 +340,7 @@ export default class ObservationSelector extends React.Component {
               <div className='input' style={{width: '100%'}}>
                 <h1>Search Radius (km) around
                   ({this.props.area[0][0].toFixed(4)},&nbsp;
-                  {this.props.area[0][1].toFixed(4)})
+                {this.props.area[0][1].toFixed(4)})
                 </h1>
                 <div style={{width: '95%', margin: '0 auto'}}>
                   <Slider

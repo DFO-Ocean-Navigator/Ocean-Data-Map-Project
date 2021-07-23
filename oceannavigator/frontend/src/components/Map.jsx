@@ -245,215 +245,92 @@ export default class Map extends React.PureComponent {
 
     // Basemap layer
     this.layer_basemap = this.getBasemap(
-      this.props.state.basemap,
-      this.props.state.projection,
-      this.props.state.basemap_attribution
+        this.props.state.basemap,
+        this.props.state.projection,
+        this.props.state.basemap_attribution
     );
 
     // Data layer
     this.layer_data = new ollayer.Tile(
-      {
-        preload: 7,
-        source: new olsource.XYZ({
-          attributions: [
-            new olcontrol.Attribution({
-              html: "CONCEPTS",
-            })
-          ],
-        }),
-    });
+        {
+          preload: 7,
+          source: new olsource.XYZ({
+            attributions: [
+              new olcontrol.Attribution({
+                html: "CONCEPTS",
+              })
+            ],
+          }),
+        });
 
     // Bathymetry layer
     this.layer_bath = new ollayer.Tile(
-      {
-        source: new olsource.XYZ({
-          url: `/api/v1.0/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
-          projection: this.props.state.projection,
-        }),
-        opacity: this.props.options.mapBathymetryOpacity,
-        visible: this.props.options.bathymetry,
-        preload: 7,
-    });
+        {
+          source: new olsource.XYZ({
+            url: `/api/v1.0/tiles/bath/${this.props.state.projection}/{z}/{x}/{y}.png`,
+            projection: this.props.state.projection,
+          }),
+          opacity: this.props.options.mapBathymetryOpacity,
+          visible: this.props.options.bathymetry,
+          preload: 7,
+        });
 
     // MBTiles Land shapes (high res)
     this.layer_landshapes = new ollayer.VectorTile(
-      {
-        opacity: 1,
-        style: new olstyle.Style({
-          stroke: new olstyle.Stroke({
-            color: 'rgba(0, 0, 0, 1)'
+        {
+          opacity: 1,
+          style: new olstyle.Style({
+            stroke: new olstyle.Stroke({
+              color: 'rgba(0, 0, 0, 1)'
+            }),
+            fill: new olstyle.Fill({
+              color: 'white'
+            })
           }),
-          fill: new olstyle.Fill({
-            color: 'white'
-          })
-        }),
-        source: new olsource.VectorTile({
-          format: new olformat.MVT(),
-          tileGrid: this.vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
-          projection: this.props.state.projection,
-        }),
-    });
+          source: new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+            projection: this.props.state.projection,
+          }),
+        });
 
     // MBTiles Bathymetry shapes (high res)
     this.layer_bathshapes = new ollayer.VectorTile(
-      {
-        opacity: this.props.options.mapBathymetryOpacity,
-        visible: this.props.options.bathymetry,
-        style: new olstyle.Style({
-          stroke: new olstyle.Stroke({
-            color: 'rgba(0, 0, 0, 1)'
-          })
-        }),
-        source: new olsource.VectorTile({
-          format: new olformat.MVT(),
-          tileGrid: this.vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
-        }),
-    });
+        {
+          opacity: this.props.options.mapBathymetryOpacity,
+          visible: this.props.options.bathymetry,
+          style: new olstyle.Style({
+            stroke: new olstyle.Stroke({
+              color: 'rgba(0, 0, 0, 1)'
+            })
+          }),
+          source: new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          }),
+        });
 
     this.layer_obsDraw = new ollayer.Vector({
       source: this.obsDrawSource,
     });
     // Drawing layer
     this.layer_vector = new ollayer.Vector(
-      {
-        source: this.vectorSource,
-        style: function (feat, res) {
+        {
+          source: this.vectorSource,
+          style: function (feat, res) {
 
-          if (feat.get("class") == "observation") {
-            if (feat.getGeometry() instanceof olgeom.LineString) {
-              let color = drifter_color[feat.get("id")];
-
-              if (color === undefined) {
-                color = COLORS[Object.keys(drifter_color).length % COLORS.length];
-                drifter_color[feat.get("id")] = color;
-              }
-              const styles = [
-                new olstyle.Style({
-                  stroke: new olstyle.Stroke({
-                    color: [color[0], color[1], color[2], 0.004],
-                    width: 8,
-                  }),
-                }),
-                new olstyle.Style({
-                  stroke: new olstyle.Stroke({
-                    color: color,
-                    width: SmartPhone.isAny() ? 4 : 2,
-                  })
-                }),
-              ];
-
-              return styles;
-            }
-
-            let image = new olstyle.Circle({
-              radius: SmartPhone.isAny() ? 6 : 4,
-              fill: new olstyle.Fill({
-                color: "#ff0000",
-              }),
-              stroke: new olstyle.Stroke({
-                color: "#000000",
-                width: 1
-              }),
-            });
-            let stroke = new olstyle.Stroke({ color: "#000000", width: 1 });
-            let radius = SmartPhone.isAny() ? 9 : 6;
-            switch (feat.get("type")) {
-              case "argo":
-                image = new olstyle.Circle({
-                  radius: SmartPhone.isAny() ? 6 : 4,
-                  fill: new olstyle.Fill({ color: "#ff0000" }),
-                  stroke: stroke,
-                });
-                break;
-              case "mission":
-                image = new olstyle.RegularShape({
-                  points: 3,
-                  radius: radius,
-                  fill: new olstyle.Fill({ color: "#ffff00" }),
-                  stroke: stroke,
-                });
-                break;
-              case "drifter":
-                image = new olstyle.RegularShape({
-                  points: 4,
-                  radius: radius,
-                  fill: new olstyle.Fill({ color: "#00ff00" }),
-                  stroke: stroke,
-                });
-                break;
-              case "glider":
-                image = new olstyle.RegularShape({
-                  points: 5,
-                  radius: radius,
-                  fill: new olstyle.Fill({ color: "#00ffff" }),
-                  stroke: stroke,
-                });
-                break;
-              case "animal":
-                image = new olstyle.RegularShape({
-                  points: 6,
-                  radius: radius,
-                  fill: new olstyle.Fill({ color: "#0000ff" }),
-                  stroke: stroke,
-                });
-                break;
-            }
-            return new olstyle.Style({ image: image });
-          } else {
-
-            switch (feat.get("type")) {
-              case "area": {
-                return [
-                  new olstyle.Style({
-                    stroke: new olstyle.Stroke({
-                      color: "#000000",
-                      width: 1,
-                    }),
-                  }),
-                  new olstyle.Style({
-                    geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-                    text: new olstyle.Text({
-                      text: feat.get("name"),
-                      fill: new olstyle.Fill({
-                        color: "#000",
-                      }),
-                    }),
-                  }),
-                ];
-              }
-
-              case "GKHdrifter": {
-                const start = feat.getGeometry().getCoordinateAt(0);
-                const end = feat.getGeometry().getCoordinateAt(1);
-                let endImage;
-                let color = drifter_color[feat.get("name")];
+            if (feat.get("class") == "observation") {
+              if (feat.getGeometry() instanceof olgeom.LineString) {
+                let color = drifter_color[feat.get("id")];
 
                 if (color === undefined) {
                   color = COLORS[Object.keys(drifter_color).length % COLORS.length];
-                  drifter_color[feat.get("name")] = color;
+                  drifter_color[feat.get("id")] = color;
                 }
-                if (feat.get("status") == "inactive" || feat.get("status") == "not responding") {
-                  endImage = new olstyle.Icon({
-                    src: X_IMAGE,
-                    scale: 0.75,
-                  });
-                } else {
-                  endImage = new olstyle.Circle({
-                    radius: SmartPhone.isAny() ? 6 : 4,
-                    fill: new olstyle.Fill({
-                      color: "#ff0000",
-                    }),
-                    stroke: new olstyle.Stroke({
-                      color: "#000000",
-                      width: 1
-                    }),
-                  });
-                }
-
                 const styles = [
                   new olstyle.Style({
                     stroke: new olstyle.Stroke({
@@ -467,177 +344,300 @@ export default class Map extends React.PureComponent {
                       width: SmartPhone.isAny() ? 4 : 2,
                     })
                   }),
-                  new olstyle.Style({
-                    geometry: new olgeom.Point(end),
-                    image: endImage,
-                  }),
-                  new olstyle.Style({
-                    geometry: new olgeom.Point(start),
+                ];
+
+                return styles;
+              }
+
+              let image = new olstyle.Circle({
+                radius: SmartPhone.isAny() ? 6 : 4,
+                fill: new olstyle.Fill({
+                  color: "#ff0000",
+                }),
+                stroke: new olstyle.Stroke({
+                  color: "#000000",
+                  width: 1
+                }),
+              });
+              let stroke = new olstyle.Stroke({ color: "#000000", width: 1 });
+              let radius = SmartPhone.isAny() ? 9 : 6;
+              switch (feat.get("type")) {
+                case "argo":
+                  image = new olstyle.Circle({
+                    radius: SmartPhone.isAny() ? 6 : 4,
+                    fill: new olstyle.Fill({ color: "#ff0000" }),
+                    stroke: stroke,
+                  });
+                  break;
+                case "mission":
+                  image = new olstyle.RegularShape({
+                    points: 3,
+                    radius: radius,
+                    fill: new olstyle.Fill({ color: "#ffff00" }),
+                    stroke: stroke,
+                  });
+                  break;
+                case "drifter":
+                  image = new olstyle.RegularShape({
+                    points: 4,
+                    radius: radius,
+                    fill: new olstyle.Fill({ color: "#00ff00" }),
+                    stroke: stroke,
+                  });
+                  break;
+                case "glider":
+                  image = new olstyle.RegularShape({
+                    points: 5,
+                    radius: radius,
+                    fill: new olstyle.Fill({ color: "#00ffff" }),
+                    stroke: stroke,
+                  });
+                  break;
+                case "animal":
+                  image = new olstyle.RegularShape({
+                    points: 6,
+                    radius: radius,
+                    fill: new olstyle.Fill({ color: "#0000ff" }),
+                    stroke: stroke,
+                  });
+                  break;
+              }
+              return new olstyle.Style({ image: image });
+            } else {
+
+              switch (feat.get("type")) {
+                case "area": {
+                  return [
+                    new olstyle.Style({
+                      stroke: new olstyle.Stroke({
+                        color: "#000000",
+                        width: 1,
+                      }),
+                    }),
+                    new olstyle.Style({
+                      geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
+                      text: new olstyle.Text({
+                        text: feat.get("name"),
+                        fill: new olstyle.Fill({
+                          color: "#000",
+                        }),
+                      }),
+                    }),
+                  ];
+                }
+
+                case "GKHdrifter": {
+                  const start = feat.getGeometry().getCoordinateAt(0);
+                  const end = feat.getGeometry().getCoordinateAt(1);
+                  let endImage;
+                  let color = drifter_color[feat.get("name")];
+
+                  if (color === undefined) {
+                    color = COLORS[Object.keys(drifter_color).length % COLORS.length];
+                    drifter_color[feat.get("name")] = color;
+                  }
+                  if (feat.get("status") == "inactive" || feat.get("status") == "not responding") {
+                    endImage = new olstyle.Icon({
+                      src: X_IMAGE,
+                      scale: 0.75,
+                    });
+                  } else {
+                    endImage = new olstyle.Circle({
+                      radius: SmartPhone.isAny() ? 6 : 4,
+                      fill: new olstyle.Fill({
+                        color: "#ff0000",
+                      }),
+                      stroke: new olstyle.Stroke({
+                        color: "#000000",
+                        width: 1
+                      }),
+                    });
+                  }
+
+                  const styles = [
+                    new olstyle.Style({
+                      stroke: new olstyle.Stroke({
+                        color: [color[0], color[1], color[2], 0.004],
+                        width: 8,
+                      }),
+                    }),
+                    new olstyle.Style({
+                      stroke: new olstyle.Stroke({
+                        color: color,
+                        width: SmartPhone.isAny() ? 4 : 2,
+                      })
+                    }),
+                    new olstyle.Style({
+                      geometry: new olgeom.Point(end),
+                      image: endImage,
+                    }),
+                    new olstyle.Style({
+                      geometry: new olgeom.Point(start),
+                      image: new olstyle.Circle({
+                        radius: SmartPhone.isAny() ? 6 : 4,
+                        fill: new olstyle.Fill({
+                          color: "#008000",
+                        }),
+                        stroke: new olstyle.Stroke({
+                          color: "#000000",
+                          width: 1
+                        }),
+                      }),
+                    }),
+                  ];
+
+                  return styles;
+                }
+
+                case "class4": {
+                  const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
+                  const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
+
+                  return new olstyle.Style({
                     image: new olstyle.Circle({
                       radius: SmartPhone.isAny() ? 6 : 4,
                       fill: new olstyle.Fill({
-                        color: "#008000",
+                        color: [red, green, 0, 1],
                       }),
                       stroke: new olstyle.Stroke({
                         color: "#000000",
                         width: 1
                       }),
                     }),
-                  }),
-                ];
+                  });
+                }
 
-                return styles;
-              }
-
-              case "class4": {
-                const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
-                const green = Math.min(255, 255 * (1 - feat.get("error_norm")) / 0.5);
-
-                return new olstyle.Style({
-                  image: new olstyle.Circle({
-                    radius: SmartPhone.isAny() ? 6 : 4,
-                    fill: new olstyle.Fill({
-                      color: [red, green, 0, 1],
-                    }),
+                default:
+                  return new olstyle.Style({
                     stroke: new olstyle.Stroke({
-                      color: "#000000",
-                      width: 1
-                    }),
-                  }),
-                });
-              }
-
-              default:
-                return new olstyle.Style({
-                  stroke: new olstyle.Stroke({
-                    color: "#ff0000",
-                    width: SmartPhone.isAny() ? 8 : 4,
-                  }),
-                  image: new olstyle.Circle({
-                    radius: SmartPhone.isAny() ? 6 : 4,
-                    fill: new olstyle.Fill({
                       color: "#ff0000",
+                      width: SmartPhone.isAny() ? 8 : 4,
                     }),
-                    stroke: new olstyle.Stroke({
-                      color: "#000000",
-                      width: 1
+                    image: new olstyle.Circle({
+                      radius: SmartPhone.isAny() ? 6 : 4,
+                      fill: new olstyle.Fill({
+                        color: "#ff0000",
+                      }),
+                      stroke: new olstyle.Stroke({
+                        color: "#000000",
+                        width: 1
+                      }),
                     }),
-                  }),
-                });
+                  });
+              }
             }
-          }
 
-        }.bind(this),
-    });
+          }.bind(this),
+        });
 
     const anchor = [0.5, 0.5];
     this.layer_quiver = new ollayer.Vector(
-      {
-        source: null, // set source during update function below
-        style: function(feature, resolution) {
-          const velocity = parseFloat(feature.get("data"));
-          const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
-          if (velocity < knotsToMetersPerSecond(0.5)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.3,
-                src: I1,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+        {
+          source: null, // set source during update function below
+          style: function(feature, resolution) {
+            const velocity = parseFloat(feature.get("data"));
+            const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
+            if (velocity < knotsToMetersPerSecond(0.5)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.3,
+                  src: I1,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(1.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.35,
-                src: I2,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(1.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.35,
+                  src: I2,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(2.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.35,
-                src: I3,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(2.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.35,
+                  src: I3,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(3.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.4,
-                src: I4,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(3.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.4,
+                  src: I4,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(5.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.5,
-                src: I5,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(5.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.5,
+                  src: I5,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(7.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.7,
-                src: I6,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(7.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.7,
+                  src: I6,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(10.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.75,
-                src: I7,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(10.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.75,
+                  src: I7,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(13.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.9,
-                src: I8,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else if (velocity < knotsToMetersPerSecond(13.0)) {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 0.9,
+                  src: I8,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
-          }
-          else {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 1.0,
-                src: I9,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
+            }
+            else {
+              return new olstyle.Style({
+                image: new olstyle.Icon({
+                  scale: 1.0,
+                  src: I9,
+                  opacity: 1,
+                  anchor: anchor,
+                  rotation: rotationRads
+                })
               })
-            })
+            }
           }
         }
-      }
     );
 
     // Construct our map
@@ -709,21 +709,21 @@ export default class Map extends React.PureComponent {
 
     this.map.on("pointermove", function (e) {
       const feature = this.map.forEachFeatureAtPixel(
-        this.map.getEventPixel(e.originalEvent),
-        function (feature, layer) {
-          return feature;
-        }
+          this.map.getEventPixel(e.originalEvent),
+          function (feature, layer) {
+            return feature;
+          }
       );
       if (feature && feature.get("name")) {
         this.overlay.setPosition(e.coordinate);
         if (feature.get("data")) {
           this.popupElement.innerHTML = ReactDOMServer.renderToString(
-            <table>
-              <tr><td>Variable</td><td>{feature.get("name")}</td></tr>
-              <tr><td>Data</td><td>{feature.get("data")}</td></tr>
-              <tr><td>Units</td><td>{feature.get("units")}</td></tr>
-              <tr><td>Bearing (+ve deg clockwise N)</td><td>{feature.get("bearing")}</td></tr>
-            </table>
+              <table>
+                <tr><td>Variable</td><td>{feature.get("name")}</td></tr>
+                <tr><td>Data</td><td>{feature.get("data")}</td></tr>
+                <tr><td>Units</td><td>{feature.get("units")}</td></tr>
+                <tr><td>Bearing (+ve deg clockwise N)</td><td>{feature.get("bearing")}</td></tr>
+              </table>
           );
         } else {
           this.popupElement.innerHTML = feature.get("name");
@@ -744,13 +744,13 @@ export default class Map extends React.PureComponent {
             success: function (response) {
               this.overlay.setPosition(e.coordinate);
               feature.set("meta", ReactDOMServer.renderToString(
-                <table>
-                  {
-                    Object.keys(response).map((key) => (
-                      <tr key={key}><td>{key}</td><td>{response[key]}</td></tr>
-                    ))
-                  }
-                </table>
+                  <table>
+                    {
+                      Object.keys(response).map((key) => (
+                        <tr key={key}><td>{key}</td><td>{response[key]}</td></tr>
+                      ))
+                    }
+                  </table>
               ));
               this.popupElement.innerHTML = feature.get("meta");
             }.bind(this)
@@ -946,10 +946,10 @@ export default class Map extends React.PureComponent {
     dragBox.on("boxend", function () {
       var extent = dragBox.getGeometry().getExtent();
       this.vectorSource.forEachFeatureIntersectingExtent(
-        extent,
-        function (feature) {
-          this.selectedFeatures.push(feature);
-        }.bind(this)
+          extent,
+          function (feature) {
+            this.selectedFeatures.push(feature);
+          }.bind(this)
       );
 
       pushSelection();
@@ -1146,8 +1146,8 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
-        251
+          function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+          251
       );
     }.bind(this));
     this.map.addInteraction(draw);
@@ -1170,10 +1170,10 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates()[0].map(
-        function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
-          return [lonlat[1], lonlat[0]];
-        }.bind(this)
+          function (c) {
+            const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
+            return [lonlat[1], lonlat[0]];
+          }.bind(this)
       );
       /*
       const area = {
@@ -1188,8 +1188,8 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
-        251
+          function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+          251
       );
     }.bind(this));
     this.map.addInteraction(draw);
@@ -1221,8 +1221,8 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); }.bind(this),
-        251
+          function () { this.controlDoubleClickZoom(true); }.bind(this),
+          251
       );
     }.bind(this));
     this.map.addInteraction(draw);
@@ -1245,10 +1245,10 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates().map(
-        function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
-          return [lonlat[1], lonlat[0]];
-        }.bind(this)
+          function (c) {
+            const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
+            return [lonlat[1], lonlat[0]];
+          }.bind(this)
       );
       // Draw line(s) on map(s)
       this.props.action("add", "line", points);
@@ -1258,8 +1258,8 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); }.bind(this),
-        251
+          function () { this.controlDoubleClickZoom(true); }.bind(this),
+          251
       );
     }.bind(this));
     this.map.addInteraction(draw);
@@ -1282,10 +1282,10 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const points = e.feature.getGeometry().getCoordinates()[0].map(
-        function (c) {
-          const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
-          return [lonlat[1], lonlat[0]];
-        }.bind(this)
+          function (c) {
+            const lonlat = olproj.transform(c, this.props.state.projection, "EPSG:4326");
+            return [lonlat[1], lonlat[0]];
+          }.bind(this)
       );
       const area = {
         polygons: [points],
@@ -1300,8 +1300,8 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); }.bind(this),
-        251
+          function () { this.controlDoubleClickZoom(true); }.bind(this),
+          251
       );
     }.bind(this));
     this.map.addInteraction(draw);
@@ -1319,8 +1319,8 @@ export default class Map extends React.PureComponent {
   }
 
   shouldUpdateScaleViewer(currentDataset, prevDataset,
-                          currentVariable, prevVariable,
-                           currentScale, prevScale)
+      currentVariable, prevVariable,
+      currentScale, prevScale)
   {
     return (currentDataset !== prevDataset)
           || (currentVariable !== prevVariable)
@@ -1342,7 +1342,7 @@ export default class Map extends React.PureComponent {
   }
 
   shouldUpdateBathymetryLayer(currentProj, prevProj,
-                              currentBathy, prevBathy)
+      currentBathy, prevBathy)
   {
     return (currentProj !== prevProj) || (currentBathy !== prevBathy);
   }
@@ -1366,9 +1366,9 @@ export default class Map extends React.PureComponent {
   }
 
   shouldUpdateQuiverLayer(currentDataset, prevDataset,
-                          currentQuiverVariable, prevQuiverVariable,
-                          currentDepth, prevDepth,
-                          currentTime, prevTime) {
+      currentQuiverVariable, prevQuiverVariable,
+      currentDepth, prevDepth,
+      currentTime, prevTime) {
     return (currentDataset !== prevDataset) ||
            (currentQuiverVariable !== prevQuiverVariable) ||
            (currentDepth !== prevDepth) ||
@@ -1380,15 +1380,15 @@ export default class Map extends React.PureComponent {
     let source = null;
     if (currentQuiverVariable !== 'none') {
       source = new olsource.Vector(
-        {
-          url: `/api/v1.0/data?dataset=${currentDataset}&variable=${currentQuiverVariable}&time=${currentTime}&depth=${currentDepth}&geometry_type=area`,
-          format: new olformat.GeoJSON(
-            { 
-              featureProjection: olproj.get("EPSG:3857"),
-              dataProjection: olproj.get("EPSG:4326")
-            }
-          )
-        }
+          {
+            url: `/api/v1.0/data?dataset=${currentDataset}&variable=${currentQuiverVariable}&time=${currentTime}&depth=${currentDepth}&geometry_type=area`,
+            format: new olformat.GeoJSON(
+                { 
+                  featureProjection: olproj.get("EPSG:3857"),
+                  dataProjection: olproj.get("EPSG:4326")
+                }
+            )
+          }
       );
     }   
     this.layer_quiver.setSource(source);
@@ -1423,53 +1423,53 @@ export default class Map extends React.PureComponent {
     datalayer.setSource(newSource);
 
     if (this.shouldUpdateScaleViewer(this.props.state.dataset,
-                                     prevProps.state.dataset,
-                                     this.props.state.variable,
-                                     prevProps.state.variable,
-                                     this.props.scale,
-                                     prevProps.scale))
+        prevProps.state.dataset,
+        this.props.state.variable,
+        prevProps.state.variable,
+        this.props.scale,
+        prevProps.scale))
     {
       this.updateScaleViewer(this.props.state.dataset, this.props.state.variable, this.props.state.scale);
     }
 
     if (this.shouldUpdateBathymetryLayer(this.props.state.projection,
-                                         prevProps.state.projection,
-                                         this.props.options.bathyContour,
-                                         prevProps.options.bathyContour))
+        prevProps.state.projection,
+        this.props.options.bathyContour,
+        prevProps.options.bathyContour))
     {
       this.updateBathymetryLayer(this.props.state.projection, this.props.options.bathyContour);
     }
 
     if (this.shouldUpdateQuiverLayer(this.props.state.dataset,
-                                     prevProps.state.dataset,
-                                     this.props.quiverVariable,
-                                     prevProps.quiverVariable,
-                                     this.props.state.depth,
-                                     prevProps.state.depth,
-                                     this.props.state.time,
-                                     prevProps.state.time)) 
+        prevProps.state.dataset,
+        this.props.quiverVariable,
+        prevProps.quiverVariable,
+        this.props.state.depth,
+        prevProps.state.depth,
+        this.props.state.time,
+        prevProps.state.time)) 
     {
       this.updateQuiverLayer(this.props.state.dataset,
-                             this.props.quiverVariable,
-                             this.props.state.depth,
-                             this.props.state.time);
+          this.props.quiverVariable,
+          this.props.state.depth,
+          this.props.state.time);
     }
 
 
     if (prevProps.state.projection != this.props.state.projection) {
       this.resetMap();
       this.layer_basemap = this.getBasemap(
-        this.props.state.basemap,
-        this.props.state.projection,
-        this.props.state.basemap_attribution
+          this.props.state.basemap,
+          this.props.state.projection,
+          this.props.state.basemap_attribution
       );
       this.map.getLayers().setAt(0, this.layer_basemap);
       this.mapView = new ol.View({
         projection: this.props.state.projection,
         center: olproj.transform(
-          DEF_CENTER[this.props.state.projection],
-          "EPSG:4326",
-          this.props.state.projection
+            DEF_CENTER[this.props.state.projection],
+            "EPSG:4326",
+            this.props.state.projection
         ),
         zoom: DEF_ZOOM[this.props.state.projection],
         minZoom: MIN_ZOOM[this.props.state.projection],
@@ -1478,23 +1478,23 @@ export default class Map extends React.PureComponent {
 
       // Update Hi-res bath layer
       this.layer_bathshapes.setSource(
-        new olsource.VectorTile({
-          format: new olformat.MVT(),
-          tileGrid: this.vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
-        })
+          new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          })
       );
 
       // Update Hi-res land layer
       this.layer_landshapes.setSource(
-        new olsource.VectorTile({
-          format: new olformat.MVT(),
-          tileGrid: this.vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
-          projection: this.props.state.projection,
-        })
+          new olsource.VectorTile({
+            format: new olformat.MVT(),
+            tileGrid: this.vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+            projection: this.props.state.projection,
+          })
       );
 
       //this.mapView.on("change:resolution", this.constrainPan.bind(this));
@@ -1507,9 +1507,9 @@ export default class Map extends React.PureComponent {
       prevProps.options.topoShadedRelief != this.props.options.topoShadedRelief
     ) {
       this.layer_basemap = this.getBasemap(
-        this.props.state.basemap,
-        this.props.state.projection,
-        this.props.state.basemap_attribution
+          this.props.state.basemap,
+          this.props.state.projection,
+          this.props.state.basemap_attribution
       );
       this.map.getLayers().setAt(0, this.layer_basemap);
 
@@ -1523,23 +1523,23 @@ export default class Map extends React.PureComponent {
       else {       // Update Hi-res bath layer
         this.setZIndices(0, 1);
         this.layer_bathshapes.setSource(
-          new olsource.VectorTile({
-            format: new olformat.MVT(),
-            tileGrid: this.vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
-          })
+            new olsource.VectorTile({
+              format: new olformat.MVT(),
+              tileGrid: this.vectorTileGrid,
+              tilePixelRatio: 8,
+              url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+            })
         );
 
         // Update Hi-res land layer
         this.layer_landshapes.setSource(
-          new olsource.VectorTile({
-            format: new olformat.MVT(),
-            tileGrid: this.vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
-            projection: this.props.state.projection,
-          })
+            new olsource.VectorTile({
+              format: new olformat.MVT(),
+              tileGrid: this.vectorTileGrid,
+              tilePixelRatio: 8,
+              url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+              projection: this.props.state.projection,
+            })
         );
       }
     }
@@ -1563,10 +1563,10 @@ export default class Map extends React.PureComponent {
 
     if (this.vectorSource.getState() == "ready") {
       var dorefresh = this.vectorSource.forEachFeatureIntersectingExtent(
-        extent,
-        function (f) {
-          return f.get("resolution") > Math.round(resolution);
-        }
+          extent,
+          function (f) {
+            return f.get("resolution") > Math.round(resolution);
+          }
       );
 
       if (dorefresh) {

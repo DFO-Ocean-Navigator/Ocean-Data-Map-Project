@@ -80,24 +80,24 @@ export default class DrifterSelector extends React.Component {
     }
 
     this.props.select(Array.from(new Set([].concat.apply([], [].concat(
-      newState.imei.map(function (o) {
-        return this.state.imei_map[o];
-      }.bind(this)),
-      newState.wmo.map(function (o) {
-        return this.state.wmo_map[o];
-      }.bind(this)),
-      newState.deployment.map(function (o) {
-        return this.state.deployment_map[o];
-      }.bind(this))
+        newState.imei.map(function (o) {
+          return this.state.imei_map[o];
+        }.bind(this)),
+        newState.wmo.map(function (o) {
+          return this.state.wmo_map[o];
+        }.bind(this)),
+        newState.deployment.map(function (o) {
+          return this.state.deployment_map[o];
+        }.bind(this))
     )))));
     this.setState(newState);
   }
 
   render() {
     const imei = Array.from(
-      new Set(
-        Object.keys(this.state.imei_map)
-      )
+        new Set(
+            Object.keys(this.state.imei_map)
+        )
     ).sort().map(function(o) {
       return {
         id: o,
@@ -105,9 +105,9 @@ export default class DrifterSelector extends React.Component {
       };
     });
     const wmo = Array.from(
-      new Set(
-        Object.keys(this.state.wmo_map)
-      )
+        new Set(
+            Object.keys(this.state.wmo_map)
+        )
     ).sort().map(function(o) {
       return {
         id: o,
@@ -115,9 +115,9 @@ export default class DrifterSelector extends React.Component {
       };
     });
     const deployment = Array.from(
-      new Set(
-        Object.keys(this.state.deployment_map)
-      )
+        new Set(
+            Object.keys(this.state.deployment_map)
+        )
     ).sort().map(function(o) {
       return {
         id: o,

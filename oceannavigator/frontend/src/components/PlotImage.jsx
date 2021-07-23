@@ -40,29 +40,29 @@ export default class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
-      const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
-      let scriptLang = null;
-      let scriptType = null;
-      switch(language){
-        case "pythonPlot":
-          scriptLang = "python";
-          scriptType = "PLOT";
-          break;
-        case "rPlot":
-          scriptLang = "r";
-          scriptType = "PLOT";
-          break;
-        case "pythonCSV":
-          scriptLang = "python";
-          scriptType = "CSV"
-          break;
-        case "rCSV":
-          scriptLang = "r";
-          scriptType = "CSV"
-          break;
-      }
-      const url = `${window.location.origin}/api/v1.0/generatescript/?query=${query}&lang=${scriptLang}&scriptType=${scriptType}`;
-      window.location.href = url;
+    const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
+    let scriptLang = null;
+    let scriptType = null;
+    switch(language){
+      case "pythonPlot":
+        scriptLang = "python";
+        scriptType = "PLOT";
+        break;
+      case "rPlot":
+        scriptLang = "r";
+        scriptType = "PLOT";
+        break;
+      case "pythonCSV":
+        scriptLang = "python";
+        scriptType = "CSV"
+        break;
+      case "rCSV":
+        scriptLang = "r";
+        scriptType = "CSV"
+        break;
+    }
+    const url = `${window.location.origin}/api/v1.0/generatescript/?query=${query}&lang=${scriptLang}&scriptType=${scriptType}`;
+    window.location.href = url;
   }
 
   componentDidMount() {

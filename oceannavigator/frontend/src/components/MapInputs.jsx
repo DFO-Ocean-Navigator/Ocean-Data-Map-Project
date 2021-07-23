@@ -87,29 +87,29 @@ export default class MapInputs extends React.Component {
     // Creates Right Map Panel when comparing datasets
     if (this.props.state.dataset_compare) {
       inputs.push(
-        <Panel
-          key='right_map_panel'
-          defaultExpanded
-          bsStyle='primary'
-        >
-          <Panel.Heading>{_("Right Map")}</Panel.Heading>
-          <Panel.Collapse>
-            <Panel.Body>
-              <DatasetSelector 
-                id='dataset_1'
-                state={this.props.state.dataset_1}
-                onUpdate={this.props.changeHandler}
-                depth={true}
-              />
-              <Range
-                key='scale_1'
-                id='scale_1'
-                state={this.props.state.scale_1}
-                setDefaultScale={this.props.state.setDefaultScale}
-                def=''
-                onUpdate={this.props.changeHandler}
-                title={_("Variable Range")}
-                autourl={"/api/v1.0/range/" +
+          <Panel
+            key='right_map_panel'
+            defaultExpanded
+            bsStyle='primary'
+          >
+            <Panel.Heading>{_("Right Map")}</Panel.Heading>
+            <Panel.Collapse>
+              <Panel.Body>
+                <DatasetSelector 
+                  id='dataset_1'
+                  state={this.props.state.dataset_1}
+                  onUpdate={this.props.changeHandler}
+                  depth={true}
+                />
+                <Range
+                  key='scale_1'
+                  id='scale_1'
+                  state={this.props.state.scale_1}
+                  setDefaultScale={this.props.state.setDefaultScale}
+                  def=''
+                  onUpdate={this.props.changeHandler}
+                  title={_("Variable Range")}
+                  autourl={"/api/v1.0/range/" +
                         this.props.state.dataset_1.dataset + "/" +
                         this.props.state.dataset_1.variable + "/" +
                         this.props.options.interpType + "/" +
@@ -119,12 +119,12 @@ export default class MapInputs extends React.Component {
                         this.props.state.extent.join(",") + "/" +
                         this.props.state.dataset_1.depth + "/" +
                         this.props.state.dataset_1.time + ".json"
-                }
-                default_scale={this.props.state.dataset_1.variable_scale}
-              ></Range>
-            </Panel.Body>
-          </Panel.Collapse>
-        </Panel>
+                  }
+                  default_scale={this.props.state.dataset_1.variable_scale}
+                ></Range>
+              </Panel.Body>
+            </Panel.Collapse>
+          </Panel>
       );
     }
 

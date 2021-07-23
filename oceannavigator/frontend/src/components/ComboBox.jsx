@@ -134,10 +134,10 @@ export default class ComboBox extends React.Component {
             let notInList = false;
             if (value instanceof Array) {
               notInList = value.map(
-                (el) => (
-                  jQuery.inArray(el, a) == -1 &&
+                  (el) => (
+                    jQuery.inArray(el, a) == -1 &&
                 jQuery.inArray(parseFloat(el), a) == -1
-                )
+                  )
               ).reduce((prev, cur) => prev || cur, false);
             } else {
               notInList = (

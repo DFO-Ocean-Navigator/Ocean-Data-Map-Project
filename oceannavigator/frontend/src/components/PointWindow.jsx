@@ -399,9 +399,9 @@ export default class PointWindow extends React.Component {
       }
       else {
         observation_data = this.props.point[0][2].datatypes.map(
-          function (o, i) {
-            return { id: i, value: o.replace(/ \[.*\]/, "") };
-          }
+            function (o, i) {
+              return { id: i, value: o.replace(/ \[.*\]/, "") };
+            }
         );
         observation_variable = <ComboBox
           key='observation_variable'
@@ -493,15 +493,15 @@ export default class PointWindow extends React.Component {
         if (this.state.depth == "all") {
           // Add Colormap selector
           inputs.push(
-            <ComboBox
-              key='colormap'
-              id='colormap'
-              state={this.state.colormap}
-              def='default'
-              onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
-            </ComboBox>);
+              <ComboBox
+                key='colormap'
+                id='colormap'
+                state={this.state.colormap}
+                def='default'
+                onUpdate={this.onLocalUpdate}
+                url='/api/v1.0/colormaps/'
+                title={_("Colourmap")}>{_("colourmap_help")}<img src="/colormaps.png" />
+              </ComboBox>);
         }
 
         break;

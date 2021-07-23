@@ -4,21 +4,21 @@
 const axios = require('axios');
 
 function _createPromise() {
-    return axios.create();
+  return axios.create();
 }
 
 
 export function GetDatasetsPromise() {
-    return _createPromise().get("/api/v1.0/datasets");
+  return _createPromise().get("/api/v1.0/datasets");
 }
 
 export function GetVariablesPromise(dataset) {
-    return _createPromise().get(
-        "/api/v1.0/variables",
-        {
-            params: {
-                dataset: dataset
-            }
+  return _createPromise().get(
+      "/api/v1.0/variables",
+      {
+        params: {
+          dataset: dataset
         }
-    );
+      }
+  );
 }

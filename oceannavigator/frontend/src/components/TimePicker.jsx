@@ -133,15 +133,15 @@ export default class TimePicker extends React.Component {
             let d3 = d2;
             if (this.props.quantum !== "hour") {
               d3 = new Date(
-                Date.UTC(
-                  d1.getUTCFullYear(),
-                  d1.getUTCMonth(),
-                  d1.getUTCDate(),
-                  0,
-                  0,
-                  0,
-                  0
-                )
+                  Date.UTC(
+                      d1.getUTCFullYear(),
+                      d1.getUTCMonth(),
+                      d1.getUTCDate(),
+                      0,
+                      0,
+                      0,
+                      0
+                  )
               );
             }
             map[data[i].id] = d2;
@@ -151,99 +151,99 @@ export default class TimePicker extends React.Component {
           const [min, max] = this.getMinMaxTimestamps(props, data);
 
           this.setState(
-            {
-              data: data,
-              map: map,
-              revmap: revmap,
-              min: min,
-              max: max
-            },
-            function () {
-              switch (props.quantum) {
-                case "month":
-                  $(this.refs.picker).MonthPicker({
-                    Button: false,
-                    MonthFormat: "MM yy",
-                    OnAfterMenuClose: this.pickerChange,
-                    MinMonth: new Date(
-                      map[min].getTime() +
+              {
+                data: data,
+                map: map,
+                revmap: revmap,
+                min: min,
+                max: max
+              },
+              function () {
+                switch (props.quantum) {
+                  case "month":
+                    $(this.refs.picker).MonthPicker({
+                      Button: false,
+                      MonthFormat: "MM yy",
+                      OnAfterMenuClose: this.pickerChange,
+                      MinMonth: new Date(
+                          map[min].getTime() +
                       map[min].getTimezoneOffset() * 60 * 1000
-                    ),
-                    MaxMonth: new Date(
-                      map[max].getTime() +
+                      ),
+                      MaxMonth: new Date(
+                          map[max].getTime() +
                       map[max].getTimezoneOffset() * 60 * 1000
-                    ),
-                    i18n: {
-                      year: _("Year"),
-                      prevYear: _("Previous Year"),
-                      nextYear: _("Next Year"),
-                      next12Years: _("Jump Forward 12 Years"),
-                      prev12Years: _("Jump Back 12 Years"),
-                      nextLabel: _("Next"),
-                      prevLabel: _("Prev"),
-                      buttonText: _("Open Month Chooser"),
-                      jumpYears: _("Jump Years"),
-                      backTo: _("Back to"),
-                      months: [
-                        _("Jan."),
-                        _("Feb."),
-                        _("Mar."),
-                        _("Apr."),
-                        _("May"),
-                        _("June"),
-                        _("July"),
-                        _("Aug."),
-                        _("Sep."),
-                        _("Oct."),
-                        _("Nov."),
-                        _("Dec.")
-                      ]
-                    }
-                  });
-                  break;
-                case "hour":
-                  $(this.refs.picker).datepicker({
-                    Button: false,
-                    dateFormat: "dd MM yy",
-                    onClose: this.pickerChange,
-                    minDate: new Date(map[min]),
-                    maxDate: new Date(map[max])
-                  });
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "minDate",
-                    new Date(map[min])
-                  );
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "maxDate",
-                    new Date(map[max])
-                  );
-                  break;
-                case "day":
-                default:
-                  $(this.refs.picker).datepicker({
-                    Button: false,
-                    dateFormat: "dd MM yy",
-                    onClose: this.pickerChange,
-                    minDate: new Date(map[min]),
-                    maxDate: new Date(map[max])
-                  });
+                      ),
+                      i18n: {
+                        year: _("Year"),
+                        prevYear: _("Previous Year"),
+                        nextYear: _("Next Year"),
+                        next12Years: _("Jump Forward 12 Years"),
+                        prev12Years: _("Jump Back 12 Years"),
+                        nextLabel: _("Next"),
+                        prevLabel: _("Prev"),
+                        buttonText: _("Open Month Chooser"),
+                        jumpYears: _("Jump Years"),
+                        backTo: _("Back to"),
+                        months: [
+                          _("Jan."),
+                          _("Feb."),
+                          _("Mar."),
+                          _("Apr."),
+                          _("May"),
+                          _("June"),
+                          _("July"),
+                          _("Aug."),
+                          _("Sep."),
+                          _("Oct."),
+                          _("Nov."),
+                          _("Dec.")
+                        ]
+                      }
+                    });
+                    break;
+                  case "hour":
+                    $(this.refs.picker).datepicker({
+                      Button: false,
+                      dateFormat: "dd MM yy",
+                      onClose: this.pickerChange,
+                      minDate: new Date(map[min]),
+                      maxDate: new Date(map[max])
+                    });
+                    $(this.refs.picker).datepicker(
+                        "option",
+                        "minDate",
+                        new Date(map[min])
+                    );
+                    $(this.refs.picker).datepicker(
+                        "option",
+                        "maxDate",
+                        new Date(map[max])
+                    );
+                    break;
+                  case "day":
+                  default:
+                    $(this.refs.picker).datepicker({
+                      Button: false,
+                      dateFormat: "dd MM yy",
+                      onClose: this.pickerChange,
+                      minDate: new Date(map[min]),
+                      maxDate: new Date(map[max])
+                    });
 
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "minDate",
-                    new Date(map[min])
-                  );
-                  $(this.refs.picker).datepicker(
-                    "option",
-                    "maxDate",
-                    new Date(map[max])
-                  );
-                  break;
-              }
-              this.pickerChange();
-            }.bind(this)
+                    $(this.refs.picker).datepicker(
+                        "option",
+                        "minDate",
+                        new Date(map[min])
+                    );
+                    $(this.refs.picker).datepicker(
+                        "option",
+                        "maxDate",
+                        new Date(map[max])
+                    );
+                    break;
+                }
+                this.pickerChange();
+              }.bind(this)
           );
         }.bind(this),
 
@@ -299,26 +299,26 @@ export default class TimePicker extends React.Component {
       }
       if (d !== null) {
         const utcDate = new Date(
-          Date.UTC(
-            d.getFullYear(),
-            d.getMonth(),
+            Date.UTC(
+                d.getFullYear(),
+                d.getMonth(),
             this.props.quantum == "month" ? 15 : d.getDate(),
             d.getHours(),
             d.getMinutes(),
             d.getSeconds(),
             d.getMilliseconds()
-          )
+            )
         );
         this.props.onUpdate(
-          this.props.id,
-          this.state.revmap[utcDate.toUTCString()]
+            this.props.id,
+            this.state.revmap[utcDate.toUTCString()]
         );
       }
       else {
         if (this.props.state < 0) {
           this.props.onUpdate(
-            this.props.id,
-            this.getTimestampFromIndex(this.props.state)
+              this.props.id,
+              this.getTimestampFromIndex(this.props.state)
           );
         }
       }
@@ -340,12 +340,12 @@ export default class TimePicker extends React.Component {
     this.props.onUpdate(this.props.id, value);
 
     this.setState(
-      {
-        value: value
-      },
-      function () {
-        this.updatePicker(old_value, value);
-      }.bind(this)
+        {
+          value: value
+        },
+        function () {
+          this.updatePicker(old_value, value);
+        }.bind(this)
     );
   }
 
@@ -354,12 +354,12 @@ export default class TimePicker extends React.Component {
     const value = this.getPrevTimestamp(parseInt(this.props.state));
 
     this.setState(
-      {
-        value: value
-      },
-      function () {
-        this.updatePicker(old_value, value);
-      }.bind(this)
+        {
+          value: value
+        },
+        function () {
+          this.updatePicker(old_value, value);
+        }.bind(this)
     );
 
     this.props.onUpdate(this.props.id, value);

@@ -20,8 +20,8 @@ export default class LocationInput extends React.Component {
   updateParent() {
     clearTimeout(this.timeout);
     this.props.onUpdate(
-      this.props.id,
-      [[this.state.latitude, this.state.longitude]]
+        this.props.id,
+        [[this.state.latitude, this.state.longitude]]
     );
   }
 
