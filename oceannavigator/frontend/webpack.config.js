@@ -4,7 +4,7 @@ const path = require('path');
 const BUILD_DIR = path.resolve(__dirname, 'public');
 const APP_DIR = path.resolve(__dirname, 'src');
 
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
@@ -18,7 +18,6 @@ const config = {
         publicPath: '/public/'
     },
     module: {
-        noParse: /node_modules\/openlayers\/dist\/.*/,
         rules: [
             {
                 test: /\.jsx?$/,
@@ -27,17 +26,15 @@ const config = {
             },
             {
                 test: /\.scss$/,
-                loader: ExtractTextPlugin.extract({
-                    fallback: "style-loader",
-                    use: [
-                        'css-loader',
-                        'sass-loader'
-                    ]
-                })
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    "sass-loader"
+                ]
             },
             {
                 test: /\.css$/,
-                loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
+                use: [MiniCssExtractPlugin.loader, "css-loader"]
             },
             {
                 test: /\.(png|gif|svg|eot|woff2?|ttf|svg)(\?.*)?$/,
@@ -66,15 +63,16 @@ const config = {
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
         }),
-        new ExtractTextPlugin({
-            filename: 'oceannavigator.css'
+        new MiniCssExtractPlugin({
+            filename: 'oceannavigator.css',
+            chunkFilename: "[name].css"
         }),
         new HtmlWebpackPlugin({
-            'filename': 'index.html',
-            'hash': true,
-            'title': "Ocean Navigator",
-            'xhtml': true,
-            'template': 'src/index.ejs'
+            filename: 'index.html',
+            hash: true,
+            title: "Ocean Navigator",
+            xhtml: true,
+            template: 'src/index.ejs',
         })
     ]
 };
