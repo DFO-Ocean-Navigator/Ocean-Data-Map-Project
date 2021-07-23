@@ -1,13 +1,13 @@
-var webpack = require('webpack');
-var path = require('path');
+const webpack = require('webpack');
+const path = require('path');
 
-var BUILD_DIR = path.resolve(__dirname, 'public');
-var APP_DIR = path.resolve(__dirname, 'src');
+const BUILD_DIR = path.resolve(__dirname, 'public');
+const APP_DIR = path.resolve(__dirname, 'src');
 
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-var config = {
+const config = {
     entry: [
         'babel-polyfill',
         APP_DIR + '/index.jsx',
@@ -18,30 +18,30 @@ var config = {
         publicPath: '/public/'
     },
     module: {
-        noParse: /node_modules\/openlayers\/dist\/.*/,
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/,
                 include: APP_DIR,
-                loaders: ['babel-loader']
+                loader: 'babel-loader'
             },
             {
                 test: /\.scss$/,
-                // loaders: ['style', 'css', 'sass']
-                loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader!sass-loader"})
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    "sass-loader"
+                ]
             },
             {
                 test: /\.css$/,
-                // loaders: ['style', 'css']
-                loader: ExtractTextPlugin.extract({fallback: "style-loader", use: "css-loader"})
+                use: [MiniCssExtractPlugin.loader, "css-loader"]
             },
             {
                 test: /\.(png|gif|svg|eot|woff2?|ttf|svg)(\?.*)?$/,
-                loaders: ['file-loader?name=/[name].[ext]']
-            },
-            {
-                test: /\.json$/,
-                loaders: ['json-loader']
+                loader: 'file-loader',
+                options: {
+                    name: '/[name].[ext]'
+                }
             }
         ]
     },
@@ -57,22 +57,22 @@ var config = {
             $: "jquery",
             jQuery: "jquery",
         }),
-        // new webpack.ProvidePlugin({
-        //     i18n: "i18next",
-        // }),
         new webpack.DefinePlugin({
             '_': "i18n.t",
         }),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
         }),
-        new ExtractTextPlugin("oceannavigator.css"),
+        new MiniCssExtractPlugin({
+            filename: 'oceannavigator.css',
+            chunkFilename: "[name].css"
+        }),
         new HtmlWebpackPlugin({
-            'filename': 'index.html',
-            'hash': true,
-            'title': "Ocean Navigator",
-            'xhtml': true,
-            'template': 'src/index.ejs'
+            filename: 'index.html',
+            hash: true,
+            title: "Ocean Navigator",
+            xhtml: true,
+            template: 'src/index.ejs',
         })
     ]
 };
