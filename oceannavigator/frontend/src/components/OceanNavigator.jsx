@@ -15,7 +15,11 @@ import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import WarningBar from "./WarningBar.jsx";
 
-import { GetDatasetsPromise, GetVariablesPromise } from "../remote/OceanNavigator.js";
+import { 
+  GetDatasetsPromise,
+  GetVariablesPromise,
+  GetTimestampsPromise
+} from "../remote/OceanNavigator.js";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -129,8 +133,6 @@ export default class OceanNavigator extends React.Component {
     this.updateOptions = this.updateOptions.bind(this);
     this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
-    this.get_variables_promise = this.get_variables_promise.bind(this);
-    this.get_timestamp_promise = this.get_timestamp_promise.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
   }
   
@@ -257,24 +259,11 @@ export default class OceanNavigator extends React.Component {
     });
   }
 
-  get_variables_promise(dataset) {
-    return $.ajax("/api/v1.0/variables/?dataset=" + dataset).promise();
-  }
-
-  get_timestamp_promise(dataset, variable) {
-
-    return $.ajax(
-      "/api/v1.0/timestamps/?dataset=" +
-      dataset +
-      "&variable=" +
-      variable
-    ).promise();
-  }
-  setStartTime(time){
-    if (time.length > 24)
-      return time[time.length-25].id;
-    else
-      return time[0].id;
+  setStartTime(time) {
+    if (time.length > 24) {
+      return time[time.length - 25].id;
+    }
+    return time[0].id;
   }
 
   changeDataset(dataset, state) {
@@ -285,22 +274,23 @@ export default class OceanNavigator extends React.Component {
     
 
     // When dataset changes, so does time & variable list
-    const var_promise = this.get_variables_promise(dataset);
-    $.when(var_promise).done(function(variable_result) {
+    // TODO: also get changes for depth
+    GetVariablesPromise(dataset).then(variableResult => {
+      const variableData = variableResult.data;
 
       let newVariable = this.state.variable;
-      if ($.inArray(this.state.variable, variable_result.map(function(e)
-      { return e.id; })) == -1) {
-        newVariable = variable_result[0].id;
+      const variableIds = variableData.map(v => { return v.id; });
+      if(!variableIds.includes(this.state.variable)) {
+        newVariable = variableData[0].id;
       }
-
 
       let newTime = 0;
       let newStarttime = 0;
-      const time_promise = this.get_timestamp_promise(dataset, newVariable);
-      $.when(time_promise).done(function(time) {
-        newTime = time[time.length-1].id;
-        newStarttime = this.setStartTime(time);
+      GetTimestampsPromise(dataset, newVariable).then(timestampResult => {
+        const timeData = timestampResult.data;
+        
+        newTime = timeData[timeData.length - 1].id;
+        newStarttime = this.setStartTime(timeData);
         if (state === undefined) {
           state = {};
         }
@@ -311,40 +301,15 @@ export default class OceanNavigator extends React.Component {
         state.busy = false;
 
         this.setState(state);
-      }.bind(this));
+      },
+      error => {
+        console.error(error);
+      });
 
-    }.bind(this));
-
-/*
-    const time_promise = $.ajax(
-      "/api/timestamp/" +
-      this.state.dataset + "/" +
-      this.state.time + "/" +
-      dataset
-    ).promise();
-    
-    $.when(var_promise, time_promise).done(function(variable, time) {
-      let newvariable = this.state.variable;
-      
-      if ($.inArray(this.state.variable, variable[0].map(function(e) 
-      { return e.id; })) == -1) {
-        newvariable = variable[0][0].id;
-      }
-
-      // If no state parameter has been passed
-      // make a skeleton one
-      if (state === undefined) {
-        state = { };
-      }
-
-      state.dataset = dataset;
-      state.variable = newvariable;
-      state.time = time[0];
-      state.busy = false;
-
-      this.setState(state);
-    }.bind(this));
-   */
+    },
+    error => {
+      console.error(error);
+    });
   }
 
   action(name, arg, arg2, arg3) {
@@ -532,7 +497,9 @@ export default class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
+  
   componentDidMount() {
+    
     GetDatasetsPromise().then(result => {
       this.setState({
         availableDatasets: result.data,
@@ -550,14 +517,21 @@ export default class OceanNavigator extends React.Component {
     error => {
       console.error(error);
     });
-    
-    // Setting the starttime and time variable default value
-    const time_promise = this.get_timestamp_promise("giops_day", "votemper");
-    $.when(time_promise).done(function(time) {
-      const newTime = time[time.length-1].id;
-      const newStarttime = time[0].id;
-      this.setState({time: newTime, starttime: newStarttime});
-    }.bind(this));
+
+    // eslint-disable-next-line max-len
+    GetTimestampsPromise(this.state.dataset, this.state.variable).then(result => {
+      const timeData = result.data;
+
+      const newTime = timeData[timeData.length - 1].id;
+      const newStarttime = timeData[0].id;
+      this.setState({
+        time: newTime,
+        starttime: newStarttime
+      });
+    },
+    error => {
+      console.error(error);
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
