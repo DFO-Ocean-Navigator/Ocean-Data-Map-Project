@@ -13,4 +13,4 @@ class GenerateScriptSchema(Schema):
 
     query = fields.Str(required=True)
     lang = fields.Str(required=True, validate=OneOf({"python", "r"}))
-    scriptType = fields.Str(required=True, validate=OneOf({"PLOT", "CSV"}))
+    scriptType = fields.Str(required=True, validate=OneOf({"PLOT", "CSV", "SUBSET"}))

@@ -473,6 +473,16 @@ def subset_query_v1_0():
     working_dir = None
     subset_filename = None
 
+    if 'area' in args.keys():
+        area = args.get('area')                
+        sp = area.split('/', 1)
+        
+        data = utils.misc.list_areas(sp[0], simplify=False)
+
+        b = [x for x in data if x.get('key') == area]
+        args=args.to_dict()
+        args['polygons'] = b[0]['polygons']
+
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
     variables = args['variables'].split(',')
