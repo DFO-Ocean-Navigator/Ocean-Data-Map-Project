@@ -115,7 +115,7 @@ export default class MapToolbar extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
+        console.error(`Failed to load pre-defined points: ${status}`);
       }
     });
     $.ajax({
@@ -128,7 +128,7 @@ export default class MapToolbar extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
+        console.error(`Failed to load pre-defined lines: ${status}`);
       }
     });
     $.ajax({
@@ -141,7 +141,7 @@ export default class MapToolbar extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
+        console.error(`Failed to load pre-defined areas: ${status}`);
       }
     });
     $.ajax({
@@ -158,7 +158,7 @@ export default class MapToolbar extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
+        console.error(`Failed to get class4: ${status}`);
       }
     });
   }
