@@ -1394,6 +1394,13 @@ export default class Map extends React.PureComponent {
     this.layer_quiver.setSource(source);
   }
 
+  shouldRefreshVectorSource(currentVectorType, prevVectorType, 
+    currentVectorId, prevVectorId) 
+  {
+    return (currentVectorType !== prevVectorType) || 
+            (currentVectorId !== prevVectorId);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
@@ -1554,15 +1561,25 @@ export default class Map extends React.PureComponent {
     this.layer_bath.setOpacity(this.props.options.mapBathymetryOpacity);
     this.layer_bath.setVisible(this.props.options.bathymetry);
 
+    if (this.shouldRefreshVectorSource(
+      this.props.state.vectortype,
+      prevProps.state.vectortype,
+      this.props.state.vectorid,
+      prevProps.state.vectorid
+    )) 
+    {
+      this.vectorSource.refresh();
+    }
+
     this.map.render();
   }
 
   refreshFeatures(e) {
-    var extent = this.mapView.calculateExtent(this.map.getSize());
-    var resolution = this.mapView.getResolution();
+    const extent = this.mapView.calculateExtent(this.map.getSize());
+    const resolution = this.mapView.getResolution();
 
     if (this.vectorSource.getState() == "ready") {
-      var dorefresh = this.vectorSource.forEachFeatureIntersectingExtent(
+      const dorefresh = this.vectorSource.forEachFeatureIntersectingExtent(
         extent,
         function (f) {
           return f.get("resolution") > Math.round(resolution);
@@ -1570,7 +1587,7 @@ export default class Map extends React.PureComponent {
       );
 
       if (dorefresh) {
-        var projection = this.mapView.getProjection();
+        const projection = this.mapView.getProjection();
         this.loader(extent, resolution, projection);
       }
     }
