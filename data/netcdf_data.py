@@ -236,10 +236,10 @@ class NetCDFData(Data):
             top_right = [float(x) for x in query.get('max_range').split(',')]
 
         if 'area' in query:
-            # Area explicitly specified
+            # Predefined area specified
             entire_globe = False
             # get bounding area
-            polys =  np.array(query['polygons']) 
+            polys =  np.squeeze(np.array(query['polygons']))
             bottom_left = [np.min(polys[:,0]),np.min(polys[:,1])]
             top_right = [np.max(polys[:,0]),np.max(polys[:,1])]
 

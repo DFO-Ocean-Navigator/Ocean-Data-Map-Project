@@ -249,7 +249,7 @@ export default class AreaWindow extends React.Component {
     };
     // check if predefined area
     if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
-      query['area'] = + this.props.area[0];
+      query['area'] = this.props.area[0];
     } else {
       const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
       query['min_range'] = [AABB[0], AABB[2]].join();
