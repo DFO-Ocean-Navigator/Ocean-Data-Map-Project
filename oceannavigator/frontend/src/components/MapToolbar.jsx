@@ -12,6 +12,12 @@ import EnterArea from "./EnterArea.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import PropTypes from "prop-types";
 
+import { 
+  GetPresetPointsPromise,
+  GetPresetLinesPromise,
+  GetPresetAreasPromise 
+} from "../remote/OceanNavigator.js";
+
 const currentLanguage = require("../currentLanguage.js");
 const i18n = require("../i18n.js");
 
@@ -105,45 +111,33 @@ export default class MapToolbar extends React.Component {
   }
 
   componentDidMount() {
-    $.ajax({
-      url: "/api/v1.0/points/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          pointFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(`Failed to load pre-defined points: ${status}`);
-      }
+    GetPresetPointsPromise().then(result => {
+      this.setState({
+        pointFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
-    $.ajax({
-      url: "/api/v1.0/lines/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          lineFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(`Failed to load pre-defined lines: ${status}`);
-      }
+
+    GetPresetLinesPromise().then(result => {
+      this.setState({
+        lineFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
-    $.ajax({
-      url: "/api/v1.0/areas/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          areaFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(`Failed to load pre-defined areas: ${status}`);
-      }
+
+    GetPresetAreasPromise().then(result => {
+      this.setState({
+        areaFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
+
     $.ajax({
       url: "/api/v1.0/class4/",
       dataType: "json",
