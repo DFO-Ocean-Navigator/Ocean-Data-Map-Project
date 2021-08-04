@@ -9,7 +9,9 @@ function _createPromise() {
 
 
 export function GetDatasetsPromise() {
-  return _createPromise().get("/api/v1.0/datasets");
+  return _createPromise().get(
+    "/api/v1.0/datasets"
+  );
 }
 
 export function GetVariablesPromise(dataset) {
@@ -32,5 +34,23 @@ export function GetTimestampsPromise(dataset, variable) {
         variable: variable
       }
     }
+  );
+}
+
+export function GetPresetPointsPromise() {
+  return _createPromise().get(
+    "/api/v1.0/points"
+  );
+}
+
+export function GetPresetLinesPromise() {
+  return _createPromise().get(
+    "/api/v1.0/lines"
+  );
+}
+
+export function GetPresetAreasPromise() {
+  return _createPromise().get(
+    "/api/v1.0/areas"
   );
 }
