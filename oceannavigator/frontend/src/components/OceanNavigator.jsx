@@ -20,7 +20,8 @@ import { withTranslation } from "react-i18next";
 import { 
   GetDatasetsPromise,
   GetVariablesPromise,
-  GetTimestampsPromise
+  GetTimestampsPromise,
+  GetDepthsPromise
 } from "../remote/OceanNavigator.js";
 
 const stringify = require("fast-stable-stringify");
@@ -46,6 +47,7 @@ class OceanNavigator extends React.Component {
     this.state = {
       availableDatasets: [],
       datasetVariables: [],
+      datasetDepthsCache: {},
       dataset: "giops_day",
       variable: "votemper",
       quiverVariable: "none",
@@ -303,6 +305,20 @@ class OceanNavigator extends React.Component {
         console.error(error);
       });
 
+      if (this.state.datasetDepthsCache[dataset] === undefined) {
+        GetDepthsPromise(dataset, newVariable).then(depthResult => {
+          this.setState(prevState => ({
+            datasetDepthsCache: {
+              ...prevState.datasetDepthsCache,
+              [dataset]: depthResult.data,
+            }
+          }));
+        },
+        error => {
+          console.error(error);
+        });
+      }
+
     },
     error => {
       console.error(error);
@@ -529,6 +545,18 @@ class OceanNavigator extends React.Component {
     error => {
       console.error(error);
     });
+
+    // eslint-disable-next-line max-len
+    GetDepthsPromise(this.state.dataset, this.state.variable).then(result => {
+      this.setState(prevState => ({
+        datasetDepthsCache: {
+          [prevState.dataset]: result.data,
+        }
+      }));
+    },
+    error => {
+      console.error(error);
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -592,6 +620,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
+            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
         modalTitle = formatLatLon(
@@ -619,6 +648,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
+            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
 
@@ -646,6 +676,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             swapViews={this.swapViews}
             options={this.state.options}
+            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
 
@@ -744,6 +775,7 @@ class OceanNavigator extends React.Component {
           updateOptions={this.updateOptions}
           availableDatasets={this.state.availableDatasets}
           datasetVariables={this.state.datasetVariables}
+          datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
         />
         <div className={contentClassName}>
           <MapToolbar

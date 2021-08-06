@@ -56,6 +56,7 @@ class MapInputs extends React.Component {
               depth={true}
               availableDatasets={this.props.availableDatasets}
               datasetVariables={this.props.datasetVariables}
+              datasetDepths={this.props.datasetDepths}
             />
             <Range
               id='scale'
@@ -99,9 +100,11 @@ class MapInputs extends React.Component {
                 id='dataset_1'
                 state={this.props.state.dataset_1}
                 onUpdate={this.props.changeHandler}
+                onUpdateOptions={this.props.updateOptions}
                 depth={true}
                 availableDatasets={this.props.availableDatasets}
                 datasetVariables={this.props.datasetVariables}
+                datasetDepths={this.props.datasetDepths}
               />
               <Range
                 key='scale_1'
@@ -284,7 +287,8 @@ MapInputs.propTypes = {
   options: PropTypes.object,
   updateOptions: PropTypes.func,
   availableDatasets: PropTypes.arrayOf(PropTypes.object),
-  datasetVariables: PropTypes.arrayOf(PropTypes.object)
+  datasetVariables: PropTypes.arrayOf(PropTypes.object),
+  datasetDepths: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default withTranslation()(MapInputs);

@@ -3,7 +3,6 @@ import { FormGroup, ControlLabel, FormControl } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 const fastEqual = require("fast-deep-equal/es6/react");
-const i18n = require("../../i18n.js"); // lgtm [js/unused-local-variable]
 
 export default class SelectBox extends React.Component {
   shouldComponentUpdate(nextProps) {
@@ -54,5 +53,6 @@ SelectBox.propTypes = {
   placeholder: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.object).isRequired,
-  selected: PropTypes.string.isRequired,
+  selected: PropTypes.oneOfType([PropTypes.string,
+  PropTypes.number,]).isRequired,
 };
