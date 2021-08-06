@@ -2,9 +2,9 @@ import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class DrifterSelector extends React.Component {
+class DrifterSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -170,3 +170,5 @@ DrifterSelector.propTypes = {
   select: PropTypes.func,
   state: PropTypes.array,
 };
+
+export default withTranslation()(DrifterSelector);

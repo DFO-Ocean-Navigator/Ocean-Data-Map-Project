@@ -5,10 +5,10 @@ import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
-export default class Range extends React.Component {
+class Range extends React.Component {
 
   constructor(props) {
     super(props);
@@ -211,3 +211,5 @@ Range.propTypes = {
   state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   autourl: PropTypes.string,
 };
+
+export default withTranslation()(Range);

@@ -18,10 +18,10 @@ import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
-export default class LineWindow extends React.Component {
+class LineWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -495,3 +495,5 @@ LineWindow.propTypes = {
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
 };
+
+export default withTranslation()(LineWindow);

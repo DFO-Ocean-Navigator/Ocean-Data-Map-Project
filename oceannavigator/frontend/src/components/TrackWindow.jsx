@@ -6,9 +6,9 @@ import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class TrackWindow extends React.Component {
+class TrackWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -254,3 +254,5 @@ TrackWindow.propTypes = {
   action: PropTypes.func,
   obs_query: PropTypes.string
 };
+
+export default withTranslation()(TrackWindow);

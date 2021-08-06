@@ -22,10 +22,10 @@ import Icon from "./lib/Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
-export default class AreaWindow extends React.Component {
+class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -216,34 +216,51 @@ export default class AreaWindow extends React.Component {
   }
 
   subsetArea() {
-    const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-    
+    var queryString = []
+    // check if predefined area
+    if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
+      queryString = "&area=" + this.props.area[0];
+    } else {
+      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
+      const min_range = [AABB[0], AABB[2]].join();
+      const max_range = [AABB[1], AABB[3]].join(); 
+      queryString = "&min_range=" + min_range +
+                      "&max_range=" + max_range;
+    }
+
     window.location.href = "/api/v1.0/subset/?" +
        "&output_format=" + this.state.output_format +
        "&dataset_name=" + this.state.dataset_0.dataset +
        "&variables=" + this.state.output_variables.join() +
-       "&min_range=" + [AABB[0], AABB[2]].join() +
-       "&max_range=" + [AABB[1], AABB[3]].join() +
+        queryString +
        "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
        "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
   saveScript(key) {
-    const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-    
     let query = {
       "output_format": this.state.output_format,
       "dataset_name": this.state.dataset_0.dataset,
       "variables": this.state.output_variables.join(),
-      "min_range": [AABB[0], AABB[2]].join(),
-      "max_range": [AABB[1], AABB[3]].join(),
       "time": [this.state.output_starttime, this.state.output_endtime].join(),
       "user_grid": (this.state.convertToUserGrid ? 1:0),
       "should_zip": (this.state.zip ? 1:0)
     };
+    // check if predefined area
+    if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
+      query['area'] = this.props.area[0];
+    } else {
+      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
+      query['min_range'] = [AABB[0], AABB[2]].join();
+      query['max_range'] = [AABB[1], AABB[3]].join() ;
+    }
 
-    window.location.href = window.location.origin + "/api/v1.0/generatescript/" + stringify(query) + "/" + key + "/" + "SUBSET/";
+    window.location.href = window.location.origin + 
+                          "/api/v1.0/generatescript/?query=" + 
+                          stringify(query) + 
+                          "&lang=" + key + 
+                          "&scriptType=SUBSET";
   }
 
   onTabChange(index) {
@@ -750,3 +767,5 @@ AreaWindow.propTypes = {
   scale_1: PropTypes.string,
   options: PropTypes.object,
 };
+
+export default withTranslation()(AreaWindow);

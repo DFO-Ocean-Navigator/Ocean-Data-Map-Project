@@ -14,9 +14,9 @@ import {FormControl, Row, Button, Form, OverlayTrigger, Tooltip} from "react-boo
 import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class CustomPlotLabels extends React.PureComponent {
+class CustomPlotLabels extends React.PureComponent {
 
   constructor (props) {
     super(props);
@@ -105,3 +105,5 @@ CustomPlotLabels.propTypes = {
   updatePlotTitle: PropTypes.func,
   plotTitle: PropTypes.string,
 };
+
+export default withTranslation()(CustomPlotLabels);

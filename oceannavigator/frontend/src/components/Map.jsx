@@ -20,7 +20,6 @@ import * as olextent from "ol/extent";
 
 require("ol/ol.css");
 
-const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
 const X_IMAGE = require("../images/x.png").default;
 
@@ -205,7 +204,7 @@ export default class Map extends React.PureComponent {
                 var id = feat.get("name");
                 feat.setId(id);
                 if (feat.get("error") != null) {
-                  feat.set("name", feat.get("name") + "<span>" + _("RMS Error: ") + feat.get("error").toPrecision(3) + "</span>");
+                  feat.set("name", feat.get("name") + "<span>" + "RMS Error: " + feat.get("error").toPrecision(3) + "</span>");
                 }
                 if (id) {
                   var oldfeat = this.vectorSource.getFeatureById(id);
@@ -1728,10 +1727,10 @@ export default class Map extends React.PureComponent {
           ref={(c) => this.infoPopup = c}
         >
           <div className={"balloonClose"}>
-            <a href="#" title={_("Close")} ref={(c) => this.infoPopupCloser = c}></a>
+            <a href="#" title={"Close"} ref={(c) => this.infoPopupCloser = c}></a>
           </div>
           <div className={"balloonLaunch"}>
-            <a href="#" style={{ right: "5px", top: "20px" }} title={_("Plot Point")} ref={(c) => this.infoPopupLauncher = c}></a>
+            <a href="#" style={{ right: "5px", top: "20px" }} title={"Plot Point"} ref={(c) => this.infoPopupLauncher = c}></a>
           </div>
 
           <div ref={(c) => this.infoPopupContent = c}></div>

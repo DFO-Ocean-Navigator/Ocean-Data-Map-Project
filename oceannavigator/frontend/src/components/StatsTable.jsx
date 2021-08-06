@@ -2,13 +2,13 @@ import React from "react";
 import {Table, Alert} from "react-bootstrap";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
 const LOADING_IMAGE = require("../images/spinner.gif");
 const FAIL_IMAGE = require("./fail.js");
 
-export default class StatsTable extends React.Component {
+class StatsTable extends React.Component {
   constructor(props) {
     super(props);
 
@@ -192,3 +192,5 @@ export default class StatsTable extends React.Component {
 StatsTable.propTypes = {
   query: PropTypes.object,
 };
+
+export default withTranslation()(StatsTable);

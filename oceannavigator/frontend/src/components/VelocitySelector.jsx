@@ -2,7 +2,7 @@ import React from "react";
 import SelectBox from "./SelectBox.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
 const PlotTypes = Object.freeze({
   "magnitude": 0,
@@ -10,7 +10,7 @@ const PlotTypes = Object.freeze({
   "perpendicular": 2,
 });
 
-export default class VelocitySelector extends React.Component {
+class VelocitySelector extends React.Component {
 
   constructor(props) {
     super(props);
@@ -80,3 +80,5 @@ VelocitySelector.propTypes = {
   title: PropTypes.string,
   updateSelectedPlots: PropTypes.func,
 };
+
+export default withTranslation()(VelocitySelector);

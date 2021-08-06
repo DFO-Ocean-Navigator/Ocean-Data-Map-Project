@@ -5,9 +5,9 @@ import Icon from "./lib/Icon.jsx";
 import SelectBox from "./SelectBox.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class Options extends React.Component {
+class Options extends React.Component {
   constructor(props) {
     super(props);
 
@@ -183,3 +183,5 @@ Options.propTypes = {
   options: PropTypes.object,
   updateOptions: PropTypes.func,
 };
+
+export default withTranslation()(Options);

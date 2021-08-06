@@ -18,7 +18,7 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
 const TabEnum = {
@@ -31,7 +31,7 @@ const TabEnum = {
   MOORING: 7,
 };
 
-export default class PointWindow extends React.Component {
+class PointWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -597,3 +597,5 @@ PointWindow.propTypes = {
   showHelp: PropTypes.func,
   dataset_1: PropTypes.object,
 };
+
+export default withTranslation()(PointWindow);

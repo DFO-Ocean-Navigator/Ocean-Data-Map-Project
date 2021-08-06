@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 import VelocitySelector from "./VelocitySelector.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
 // Default properties for a dataset-state
 const DATA_ELEMS = [
@@ -22,7 +22,7 @@ const DATA_ELEMS = [
   "quiverVariable",
 ];
 
-export default class DatasetSelector extends React.Component {
+class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -211,3 +211,5 @@ DatasetSelector.propTypes = {
   availableDatasets: PropTypes.arrayOf(PropTypes.object),
   datasetVariables: PropTypes.arrayOf(PropTypes.object)
 };
+
+export default withTranslation()(DatasetSelector);

@@ -11,12 +11,12 @@ import {Button,
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
-export default class PlotImage extends React.PureComponent {
+class PlotImage extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -488,3 +488,5 @@ PlotImage.propTypes = {
   action: PropTypes.func,
   permlink_subquery: PropTypes.object,
 };
+
+export default withTranslation()(PlotImage);

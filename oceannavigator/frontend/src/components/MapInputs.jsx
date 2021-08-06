@@ -14,9 +14,9 @@ import Icon from "./lib/Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class MapInputs extends React.Component {
+class MapInputs extends React.Component {
   constructor(props) {
     super(props);
 
@@ -284,3 +284,5 @@ MapInputs.propTypes = {
   availableDatasets: PropTypes.arrayOf(PropTypes.object),
   datasetVariables: PropTypes.arrayOf(PropTypes.object)
 };
+
+export default withTranslation()(MapInputs);
