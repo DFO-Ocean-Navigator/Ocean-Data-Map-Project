@@ -23,7 +23,7 @@ import {
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
-const LOADING_IMAGE = require("../images/bar_loader.gif");
+const LOADING_IMAGE = require("../images/bar_loader.gif").default;
 
 function formatLatLon(latitude, longitude) {
   let formatted = "";
