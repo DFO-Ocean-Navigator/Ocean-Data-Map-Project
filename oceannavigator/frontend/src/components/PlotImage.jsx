@@ -8,7 +8,7 @@ import {Button,
   MenuItem,
   Modal,
   Alert} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");

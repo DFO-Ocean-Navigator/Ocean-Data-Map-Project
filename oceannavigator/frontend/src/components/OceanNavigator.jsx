@@ -10,7 +10,7 @@ import Class4Window from "./Class4Window.jsx";
 import Permalink from "./Permalink.jsx";
 import Options from "./Options.jsx";
 import {Button, Modal} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import WarningBar from "./WarningBar.jsx";

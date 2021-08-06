@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import {Button, MenuItem, Modal, Navbar, Nav, NavItem, NavDropdown, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Papa from "papaparse";
 
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import DrifterSelector from "./DrifterSelector.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import EnterPoint from "./EnterPoint.jsx";
