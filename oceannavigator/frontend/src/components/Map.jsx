@@ -1490,6 +1490,7 @@ export default class Map extends React.PureComponent {
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
           url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          projection: this.props.state.projection
         })
       );
 
@@ -1535,6 +1536,7 @@ export default class Map extends React.PureComponent {
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
             url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+            projection: this.props.state.projection
           })
         );
 
