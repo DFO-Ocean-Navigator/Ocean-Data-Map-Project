@@ -22,19 +22,19 @@ require("ol/ol.css");
 
 const i18n = require("../i18n.js");
 const SmartPhone = require("detect-mobile-browser")(false);
-const X_IMAGE = require("../images/x.png");
+const X_IMAGE = require("../images/x.png").default;
 
 // CHS S111 standard arrows for quiver layer
-const I0 = require("../images/s111/I0.svg"); // lgtm [js/unused-local-variable]
-const I1 = require("../images/s111/I1.svg");
-const I2 = require("../images/s111/I2.svg");
-const I3 = require("../images/s111/I3.svg");
-const I4 = require("../images/s111/I4.svg");
-const I5 = require("../images/s111/I5.svg");
-const I6 = require("../images/s111/I6.svg");
-const I7 = require("../images/s111/I7.svg");
-const I8 = require("../images/s111/I8.svg");
-const I9 = require("../images/s111/I9.svg");
+const I0 = require("../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
+const I1 = require("../images/s111/I1.svg").default;
+const I2 = require("../images/s111/I2.svg").default;
+const I3 = require("../images/s111/I3.svg").default;
+const I4 = require("../images/s111/I4.svg").default;
+const I5 = require("../images/s111/I5.svg").default;
+const I6 = require("../images/s111/I6.svg").default;
+const I7 = require("../images/s111/I7.svg").default;
+const I8 = require("../images/s111/I8.svg").default;
+const I9 = require("../images/s111/I9.svg").default;
 
 function knotsToMetersPerSecond(knots) {
   return knots * 0.514444;
