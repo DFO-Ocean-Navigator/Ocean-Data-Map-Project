@@ -18,7 +18,7 @@ import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
