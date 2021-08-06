@@ -12,7 +12,7 @@
 import React from "react";
 import {FormControl, Row, Button, Form, OverlayTrigger, Tooltip} from "react-bootstrap";
 import PropTypes from "prop-types";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 
 const i18n = require("../i18n.js");
 

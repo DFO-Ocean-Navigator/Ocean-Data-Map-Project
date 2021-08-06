@@ -1,7 +1,7 @@
 import React from "react";
 import { Row, FormControl, ControlLabel, Col, Panel, Button } from "react-bootstrap";
 import NumericInput from "react-numeric-input";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import SelectBox from "./SelectBox.jsx";
 import PropTypes from "prop-types";
 
