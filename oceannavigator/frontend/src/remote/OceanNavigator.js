@@ -37,6 +37,18 @@ export function GetTimestampsPromise(dataset, variable) {
   );
 }
 
+export function GetDepthsPromise(dataset, variable) {
+  return _createPromise().get(
+    "/api/v1.0/depths",
+    {
+      params: {
+        dataset: dataset,
+        variable: variable
+      }
+    }
+  );
+}
+
 export function GetPresetPointsPromise() {
   return _createPromise().get(
     "/api/v1.0/points"
