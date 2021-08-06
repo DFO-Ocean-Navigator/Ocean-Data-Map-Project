@@ -36,7 +36,7 @@
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "ol": "^6.6.1",
     "papaparse": "^5.2.0",
-    "proj4": "~2.4.3",
+    "proj4": "^2.7.5",
     "prop-types": "^15.5.10",
     "rc-slider": "^9.2.2",
     "react": "^16.8.6",
