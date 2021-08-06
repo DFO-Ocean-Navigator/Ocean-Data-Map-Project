@@ -8,13 +8,13 @@ import {Button,
   MenuItem,
   Modal,
   Alert} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
-const LOADING_IMAGE = require("../images/spinner.gif");
+const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 export default class PlotImage extends React.PureComponent {
   constructor(props) {

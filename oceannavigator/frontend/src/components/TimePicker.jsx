@@ -6,7 +6,7 @@ import $ from "jquery";
 import jQuery from "jquery";
 import dateFormat from "dateformat";
 import { Button } from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 import "jquery-ui-css/base.css";

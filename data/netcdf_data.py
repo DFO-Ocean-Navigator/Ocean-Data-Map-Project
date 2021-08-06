@@ -238,6 +238,14 @@ class NetCDFData(Data):
             bottom_left = [float(x) for x in query.get('min_range').split(',')]
             top_right = [float(x) for x in query.get('max_range').split(',')]
 
+        if 'area' in query:
+            # Predefined area specified
+            entire_globe = False
+            # get bounding area
+            polys =  np.squeeze(np.array(query['polygons']))
+            bottom_left = [np.min(polys[:,0]),np.min(polys[:,1])]
+            top_right = [np.max(polys[:,0]),np.max(polys[:,1])]
+
         # Time range
         try:
             # Time is an index into timestamps array
