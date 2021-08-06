@@ -52,22 +52,25 @@ class NetCDFData(Data):
         # Don't decode times since we do it anyways.
         decode_times = False
 
-        if self._nc_files:
-            try:
-                if len(self._nc_files) > 1:
-                    self.dataset = xarray.open_mfdataset(
-                        self._nc_files,
-                        decode_times=decode_times
-                    )
-                else:
-                    self.dataset = xarray.open_dataset(
-                        self._nc_files[0],
-                        decode_times=decode_times,
-                    )
-            except xarray.core.variable.MissingDimensionsError:
-                # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                # duplication issue, so fall back to using netCDF4.Dataset()
-                self.dataset = netCDF4.MFDataset(self._nc_files)
+        if (self.url.endswith(".sqlite3") if not isinstance(self.url, list) else False):
+            if self._nc_files:
+                try:
+                    if len(self._nc_files) > 1:
+                        self.dataset = xarray.open_mfdataset(
+                            self._nc_files,
+                            decode_times=decode_times
+                        )
+                    else:
+                        self.dataset = xarray.open_dataset(
+                            self._nc_files[0],
+                            decode_times=decode_times,
+                        )
+                except xarray.core.variable.MissingDimensionsError:
+                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
+                    # duplication issue, so fall back to using netCDF4.Dataset()
+                    self.dataset = netCDF4.MFDataset(self._nc_files)
+            else:
+                self.dataset = xarray.Dataset()
 
         elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
             ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
@@ -830,11 +833,15 @@ class NetCDFData(Data):
         try:
             variables = kwargs['variable']
         except KeyError:
-            variables = datasetconfig.variables[0]
+            variables = set()
+            
         variables = {variables} if isinstance(variables, str) else set(variables)
         calculated_variables = datasetconfig.calculated_variables
         with SQLiteDatabase(self.url) as db:
             variables_to_load = self.__get_variables_to_load(db, variables, calculated_variables)
+
+            if len(variables_to_load) == 0:
+                return []
 
             timestamp = self.__get_requested_timestamps(
                 db, variables_to_load[0], kwargs.get('timestamp', -1),
