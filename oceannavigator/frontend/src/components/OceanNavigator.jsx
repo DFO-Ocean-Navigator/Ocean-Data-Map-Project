@@ -74,6 +74,7 @@ export default class OceanNavigator extends React.Component {
         time: -1,
         starttime: -2,  // Start time for Right Map
         variable_scale: [-5,30], // Default variable range for Right Map
+        quiverVariable: "none",
       },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
@@ -298,6 +299,7 @@ export default class OceanNavigator extends React.Component {
         state.variable = newVariable;
         state.time = newTime;
         state.starttime = newStarttime;
+        state.quiverVariable = "none";
         state.busy = false;
 
         this.setState(state);

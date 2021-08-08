@@ -360,8 +360,8 @@ def get_data_v1_0():
 
         lat_var, lon_var = ds.nc_data.latlon_variables
 
-        lat_slice = slice(0, lat_var.size, 8)
-        lon_slice = slice(0, lon_var.size, 8)
+        lat_slice = slice(0, lat_var.size, 4)
+        lon_slice = slice(0, lon_var.size, 4)
 
         time_index = ds.nc_data.timestamp_to_time_index(result['time'])
         
