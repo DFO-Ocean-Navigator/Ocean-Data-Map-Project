@@ -140,13 +140,26 @@ export default class DatasetSelector extends React.Component {
       ];  
     }
 
-    let quiverVariables = [];
-    if (this.props.datasetVariables) {
-      quiverVariables = this.props.datasetVariables.filter((variable) => {
-        return variable.id.includes("mag") && variable.id.includes("vel");
-      })
+    let quiverSelector = null;
+    if (this.props.showQuiverSelector) {
+      let quiverVariables = [];
+      if (this.props.datasetVariables) {
+        quiverVariables = this.props.datasetVariables.filter((variable) => {
+          return variable.id.includes("mag") && variable.id.includes("vel");
+        });
+      }
+      quiverVariables.unshift({ id: "none", value: "None" });
+  
+      quiverSelector = <SelectBox
+        id={`dataset-selector-quiver-selector-${this.props.id}`}
+        name="quiverVariable"
+        label={_("Quiver Variable")}
+        placeholder={_("Quiver Variable")}
+        options={quiverVariables}
+        onChange={this.onUpdate}
+        selected={this.props.state.quiverVariable}
+      />;
     }
-    quiverVariables.unshift({ id: 'none', value: 'None' });
 
     return (
       <div className='DatasetSelector'>
@@ -171,6 +184,8 @@ export default class DatasetSelector extends React.Component {
         ><h1>{_("Variable")}</h1></ComboBox>
 
         {velocity_selector}
+
+        {quiverSelector}
 
         {this.props.depth && <ComboBox
           id='depth'
@@ -209,5 +224,10 @@ DatasetSelector.propTypes = {
   updateSelectedPlots: PropTypes.func,
   compare: PropTypes.bool,
   availableDatasets: PropTypes.arrayOf(PropTypes.object),
-  datasetVariables: PropTypes.arrayOf(PropTypes.object)
+  datasetVariables: PropTypes.arrayOf(PropTypes.object),
+  showQuiverSelector: PropTypes.bool,
+};
+
+DatasetSelector.defaultProps = {
+  showQuiverSelector: true,
 };
