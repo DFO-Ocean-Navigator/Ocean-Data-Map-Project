@@ -600,6 +600,66 @@ def plot_v1_0():
 
     return response
 
+@bp_v1_0.route('/api/v1.0/point_data/', methods=['GET', 'POST'])
+def point_data():
+    """
+    API Format: /api/v1.0/plot/?query='...'&format
+
+    query = {
+        dataset   : Dataset to extract data
+        variable  : Type of data to plot - Options found using /api/variables/?dataset='...'
+        point   : Coordinates of the point/line/area/etc
+        starttime : 
+        endtime :        
+    }
+    **Query must be written in JSON and converted to encodedURI**
+    **Not all components of query are required
+    """
+    
+    if request.method == 'GET':
+        args = request.args
+    else:
+        args = request.form
+
+    if "query" not in args:
+        raise APIError("Please provide a query.")
+
+    query = json.loads(args.get('query'))
+
+    dataset = query.get('dataset')
+    variable = query.get('variable')
+    point = query.get('point')
+    starttime = query.get('starttime')
+    endtime = query.get('endtime')
+    depth = query.get('depth')
+    plot_type = query.get('plotType')
+
+    config = DatasetConfig(dataset)
+    
+    with open_dataset(config, variable=variable, timestamp=int(starttime), endtime=int(endtime)) as ds: 
+        if plot_type == 'profile':
+            data, _ = ds.get_timeseries_profile(float(point[0][0]),
+                                                float(point[0][1]),
+                                                starttime,
+                                                endtime,
+                                                variable
+                                                )
+
+            data = list(filter(None, data.tolist()))
+        elif  plot_type == 'timeseries': 
+            data, _ = ds.get_timeseries_point(float(point[0][0]),
+                                                float(point[0][1]),
+                                                depth,
+                                                starttime,
+                                                endtime,
+                                                variable,
+                                                return_depth=False
+                                                )
+
+            data = list(filter(None, data.tolist()))                         
+    data = json.dumps(data)
+
+    return Response(data, status=200, mimetype='application/json')
 
 @bp_v1_0.route('/api/v1.0/colors/')
 def colors_v1_0():
