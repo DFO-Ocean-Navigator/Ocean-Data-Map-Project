@@ -37,6 +37,7 @@
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "ol": "^6.6.1",
     "papaparse": "^5.2.0",
+    "plotly.js": "^2.3.1",
     "proj4": "^2.7.5",
     "prop-types": "^15.5.10",
     "rc-slider": "^9.2.2",
@@ -50,7 +51,11 @@
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
+<<<<<<< HEAD
     "tar": "^4.4.18",
+=======
+    "react-plotly.js": "^2.5.1",
+>>>>>>> Add plotly to point window
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

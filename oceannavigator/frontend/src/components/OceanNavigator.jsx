@@ -18,7 +18,8 @@ import WarningBar from "./WarningBar.jsx";
 import { 
   GetDatasetsPromise,
   GetVariablesPromise,
-  GetTimestampsPromise
+  GetTimestampsPromise,
+  GetDepthsPromise
 } from "../remote/OceanNavigator.js";
 
 const i18n = require("../i18n.js");
@@ -292,6 +293,8 @@ export default class OceanNavigator extends React.Component {
         
         newTime = timeData[timeData.length - 1].id;
         newStarttime = this.setStartTime(timeData);
+        const timestamps = timeData.map(function (d) { return d.id;});
+        const datetimes = timeData.map(function (d) { return d.value;});
         if (state === undefined) {
           state = {};
         }
@@ -299,6 +302,8 @@ export default class OceanNavigator extends React.Component {
         state.variable = newVariable;
         state.time = newTime;
         state.starttime = newStarttime;
+        state.timestamps = timestamps;
+        state.datetimes = datetimes;
         state.quiverVariable = "none";
         state.busy = false;
 
@@ -308,6 +313,22 @@ export default class OceanNavigator extends React.Component {
         console.error(error);
       });
 
+      GetDepthsPromise(dataset, newVariable).then(depthsResult => {
+        const depthData = depthsResult.data;
+  
+        var depths = depthData.map(function (d) { return d.value;});
+        if (state === undefined) {
+          state = {};
+        }
+        if (depths.length === 0) {
+          depths = "0 m";
+        }
+        state.depths = depths;
+        this.setState(state);
+      },
+      error => {
+        console.error(error);
+      });
     },
     error => {
       console.error(error);
@@ -526,10 +547,28 @@ export default class OceanNavigator extends React.Component {
 
       const newTime = timeData[timeData.length - 1].id;
       const newStarttime = timeData[0].id;
+      const timestamps = timeData.map(function (d) { return d.id;});
+      const datetimes = timeData.map(function (d) { return d.value;});
+      
       this.setState({
         time: newTime,
-        starttime: newStarttime
+        starttime: newStarttime,
+        timestamps : timestamps,
+        datetimes : datetimes
       });
+    },
+    error => {
+      console.error(error);
+    });
+
+    GetDepthsPromise(this.state.dataset, this.state.variable).then(result => {
+      const depthData = result.data;
+
+      var depths = depthData.map(function (d) { return d.value;});
+      if (depths.length === 0) {
+        depths = "0 m";
+      }
+      this.setState({depths : depths});
     },
     error => {
       console.error(error);
@@ -586,6 +625,9 @@ export default class OceanNavigator extends React.Component {
             depth={this.state.depth}
             time={this.state.time}
             starttime={this.state.starttime}
+            timestamps={this.state.timestamps}
+            datetimes={this.state.datetimes}
+            depths={this.state.depths}
             scale={this.state.scale}
             colormap={this.state.colormap}
             names={this.state.names}

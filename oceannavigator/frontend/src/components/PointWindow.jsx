@@ -18,6 +18,8 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
+import {ProfilePlotter} from "./PointPlotter.jsx";
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 
@@ -428,6 +430,7 @@ export default class PointWindow extends React.Component {
     };
 
     let inputs = [];
+    let plot = null;
 
     switch(this.state.selected) {
       case TabEnum.PROFILE:
@@ -435,6 +438,18 @@ export default class PointWindow extends React.Component {
         plot_query.time = this.props.time;
         plot_query.variable = this.state.variable;
         inputs = [global, time, profilevariable];
+        
+        plot = <ProfilePlotter
+                key='profile'
+                id='profile'
+                dataset = {this.props.dataset}
+                variable = {this.state.variable}
+                point = {this.props.point}
+                timestamps = {this.props.timestamps}
+                datetimes = {this.props.datetimes}
+                depths = {this.props.depths}
+                plotType = {"profile"}
+              />
         break;
 
       case TabEnum.CTD:
@@ -452,6 +467,18 @@ export default class PointWindow extends React.Component {
           plot_query.variable += "salinity";
         }
         inputs = [global, time];
+
+        plot = <ProfilePlotter
+                key='ctd'
+                id='ctd'
+                dataset = {this.props.dataset}
+                variable =  {["votemper","vosaline"]}
+                point = {this.props.point}
+                timestamps = {this.props.timestamps}
+                datetimes = {this.props.datetimes}
+                depths = {this.props.depths}
+                plotType = {"profile"}
+              />
         break;
 
       case TabEnum.TS:
@@ -462,12 +489,31 @@ export default class PointWindow extends React.Component {
         }
 
         inputs = [global, time];
+
+        plot = <PlotImage
+              query={plot_query} // For image saving link.
+              permlink_subquery={permlink_subquery}
+              action={this.props.action}
+            />
         break;
 
       case TabEnum.SOUND:
         plot_query.type = "sound";
         plot_query.time = this.props.time;
         inputs = [global, time];
+
+        plot = <ProfilePlotter
+                key='sound'
+                id='sound'
+                dataset = {this.props.dataset}
+                variable =  {["sspeed"]}
+                point = {this.props.point}
+                timestamps = {this.props.timestamps}
+                datetimes = {this.props.datetimes}
+                depths = {this.props.depths}
+                plotType = {"profile"}
+              />
+
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
@@ -478,6 +524,12 @@ export default class PointWindow extends React.Component {
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.variable;
         inputs = [global, observation_variable, profilevariable];
+
+        plot = <PlotImage
+              query={plot_query} // For image saving link.
+              permlink_subquery={permlink_subquery}
+              action={this.props.action}
+            />
 
         break;
       case TabEnum.MOORING:
@@ -504,6 +556,17 @@ export default class PointWindow extends React.Component {
             </ComboBox>);
         }
 
+        plot = <ProfilePlotter
+                key='mooring'
+                id='mooring'
+                dataset = {this.props.dataset}
+                variable =  {this.state.variable}
+                point = {this.props.point}
+                timestamps = {this.props.timestamps}
+                datetimes = {this.props.datetimes}
+                depths = {this.props.depths}
+                plotType = {'timeseries'}
+              />
         break;
       case TabEnum.STICK:
         plot_query.type = "stick";
@@ -514,6 +577,11 @@ export default class PointWindow extends React.Component {
 
         inputs = [global, timeRange, multiDepthVector];
 
+        plot = <PlotImage
+              query={plot_query} // For image saving link.
+              permlink_subquery={permlink_subquery}
+              action={this.props.action}
+            />
         break;
     }
 
@@ -565,11 +633,7 @@ export default class PointWindow extends React.Component {
             {inputs}
           </Col>
           <Col lg={10}>
-            <PlotImage
-              query={plot_query} // For image saving link.
-              permlink_subquery={permlink_subquery}
-              action={this.props.action}
-            />
+            {plot}
           </Col>
         </Row>
       </div>
