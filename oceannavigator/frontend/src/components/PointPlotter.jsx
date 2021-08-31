@@ -18,6 +18,7 @@ export class ProfilePlotter extends React.Component {
                 };
 
     this.getProfileData = this.getProfileData.bind(this);
+    this.getTsData = this.getTsData.bind(this);
   }
 
   componentDidMount() {
@@ -191,14 +192,14 @@ export class ProfilePlotter extends React.Component {
 
   async getTsData(variable) {
     var q = {};
-    for (let j = 0; j < this.state.depths.length; j++){
+    for (let i = 0; i < this.props.depths.length-1; i++){
       q = {
         dataset: this.props.dataset,
         variable: variable,
         point: this.props.point,
-        starttime: this.props.timestamps[j],
+        starttime: this.props.timestamps[i],
         endtime: this.props.timestamps[this.props.timestamps.length-1],
-        depth: this.state.depths[j],
+        depth: this.props.depths[i+1],
         plotType: this.props.plotType
       };
     
@@ -210,11 +211,11 @@ export class ProfilePlotter extends React.Component {
       newData.push({
         x: this.props.datetimes,
         y: data.data,
-        name: this.state.depths[j],
+        name: this.props.depths[i+1],
         type: 'scatter',
         mode: 'lines',
         marker: {color: 'blue'},
-        visible: j === 0 ? true : "legendonly",
+        visible: i === 0 ? true : "legendonly",
       })
       this.setState({data: newData})
     }   

@@ -649,11 +649,11 @@ def point_data():
         elif  plot_type == 'timeseries': 
             data, _ = ds.get_timeseries_point(float(point[0][0]),
                                                 float(point[0][1]),
-                                                depth,
+                                                float(depth.replace(' m','')),
                                                 starttime,
                                                 endtime,
-                                                variable,
-                                                return_depth=False
+                                                variable[0],
+                                                return_depth=True
                                                 )
 
             data = list(filter(None, data.tolist()))                         
