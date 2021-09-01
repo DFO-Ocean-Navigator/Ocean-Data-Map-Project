@@ -276,9 +276,9 @@ export default class PointWindow extends React.Component {
       </Panel.Collapse>
     </Panel>);
 
-    // Show a single time selector on all tabs except Stick and Virtual Mooring.
-    const showTime = this.state.selected !== TabEnum.STICK ||
-                      this.state.selected !== TabEnum.MOORING;
+    // Show a single time selector on the T/S and Observation tabs.
+    const showTime = this.state.selected === TabEnum.TS ||
+                     this.state.selected === TabEnum.OBSERVATION;
     const time = showTime ? <TimePicker
       key='time'
       id='time'
@@ -290,9 +290,8 @@ export default class PointWindow extends React.Component {
       onUpdate={this.props.onUpdate}
     /> : null;
 
-    // Show a start and end time selector for only Stick and Virtual Mooring tabs.
-    const showTimeRange = this.state.selected === TabEnum.STICK ||
-                          this.state.selected === TabEnum.MOORING;
+    // Show a start and end time selector for only the Stick tab.
+    const showTimeRange = this.state.selected === TabEnum.STICK;
     const timeRange = showTimeRange ? <div>
       <TimePicker
         key='starttime'
@@ -321,15 +320,6 @@ export default class PointWindow extends React.Component {
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
     const depthVariableScale = showDepthVariableScale ? <div>
       <ComboBox
-        key='depth'
-        id='depth'
-        state={this.state.depth}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
-        title={_("Depth")}></ComboBox>
-
-      <ComboBox
         key='variable'
         id='variable'
         state={this.props.variable}
@@ -337,15 +327,6 @@ export default class PointWindow extends React.Component {
         onUpdate={this.props.onUpdate}
         url={"/api/v1.0/variables/?dataset="+this.props.dataset}
         title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
-
-      <Range
-        auto
-        key='scale'
-        id='scale'
-        state={this.state.scale}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        title={_("Variable Range")} />
     </div> : null;
 
     // Show multidepth selector on for Stick tab
