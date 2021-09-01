@@ -113,10 +113,10 @@ export class ProfilePlotter extends React.Component {
     var newLayout = {
       width: 1000,
       height: 750,
-      title : this.props.variable,
+      title : variable[0],
       xaxis: {rangeslider: {}},
       yaxis: {
-        title : this.props.variable,
+        title : variable[0],
       },
       showlegend: true
     };
@@ -152,7 +152,7 @@ export class ProfilePlotter extends React.Component {
       datetimes.push(dt)
     }
     this.setState({datetimes: datetimes})
-  }
+  } 
 
   async getProfileData(variable) {
     var q = {};
@@ -197,7 +197,7 @@ export class ProfilePlotter extends React.Component {
         dataset: this.props.dataset,
         variable: variable,
         point: this.props.point,
-        starttime: this.props.timestamps[i],
+        starttime: this.props.timestamps[0],
         endtime: this.props.timestamps[this.props.timestamps.length-1],
         depth: this.props.depths[i+1],
         plotType: this.props.plotType
@@ -224,7 +224,7 @@ export class ProfilePlotter extends React.Component {
   render() {
     return (
       <Plot
-          data={this.state.data}
+          data={this.state.data}plotly_test
           layout={this.state.layout}
           frames={this.state.frames}
           config={this.state.config}
