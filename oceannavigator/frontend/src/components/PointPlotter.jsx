@@ -6,7 +6,7 @@ const stringify = require("fast-stable-stringify");
 const axios = require("axios");
 
 
-export class ProfilePlotter extends React.Component {
+export class PointPlotter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {data: [],
@@ -23,8 +23,9 @@ export class ProfilePlotter extends React.Component {
 
   componentDidMount() {
     // use switch here instead of ifs
-    this.formatDepths();
+    
     if (this.props.plotType === 'profile') {
+      this.formatDepths();
       this.formatDatetimes();
       this.profileLayout(this.props.variable);
       this.getProfileData(this.props.variable); 
@@ -35,19 +36,16 @@ export class ProfilePlotter extends React.Component {
   } 
 
   shouldComponentUpdate(nextProps) {
-    if (nextProps.dataset !== this.props.dataset ||
-        nextProps.variable !== this.props.variable ||
-        nextProps.point !== this.props.point) {
+
+    // need better way to manage updates...
       if (nextProps.dataset !== this.props.dataset) {
-        this.formatDepths();
         if (this.props.plotType === 'profile'){
+          this.formatDepths();
           this.formatDatetimes();
         }
       } 
-      this.setState({data: []})
-      this.setState({layout: {}})
       
-      // use switch here instead of ifs
+     if (nextProps.variable !== this.props.variable) {
       if (this.props.plotType === 'profile') {
         this.profileLayout(this.props.variable);
         this.getProfileData(this.props.variable); 
@@ -199,7 +197,7 @@ export class ProfilePlotter extends React.Component {
         point: this.props.point,
         starttime: this.props.timestamps[0],
         endtime: this.props.timestamps[this.props.timestamps.length-1],
-        depth: this.props.depths[i+1],
+        depth: i.toString(),
         plotType: this.props.plotType
       };
     
@@ -224,7 +222,7 @@ export class ProfilePlotter extends React.Component {
   render() {
     return (
       <Plot
-          data={this.state.data}plotly_test
+          data={this.state.data}
           layout={this.state.layout}
           frames={this.state.frames}
           config={this.state.config}

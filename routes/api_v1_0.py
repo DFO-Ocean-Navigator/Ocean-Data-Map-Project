@@ -33,6 +33,7 @@ from PIL import Image
 from plotting.class4 import Class4Plotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
+from plotting.map_new import MapPlotterNew
 from plotting.observation import ObservationPlotter
 from plotting.profile import ProfilePlotter
 from plotting.scriptGenerator import generatePython, generateR
@@ -635,7 +636,6 @@ def point_data():
     plot_type = query.get('plotType')
 
     config = DatasetConfig(dataset)
-    
     with open_dataset(config, variable=variable, timestamp=int(starttime), endtime=int(endtime)) as ds: 
         if plot_type == 'profile':
             data, _ = ds.get_timeseries_profile(float(point[0][0]),
@@ -649,7 +649,7 @@ def point_data():
         elif  plot_type == 'timeseries': 
             data, _ = ds.get_timeseries_point(float(point[0][0]),
                                                 float(point[0][1]),
-                                                float(depth.replace(' m','')),
+                                                depth,
                                                 starttime,
                                                 endtime,
                                                 variable[0],
@@ -658,6 +658,48 @@ def point_data():
 
             data = list(filter(None, data.tolist()))                         
     data = json.dumps(data)
+
+    return Response(data, status=200, mimetype='application/json')
+
+@bp_v1_0.route('/api/v1.0/area_data/', methods=['GET', 'POST'])
+def area_data():
+    if request.method == 'GET':
+        args = request.args
+    else:
+        args = request.form
+
+    if "query" not in args:
+        raise APIError("Please provide a query.")
+
+    query = json.loads(args.get('query'))
+
+    fmt = args.get('format')
+    if fmt == 'json':
+        def make_response(data, mime):
+            b64 = base64.encodebytes(data).decode()
+
+            return Response(json.dumps("data:%s;base64,%s" % (
+                mime,
+                b64
+            )), status=200, mimetype="application/json")
+    else:
+        def make_response(data, mime):
+            return Response(data, status=200, mimetype=mime)
+
+    dataset = query.get('dataset')
+    plottype = query.get('type')
+
+    options = {
+        'format': fmt,
+        'size': args.get('size', '15x9'),
+        'dpi': args.get('dpi', 72)
+    }
+
+    # Determine which plotter we need.
+    if plottype == 'map':
+        plotter = MapPlotterNew(dataset, query, **options)
+
+    img, mime, filename = plotter.run()
 
     return Response(data, status=200, mimetype='application/json')
 
