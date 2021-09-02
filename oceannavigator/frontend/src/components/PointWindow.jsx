@@ -18,7 +18,7 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
-import {ProfilePlotter} from "./PointPlotter.jsx";
+import {PointPlotter} from "./PointPlotter.jsx";
 
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
@@ -420,7 +420,7 @@ export default class PointWindow extends React.Component {
         plot_query.variable = this.state.variable;
         inputs = [global, time, profilevariable];
         
-        plot = <ProfilePlotter
+        plot = <PointPlotter
                 key='profile'
                 id='profile'
                 dataset = {this.props.dataset}
@@ -449,7 +449,7 @@ export default class PointWindow extends React.Component {
         }
         inputs = [global, time];
 
-        plot = <ProfilePlotter
+        plot = <PointPlotter
                 key='ctd'
                 id='ctd'
                 dataset = {this.props.dataset}
@@ -483,7 +483,7 @@ export default class PointWindow extends React.Component {
         plot_query.time = this.props.time;
         inputs = [global, time];
 
-        plot = <ProfilePlotter
+        plot = <PointPlotter
                 key='sound'
                 id='sound'
                 dataset = {this.props.dataset}
@@ -537,7 +537,7 @@ export default class PointWindow extends React.Component {
             </ComboBox>);
         }
 
-        plot = <ProfilePlotter
+        plot = <PointPlotter
                 key='mooring'
                 id='mooring'
                 dataset = {this.props.dataset}
