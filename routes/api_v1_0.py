@@ -3,6 +3,7 @@ import datetime
 import gzip
 import json
 import os
+from plotting.overlays import bathymetry
 import shutil
 import sqlite3
 from io import BytesIO
@@ -604,6 +605,13 @@ def plot_v1_0():
 @bp_v1_0.route('/api/v1.0/point_data/', methods=['GET', 'POST'])
 def point_data():
     """
+    ***********************************************************
+    https://flask.palletsprojects.com/en/1.1.x/patterns/streaming/
+    ***********************************************************
+
+    """
+
+    """
     API Format: /api/v1.0/plot/?query='...'&format
 
     query = {
@@ -698,10 +706,13 @@ def area_data():
     # Determine which plotter we need.
     if plottype == 'map':
         plotter = MapPlotterNew(dataset, query, **options)
+    plotter.parse_query(query)
+    data, bathymetry = plotter.load_data()
+    data = [d.tolist() for d in data.data]
+    bathymetry = [b.tolist() for b in bathymetry]
+    resp = json.dumps({'data' : data, 'bathymetry' : bathymetry})
 
-    img, mime, filename = plotter.run()
-
-    return Response(data, status=200, mimetype='application/json')
+    return Response(resp, status=200, mimetype='application/json')
 
 @bp_v1_0.route('/api/v1.0/colors/')
 def colors_v1_0():
