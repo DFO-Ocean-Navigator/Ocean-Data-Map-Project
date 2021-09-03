@@ -22,6 +22,8 @@ import Icon from "./lib/Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
+import { AreaPlotter } from "./AreaPlotter.jsx";
+
 const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 
@@ -701,11 +703,14 @@ export default class AreaWindow extends React.Component {
         if (this.props.dataset_compare) {   //Adds pane to right sidebar when compare is selected
           rightInputs.push(compare_dataset);
         }
-        content = <PlotImage
-          query={plot_query} // For image saving link.
-          permlink_subquery={this.state}
-          action={this.props.action}
-        />;
+        // content = <PlotImage
+        //   query={plot_query} // For image saving link.
+        //   permlink_subquery={this.state}
+        //   action={this.props.action}
+        // />;
+        content = <AreaPlotter
+                    query={plot_query} 
+                />
         break;
       case 2:
         plot_query.time = this.state.dataset_0.time;
