@@ -178,6 +178,9 @@ class MapPlotterNew(PlotterNew):
                 (height_bounds[0], height_bounds[1]),
                 (new_width_bounds[0], new_width_bounds[1])
             )
+
+            self.bounds = [height_bounds[0], new_width_bounds[0], height_bounds[1], new_width_bounds[1]]
+            
         else:
             self.basemap = basemap.load_map(
                 'lcc', self.centroid, height, width
@@ -417,7 +420,7 @@ class MapPlotterNew(PlotterNew):
         #         rings = [LinearRing(p) for p in a['polygons']]
         #         innerrings = [LinearRing(p) for p in a['innerrings']]
 
-        #         polygons = []
+        #         polygons = []bounds
         #         for r in rings:
         #             inners = []
         #             for ir in innerrings:
@@ -447,7 +450,7 @@ class MapPlotterNew(PlotterNew):
 
         # self.depth_value_map = depth_value_map
 
-        return self.data,self.bathymetry 
+        return self.data,self.bathymetry, [np.min(self.latitude),np.min(self.longitude),np.max(self.latitude),np.max(self.longitude)]#self.bounds
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
