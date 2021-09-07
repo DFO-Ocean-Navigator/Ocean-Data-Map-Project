@@ -20,7 +20,6 @@ export class AreaPlotter extends React.Component {
   }
 
   componentDidMount() {
-    this.setLayout();
     this.getPlotData();
   }
 
@@ -30,35 +29,52 @@ export class AreaPlotter extends React.Component {
     const res = await axios(query);
     const data = await res;
 
+    var shapes = {
+                  type: 'path',
+                  line: {
+                    color: 'rgb(10, 10, 10)',
+                    width: 2
+                  }
+                };
+
+    shapes['path'] = data.data.path;
+
+    var newLayout = {
+      width: 1000,
+      height: 750,
+      title : 'Area Plot',
+      xaxis: {},
+      yaxis: {scaleanchor: "x",
+              scaleratio: 1},
+      shapes: [shapes]
+    };
+
+    this.setState({layout: newLayout})
+
     var newData = [ {
+      x: data.data.x,
+      y: data.data.y,
       z: data.data.data,
-      type: 'heatmap'
+      type: 'heatmap',
+      hoverinfo:'z',
       }, 
       {
+      x: data.data.x,
+      y: data.data.y,
       z: data.data.bathymetry,
       type: 'contour',
       colorscale: [[0,'rgb(50,50,50)'],[1,'rgb(50,50,50)']],
       showscale: false,
+      hoverinfo:'skip',
       contours:{
         coloring: 'lines',
         showlabels: true,
         }
       }
     ];
+    
     this.setState({data: newData})
   }
-
-  setLayout() {
-    var newLayout = {
-      width: 1000,
-      height: 750,
-      title : 'Area Plot',
-      xaxis: {},
-      yaxis: {},
-    };
-
-    this.setState({layout: newLayout})
-  } 
 
   render() {
     return (

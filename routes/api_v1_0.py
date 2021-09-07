@@ -671,6 +671,7 @@ def point_data():
 
 @bp_v1_0.route('/api/v1.0/area_data/', methods=['GET', 'POST'])
 def area_data():
+
     if request.method == 'GET':
         args = request.args
     else:
@@ -707,10 +708,24 @@ def area_data():
     if plottype == 'map':
         plotter = MapPlotterNew(dataset, query, **options)
     plotter.parse_query(query)
-    data, bathymetry = plotter.load_data()
+    data, bathymetry, bounds = plotter.load_data()
+    x_data = np.linspace(bounds[1],bounds[3],num=data.shape[1])
+    y_data = np.linspace(bounds[0],bounds[2],num=data.shape[0])
     data = [d.tolist() for d in data.data]
     bathymetry = [b.tolist() for b in bathymetry]
-    resp = json.dumps({'data' : data, 'bathymetry' : bathymetry})
+
+    area = query.get('area')
+    polys = area[0]['polygons'][0]
+    path = [str(p[1]) + ',' + str(p[0]) for p in polys]
+    path = 'M ' + ' L'.join(path) + ' Z'
+
+    resp = json.dumps({'data': data, 
+                        'bathymetry': bathymetry, 
+                        'bounds': bounds,
+                        'path': path,
+                        'x': x_data.tolist(),
+                        'y': y_data.tolist(),
+                        })
 
     return Response(resp, status=200, mimetype='application/json')
 
