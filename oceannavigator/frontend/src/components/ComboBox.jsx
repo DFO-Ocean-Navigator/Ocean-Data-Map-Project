@@ -86,6 +86,9 @@ export default class ComboBox extends React.Component {
 
       // Update OceanNavigator state
       this.props.onUpdate(keys, values);
+      if (this.props.onUpdateOptions && keys.includes("options")){
+        this.props.onUpdateOptions(values[keys.indexOf("options")]); 
+      }
     }
   }
 

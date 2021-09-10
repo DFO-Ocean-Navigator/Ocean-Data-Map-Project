@@ -577,7 +577,7 @@ export default class AreaWindow extends React.Component {
             multiple={this.state.currentTab === 2}
             state={this.state.dataset_0} 
             onUpdate={this.onLocalUpdate}
-            onUpdateOptions={this.props.updateOptions}
+            onUpdateOptions={this.props.onUpdateOptions}
             depth={true}
             showQuiverSelector={false}
           />
@@ -627,7 +627,7 @@ export default class AreaWindow extends React.Component {
                 multiple={this.state.currentTab === 2}
                 state={this.props.dataset_1}
                 onUpdate={this.props.onUpdate}
-                onUpdateOptions={this.props.updateOptions}
+                onUpdateOptions={this.props.onUpdateOptions}
                 depth={true}
                 showQuiverSelector={false}
               />

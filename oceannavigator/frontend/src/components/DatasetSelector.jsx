@@ -34,11 +34,6 @@ export default class DatasetSelector extends React.Component {
   variableUpdate(key, value) {
     this.props.onUpdate("setDefaultScale", true);
     this.onUpdate(key, value);
-    if(Array.isArray(key)){
-      if (key.includes("options")){
-        this.props.onUpdateOptions(value[key.indexOf("options")]); 
-      }
-    }
   }
 
   onUpdate(key, value) {
@@ -178,6 +173,7 @@ export default class DatasetSelector extends React.Component {
           state={this.props.state.variable}
           def={"defaults.dataset"}
           onUpdate={this.variableUpdate}
+          onUpdateOptions={this.props.onUpdateOptions}
           url={"/api/v1.0/variables/?dataset=" + this.props.state.dataset + variables
           }
           title={_("Variable")}
