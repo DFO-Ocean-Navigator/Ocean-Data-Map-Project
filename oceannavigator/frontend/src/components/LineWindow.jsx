@@ -323,6 +323,7 @@ class LineWindow extends React.Component {
             line={true}
             updateSelectedPlots={this.updateSelectedPlots}
             compare={this.props.dataset_compare}
+            showQuiverSelector={false}
           />
 
           <Range
@@ -368,6 +369,7 @@ class LineWindow extends React.Component {
               depth={this.state.selected == 2}
               variables={this.state.selected == 2 ? "all" : "3d"}
               time={this.state.selected == 2 ? "range" : "single"}
+              showQuiverSelector={false}
             />
             <Range
               auto

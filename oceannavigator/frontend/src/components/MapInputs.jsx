@@ -100,6 +100,8 @@ class MapInputs extends React.Component {
                 state={this.props.state.dataset_1}
                 onUpdate={this.props.changeHandler}
                 depth={true}
+                availableDatasets={this.props.availableDatasets}
+                datasetVariables={this.props.datasetVariables}
               />
               <Range
                 key='scale_1'

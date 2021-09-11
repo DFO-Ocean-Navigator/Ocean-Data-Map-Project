@@ -577,7 +577,9 @@ class AreaWindow extends React.Component {
             multiple={this.state.currentTab === 2}
             state={this.state.dataset_0} 
             onUpdate={this.onLocalUpdate}
+            onUpdateOptions={this.props.onUpdateOptions}
             depth={true}
+            showQuiverSelector={false}
           />
 
           <div style={{"display": this.state.currentTab == 1 ? "block" : "none"}}>
@@ -622,8 +624,12 @@ class AreaWindow extends React.Component {
               <DatasetSelector
                 key='dataset_1'
                 id='dataset_1'
+                multiple={this.state.currentTab === 2}
                 state={this.props.dataset_1}
                 onUpdate={this.props.onUpdate}
+                onUpdateOptions={this.props.onUpdateOptions}
+                depth={true}
+                showQuiverSelector={false}
               />
 
               <Range
