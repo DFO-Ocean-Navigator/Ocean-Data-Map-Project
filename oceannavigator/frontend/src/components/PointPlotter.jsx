@@ -1,5 +1,4 @@
-import { redraw } from "plotly.js";
-import React, { Component} from "react";
+import React from "react";
 import Plot from 'react-plotly.js';
 
 const stringify = require("fast-stable-stringify");

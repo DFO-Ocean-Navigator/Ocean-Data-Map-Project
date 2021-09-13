@@ -710,9 +710,11 @@ export default class AreaWindow extends React.Component {
         //   permlink_subquery={this.state}
         //   action={this.props.action}
         // />;
-        content = <AreaPlotter
-                    query={plot_query} 
-                />
+        content = <div>
+                    <AreaPlotter
+                      query={plot_query} 
+                    />
+                  </div>
         break;
       case 2:
         plot_query.time = this.state.dataset_0.time;

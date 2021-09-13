@@ -56,7 +56,8 @@ export class AreaPlotter extends React.Component {
       y: data.data.y,
       z: data.data.data,
       type: 'heatmap',
-      hoverinfo:'z',
+      hovertemplate: '%{y:.4f},%{x:.4f}<br> %{z:.4f}',
+      text: '',
       }, 
       {
       x: data.data.x,
