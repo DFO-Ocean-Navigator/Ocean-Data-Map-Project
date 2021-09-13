@@ -51,11 +51,8 @@
     "react-ga": "^2.5.3",
     "react-iframe": "1.0.7",
     "react-numeric-input": "^2.2.3",
-<<<<<<< HEAD
     "tar": "^4.4.18",
-=======
     "react-plotly.js": "^2.5.1",
->>>>>>> Add plotly to point window
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
