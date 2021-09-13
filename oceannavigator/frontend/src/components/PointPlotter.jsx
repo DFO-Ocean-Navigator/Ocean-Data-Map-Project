@@ -1,5 +1,5 @@
 import React from "react";
-import Plot from 'react-plotly.js';
+import Plot from "react-plotly.js";
 
 const stringify = require("fast-stable-stringify");
 const axios = require("axios");
@@ -16,44 +16,41 @@ export class PointPlotter extends React.Component {
                   datetimes: [],
                 };
 
-    this.getProfileData = this.getProfileData.bind(this);
-    this.getTsData = this.getTsData.bind(this);
+    this.plotProfile = this.plotProfile.bind(this);
+    this.plotTimeseries = this.plotTimeseries.bind(this);
   }
 
   componentDidMount() {
-    // use switch here instead of ifs
-    
-    if (this.props.plotType === 'profile') {
-      this.formatDepths();
-      this.formatDatetimes();
-      this.profileLayout(this.props.variable);
-      this.getProfileData(this.props.variable); 
-    } else if (this.props.plotType === 'timeseries') {
-      this.tsLayout(this.props.variable);
-      this.getTsData(this.props.variable); 
+    if (this.props.plotType === "profile") {
+      this.plotProfile();
+    } else if (this.props.plotType === "timeseries") {
+      this.plotTimeseries();
     }
   } 
 
-  shouldComponentUpdate(nextProps) {
-
-    // need better way to manage updates...
-      if (nextProps.dataset !== this.props.dataset) {
-        if (this.props.plotType === 'profile'){
-          this.formatDepths();
-          this.formatDatetimes();
-        }
-      } 
-      
-     if (nextProps.variable !== this.props.variable) {
-      if (this.props.plotType === 'profile') {
-        this.profileLayout(this.props.variable);
-        this.getProfileData(this.props.variable); 
-      } else if (this.props.plotType === 'timeseries') {
-        this.tsLayout(this.props.variable);
-        this.getTsData(this.props.variable); 
+  componentDidUpdate(prevProps){
+    if (prevProps.dataset !== this.props.dataset ||
+      prevProps.variable !== this.props.variable ||
+      prevProps.plotType !== this.props.plotType) {
+      this.setState({data: []})
+      if (this.props.plotType === "profile") {
+        this.plotProfile();
+      } else if (this.props.plotType === "timeseries") {
+        this.plotTimeseries();
       }
-    }
-    return true;
+    }   
+  }
+
+  plotProfile(){
+    this.formatDepths();
+    this.formatDatetimes();
+    this.profileLayout(this.props.variable);
+    this.getProfileData(this.props.variable); 
+  }
+
+  plotTimeseries(){
+    this.tsLayout(this.props.variable);
+    this.getTsData(this.props.variable); 
   }
 
   profileLayout(variable) {
@@ -69,11 +66,11 @@ export class PointPlotter extends React.Component {
     };
 
     var subplots = [];
-    var annotations = []; // hacky way to add titles to subplots (Ploty doesn't support subplot titles)
+    var annotations = []; // hacky way to add titles to subplots (Ploty doesn"t support subplot titles)
     for (let i = 0; i < variable.length; i++) {
       var idx = (i + 1).toString();
       if (i === 0) {
-        subplots.push('xy')
+        subplots.push("xy")
         annotations.push({
           text: variable[i],
           showarrow: false,
@@ -84,7 +81,7 @@ export class PointPlotter extends React.Component {
         },)
       } else {
         newLayout["xaxis" + idx] = {}
-        subplots.push('x' + idx + 'y')
+        subplots.push("x" + idx + "y")
         annotations.push({
           text: variable[i],
           showarrow: false,
@@ -96,12 +93,12 @@ export class PointPlotter extends React.Component {
       }
     } 
 
-    newLayout['grid'] = {rows: 1, 
+    newLayout["grid"] = {rows: 1, 
                     columns: variable.length, 
                     subplots:[subplots]
                 };
 
-    newLayout['annotations'] = annotations;
+    newLayout["annotations"] = annotations;
 
     this.setState({layout: newLayout})
   }
@@ -122,7 +119,7 @@ export class PointPlotter extends React.Component {
   }  
 
   formatDepths() {
-    // remove 'Bottom' from depths
+    // remove "Bottom" from depths
     var d = [...this.props.depths];
     if (d[0] === "Bottom"){
       d.shift();
@@ -130,7 +127,7 @@ export class PointPlotter extends React.Component {
   
     var depths = [];
     for (let i = 0; i < d.length; i++) {
-      if (this.props.plotType === 'profile') {
+      if (this.props.plotType === "profile") {
         depths.push(parseInt(d[i]))
       } else {
         depths.push(d[i])
@@ -140,12 +137,11 @@ export class PointPlotter extends React.Component {
   }
 
   formatDatetimes() {
-  
     var datetimes = [];
     var d = [...this.props.datetimes];
     for (let i = 0; i < d.length; i++) {
-      var dt = d[i].replace('T', ' ')
-      dt = dt.replace('+00:00', '')
+      var dt = d[i].replace("T", " ")
+      dt = dt.replace("+00:00", "")
       datetimes.push(dt)
     }
     this.setState({datetimes: datetimes})
@@ -166,23 +162,27 @@ export class PointPlotter extends React.Component {
     
         const query = "/api/v1.0/point_data/?query=" + encodeURIComponent(stringify(q))
     
-        const res = await axios(query);
-        const data = await res;
+        const resp = await axios(query);
         var newData = [...this.state.data];
+        var h = 240 - j/this.props.timestamps.length*240
+        var v = 1.0 - j/(2*this.props.timestamps.length)
+        var lineColor = "hsv(" + h.toString() + ",1," + v.toString() +")";
         newData.push({
-          x: data.data,
+          x: resp.data,
           y: this.state.depths,
           legendgroup: this.props.datetimes[j],
           name: this.state.datetimes[j],
-          type: 'scatter',
-          mode: 'lines',
-          marker: {color: 'blue'},
+          type: "scatter",
+          mode: "lines",
+          marker: {color: lineColor},
           visible: j === 0 ? true : "legendonly",
-          xaxis: i === 0 ? 'x' : 'x' + (i+1).toString(),
-          yaxis: 'y',
+          xaxis: i === 0 ? "x" : "x" + (i+1).toString(),
+          yaxis: "y",
           showlegend: i === 0 ? true : false,
         })
-        this.setState({data: newData})
+        if (variable === this.props.variable) {
+          this.setState({data: newData})
+        }
       }
     }   
   }
@@ -202,16 +202,18 @@ export class PointPlotter extends React.Component {
     
       const query = "/api/v1.0/point_data/?query=" + encodeURIComponent(stringify(q))
     
-      const res = await axios(query);
-      const data = await res;
+      const resp = await axios(query);
       var newData = [...this.state.data];
+      var h = 240 - i/(this.props.depths.length-1)*240
+      var v = 1.0 - i/(2*(this.props.depths.length-1))
+      var lineColor = "hsv(" + h.toString() + ",1," + v.toString() +")";
       newData.push({
         x: this.props.datetimes,
-        y: data.data,
+        y: resp.data,
         name: this.props.depths[i+1],
-        type: 'scatter',
-        mode: 'lines',
-        marker: {color: 'blue'},
+        type: "scatter",
+        mode: "lines",
+        marker: {color: lineColor},
         visible: i === 0 ? true : "legendonly",
       })
       this.setState({data: newData})
