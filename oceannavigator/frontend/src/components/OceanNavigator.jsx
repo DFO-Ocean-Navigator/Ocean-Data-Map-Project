@@ -15,13 +15,14 @@ import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import WarningBar from "./WarningBar.jsx";
 
+import { withTranslation } from "react-i18next";
+
 import { 
   GetDatasetsPromise,
   GetVariablesPromise,
   GetTimestampsPromise
 } from "../remote/OceanNavigator.js";
 
-const i18n = require("../i18n.js");
 const stringify = require("fast-stable-stringify");
 const LOADING_IMAGE = require("../images/bar_loader.gif").default;
 
@@ -36,7 +37,7 @@ function formatLatLon(latitude, longitude) {
   return formatted;
 }
 
-export default class OceanNavigator extends React.Component {
+class OceanNavigator extends React.Component {
   constructor(props) {
     super(props);
 
@@ -132,14 +133,8 @@ export default class OceanNavigator extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
-    this.updateLanguage = this.updateLanguage.bind(this);
     this.updateScale = this.updateScale.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
-  }
-  
-  //Updates the page language upon user request
-  updateLanguage() {
-    this.forceUpdate();
   }
 
   // Opens/closes the sidebar state
@@ -758,7 +753,6 @@ export default class OceanNavigator extends React.Component {
             updateState={this.updateState}
             toggleSidebar={this.toggleSidebar}
             toggleOptionsSidebar={this.toggleOptionsSidebar}
-            updateLanguage={this.updateLanguage}
             showObservationSelect={this.state.showObservationSelect}
             observationArea={this.state.observationArea}
           />
@@ -885,3 +879,5 @@ export default class OceanNavigator extends React.Component {
     );
   }
 }
+
+export default withTranslation()(OceanNavigator);

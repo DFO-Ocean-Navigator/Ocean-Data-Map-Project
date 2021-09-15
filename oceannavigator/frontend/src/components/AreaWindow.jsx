@@ -22,10 +22,10 @@ import Icon from "./lib/Icon.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
-export default class AreaWindow extends React.Component {
+class AreaWindow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -773,3 +773,5 @@ AreaWindow.propTypes = {
   scale_1: PropTypes.string,
   options: PropTypes.object,
 };
+
+export default withTranslation()(AreaWindow);

@@ -13,7 +13,7 @@ import 'rc-slider/assets/index.css';
 import "react-datepicker/dist/react-datepicker.css";
 import "react-bootstrap-toggle/dist/bootstrap2-toggle.css";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
 const STD_DEPTHS = {
   0: '0m',
@@ -39,7 +39,7 @@ const STD_DEPTHS = {
   20: '10,000m',
 };
 
-export default class ObservationSelector extends React.Component {
+class ObservationSelector extends React.Component {
   constructor(props) {
     super(props);
 
@@ -451,3 +451,6 @@ ObservationSelector.propTypes = {
   state: PropTypes.object,
   area: PropTypes.array,
 };
+
+
+export default withTranslation()(ObservationSelector);

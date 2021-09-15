@@ -18,15 +18,14 @@ import {
   GetPresetAreasPromise 
 } from "../remote/OceanNavigator.js";
 
-const currentLanguage = require("../currentLanguage.js");
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 
-export default class MapToolbar extends React.Component {
+class MapToolbar extends React.Component {
   constructor(props) {
     super(props);
     
@@ -86,7 +85,7 @@ export default class MapToolbar extends React.Component {
       this.class4Picker = $(this.class4div).datepicker({
         dateFormat: "yy-mm-dd",
         beforeShowDay: this.beforeShowDay.bind(this),
-        regional: currentLanguage.language,
+        regional: this.props.i18n.language,
         onSelect: function(text, picker) {
           this.props.action("show", "class4", this.state.class4Files[text]);
           this.class4Picker.hide();
@@ -726,7 +725,6 @@ export default class MapToolbar extends React.Component {
 
             <ToggleLanguage
               className="languageButton"
-              updateLanguage={this.props.updateLanguage}   
             />
 
             <OverlayTrigger
@@ -918,7 +916,8 @@ MapToolbar.propTypes = {
   toggleSidebar: PropTypes.func,
   action: PropTypes.func,
   toggleOptionsSidebar: PropTypes.func,
-  updateLanguage: PropTypes.func,
   showObservationSelect: PropTypes.bool,
   observationArea: PropTypes.array,
 };
+
+export default withTranslation()(MapToolbar);

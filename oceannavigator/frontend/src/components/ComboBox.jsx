@@ -7,9 +7,9 @@ import {Modal, Button, FormControl} from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class ComboBox extends React.Component {
+class ComboBox extends React.Component {
   constructor(props) {   
     super(props);
 
@@ -358,3 +358,4 @@ ComboBox.propTypes = {
   url: PropTypes.string,
 };
 
+export default withTranslation()(ComboBox);

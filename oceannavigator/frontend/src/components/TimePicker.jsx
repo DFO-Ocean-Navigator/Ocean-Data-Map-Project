@@ -19,9 +19,9 @@ import "jquery-ui-month-picker/MonthPicker.js";
 import "jquery-ui/../i18n/datepicker-fr.js";
 import "jquery-ui/../i18n/datepicker-fr-CA.js";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class TimePicker extends React.Component {
+class TimePicker extends React.Component {
   constructor(props) {
     super(props);
 
@@ -386,7 +386,7 @@ export default class TimePicker extends React.Component {
   }
 
   render() {
-    $.datepicker.setDefaults($.datepicker.regional[i18n.language]);
+    $.datepicker.setDefaults($.datepicker.regional[this.props.i18n.language]);
 
     const date = new Date(this.state.map[this.props.state]);
     let input = null;
@@ -462,3 +462,5 @@ TimePicker.propTypes = {
   min: PropTypes.number,
   max: PropTypes.number
 };
+
+export default withTranslation()(TimePicker);

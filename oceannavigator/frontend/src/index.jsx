@@ -5,7 +5,7 @@ import WebFont from "webfontloader";
 import Browser from "detect-browser";
 import ReactGA from "react-ga";
 
-const i18n = require("./i18n.js");
+import "./i18n";
 
 require("bootstrap/dist/css/bootstrap.css");
 require("./stylesheets/utils/bootstrap.css");
@@ -24,13 +24,13 @@ class App extends React.Component {
   render () {
     return (
       <div>
-        <OceanNavigator/>
+        <OceanNavigator />
       </div>
     );
   }
 }
 
-document.title = _("Ocean Navigator");
+document.title = "Ocean Navigator";
 
 render(<App/>, document.getElementById("app"));
 
