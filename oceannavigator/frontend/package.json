@@ -14,7 +14,7 @@
   "author": "Fisheries and Oceans Canada",
   "license": "GPL-3.0",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bootstrap": "^3.3.7",
     "bower": "^1.8.8",
     "dateformat": "^2.0.0",
