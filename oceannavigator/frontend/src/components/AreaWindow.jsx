@@ -274,7 +274,6 @@ class AreaWindow extends React.Component {
     _("Time");
     _("Start Time");
     _("End Time");
-    _("Depth");
     _("Variable");
     _("Variable Range");
     _("Colourmap");
@@ -580,6 +579,7 @@ class AreaWindow extends React.Component {
             onUpdateOptions={this.props.onUpdateOptions}
             depth={true}
             showQuiverSelector={false}
+            datasetDepths={this.props.datasetDepths}
           />
 
           <div style={{"display": this.state.currentTab == 1 ? "block" : "none"}}>
@@ -630,6 +630,7 @@ class AreaWindow extends React.Component {
                 onUpdateOptions={this.props.onUpdateOptions}
                 depth={true}
                 showQuiverSelector={false}
+                datasetDepths={this.props.datasetDepths}
               />
 
               <Range
@@ -772,6 +773,7 @@ AreaWindow.propTypes = {
   swapViews: PropTypes.func,
   scale_1: PropTypes.string,
   options: PropTypes.object,
+  datasetDepths: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(AreaWindow);

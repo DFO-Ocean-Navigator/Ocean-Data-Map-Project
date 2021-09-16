@@ -157,7 +157,6 @@ class LineWindow extends React.Component {
     _("Time");
     _("Start Time");
     _("End Time");
-    _("Depth");
     _("Variable");
     _("Variable Range");
     _("Colourmap");
@@ -324,6 +323,7 @@ class LineWindow extends React.Component {
             updateSelectedPlots={this.updateSelectedPlots}
             compare={this.props.dataset_compare}
             showQuiverSelector={false}
+            datasetDepths={this.props.datasetDepths}
           />
 
           <Range
@@ -370,6 +370,7 @@ class LineWindow extends React.Component {
               variables={this.state.selected == 2 ? "all" : "3d"}
               time={this.state.selected == 2 ? "range" : "single"}
               showQuiverSelector={false}
+              datasetDepths={this.props.datasetDepths}
             />
             <Range
               auto
@@ -496,6 +497,7 @@ LineWindow.propTypes = {
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
+  datasetDepths: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(LineWindow);

@@ -39,11 +39,12 @@ export function GetTimestampsPromise(dataset, variable) {
 
 export function GetDepthsPromise(dataset, variable) {
   return _createPromise().get(
-    "/api/v1.0/depths",
+    "/api/v1.0/depth",
     {
       params: {
         dataset: dataset,
-        variable: variable
+        variable: variable,
+        all: true,
       }
     }
   );

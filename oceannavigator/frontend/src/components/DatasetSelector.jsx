@@ -156,6 +156,28 @@ class DatasetSelector extends React.Component {
       />;
     }
 
+    let depthSelector = null;
+    if (this.props.depth && this.props.datasetDepths) {
+      depthSelector = <SelectBox 
+        id={`dataset-selector-depth-selector-${this.props.id}`}
+        name={"depth"}
+        label={_("Depth")}
+        placeholder={_("Depth")}
+        options={this.props.datasetDepths.filter(d => d.id !== "all")}
+        onChange={this.onUpdate}
+        selected={
+          this.props.datasetDepths.filter(d => {
+            let depth = parseInt(this.props.state.depth);
+            if (isNaN(depth)) { // when depth == "bottom" or "all"
+              depth = this.props.state.depth;
+            }
+
+            return d.id === depth;
+          })[0].id
+        }
+      />;
+    }
+
     return (
       <div className='DatasetSelector'>
 
@@ -183,18 +205,7 @@ class DatasetSelector extends React.Component {
 
         {quiverSelector}
 
-        {this.props.depth && <ComboBox
-          id='depth'
-          state={this.props.state.depth}
-          def={0}
-          onUpdate={this.onUpdate}
-          url={"/api/v1.0/depth/?variable=" +
-            this.props.state.variable +
-            "&dataset=" +
-            this.props.state.dataset
-          }
-          title={_("Depth")}
-        ></ComboBox>}
+        {depthSelector}
         
         {time}
 
@@ -222,6 +233,7 @@ DatasetSelector.propTypes = {
   availableDatasets: PropTypes.arrayOf(PropTypes.object),
   datasetVariables: PropTypes.arrayOf(PropTypes.object),
   showQuiverSelector: PropTypes.bool,
+  datasetDepths: PropTypes.arrayOf(PropTypes.object),
 };
 
 DatasetSelector.defaultProps = {

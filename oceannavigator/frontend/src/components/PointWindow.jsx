@@ -18,6 +18,8 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
+import { default as SelectBoxAlias } from "./lib/SelectBox.jsx";
+
 import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 
@@ -317,35 +319,45 @@ class PointWindow extends React.Component {
 
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    const depthVariableScale = showDepthVariableScale ? <div>
-      <ComboBox
-        key='depth'
-        id='depth'
-        state={this.state.depth}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/depth/?variable=" + this.props.variable + "&dataset=" + this.props.dataset + "&all=True"}
-        title={_("Depth")}></ComboBox>
+    const depthVariableScale = showDepthVariableScale && 
+      this.props.datasetDepths ? <div>
+        <SelectBoxAlias 
+          id={"depth-selector-point-window"}
+          name={"depth"}
+          label={_("Depth")}
+          placeholder={_("Depth")}
+          options={this.props.datasetDepths}
+          onChange={this.onLocalUpdate}
+          selected={
+            this.props.datasetDepths.filter(d => {
+              let depth = parseInt(this.state.depth);
+              if (isNaN(depth)) { // when depth == "bottom" or "all"
+                depth = this.state.depth;
+              }
 
-      <ComboBox
-        key='variable'
-        id='variable'
-        state={this.props.variable}
-        def=''
-        onUpdate={this.props.onUpdate}
-        onUpdateOptions={this.props.onUpdateOptions}
-        url={"/api/v1.0/variables/?dataset="+this.props.dataset}
-        title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
+              return d.id === depth;
+            })[0].id
+          }
+        />
 
-      <Range
-        auto
-        key='scale'
-        id='scale'
-        state={this.state.scale}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        title={_("Variable Range")} />
-    </div> : null;
+        <ComboBox
+          key='variable'
+          id='variable'
+          state={this.props.variable}
+          def=''
+          onUpdate={this.props.onUpdate}
+          url={"/api/v1.0/variables/?dataset="+this.props.dataset}
+          title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
+
+        <Range
+          auto
+          key='scale'
+          id='scale'
+          state={this.state.scale}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          title={_("Variable Range")} />
+      </div> : null;
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
@@ -597,6 +609,7 @@ PointWindow.propTypes = {
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
   dataset_1: PropTypes.object,
+  datasetDepths: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(PointWindow);
