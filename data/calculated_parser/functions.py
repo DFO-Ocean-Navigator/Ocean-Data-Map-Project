@@ -57,7 +57,7 @@ def magnitude(a, b):
     return np.sqrt(a ** 2 + b ** 2)
 
 
-def bearing(east_vel: xr.DataArray, north_vel: xr.DataArray) -> xr.DataArray:
+def bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
     """
     Calculates the bearing (degrees clockwise positive from North) from
     component East and North vectors.
@@ -69,7 +69,7 @@ def bearing(east_vel: xr.DataArray, north_vel: xr.DataArray) -> xr.DataArray:
     east_vel = np.squeeze(east_vel)
     north_vel = np.squeeze(north_vel)
 
-    bearing = np.arctan2(east_vel, north_vel)
+    bearing = np.arctan2(north_vel, east_vel)
     bearing = np.pi / 2.0 - bearing
 
     negative_bearings = np.nonzero(bearing < 0)
