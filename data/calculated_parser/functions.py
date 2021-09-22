@@ -120,24 +120,24 @@ def unstaggered_speed(u_vel, v_vel):
     v_t_grid = (v_vel + v_vel.shift({y_dim: 1})) / 2
     return numpy.sqrt(u_t_grid**2 + v_t_grid**2)
 
-def unstaggered_bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
+def unstaggered_bearing(x_vel: xr.DataArray, y_vel: xr.DataArray, sin_alpha: xr.DataArray, cos_alpha: xr.DataArray) -> xr.DataArray:
     """
     Calculates the bearing (degrees clockwise positive from North) from
-    component East and North vectors.
+    component X and Y vectors.
 
     Returns:
-        xr.DataArray -- bearing of east_vel and north_vel
+        xr.DataArray -- bearing of x_vel and y_vel
     """
 
-    north_dim = north_vel.dims[-1]
-    east_dim = east_vel.dims[-2]
-    north_vel_unstag = (north_vel + north_vel.shift({north_dim: 1})) / 2
-    east_vel_unstag = (east_vel + east_vel.shift({east_dim: 1})) / 2
+    x_dim = x_vel.dims[-1]
+    y_dim = y_vel.dims[-2]
+    x_vel_unstag = (x_vel + x_vel.shift({x_dim: 1})) / 2
+    y_vel_unstag = (y_vel + y_vel.shift({y_dim: 1})) / 2
     
-    east_vel = np.squeeze(east_vel_unstag)
-    north_vel = np.squeeze(north_vel_unstag)
+    x_vel_unstag = x_vel_unstag * cos_alpha - y_vel_unstag * sin_alpha
+    y_vel_unstag = x_vel_unstag * sin_alpha + y_vel_unstag * cos_alpha
 
-    bearing = np.arctan2(east_vel, north_vel)
+    bearing = np.arctan2(y_vel_unstag, x_vel_unstag)
     bearing = np.pi / 2.0 - bearing
 
     negative_bearings = np.nonzero(bearing < 0)
@@ -148,8 +148,8 @@ def unstaggered_bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.D
     # Deal with undefined angles (where velocity is 0 or very close)
     inds = np.where(
             np.logical_and(
-                np.abs(east_vel) < 10e-6,
-                np.abs(north_vel) < 10e-6
+                np.abs(x_vel_unstag) < 10e-6,
+                np.abs(y_vel_unstag) < 10e-6
             )
         )
     bearing.values[inds] = np.nan
