@@ -71,10 +71,7 @@ def bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
 
     bearing = np.arctan2(north_vel, east_vel)
     bearing = np.pi / 2.0 - bearing
-
-    negative_bearings = np.nonzero(bearing < 0)
-    bearing.values[negative_bearings] += 2 * np.pi
-    
+    bearing = xr.where(bearing < 0, bearing + 2*np.pi, bearing)
     bearing *= 180.0 / np.pi
 
     # Deal with undefined angles (where velocity is 0 or very close)
