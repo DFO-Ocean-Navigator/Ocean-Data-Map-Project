@@ -6,7 +6,7 @@ from data.utils import trunc
 from geojson import Feature, FeatureCollection, Point
 
 
-def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_var: xr.DataArray, lon_var: xr.DataArray) -> FeatureCollection:
+def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_var: xr.DataArray, lon_var: xr.DataArray, model_class: str) -> FeatureCollection:
     """
     Converts a given xarray.DataArray, along with lat and lon keys to a geojson.FeatureCollection (subclass of dict).
 
@@ -63,13 +63,23 @@ def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_
     for elem, multi_idx in enumerate_nd_array(data):
         if np.isnan(elem):
             continue
-
-        p = Point(
-            (
-                ((lon_var[multi_idx[1]].item() + 180.0) % 360.0) - 180.0,
-                lat_var[multi_idx[0]].item()
+        
+        if model_class == 'Mercator':
+            p = Point(
+                (
+                    ((lon_var[multi_idx[1]].item() + 180.0) % 360.0) - 180.0,
+                    lat_var[multi_idx[0]].item()
+                )
             )
-        )
+        elif model_class == 'Nemo':
+            
+            p = Point(
+                (
+                    ((lon_var.values[multi_idx].item() + 180.0) % 360.0) - 180.0,
+                    lat_var.values[multi_idx].item()
+                )
+            )
+             
 
         props = {
             **attribs,
@@ -77,7 +87,11 @@ def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_
         }
 
         if bearings is not None:
-            props['bearing'] = bearings[multi_idx].item()
+            bearing = bearings[multi_idx].item()
+            if not np.isnan(bearing):
+                props['bearing'] = bearing
+            else:
+                continue
         
         features.append(Feature(geometry=p, properties=props))
 
