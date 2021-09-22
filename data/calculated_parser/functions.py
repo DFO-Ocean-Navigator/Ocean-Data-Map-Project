@@ -120,6 +120,41 @@ def unstaggered_speed(u_vel, v_vel):
     v_t_grid = (v_vel + v_vel.shift({y_dim: 1})) / 2
     return numpy.sqrt(u_t_grid**2 + v_t_grid**2)
 
+def unstaggered_bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
+    """
+    Calculates the bearing (degrees clockwise positive from North) from
+    component East and North vectors.
+
+    Returns:
+        xr.DataArray -- bearing of east_vel and north_vel
+    """
+
+    north_dim = north_vel.dims[-1]
+    east_dim = east_vel.dims[-2]
+    north_vel_unstag = (north_vel + north_vel.shift({north_dim: 1})) / 2
+    east_vel_unstag = (east_vel + east_vel.shift({east_dim: 1})) / 2
+    
+    east_vel = np.squeeze(east_vel_unstag)
+    north_vel = np.squeeze(north_vel_unstag)
+
+    bearing = np.arctan2(east_vel, north_vel)
+    bearing = np.pi / 2.0 - bearing
+
+    negative_bearings = np.nonzero(bearing < 0)
+    bearing.values[tuple(negative_bearings)] += 2 * np.pi
+    
+    bearing *= 180.0 / np.pi
+
+    # Deal with undefined angles (where velocity is 0 or very close)
+    inds = np.where(
+            np.logical_and(
+                np.abs(east_vel) < 10e-6,
+                np.abs(north_vel) < 10e-6
+            )
+        )
+    bearing.values[inds] = np.nan
+
+    return bearing
 
 def __calc_pressure(depth, latitude):
     pressure = []

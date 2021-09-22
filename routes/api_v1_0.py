@@ -360,8 +360,19 @@ def get_data_v1_0():
 
         lat_var, lon_var = ds.nc_data.latlon_variables
 
-        lat_slice = slice(0, lat_var.size, 4)
-        lon_slice = slice(0, lon_var.size, 4)
+        if config.model_class == "Mercator":
+            lat_slice = slice(0, lat_var.size, 4)
+            lon_slice = slice(0, lon_var.size, 4)
+            lat_grid = lat_var[lat_slice]
+            lon_grid = lon_var[lon_slice]
+
+        elif config.model_class == "Nemo":  
+            n_points = 10          
+            lat_slice = slice(0, lat_var.shape[0], n_points)
+            lon_slice = slice(0, lon_var.shape[1], n_points)
+            slice_2d = np.s_[0:lat_var.shape[0]:n_points, 0:lat_var.shape[1]:n_points]
+            lat_grid = lat_var[slice_2d]
+            lon_grid = lon_var[slice_2d]
 
         time_index = ds.nc_data.timestamp_to_time_index(result['time'])
         
@@ -379,8 +390,9 @@ def get_data_v1_0():
         d = data_array_to_geojson(
                 data,
                 bearings, # this is a hack
-                lat_var[lat_slice],
-                lon_var[lon_slice]
+                lat_grid,
+                lon_grid,
+                config.model_class 
             )
 
         os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
