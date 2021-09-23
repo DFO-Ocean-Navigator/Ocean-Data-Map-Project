@@ -3,7 +3,7 @@
 # Usage: ./runserver.sh <port> <optional_dataset_config_file.json>
 # <optional_dataset_config_file.json>:  Specify a non-default dataset config file to load the Navigator with.
 #                                       Argument not required.
-WORKER_THREADS=2
+WORKER_THREADS=1
 
 [[ "$1" == "" ]] && PORT=5000 || PORT=$1
 
@@ -25,4 +25,4 @@ else
 
 fi
 
-gunicorn -w $((NUMBER_WORKERS)) --threads $((WORKER_THREADS)) --worker-class=gthread -t 300 --graceful-timeout 300 --preload -b 0.0.0.0:$((PORT)) --reload "oceannavigator:create_app()" $2
+gunicorn --error-log ${HOME}/gunicorn.log -w 4 --threads $((WORKER_THREADS)) --worker-class=gthread -t 300 --graceful-timeout 300 --preload -b 0.0.0.0:$((PORT)) --reload "oceannavigator:create_app()" $2 --daemon

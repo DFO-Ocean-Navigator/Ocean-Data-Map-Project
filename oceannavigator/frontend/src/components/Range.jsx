@@ -18,7 +18,7 @@ class Range extends React.Component {
 
     // Parse scale tuple
     let scale = this.props.state;
-    if (typeof (this.props.state.split) === "function") {
+    if (typeof this.props.state === "string" || this.props.state instanceof String) {
       scale = this.props.state.split(",");
     }
     const min = parseFloat(scale[0]);
@@ -47,16 +47,10 @@ class Range extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-
-    //Sets scale to default on variable change
-    if (this.props.setDefaultScale == true) {
-      this.handleDefaultButton();  //Changes Scale
-      this.props.onUpdate("setDefaultScale", false); //Resets set to default flag
-    }
     if (stringify(this.props) !== stringify(nextProps)) {
 
       let scale = nextProps.state;
-      if (typeof (scale.split) === "function") {
+      if (typeof scale === "string" || scale instanceof String) {
         scale = scale.split(",");
       }
       if (scale.length > 1) {
@@ -102,7 +96,7 @@ class Range extends React.Component {
     });
 
     var scale = this.props.state;
-    if (typeof (this.props.state.split) === "function") {
+    if (typeof this.props.state === "string" || this.props.state instanceof String) {
       scale = this.props.state.split(",");
     }
 
@@ -124,7 +118,7 @@ class Range extends React.Component {
       cache: false,
       success: function (data) {
         if (this._mounted) {
-          this.props.onUpdate(this.props.id, data.min + "," + data.max);
+          this.props.onUpdate(this.props.id, [data.min, data.max]);
         }
       }.bind(this),
       
@@ -144,7 +138,7 @@ class Range extends React.Component {
       </Checkbox>
     );
 
-    var autobuttons = <div></div>;
+    let autobuttons = <div></div>;
     if (this.props.autourl) {
       autobuttons = (
         <ButtonToolbar style={{ display: "inline-block", "float": "right" }}>
@@ -206,9 +200,8 @@ Range.propTypes = {
   auto: PropTypes.bool,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
-  setDefaultScale: PropTypes.bool,
   default_scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   autourl: PropTypes.string,
 };
 

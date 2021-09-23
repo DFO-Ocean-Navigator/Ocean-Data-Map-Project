@@ -19,7 +19,6 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 
 
 import { withTranslation } from "react-i18next";
-const stringify = require("fast-stable-stringify");
 
 class LineWindow extends React.Component {
   constructor(props) {
@@ -30,8 +29,8 @@ class LineWindow extends React.Component {
     
     this.state = {
       selected: 1,
-      scale: props.scale + ",auto",
-      scale_1: props.scale_1 + ",auto",
+      scale: props.dataset_0.variable_scale + ",auto",
+      scale_1: props.dataset_1.variable_scale + ",auto",
       scale_diff: "-10,10,auto",
       colormap: "default",
       colormap_right: "default", // Colourmap for second (right) plot
@@ -63,29 +62,6 @@ class LineWindow extends React.Component {
 
   componentWillUnmount() {
     this._mounted = false;
-  }
-
-  componentWillReceiveProps(props) {
-
-    if (stringify(this.props) !== stringify(props) && this._mounted) {
-
-      if (props.depth !== this.props.depth) {
-        this.setState({
-          depth: props.depth,
-        });
-      }
-      if (props.scale !== this.props.scale) {
-        if (this.state.scale.indexOf("auto") !== -1) {
-          this.setState({
-            scale: props.scale + ",auto"
-          });
-        } else {
-          this.setState({
-            scale: props.scale,
-          });
-        }
-      }
-    }
   }
 
   //Updates Plot with User Specified Title
@@ -312,28 +288,17 @@ class LineWindow extends React.Component {
       <Panel.Collapse>
         <Panel.Body>
           <DatasetSelector
-            key='dataset_0'
+            key='line_window_dataset_0'
             id='dataset_0'
-            state={this.props.dataset_0}
             onUpdate={this.props.onUpdate}
-            depth={this.state.selected == 2}
             variables={this.state.selected == 2 ? "all" : "3d"}
-            time={this.state.selected == 2 ? "range" : "single"}
-            line={true}
-            updateSelectedPlots={this.updateSelectedPlots}
-            compare={this.props.dataset_compare}
             showQuiverSelector={false}
-            datasetDepths={this.props.datasetDepths}
-          />
-
-          <Range
-            auto
-            key='scale'
-            id='scale'
-            state={this.state.scale}
-            def={""}
-            onUpdate={this.onLocalUpdate}
-            title={_("Variable Range")}
+            showDepthSelector={this.state.selected == 2}
+            showTimeRange={this.state.selected == 2}
+            showVariableRange={false}
+            options={this.props.options}
+            mountedDataset={this.props.dataset_0.dataset}
+            mountedVariable={this.props.dataset_0.variable}
           />
 
           <ComboBox
@@ -362,24 +327,17 @@ class LineWindow extends React.Component {
         <Panel.Collapse>
           <Panel.Body>
             <DatasetSelector
-              key='dataset_1'
+              key='line_window_dataset_1'
               id='dataset_1'
-              state={this.props.dataset_1}
               onUpdate={this.props.onUpdate}
-              depth={this.state.selected == 2}
               variables={this.state.selected == 2 ? "all" : "3d"}
-              time={this.state.selected == 2 ? "range" : "single"}
+              updateSelectedPlots={this.updateSelectedPlots}
               showQuiverSelector={false}
-              datasetDepths={this.props.datasetDepths}
-            />
-            <Range
-              auto
-              key='scale_1'
-              id='scale_1'
-              state={this.state.scale_1}
-              def={""}
-              onUpdate={this.onLocalUpdate}
-              title={_("Variable Range")}
+              showDepthSelector={this.state.selected == 2}
+              showTimeRange={this.state.selected == 2}
+              showVariableRange={false}
+              mountedDataset={this.props.dataset_1.dataset}
+              mountedVariable={this.props.dataset_1.variable}
             />
             <ComboBox
               key='colormap_right'
@@ -404,8 +362,8 @@ class LineWindow extends React.Component {
     }
     const plot_query = {
       dataset: this.props.dataset_0.dataset,
-      quantum: this.props.quantum,
-      variable: this.props.variable,
+      quantum: this.props.dataset_0.quantum,
+      variable: this.props.dataset_0.variable,
       path: this.props.line[0],
       scale: this.state.scale,
       colormap: this.state.colormap,
@@ -419,7 +377,7 @@ class LineWindow extends React.Component {
     switch(this.state.selected) {
       case 1:
         plot_query.type = "transect";
-        plot_query.time = this.props.time;
+        plot_query.time = this.props.dataset_0.time;
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
@@ -435,9 +393,9 @@ class LineWindow extends React.Component {
         break;
       case 2:
         plot_query.type = "hovmoller";
-        plot_query.endtime = this.props.time;
+        plot_query.endtime = this.props.dataset_0.time;
         plot_query.starttime = this.props.dataset_0.starttime;
-        plot_query.depth = this.props.depth;
+        plot_query.depth = this.props.dataset_0.depth;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
@@ -481,23 +439,16 @@ class LineWindow extends React.Component {
 //***********************************************************************
 LineWindow.propTypes = {
   generatePermLink: PropTypes.func,
-  depth: PropTypes.number,
-  time: PropTypes.number,
   dataset_compare: PropTypes.bool,
-  dataset_1: PropTypes.object,
+  dataset_0: PropTypes.object.isRequired,
+  dataset_1: PropTypes.object.isRequired,
   names: PropTypes.array,
   line: PropTypes.array,
-  variable: PropTypes.string,
-  quantum: PropTypes.string,
-  dataset_0: PropTypes.object,
   onUpdate: PropTypes.func,
-  scale: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  scale_1: PropTypes.string,
   init: PropTypes.object,
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
-  datasetDepths: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(LineWindow);

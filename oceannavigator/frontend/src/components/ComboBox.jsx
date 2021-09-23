@@ -77,18 +77,9 @@ class ComboBox extends React.Component {
           values.push(dataset[key]);
         }
       }
-      //Check if this is a combobox is for variable
-      if(this.props.id === "variable"){
-        const variableConfig = this.state.data[e.target.selectedIndex];
-        keys.push("options");
-        values.push(variableConfig.interp);
-      }
 
       // Update OceanNavigator state
       this.props.onUpdate(keys, values);
-      if (this.props.onUpdateOptions && keys.includes("options")){
-        this.props.onUpdateOptions(values[keys.indexOf("options")]); 
-      }
     }
   }
 
@@ -105,11 +96,6 @@ class ComboBox extends React.Component {
         url: props.url,
         dataType: "json",
         cache: true,
-        
-        //If server returns status code of 200 / it worked - Ajax call successful
-        //
-        // data filled by ajax
-        //
         success: function (data) {
           if (this._mounted) {  //Combobox is mounted
 
