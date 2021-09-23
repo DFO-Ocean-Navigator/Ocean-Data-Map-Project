@@ -46,7 +46,7 @@ class OceanNavigator extends React.Component {
 
     this.state = {
       availableDatasets: [],
-      datasetVariables: [],
+      datasetVariablesCache: {},
       datasetDepthsCache: {},
       dataset: "giops_day",
       variable: "votemper",
@@ -269,59 +269,69 @@ class OceanNavigator extends React.Component {
     this.setState({
       busy: true,
     });
-    
 
-    // When dataset changes, so does time & variable list
-    // TODO: also get changes for depth
-    GetVariablesPromise(dataset).then(variableResult => {
-      const variableData = variableResult.data;
+    if (this.state.datasetVariablesCache[dataset] === undefined) {
+      // When dataset changes, so do the variables, depths, and time
+      GetVariablesPromise(dataset).then(variableResult => {
+        const variableData = variableResult.data;
 
-      let newVariable = this.state.variable;
-      const variableIds = variableData.map(v => { return v.id; });
-      if(!variableIds.includes(this.state.variable)) {
-        newVariable = variableData[0].id;
-      }
+        this.setState(prevState => ({
+          datasetVariablesCache: {
+            ...prevState.datasetVariablesCache,
+            [dataset]: variableData,
+          }
+        }));
 
-      let newTime = 0;
-      let newStarttime = 0;
-      GetTimestampsPromise(dataset, newVariable).then(timestampResult => {
-        const timeData = timestampResult.data;
-        
-        newTime = timeData[timeData.length - 1].id;
-        newStarttime = this.setStartTime(timeData);
-        if (state === undefined) {
-          state = {};
+        let newVariable = this.state.variable;
+        const variableIds = variableData.map(v => { return v.id; });
+        if (!variableIds.includes(this.state.variable)) {
+          newVariable = variableData[0].id;
         }
-        state.dataset = dataset;
-        state.variable = newVariable;
-        state.time = newTime;
-        state.starttime = newStarttime;
-        state.quiverVariable = "none";
-        state.busy = false;
 
-        this.setState(state);
-      },
-      error => {
-        console.error(error);
-      });
 
-      if (this.state.datasetDepthsCache[dataset] === undefined) {
-        GetDepthsPromise(dataset, newVariable).then(depthResult => {
-          this.setState(prevState => ({
-            datasetDepthsCache: {
-              ...prevState.datasetDepthsCache,
-              [dataset]: depthResult.data,
-            }
-          }));
+        let newTime = 0;
+        let newStarttime = 0;
+        GetTimestampsPromise(dataset, newVariable).then(timestampResult => {
+          const timeData = timestampResult.data;
+
+          newTime = timeData[timeData.length - 1].id;
+          newStarttime = this.setStartTime(timeData);
+          if (state === undefined) {
+            state = {};
+          }
+          state.dataset = dataset;
+          state.variable = newVariable;
+          state.time = newTime;
+          state.starttime = newStarttime;
+          state.quiverVariable = "none";
+
+          this.setState(state);
         },
+          error => {
+            console.error(error);
+          });
+
+        if (this.state.datasetDepthsCache[dataset] === undefined) {
+          GetDepthsPromise(dataset, newVariable).then(depthResult => {
+            this.setState(prevState => ({
+              datasetDepthsCache: {
+                ...prevState.datasetDepthsCache,
+                [dataset]: depthResult.data,
+              }
+            }));
+          },
+            error => {
+              console.error(error);
+            });
+        }
+      },
         error => {
           console.error(error);
         });
-      }
+    }
 
-    },
-    error => {
-      console.error(error);
+    this.setState({
+      busy: false,
     });
   }
 
@@ -523,9 +533,12 @@ class OceanNavigator extends React.Component {
     });
 
     GetVariablesPromise(this.state.dataset).then(result => {
-      this.setState({
-        datasetVariables: result.data,
-      });
+      this.setState(prevState => ({
+        datasetVariablesCache: {
+          ...prevState.datasetVariablesCache,
+          [this.state.dataset]: result.data,
+        }
+      }));
     },
     error => {
       console.error(error);
@@ -620,6 +633,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
+            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
             datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
@@ -648,6 +662,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
+            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
             datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
@@ -676,6 +691,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             swapViews={this.swapViews}
             options={this.state.options}
+            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
             datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
@@ -774,7 +790,7 @@ class OceanNavigator extends React.Component {
           options={this.state.options}
           updateOptions={this.updateOptions}
           availableDatasets={this.state.availableDatasets}
-          datasetVariables={this.state.datasetVariables}
+          datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
           datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
         />
         <div className={contentClassName}>

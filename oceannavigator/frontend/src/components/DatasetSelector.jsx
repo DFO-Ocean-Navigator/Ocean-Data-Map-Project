@@ -178,6 +178,23 @@ class DatasetSelector extends React.Component {
       />;
     }
 
+    let variableSelector = null;
+    if (this.props.datasetVariables && !this.props.multiple && null == "edoops") {
+      variableSelector = <SelectBox 
+        id={`dataset-selector-variable-selector-${this.props.id}`}
+        name={"variable"}
+        label={_("Variable")}
+        placeholder={_("Variable")}
+        options={this.props.datasetVariables}
+        onChange={this.onUpdate}
+        selected={this.props.state.variable}
+      />;
+    }
+    
+    if (this.props.datasetVariables && this.props.multiple) {
+      // do something for multi select
+    }
+
     return (
       <div className='DatasetSelector'>
 
@@ -200,6 +217,8 @@ class DatasetSelector extends React.Component {
           }
           title={_("Variable")}
         ><h1>{_("Variable")}</h1></ComboBox>
+
+        {variableSelector}
 
         {velocity_selector}
 
