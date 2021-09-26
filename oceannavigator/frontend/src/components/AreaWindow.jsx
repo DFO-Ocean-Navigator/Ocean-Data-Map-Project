@@ -576,10 +576,10 @@ class AreaWindow extends React.Component {
             multiple={this.state.currentTab === 2}
             state={this.state.dataset_0} 
             onUpdate={this.onLocalUpdate}
-            onUpdateOptions={this.props.onUpdateOptions}
             depth={true}
             showQuiverSelector={false}
             datasetDepths={this.props.datasetDepths}
+            datasetVariables={this.props.datasetVariables}
           />
 
           <div style={{"display": this.state.currentTab == 1 ? "block" : "none"}}>
@@ -627,10 +627,10 @@ class AreaWindow extends React.Component {
                 multiple={this.state.currentTab === 2}
                 state={this.props.dataset_1}
                 onUpdate={this.props.onUpdate}
-                onUpdateOptions={this.props.onUpdateOptions}
                 depth={true}
                 showQuiverSelector={false}
                 datasetDepths={this.props.datasetDepths}
+                datasetVariables={this.props.datasetVariables}
               />
 
               <Range
@@ -774,6 +774,7 @@ AreaWindow.propTypes = {
   scale_1: PropTypes.string,
   options: PropTypes.object,
   datasetDepths: PropTypes.arrayOf(PropTypes.object),
+  datasetVariables: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(AreaWindow);

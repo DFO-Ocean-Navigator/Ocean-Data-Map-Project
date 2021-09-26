@@ -10,7 +10,7 @@ import SelectBox from "./lib/SelectBox.jsx";
 import { withTranslation } from "react-i18next";
 
 // Default properties for a dataset-state
-const DATA_ELEMS = [
+const DATA_ELEMS = Object.freeze([
   "dataset",
   "dataset_attribution",
   "dataset_quantum",
@@ -20,20 +20,14 @@ const DATA_ELEMS = [
   "time",
   "starttime",
   "quiverVariable",
-];
+]);
 
 class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
 
     // Function bindings
-    this.variableUpdate = this.variableUpdate.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
-  }
-
-  variableUpdate(key, value) {
-    this.props.onUpdate("setDefaultScale", true);
-    this.onUpdate(key, value);
   }
 
   onUpdate(key, value) {
@@ -179,7 +173,7 @@ class DatasetSelector extends React.Component {
     }
 
     let variableSelector = null;
-    if (this.props.datasetVariables && !this.props.multiple && null == "edoops") {
+    if (this.props.datasetVariables) {
       variableSelector = <SelectBox 
         id={`dataset-selector-variable-selector-${this.props.id}`}
         name={"variable"}
@@ -189,10 +183,6 @@ class DatasetSelector extends React.Component {
         onChange={this.onUpdate}
         selected={this.props.state.variable}
       />;
-    }
-    
-    if (this.props.datasetVariables && this.props.multiple) {
-      // do something for multi select
     }
 
     return (
@@ -205,18 +195,6 @@ class DatasetSelector extends React.Component {
           onUpdate={this.onUpdate}
           url='/api/v1.0/datasets/'
           title={_("Dataset")}></ComboBox>
-
-        <ComboBox
-          id='variable'
-          multiple={this.props.multiple}
-          state={this.props.state.variable}
-          def={"defaults.dataset"}
-          onUpdate={this.variableUpdate}
-          onUpdateOptions={this.props.onUpdateOptions}
-          url={"/api/v1.0/variables/?dataset=" + this.props.state.dataset + variables
-          }
-          title={_("Variable")}
-        ><h1>{_("Variable")}</h1></ComboBox>
 
         {variableSelector}
 

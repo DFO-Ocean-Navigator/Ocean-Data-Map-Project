@@ -44,6 +44,10 @@ class OceanNavigator extends React.Component {
 
     ReactGA.ga("send", "pageview");
 
+    this.DEF_INTERP_TYPE = Object.freeze("gaussian");
+    this.DEF_INTERP_RADIUS_KM = Object.freeze(25);
+    this.DEF_INTERP_NUM_NEIGHBOURS = Object.freeze(10);
+
     this.state = {
       availableDatasets: [],
       datasetVariablesCache: {},
@@ -56,8 +60,6 @@ class OceanNavigator extends React.Component {
       depth: 0,
       time: -1,
       starttime: -2, // Start time for Left Map
-      scale: "-5,30", // Variable scale for left/Main Map
-      scale_1: "-5,30", // Variable scale for Right Map
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
@@ -83,9 +85,9 @@ class OceanNavigator extends React.Component {
       sidebarOpen: true, // Controls sidebar opened/closed status
       options: {
         // Interpolation
-        interpType: "gaussian",
-        interpRadius: 25,
-        interpNeighbours: 10,
+        interpType: this.DEF_INTERP_TYPE,
+        interpRadius: this.DEF_INTERP_RADIUS_KM,
+        interpNeighbours: this.DEF_INTERP_NUM_NEIGHBOURS,
         // Map
         mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
         topoShadedRelief: false,    // Show hill shading (relief mapping) on topography
@@ -135,7 +137,6 @@ class OceanNavigator extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
-    this.updateScale = this.updateScale.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
   }
 
@@ -194,7 +195,7 @@ class OceanNavigator extends React.Component {
 
   // Updates global app state
   updateState(key, value) {
-    var newState = {};
+    let newState = {};
 
     // Only updating one value
     if (typeof(key) === "string") {
@@ -209,21 +210,56 @@ class OceanNavigator extends React.Component {
 
       switch (key) {
         case "scale":
-          this.updateScale(key, value);
-          return;
-        case "scale_1":
+          const newScaleState = {
+            variable_scale: value,
+          };
 
           if (this.state.syncRanges) {
-            newState.scale = value;
-            newState.scale_1 = value;
+            newScaleState["dataset_1"] = {
+              ...this.state.dataset_1,
+              variable_scale: value,
+            };
           }
-          break;
-        case "dataset_0":
 
+          this.setState(newScaleState);
+          return;
+        case "scale_1":
+          const newScale_1State = {
+            dataset_1: {
+              ...this.state.dataset_1,
+              variable_scale: value,
+            }
+          };
+
+          if (this.state.syncRanges) {
+            newScale_1State["variable_scale"] = value;
+          }
+
+          this.setState(newScale_1State);
+          return;
+        case "dataset_0":
           if (value.dataset !== this.state.dataset) {
             this.changeDataset(value.dataset, value);
             return;
           }
+          
+          // If variable is being changed...
+          if (value.variable !== this.state.variable) {
+            const variableFromCache = this.state.datasetVariablesCache[value.dataset]
+            .find(v => v.id === value.variable);
+
+            // Update interpolation
+            newState["dataset_0"]["options"] = {
+              ...this.state.options,
+              interpType: variableFromCache.interp?.interpType || this.DEF_INTERP_TYPE,
+              interpRadius: variableFromCache.interp?.interpRadius || this.DEF_INTERP_RADIUS_KM,
+              interpNeighbours: variableFromCache.interp?.interpNeighbours || this.DEF_INTERP_NUM_NEIGHBOURS,
+            };
+
+            // Update default colour scale
+            newState["dataset_0"]["variable_scale"] = variableFromCache.scale;
+          }
+
           newState = value;
           break;
 
@@ -249,12 +285,6 @@ class OceanNavigator extends React.Component {
       }
     }
     this.setState(newState);
-  }
-
-  updateScale(key, value) {
-    this.setState({
-      scale: value
-    });
   }
 
   setStartTime(time) {
@@ -622,7 +652,7 @@ class OceanNavigator extends React.Component {
             depth={this.state.depth}
             time={this.state.time}
             starttime={this.state.starttime}
-            scale={this.state.scale}
+            scale={this.state.variable_scale}
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
@@ -651,8 +681,8 @@ class OceanNavigator extends React.Component {
             variable={this.state.variable}
             depth={this.state.depth}
             time={this.state.time}
-            scale={this.state.scale}
-            scale_1={this.state.scale_1}
+            scale={this.state.variable_scale}
+            scale_1={this.state.dataset_1.variable_scale}
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
@@ -676,8 +706,8 @@ class OceanNavigator extends React.Component {
           <AreaWindow
             dataset_0={this.state}
             area={this.state.area}
-            scale={this.state.scale}
-            scale_1={this.state.scale_1}
+            scale={this.state.variable_scale}
+            scale_1={this.state.dataset_1.variable_scale}
             colormap={this.state.colormap}
             names={this.state.names}
             depth={this.state.depth}
@@ -705,7 +735,7 @@ class OceanNavigator extends React.Component {
             quantum={this.state.dataset_quantum}
             track={this.state.track}
             variable={this.state.variable}
-            scale={this.state.scale}
+            scale={this.state.variable_scale}
             names={this.state.names}
             depth={this.state.depth}
             onUpdate={this.updateState}
@@ -753,7 +783,7 @@ class OceanNavigator extends React.Component {
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent2}
-          scale={this.state.scale}
+          scale={this.state.variable_scale}
           options={this.state.options}
           quiverVariable={this.state.quiverVariable}
         />
@@ -763,7 +793,7 @@ class OceanNavigator extends React.Component {
           action={this.action}
           updateState={this.updateState}
           partner={this.mapComponent}
-          scale={this.state.scale_1}
+          scale={this.state.dataset_1.variable_scale}
           options={this.state.options}
         />
       </div>;
@@ -774,7 +804,7 @@ class OceanNavigator extends React.Component {
         state={this.state}
         action={this.action}
         updateState={this.updateState}
-        scale={this.state.scale}
+        scale={this.state.variable_scale}
         options={this.state.options}
         quiverVariable={this.state.quiverVariable}
       />;
