@@ -54,15 +54,6 @@ class DatasetSelector extends React.Component {
     _("Time (UTC)");
     _("Quiver Variable");
 
-    let variables = "";
-    switch (this.props.variables) {
-      case "3d":
-        variables = "&3d_only";
-        break;
-      default:
-        break;
-    }
-
     // Determine which timepicker we need
     let time = "";
     switch (this.props.time) {
@@ -174,12 +165,22 @@ class DatasetSelector extends React.Component {
 
     let variableSelector = null;
     if (this.props.datasetVariables) {
+      let options = [];
+      if (this.props.variables === "3d") {
+        options = this.props.datasetVariables.filter(v => {
+          return v.two_dimensional === false;
+        });
+      }
+      else {
+        options = this.props.datasetVariables;
+      }
+
       variableSelector = <SelectBox 
         id={`dataset-selector-variable-selector-${this.props.id}`}
         name={"variable"}
         label={_("Variable")}
         placeholder={_("Variable")}
-        options={this.props.datasetVariables}
+        options={options}
         onChange={this.onUpdate}
         selected={this.props.state.variable}
       />;
