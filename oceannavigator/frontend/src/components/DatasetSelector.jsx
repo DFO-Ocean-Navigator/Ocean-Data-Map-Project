@@ -157,7 +157,7 @@ class DatasetSelector extends React.Component {
     }
 
     let depthSelector = null;
-    if (this.props.depth && this.props.datasetDepths) {
+    if (this.props.depth && this.props.datasetDepths && this.props.datasetDepths.length > 0) {
       depthSelector = <SelectBox 
         id={`dataset-selector-depth-selector-${this.props.id}`}
         name={"depth"}
