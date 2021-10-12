@@ -349,6 +349,7 @@ class PointWindow extends React.Component {
           state={this.props.variable}
           def=''
           onUpdate={this.props.onUpdate}
+          onUpdateOptions={this.props.onUpdateOptions}
           url={"/api/v1.0/variables/?dataset="+this.props.dataset}
           title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
 
