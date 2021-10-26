@@ -28,7 +28,7 @@
     "i18next-browser-languagedetector": "^6.1.2",
     "glob-parent": "^5.1.2",
     "jquery": "~3.5.0",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.0",
     "jquery-ui-month-picker": "kidsysco/jquery-ui-month-picker",
     "ol": "^6.6.1",
     "papaparse": "^5.2.0",
