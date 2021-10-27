@@ -587,7 +587,7 @@ def plot_v1_0():
         response.headers[
             'Content-Disposition'] = "attachment; filename=\"%s\"" % filename
 
-    response.cache_control.max_age = 300
+    response.cache_control.max_age = 1#300  # CHANGE BACK*******************************************************************************************
 
     if 'data' in args:
         plotData = {
@@ -597,6 +597,14 @@ def plot_v1_0():
         }
         plotData = json.dumps(plotData)
         return Response(plotData, status=200, mimetype='application/json')
+
+    if plotter.interactive and not 'save' in args:
+        response = {
+            'data': img,
+            'variableName': plotter.variable_names,
+            'variableUnit': plotter.variable_units
+        }  
+        response = json.dumps(response)    
 
     return response
 

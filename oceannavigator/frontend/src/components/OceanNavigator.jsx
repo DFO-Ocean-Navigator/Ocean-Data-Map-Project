@@ -289,6 +289,8 @@ class OceanNavigator extends React.Component {
         
         newTime = timeData[timeData.length - 1].id;
         newStarttime = this.setStartTime(timeData);
+        const timestamps = timeData.map(function (d) { return d.id;});
+        const datetimes = timeData.map(function (d) { return d.value;});
         if (state === undefined) {
           state = {};
         }
@@ -296,6 +298,8 @@ class OceanNavigator extends React.Component {
         state.variable = newVariable;
         state.time = newTime;
         state.starttime = newStarttime;
+        state.timestamps = timestamps;
+        state.datetimes = datetimes;
         state.quiverVariable = "none";
         state.busy = false;
 
@@ -537,9 +541,13 @@ class OceanNavigator extends React.Component {
 
       const newTime = timeData[timeData.length - 1].id;
       const newStarttime = timeData[0].id;
+      const timestamps = timeData.map(function (d) { return d.id;});
+      const datetimes = timeData.map(function (d) { return d.value;});
       this.setState({
         time: newTime,
-        starttime: newStarttime
+        starttime: newStarttime,
+        timestamps : timestamps,
+        datetimes : datetimes
       });
     },
     error => {
@@ -609,6 +617,8 @@ class OceanNavigator extends React.Component {
             depth={this.state.depth}
             time={this.state.time}
             starttime={this.state.starttime}
+            timestamps={this.state.timestamps}
+            datetimes={this.state.datetimes}
             scale={this.state.scale}
             colormap={this.state.colormap}
             names={this.state.names}

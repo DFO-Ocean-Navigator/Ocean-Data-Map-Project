@@ -2,15 +2,8 @@ import datetime
 import re
 from textwrap import wrap
 
-import matplotlib
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import ScalarFormatter
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import plotting.colormap as colormap
-import plotting.utils as utils
 from data import open_dataset
 from plotting.point import PointPlotter
 
@@ -142,7 +135,7 @@ class TimeseriesPlotter(PointPlotter):
                 self.quiver_data = vector_point_data
 
             self.times = times
-            self.data = point_data
+            self.data = np.ma.compressed(point_data)
             self.depths = depths
             self.depth_unit = "m"
 
@@ -259,119 +252,3 @@ class TimeseriesPlotter(PointPlotter):
         data = d.tolist()
 
         return super(TimeseriesPlotter, self).csv(header, columns, data)
-
-    def plot(self):
-        if self.scale:
-            vmin = self.scale[0]
-            vmax = self.scale[1]
-        else:
-            vmin, vmax = utils.normalize_scale(self.data,
-                                                self.dataset_config.variable[self.variables[0]])
-
-        if self.cmap is None:
-            self.cmap = colormap.find_colormap(self.variable_name)
-
-        datenum = matplotlib.dates.date2num(self.times)
-        if self.depth == 'all':
-            size = list(map(float, self.size.split("x")))
-            numpoints = len(self.points)
-            figuresize = (size[0], size[1] * numpoints)
-            fig, ax = plt.subplots(
-                numpoints, 1, sharex=True, figsize=figuresize,
-                dpi=self.dpi)
-
-            if not isinstance(ax, np.ndarray):
-                ax = [ax]
-
-            for idx, p in enumerate(self.points):
-                d = self.data[idx, 0, :]
-                dlim = np.ma.flatnotmasked_edges(d[0, :])
-                maxdepth = self.depths[dlim[1]].max()
-                mindepth = self.depths[dlim[0]].min()
-
-                c = ax[idx].pcolormesh(
-                    datenum, self.depths[:dlim[1] + 1], d[
-                        :, :dlim[1] + 1].transpose(),
-                    shading='gouraud', cmap=self.cmap, vmin=vmin, vmax=vmax)
-                ax[idx].invert_yaxis()
-                if maxdepth > LINEAR:
-                    ax[idx].set_yscale('symlog', linthreshy=LINEAR)
-                ax[idx].yaxis.set_major_formatter(ScalarFormatter())
-
-                if maxdepth > LINEAR:
-                    l = 10 ** np.floor(np.log10(maxdepth))
-                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, mindepth)
-                    ax[idx].set_yticks(
-                        list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
-                else:
-                    ax[idx].set_ylim(maxdepth, mindepth)
-                ax[idx].set_ylabel("Depth (%s)" %
-                                   utils.mathtext(self.depth_unit))
-
-                ax[idx].xaxis_date()
-                ax[idx].set_xlim(datenum[0], datenum[-1])
-
-                divider = make_axes_locatable(ax[idx])
-                cax = divider.append_axes("right", size="5%", pad=0.05)
-                bar = plt.colorbar(c, cax=cax)
-                bar.set_label("%s (%s)" % (self.variable_name.title(),
-                                           utils.mathtext(self.variable_unit)))
-                ax[idx].set_title(
-                    "%s%s at %s" % (
-                        self.variable_name.title(), self.depth_label,
-                        self.names[idx]))
-                plt.setp(ax[idx].get_xticklabels(), rotation=30)
-            fig.autofmt_xdate()
-        else:
-            # Create base figure
-            figure_size = self.figuresize
-            figure_size[0] *= 1.5 if self.showmap else 1.0
-            fig = plt.figure(figsize=figure_size, dpi=self.dpi)
-
-            # Setup figure layout
-            width = 1
-            if self.showmap:
-                width += 1
-                # Horizontally scale the actual plots by 2x the size of
-                # the location map
-                width_ratios = [1, 2]
-            else:
-                width_ratios = None
-
-            # Create layout helper
-            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
-            subplot = 0
-
-            # Render point location
-            if self.showmap:
-                plt.subplot(gs[0, 0])
-                subplot += 1
-                utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                           [x[1] for x in self.points]]))  # Longitudes
-
-            plt.subplot(gs[:, subplot])
-            plt.plot_date(datenum, np.squeeze(self.data), fmt='-', figure=fig, xdate=True)
-            plt.ylabel(
-                f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
-                fontsize=14)
-            plt.ylim(vmin, vmax)
-
-            # Title
-            if self.plotTitle is None or self.plotTitle == "":
-                wrapped_title = wrap(
-                    "%s%s at %s" % (
-                        self.variable_name.title(),
-                        self.depth_label,
-                        ", ".join(self.names)
-                    ), 80)
-                plt.title("\n".join(wrapped_title), fontsize=15)
-            else:
-                plt.title(self.plotTitle, fontsize=15)
-
-            plt.gca().grid(True)
-
-            fig.autofmt_xdate()
-
-            self.plot_legend(fig, self.names)
-
-        return super(TimeseriesPlotter, self).plot(fig)

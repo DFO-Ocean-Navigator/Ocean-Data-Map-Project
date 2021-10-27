@@ -21,6 +21,7 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import { default as SelectBoxAlias } from "./lib/SelectBox.jsx";
 
 import { withTranslation } from "react-i18next";
+import { toStringHDMS } from "ol/coordinate";
 const stringify = require("fast-stable-stringify");
 
 const TabEnum = {
@@ -276,9 +277,8 @@ class PointWindow extends React.Component {
       </Panel.Collapse>
     </Panel>);
 
-    // Show a single time selector on all tabs except Stick and Virtual Mooring.
-    const showTime = this.state.selected !== TabEnum.STICK ||
-                      this.state.selected !== TabEnum.MOORING;
+    // Show a single time selector for T/S tab.
+    const showTime = this.state.selected === TabEnum.TS;
     const time = showTime ? <TimePicker
       key='time'
       id='time'
@@ -290,9 +290,8 @@ class PointWindow extends React.Component {
       onUpdate={this.props.onUpdate}
     /> : null;
 
-    // Show a start and end time selector for only Stick and Virtual Mooring tabs.
-    const showTimeRange = this.state.selected === TabEnum.STICK ||
-                          this.state.selected === TabEnum.MOORING;
+    // Show a start and end time selector on Stick tab
+    const showTimeRange = this.state.selected === TabEnum.STICK;
     const timeRange = showTimeRange ? <div>
       <TimePicker
         key='starttime'
@@ -319,45 +318,17 @@ class PointWindow extends React.Component {
 
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    const depthVariableScale = showDepthVariableScale && 
-      this.props.datasetDepths ? <div>
-        <SelectBoxAlias 
-          id={"depth-selector-point-window"}
-          name={"depth"}
-          label={_("Depth")}
-          placeholder={_("Depth")}
-          options={this.props.datasetDepths}
-          onChange={this.onLocalUpdate}
-          selected={
-            this.props.datasetDepths.filter(d => {
-              let depth = parseInt(this.state.depth);
-              if (isNaN(depth)) { // when depth == "bottom" or "all"
-                depth = this.state.depth;
-              }
-
-              return d.id === depth;
-            })[0].id
-          }
-        />
-
+    const variableRangeScale = <div>
         <ComboBox
           key='variable'
           id='variable'
           state={this.props.variable}
           def=''
           onUpdate={this.props.onUpdate}
+          onUpdateOptions={this.props.onUpdateOptions}
           url={"/api/v1.0/variables/?dataset="+this.props.dataset}
           title={_("Variable")}><h1>{_("Variable")}</h1></ComboBox>
-
-        <Range
-          auto
-          key='scale'
-          id='scale'
-          state={this.state.scale}
-          def={""}
-          onUpdate={this.onLocalUpdate}
-          title={_("Variable Range")} />
-      </div> : null;
+      </div>;
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
@@ -441,28 +412,35 @@ class PointWindow extends React.Component {
     };
 
     let inputs = [];
+    let metaData = {};
 
     switch(this.state.selected) {
       case TabEnum.PROFILE:
         plot_query.type = "profile";
-        plot_query.time = this.props.time;
         plot_query.variable = this.state.variable;
+        plot_query.interactive = true;
+        metaData = {timestamps: this.props.timestamps,
+                    datetimes: this.props.datetimes,
+                    depths: this.props.datasetDepths};
         inputs = [global, time, profilevariable];
         break;
 
       case TabEnum.CTD:
         plot_query.type = "profile";
-        plot_query.time = this.props.time;
-        plot_query.variable = "";
+        plot_query.variable = [];
+        plot_query.interactive = true;
+        metaData = {timestamps: this.props.timestamps,
+                    datetimes: this.props.datetimes,
+                    depths: this.props.datasetDepths};
         if (this.state.variables.indexOf("votemper") !== -1) {
-          plot_query.variable += "votemper,";
+          plot_query.variable.push("votemper");
         } else if (this.state.variables.indexOf("temp") !== -1) {
-          plot_query.variable += "temp,";
+          plot_query.variable.push("temp");
         }
         if (this.state.variables.indexOf("vosaline") !== -1) {
-          plot_query.variable += "vosaline";
+          plot_query.variable.push("vosaline");
         } else if (this.state.variables.indexOf("salinity") !== -1) {
-          plot_query.variable += "salinity";
+          plot_query.variable.push("salinity");
         }
         inputs = [global, time];
         break;
@@ -478,8 +456,12 @@ class PointWindow extends React.Component {
         break;
 
       case TabEnum.SOUND:
-        plot_query.type = "sound";
-        plot_query.time = this.props.time;
+        plot_query.type = "profile";
+        plot_query.variable = ["sspeed"];
+        plot_query.interactive = true;
+        metaData = {timestamps: this.props.timestamps,
+                    datetimes: this.props.datetimes,
+                    depths: this.props.datasetDepths};
         inputs = [global, time];
         break;
       case TabEnum.OBSERVATION:
@@ -496,13 +478,13 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.props.variable;
-        plot_query.starttime = this.state.starttime;
-        plot_query.endtime = this.props.time;
-        plot_query.depth = this.state.depth;
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
-
-        inputs = [global, timeRange, depthVariableScale];
+        plot_query.interactive = true;
+        metaData = {timestamps: this.props.timestamps,
+                    datetimes: this.props.datetimes,
+                    depths: this.props.datasetDepths};
+        inputs = [global, timeRange, variableRangeScale];
         if (this.state.depth == "all") {
           // Add Colormap selector
           inputs.push(
@@ -579,7 +561,10 @@ class PointWindow extends React.Component {
           </Col>
           <Col lg={10}>
             <PlotImage
-              query={plot_query} // For image saving link.
+              key = {this.state.selected}
+              id = {this.state.selected}
+              query={plot_query} 
+              metaData={metaData}
               permlink_subquery={permlink_subquery}
               action={this.props.action}
             />

@@ -11,6 +11,9 @@ import {Button,
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
+import { ProfilePlotter } from "./plotters/ProfilePlotter.jsx";
+import { TimeseriesPlotter } from "./plotters/TimeseriesPlotter.jsx";
+
 import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
@@ -37,6 +40,7 @@ class PlotImage extends React.PureComponent {
     this.getLink = this.getLink.bind(this);
     this.toggleImageLink = this.toggleImageLink.bind(this);
     this.generateScript = this.generateScript.bind(this);
+    this.updateTraces = this.updateTraces.bind(this);
   }
 
   generateScript(language) {
@@ -67,12 +71,14 @@ class PlotImage extends React.PureComponent {
 
   componentDidMount() {
     this._mounted = true;
-    this.loadImage(this.generateQuery(this.props.query));
+    if (!this.props.query.interactive) {
+      //this.loadImage(this.generateQuery(this.props.query));
+    }
   }
 
   componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(this.generateQuery(props.query));
+    if (!this.props.query.interactive) {
+      //this.loadImage(this.generateQuery(this.props.query));
     }
   }
 
@@ -152,6 +158,12 @@ class PlotImage extends React.PureComponent {
     
     switch(q.type) {
       case "profile":
+        query.interactive = true;
+        query.variable = q.variable;
+        query.starttime = this.props.metaData.timestamps[0];
+        query.endtime = this.props.metaData.timestamps[this.props.metaData.timestamps.length-1];
+        query.time = this.state.visibleTraces;
+        break;
       case "ts":
       case "sound":
         query.variable = q.variable;
@@ -324,6 +336,14 @@ class PlotImage extends React.PureComponent {
         break;
     }
   }
+  
+  updateTraces(traces) {
+    let timestmaps = []
+    for (const idx of traces) {
+      timestmaps.push(this.props.metaData.timestamps[idx])
+    }
+    this.setState( {visibleTraces: timestmaps} )
+  }
 
   render() {
     
@@ -338,12 +358,67 @@ class PlotImage extends React.PureComponent {
       errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
     }
 
+    let image = null;
+    if (this.props.query.type === 'profile') {
+      this.setState({loading: false})
+      image = <ProfilePlotter
+                key = 'profile'
+                id = 'profile'
+                query = {this.props.query}
+                metaData = {this.props.metaData}
+                LOADING_IMAGE = {LOADING_IMAGE}
+                updateTraces = {traces => this.updateTraces(traces)}
+              />
+    } else if (this.props.query.type === 'timeseries') {
+      image = <TimeseriesPlotter
+                key = 'timeseries'
+                id = 'timeseries'
+                query = {this.props.query}
+                metaData = {this.props.metaData}
+                LOADING_IMAGE = {LOADING_IMAGE}
+                updateTraces = {traces => this.updateTraces(traces)}
+              />
+    } else {
+      image = <img src={this.state.url} />
+    }
+
+    const saveImageButtons = 
+      this.props.query.interactive ? null : 
+                            <div>
+                              <MenuItem
+                                eventKey="png"
+                              ><Icon icon="file-image-o" /> PNG</MenuItem>
+                              <MenuItem
+                                eventKey="jpeg"
+                              ><Icon icon="file-image-o" /> JPG</MenuItem>
+                              <MenuItem
+                                eventKey="pdf"
+                              ><Icon icon="file-pdf-o" /> PDF</MenuItem>
+                              <MenuItem
+                                eventKey="svg"
+                              ><Icon icon="file-code-o" /> SVG</MenuItem>
+                              <MenuItem
+                                eventKey="ps"
+                              ><Icon icon="file-pdf-o" /> PS</MenuItem>
+                              <MenuItem
+                                eventKey="eps"
+                              ><Icon icon="file-pdf-o" /> EPS</MenuItem>
+                              <MenuItem
+                                eventKey="tiff"
+                              ><Icon icon="file-image-o" /> TIFF</MenuItem>
+                              <MenuItem
+                                eventKey="geotiff"
+                                disabled={this.props.query.type != "map"}
+                              ><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
+                              <MenuItem divider />
+                            </div>
+
     return (
       <div className='PlotImage'>
 
         {/* Rendered graph */}
         <div className="RenderedImage">
-          <img src={this.state.url} />
+          {image}
         </div>
 
         {errorAlert}
@@ -356,32 +431,7 @@ class PlotImage extends React.PureComponent {
             onSelect={this.saveImage}
             dropup
           >
-            <MenuItem
-              eventKey="png"
-            ><Icon icon="file-image-o" /> PNG</MenuItem>
-            <MenuItem
-              eventKey="jpeg"
-            ><Icon icon="file-image-o" /> JPG</MenuItem>
-            <MenuItem
-              eventKey="pdf"
-            ><Icon icon="file-pdf-o" /> PDF</MenuItem>
-            <MenuItem
-              eventKey="svg"
-            ><Icon icon="file-code-o" /> SVG</MenuItem>
-            <MenuItem
-              eventKey="ps"
-            ><Icon icon="file-pdf-o" /> PS</MenuItem>
-            <MenuItem
-              eventKey="eps"
-            ><Icon icon="file-pdf-o" /> EPS</MenuItem>
-            <MenuItem
-              eventKey="tiff"
-            ><Icon icon="file-image-o" /> TIFF</MenuItem>
-            <MenuItem
-              eventKey="geotiff"
-              disabled={this.props.query.type != "map"}
-            ><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
-            <MenuItem divider />
+            {saveImageButtons}
             <MenuItem
               eventKey="csv"
               disabled={this.props.query.type == "hovmoller"}
