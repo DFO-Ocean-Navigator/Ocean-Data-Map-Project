@@ -371,8 +371,8 @@ class NetCDFData(Data):
                                               y_coord: y_slice,
                                               x_coord: x_slice
                                           })})
-                # Remove 'dims' attr (prevents exporting to NC3 formats)            
-                subset[variable].attrs.pop('dims')  
+                # Convert 'dims' attr to string (allows exporting to NC3 formats)            
+                subset[variable].attrs['dims'] = "(" + ",".join(subset[variable].attrs['dims']) + ")"
 
         output_format = query.get('output_format')
         filename = dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
