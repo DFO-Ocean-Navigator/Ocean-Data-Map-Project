@@ -297,6 +297,9 @@ def __get_soniclayerdepth_mask(soundspeed: np.ndarray, min_depth_indices: np.nda
 
 def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray) -> np.ndarray:
 
+    if (len(soundspeed.shape) > 3): 
+        soundspeed = np.swapaxes(soundspeed,0,1) # swap time and depth dims to ensure depth is 0th
+
     min_indices = __find_depth_index_of_min_value(soundspeed)
 
     mask = __get_soniclayerdepth_mask(soundspeed, min_indices)
@@ -354,6 +357,8 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
         depth, latitude, temperature, salinity)
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
+    if (len(sound_speed.shape) > 3): 
+        sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
@@ -386,7 +391,8 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
 
     # Use masked array to quickly enable/disable data (see below)
     sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
-
+    if (len(sound_speed.shape) > 3): 
+        sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
     
@@ -437,7 +443,7 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity)
 
     # Actually do the math.
-    return dscb - bathy
+    return dscb - bathy.data
 
 def calculate_del_C(depth:np.ndarray,soundspeed:np.ndarray,minima:np.ndarray,maxima:np.ndarray,freq_cutoff:float) -> np.ndarray:
     """
