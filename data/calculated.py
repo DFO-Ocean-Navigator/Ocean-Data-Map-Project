@@ -180,4 +180,15 @@ class CalculatedArray():
         for d in self.dims:
             key.append(keys[d])
 
-        return self[tuple(key)]
+        selection = self[tuple(key)]
+        # check to see that dimensions are named, if not recreate DataArray w/ correct dims and coords
+        if selection.dims != tuple(keys.keys()):   
+            shape = [k.stop - k.start for k in keys.values()]
+            selection = xr.DataArray(
+                            data = np.reshape(selection.data, shape), 
+                            dims = keys.keys(),
+                            coords = {str(k) : self._parent.coords[k][v] for k,v in keys.items()},
+                            attrs = self.attrs
+                        )
+
+        return selection
