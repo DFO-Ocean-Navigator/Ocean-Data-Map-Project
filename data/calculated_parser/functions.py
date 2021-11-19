@@ -224,7 +224,9 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
 
     if salinity.shape != press.shape:
         # pad array shape to match otherwise seawater freaks out
-        press = press[..., np.newaxis]
+        for i in range(len(salinity.shape)):  
+            if i > len(press.shape) - 1 or salinity.shape[i] != press.shape[i]:
+                press = np.expand_dims(press, axis=i)
 
     speed = seawater.svel(salinity, temperature, press)
     return np.squeeze(speed)
