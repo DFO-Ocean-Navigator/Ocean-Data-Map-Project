@@ -334,7 +334,7 @@ def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
         depth, latitude, temperature, salinity)
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
-    if (len(sound_speed.shape) > 3): 
+    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x)
         sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
 
     return __soniclayerdepth_from_sound_speed(sound_speed, depth)
@@ -358,7 +358,7 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
         depth, latitude, temperature, salinity)
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
-    if (len(sound_speed.shape) > 3): 
+    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x) 
         sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
@@ -392,7 +392,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
 
     # Use masked array to quickly enable/disable data (see below)
     sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
-    if (len(sound_speed.shape) > 3): 
+    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x) 
         sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
