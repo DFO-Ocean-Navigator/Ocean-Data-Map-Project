@@ -686,6 +686,7 @@ class OceanNavigator extends React.Component {
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
+            onUpdateOptions={this.updateOptions}
             init={this.state.subquery}
             dataset_compare={this.state.dataset_compare}
             dataset_1={this.state.dataset_1}

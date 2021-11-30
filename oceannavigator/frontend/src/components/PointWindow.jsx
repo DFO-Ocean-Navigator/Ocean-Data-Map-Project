@@ -319,8 +319,9 @@ class PointWindow extends React.Component {
 
     // Only show depth and scale selector for Mooring tab.
     const showDepthVariableScale = this.state.selected === TabEnum.MOORING;
-    const depthVariableScale = showDepthVariableScale && 
-      this.props.datasetDepths ? <div>
+    const depthScale = showDepthVariableScale && 
+      this.props.datasetDepths &&
+      this.props.datasetDepths.length > 0 ? <div>
         <SelectBoxAlias 
           id={"depth-selector-point-window"}
           name={"depth"}
@@ -339,7 +340,9 @@ class PointWindow extends React.Component {
             })[0].id
           }
         />
+       </div> : null;
 
+    const variableRangeScale = <div>
         <ComboBox
           key='variable'
           id='variable'
@@ -358,7 +361,7 @@ class PointWindow extends React.Component {
           def={""}
           onUpdate={this.onLocalUpdate}
           title={_("Variable Range")} />
-      </div> : null;
+      </div>;
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
@@ -503,7 +506,7 @@ class PointWindow extends React.Component {
         plot_query.colormap = this.state.colormap;
         plot_query.scale = this.state.scale;
 
-        inputs = [global, timeRange, depthVariableScale];
+        inputs = [global, timeRange, depthScale, variableRangeScale];
         if (this.state.depth == "all") {
           // Add Colormap selector
           inputs.push(
