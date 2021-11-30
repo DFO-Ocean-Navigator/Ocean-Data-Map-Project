@@ -170,6 +170,10 @@ export default class Map extends React.PureComponent {
       location: [0, 90],
     };
 
+    this.scaleViewer = new app.ScaleViewer({
+      image: "/api/v1.0/scale/giops_day/votemper/-5,30.png",
+    });
+
     this.loader = function (extent, resolution, projection) {
       if (this.props.state.vectortype) {
         let url = "";
@@ -671,6 +675,7 @@ export default class Map extends React.PureComponent {
         }),
       ])
     });
+    this.map.addControl(this.scaleViewer);
     this.map.on("moveend", this.refreshFeatures.bind(this));
     this.map.on("moveend", function () {
       const c = olproj.transform(this.mapView.getCenter(), this.props.state.projection, "EPSG:4326").map(function (c) { return c.toFixed(4); });
@@ -1318,8 +1323,8 @@ export default class Map extends React.PureComponent {
   }
 
   shouldUpdateScaleViewer(currentDataset, prevDataset,
-                          currentVariable, prevVariable,
-                           currentScale, prevScale)
+    currentVariable, prevVariable,
+    currentScale, prevScale)
   {
     return (currentDataset !== prevDataset)
           || (currentVariable !== prevVariable)
@@ -1330,11 +1335,17 @@ export default class Map extends React.PureComponent {
     if (this.scaleViewer != null) {
       this.map.removeControl(this.scaleViewer);
     }
+
+    let scale = currentScale;
+    if (Array.isArray(scale)) {
+      scale = scale.join(",");
+    }
+
     this.scaleViewer = new app.ScaleViewer({
       image: (
         `/api/v1.0/scale/${currentDataset}` +
         `/${currentVariable}` +
-        `/${currentScale}.png`
+        `/${scale}.png`
       )
     });
     this.map.addControl(this.scaleViewer);
@@ -1404,6 +1415,12 @@ export default class Map extends React.PureComponent {
     const datalayer = this.map.getLayers().getArray()[1];
     const old = datalayer.getSource();
     const props = old.getProperties();
+
+    let scale = this.props.scale;
+    if (Array.isArray(scale)) {
+      scale = scale.join(",");
+    }
+
     props.url = "/api/v1.0/tiles" +
       `/${this.props.options.interpType}` +
       `/${this.props.options.interpRadius}` +
@@ -1413,7 +1430,7 @@ export default class Map extends React.PureComponent {
       `/${this.props.state.variable}` +
       `/${this.props.state.time}` +
       `/${this.props.state.depth}` +
-      `/${this.props.scale}` +
+      `/${scale}` +
       "/{z}/{x}/{y}.png";
     props.projection = this.props.state.projection;
     props.attributions = [
@@ -1435,7 +1452,7 @@ export default class Map extends React.PureComponent {
                                      this.props.scale,
                                      prevProps.scale))
     {
-      this.updateScaleViewer(this.props.state.dataset, this.props.state.variable, this.props.state.scale);
+      this.updateScaleViewer(this.props.state.dataset, this.props.state.variable, this.props.scale);
     }
 
     if (this.shouldUpdateBathymetryLayer(this.props.state.projection,

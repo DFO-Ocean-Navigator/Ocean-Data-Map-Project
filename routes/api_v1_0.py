@@ -179,12 +179,12 @@ def quantum_query_v1_0():
     return jsonify(quantum)
 
 
-@bp_v1_0.route('/api/v1.0/variables/')
+@bp_v1_0.route('/api/v1.0/variables/', methods=['GET'])
 def variables_query_v1_0():
     """
     Returns the available variables for a given dataset.
 
-    API Format: /api/v1.0/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
+    API Format: /api/v1.0/variables/?dataset='...'&3d_only&vectors_only
 
     Required Arguments:
     * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
@@ -192,7 +192,6 @@ def variables_query_v1_0():
     Optional Arguments:
     * 3d_only      : Boolean Value; When True, only variables with depth will be shown
     * vectors_only : Boolean Value; When True, only variables with magnitude will be shown
-    * vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean value: True / False**
     """
@@ -207,27 +206,24 @@ def variables_query_v1_0():
 
     data = []
 
-    if 'vectors_only' in args:
-        for variable in config.vector_variables:
-            data.append({
-                'id': variable,
-                'value': config.variable[variable].name,
-                'scale': config.variable[variable].scale,
-                'interp':config.variable[variable].interpolation
-            })
-    else:
-        with open_dataset(config) as ds:
-            for v in ds.variables:
-                if ('3d_only' in args) and v.is_surface_only():
-                    continue
+    with open_dataset(config) as ds:
+        for v in ds.variables:
+            if config.variable[v.key].is_hidden:
+                continue
 
-                if not config.variable[v].is_hidden:
-                    data.append({
-                                'id': v.key,
-                                'value': config.variable[v].name,
-                                'scale': config.variable[v].scale,
-                                'interp':config.variable[v].interpolation
-                                })
+            if ('3d_only' in args) and v.is_surface_only():
+                continue
+
+            if ('vectors_only' in args) and v.key not in config.vector_variables:
+                continue
+
+            data.append({
+                'id': v.key,
+                'value': config.variable[v].name,
+                'scale': config.variable[v].scale,
+                'interp':config.variable[v].interpolation,
+                'two_dimensional': v.is_surface_only()
+            })
 
     data = sorted(data, key=lambda k: k['value'])
 

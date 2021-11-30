@@ -36,6 +36,57 @@ class MapInputs extends React.Component {
     _("Variable Range");
     _("Show Bathymetry Contours");
 
+    let mainRange = null;
+    if (this.props.datasetVariables) {
+      mainRange = <Range
+        id='scale'
+        state={this.props.state.variable_scale}
+        onUpdate={this.props.changeHandler}
+        onSubmit={this.props.changeHandler}
+        title={_("Variable Range")}
+        autourl={"/api/v1.0/range/" +
+                  this.props.state.dataset + "/" + 
+                  this.props.state.variable + "/" +
+                  this.props.options.interpType + "/" +
+                  this.props.options.interpRadius + "/" +
+                  this.props.options.interpNeighbours + "/" +
+                  this.props.state.projection + "/" +
+                  this.props.state.extent.join(",") + "/" +
+                  this.props.state.depth + "/" +
+                  this.props.state.time +  ".json"
+        }
+        dataset_compare={this.props.state.dataset_compare}
+        default_scale={this.props.datasetVariables
+          .find(v => v.id === this.props.state.variable).scale
+        }
+      />;
+    }
+
+    let compareRange = null;
+    if (this.props.state.dataset_compare && this.props.datasetVariables) {
+      compareRange = <Range
+        key='scale_1'
+        id='scale_1'
+        state={this.props.state.dataset_1.variable_scale}
+        onUpdate={this.props.changeHandler}
+        title={_("Variable Range")}
+        autourl={"/api/v1.0/range/" +
+                    this.props.state.dataset_1.dataset + "/" +
+                    this.props.state.dataset_1.variable + "/" +
+                    this.props.options.interpType + "/" +
+                    this.props.options.interpRadius + "/" +
+                    this.props.options.interpNeighbours + "/" +
+                    this.props.state.projection + "/" +
+                    this.props.state.extent.join(",") + "/" +
+                    this.props.state.dataset_1.depth + "/" +
+                    this.props.state.dataset_1.time + ".json"
+        }
+        default_scale={this.props.datasetVariables
+          .find(v => v.id === this.props.state.variable).scale
+        }
+      />;
+    }
+
     //Creates Main Map Panel
     const inputs = [
       <Panel
@@ -52,34 +103,14 @@ class MapInputs extends React.Component {
               id='dataset_0'
               state={this.props.state}
               onUpdate={this.props.changeHandler}
-              onUpdateOptions={this.props.updateOptions}
               depth={true}
               availableDatasets={this.props.availableDatasets}
               datasetVariables={this.props.datasetVariables}
               datasetDepths={this.props.datasetDepths}
             />
-            <Range
-              id='scale'
-              state={this.props.state.scale}
-              setDefaultScale={this.props.state.setDefaultScale}
-              def=''
-              onUpdate={this.props.changeHandler}
-              onSubmit={this.props.changeHandler}
-              title={_("Variable Range")}
-              autourl={"/api/v1.0/range/" +
-                      this.props.state.dataset + "/" + 
-                      this.props.state.variable + "/" +
-                      this.props.options.interpType + "/" +
-                      this.props.options.interpRadius + "/" +
-                      this.props.options.interpNeighbours + "/" +
-                      this.props.state.projection + "/" +
-                      this.props.state.extent.join(",") + "/" +
-                      this.props.state.depth + "/" +
-                      this.props.state.time +  ".json"
-              }
-              dataset_compare={this.props.state.dataset_compare}
-              default_scale={this.props.state.variable_scale}
-            ></Range>
+            
+            {mainRange}
+
           </Panel.Body>
         </Panel.Collapse>
       </Panel>
@@ -106,27 +137,9 @@ class MapInputs extends React.Component {
                 datasetVariables={this.props.datasetVariables}
                 datasetDepths={this.props.datasetDepths}
               />
-              <Range
-                key='scale_1'
-                id='scale_1'
-                state={this.props.state.scale_1}
-                setDefaultScale={this.props.state.setDefaultScale}
-                def=''
-                onUpdate={this.props.changeHandler}
-                title={_("Variable Range")}
-                autourl={"/api/v1.0/range/" +
-                        this.props.state.dataset_1.dataset + "/" +
-                        this.props.state.dataset_1.variable + "/" +
-                        this.props.options.interpType + "/" +
-                        this.props.options.interpRadius + "/" +
-                        this.props.options.interpNeighbours + "/" +
-                        this.props.state.projection + "/" +
-                        this.props.state.extent.join(",") + "/" +
-                        this.props.state.dataset_1.depth + "/" +
-                        this.props.state.dataset_1.time + ".json"
-                }
-                default_scale={this.props.state.dataset_1.variable_scale}
-              ></Range>
+              
+              {compareRange}
+
             </Panel.Body>
           </Panel.Collapse>
         </Panel>
@@ -137,7 +150,6 @@ class MapInputs extends React.Component {
 
     return (
       <div className={className}>
-
         
         <Tabs //Creates Tabs Container
           activeKey={this.state.currentTab}
