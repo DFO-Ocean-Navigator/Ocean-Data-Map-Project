@@ -127,7 +127,18 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        return xr.DataArray(data_array, attrs=self.attrs)
+        if hasattr(data_array, 'dims'): 
+            dims = data_array.dims
+        else: 
+            dims = self._dims
+
+        key = [k for k in key if type(k) is slice] #remove any non-slice elements 
+        return xr.DataArray(
+                    data = np.reshape(data_array.data, [k.stop - k.start for k in key]), 
+                    dims = dims,
+                    coords = {str(d) : self._parent.coords[d][k] for d,k in zip(dims,key)},
+                    attrs = self.attrs
+                )
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
@@ -180,15 +191,4 @@ class CalculatedArray():
         for d in self.dims:
             key.append(keys[d])
 
-        selection = self[tuple(key)]
-        # check to see that dimensions are named, if not recreate DataArray w/ correct dims and coords
-        if selection.dims != tuple(keys.keys()):   
-            shape = [k.stop - k.start for k in keys.values()]
-            selection = xr.DataArray(
-                            data = np.reshape(selection.data, shape), 
-                            dims = keys.keys(),
-                            coords = {str(k) : self._parent.coords[k][v] for k,v in keys.items()},
-                            attrs = self.attrs
-                        )
-
-        return selection
+        return self[tuple(key)]
