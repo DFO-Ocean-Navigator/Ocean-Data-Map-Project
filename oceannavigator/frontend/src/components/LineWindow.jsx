@@ -325,6 +325,7 @@ class LineWindow extends React.Component {
             compare={this.props.dataset_compare}
             showQuiverSelector={false}
             datasetDepths={this.props.datasetDepths}
+            datasetVariables={this.props.datasetVariables}
           />
 
           <Range
@@ -373,6 +374,7 @@ class LineWindow extends React.Component {
               time={this.state.selected == 2 ? "range" : "single"}
               showQuiverSelector={false}
               datasetDepths={this.props.datasetDepths}
+              datasetVariables={this.props.datasetVariables}
             />
             <Range
               auto
@@ -500,6 +502,7 @@ LineWindow.propTypes = {
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
   datasetDepths: PropTypes.arrayOf(PropTypes.object),
+  datasetVariables: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default withTranslation()(LineWindow);
