@@ -127,7 +127,18 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        return xr.DataArray(data_array, attrs=self.attrs)
+        if hasattr(data_array, 'dims'): 
+            dims = data_array.dims
+        else: 
+            dims = self._dims
+
+        key = [filter(lambda k: type(k) is slice, key)]
+        return xr.DataArray(
+                    data = np.reshape(data_array.data, [k.stop - k.start for k in key]), 
+                    dims = dims,
+                    coords = {str(d) : self._parent.coords[d][k] for d,k in zip(dims,key)},
+                    attrs = self.attrs
+                )
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
