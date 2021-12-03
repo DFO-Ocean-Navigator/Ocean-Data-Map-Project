@@ -17,4 +17,4 @@ echo " "
 echo "Use the following IP in your URL ${HOST_IP}:$((PORT))"
 echo " "
 echo "This will log information from the application to the screen and the logfile."
-exec bash runserver.sh $PORT &> >(tee -a ${HOME}/launch-on-web-service.log)
+exec bash runserver.sh $PORT 

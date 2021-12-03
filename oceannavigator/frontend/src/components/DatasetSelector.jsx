@@ -10,7 +10,7 @@ import SelectBox from "./lib/SelectBox.jsx";
 import { withTranslation } from "react-i18next";
 
 // Default properties for a dataset-state
-const DATA_ELEMS = [
+const DATA_ELEMS = Object.freeze([
   "dataset",
   "dataset_attribution",
   "dataset_quantum",
@@ -20,20 +20,14 @@ const DATA_ELEMS = [
   "time",
   "starttime",
   "quiverVariable",
-];
+]);
 
 class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
 
     // Function bindings
-    this.variableUpdate = this.variableUpdate.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
-  }
-
-  variableUpdate(key, value) {
-    this.props.onUpdate("setDefaultScale", true);
-    this.onUpdate(key, value);
   }
 
   onUpdate(key, value) {
@@ -59,15 +53,6 @@ class DatasetSelector extends React.Component {
     _("Depth");
     _("Time (UTC)");
     _("Quiver Variable");
-
-    let variables = "";
-    switch (this.props.variables) {
-      case "3d":
-        variables = "&3d_only";
-        break;
-      default:
-        break;
-    }
 
     // Determine which timepicker we need
     let time = "";
@@ -178,6 +163,29 @@ class DatasetSelector extends React.Component {
       />;
     }
 
+    let variableSelector = null;
+    if (this.props.datasetVariables) {
+      let options = [];
+      if (this.props.variables === "3d") {
+        options = this.props.datasetVariables.filter(v => {
+          return v.two_dimensional === false;
+        });
+      }
+      else {
+        options = this.props.datasetVariables;
+      }
+
+      variableSelector = <SelectBox 
+        id={`dataset-selector-variable-selector-${this.props.id}`}
+        name={"variable"}
+        label={_("Variable")}
+        placeholder={_("Variable")}
+        options={options}
+        onChange={this.onUpdate}
+        selected={this.props.state.variable}
+      />;
+    }
+
     return (
       <div className='DatasetSelector'>
 
@@ -189,17 +197,7 @@ class DatasetSelector extends React.Component {
           url='/api/v1.0/datasets/'
           title={_("Dataset")}></ComboBox>
 
-        <ComboBox
-          id='variable'
-          multiple={this.props.multiple}
-          state={this.props.state.variable}
-          def={"defaults.dataset"}
-          onUpdate={this.variableUpdate}
-          onUpdateOptions={this.props.onUpdateOptions}
-          url={"/api/v1.0/variables/?dataset=" + this.props.state.dataset + variables
-          }
-          title={_("Variable")}
-        ><h1>{_("Variable")}</h1></ComboBox>
+        {variableSelector}
 
         {velocity_selector}
 
