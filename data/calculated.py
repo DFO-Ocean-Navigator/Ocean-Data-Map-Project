@@ -132,7 +132,7 @@ class CalculatedArray():
         else: 
             dims = self._dims
 
-        key = [k for k in key if type(k) is slice] #remove any non-slice elements 
+        key = [filter(lambda k: type(k) is slice, key)]
         return xr.DataArray(
                     data = np.reshape(data_array.data, [k.stop - k.start for k in key]), 
                     dims = dims,
