@@ -350,7 +350,7 @@ class DatasetSelector extends React.Component {
     let depthSelector = null;
     // eslint-disable-next-line max-len
     if (this.props.showDepthSelector && this.state.datasetDepths && this.state.datasetDepths.length > 0 && !this.state.loading) {    
-      depthSelector = <SelectBox
+      depthSelector = <SelectBox 
         id={`dataset-selector-depth-selector-${this.props.id}`}
         name={"depth"}
         label={_("Depth")}
@@ -434,7 +434,7 @@ class DatasetSelector extends React.Component {
         {datasetSelector}
 
         {variableSelector}
-
+        
         {quiverSelector}
 
         {depthSelector}
