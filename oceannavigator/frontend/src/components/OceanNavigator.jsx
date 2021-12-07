@@ -62,15 +62,7 @@ class OceanNavigator extends React.Component {
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
       options: {
-        // Interpolation
-        interpType: this.DEF_INTERP_TYPE,
-        interpRadius: this.DEF_INTERP_RADIUS_KM,
-        interpNeighbours: this.DEF_INTERP_NUM_NEIGHBOURS,
-        // Map
-        mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
-        topoShadedRelief: false,    // Show hill shading (relief mapping) on topography
-        bathymetry: true,           // Show bathymetry contours
-        bathyContour: 'etopo1',
+        ...DEFAULT_OPTIONS
       },
       showObservationSelect: false,
       observationArea: [],
