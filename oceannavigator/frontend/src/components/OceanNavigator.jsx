@@ -15,17 +15,11 @@ import Iframe from "react-iframe";
 import ReactGA from "react-ga";
 import WarningBar from "./WarningBar.jsx";
 
+import { DATASET_DEFAULTS, DEFAULT_OPTIONS } from "./Defaults.js";
+
 import { withTranslation } from "react-i18next";
 
-import { 
-  GetDatasetsPromise,
-  GetVariablesPromise,
-  GetTimestampsPromise,
-  GetDepthsPromise
-} from "../remote/OceanNavigator.js";
-
 const stringify = require("fast-stable-stringify");
-const LOADING_IMAGE = require("../images/bar_loader.gif").default;
 
 function formatLatLon(latitude, longitude) {
   let formatted = "";
@@ -49,17 +43,7 @@ class OceanNavigator extends React.Component {
     this.DEF_INTERP_NUM_NEIGHBOURS = Object.freeze(10);
 
     this.state = {
-      availableDatasets: [],
-      datasetVariablesCache: {},
-      datasetDepthsCache: {},
-      dataset: "giops_day",
-      variable: "votemper",
-      quiverVariable: "none",
-      quantum: "day",
-      variable_scale: [-5,30], // Default variable range for left/Main Map
-      depth: 0,
-      time: -1,
-      starttime: -2, // Start time for Left Map
+      ...DATASET_DEFAULTS,
       plotEnabled: false, // "Plot" button in MapToolbar
       projection: "EPSG:3857", // Map projection
       showModal: false,
@@ -73,13 +57,7 @@ class OceanNavigator extends React.Component {
       setDefaultScale: false,
       dataset_compare: false, // Controls if compare mode is enabled
       dataset_1: {
-        dataset: "giops_day",
-        variable: "votemper",
-        depth: 0,
-        time: -1,
-        starttime: -2,  // Start time for Right Map
-        variable_scale: [-5,30], // Default variable range for Right Map
-        quiverVariable: "none",
+        ...DATASET_DEFAULTS,
       },
       syncRanges: false, // Clones the variable range from one view to the other when enabled
       sidebarOpen: true, // Controls sidebar opened/closed status
@@ -102,9 +80,6 @@ class OceanNavigator extends React.Component {
     this.mapComponent2 = null;
 
     this.prevOptions = this.state.options;
-
-    const preload = new Image();
-    preload.src = LOADING_IMAGE;
 
     if (window.location.search.length > 0) {
       try {
@@ -195,6 +170,16 @@ class OceanNavigator extends React.Component {
 
   // Updates global app state
   updateState(key, value) {
+    if (key === "dataset_0" ) {
+      this.setState(value);
+      return;
+    }
+
+    if (key === "dataset_1") {
+      this.state(value);
+      return;
+    }
+
     let newState = {};
 
     // Only updating one value
@@ -237,32 +222,6 @@ class OceanNavigator extends React.Component {
 
           this.setState(newScale_1State);
           return;
-        case "dataset_0":
-          if (value.dataset !== this.state.dataset) {
-            this.changeDataset(value.dataset, value);
-            return;
-          }
-          
-          // If variable is being changed...
-          if (value.variable !== this.state.variable) {
-            const variableFromCache = this.state.datasetVariablesCache[value.dataset]
-            .find(v => v.id === value.variable);
-
-            // Update interpolation
-            newState["dataset_0"]["options"] = {
-              ...this.state.options,
-              interpType: variableFromCache.interp?.interpType || this.DEF_INTERP_TYPE,
-              interpRadius: variableFromCache.interp?.interpRadius || this.DEF_INTERP_RADIUS_KM,
-              interpNeighbours: variableFromCache.interp?.interpNeighbours || this.DEF_INTERP_NUM_NEIGHBOURS,
-            };
-
-            // Update default colour scale
-            newState["dataset_0"]["variable_scale"] = variableFromCache.scale;
-          }
-
-          newState = value;
-          break;
-
         case "showObservationSelect":
           if (!value) {
             newState['observationArea'] = [];
@@ -292,77 +251,6 @@ class OceanNavigator extends React.Component {
       return time[time.length - 25].id;
     }
     return time[0].id;
-  }
-
-  changeDataset(dataset, state) {
-    // Busy modal
-    this.setState({
-      busy: true,
-    });
-
-    if (this.state.datasetVariablesCache[dataset] === undefined) {
-      // When dataset changes, so do the variables, depths, and time
-      GetVariablesPromise(dataset).then(variableResult => {
-        const variableData = variableResult.data;
-
-        this.setState(prevState => ({
-          datasetVariablesCache: {
-            ...prevState.datasetVariablesCache,
-            [dataset]: variableData,
-          }
-        }));
-
-        let newVariable = this.state.variable;
-        const variableIds = variableData.map(v => { return v.id; });
-        if (!variableIds.includes(this.state.variable)) {
-          newVariable = variableData[0].id;
-        }
-
-
-        let newTime = 0;
-        let newStarttime = 0;
-        GetTimestampsPromise(dataset, newVariable).then(timestampResult => {
-          const timeData = timestampResult.data;
-
-          newTime = timeData[timeData.length - 1].id;
-          newStarttime = this.setStartTime(timeData);
-          if (state === undefined) {
-            state = {};
-          }
-          state.dataset = dataset;
-          state.variable = newVariable;
-          state.time = newTime;
-          state.starttime = newStarttime;
-          state.quiverVariable = "none";
-
-          this.setState(state);
-        },
-          error => {
-            console.error(error);
-          });
-
-        if (this.state.datasetDepthsCache[dataset] === undefined) {
-          GetDepthsPromise(dataset, newVariable).then(depthResult => {
-            this.setState(prevState => ({
-              datasetDepthsCache: {
-                ...prevState.datasetDepthsCache,
-                [dataset]: depthResult.data,
-              }
-            }));
-          },
-            error => {
-              console.error(error);
-            });
-        }
-      },
-        error => {
-          console.error(error);
-        });
-    }
-
-    this.setState({
-      busy: false,
-    });
   }
 
   action(name, arg, arg2, arg3) {
@@ -550,57 +438,6 @@ class OceanNavigator extends React.Component {
       window.history.back();
     }
   }
-  
-  componentDidMount() {
-    
-    GetDatasetsPromise().then(result => {
-      this.setState({
-        availableDatasets: result.data,
-      });
-    },
-    error => {
-      console.error(error);
-    });
-
-    GetVariablesPromise(this.state.dataset).then(result => {
-      this.setState(prevState => ({
-        datasetVariablesCache: {
-          ...prevState.datasetVariablesCache,
-          [this.state.dataset]: result.data,
-        }
-      }));
-    },
-    error => {
-      console.error(error);
-    });
-
-    // eslint-disable-next-line max-len
-    GetTimestampsPromise(this.state.dataset, this.state.variable).then(result => {
-      const timeData = result.data;
-
-      const newTime = timeData[timeData.length - 1].id;
-      const newStarttime = timeData[0].id;
-      this.setState({
-        time: newTime,
-        starttime: newStarttime
-      });
-    },
-    error => {
-      console.error(error);
-    });
-
-    // eslint-disable-next-line max-len
-    GetDepthsPromise(this.state.dataset, this.state.variable).then(result => {
-      this.setState(prevState => ({
-        datasetDepthsCache: {
-          [prevState.dataset]: result.data,
-        }
-      }));
-    },
-    error => {
-      console.error(error);
-    });
-  }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.showModal && !prevState.showModal) {
@@ -645,15 +482,8 @@ class OceanNavigator extends React.Component {
       case "point":
         modalContent = (
           <PointWindow
-            dataset={this.state.dataset}
-            quantum={this.state.dataset_quantum}
+            dataset_0={this.state}
             point={this.state.point}
-            variable={this.state.variable}
-            depth={this.state.depth}
-            time={this.state.time}
-            starttime={this.state.starttime}
-            scale={this.state.variable_scale}
-            colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
             onUpdateOptions={this.updateOptions}
@@ -663,8 +493,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
-            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
-            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
+            options={this.state.options}
           />
         );
         modalTitle = formatLatLon(
@@ -676,13 +505,7 @@ class OceanNavigator extends React.Component {
         modalContent = (
           <LineWindow
             dataset_0={this.state}
-            quantum={this.state.dataset_quantum}
             line={this.state.line}
-            variable={this.state.variable}
-            depth={this.state.depth}
-            time={this.state.time}
-            scale={this.state.variable_scale}
-            scale_1={this.state.dataset_1.variable_scale}
             colormap={this.state.colormap}
             names={this.state.names}
             onUpdate={this.updateState}
@@ -693,8 +516,7 @@ class OceanNavigator extends React.Component {
             action={this.action}
             showHelp={this.toggleCompareHelp}
             swapViews={this.swapViews}
-            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
-            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
+            options={this.state.options}
           />
         );
 
@@ -707,11 +529,8 @@ class OceanNavigator extends React.Component {
           <AreaWindow
             dataset_0={this.state}
             area={this.state.area}
-            scale={this.state.variable_scale}
-            scale_1={this.state.dataset_1.variable_scale}
             colormap={this.state.colormap}
             names={this.state.names}
-            depth={this.state.depth}
             projection={this.state.projection}
             onUpdate={this.updateState}
             onUpdateOptions={this.updateOptions}
@@ -722,8 +541,6 @@ class OceanNavigator extends React.Component {
             action={this.action}
             swapViews={this.swapViews}
             options={this.state.options}
-            datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
-            datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
           />
         );
 
@@ -733,7 +550,7 @@ class OceanNavigator extends React.Component {
         modalContent = (
           <TrackWindow
             dataset={this.state.dataset}
-            quantum={this.state.dataset_quantum}
+            quantum={this.state.quantum}
             track={this.state.track}
             variable={this.state.variable}
             scale={this.state.variable_scale}
@@ -820,9 +637,11 @@ class OceanNavigator extends React.Component {
           showHelp={this.toggleCompareHelp}
           options={this.state.options}
           updateOptions={this.updateOptions}
-          availableDatasets={this.state.availableDatasets}
-          datasetVariables={this.state.datasetVariablesCache[this.state.dataset]}
-          datasetDepths={this.state.datasetDepthsCache[this.state.dataset]}
+          extent={this.state.extent}
+          projection={this.state.projection}
+          basemap={this.state.basemap}
+          dataset_compare={this.state.dataset_compare}
+          sidebarOpen={this.state.sidebarOpen}
         />
         <div className={contentClassName}>
           <MapToolbar
@@ -940,19 +759,6 @@ class OceanNavigator extends React.Component {
           <Modal.Footer>
             <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
           </Modal.Footer>
-        </Modal>
-
-        <Modal 
-          show={this.state.busy}
-          dialogClassName='busy-modal'
-          backdrop
-        >
-          <Modal.Header>
-            <Modal.Title>{_("Please Wait…")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <img src={LOADING_IMAGE} alt={_("Loading")} />
-          </Modal.Body>
         </Modal>
       </div>
     );

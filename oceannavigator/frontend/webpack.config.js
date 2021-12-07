@@ -73,6 +73,9 @@ const config = {
       title: "Ocean Navigator",
       xhtml: true,
       template: "src/index.ejs",
+    }),
+    new webpack.DefinePlugin({
+      "process.env.LOGGER_LEVEL": JSON.stringify("info")
     })
   ]
 };
