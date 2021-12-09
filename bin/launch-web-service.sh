@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+CODE_VER=$(git status | head -1 | awk '{print $NF}')
+$(sed -i "s/CODE_VERSION/$CODE_VER/g" oceannavigator/frontend/index.html)
+
 HOST_IP=$(hostname -I | awk '{print $1}')
 
 PORT=5000

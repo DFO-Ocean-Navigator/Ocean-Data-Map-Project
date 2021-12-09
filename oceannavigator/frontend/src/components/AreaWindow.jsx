@@ -227,13 +227,13 @@ class AreaWindow extends React.Component {
       queryString = "&min_range=" + min_range +
                       "&max_range=" + max_range;
     }
-
+    const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime
     window.location.href = "/api/v1.0/subset/?" +
        "&output_format=" + this.state.output_format +
        "&dataset_name=" + this.state.dataset_0.dataset +
        "&variables=" + this.state.output_variables.join() +
         queryString +
-       "&time=" + [this.state.output_starttime, this.state.output_endtime].join() +
+       "&time=" + [this.state.output_starttime, output_endtime].join() +
        "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
   }

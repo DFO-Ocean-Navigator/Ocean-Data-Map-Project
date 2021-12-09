@@ -356,7 +356,7 @@ class NetCDFData(Data):
         # Filter out unwanted variables
         output_vars = query.get('variables').split(',')
         # Keep the coordinate variables
-        output_vars.extend([depth_var, time_var, lat_var, lon_var])
+        output_vars.extend(filter(None, [depth_var, time_var, lat_var, lon_var]))
         for variable in subset.data_vars:
             if variable not in output_vars:
                 subset = subset.drop(variable)
