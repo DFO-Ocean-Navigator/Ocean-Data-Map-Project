@@ -5,11 +5,11 @@ from textwrap import wrap
 
 import matplotlib.pyplot as plt
 import numpy as np
-import osr
+from osgeo import osr
 import pyresample.utils
 from flask_babel import gettext
-from geopy.distance import VincentyDistance
-from matplotlib.bezier import concatenate_paths
+from geopy.distance import GeodesicDistance
+from matplotlib.path import Path
 from matplotlib.colors import LogNorm
 from matplotlib.patches import PathPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -105,7 +105,7 @@ class MapPlotter(Plotter):
                self.quiver['variable'] != 'none'
 
     def load_data(self):
-        distance = VincentyDistance()
+        distance = GeodesicDistance()
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
             (self.bounds[2], self.centroid[1])
@@ -675,7 +675,7 @@ class MapPlotter(Plotter):
                 paths = []
                 for poly in polys:
                     paths.append(poly.get_path())
-                path = concatenate_paths(paths)
+                path = Path.make_compound_path(*paths)
 
                 poly = PathPatch(path,
                                  fill=None,
@@ -880,3 +880,4 @@ class MapPlotter(Plotter):
         fig.tight_layout(pad=3, w_pad=4)
 
         return super(MapPlotter, self).plot(fig)
+        
