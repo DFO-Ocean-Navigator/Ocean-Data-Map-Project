@@ -127,16 +127,14 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        if hasattr(data_array, 'dims'): 
-            dims = data_array.dims
-        else: 
-            dims = self._dims
+        keys = [k if type(k) is slice else slice(k,k+1,None) for k in key]
+        coords = {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims,keys)}
+        arr_shape = [c.shape[0] for c in coords.values()]
 
-        key = [filter(lambda k: type(k) is slice, key)]
         return xr.DataArray(
-                    data = np.reshape(data_array.data, [k.stop - k.start for k in key]), 
-                    dims = dims,
-                    coords = {str(d) : self._parent.coords[d][k] for d,k in zip(dims,key)},
+                    data = np.reshape(data_array.data, arr_shape), 
+                    dims = self._dims,
+                    coords = coords,
                     attrs = self.attrs
                 )
 
@@ -192,3 +190,4 @@ class CalculatedArray():
             key.append(keys[d])
 
         return self[tuple(key)]
+        
