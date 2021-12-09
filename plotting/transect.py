@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from flask import current_app
 from flask_babel import gettext
-from geopy.distance import VincentyDistance
+from geopy.distance import GeodesicDistance
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from netCDF4 import Dataset
@@ -843,7 +843,7 @@ class TransectPlotter(LinePlotter):
             self.depth_limit is not None and
             self.linearthresh < self.depth_limit
         ):
-            plt.yscale('symlog', linthreshy=self.linearthresh)
+            plt.yscale('symlog', linthresh=self.linearthresh)
 
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
@@ -893,7 +893,7 @@ class TransectPlotter(LinePlotter):
         if len(self.points) > 2:
             station_distances = []
             current_dist = 0
-            d = VincentyDistance()
+            d = GeodesicDistance()
             for idx, p in enumerate(self.points):
                 if idx == 0:
                     station_distances.append(0)
@@ -919,3 +919,4 @@ class TransectPlotter(LinePlotter):
             bar2 = plt.colorbar(c, cax=cax)
             bar2.remove()
         return divider
+        
