@@ -16,6 +16,7 @@ from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
 from PIL import Image
 from pyproj import Proj
+from pyproj.transformer import Transformer
 from scipy.ndimage.filters import gaussian_filter
 from skimage import measure
 
@@ -48,12 +49,13 @@ def get_m_coords(projection, x, y, z):
         nw = num2deg(x, y, z)
         se = num2deg(x + 1, y + 1, z)
 
-        wgs84 = Proj(init='EPSG:4326')
-        dest = Proj(init=projection)
-
-        # 0,0 is top-left, 1st dim is rows
-        x1, y1 = pyproj.transform(wgs84, dest, nw[1], nw[0])
-        x2, y2 = pyproj.transform(wgs84, dest, se[1], se[0])
+        transformer = Transformer.from_crs(
+                        'EPSG:4326',
+                        projection,
+                        always_xy = True
+                    )
+        x1, y1 = transformer.transform(nw[1], nw[0])
+        x2, y2 = transformer.transform(se[1], se[0])                
     elif projection == 'EPSG:32661' or projection == 'EPSG:3031':
         if projection == 'EPSG:32661':
             boundinglat = 60.0
@@ -66,7 +68,7 @@ def get_m_coords(projection, x, y, z):
             llcrnr_lon = -135
             urcrnr_lon = 45
 
-        proj = Proj(init=projection)
+        proj = Proj(projection)
 
         xx, yy = proj(lon_0, boundinglat)
         lon, llcrnr_lat = proj(math.sqrt(2.) * yy, 0., inverse=True)
@@ -99,8 +101,7 @@ def get_m_coords(projection, x, y, z):
 
 def get_latlon_coords(projection, x, y, z):
     x0, y0 = get_m_coords(projection, x, y, z)
-    # webmerc = Proj(init='EPSG:3857')
-    dest = Proj(init=projection)
+    dest = Proj(projection)
     lon, lat = dest(x0, y0, inverse=True)
 
     return lat, lon
