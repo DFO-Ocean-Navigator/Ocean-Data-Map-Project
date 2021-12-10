@@ -128,7 +128,7 @@ def class4(class4_id, projection, resolution, extent):
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
         class4_id[7:11], class4_id)
 
-    proj = pyproj.Proj(init=projection)
+    proj = pyproj.Proj(projection)
     view = get_view_from_extent(extent)
 
     rmse = []
