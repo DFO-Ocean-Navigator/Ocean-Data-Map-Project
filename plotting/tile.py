@@ -8,7 +8,6 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
-import pyproj
 from flask import current_app
 from flask_babel import gettext
 from matplotlib.colorbar import ColorbarBase
