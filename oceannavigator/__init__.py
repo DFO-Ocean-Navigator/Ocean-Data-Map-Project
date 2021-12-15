@@ -11,6 +11,7 @@ from flask_babel import Babel
 from flask_compress import Compress
 from sentry_sdk.integrations.flask import FlaskIntegration
 from utils.ascii_terminal_colors import ASCIITerminalColors
+from werkzeug.contrib.profiler import ProfilerMiddleware
 
 # Although DatasetConfig is not used in this module, this import is absolutely necessary
 # because it is how the rest of the app gets access to DatasetConfig
@@ -39,6 +40,11 @@ def create_app(testing: bool = False):
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
     app.testing = testing
+
+    if app.config.get('WSGI_PROFILING'):
+        if not os.path.isdir('./profiler_results'):
+            os.mkdir('./profiler_results')
+        app.wsgi_app = ProfilerMiddleware(app.wsgi_app, stream=None, restrictions=[10], profile_dir='./profiler_results')        
 
     if testing:
         # Override cache dirs when testing
