@@ -1088,6 +1088,7 @@ def observation_track_v1_0(query: str):
     if len(coordinates) > 1:
         df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
         df['id'] = df.id.astype(int)
+        df['lon'] = (df['lon'] + 360) % 360
 
         vc = df.id.value_counts()
         for p_id in vc.where(vc > 1).dropna().index:
