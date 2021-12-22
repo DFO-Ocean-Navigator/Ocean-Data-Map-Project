@@ -50,7 +50,7 @@ class SQLiteDatabase:
         """
 
         query = f"""
-            SELECT
+            SELECT DISTINCT
                 filepath
             FROM
                 TimestampVariableFilepath tvf
