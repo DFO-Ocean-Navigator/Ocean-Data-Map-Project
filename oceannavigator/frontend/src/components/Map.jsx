@@ -231,7 +231,7 @@ export default class Map extends React.PureComponent {
         });
       }
     };
-    this.map.addControl(this.scaleViewer);
+    //this.map.addControl(this.scaleViewer);
     this.obsDrawSource = new olsource.Vector({
       features: [],
     });
