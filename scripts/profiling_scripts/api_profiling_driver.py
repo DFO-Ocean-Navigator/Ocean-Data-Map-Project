@@ -329,14 +329,14 @@ class ONav_Profiling_Driver():
             logging.info(f"Observation ID: {o}")
 
             _, start_time, resp_time = self.get_plot({
-                                "dataset":"giops_day",
-                                "names":[],
-                                "observation":o,
-                                "observation_variable":[0],
-                                "plotTitle":"",
-                                "quantum":"day",
-                                "type":"observation",
-                                "variable":["votemper"]
+                                "dataset" : "giops_day",
+                                "names" : [],
+                                "observation" : o,
+                                "observation_variable" : [0],
+                                "plotTitle" : "",
+                                "quantum" : "day",
+                                "type" : "observation",
+                                "variable" : ["votemper"]
                             })                
 
             self.results.append(['observation', o, '', start_time, resp_time])   
