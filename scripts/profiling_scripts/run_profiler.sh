@@ -13,9 +13,10 @@ config="api_profiling_config.json"
 prof_path=""
 max_time=120
 max_attempts=1
-user_id="$(whoami)-$(hostname)-$(hostname -I | awk '/10/ {print $1}')"
+user_id="$(whoami)-$(hostname)-$(hostname -I | awk '{print $1}')"
 csv_path="${user_id}_profiling_results.csv"
 
 python api_profiling_driver.py --url $url --config $config --csv $csv_path --id $user_id -a $max_attempts -t $max_time
 
-#scp ......
+ssh -i ${HOME}/onav-cloud/.ssh/id_ed25519 profiler@trinity.ent.dfo-mpo.ca " [ ! -d $(date +%Y%m%d) ] && mkdir $(date +%Y%m%d)"
+scp -i ${HOME}/onav-cloud/.ssh/id_ed25519 $(find . -name "*.csv") $(find . -name "*.log") profiler@trinity.ent.dfo-mpo.ca:$(date +%Y%m%d)
