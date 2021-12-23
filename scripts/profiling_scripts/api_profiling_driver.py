@@ -383,7 +383,7 @@ class ONav_Profiling_Driver():
         if self.csv_file:
             csv_name = self.csv_file
         else: 
-            csv_name = f'{self.user_id}_api_profiling_results.csv'
+            csv_name = f'{self.user_id}_api_profiling_{self.format_time(self.start_time)}.csv'
 
         with open(csv_name, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
@@ -454,7 +454,7 @@ if __name__ == '__main__':
 
     # default options
     url = 'https://navigator.oceansdata.ca'
-    config = 'test_config.json'
+    config = 'api_profiling_config.json'
     csv_file = None
     prof_path = None
     usr_id = 'test_usr'
