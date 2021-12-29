@@ -39,5 +39,6 @@ dependencies:
   - zarr
   - pip: 
     - visvalingamwyatt
+    - mysqlclient
 prefix: /opt/tools/miniconda3/envs/nav-pkg-update
 
