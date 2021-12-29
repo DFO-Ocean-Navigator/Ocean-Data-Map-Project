@@ -817,7 +817,8 @@ class MapPlotter(Plotter):
 
         # Map Info
         self.basemap.drawmapboundary(fill_color=(0.3, 0.3, 0.3), zorder=-1)
-        self.basemap.drawcoastlines(linewidth=0.5)
+        if self.basemap.coastsegs[0]:  # ensure map contains coastline before trying to draw
+            self.basemap.drawcoastlines(linewidth=0.5)
         self.basemap.fillcontinents(color='grey', lake_color='dimgrey')
 
         def find_lines(values):
