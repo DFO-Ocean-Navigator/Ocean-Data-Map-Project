@@ -77,11 +77,10 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     Returns:
         [int] -- timestamp integer
     """
-
-    t = cftime.utime(time_units)
-
+    
     datetime = datetime.replace(tzinfo=pytz.UTC)
-    return t.date2num(datetime)
+
+    return cftime.date2num(datetime, time_units)
 
 
 def time_index_to_datetime(timestamps, time_units: str):
