@@ -646,7 +646,6 @@ class OceanNavigator extends React.Component {
             showObservationSelect={this.state.showObservationSelect}
             observationArea={this.state.observationArea}
           />
-          <WarningBar />
           {map}
         </div>
 
