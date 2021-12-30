@@ -377,12 +377,12 @@ class DatasetSelector extends React.Component {
     if (this.props.showVariableSelector && this.state.datasetVariables && this.state.datasetVariables.length > 0 && !this.state.loading) {
       let options = [];
       if (this.props.variables === "3d") {
-        options = this.props.datasetVariables.filter(v => {
+        options = this.state.datasetVariables.filter(v => {
           return v.two_dimensional === false;
         });
       }
       else {
-        options = this.props.datasetVariables;
+        options = this.state.datasetVariables;
       }
 
        // Work-around for when someone selected a plot that requires
