@@ -227,7 +227,7 @@ class Grid(object):
         ts = [
             t.replace(tzinfo=pytz.UTC)
             for t in
-            cftime.utime(self.time_var.units).num2date(self.time_var[:])
+            cftime.num2date(self.time_var[:], self.time_var.units)
         ]
 
         mintime, x = _take_surrounding(ts, times[0])
