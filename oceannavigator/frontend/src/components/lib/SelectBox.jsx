@@ -34,7 +34,14 @@ export default class SelectBox extends React.Component {
           componentClass="select"
           name={this.props.name}
           placeholder={disabled ? _("Loading...") : this.props.placeholder}
-          onChange={(e) => this.props.onChange(e.target.name, e.target.value)}
+          onChange={(e) => {
+            if (this.props.multiple) {
+              this.props.onChange(e.target.name, e.target.selectedOptions);
+            }
+            else {
+              this.props.onChange(e.target.name, e.target.value);
+            }
+          }}
           disabled={disabled}
           value={this.props.selected}
           multiple={this.props.multiple}
@@ -57,6 +64,7 @@ SelectBox.propTypes = {
   selected: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
+    PropTypes.arrayOf(PropTypes.string),
   ]).isRequired,
   multiple: PropTypes.bool,
 };

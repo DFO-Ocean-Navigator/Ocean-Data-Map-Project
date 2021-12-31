@@ -231,6 +231,7 @@ export default class Map extends React.PureComponent {
         });
       }
     };
+    
     this.obsDrawSource = new olsource.Vector({
       features: [],
     });
@@ -1435,7 +1436,7 @@ export default class Map extends React.PureComponent {
     props.projection = this.props.state.projection;
     props.attributions = [
       new olcontrol.Attribution({
-        html: this.props.state.dataset_attribution,
+        html: this.props.state.attribution,
       }),
     ];
 
