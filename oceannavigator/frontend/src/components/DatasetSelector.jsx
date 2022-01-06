@@ -1,6 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Modal, ProgressBar, Button } from "react-bootstrap";
+import { 
+  Modal,
+  ProgressBar,
+  Button,
+  Tooltip,
+  OverlayTrigger
+} from "react-bootstrap";
 
 import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
@@ -436,6 +442,12 @@ class DatasetSelector extends React.Component {
       />;
     }
 
+    const goButtonTooltip = (
+      <Tooltip id="goButtonTooltip">
+        {_("Click to apply selections")}
+      </Tooltip>
+    );
+
     return (
       <div id={`dataset-selector-${this.props.id}`} className='DatasetSelector'>
 
@@ -451,13 +463,15 @@ class DatasetSelector extends React.Component {
 
         {variableRange}
 
-        <Button
-          bsStyle="primary"
-          block
-          onClick={this.handleGoButton}
-        >
-          Go
-        </Button>
+        <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
+          <Button
+            bsStyle="primary"
+            block
+            onClick={this.handleGoButton}
+          >
+            Go
+          </Button>
+        </OverlayTrigger>
 
         <Modal
           show={this.state.loading}
