@@ -92,8 +92,6 @@ class AreaWindow extends React.Component {
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
-    this.pushLocalStateToGlobalState = 
-      this.pushLocalStateToGlobalState.bind(this);
     this.subsetArea = this.subsetArea.bind(this);
     this.onTabChange = this.onTabChange.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
