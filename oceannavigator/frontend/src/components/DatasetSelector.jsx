@@ -271,6 +271,15 @@ class DatasetSelector extends React.Component {
     let datasetSelector = null;
     // eslint-disable-next-line max-len
     if (this.state.availableDatasets && this.state.availableDatasets.length > 0 && !this.state.loading) {
+      const helpContent = this.state.availableDatasets.map(d => {
+        return (
+          <p key={`help-${d.id}`}>
+            <em>{d.value}</em>
+            <span dangerouslySetInnerHTML={{ __html: d.help}} />
+          </p>
+        );
+      });
+
       datasetSelector = <SelectBox
         id={`dataset-selector-dataset-selector-${this.props.id}`}
         name="dataset"
@@ -281,6 +290,7 @@ class DatasetSelector extends React.Component {
         })}
         onChange={this.onUpdate}
         selected={this.state.dataset}
+        helpContent={helpContent}
       />;
     }
 

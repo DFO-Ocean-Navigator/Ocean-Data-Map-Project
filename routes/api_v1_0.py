@@ -373,8 +373,8 @@ def get_data_v1_0():
                                 .get_dataset_variable('bearing')[time_index, result['depth'], lat_slice, lon_slice]
                                 
         d = data_array_to_geojson(
-                data,
-                bearings, # this is a hack
+                data.squeeze(drop=True),
+                bearings.squeeze(drop=True), # this is a hack
                 lat_var[lat_slice],
                 lon_var[lon_slice]
             )
