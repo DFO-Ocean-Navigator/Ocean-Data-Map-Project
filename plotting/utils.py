@@ -81,7 +81,6 @@ def mathtext(text):
 
 # Plots point(s) on a map (called when "Show Location" is true)
 def _map_plot(points, path=True, quiver=True):
-    points = points[:,points[1,:].argsort()]
     minlat = np.min(points[0, :])
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
