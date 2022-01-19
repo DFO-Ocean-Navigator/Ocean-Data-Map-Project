@@ -29,27 +29,33 @@
         "datasets" : {
             "giops_day" : {
                 "variables" : ["votemper", "vosaline", "sspeed", "magwatervel"],
-                "quantum" : "day"
+                "quantum" : "day",
+                "n_timestamps" : 10
             }, 
             "riops_fc_2dll" : {
                 "variables" : ["votemper", "vosaline", "magwatervel"],
-                "quantum" : "hour"
+                "quantum" : "hour",
+                "n_timestamps" : 10
             }, 
             "riops_fc_3dps" : {
                 "variables" : ["votemper", "vosaline", "sspeed", "magwatervel"],
-                "quantum" : "hour"
+                "quantum" : "hour",
+                "n_timestamps" : 10
             },
             "ciops_east3d" : {
                 "variables" : ["thetao", "so"],
-                "quantum" : "hour"
+                "quantum" : "hour",
+                "n_timestamps" : 10
             },
             "salishseacast_3d_tracers" : {
                 "variables" : ["temperature", "salinity"],
-                "quantum" : "hour"
+                "quantum" : "hour",
+                "n_timestamps" : 10
             },
             "salishseacast_3d_currents" : {
                 "variables" : ["current_speed"],
-                "quantum" : "hour"
+                "quantum" : "hour",
+                "n_timestamps" : 10
             }
         },
         "station" : [[45,-45]]
@@ -116,6 +122,7 @@
             "giops_day" : {
                 "variables" : ["votemper", "vosaline", "sspeed", "magwatervel"],
                 "quantum" : "day",
+                "n_timestamps" : 10,
                 "name" : "Flemish Cap",
                 "path" : [[47,-52.832],[47,-52.705],[47,-52.58],[47,-52.322],[47,-52.033],
                             [47,-51.48499999999999],[47,-50.99999999999999],[47,-50.66700000000001],
@@ -129,6 +136,7 @@
             "riops_fc_2dll" : {
                 "variables" : ["votemper", "vosaline", "magwatervel"],
                 "quantum" : "hour",
+                "n_timestamps" : 10,
                 "name" : "Flemish Cap",
                 "path" : [[47,-52.832],[47,-52.705],[47,-52.58],[47,-52.322],[47,-52.033],
                             [47,-51.48499999999999],[47,-50.99999999999999],[47,-50.66700000000001],
@@ -142,6 +150,7 @@
             "riops_fc_3dps" : {
                 "variables" : ["votemper", "vosaline", "sspeed", "magwatervel"],
                 "quantum" : "hour",
+                "n_timestamps" : 10,
                 "name" : "Flemish Cap",
                 "path" : [[47,-52.832],[47,-52.705],[47,-52.58],[47,-52.322],[47,-52.033],
                             [47,-51.48499999999999],[47,-50.99999999999999],[47,-50.66700000000001],
@@ -155,6 +164,7 @@
             "ciops_east3d" : {
                 "variables" : ["thetao", "so"],
                 "quantum" : "hour",
+                "n_timestamps" : 10,
                 "name" : "Flemish Cap",
                 "path" : [[47,-52.832],[47,-52.705],[47,-52.58],[47,-52.322],[47,-52.033],
                             [47,-51.48499999999999],[47,-50.99999999999999],[47,-50.66700000000001],
@@ -168,12 +178,14 @@
             "salishseacast_3d_tracers" : {
                 "variables" : ["temperature", "salinity"],
                 "quantum" : "hour",
+                "n_timestamps" : 10,
                 "name" : "Salish Sea Transect",
                 "path" : [[48.24, -123.03],[48.30, -124.22]]
             },
             "salishseacast_3d_currents" : {
                 "variables" : ["current_speed"],
                 "quantum" : "hour",
+                "n_timestamps" : 10,
                 "name" : "Salish Sea Transect",
                 "path" : [[48.24, -123.03],[48.30, -124.22]]
             } 

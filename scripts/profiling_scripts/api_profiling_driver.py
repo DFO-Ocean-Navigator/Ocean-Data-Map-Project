@@ -27,7 +27,8 @@ class ONav_Profiling_Driver():
         """
         if base_url[-1] == '/':
             base_url = base_url[:-1]
-        self.base_url = base_url + '/api/v1.0/'
+        self.base_url = base_url
+        self.api_url = base_url + '/api/v1.0/'
         self.csv_file = csv_file
         self.user_id = user_id
         self.prof_path = prof_path
@@ -89,43 +90,43 @@ class ONav_Profiling_Driver():
 
     def get_datasets(self):
         logging.info('Requesting dataset meta data...')
-        data, _, _ = self.send_req(self.base_url + 'datasets/')
+        data, _, _ = self.send_req(self.api_url + 'datasets/')
         return [d for d in json.loads(data.content)]
 
 
     def get_variables(self, dataset):
         logging.info('Requesting variables...')
-        data, _, _ = self.send_req(self.base_url + f'variables/?dataset={dataset}')
+        data, _, _ = self.send_req(self.api_url + f'variables/?dataset={dataset}')
         return [d for d in json.loads(data.content)]
 
 
     def get_timestamps(self, dataset, variable): 
         logging.info('Requesting timestamps...')
-        data, _, _ = self.send_req(self.base_url + f"timestamps/?dataset={dataset}&variable={variable}")  
+        data, _, _ = self.send_req(self.api_url + f"timestamps/?dataset={dataset}&variable={variable}")  
         return [d for d in json.loads(data.content)]       
 
 
     def get_depths(self, dataset, variable):
         logging.info('Requesting depths...')
-        data, _, _ = self.send_req(self.base_url + f"depth/?dataset={dataset}&variable={variable}")
+        data, _, _ = self.send_req(self.api_url + f"depth/?dataset={dataset}&variable={variable}")
         return [d for d in json.loads(data.content)]
 
 
     def get_plot(self, query):
         logging.info('Requesting plot...')
-        return self.send_req(self.base_url + 'plot/?' + urlencode({'query': json.dumps(query)}) + '&format=json')
+        return self.send_req(self.api_url + 'plot/?' + urlencode({'query': json.dumps(query)}) + '&format=json')
 
 
     def get_subset(self, query):
         logging.info('Requesting subset...')
-        url = self.base_url + 'subset/?'
+        url = self.api_url + 'subset/?'
         for key in query:
             url += f"&{key}={query[key]}"
         return self.send_req(url)        
 
 
     def get_git_hash(self):
-        resp = requests.get(self.base_url + 'git-hash', timeout=self.max_time)
+        resp = requests.get(self.api_url + 'git-hash', timeout=self.max_time)
         if resp.status_code == 200: 
             return json.loads(resp.content)
         else:
@@ -170,7 +171,7 @@ class ONav_Profiling_Driver():
             for v in config['datasets'][ds]['variables']:
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
-                start_idx = len(timestamps) - 10
+                start_idx = len(timestamps) - config['datasets'][ds]['n_timestamps']
 
                 _, start_time, resp_time = self.get_plot({
                                     "colormap" : "default",
@@ -231,7 +232,7 @@ class ONav_Profiling_Driver():
             for v in config['datasets'][ds]['variables']:
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
-                start_idx = len(timestamps) - 10 
+                start_idx = len(timestamps) - config['datasets'][ds]['n_timestamps']
 
                 _, start_time, resp_time = self.get_plot({
                                     "colormap" : "default",
@@ -389,12 +390,12 @@ class ONav_Profiling_Driver():
             writer = csv.writer(csvfile, delimiter = ',')
 
             if os.stat(csv_name).st_size == 0:
-                writer.writerow(['Test', 'Dataset', 'Variable', 'Git Hash', 'Start Time', 'Response Time (s)', 'Profile File Path'])
+                writer.writerow(['URL', 'Test', 'Dataset', 'Variable', 'Git Hash', 'Start Time', 'Response Time (s)', 'Profile File Path'])
             for row in self.results:
                 if self.prof_path:
-                    writer.writerow([*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',row[5]])
+                    writer.writerow([self.base_url,*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',row[5]])
                 else:
-                    writer.writerow([*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}'])
+                    writer.writerow([self.base_url,*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',''])
 
 
     def run(self):
