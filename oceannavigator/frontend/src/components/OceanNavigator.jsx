@@ -13,7 +13,6 @@ import {Button, Modal} from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import Iframe from "react-iframe";
 import ReactGA from "react-ga";
-import WarningBar from "./WarningBar.jsx";
 
 import { DATASET_DEFAULTS, DEFAULT_OPTIONS } from "./Defaults.js";
 
@@ -646,7 +645,6 @@ class OceanNavigator extends React.Component {
             showObservationSelect={this.state.showObservationSelect}
             observationArea={this.state.observationArea}
           />
-          <WarningBar />
           {map}
         </div>
 

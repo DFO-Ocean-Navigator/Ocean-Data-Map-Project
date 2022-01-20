@@ -154,7 +154,7 @@ for buoy_id, files in buoy_files.items():
         ends = points.shift(1)
         distances = []
         for idx, start in enumerate(points):
-            distances.append(geopy.distance.vincenty(start, ends[idx]).nm)
+            distances.append(geopy.distance.geodesic(start, ends[idx]).nm)
         distances = np.ma.masked_invalid(distances)
 
         # get time differences in hours
@@ -193,7 +193,7 @@ for buoy_id, files in buoy_files.items():
     dx = []
     dy = []
     for idx in range(0, len(start) - 1):
-        d = geopy.distance.vincenty(start[idx], ends[idx]).meters
+        d = geopy.distance.geodesic(start[idx], ends[idx]).meters
         b = bearing(start[idx], ends[idx])
         dy.append(np.sin(b) * d)
         dx.append(np.cos(b) * d)
@@ -379,4 +379,5 @@ for buoy_id, files in buoy_files.items():
         appendVariable(
             ds, dataframe, "VY_smooth", 'f4', 'm/s',
             'Drifter Y Velocity (filtered)'
-        )
+        )   
+        
