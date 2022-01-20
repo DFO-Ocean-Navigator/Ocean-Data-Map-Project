@@ -4,16 +4,15 @@ import React from "react";
 import $ from "jquery";
 import jQuery from "jquery";
 import {Modal, Button, FormControl} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class ComboBox extends React.Component {
-  constructor(props) {
-
+class ComboBox extends React.Component {
+  constructor(props) {   
     super(props);
-    
+
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
 
@@ -67,7 +66,6 @@ export default class ComboBox extends React.Component {
       // Get index of selected option
       if (e.target.selectedIndex != -1) {
         const dataset = e.target.options[e.target.selectedIndex].dataset;
-
         // Construct keys and their associative value to be sent to 
         // OceanNavigator state
         for (let key in dataset) {
@@ -79,6 +77,7 @@ export default class ComboBox extends React.Component {
           values.push(dataset[key]);
         }
       }
+
       // Update OceanNavigator state
       this.props.onUpdate(keys, values);
     }
@@ -97,11 +96,6 @@ export default class ComboBox extends React.Component {
         url: props.url,
         dataType: "json",
         cache: true,
-        
-        //If server returns status code of 200 / it worked - Ajax call successful
-        //
-        // data filled by ajax
-        //
         success: function (data) {
           if (this._mounted) {  //Combobox is mounted
 
@@ -350,3 +344,4 @@ ComboBox.propTypes = {
   url: PropTypes.string,
 };
 
+export default withTranslation()(ComboBox);

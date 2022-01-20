@@ -43,6 +43,7 @@ def find_colormap(name):
 _c = mcolors.ColorConverter().to_rgb
 data_dir = os.path.join(os.path.dirname(plotting.__file__), 'data')
 colormaps = {
+    'water velocity bearing': cmocean.cm.rain,
     'depth excess': cmocean.cm.deep,
     'ammonium concentration': cmocean.cm.matter,
     'nitrogen': cmocean.cm.balance,
@@ -168,6 +169,9 @@ colormaps = {
         _c('#ffffff'),
         _c('#000000')
     ]),
+    'potential sub surface channel': mcolors.ListedColormap(
+        ['#ecf0f1','#f57732']
+        ),
     'thermal': cmocean.cm.thermal,
     'neo_sst': mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, 'neo_sst.txt'))),
@@ -225,6 +229,7 @@ gettext('Vorticity')
 gettext('Density')
 gettext('Deep')
 gettext('Balance')
+gettext('Potential Sub Surface Channel')
 
 colormap_names = {
     'ammonium concentration': 'Ammonium Concentration',
@@ -232,24 +237,25 @@ colormap_names = {
     'anomaly': 'Anomaly',
     'bathymetry': 'Bathymetry',
     'chlorophyll': 'Chlorophyll',
+    'dissolved organic nitrogen concentration': 'Dissolved Organic Nitrogen Concentration',
+    'diatoms concentration as nitrogen': 'Diatoms Concentration as Nitrogen',
+    'flagellates concentration as nitrogen': 'Flagellates Concentration as Nitrogen',
     'freesurface': 'Sea Surface Height (Free Surface)',
     'grey': 'Greyscale',
     'ice': 'Ice',
     'iron': 'Iron',
     'mercator_current': 'Mercator Ocean Current',
     'mercator': 'Mercator',
-    'nitrate': 'Nitrate',
-    'nitrate concentration': 'Nitrate Concentration',
-    'dissolved organic nitrogen concentration': 'Dissolved Organic Nitrogen Concentration',
-    'particulate organic nitrogen concentration': 'Particulate Organic Nitrogen Concentration',
-    'oxygen': 'Oxygen',
-    'phosphate': 'Phosphate',
-    'phytoplankton': 'Phytoplankton',
-    'diatoms concentration as nitrogen': 'Diatoms Concentration as Nitrogen',
-    'flagellates concentration as nitrogen': 'Flagellates Concentration as Nitrogen',
     'mesodinium rubrum concentration as nitrogen': 'Mesodinium rubrum Concentration as Nitrogen',
     'mesozooplankton concentration as nitrogen': 'Mesozooplankton Concentration as Nitrogen',
     'microzooplankton concentration as nitrogen': 'Microzooplankton Concentration as Nitrogen',
+    'nitrate': 'Nitrate',
+    'nitrate concentration': 'Nitrate Concentration',
+    'oxygen': 'Oxygen',
+    'particulate organic nitrogen concentration': 'Particulate Organic Nitrogen Concentration',
+    'phosphate': 'Phosphate',
+    'phytoplankton': 'Phytoplankton',
+    'potential sub surface channel':'Potential Sub Surface Channel',
     'salinity': 'Salinity',
     'silicate': 'Silicate',
     'silicon concentration': 'Silicon Concentration',

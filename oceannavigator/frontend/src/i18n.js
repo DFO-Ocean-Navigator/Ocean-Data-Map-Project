@@ -1,16 +1,19 @@
-import LngDetector from "i18next-browser-languagedetector"; 
-//import { changeLanguage } from "i18next/dist/commonjs";
 import i18n from "i18next";
-//var i18next = require("i18next"); //.default;
-
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
 i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
   .init({
-    lng: "en",
+    debug: false, // toggle to true to see debug output in browser console
     nsSeparator: false,
     keySeparator: false,
-    whitelist: ["en", "fr"],
-    fallbackLng: ["en"],
+    supportedLngs: ["en", "fr"],
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false,
+    },
     resources: {
       fr: {
         translation: require("../../translations/fr.json"),
@@ -21,5 +24,4 @@ i18n
     },
   });
 
-
-module.exports = i18n;
+export default i18n;

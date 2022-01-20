@@ -4,11 +4,11 @@ import datetime
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 import pytz
-
 from data.utils import (datetime_to_timestamp, find_ge, find_le,
                         get_data_vars_from_equation, roll_time,
-                        time_index_to_datetime)
+                        time_index_to_datetime, trunc)
 
 
 class TestDataUtils(unittest.TestCase):
@@ -74,3 +74,17 @@ class TestDataUtils(unittest.TestCase):
             "sspeed(depth, nav_lat, votemper - 273.15, vosaline)", ["vosaline", "votemper", "vozocrtx", "vomecrty"]))
 
         self.assertEqual(expected, result)
+
+    def test_trunc_truncates_one_value(self):
+        expected = 3.14
+
+        result = trunc(3.14444444444444444444, 2)
+
+        npt.assert_allclose(result, expected, 0)
+
+    def test_trunc_truncates_all_values(self):
+        expected = np.array([3.141, 1.234])
+
+        result = trunc(np.array([3.1414141414, 1.23456789]))
+
+        npt.assert_allclose(result, expected)

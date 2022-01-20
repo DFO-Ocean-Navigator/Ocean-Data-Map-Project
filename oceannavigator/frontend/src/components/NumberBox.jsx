@@ -1,12 +1,12 @@
 import React from "react";
 import {Modal, Button} from "react-bootstrap";
 import NumericInput from "react-numeric-input";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class NumberBox extends React.Component {
+class NumberBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -120,3 +120,5 @@ NumberBox.propTypes = {
   onUpdate: PropTypes.func,
   state: PropTypes.number,
 };
+
+export default withTranslation()(NumberBox);

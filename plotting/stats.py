@@ -103,7 +103,6 @@ class Stats:
 
                 variable_name = config.variable[var].name
                 variable_unit = config.variable[var].unit
-                scale_factor = config.variable[var].scale_factor
 
                 lat, lon, d = dataset.get_raw_point(
                     lat.ravel(),
@@ -112,9 +111,6 @@ class Stats:
                     time,
                     v
                 )
-
-                if scale_factor != 1.0:
-                    d = np.multiply(d, scale_factor)
 
                 lon[np.where(lon > 180)] -= 360
 

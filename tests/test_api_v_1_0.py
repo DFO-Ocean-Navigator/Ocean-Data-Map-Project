@@ -8,7 +8,6 @@ from unittest.mock import patch, PropertyMock, MagicMock
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
-from utils.errors import APIError
 
 app = create_app(testing=True)
 
@@ -175,15 +174,6 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get('/api/v1.0/')
         self.assertEqual(res.status_code, 400)
 
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_generatescript_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        res = self.app.get(self.apiLinks['generatescript'])
-        self.assertEqual(res.status_code, 200)
-
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
     def test_range_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
@@ -299,7 +289,7 @@ class TestAPIv1(unittest.TestCase):
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
-    def test_plot_timeseries_endpoint_all_depths(self, patch_get_data_vars, patch_get_dataset_config):
+    def test_plot_timeseries_endpoint_bottom_depth(self, patch_get_data_vars, patch_get_dataset_config):
 
         patch_get_data_vars.return_value = self.patch_data_vars_ret_val
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val

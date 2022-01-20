@@ -1,11 +1,11 @@
 import React from "react";
 import {Button, Well, Panel, Checkbox, Row} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class Permalink extends React.Component {
+class Permalink extends React.Component {
   constructor(props) {
     super(props);
 
@@ -161,3 +161,5 @@ export default class Permalink extends React.Component {
 Permalink.propTypes = {
   generatePermLink: PropTypes.func,
 };
+
+export default withTranslation()(Permalink);

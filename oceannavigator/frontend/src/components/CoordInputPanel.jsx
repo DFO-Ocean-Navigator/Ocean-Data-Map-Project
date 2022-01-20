@@ -2,14 +2,14 @@ import React from "react";
 import {Panel, Form, FormControl, ControlLabel} from "react-bootstrap";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
 const DataInput = {
   LATITUDE: 0,
   LONGTITUDE: 1,
 };
 
-export default class CoordInputPanel extends React.Component {
+class CoordInputPanel extends React.Component {
   constructor(props) {
     super(props);
     
@@ -84,3 +84,5 @@ CoordInputPanel.propTypes = {
   setCoordData: PropTypes.func,
   id: PropTypes.string,
 };
+
+export default withTranslation()(CoordInputPanel);

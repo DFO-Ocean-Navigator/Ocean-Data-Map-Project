@@ -203,9 +203,6 @@ class MapPlotter(Plotter):
             self.variable_name = self.get_variable_names(
                 dataset, self.variables
             )[0]
-            scale_factor = self.get_variable_scale_factors(
-                dataset, self.variables
-            )[0]
 
             if self.cmap is None:
                 self.cmap = colormap.find_colormap(self.variable_name)
@@ -241,8 +238,6 @@ class MapPlotter(Plotter):
                     self.radius,
                     self.neighbours
                 )
-
-            d = np.multiply(d, scale_factor)
 
             data.append(d)
             if self.filetype not in ['csv', 'odv', 'txt']:
@@ -355,8 +350,6 @@ class MapPlotter(Plotter):
                 vc = self.dataset_config.variable[self.contour['variable']]
                 contour_unit = vc.unit
                 contour_name = vc.name
-                contour_factor = vc.scale_factor
-                d = np.multiply(d, contour_factor)
                 contour_data.append(d)
                 self.contour_unit = contour_unit
                 self.contour_name = contour_name

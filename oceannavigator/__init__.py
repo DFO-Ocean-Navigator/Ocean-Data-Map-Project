@@ -1,25 +1,34 @@
 import logging
 import os
+import tempfile
 from sys import argv
 
-from flask import Flask, request, send_file
-from flask_compress import Compress
-from flask_babel import Babel
+import dask
 import sentry_sdk
+from data.observational import db
+from flask import Flask, request, send_file
+from flask_babel import Babel
+from flask_compress import Compress
 from sentry_sdk.integrations.flask import FlaskIntegration
+from utils.ascii_terminal_colors import ASCIITerminalColors
+from werkzeug.contrib.profiler import ProfilerMiddleware
 
 # Although DatasetConfig is not used in this module, this import is absolutely necessary
 # because it is how the rest of the app gets access to DatasetConfig
 from .dataset_config import DatasetConfig
-from data.observational import db
 
 babel = Babel()
 
-def config_blueprints(app):
+def config_blueprints(app) -> None:
     from routes.api_v1_0 import bp_v1_0
     app.register_blueprint(bp_v1_0)
 
-def create_app(testing = False):
+def config_dask(app) -> None:
+    dask.config.set(scheduler=app.config.get('DASK_SCHEDULER', 'processes'))
+    dask.config.set(num_workers=app.config.get('DASK_NUM_WORKERS', 4))
+    dask.config.set({"multiprocessing.context": app.config.get('DASK_MULTIPROCESSING_CONTEXT', 'spawn') })
+
+def create_app(testing: bool = False):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
@@ -31,6 +40,24 @@ def create_app(testing = False):
     app.config.from_pyfile('oceannavigator.cfg', silent=False)
     app.config.from_envvar('OCEANNAVIGATOR_SETTINGS', silent=True)
     app.testing = testing
+
+    if app.config.get('WSGI_PROFILING'):
+        if not os.path.isdir('./profiler_results'):
+            os.mkdir('./profiler_results')
+        app.wsgi_app = ProfilerMiddleware(app.wsgi_app, stream=None, restrictions=[10], profile_dir='./profiler_results')        
+
+    if testing:
+        # Override cache dirs when testing
+        # to avoid test files being cached
+        # in production cache
+        cache_dir = tempfile.mkdtemp()
+        tile_dir = tempfile.mkdtemp()
+        app.config.update(
+            CACHE_DIR=cache_dir,
+            TILE_CACHE_DIR=tile_dir
+        )
+        print(f"{ASCIITerminalColors.WARNING}[Warning] -- Cached files will NOT be cleaned after tests complete: {cache_dir} AND {tile_dir}{ASCIITerminalColors.ENDC}")
+
     # Customize Flask debug logger message format
     app.logger.handlers[0].setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s',
@@ -47,6 +74,8 @@ def create_app(testing = False):
     def public_index():
         res = send_file('frontend/public/index.html')
         return res
+
+    config_dask(app)
 
     config_blueprints(app)
 

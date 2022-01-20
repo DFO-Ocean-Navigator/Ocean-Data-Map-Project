@@ -2,9 +2,9 @@ import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class QuiverSelector extends React.Component {
+class QuiverSelector extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -55,3 +55,5 @@ QuiverSelector.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
 };
+
+export default withTranslation()(QuiverSelector);

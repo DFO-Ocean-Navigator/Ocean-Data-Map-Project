@@ -6,9 +6,9 @@ import SelectBox from "./SelectBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class Class4Window extends React.Component {
+class Class4Window extends React.Component {
   constructor(props) {
     super(props);
 
@@ -174,3 +174,5 @@ Class4Window.propTypes = {
   init: PropTypes.object,
   action: PropTypes.func,
 };
+
+export default withTranslation()(Class4Window);

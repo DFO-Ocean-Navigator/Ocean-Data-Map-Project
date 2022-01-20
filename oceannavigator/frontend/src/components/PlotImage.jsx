@@ -8,15 +8,15 @@ import {Button,
   MenuItem,
   Modal,
   Alert} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 const stringify = require("fast-stable-stringify");
 const FAIL_IMAGE = require("./fail.js");
-const LOADING_IMAGE = require("../images/spinner.gif");
+const LOADING_IMAGE = require("../images/spinner.gif").default;
 
-export default class PlotImage extends React.PureComponent {
+class PlotImage extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -40,27 +40,29 @@ export default class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
-      if (language == "pythonPlot") {
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "PLOT/";
-      } else if (language == "rPlot") {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        url = window.location.origin + "/api/v1.0/generatescript/" + url + "/r/" + "PLOT/";
-      } else {
-
-        var url = stringify(this.generateQuery(this.props.query));
-        if (language == "pythonCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url + "/python/" + "CSV/";
-        } else if (language == "rCSV") {
-          url = window.location.origin + "/api/v1.0/generatescript/" + url +
-          `&save&format=csv&size=${this.props.query.size}` +
-          `&dpi=${this.props.query.dpi}` + "/r/" + "CSV/";
-        }
-      
+      const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
+      let scriptLang = null;
+      let scriptType = null;
+      switch(language){
+        case "pythonPlot":
+          scriptLang = "python";
+          scriptType = "PLOT";
+          break;
+        case "rPlot":
+          scriptLang = "r";
+          scriptType = "PLOT";
+          break;
+        case "pythonCSV":
+          scriptLang = "python";
+          scriptType = "CSV"
+          break;
+        case "rCSV":
+          scriptLang = "r";
+          scriptType = "CSV"
+          break;
       }
-    
-    window.location.href = url;
+      const url = `${window.location.origin}/api/v1.0/generatescript/?query=${query}&lang=${scriptLang}&scriptType=${scriptType}`;
+      window.location.href = url;
   }
 
   componentDidMount() {
@@ -494,3 +496,5 @@ PlotImage.propTypes = {
   action: PropTypes.func,
   permlink_subquery: PropTypes.object,
 };
+
+export default withTranslation()(PlotImage);

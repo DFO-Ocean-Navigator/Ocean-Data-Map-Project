@@ -58,8 +58,8 @@ class CalculatedData(NetCDFData):
                                    self.__get_calculated_dims(key),
                                    attrs,
                                    self.url)
-        else:
-            return self.dataset.variables[key]
+        
+        return super().get_dataset_variable(key)
 
     @property
     def variables(self):
@@ -121,13 +121,22 @@ class CalculatedArray():
         for _ in self._parser.lexer.lexer:
             pass
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> xr.DataArray:
         # This is where the magic happens.
 
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        return xr.DataArray(data_array)
+        keys = [k if type(k) is slice else slice(k,k+1,None) for k in key]
+        coords = {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims,keys)}
+        arr_shape = [c.shape[0] for c in coords.values()]
+
+        return xr.DataArray(
+                    data = np.reshape(data_array.data, arr_shape), 
+                    dims = self._dims,
+                    coords = coords,
+                    attrs = self.attrs
+                )
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
@@ -157,8 +166,8 @@ class CalculatedArray():
         if hasattr(self._parent.variables[variable], "dims"):
             # xarray calls it dims
             return self._parent.variables[variable].dims
-        else:
-            return self._parent.variables[variable].dimensions
+        
+        return self._parent.variables[variable].dimensions
 
     def isel(self, **kwargs):
         """
@@ -181,3 +190,4 @@ class CalculatedArray():
             key.append(keys[d])
 
         return self[tuple(key)]
+        

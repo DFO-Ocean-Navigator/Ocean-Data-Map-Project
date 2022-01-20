@@ -140,6 +140,9 @@ def scale(args):
     formatter.set_powerlimits((-3, 4))
     bar = ColorbarBase(ax, cmap=cmap, norm=norm, orientation='vertical',
                        format=formatter)
+    if variable_name == 'Potential Sub Surface Channel':
+        bar.set_ticks([0,1],True)
+    
     bar.set_label("%s (%s)" % (variable_name.title(),
                                utils.mathtext(variable_unit)), fontsize=12)
     # Increase tick font size
@@ -189,17 +192,12 @@ def plot(projection, x, y, z, args):
         vc = config.variable[dataset.variables[variable[0]]]
         variable_name = vc.name
         variable_unit = vc.unit
-        scale_factor = vc.scale_factor
         cmap = colormap.find_colormap(variable_name)
 
         if depth != 'bottom':
             depthm = dataset.depths[depth]
         else:
             depthm = 0
-
-    if scale_factor != 1.0:
-        for idx, val in enumerate(data):
-            data[idx] = np.multiply(val, scale_factor)
 
     if len(data) == 1:
         data = data[0]

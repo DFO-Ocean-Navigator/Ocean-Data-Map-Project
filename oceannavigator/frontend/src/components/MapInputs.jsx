@@ -6,17 +6,16 @@
 
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
 import SelectBox from "./SelectBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import Options from "./Options.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class MapInputs extends React.Component {
+class MapInputs extends React.Component {
   constructor(props) {
     super(props);
 
@@ -33,7 +32,6 @@ export default class MapInputs extends React.Component {
   }
  
   render() {
-    _("Variable Range");
     _("Show Bathymetry Contours");
 
     //Creates Main Map Panel
@@ -44,45 +42,25 @@ export default class MapInputs extends React.Component {
         bsStyle='primary'
       >
         <Panel.Heading>
-          {this.props.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+          {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
         </Panel.Heading>
         <Panel.Collapse>
           <Panel.Body>
             <DatasetSelector
+              key='map_inputs_dataset_0'
               id='dataset_0'
-              state={this.props.state}
               onUpdate={this.props.changeHandler}
-              depth={true}
-            />
-            <Range
-              id='scale'
-              state={this.props.state.scale}
-              setDefaultScale={this.props.state.setDefaultScale}
-              def=''
-              onUpdate={this.props.changeHandler}
-              onSubmit={this.props.changeHandler}
-              title={_("Variable Range")}
-              autourl={"/api/v1.0/range/" +
-                      this.props.state.dataset + "/" + 
-                      this.props.state.variable + "/" +
-                      this.props.options.interpType + "/" +
-                      this.props.options.interpRadius + "/" +
-                      this.props.options.interpNeighbours + "/" +
-                      this.props.state.projection + "/" +
-                      this.props.state.extent.join(",") + "/" +
-                      this.props.state.depth + "/" +
-                      this.props.state.time +  ".json"
-              }
-              dataset_compare={this.props.state.dataset_compare}
-              default_scale={this.props.state.variable_scale}
-            ></Range>
+              options={this.props.options}
+              projection={this.props.projection}
+              extent={this.props.extent}
+            />            
           </Panel.Body>
         </Panel.Collapse>
       </Panel>
     ];
 
     // Creates Right Map Panel when comparing datasets
-    if (this.props.state.dataset_compare) {
+    if (this.props.dataset_compare) {
       inputs.push(
         <Panel
           key='right_map_panel'
@@ -92,44 +70,24 @@ export default class MapInputs extends React.Component {
           <Panel.Heading>{_("Right Map")}</Panel.Heading>
           <Panel.Collapse>
             <Panel.Body>
-              <DatasetSelector 
-                id='dataset_1'
-                state={this.props.state.dataset_1}
+              <DatasetSelector
+                key='map_inputs_dataset_1'
+                id='map_inputs_dataset_1'
                 onUpdate={this.props.changeHandler}
-                depth={true}
+                options={this.props.options}
+                projection={this.props.projection}
+                extent={this.props.extent}
               />
-              <Range
-                key='scale_1'
-                id='scale_1'
-                state={this.props.state.scale_1}
-                setDefaultScale={this.props.state.setDefaultScale}
-                def=''
-                onUpdate={this.props.changeHandler}
-                title={_("Variable Range")}
-                autourl={"/api/v1.0/range/" +
-                        this.props.state.dataset_1.dataset + "/" +
-                        this.props.state.dataset_1.variable + "/" +
-                        this.props.options.interpType + "/" +
-                        this.props.options.interpRadius + "/" +
-                        this.props.options.interpNeighbours + "/" +
-                        this.props.state.projection + "/" +
-                        this.props.state.extent.join(",") + "/" +
-                        this.props.state.dataset_1.depth + "/" +
-                        this.props.state.dataset_1.time + ".json"
-                }
-                default_scale={this.props.state.dataset_1.variable_scale}
-              ></Range>
             </Panel.Body>
           </Panel.Collapse>
         </Panel>
       );
     }
 
-    const className = this.props.state.sidebarOpen ? "MapInputs open" : "MapInputs";
+    const className = this.props.sidebarOpen ? "MapInputs open" : "MapInputs";
 
     return (
       <div className={className}>
-
         
         <Tabs //Creates Tabs Container
           activeKey={this.state.currentTab}
@@ -150,7 +108,7 @@ export default class MapInputs extends React.Component {
                     <Col xs={9}>
                       <SelectBox
                         id='dataset_compare'
-                        state={this.props.state.dataset_compare}
+                        state={this.props.dataset_compare}
                         onUpdate={this.props.changeHandler}
                         title={_("Compare Datasets")}
                       />
@@ -170,12 +128,12 @@ export default class MapInputs extends React.Component {
                     id='syncRanges'
                     onUpdate={this.props.changeHandler}
                     title={_("Sync Variable Ranges")}
-                    style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+                    style={{display: this.props.dataset_compare ? "block" : "none"}}
                   />
                   <Button
                     bsStyle="default"
                     block
-                    style={{display: this.props.state.dataset_compare ? "block" : "none"}}
+                    style={{display: this.props.dataset_compare ? "block" : "none"}}
                     onClick={this.props.swapViews}
                   >
                     {_("Swap Views")}
@@ -201,7 +159,7 @@ export default class MapInputs extends React.Component {
                 <Panel.Body>
                   <ComboBox   //Projection Drop Down - Hardcoded
                     id='projection'
-                    state={this.props.state.projection}
+                    state={this.props.projection}
                     onUpdate={this.props.changeHandler}
                     data={[
                       { id: "EPSG:3857", value: _("Global") },
@@ -212,7 +170,7 @@ export default class MapInputs extends React.Component {
                   />
                   <ComboBox   //Basemap Drop Down - Hardcoded
                     id='basemap'
-                    state={this.props.state.basemap}
+                    state={this.props.basemap}
                     onUpdate={this.props.changeHandler}
                     data={[
                       {
@@ -230,6 +188,11 @@ export default class MapInputs extends React.Component {
                         value: _("Esri World Imagery"),
                         attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community."
                       },
+                      {
+                        id: "chs",
+                        value: _("Maritime Chart Service"),
+                        attribution: "Government of Canada"
+                      }
                     ]}
                     title={_("Basemap")}
                   />
@@ -245,7 +208,8 @@ export default class MapInputs extends React.Component {
           </Tab>
         </Tabs>
         <div className='cookieBanner'>
-          This website uses Google Analytics. By continuing, you accept the usage of cookies. 
+          This website uses Google Analytics.
+          By continuing, you accept the usage of cookies. 
           <a target="_blank" rel="noopener noreferrer" href="https://www.wikihow.com/Disable-Cookies">How to Disable Cookies</a>
         </div>
       </div>
@@ -258,15 +222,9 @@ MapInputs.propTypes = {
   state: PropTypes.object,
   sidebarOpen: PropTypes.bool,
   basemap: PropTypes.string,
-  scale: PropTypes.string,
-  scale_1: PropTypes.string,
   bathymetry: PropTypes.bool,
   dataset_compare: PropTypes.bool,
-  dataset_1: PropTypes.object,
   projection: PropTypes.string,
-  depth: PropTypes.number,
-  time: PropTypes.number,
-  variable_scale: PropTypes.array,
   extent: PropTypes.array,
   changeHandler: PropTypes.func,
   swapViews: PropTypes.func,
@@ -274,3 +232,5 @@ MapInputs.propTypes = {
   options: PropTypes.object,
   updateOptions: PropTypes.func,
 };
+
+export default withTranslation()(MapInputs);

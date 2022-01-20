@@ -1,9 +1,9 @@
 import React from "react";
 import {Alert, Button} from "react-bootstrap";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class WarningBar extends React.PureComponent {
+class WarningBar extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -33,3 +33,5 @@ export default class WarningBar extends React.PureComponent {
     return(<div></div>);
   }
 }
+
+export default withTranslation()(WarningBar);

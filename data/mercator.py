@@ -18,15 +18,18 @@ class Mercator(Model):
         self.latvar = None
         self.lonvar = None
         self.nc_data = nc_data
-        self._meta_only = nc_data.meta_only
         self.variables = nc_data.variables
 
     def __enter__(self):
         self.nc_data.__enter__()
 
-        if not self._meta_only:
-            if self.latvar is None:
+        if self.latvar is None:
+            try:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
+            except KeyError:
+                print("Warning: No variables with latitude or longitude are loaded in this NetCDF dataset.")
+
+
 
         return self
 

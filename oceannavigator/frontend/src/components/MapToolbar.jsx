@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import {Button, MenuItem, Modal, Navbar, Nav, NavItem, NavDropdown, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Papa from "papaparse";
 
-import Icon from "./Icon.jsx";
+import Icon from "./lib/Icon.jsx";
 import DrifterSelector from "./DrifterSelector.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import EnterPoint from "./EnterPoint.jsx";
@@ -12,15 +12,20 @@ import EnterArea from "./EnterArea.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import PropTypes from "prop-types";
 
-const currentLanguage = require("../currentLanguage.js");
-const i18n = require("../i18n.js");
+import { 
+  GetPresetPointsPromise,
+  GetPresetLinesPromise,
+  GetPresetAreasPromise 
+} from "../remote/OceanNavigator.js";
+
+import { withTranslation } from "react-i18next";
 
 import "jquery-ui-css/base.css";
 import "jquery-ui-css/datepicker.css";
 import "jquery-ui-css/theme.css";
 import "jquery-ui/datepicker";
 
-export default class MapToolbar extends React.Component {
+class MapToolbar extends React.Component {
   constructor(props) {
     super(props);
     
@@ -80,7 +85,7 @@ export default class MapToolbar extends React.Component {
       this.class4Picker = $(this.class4div).datepicker({
         dateFormat: "yy-mm-dd",
         beforeShowDay: this.beforeShowDay.bind(this),
-        regional: currentLanguage.language,
+        regional: this.props.i18n.language,
         onSelect: function(text, picker) {
           this.props.action("show", "class4", this.state.class4Files[text]);
           this.class4Picker.hide();
@@ -105,45 +110,33 @@ export default class MapToolbar extends React.Component {
   }
 
   componentDidMount() {
-    $.ajax({
-      url: "/api/v1.0/points/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          pointFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }
+    GetPresetPointsPromise().then(result => {
+      this.setState({
+        pointFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
-    $.ajax({
-      url: "/api/v1.0/lines/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          lineFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }
+
+    GetPresetLinesPromise().then(result => {
+      this.setState({
+        lineFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
-    $.ajax({
-      url: "/api/v1.0/areas/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          areaFiles: data,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }
+
+    GetPresetAreasPromise().then(result => {
+      this.setState({
+        areaFiles: result.data,
+      });
+    },
+    error => {
+      console.error(error);
     });
+
     $.ajax({
       url: "/api/v1.0/class4/",
       dataType: "json",
@@ -158,7 +151,7 @@ export default class MapToolbar extends React.Component {
         });
       }.bind(this),
       error: function(r, status, err) {
-        console.error(this.props.url, status, err.toString());
+        console.error(`Failed to get class4: ${status}`);
       }
     });
   }
@@ -732,7 +725,6 @@ export default class MapToolbar extends React.Component {
 
             <ToggleLanguage
               className="languageButton"
-              updateLanguage={this.props.updateLanguage}   
             />
 
             <OverlayTrigger
@@ -924,7 +916,8 @@ MapToolbar.propTypes = {
   toggleSidebar: PropTypes.func,
   action: PropTypes.func,
   toggleOptionsSidebar: PropTypes.func,
-  updateLanguage: PropTypes.func,
   showObservationSelect: PropTypes.bool,
   observationArea: PropTypes.array,
 };
+
+export default withTranslation()(MapToolbar);

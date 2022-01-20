@@ -63,13 +63,13 @@ class SQLiteDatabase:
             variable = ?
             AND timestamp = ?;
         """
-        for ts in timestamp:
+        for ts in sorted(timestamp):
             for v in variable:
                 self.c.execute(query, (v, ts))
                 file_list.append(self.__flatten_list(self.c.fetchall()))
 
-        # funky way to remove duplicates from the list: https://stackoverflow.com/a/7961390/2231969
-        return list(set(self.__flatten_list(file_list)))
+        # funky way to remove duplicates while preserving order: https://stackoverflow.com/a/39835527
+        return list(dict.fromkeys(self.__flatten_list(file_list))) 
 
     def get_all_dimensions(self) -> List[str]:
         """Returns a list of all the dimensions in the Dimensions table.

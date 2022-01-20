@@ -32,7 +32,6 @@ class Plotter(metaclass=ABCMeta):
         self.variable_names = None
         self.variable_units = None
         self.scale = None
-        self.scale_factors = None
         self.date_formatter = None
         # Init interpolation stuff
         self.interp: str = "gaussian"
@@ -222,8 +221,6 @@ class Plotter(metaclass=ABCMeta):
     def load_misc(self, dataset, variables):
         self.variable_names = self.get_variable_names(dataset, variables)
         self.variable_units = self.get_variable_units(dataset, variables)
-        self.scale_factors = self.get_variable_scale_factors(
-            dataset, variables)
 
     def plot(self, fig=None):
 
@@ -465,33 +462,6 @@ class Plotter(metaclass=ABCMeta):
         """
         v = ",".join(variables)
         return self.dataset_config.variable[v].unit
-
-    def get_variable_scale_factors(self, dataset, variables):
-        """Returns a list of scale factors for the variables.
-
-        Parameters:
-        dataset -- the dataset
-        variables -- a list of strings, each of which is the key for a
-                     variable
-        """
-        factors = []
-
-        for idx, v in enumerate(variables):
-            factors.append(
-                self.dataset_config.variable[dataset.variables[v]].scale_factor)
-
-        return factors
-
-    def get_vector_variable_scale_factor(self, dataset, variables):
-        """Returns a scaling factor for the vector version of the variables.
-
-        Parameters:
-        dataset -- the dataset
-        variables -- a list of strings, each of which is the key for a
-                     variable
-        """
-        v = ",".join(variables)
-        return self.dataset_config.variable[v].scale_factor
 
     def clip_value(self, input_value, variable):
         output = input_value

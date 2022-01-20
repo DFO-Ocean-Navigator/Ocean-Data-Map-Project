@@ -22,6 +22,7 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
+            self.assertEqual(xr.DataArray, type(v))
             self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875)
 
     @patch('data.sqlite_database.SQLiteDatabase.get_data_variables')
@@ -111,6 +112,14 @@ class CalculatedImpl(CalculatedData):
 
 
 class TestCalculatedArray(unittest.TestCase):
+
+    def test_attrs(self):
+        attrs = { "my_attr": 420 }
+
+        dataset = xr.Dataset()
+        array = CalculatedArray(dataset, "3 * 5", [], attrs)
+        self.assertEqual(array[:].attrs, attrs)
+        self.assertEqual(array.attrs, attrs)
 
     def test_static(self):
         dataset = xr.Dataset()

@@ -2,9 +2,9 @@ import React from "react";
 import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class ImageSize extends React.Component {
+class ImageSize extends React.Component {
   constructor(props) {
     super(props);
 
@@ -42,6 +42,7 @@ export default class ImageSize extends React.Component {
 
   render() {
     _("inches");
+    const _inches = _("inches");
     return ( 
       <div className='Size input'>
         <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
@@ -56,7 +57,7 @@ export default class ImageSize extends React.Component {
                   value={this.state.width}
                   precision={2}
                   onChange={(n, s) => this.changed("width", n)}
-                  format={(num) => {return num + " " + _("inches");}}
+                  format={(num) => { return `${num} ${_inches}`; }}
                 />
               </td>
             </tr>
@@ -69,7 +70,7 @@ export default class ImageSize extends React.Component {
                   value={this.state.height}
                   precision={2}
                   onChange={(n, s) => this.changed("height", n)}
-                  format={(num) => {return num + " " + _("inches");}}
+                  format={(num) => { return `${num} ${_inches}`; }}
                 />
               </td>
             </tr>
@@ -98,3 +99,5 @@ ImageSize.propTypes = {
   title: PropTypes.string,
   onUpdate: PropTypes.func,
 };
+
+export default withTranslation()(ImageSize);

@@ -3,9 +3,9 @@ import {Alert} from "react-bootstrap";
 import CoordInputPanel from "./CoordInputPanel.jsx";
 import PropTypes from "prop-types";
 
-const i18n = require("../i18n.js");
+import { withTranslation } from "react-i18next";
 
-export default class EnterPoint extends React.Component {
+class EnterPoint extends React.Component {
 
   render() {
     return (
@@ -26,3 +26,5 @@ export default class EnterPoint extends React.Component {
 EnterPoint.propTypes = {
   setCoordData: PropTypes.func,
 };
+
+export default withTranslation()(EnterPoint);

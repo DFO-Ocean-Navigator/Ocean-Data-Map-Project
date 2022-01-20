@@ -5,32 +5,32 @@ import json
 import os
 import shutil
 import sqlite3
-import pandas as pd
 from io import BytesIO
 
-import numpy as np
-from flask import (Blueprint, Flask, Response, current_app, jsonify, request,
-                   send_file, send_from_directory)
-from PIL import Image
-from dateutil.parser import parse as dateparse
-from shapely.geometry import Polygon, LinearRing, Point
-
 import data.class4 as class4
+import data.observational.queries as ob_queries
+import geojson
+import numpy as np
+import pandas as pd
 import plotting.colormap
 import plotting.scale
 import plotting.tile
 import utils.misc
 from data import open_dataset
+from data.observational import DataType, Platform, Sample, Station
+from data.observational import db as DB
 from data.sqlite_database import SQLiteDatabase
+from data.transformers.geojson import data_array_to_geojson
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
-from data.observational import db as DB
-from data.observational import Station, Platform, Sample, DataType
-import data.observational.queries as ob_queries
+from dateutil.parser import parse as dateparse
+from flask import (Blueprint, Response, abort, current_app, jsonify, request,
+                   send_file, send_from_directory)
 from flask_babel import gettext
+from marshmallow.exceptions import ValidationError
 from oceannavigator import DatasetConfig
+from PIL import Image
 from plotting.class4 import Class4Plotter
-from plotting.track import TrackPlotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
@@ -40,9 +40,14 @@ from plotting.sound import SoundSpeedPlotter
 from plotting.stats import stats as areastats
 from plotting.stick import StickPlotter
 from plotting.timeseries import TimeseriesPlotter
+from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
+from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
+
+from .schemas import (DepthSchema, GenerateScriptSchema, GetDataSchema,
+                      QuantumSchema, TimestampsSchema)
 
 bp_v1_0 = Blueprint('api_v1_0', __name__)
 
@@ -80,18 +85,35 @@ def test_sentry():
     raise APIError("This is the Ocean Navigator API Sentry integration test endpoint.")
 
 
-@bp_v1_0.route("/api/v1.0/generatescript/<string:query>/<string:lang>/<string:scriptType>/")
-def generateScript(query: str, lang: str, scriptType: str):
+@bp_v1_0.route("/api/v1.0/generatescript/")
+def generateScript():
+    """
+    API Format: /api/v1.0/generatescript/?query='...'&lang='...'&scriptType='...'
+
+    query(JSON): Will contain the URI encoded JSON query object for the api script
+    lang (string) : Language of the requested API script (python/r)
+    scriptType (string): Type of requested script (PLOT/CSV)
+    **Query must be written in JSON and converted to encodedURI**
+    """
+    
+    try:
+        result = GenerateScriptSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    lang = result['lang']
+    query = result['query']
+    script_type = result['scriptType']
 
     if lang == "python":
-        b = generatePython(query, scriptType)
+        b = generatePython(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.py', mimetype='application/x-python')
+                         attachment_filename=f"API_script_{script_type}.py", mimetype='application/x-python')
 
     elif lang == "r":
-        b = generateR(query, scriptType)
+        b = generateR(query, script_type)
         resp = send_file(b, as_attachment=True,
-                         attachment_filename='script_template.r', mimetype='application/x-python')
+                         attachment_filename=f"API_script_{script_type}.r", mimetype='text/plain')
 
     return resp
 
@@ -138,32 +160,31 @@ def quantum_query_v1_0():
 
     API Format: /api/v1.0/quantum/
 
-    Raises:
-        APIError: If `dataset` is not present in API arguments.
+    Required parameters:
+    * dataset       : Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
 
     Returns:
         Response -- Response object containing the dataset quantum string as JSON.
     """
 
-    args = request.args
+    try:
+        result = QuantumSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset Using ?dataset='...' ")
-
-    dataset = args.get('dataset')
-    config = DatasetConfig(dataset)
+    config = DatasetConfig(result['dataset'])
 
     quantum = config.quantum
 
     return jsonify(quantum)
 
 
-@bp_v1_0.route('/api/v1.0/variables/')
+@bp_v1_0.route('/api/v1.0/variables/', methods=['GET'])
 def variables_query_v1_0():
     """
     Returns the available variables for a given dataset.
 
-    API Format: /api/v1.0/variables/?dataset='...'&3d_only='...'&vectors_only='...'&vectors='...'
+    API Format: /api/v1.0/variables/?dataset='...'&3d_only&vectors_only
 
     Required Arguments:
     * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
@@ -171,7 +192,6 @@ def variables_query_v1_0():
     Optional Arguments:
     * 3d_only      : Boolean Value; When True, only variables with depth will be shown
     * vectors_only : Boolean Value; When True, only variables with magnitude will be shown
-    * vectors      : Boolean Value; When True, magnitude components will be included
 
     **Boolean value: True / False**
     """
@@ -186,25 +206,24 @@ def variables_query_v1_0():
 
     data = []
 
-    if 'vectors_only' in args:
-        for variable in config.vector_variables:
-            data.append({
-                'id': variable,
-                'value': config.variable[variable].name,
-                'scale': config.variable[variable].scale,
-            })
-    else:
-        with open_dataset(config, meta_only=True) as ds:
-            for v in ds.variables:
-                if ('3d_only' in args) and v.is_surface_only():
-                    continue
+    with open_dataset(config) as ds:
+        for v in ds.variables:
+            if config.variable[v.key].is_hidden:
+                continue
 
-                if not config.variable[v].is_hidden:
-                    data.append({
-                                'id': v.key,
-                                'value': config.variable[v].name,
-                                'scale': config.variable[v].scale
-                                })
+            if ('3d_only' in args) and v.is_surface_only():
+                continue
+
+            if ('vectors_only' in args) and v.key not in config.vector_variables:
+                continue
+
+            data.append({
+                'id': v.key,
+                'value': config.variable[v].name,
+                'scale': config.variable[v].scale,
+                'interp':config.variable[v].interpolation,
+                'two_dimensional': v.is_surface_only()
+            })
 
     data = sorted(data, key=lambda k: k['value'])
 
@@ -216,7 +235,7 @@ def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
 
-    Required Arguments:
+    Required parameters:
     * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
     * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
 
@@ -224,15 +243,13 @@ def depth_query_v1_0():
         Response -- Response object containing all depths available for the given variable as a JSON array.
     """
 
-    args = request.args
+    try:
+        result = DepthSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    if 'dataset' not in args:
-        raise APIError("Please specify a dataset using &dataset='...'")
-    if 'variable' not in args:
-        raise APIError("Please specify a variable using &variable='...' ")
-
-    dataset = args.get('dataset')
-    variable = args.get('variable')
+    dataset = result['dataset']
+    variable = result['variable']
 
     config = DatasetConfig(dataset)
 
@@ -244,9 +261,10 @@ def depth_query_v1_0():
         v = ds.variables[variable]
 
         if v.has_depth():
-            if str(args.get('all')).lower() in ['true', 'yes', 'on']:
-                data.append(
-                    {'id': 'all', 'value': gettext('All Depths')})
+            if 'all' in result.keys():
+                if result['all'].lower() in ['true', 'yes', 'on']:
+                    data.append(
+                        {'id': 'all', 'value': gettext('All Depths')})
 
             for idx, value in enumerate(np.round(ds.depths)):
                 data.append({
@@ -301,31 +319,74 @@ def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neig
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/data/<string:dataset>/<string:variable>/<string:time>/<string:depth>/<string:location>.json')
-def get_data_v1_0(dataset: str, variable: str, time: str, depth: str, location: str):
+@bp_v1_0.route('/api/v1.0/data/', methods=['GET'])
+def get_data_v1_0():
     """
-    API Format: /api/v1.0/data/<string:dataset>/<string:variable>/<int:time>/<string:Depth>/<string:location>.json'
+    Returns a geojson representation of requested model data.
 
-    <string:dataset>  : Dataset to extract data - Can be found using /api/v1.0/datasets
-    <string:variable> : Type of data to retrieve - found using /api/v1.0/variables/?dataset='...'
-    <int:time>        : Time retrieved data was gathered/modeled
-    <string:depth>    : Water Depth - found using /api/v1.0/depth/?dataset='...'
-    <string:location> : Location of the data you want to retrieve (Lat, Long)
+    API Format: GET /api/v1.0/data?...
 
-    **All Components Must be Included**
+    Required params:
+    * dataset: dataset key (e.g. giops_day)
+    * variable: variable key (e.g. votemper)
+    * time: time index (e.g. 0)
+    * depth: depth index (e.g. 49)
+    * geometry_type: the "shape" of the data being requested
     """
 
+    try:
+        result = GetDataSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    config = DatasetConfig(dataset)
-    with open_dataset(config) as ds:
-        date = ds.convert_to_timestamp(time)
-        data = utils.misc.get_point_data(
-            dataset, variable, date, depth,
-            list(map(float, location.split(",")))
+    cached_file_name = os.path.join(
+        current_app.config['CACHE_DIR'],
+        "data",
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson"
         )
-        resp = jsonify(data)
-        resp.cache_control.max_age = 2
-        return resp
+    
+    if os.path.isfile(cached_file_name):
+        print(f"Using cached {cached_file_name}")
+        with open(cached_file_name, 'r') as f:
+            send_file(f, 'application/json')
+
+    config = DatasetConfig(result['dataset'])
+    
+    with open_dataset(config, variable=result['variable'], timestamp=result['time']) as ds:
+
+        lat_var, lon_var = ds.nc_data.latlon_variables
+
+        lat_slice = slice(0, lat_var.size, 4)
+        lon_slice = slice(0, lon_var.size, 4)
+
+        time_index = ds.nc_data.timestamp_to_time_index(result['time'])
+        
+        data = ds \
+                .nc_data \
+                .get_dataset_variable(result['variable'])[time_index, result['depth'], lat_slice, lon_slice]
+        
+        bearings = None
+        if 'mag' in result['variable']:
+            with open_dataset(config, variable='bearing', timestamp=result['time']) as ds_bearing:
+                bearings = ds_bearing \
+                                .nc_data \
+                                .get_dataset_variable('bearing')[time_index, result['depth'], lat_slice, lon_slice]
+                                
+        d = data_array_to_geojson(
+                data.squeeze(drop=True),
+                bearings.squeeze(drop=True), # this is a hack
+                lat_var[lat_slice],
+                lon_var[lon_slice]
+            )
+
+        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
+        with open(cached_file_name, 'w', encoding='utf-8') as f:
+            geojson.dump(d, f)
+        
+
+        return jsonify(
+           d
+        )
 
 
 @bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
@@ -408,6 +469,17 @@ def subset_query_v1_0():
     working_dir = None
     subset_filename = None
 
+    if 'area' in args.keys():
+        # Predefined area selected
+        area = args.get('area')                
+        sp = area.split('/', 1)
+        
+        data = utils.misc.list_areas(sp[0], simplify=False)
+
+        b = [x for x in data if x.get('key') == area]
+        args = args.to_dict()
+        args['polygons'] = b[0]['polygons']
+
     config = DatasetConfig(args.get('dataset_name'))
     time_range = args['time'].split(',')
     variables = args['variables'].split(',')
@@ -437,7 +509,6 @@ def plot_v1_0():
     **Not all components of query are required
     """
 
-    args = None
     if request.method == 'GET':
         args = request.args
     else:
@@ -464,32 +535,11 @@ def plot_v1_0():
     dataset = query.get('dataset')
     plottype = query.get('type')
 
-    """
-    if 'station' in query:
-        station = query.get('station')
-
-        def wrapdeg(num):   #Ensures the lat and lon are between -180 and 180deg
-            num = num % 360
-            if num > 180:
-                num = num - 360
-            return num
-
-        for index in range(0, len(station)):
-            if station[index][0] >= 0:
-                station[index][0] = wrapdeg(station[index][0])
-            else:
-                station[index][0] = wrapdeg(station[index][0])
-
-            if station[index][1] >= 0:
-                station[index][1] = wrapdeg(station[index][1])
-            else:
-                station[index][1] = wrapdeg(station[index][1])
-    """
-
-    options = {}
-    options['format'] = fmt
-    options['size'] = args.get('size', '15x9')
-    options['dpi'] = args.get('dpi', 72)
+    options = {
+        'format': fmt,
+        'size': args.get('size', '15x9'),
+        'dpi': args.get('dpi', 72)
+    }
 
     # Determine which plotter we need.
     if plottype == 'map':
@@ -517,8 +567,6 @@ def plot_v1_0():
     else:
         raise APIError(
             "You Have Not Selected a Plot Type - Please Review your Query")
-
-    filename = 'png'
 
     if 'data' in request.args:
         data = plotter.prepare_plot()
@@ -714,24 +762,20 @@ def timestamps():
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
 
-    Raises:
-        APIError: if dataset or variable is not specified in the request
-
     Returns:
         Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
         dataset and variable.
     """
 
-    args = request.args
-    if "dataset" not in args:
-        raise APIError("Please specify a dataset via ?dataset=dataset_name")
+    try:
+        result = TimestampsSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
 
-    dataset = args.get("dataset")
+    dataset = result['dataset']
+    variable = result['variable']
+
     config = DatasetConfig(dataset)
-
-    if "variable" not in args:
-        raise APIError("Please specify a variable via ?variable=variable_name")
-    variable = args.get("variable")
 
     # Handle possible list of URLs for staggered grid velocity field datasets
     url = config.url if not isinstance(config.url, list) else config.url[0]
@@ -744,7 +788,7 @@ def timestamps():
             else:
                 vals = db.get_timestamps(variable)
     else:
-        with open_dataset(url, variable=variable) as ds:
+        with open_dataset(config, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
@@ -802,10 +846,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
         Generates topographical tiles
     """
 
-    if shaded_relief == "true":
-        bShaded_relief = True
-    else:
-        bShaded_relief = False
+    bShaded_relief = shaded_relief == "true"
 
     shape_file_dir = current_app.config['SHAPE_FILE_DIR']
 
@@ -871,7 +912,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)
     tile = selector.fetchone()
-    if tile == None:
+    if tile is None:
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
@@ -1047,10 +1088,11 @@ def observation_track_v1_0(query: str):
     if len(coordinates) > 1:
         df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
         df['id'] = df.id.astype(int)
+        df['lon'] = (df['lon'] + 360) % 360
 
         vc = df.id.value_counts()
         for p_id in vc.where(vc > 1).dropna().index:
-            d = { 
+            d = {
                 'type': "Feature",
                 'geometry': {
                     'type': "LineString",
@@ -1152,7 +1194,7 @@ def observation_point_v1_0(query: str):
         if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
             continue
 
-        d = { 
+        d = {
             'type': "Feature",
             'geometry': {
                 'type': "Point",
@@ -1197,7 +1239,7 @@ def observation_meta_v1_0():
             data['Station Name'] = station.name
 
         platform = station.platform
-        
+
     elif key == 'platform':
         platform = DB.session.query(Platform).get(identifier)
     else:
@@ -1290,8 +1332,7 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
             if age_hours > cache_time:
                 os.remove(f)
                 return False
-            else:
-                return True
+            return True
         else:
             return True
     else:

@@ -27,7 +27,7 @@ def requestFile():
    #Open URL and save response
    with closing(urlopen(url)) as f:
       img = Image.open(f)
-      fname = "script_template_" + str(query["dataset"]) + "_" + str(query["{var}"]) + ".png"
+      fname = "ONAV_PLOT_" + str(query["dataset"]) + "_" + str(query["{var}"]) + ".png"
       print("Saving as " + fname + " and exiting...")
       img.save(fname , "PNG")
 
