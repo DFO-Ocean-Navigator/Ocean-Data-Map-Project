@@ -302,7 +302,7 @@ export default class PlotImage extends React.PureComponent {
   saveImage(format) {
     let url = `${this.urlFromQuery(this.props.query)}` + `&save&format=${format}`;
       
-    if (format !== "odv" || format !== "csv") {
+    if (format !== "odv" || format !== "csv" || format !== "igoss") {
       url += `&size=${this.props.query.size}` + `&dpi=${this.props.query.dpi}`;
     }
 
@@ -395,6 +395,14 @@ export default class PlotImage extends React.PureComponent {
                 "map"
               ]) == -1}
             ><Icon icon="file-text-o" /> {_("ODV")}</MenuItem>
+            <MenuItem
+              eventKey="igoss"
+              onSelect={this.saveImage}
+              disabled={jQuery.inArray((this.props.query.type, [
+                "profile" 
+              ]) == -1 && this.props.variable != 'votemper')
+            }
+            ><Icon icon="file-text-o" /> {_("IGOSS/JJYY")}</MenuItem>
           </DropdownButton>
 
           <DropdownButton

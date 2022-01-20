@@ -60,7 +60,10 @@ class Plotter(metaclass=ABCMeta):
         if self.filetype == 'csv':
             return self.csv()
         elif self.filetype == 'txt':
-            return self.odv_ascii()
+            if self.format == 'odv':
+                return self.odv_ascii()
+            elif self.format == 'igoss':
+                return self.igoss_ascii()
         else:
             return self.plot()
 
@@ -322,6 +325,90 @@ class Plotter(metaclass=ABCMeta):
 
                     buf.write("\t".join(line))
                     buf.write("\n")
+
+            return (buf.getvalue(), self.mime, self.filename)
+
+    def igoss_ascii(self, latitude, longitude, depth, time, data):
+
+        # determine quadrant ID:
+        if latitude > 0. and longitude > 0. :
+            quad_id = 1
+        elif latitude < 0. and longitude > 0. :
+            quad_id = 3
+        elif latitude < 0. and longitude < 0. :
+            quad_id = 5
+        elif latitude > 0. and longitude < 0. :
+            quad_id = 7
+
+        # convert decimal lat lon to deg & min
+        lat = int(np.floor(latitude))
+        lat_min = int((latitude-lat)*60)
+
+        lon = int(np.floor(abs(longitude)))
+        lon_min = int((abs(longitude)-lon)*60)
+
+        data = data[~data.mask].data.flatten()       # get temperature data
+        depth = depth[~depth.mask].data.flatten()    # get depth data
+
+        # select data for igoss based on rules provided by James Herbert
+        # (points should be < 50 m apart with temp change > 2 degrees)
+
+        ig_temp = np.array([data[0]])
+        ig_depth = np.array([depth[0]])
+
+        for i in range(1,len(data)): 
+            del_depth = depth[i] - ig_depth[-1]
+            del_temp = data[i] - ig_temp[-1] 
+            if del_depth > 0 and del_depth < 50 and del_temp > 2 :
+                ig_depth = np.append(ig_depth, depth[i])
+                ig_temp = np.append(ig_temp, data[i])
+            elif del_depth > 50 :
+                ig_depth = np.append(ig_depth, depth[i-1])
+                ig_temp = np.append(ig_temp, data[i-1])
+            
+        # create list with formatted igoss data
+        igoss_data = []
+
+        depth_div = 100
+        for i in range(len(ig_temp)):
+            # add divider for 100 m's of depth
+            if ig_depth[i] > depth_div:
+                new_div = np.floor(ig_depth[i]/100)
+                igoss_data.append('999'+f'{new_div:02.0f}')
+                depth_div = 100*(new_div + 1)
+
+            depth_str = f'{ig_depth[i]:03.0f}'.replace('.','')[-2:]
+            temp_str = f'{ig_temp[i]:04.1f}'.replace('.','')[-3:]
+            igoss_data.append(depth_str+temp_str)
+
+        # add end of data signifiers
+        igoss_data.append('00000') 
+        igoss_data.append('ONAV')
+
+        # reshape igoss_data into (n_row,7) np array 
+        n_row = int(np.ceil(len(igoss_data)/7))
+        if len(igoss_data) % 7 == 0 :
+            igoss_data = np.array(igoss_data)
+        else:
+            igoss_data = np.append(np.array(igoss_data), np.repeat('',7-(len(igoss_data)%7)))
+        igoss_data = np.reshape(igoss_data,(n_row ,7))
+
+        with contextlib.closing(StringIO()) as buf:
+            buf.write('JJYY  ' +\
+                f'{time.day:02}{time.month:02}' + str(time.year)[-1] + \
+                f' {time.hour:02}{time.minute:02}/ ' + \
+                f'{quad_id}{lat:02}{lat_min:02} ' + \
+                f'{lon:03}{lon_min:02} ' + \
+                '88888 99999\n') 
+
+            for i in range(n_row):
+                buf.write(f'{igoss_data[i][0]} ' + \
+                        f'{igoss_data[i][1]} ' + \
+                        f'{igoss_data[i][2]} ' + \
+                        f'{igoss_data[i][3]} ' + \
+                        f'{igoss_data[i][4]} ' + \
+                        f'{igoss_data[i][5]} ' + \
+                        f'{igoss_data[i][6]}\n')
 
             return (buf.getvalue(), self.mime, self.filename)
 

@@ -42,6 +42,9 @@ def get_mimetype(filetype: str):
     elif filetype == 'odv':
         mime = 'text/plain'
         filetype = 'txt'
+    elif filetype == 'igoss':
+        mime = 'text/plain'
+        filetype = 'txt'
     else:
         filetype = 'png'
         mime = 'image/png'

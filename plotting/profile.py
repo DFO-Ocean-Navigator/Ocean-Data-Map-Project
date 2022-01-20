@@ -60,6 +60,24 @@ class ProfilePlotter(PointPlotter):
             data
         )
 
+    def igoss_ascii(self):
+        if 'Temperature' in self.variable_names:
+            latitude = self.points[0][0]
+            longitude = self.points[0][1]
+            time = self.iso_timestamp
+            depth = self.depths[:, 0, :]
+
+            return super(ProfilePlotter, self).igoss_ascii(
+                latitude,
+                longitude,
+                depth,
+                time,
+                self.data
+            )
+        else:
+            return self.odv_ascii()
+
+
     def csv(self):
         header = [
             ['Dataset', self.dataset_name],
