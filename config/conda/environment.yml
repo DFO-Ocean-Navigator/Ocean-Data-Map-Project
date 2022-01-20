@@ -21,6 +21,7 @@ dependencies:
   - marshmallow=3.14.1=pyhd8ed1ab_0
   - matplotlib=3.5.0=py38h578d9bd_0
   - metpy=1.1.0=pyhd8ed1ab_0
+  - mysqlclient=2.0.3=py38h2531618_1
   - netcdf4=1.5.8=nompi_py38h2823cc8_101
   - numpy=1.21.4=py38he2449b9_0
   - pandas=1.3.4=py38h43a58ef_1
