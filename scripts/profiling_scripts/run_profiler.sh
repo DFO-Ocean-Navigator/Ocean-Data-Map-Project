@@ -24,4 +24,4 @@ done
 wait
 
 ssh -i ${HOME}/onav-cloud/.ssh/id_ed25519 profiler@trinity.ent.dfo-mpo.ca " [ ! -d $(date +%Y%m%d) ] && mkdir $(date +%Y%m%d)"
-scp -i ${HOME}/onav-cloud/.ssh/id_ed25519 $(find . -name "*.csv") $(find . -name "*.log") profiler@trinity.ent.dfo-mpo.ca:$(date +%Y%m%d)
+scp -i ${HOME}/onav-cloud/.ssh/id_ed25519 $(find . -name "*_*_api_profiling_*.csv") $(find . -name "*_*_api_profiling_*.log") profiler@trinity.ent.dfo-mpo.ca:$(date +%Y%m%d)
