@@ -27,7 +27,7 @@ class ONav_Profiling_Driver():
         """
         if base_url[-1] == '/':
             base_url = base_url[:-1]
-        self.base_url = base_url
+        self.base_url = base_url.split('//')[1]
         self.api_url = base_url + '/api/v1.0/'
         self.csv_file = csv_file
         self.user_id = user_id
@@ -36,7 +36,7 @@ class ONav_Profiling_Driver():
         self.max_time = max_time
         self.git_hash = self.get_git_hash()
         self.start_time = time.time() 
-        self.log_filename = f'/dev/shm/{self.user_id}_api_profiling_{self.format_time(self.start_time)}.log'
+        self.log_filename = f'/dev/shm/{self.user_id}_{self.base_url}_api_profiling_{self.format_time(self.start_time)}.log'
         self.results = []
 
         logging.basicConfig(
@@ -384,7 +384,7 @@ class ONav_Profiling_Driver():
         if self.csv_file:
             csv_name = self.csv_file
         else: 
-            csv_name = f'{self.user_id}_api_profiling_{self.format_time(self.start_time)}.csv'
+            csv_name = f'{self.user_id}_{self.base_url}_api_profiling_{self.format_time(self.start_time)}.csv'
 
         with open(csv_name, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
