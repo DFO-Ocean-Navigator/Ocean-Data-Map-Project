@@ -128,7 +128,7 @@ def class4(class4_id, projection, resolution, extent):
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
         class4_id[7:11], class4_id)
 
-    proj = pyproj.Proj(init=projection)
+    proj = pyproj.Proj(projection)
     view = get_view_from_extent(extent)
 
     rmse = []
@@ -201,7 +201,7 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
         class4_id[7:11], class4_id.rsplit('_', maxsplit=1)[0])
     with xr.open_dataset(dataset_url, decode_times=False) as ds:
         forecast_date = [
-            f"{d:%d %B %Y}" for d in cftime.utime(ds.modeljuld.units).num2date(ds.modeljuld)
+            f"{d:%d %B %Y}" for d in cftime.num2date(ds.modeljuld, ds.modeljuld.units)
         ]
 
     result = [{

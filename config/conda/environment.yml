@@ -1,4 +1,4 @@
-name: navigator
+name: nav-pkg-update
 channels:
   - conda-forge
 dependencies:
@@ -40,4 +40,4 @@ dependencies:
   - zarr=2.10.3=pyhd8ed1ab_0
   - pip: 
     - visvalingamwyatt==0.1.4
-prefix: /opt/tools/miniconda3/envs/navigator
+prefix: /home/ubuntu/tools/miniconda/3/amd64/envs/nav-pkg-update
