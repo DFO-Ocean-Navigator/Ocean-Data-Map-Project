@@ -1,0 +1,44 @@
+name: update-navigator
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - flask
+  - basemap
+  - basemap-data-hires
+  - blinker
+  - cachetools
+  - cloudpickle
+  - cmocean
+  - dask
+  - flask-babel
+  - flask-compress
+  - flask-sqlalchemy
+  - gdal
+  - geopy
+  - gunicorn
+  - geojson
+  - marshmallow
+  - matplotlib
+  - metpy
+  - netcdf4
+  - numpy
+  - pandas
+  - pip
+  - ply
+  - pykdtree
+  - pyresample
+  - requests
+  - scikit-image
+  - scipy
+  - seawater
+  - sentry-sdk
+  - xarray
+  - sqlalchemy
+  - werkzeug
+  - zarr
+  - mysqlclient
+  - pip: 
+    - visvalingamwyatt
+prefix: /opt/tools/miniconda3/envs/nav-pkg-update
+
