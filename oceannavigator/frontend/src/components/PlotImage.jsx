@@ -400,10 +400,10 @@ class PlotImage extends React.PureComponent {
             <MenuItem
               eventKey="igoss"
               onSelect={this.saveImage}
-              disabled={jQuery.inArray((this.props.query.type, [
-                "profile" 
-              ]) == -1 && this.props.variable != 'votemper')
-            }
+              disabled={
+                this.props.query.type !="profile" 
+                || !(this.props.query.variable[0] == 'votemper'
+                || this.props.query.variable == 'votemper')}
             ><Icon icon="file-text-o" /> {_("IGOSS/JJYY")}</MenuItem>
           </DropdownButton>
 
