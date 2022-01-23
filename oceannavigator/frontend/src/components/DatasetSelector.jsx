@@ -100,9 +100,9 @@ class DatasetSelector extends React.Component {
         this.setState({ loadingPercent: 75 });
 
         const timeData = timeResult.data;
-
+        
         const newTime = timeData[timeData.length - 1].id;
-        const newStarttime = timeData[0].id;
+        const newStarttime = timeData.length > 20 ? timeData[timeData.length - 20].id : timeData[0].id;
 
         // eslint-disable-next-line max-len
         GetDepthsPromise(newDataset, newVariable).then(depthResult => {
