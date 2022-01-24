@@ -295,7 +295,7 @@ class TimeseriesPlotter(PointPlotter):
                     shading='gouraud', cmap=self.cmap, vmin=vmin, vmax=vmax)
                 ax[idx].invert_yaxis()
                 if maxdepth > LINEAR:
-                    ax[idx].set_yscale('symlog', linthreshy=LINEAR)
+                    ax[idx].set_yscale('symlog', linthresh=LINEAR)
                 ax[idx].yaxis.set_major_formatter(ScalarFormatter())
 
                 if maxdepth > LINEAR:
@@ -375,3 +375,4 @@ class TimeseriesPlotter(PointPlotter):
             self.plot_legend(fig, self.names)
 
         return super(TimeseriesPlotter, self).plot(fig)
+        

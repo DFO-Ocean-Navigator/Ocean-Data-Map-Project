@@ -49,27 +49,23 @@ class SQLiteDatabase:
             * [list] -- List of netCDF file paths corresponding to given timestamp(s) and variable.
         """
 
-        file_list = []
-
-        query = """
-        SELECT
-            filepath
-        FROM
-            TimestampVariableFilepath tvf
-            JOIN Filepaths fp ON tvf.filepath_id = fp.id
-            JOIN Variables v ON tvf.variable_id = v.id
-            JOIN Timestamps t ON tvf.timestamp_id = t.id
-        WHERE
-            variable = ?
-            AND timestamp = ?;
+        query = f"""
+            SELECT DISTINCT
+                filepath
+            FROM
+                TimestampVariableFilepath tvf
+                JOIN Filepaths fp ON tvf.filepath_id = fp.id
+                JOIN Variables v ON tvf.variable_id = v.id
+                JOIN Timestamps t ON tvf.timestamp_id = t.id
+            WHERE
+                variable in ({','.join([f"'{v}'" for v in variable])})
+                AND timestamp in ({','.join([str(t) for t in timestamp])})
+            ORDER BY timestamp ASC;
         """
-        for ts in sorted(timestamp):
-            for v in variable:
-                self.c.execute(query, (v, ts))
-                file_list.append(self.__flatten_list(self.c.fetchall()))
 
-        # funky way to remove duplicates while preserving order: https://stackoverflow.com/a/39835527
-        return list(dict.fromkeys(self.__flatten_list(file_list))) 
+        self.c.execute(query)
+
+        return self.__flatten_list(self.c.fetchall())
 
     def get_all_dimensions(self) -> List[str]:
         """Returns a list of all the dimensions in the Dimensions table.

@@ -20,7 +20,7 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
     x = np.linspace(extent[0], extent[2], 50)
     y = np.linspace(extent[1], extent[3], 50)
     xx, yy = np.meshgrid(x, y)
-    dest = Proj(init=projection)
+    dest = Proj(projection)
     lon, lat = dest(xx, yy, inverse=True)
 
     variables = variable.split(",")
