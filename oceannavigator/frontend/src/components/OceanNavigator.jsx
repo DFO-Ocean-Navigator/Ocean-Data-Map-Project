@@ -18,6 +18,8 @@ import { DATASET_DEFAULTS, DEFAULT_OPTIONS } from "./Defaults.js";
 
 import { withTranslation } from "react-i18next";
 
+import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
+
 const stringify = require("fast-stable-stringify");
 
 function formatLatLon(latitude, longitude) {
@@ -159,6 +161,16 @@ class OceanNavigator extends React.Component {
     this.setState({options});
   }
 
+  componentWillMount() {
+    GetTimestampsPromise(DATASET_DEFAULTS.dataset, DATASET_DEFAULTS.variable, true).then(timeResult => {
+      var defaults = {...DATASET_DEFAULTS};
+      defaults.time = timeResult.data[0].id;
+      this.setState({ ...defaults,
+                      dataset_1 : {...defaults}
+                    });
+    });     
+  }
+
   // Updates global app state
   updateState(key, value) {
     if (key === "dataset_0" ) {
@@ -167,7 +179,7 @@ class OceanNavigator extends React.Component {
     }
 
     if (key === "dataset_1") {
-      this.setState(value);
+      this.setState({dataset_1: value});
       return;
     }
 

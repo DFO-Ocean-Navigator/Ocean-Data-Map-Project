@@ -15,3 +15,4 @@ class TimestampsSchema(Schema):
 
     dataset = fields.Str(required=True)
     variable = fields.Str(required=True)
+    latest = fields.Bool(required=False)

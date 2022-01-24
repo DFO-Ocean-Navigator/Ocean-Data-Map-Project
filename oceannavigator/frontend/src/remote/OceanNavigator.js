@@ -26,13 +26,14 @@ export function GetVariablesPromise(dataset) {
   );
 }
 
-export function GetTimestampsPromise(dataset, variable) {
+export function GetTimestampsPromise(dataset, variable, latest = false) {
   return instance.get(
     "/api/v1.0/timestamps/",
     {
       params: {
         dataset: dataset,
-        variable: variable
+        variable: variable,
+        latest : latest
       }
     }
   );
