@@ -167,7 +167,7 @@ class OceanNavigator extends React.Component {
     }
 
     if (key === "dataset_1") {
-      this.state(value);
+      this.setState(value);
       return;
     }
 
