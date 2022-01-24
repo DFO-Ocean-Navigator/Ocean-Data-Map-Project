@@ -164,7 +164,8 @@ class OceanNavigator extends React.Component {
   componentWillMount() {
     GetTimestampsPromise(DATASET_DEFAULTS.dataset, DATASET_DEFAULTS.variable, true).then(timeResult => {
       var defaults = {...DATASET_DEFAULTS};
-      defaults.time = timeResult.data[0].id;
+      defaults.starttime = timeResult.data[0].id;
+      defaults.time = timeResult.data[timeResult.data.length - 1].id;
       this.setState({ ...defaults,
                       dataset_1 : {...defaults}
                     });

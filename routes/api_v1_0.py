@@ -761,9 +761,6 @@ def timestamps():
     Required Arguments:
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
-    
-    Optional Arguments:
-    * latest : boolian - if true returns latest timestamp availabe for given dataset/variable
 
     Returns:
         Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
@@ -785,20 +782,14 @@ def timestamps():
     if url.endswith(".sqlite3"):
         with SQLiteDatabase(url) as db:
             if variable in config.calculated_variables:
-                v = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
-                                                [v.key for v in db.get_data_variables()])[0]
+                data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
+                                                        [v.key for v in db.get_data_variables()])
+                vals = db.get_timestamps(data_vars[0])
             else:
-                v = variable
-
-            if result.get('latest'):
-                vals = [db.get_latest_timestamp(v)]
-            else:
-                vals = db.get_timestamps(v)
+                vals = db.get_timestamps(variable)
     else:
         with open_dataset(config, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
-            if result.get('latest'):
-                vals = [int(np.nanmax(vals))]
     converted_vals = time_index_to_datetime(vals, config.time_dim_units)
 
     result = []
