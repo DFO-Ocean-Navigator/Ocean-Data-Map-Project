@@ -498,7 +498,6 @@ def plot_v1_0():
         dataset   : Dataset to extract data
         names     :
         plottitle : Title of Plot (Default if blank)
-        quantum   : (year, month, day, hour)
         showmap   : Include a map of the plots location on the map
         station   : Coordinates of the point/line/area/etc
         time      : Time retrieved data was gathered/modeled
