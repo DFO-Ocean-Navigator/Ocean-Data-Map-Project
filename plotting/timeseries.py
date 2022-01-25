@@ -103,7 +103,7 @@ class TimeseriesPlotter(PointPlotter):
             starttime_idx = dataset.nc_data.timestamp_to_time_index(self.starttime)
             endtime_idx = dataset.nc_data.timestamp_to_time_index(self.endtime)
             times = dataset.nc_data.timestamps[starttime_idx: endtime_idx + 1]
-            if self.query.get('dataset_quantum') == 'month':
+            if self.dataset_config.quantum == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
             
             if 'mag' in variable and self.depth != 'all':
