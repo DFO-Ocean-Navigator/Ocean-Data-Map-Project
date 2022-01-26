@@ -10,7 +10,6 @@ import pyresample.utils
 from flask_babel import gettext
 from geopy.distance import GeodesicDistance
 from matplotlib.path import Path
-from matplotlib.colors import LogNorm
 from matplotlib.patches import PathPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
@@ -660,7 +659,7 @@ class MapPlotter(Plotter):
                 linewidths=0.5,
                 #norm=LogNorm(vmin=1, vmax=6000),
                 cmap='Greys',
-                levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
+                levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])                
             plt.clabel(cs, fontsize='x-large', fmt='%1.0fm')
 
         if self.area and self.show_area:
@@ -817,7 +816,7 @@ class MapPlotter(Plotter):
 
         # Map Info
         self.basemap.drawmapboundary(fill_color=(0.3, 0.3, 0.3), zorder=-1)
-        if len(self.basemap.coastsegs) > 0:  # ensure map contains coastline before trying to draw
+        if self.basemap.coastsegs:  # ensure map contains coastline before trying to draw
             self.basemap.drawcoastlines(linewidth=0.5)
         self.basemap.fillcontinents(color='grey', lake_color='dimgrey')
 
