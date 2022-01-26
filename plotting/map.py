@@ -10,6 +10,7 @@ import pyresample.utils
 from flask_babel import gettext
 from geopy.distance import GeodesicDistance
 from matplotlib.path import Path
+from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
@@ -657,9 +658,9 @@ class MapPlotter(Plotter):
             cs = self.basemap.contour(
                 self.longitude, self.latitude, self.bathymetry, latlon=True,
                 linewidths=0.5,
-                #norm=LogNorm(vmin=1, vmax=6000),
+                norm=FuncNorm((lambda x: np.log10(x), lambda x: 10**x), vmin=1, vmax=6000),
                 cmap='Greys',
-                levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])                
+                levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
             plt.clabel(cs, fontsize='x-large', fmt='%1.0fm')
 
         if self.area and self.show_area:
