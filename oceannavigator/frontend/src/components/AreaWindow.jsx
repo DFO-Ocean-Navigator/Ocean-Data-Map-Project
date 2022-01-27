@@ -597,7 +597,7 @@ class AreaWindow extends React.Component {
         plot_query.neighbours = this.props.options.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
         if (this.state.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = this.state.dataset_1;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.rightColormap;
