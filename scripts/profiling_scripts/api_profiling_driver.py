@@ -27,7 +27,8 @@ class ONav_Profiling_Driver():
         """
         if base_url[-1] == '/':
             base_url = base_url[:-1]
-        self.base_url = base_url + '/api/v1.0/'
+        self.base_url = base_url.split('//')[1]
+        self.api_url = base_url + '/api/v1.0/'
         self.csv_file = csv_file
         self.user_id = user_id
         self.prof_path = prof_path
@@ -35,7 +36,7 @@ class ONav_Profiling_Driver():
         self.max_time = max_time
         self.git_hash = self.get_git_hash()
         self.start_time = time.time() 
-        self.log_filename = f'/dev/shm/{self.user_id}_api_profiling_{self.format_time(self.start_time)}.log'
+        self.log_filename = f'/dev/shm/{self.user_id}_{self.base_url}_api_profiling_{self.format_time(self.start_time)}.log'
         self.results = []
 
         logging.basicConfig(
@@ -81,58 +82,62 @@ class ONav_Profiling_Driver():
                 end_time = time.time()
                 logging.warning(f'*** Client timed out after {end_time-start_time} seconds (max_time = {self.max_time} seconds). ***')
             except requests.exceptions.ConnectionError:
-                logging.warning('*** Connection aborted. ***')
-            
+                logging.warning('*** Connection aborted. ***')       
         logging.critical(f'Could not complete request after {self.max_attempts} attempt(s).')
         return [], start_time, np.nan
 
 
     def get_datasets(self):
         logging.info('Requesting dataset meta data...')
-        data, _, _ = self.send_req(self.base_url + 'datasets/')
-        return [d for d in json.loads(data.content)]
+        data, _, _ = self.send_req(self.api_url + 'datasets/')
+        if data:
+            return [d for d in json.loads(data.content)]   
 
 
     def get_variables(self, dataset):
         logging.info('Requesting variables...')
-        data, _, _ = self.send_req(self.base_url + f'variables/?dataset={dataset}')
-        return [d for d in json.loads(data.content)]
+        data, _, _ = self.send_req(self.api_url + f'variables/?dataset={dataset}')
+        if data:
+            return [d for d in json.loads(data.content)] 
 
 
     def get_timestamps(self, dataset, variable): 
         logging.info('Requesting timestamps...')
-        data, _, _ = self.send_req(self.base_url + f"timestamps/?dataset={dataset}&variable={variable}")  
-        return [d for d in json.loads(data.content)]       
+        data, _, _ = self.send_req(self.api_url + f"timestamps/?dataset={dataset}&variable={variable}")  
+        if data:
+            return [d for d in json.loads(data.content)]    
 
 
     def get_depths(self, dataset, variable):
         logging.info('Requesting depths...')
-        data, _, _ = self.send_req(self.base_url + f"depth/?dataset={dataset}&variable={variable}")
-        return [d for d in json.loads(data.content)]
+        data, _, _ = self.send_req(self.api_url + f"depth/?dataset={dataset}&variable={variable}")
+        if data:
+            return [d for d in json.loads(data.content)] 
 
 
     def get_plot(self, query):
         logging.info('Requesting plot...')
-        return self.send_req(self.base_url + 'plot/?' + urlencode({'query': json.dumps(query)}) + '&format=json')
+        return self.send_req(self.api_url + 'plot/?' + urlencode({'query': json.dumps(query)}) + '&format=json')
 
 
     def get_subset(self, query):
         logging.info('Requesting subset...')
-        url = self.base_url + 'subset/?'
+        url = self.api_url + 'subset/?'
         for key in query:
             url += f"&{key}={query[key]}"
         return self.send_req(url)        
 
 
     def get_git_hash(self):
-        resp = requests.get(self.base_url + 'git-hash', timeout=self.max_time)
+        resp = requests.get(self.api_url + 'git-hash', timeout=self.max_time)
         if resp.status_code == 200: 
             return json.loads(resp.content)
-        else:
-            return ' '
+        return ''
 
 
     def format_time(self, in_time):
+        if np.isnan(in_time):
+            return in_time
         return time.strftime("%Y.%m.%d_%H.%M.%S", time.gmtime(in_time))
 
 
@@ -145,8 +150,9 @@ class ONav_Profiling_Driver():
             for v in config['datasets'][ds]['variables']:
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
-                
-                _, start_time, resp_time = self.get_plot({
+
+                if timestamps:            
+                    _, start_time, resp_time = self.get_plot({
                                     "dataset" : ds,
                                     "names" : [],
                                     "plotTitle" : "",
@@ -158,7 +164,9 @@ class ONav_Profiling_Driver():
                                     "variable" : v
                                 })
 
-                self.results.append(['profile', ds, v, start_time, resp_time])
+                    self.results.append(['profile', ds, v, start_time, resp_time])
+                else:
+                    self.results.append(['profile', ds, v, np.nan, np.nan])
     
 
     def virtual_mooring_test(self):
@@ -170,9 +178,11 @@ class ONav_Profiling_Driver():
             for v in config['datasets'][ds]['variables']:
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
-                start_idx = len(timestamps) - 10
 
-                _, start_time, resp_time = self.get_plot({
+                if timestamps:            
+                    start_idx = len(timestamps) - config['datasets'][ds]['n_timestamps']
+
+                    _, start_time, resp_time = self.get_plot({
                                     "colormap" : "default",
                                     "dataset" : ds,
                                     "depth" : 0,
@@ -188,7 +198,9 @@ class ONav_Profiling_Driver():
                                     "variable" : v
                                 })
 
-                self.results.append(['virtual mooring', ds, v, start_time, resp_time])
+                    self.results.append(['virtual mooring', ds, v, start_time, resp_time])
+                else:
+                    self.results.append(['virtual mooring', ds, v, np.nan, np.nan])                    
 
 
     def transect_test(self):
@@ -201,7 +213,8 @@ class ONav_Profiling_Driver():
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
 
-                _, start_time, resp_time = self.get_plot({
+                if timestamps:            
+                    _, start_time, resp_time = self.get_plot({
                                     "colormap" : "default",
                                     "dataset" : ds,
                                     "depth_limit" : 0,
@@ -219,7 +232,9 @@ class ONav_Profiling_Driver():
                                     "variable" : v
                                 })
 
-                self.results.append(['transect', ds, v, start_time, resp_time])                         
+                    self.results.append(['transect', ds, v, start_time, resp_time])    
+                else:
+                    self.results.append(['transect', ds, v, np.nan, np.nan])                                         
 
 
     def hovmoller_test(self):
@@ -231,9 +246,11 @@ class ONav_Profiling_Driver():
             for v in config['datasets'][ds]['variables']:
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
-                start_idx = len(timestamps) - 10 
 
-                _, start_time, resp_time = self.get_plot({
+                if timestamps: 
+                    start_idx = len(timestamps) - config['datasets'][ds]['n_timestamps']
+
+                    _, start_time, resp_time = self.get_plot({
                                     "colormap" : "default",
                                     "dataset" : ds,
                                     "depth" : 0,
@@ -249,7 +266,9 @@ class ONav_Profiling_Driver():
                                     "variable" : v
                                 })
 
-                self.results.append(['hovmoller', ds, v, start_time, resp_time])
+                    self.results.append(['hovmoller', ds, v, start_time, resp_time])
+                else:
+                    self.results.append(['hovmoller', ds, v, np.nan, np.nan])                    
 
 
     def area_test(self):
@@ -262,7 +281,8 @@ class ONav_Profiling_Driver():
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
 
-                _, start_time, resp_time = self.get_plot({
+                if timestamps: 
+                    _, start_time, resp_time = self.get_plot({
                                     "area":[{"innerrings" : [],
                                         "name" : "",
                                         "polygons" : config['datasets'][ds]['polygons']}
@@ -293,7 +313,9 @@ class ONav_Profiling_Driver():
                                     "variable" : v
                                 })                
 
-                self.results.append(['area', ds, v, start_time, resp_time])
+                    self.results.append(['area', ds, v, start_time, resp_time])
+                else:
+                    self.results.append(['area', ds, v, np.nan, np.nan])                    
 
 
     def subset_test(self):
@@ -306,7 +328,8 @@ class ONav_Profiling_Driver():
                 logging.info(f"Variable: {v}")
                 timestamps = self.get_timestamps(ds,v)
 
-                _, start_time, resp_time = self.get_subset({
+                if timestamps: 
+                    _, start_time, resp_time = self.get_subset({
                                     "output_format" : "NETCDF4",
                                     "dataset_name" : ds,
                                     "max_range" : config['datasets'][ds]['max_range'],
@@ -318,7 +341,9 @@ class ONav_Profiling_Driver():
                                     "variables" : v,
                                 })                
 
-                self.results.append(['subset', ds, v, start_time, resp_time])
+                    self.results.append(['subset', ds, v, start_time, resp_time])
+                else:
+                    self.results.append(['subset', ds, v, np.nan, np.nan])                    
 
 
     def obs_test(self):
@@ -383,18 +408,18 @@ class ONav_Profiling_Driver():
         if self.csv_file:
             csv_name = self.csv_file
         else: 
-            csv_name = f'{self.user_id}_api_profiling_{self.format_time(self.start_time)}.csv'
+            csv_name = f'{self.user_id}_{self.base_url}_api_profiling_{self.format_time(self.start_time)}.csv'
 
         with open(csv_name, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter = ',')
 
             if os.stat(csv_name).st_size == 0:
-                writer.writerow(['Test', 'Dataset', 'Variable', 'Git Hash', 'Start Time', 'Response Time (s)', 'Profile File Path'])
+                writer.writerow(['URL', 'Test', 'Dataset', 'Variable', 'Git Hash', 'Start Time', 'Response Time (s)', 'Profile File Path'])
             for row in self.results:
                 if self.prof_path:
-                    writer.writerow([*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',row[5]])
+                    writer.writerow([self.base_url,*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',row[5]])
                 else:
-                    writer.writerow([*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}'])
+                    writer.writerow([self.base_url,*row[:3],self.git_hash, self.format_time(row[3]),f'{row[4]:.4f}',''])
 
 
     def run(self):
