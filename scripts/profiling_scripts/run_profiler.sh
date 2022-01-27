@@ -17,7 +17,6 @@ user_id="$(whoami)-$(hostname)-$(hostname -I | awk '{print $1}')"
 
 for index in $url ; do
     python api_profiling_driver.py --url $index --config $config --id $user_id -a $max_attempts -t $max_time &
-    disown $!
 done
 
 wait
