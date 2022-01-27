@@ -1,6 +1,6 @@
 import numpy as np
 import geopy
-from geopy.distance import vincenty, VincentyDistance
+from geopy.distance import geodesic, GeodesicDistance
 import datetime
 
 def bearing(lat0, lon0, lat1, lon1):
@@ -29,7 +29,7 @@ def path_to_points(points, n=100, times=None):
 
     distance_between = []
     for pair in tuples:
-        distance_between.append(vincenty(pair[0], pair[1]).km)
+        distance_between.append(geodesic(pair[0], pair[1]).km)
 
     total_distance = np.sum(distance_between)
     distance = []
@@ -74,7 +74,7 @@ def points_between(start, end, numpoints, constantvalue=False):
         latitude = np.ones(numpoints) * lat0
         longitude = np.linspace(lon0, lon1, num=numpoints)
         for lon in longitude:
-            distance.append(vincenty(start, geopy.Point(lat0, lon)).km)
+            distance.append(geodesic(start, geopy.Point(lat0, lon)).km)
         if lon1 > lon0:
             b = 90
         else:
@@ -83,18 +83,18 @@ def points_between(start, end, numpoints, constantvalue=False):
         latitude = np.linspace(lat0, lat1, num=numpoints)
         longitude = np.ones(numpoints) * lon0
         for lat in latitude:
-            distance.append(vincenty(start, geopy.Point(lat, lon0)).km)
+            distance.append(geodesic(start, geopy.Point(lat, lon0)).km)
         if lat1 > lat0:
             b = 0
         else:
             b = 180
     else:
-        total_distance = vincenty(start, end).km
+        total_distance = geodesic(start, end).km
         distance = np.linspace(0, total_distance, num=numpoints)
         b = bearing(lat0, lon0, lat1, lon1)
 
         for d in distance:
-            p = VincentyDistance().destination(start, b, d)
+            p = GeodesicDistance().destination(start, b, d)
             latitude.append(p.latitude)
             longitude.append(p.longitude)
 

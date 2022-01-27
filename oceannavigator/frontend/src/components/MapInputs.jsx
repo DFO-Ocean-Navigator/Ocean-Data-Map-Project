@@ -72,7 +72,7 @@ class MapInputs extends React.Component {
             <Panel.Body>
               <DatasetSelector
                 key='map_inputs_dataset_1'
-                id='map_inputs_dataset_1'
+                id='dataset_1'
                 onUpdate={this.props.changeHandler}
                 options={this.props.options}
                 projection={this.props.projection}

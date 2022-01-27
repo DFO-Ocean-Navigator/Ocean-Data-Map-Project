@@ -20,7 +20,7 @@ import numpy as np
 from geographiclib import geodesic
 #from GeographicLib import Geodesic, GeodesicLine
 
-from geopy.distance import vincenty
+from geopy.distance import geodesic
 import matplotlib.pyplot as plt
 from createMapsEtopo1 import findSubsetIndices
 import laplaceFilter
@@ -714,4 +714,5 @@ if __name__=="__main__":
 #    days = np.arange(dayStart,dayEnd,1)    
 
 #    for dirname,dirnames,filenames  in os.walk(fpath):
+            
             
