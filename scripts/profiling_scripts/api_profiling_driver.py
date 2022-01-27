@@ -91,14 +91,14 @@ class ONav_Profiling_Driver():
         logging.info('Requesting dataset meta data...')
         data, _, _ = self.send_req(self.api_url + 'datasets/')
         if data:
-            return [d for d in json.loads(data.content)]    
+            return [d for d in json.loads(data.content)]   
 
 
     def get_variables(self, dataset):
         logging.info('Requesting variables...')
         data, _, _ = self.send_req(self.api_url + f'variables/?dataset={dataset}')
         if data:
-            return [d for d in json.loads(data.content)]    
+            return [d for d in json.loads(data.content)] 
 
 
     def get_timestamps(self, dataset, variable): 
@@ -112,7 +112,7 @@ class ONav_Profiling_Driver():
         logging.info('Requesting depths...')
         data, _, _ = self.send_req(self.api_url + f"depth/?dataset={dataset}&variable={variable}")
         if data:
-            return [d for d in json.loads(data.content)]    
+            return [d for d in json.loads(data.content)] 
 
 
     def get_plot(self, query):
@@ -200,7 +200,7 @@ class ONav_Profiling_Driver():
 
                     self.results.append(['virtual mooring', ds, v, start_time, resp_time])
                 else:
-                    self.results.append(['profile', ds, v, np.nan, np.nan])                    
+                    self.results.append(['virtual mooring', ds, v, np.nan, np.nan])                    
 
 
     def transect_test(self):
@@ -234,7 +234,7 @@ class ONav_Profiling_Driver():
 
                     self.results.append(['transect', ds, v, start_time, resp_time])    
                 else:
-                    self.results.append(['profile', ds, v, np.nan, np.nan])                                         
+                    self.results.append(['transect', ds, v, np.nan, np.nan])                                         
 
 
     def hovmoller_test(self):
@@ -268,7 +268,7 @@ class ONav_Profiling_Driver():
 
                     self.results.append(['hovmoller', ds, v, start_time, resp_time])
                 else:
-                    self.results.append(['profile', ds, v, np.nan, np.nan])                    
+                    self.results.append(['hovmoller', ds, v, np.nan, np.nan])                    
 
 
     def area_test(self):
@@ -315,7 +315,7 @@ class ONav_Profiling_Driver():
 
                     self.results.append(['area', ds, v, start_time, resp_time])
                 else:
-                    self.results.append(['profile', ds, v, np.nan, np.nan])                    
+                    self.results.append(['area', ds, v, np.nan, np.nan])                    
 
 
     def subset_test(self):
@@ -343,7 +343,7 @@ class ONav_Profiling_Driver():
 
                     self.results.append(['subset', ds, v, start_time, resp_time])
                 else:
-                    self.results.append(['profile', ds, v, np.nan, np.nan])                    
+                    self.results.append(['subset', ds, v, np.nan, np.nan])                    
 
 
     def obs_test(self):
