@@ -499,7 +499,7 @@ class AreaWindow extends React.Component {
           <DatasetSelector 
             key='area_window_dataset_0'
             id='dataset_0'
-            onUpdate={this.onLocalUpdate}
+            onUpdate={this.props.onUpdate}
             showQuiverSelector={false}
             showVariableRange={false}
             options={this.props.options}
@@ -539,7 +539,7 @@ class AreaWindow extends React.Component {
               <DatasetSelector
                 key='area_window_dataset_1'
                 id='dataset_1'
-                onUpdate={this.onLocalUpdate}
+                onUpdate={this.props.onUpdate}
                 showQuiverSelector={false}
                 showVariableRange={false}
                 options={this.props.options}
