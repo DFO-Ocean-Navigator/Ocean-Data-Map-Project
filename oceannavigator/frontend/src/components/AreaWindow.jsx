@@ -570,8 +570,8 @@ class AreaWindow extends React.Component {
     let leftInputs = [];
     let rightInputs = [];
     const plot_query = {
-      dataset: this.state.dataset_0.dataset,
-      quantum: this.state.dataset_0.quantum,
+      dataset: this.props.dataset_0.dataset,
+      quantum: this.props.dataset_0.quantum,
       scale: this.state.scale,
       name: this.props.name,
     };
@@ -581,14 +581,14 @@ class AreaWindow extends React.Component {
       case 1:
         plot_query.type = "map";
         plot_query.colormap = this.state.leftColormap;
-        plot_query.time = this.state.dataset_0.time;
+        plot_query.time = this.props.dataset_0.time;
         plot_query.area = this.props.area;
         plot_query.depth = this.state.dataset_0.depth;
         plot_query.bathymetry = this.state.bathymetry;
         plot_query.quiver = this.state.quiver;
         plot_query.contour = this.state.contour;
         plot_query.showarea = this.state.showarea;
-        plot_query.variable = this.state.dataset_0.variable; 
+        plot_query.variable = this.props.dataset_0.variable; 
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
