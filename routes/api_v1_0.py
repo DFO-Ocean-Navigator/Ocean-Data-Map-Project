@@ -347,8 +347,7 @@ def get_data_v1_0():
     
     if os.path.isfile(cached_file_name):
         print(f"Using cached {cached_file_name}")
-        with open(cached_file_name, 'r') as f:
-            send_file(f, 'application/json')
+        return send_file(cached_file_name, 'application/json')
 
     config = DatasetConfig(result['dataset'])
     
