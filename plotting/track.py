@@ -67,7 +67,7 @@ class TrackPlotter(Plotter):
 
         datatypes = db.session.query(
             DataType
-        ).filter(DataType.key.in_(datatype_keys)).order_by(DataType.key).all()
+        ).filter(DataType.key.in_([d for d, in datatype_keys])).order_by(DataType.key).all()
 
         variables = [datatypes[int(x)] for x in self.trackvariables]
         self.data_names = [dt.name for dt in variables]

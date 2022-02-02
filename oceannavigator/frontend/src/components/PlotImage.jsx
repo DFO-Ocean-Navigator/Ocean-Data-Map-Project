@@ -142,7 +142,6 @@ class PlotImage extends React.PureComponent {
     const query = {
       type: q.type,
       dataset: q.dataset,
-      quantum: q.quantum,
       names: q.names,
     };
 
