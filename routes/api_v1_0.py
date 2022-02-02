@@ -358,23 +358,18 @@ def get_data_v1_0():
         lat_slice = slice(0, lat_var.size, 4)
         lon_slice = slice(0, lon_var.size, 4)
 
-        time_index = ds.nc_data.timestamp_to_time_index(result['time'])     
+        time_index = ds.nc_data.timestamp_to_time_index(result['time'])
         
-        data = ds.nc_data.get_dataset_variable(result['variable'])
-
-        if len(data.shape) == 3:
-            data_slice = (time_index, lat_slice, lon_slice)
-        else:
-            data_slice = (time_index, result['depth'], lat_slice, lon_slice)
-
-        data = data[data_slice]
-
+        data = ds \
+                .nc_data \
+                .get_dataset_variable(result['variable'])[time_index, result['depth'], lat_slice, lon_slice]
+        
         bearings = None
         if 'mag' in result['variable']:
             with open_dataset(config, variable='bearing', timestamp=result['time']) as ds_bearing:
                 bearings = ds_bearing \
                                 .nc_data \
-                                .get_dataset_variable('bearing')[data_slice]
+                                .get_dataset_variable('bearing')[time_index, result['depth'], lat_slice, lon_slice]
                                 
         d = data_array_to_geojson(
                 data.squeeze(drop=True),
