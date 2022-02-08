@@ -112,6 +112,7 @@ class CalculatedArray():
         self._attrs: dict = attrs
         self._db_url: str = db_url
         self._shape: tuple = self.__calculate_var_shape()
+        self._coords: dict = {} 
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
@@ -127,22 +128,35 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        keys = [k if type(k) is slice else slice(k,k+1,None) for k in key]
-        coords = {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims,keys)}
-        arr_shape = [c.shape[0] for c in coords.values()]
+        self.__calculate_arr_coords(key)            
 
-        return xr.DataArray(
-                    data = np.reshape(data_array.data, arr_shape), 
-                    dims = self._dims,
-                    coords = coords,
-                    attrs = self.attrs
-                )
+        if data_array.ndim != len(self._dims):
+            shape = [k.stop-k.start if isinstance(k,slice) else 1 for k in key]
+            data_array = np.reshape(data_array, shape)
+
+        return xr.DataArray(data_array, coords=self._coords, attrs=self.attrs)
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
         # declared dims in datasetconfig.json
         return tuple(self._parent[s].shape[0]
                      for s in self._dims)
+
+    def __calculate_arr_coords(self, key) -> tuple:
+        # Determine coordinates of calculated array based 
+        # on key, its declared dims, and parent coords
+        key = self._format_key(key)
+        if self._parent.coords:
+            self._coords = {str(d) : self._parent.coords[d][k] 
+                                for d,k in zip(self._dims, key)}
+
+    def _format_key(self, key):
+        try:
+            iter(key)
+            key = [[k] if isinstance(k, int) else k for k in key]
+        except TypeError:
+            key = [key]
+        return key
 
     @property
     def attrs(self):

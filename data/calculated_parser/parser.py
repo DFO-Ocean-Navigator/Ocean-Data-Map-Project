@@ -41,7 +41,7 @@ class Parser:
         Returns a numpy array of data.
         """
         self.data = data
-        self.result = np.nan  # populated by p_statement_expr()
+        self.result = np.array(np.nan)  # populated by p_statement_expr()
         self.key = key
         self.dims = dims
         self.expression = expression
@@ -94,6 +94,8 @@ class Parser:
     # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
         'statement : expression'
+        if not isinstance(t[1],np.ndarray):
+            t[1] = np.array(t[1])
         self.result = t[1]
 
     def p_expression_variable(self, t):
