@@ -103,7 +103,7 @@ class TimeseriesPlotter(PointPlotter):
             starttime_idx = dataset.nc_data.timestamp_to_time_index(self.starttime)
             endtime_idx = dataset.nc_data.timestamp_to_time_index(self.endtime)
             times = dataset.nc_data.timestamps[starttime_idx: endtime_idx + 1]
-            if self.query.get('dataset_quantum') == 'month':
+            if self.dataset_config.quantum == 'month':
                 times = [datetime.date(x.year, x.month, 1) for x in times]
             
             if 'mag' in variable and self.depth != 'all':
@@ -295,7 +295,7 @@ class TimeseriesPlotter(PointPlotter):
                     shading='gouraud', cmap=self.cmap, vmin=vmin, vmax=vmax)
                 ax[idx].invert_yaxis()
                 if maxdepth > LINEAR:
-                    ax[idx].set_yscale('symlog', linthreshy=LINEAR)
+                    ax[idx].set_yscale('symlog', linthresh=LINEAR)
                 ax[idx].yaxis.set_major_formatter(ScalarFormatter())
 
                 if maxdepth > LINEAR:
@@ -375,3 +375,4 @@ class TimeseriesPlotter(PointPlotter):
             self.plot_legend(fig, self.names)
 
         return super(TimeseriesPlotter, self).plot(fig)
+        

@@ -69,7 +69,7 @@ def _get_kml(subdir, file_id):
 
 
 def points(file_id, projection, resolution, extent):
-    proj = pyproj.Proj(init=projection)
+    proj = pyproj.Proj(projection)
     view = _get_view(extent)
     folder, nsmap = _get_kml('point', file_id)
     points = []
@@ -106,7 +106,7 @@ def points(file_id, projection, resolution, extent):
 
 
 def lines(file_id, projection, resolution, extent):
-    proj = pyproj.Proj(init=projection)
+    proj = pyproj.Proj(projection)
     view = _get_view(extent)
     folder, nsmap = _get_kml('line', file_id)
     lines = []
@@ -202,7 +202,7 @@ def areas(area_id, projection, resolution, extent):
     folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
-    proj = pyproj.Proj(init=projection)
+    proj = pyproj.Proj(projection)
     view = _get_view(extent)
     areas = []
 

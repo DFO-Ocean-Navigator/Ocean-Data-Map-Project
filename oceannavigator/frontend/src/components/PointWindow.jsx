@@ -51,7 +51,6 @@ class PointWindow extends React.Component {
       dataset_0: {
         dataset: props.dataset_0.dataset,
         variable: [props.dataset_0.variable],
-        quantum: props.dataset_0.quantum,
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
@@ -326,7 +325,6 @@ class PointWindow extends React.Component {
     // Start constructing query for image
     const plot_query = {
       dataset: this.state.dataset_0.dataset,
-      quantum: this.state.dataset_0.quantum,
       point: this.props.point,
       showmap: this.state.showmap,
       names: this.props.names,

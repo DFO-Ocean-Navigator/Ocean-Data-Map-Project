@@ -5,12 +5,12 @@ from textwrap import wrap
 
 import matplotlib.pyplot as plt
 import numpy as np
-import osr
+from osgeo import osr
 import pyresample.utils
 from flask_babel import gettext
-from geopy.distance import VincentyDistance
-from matplotlib.bezier import concatenate_paths
-from matplotlib.colors import LogNorm
+from geopy.distance import GeodesicDistance
+from matplotlib.path import Path
+from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
@@ -105,7 +105,7 @@ class MapPlotter(Plotter):
                self.quiver['variable'] != 'none'
 
     def load_data(self):
-        distance = VincentyDistance()
+        distance = GeodesicDistance()
         height = distance.measure(
             (self.bounds[0], self.centroid[1]),
             (self.bounds[2], self.centroid[1])
@@ -658,7 +658,7 @@ class MapPlotter(Plotter):
             cs = self.basemap.contour(
                 self.longitude, self.latitude, self.bathymetry, latlon=True,
                 linewidths=0.5,
-                norm=LogNorm(vmin=1, vmax=6000),
+                norm=FuncNorm((lambda x: np.log10(x), lambda x: 10**x), vmin=1, vmax=6000),
                 cmap='Greys',
                 levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000])
             plt.clabel(cs, fontsize='x-large', fmt='%1.0fm')
@@ -675,7 +675,7 @@ class MapPlotter(Plotter):
                 paths = []
                 for poly in polys:
                     paths.append(poly.get_path())
-                path = concatenate_paths(paths)
+                path = Path.make_compound_path(*paths)
 
                 poly = PathPatch(path,
                                  fill=None,
@@ -817,7 +817,8 @@ class MapPlotter(Plotter):
 
         # Map Info
         self.basemap.drawmapboundary(fill_color=(0.3, 0.3, 0.3), zorder=-1)
-        self.basemap.drawcoastlines(linewidth=0.5)
+        if self.basemap.coastsegs and self.basemap.coastsegs[0]:  # ensure map contains coastline before trying to draw
+            self.basemap.drawcoastlines(linewidth=0.5)
         self.basemap.fillcontinents(color='grey', lake_color='dimgrey')
 
         def find_lines(values):
@@ -880,3 +881,4 @@ class MapPlotter(Plotter):
         fig.tight_layout(pad=3, w_pad=4)
 
         return super(MapPlotter, self).plot(fig)
+        

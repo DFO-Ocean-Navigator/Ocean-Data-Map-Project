@@ -2,7 +2,7 @@ from math import pi, radians, degrees
 import numpy as np
 from pykdtree.kdtree import KDTree
 import geopy
-from geopy.distance import VincentyDistance
+from geopy.distance import GeodesicDistance
 import scipy.interpolate
 import itertools
 from pyresample.geometry import SwathDefinition
@@ -104,7 +104,7 @@ class Grid(object):
         return miny, maxy, minx, maxx
 
     def interpolation_radius(self, lat, lon):
-        distance = VincentyDistance()
+        distance = GeodesicDistance()
         d = distance.measure(
             (np.amin(lat), np.amin(lon)),
             (np.amax(lat), np.amax(lon))
@@ -227,7 +227,7 @@ class Grid(object):
         ts = [
             t.replace(tzinfo=pytz.UTC)
             for t in
-            cftime.utime(self.time_var.units).num2date(self.time_var[:])
+            cftime.num2date(self.time_var[:], self.time_var.units)
         ]
 
         mintime, x = _take_surrounding(ts, times[0])
@@ -350,7 +350,7 @@ def resample(in_lat, in_lon, out_lat, out_lon, data, method='inv_square',
 
 
 def points_between(start, end, numpoints):
-    distance = VincentyDistance()
+    distance = GeodesicDistance()
 
     distances = []
     latitudes = []
@@ -467,7 +467,7 @@ def _path_to_points(points, n, intimes=None):
 
     tuples = list(zip(points, points[1::], intimes, intimes[1::]))
 
-    d = VincentyDistance()
+    d = GeodesicDistance()
     dist_between_pts = []
     for pair in tuples:
         dist_between_pts.append(d.measure(pair[0], pair[1]))
@@ -507,3 +507,4 @@ def _take_surrounding(myList, mynum):
     if pos == len(myList):
         return len(myList) - 1, len(myList) - 1
     return pos - 1, pos
+    

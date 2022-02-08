@@ -1,6 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Modal, ProgressBar } from "react-bootstrap";
+import { 
+  Modal,
+  ProgressBar,
+  Button,
+  Tooltip,
+  OverlayTrigger
+} from "react-bootstrap";
 
 import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
@@ -54,9 +60,10 @@ class DatasetSelector extends React.Component {
 
     // Function bindings
     this.onUpdate = this.onUpdate.bind(this);
+    this.handleGoButton = this.handleGoButton.bind(this);
   }
 
-  changeDataset(newDataset, currentVariable) {
+  changeDataset(newDataset, currentVariable, updateParentOnSuccess = false) {
     const currentDataset = this.state.availableDatasets.filter((d) => {
       return d.id === newDataset;
     })[0];
@@ -93,9 +100,9 @@ class DatasetSelector extends React.Component {
         this.setState({ loadingPercent: 75 });
 
         const timeData = timeResult.data;
-
+        
         const newTime = timeData[timeData.length - 1].id;
-        const newStarttime = timeData[0].id;
+        const newStarttime = timeData.length > 20 ? timeData[timeData.length - 20].id : timeData[0].id;
 
         // eslint-disable-next-line max-len
         GetDepthsPromise(newDataset, newVariable).then(depthResult => {
@@ -137,15 +144,10 @@ class DatasetSelector extends React.Component {
               interpNeighbours: interpNeighbours,
             }
           }, () => {
-
-            const parentState = {};
-            for (const attrib of PARENT_ATTRIBUTES_TO_UPDATE) {
-              parentState[attrib] = this.state[attrib];
+            if (updateParentOnSuccess) {
+              this.updateParent();
             }
-
-            this.props.onUpdate(this.props.id, parentState);
           });
-
         },
           error => {
             this.setState({ loading: false, loadingPercent: 0 });
@@ -191,8 +193,6 @@ class DatasetSelector extends React.Component {
     }
 
     this.setState(newState);
-
-    this.props.onUpdate(this.props.id, newState);
   }
 
   componentDidMount() {
@@ -209,7 +209,7 @@ class DatasetSelector extends React.Component {
         }
         else {
           // Use defaults in DATASET_DEFAULTS
-          this.changeDataset(this.state.dataset, this.state.variable);
+          this.changeDataset(this.state.dataset, this.state.variable, true);
         }
       });
     },
@@ -253,8 +253,19 @@ class DatasetSelector extends React.Component {
     };
 
     this.setState(newState);
+  }
 
-    this.props.onUpdate(this.props.id, newState);
+  updateParent() {
+    const parentState = {};
+    for (const attrib of PARENT_ATTRIBUTES_TO_UPDATE) {
+      parentState[attrib] = this.state[attrib];
+    }
+
+    this.props.onUpdate(this.props.id, parentState);
+  }
+
+  handleGoButton() {
+    this.updateParent();
   }
 
 
@@ -441,6 +452,12 @@ class DatasetSelector extends React.Component {
       />;
     }
 
+    const goButtonTooltip = (
+      <Tooltip id="goButtonTooltip">
+        {_("Click to apply selections")}
+      </Tooltip>
+    );
+
     return (
       <div id={`dataset-selector-${this.props.id}`} className='DatasetSelector'>
 
@@ -455,6 +472,16 @@ class DatasetSelector extends React.Component {
         {timeSelector}
 
         {variableRange}
+
+        <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
+          <Button
+            bsStyle="primary"
+            block
+            onClick={this.handleGoButton}
+          >
+            Go
+          </Button>
+        </OverlayTrigger>
 
         <Modal
           show={this.state.loading}

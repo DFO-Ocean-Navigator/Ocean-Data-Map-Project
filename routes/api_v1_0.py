@@ -347,8 +347,7 @@ def get_data_v1_0():
     
     if os.path.isfile(cached_file_name):
         print(f"Using cached {cached_file_name}")
-        with open(cached_file_name, 'r') as f:
-            send_file(f, 'application/json')
+        return send_file(cached_file_name, 'application/json')
 
     config = DatasetConfig(result['dataset'])
     
@@ -359,18 +358,23 @@ def get_data_v1_0():
         lat_slice = slice(0, lat_var.size, 4)
         lon_slice = slice(0, lon_var.size, 4)
 
-        time_index = ds.nc_data.timestamp_to_time_index(result['time'])
+        time_index = ds.nc_data.timestamp_to_time_index(result['time'])     
         
-        data = ds \
-                .nc_data \
-                .get_dataset_variable(result['variable'])[time_index, result['depth'], lat_slice, lon_slice]
-        
+        data = ds.nc_data.get_dataset_variable(result['variable'])
+
+        if len(data.shape) == 3:
+            data_slice = (time_index, lat_slice, lon_slice)
+        else:
+            data_slice = (time_index, result['depth'], lat_slice, lon_slice)
+
+        data = data[data_slice]
+
         bearings = None
         if 'mag' in result['variable']:
             with open_dataset(config, variable='bearing', timestamp=result['time']) as ds_bearing:
                 bearings = ds_bearing \
                                 .nc_data \
-                                .get_dataset_variable('bearing')[time_index, result['depth'], lat_slice, lon_slice]
+                                .get_dataset_variable('bearing')[data_slice]
                                 
         d = data_array_to_geojson(
                 data.squeeze(drop=True),
@@ -498,7 +502,6 @@ def plot_v1_0():
         dataset   : Dataset to extract data
         names     :
         plottitle : Title of Plot (Default if blank)
-        quantum   : (year, month, day, hour)
         showmap   : Include a map of the plots location on the map
         station   : Coordinates of the point/line/area/etc
         time      : Time retrieved data was gathered/modeled
