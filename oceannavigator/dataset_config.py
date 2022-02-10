@@ -114,7 +114,7 @@ class DatasetConfig:
         """
 
         stride = self._get_attribute("vector_arrow_stride")
-        if not stride:
+        if stride:
             return stride
 
         return 4
