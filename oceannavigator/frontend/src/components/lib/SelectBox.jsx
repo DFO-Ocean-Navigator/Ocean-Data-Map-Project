@@ -8,7 +8,7 @@ import { withTranslation } from "react-i18next";
 
 const fastEqual = require("fast-deep-equal/es6/react");
 
-export class SelectBox extends React.Component {
+class SelectBox extends React.Component {
   constructor(props) {
     super(props);
 

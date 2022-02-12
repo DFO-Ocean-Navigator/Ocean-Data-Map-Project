@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 require("font-awesome/scss/font-awesome.scss");
 
-export default class Icon extends React.PureComponent {
+export default class Icon extends React.Component {
 
   constructor(props) {
     super(props);

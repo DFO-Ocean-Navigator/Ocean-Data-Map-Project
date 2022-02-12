@@ -8,9 +8,9 @@ import {
   OverlayTrigger
 } from "react-bootstrap";
 
-import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
+import DateTimePicker from "./lib/DateTimePicker.jsx";
 
 import {
   GetDatasetsPromise,
@@ -52,6 +52,8 @@ class DatasetSelector extends React.Component {
        datasetVariables: [],
        datasetTimestamps: [],
        datasetDepths: [],
+       ncTimestampDateTimeMap: null,
+       dateTimeNCTimestampMap: null,
        options: {
          ...props.options,
        },
@@ -100,6 +102,12 @@ class DatasetSelector extends React.Component {
         this.setState({ loadingPercent: 75 });
 
         const timeData = timeResult.data;
+
+        // Map timestamps to datetimes (2275776000 => 2022-02-12T00:00:00+00:00)
+        const ncTimestampDateTimeMap = new Map(data.map(i => [i.id, i.value]));
+        
+        // Map datetimes to timestamps (2022-02-12T00:00:00+00:00 => 2275776000)
+        const dateTimeNCTimestampMap = new Map(data.map(i => [i.value, i.id]));
         
         const newTime = timeData[timeData.length - 1].id;
         const newStarttime = timeData.length > 20 ? timeData[timeData.length - 20].id : timeData[0].id;
@@ -133,6 +141,8 @@ class DatasetSelector extends React.Component {
             time: newTime,
             starttime: newStarttime,
             datasetTimestamps: timeData,
+            ncTimestampDateTimeMap: ncTimestampDateTimeMap,
+            dateTimeNCTimestampMap: dateTimeNCTimestampMap,
 
             datasetDepths: depthResult.data,
             depth: 0, // Default to surface for simplicity but could change later
@@ -212,6 +222,20 @@ class DatasetSelector extends React.Component {
     this.setState(newState);
   }
 
+  changeTime(key, newTime) {
+    this.setState({
+      [key]: this.dateTimeToNCTimestamp(newTime),
+    });
+  }
+
+  ncTimestampToDateTime(ncTimestamp) {
+    this.state.ncTimestampDateTimeMap.get(ncTimestamp);
+  }
+
+  dateTimeToNCTimestamp(dateTime) {
+    this.state.dateTimeNCTimestampMap.get(dateTime);
+  }
+
   componentDidMount() {
     GetDatasetsPromise().then(result => {
       this.setState({
@@ -247,13 +271,17 @@ class DatasetSelector extends React.Component {
     return key === "variable";
   }
 
+  timeChanged(key) {
+    return key === "time" || key === "starttime";
+  }
+
   onUpdate(key, value) {
     if (this.nothingChanged(key, value)) {
       return;
     }
 
-    // There's extra logic involved with changing datasets
-    // and variables so delegate that to their own 
+    // There's extra logic involved with changing datasets,
+    // variables, and times so delegate that to their own 
     // functions.
     if (this.datasetChanged(key)) {
       this.changeDataset(value, this.state.variable);
@@ -262,6 +290,11 @@ class DatasetSelector extends React.Component {
 
     if (this.variableChanged(key)) {
       this.changeVariable(value);
+      return;
+    }
+
+    if (this.timeChanged(key)) {
+      this.changeTime(key, value);
       return;
     }
 
@@ -325,44 +358,60 @@ class DatasetSelector extends React.Component {
     let timeSelector = null;
     if (this.state.datasetTimestamps && !this.state.loading) {
       if (this.props.showTimeRange) {
-        timeSelector = (<div>
-          <TimePicker
-            key='starttime'
-            id='starttime'
-            state={this.state.starttime}
-            def=''
-            quantum={this.state.quantum}
-            title={_("Start Time (UTC)")}
-            onUpdate={this.onUpdate}
-            max={this.state.time}
-            dataset={this.state.dataset}
-            variable={this.state.variable}
-          />
-          <TimePicker
-            key='time'
-            id='time'
-            state={this.state.time}
-            def=''
-            quantum={this.state.quantum}
-            title={_("End Time (UTC)")}
-            onUpdate={this.onUpdate}
-            min={this.state.starttime}
-            dataset={this.state.dataset}
-            variable={this.state.variable}
-          />
-        </div>);
+        timeSelector = (
+          <div>
+            <DateTimePicker
+              key={`dataset-selector-datetimepicker-starttime-${this.props.id}`}
+              id='starttime'
+              quantum={this.state.quantum}
+              selected={
+                this.ncTimestampToDateTime(this.state.starttime)
+              }
+              minDate={
+                this.ncTimestampToDateTime(this.state.datasetTimestamps[0])
+              }
+              maxDate={
+                this.ncTimestampToDateTime(this.state.time)
+              }
+              onChange={this.onUpdate}
+              label={_("Start Time (UTC)")}
+            />
+
+            <DateTimePicker
+              key={`dataset-selector-datetimepicker-endtime-${this.props.id}`}
+              id='time'
+              quantum={this.state.quantum}
+              selected={
+                this.ncTimestampToDateTime(this.state.time)
+              }
+              minDate={
+                this.ncTimestampToDateTime(this.state.starttime)
+              }
+              maxDate={
+                this.ncTimestampToDateTime(this.state.datasetTimestamps[this.state.datasetTimestamps.length - 1])
+              }
+              onChange={this.onUpdate}
+              label={_("End Time (UTC)")}
+            />
+          </div>
+        );
       }
       else {
-        timeSelector = <TimePicker
-          key='time'
+        timeSelector = <DateTimePicker
+        key={`dataset-selector-datetimepicker-${this.props.id}`}
           id='time'
-          state={this.state.time}
-          def={-1}
           quantum={this.state.quantum}
-          onUpdate={this.onUpdate}
-          title={_("Time (UTC)")}
-          dataset={this.state.dataset}
-          variable={this.state.variable}
+          selected={
+            this.ncTimestampToDateTime(this.state.time)
+          }
+          minDate={
+            this.ncTimestampToDateTime(this.state.datasetTimestamps[0])
+          }
+          maxDate={
+            this.ncTimestampToDateTime(this.state.datasetTimestamps[this.state.datasetTimestamps.length - 1])
+          }
+          onChange={this.onUpdate}
+          label={_("Time (UTC)")}
         />;
       }
     }
