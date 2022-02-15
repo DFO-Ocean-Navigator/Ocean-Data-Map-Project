@@ -105,6 +105,21 @@ class DatasetConfig:
         return self._get_attribute("bathymetry_file_url")
 
     @property
+    def vector_arrow_stride(self) -> int:
+        """
+        Returns the stride used to slice the dataset for generating geojson
+        for the vector arrows (i.e. every n-th value).
+
+        Defaults to 4.
+        """
+
+        stride = self._get_attribute("vector_arrow_stride")
+        if stride:
+            return stride
+
+        return 4
+    
+    @property
     def model_class(self) -> str:
         return self._get_attribute("model_class")
 
