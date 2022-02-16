@@ -1,10 +1,3 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image of a Selected Area
-
-*/
-
 import React from "react";
 import {Nav, NavItem, Panel, Row,  Col, Button, 
   FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
@@ -19,10 +12,20 @@ import ImageSize from "./ImageSize.jsx";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import Icon from "./lib/Icon.jsx";
-import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 
+import DateTimePicker from "./lib/DateTimePicker.jsx";
+import DateTimePickerRange from "./lib/DateTimePickerRange.jsx";
+
+import {
+  buildDateTimeNcTimestampMap,
+  buildNcTimestampDateTimeMap
+} from "./NcTimestampUtils.js";
+
+import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
+
 import { withTranslation } from "react-i18next";
+
 const stringify = require("fast-stable-stringify");
 
 class AreaWindow extends React.Component {
@@ -82,7 +85,9 @@ class AreaWindow extends React.Component {
       output_starttime: props.dataset_0.time,
       output_endtime: props.dataset_0.time,
       output_format: "NETCDF4", // Subset output format
-      convertToUserGrid: false,
+      outputDatasetTimestamps: [],
+      outputNcTimestampDateTimeMap: null,
+      outputDateTimeNCTimestampMap: null,
       zip: false, // Should subset file(s) be zipped
     };
 
@@ -121,7 +126,16 @@ class AreaWindow extends React.Component {
             ...prevState.dataset_0,
             ...value
           }
-        }));
+        }), () => {
+          
+          this.updateSubsetTimestampsFor(
+            this.state.dataset_0.dataset,
+            this.state.dataset_0.variable
+          );
+          
+          this.resetOutputVariables();
+        });
+
         return;
       }
 
@@ -145,6 +159,34 @@ class AreaWindow extends React.Component {
       }
       this.setState(newState);
     }
+  }
+
+  resetOutputVariables() {
+    this.setState({
+      output_variables: "",
+    });
+  }
+
+  updateSubsetTimestampsFor(dataset, variable) {
+    GetTimestampsPromise(dataset, variable).then(timeResult => {
+      const timeData = timeResult.data;
+      
+      this.setState(prevState => ({
+        outputDatasetTimestamps: timeData,
+        outputNcTimestampDateTimeMap: buildNcTimestampDateTimeMap(timeData),
+        outputDateTimeNCTimestampMap: buildDateTimeNcTimestampMap(timeData),
+        output_starttime: prevState.dataset_0.time,
+        output_endtime: prevState.dataset_0.time,
+      }));
+    });
+  }
+
+  ncTimestampToDateTime(ncTimestamp) {
+    this.state.outputNcTimestampDateTimeMap.get(ncTimestamp);
+  }
+
+  dateTimeToNCTimestamp(dateTime) {
+    this.state.outputDateTimeNCTimestampMap.get(dateTime);
   }
 
   // Find max extents of drawn area
@@ -184,7 +226,6 @@ class AreaWindow extends React.Component {
        "&variables=" + this.state.output_variables.join() +
         queryString +
        "&time=" + [this.state.output_starttime, output_endtime].join() +
-       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
        "&should_zip=" + (this.state.zip ? 1 : 0);
   }
 
@@ -194,7 +235,6 @@ class AreaWindow extends React.Component {
       "dataset_name": this.state.dataset_0.dataset,
       "variables": this.state.output_variables.join(),
       "time": [this.state.output_starttime, this.state.output_endtime].join(),
-      "user_grid": (this.state.convertToUserGrid ? 1:0),
       "should_zip": (this.state.zip ? 1:0)
     };
     // check if predefined area
@@ -221,9 +261,7 @@ class AreaWindow extends React.Component {
 
   render() {
     _("Dataset");
-    _("Time");
-    _("Start Time");
-    _("End Time");
+    _("Time (UTC)");
     _("Variable");
     _("Variable Range");
     _("Colourmap");
@@ -366,6 +404,45 @@ class AreaWindow extends React.Component {
       </Panel.Collapse>
     </Panel>);
 
+    let subsetDateTimePicker = null;
+    if (this.state.output_timerange) {
+      subsetDateTimePicker = <DateTimePickerRange
+        key={`areawindow-subset-datetimepicker`}
+        quantum={this.state.dataset_0.quantum}
+        selectedStart={
+          this.ncTimestampToDateTime(this.state.output_starttime)
+        }
+        selectedEnd={
+          this.ncTimestampToDateTime(this.state.output_endtime)
+        }
+        minDate={
+          this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[0])
+        }
+        maxDate={
+          this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[this.state.outputDatasetTimestamps.length - 1])
+        }
+        onChange={this.onUpdate}
+      />;
+    }
+    else {
+      subsetDateTimePicker = <DateTimePicker
+        key={`areawindow-subset-datetimepicker`}
+        id='starttime'
+        quantum={this.state.dataset_0.quantum}
+        selected={
+          this.ncTimestampToDateTime(this.state.output_starttime)
+        }
+        minDate={
+          this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[0])
+        }
+        maxDate={
+          this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[this.state.outputDatasetTimestamps.length - 1])
+        }
+        onChange={ (_, value) => { this.setState({output_endtime: value}); } }
+        label={_("Time (UTC)")}
+      />;
+    }
+
     const subsetPanel = (<Panel
       key='subset'
       defaultExpanded
@@ -381,7 +458,7 @@ class AreaWindow extends React.Component {
               multiple={true}
               state={this.state.output_variables}
               def={"defaults.dataset"}
-              onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
+              onUpdate={(_, values) => { this.setState({output_variables: values[0],}); }}
               url={"/api/v1.0/variables/?dataset=" + this.state.dataset_0.dataset
               }
               title={_("Variables")}
@@ -395,33 +472,7 @@ class AreaWindow extends React.Component {
               title={_("Select Time Range")}
             />
 
-            <TimePicker
-              id='starttime'
-              key='starttime'
-              state={this.state.output_starttime}
-              def=''
-              quantum={this.state.dataset_0.quantum}
-              dataset={this.state.dataset_0.dataset}
-              variable={this.state.dataset_0.variable}
-              title={this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")}
-              onUpdate={ (_, value) => { this.setState({output_starttime: value}); }}
-              max={this.state.dataset_0.time + 1}
-            />
-
-            <div style={{display: this.state.output_timerange ? "block" : "none",}}>
-              <TimePicker
-                id='time'
-                key='time'
-                state={this.state.output_endtime}
-                def=''
-                quantum={this.state.dataset_0.quantum}
-                dataset={this.state.dataset_0.dataset}
-                variable={this.state.dataset_0.variable}
-                title={this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")}
-                onUpdate={ (_, value) => { this.setState({output_endtime: value}); }}
-                min={this.state.dataset_0.time}
-              />
-            </div>
+            {subsetDateTimePicker}
 
             <FormGroup controlId="output_format">
               <ControlLabel>{_("Output Format")}</ControlLabel>
@@ -438,16 +489,7 @@ class AreaWindow extends React.Component {
                 <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
               </FormControl>
             </FormGroup>
-
-            {/*
-            <SelectBox
-              id='convertToUserGrid'
-              key='convertToUserGrid'
-              state={this.state.convertToUserGrid}
-              onUpdate={this.onLocalUpdate}
-              title={_("Convert to User Grid")}
-            />
-            */}        
+ 
             <SelectBox 
               id='zip'
               key='zip'

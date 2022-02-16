@@ -2,9 +2,12 @@ import React from "react";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
-import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
+
+import DateTimePickerRange from "./lib/DateTimePickerRange.jsx";
+
+import { GetObsTrackTimeRange } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -22,15 +25,17 @@ class TrackWindow extends React.Component {
       size: "10x7",
       dpi: 72,
       depth: 0,
-      track_quantum: 'month'
+      track_quantum: "month",
+      minDate: null,
+      maxDate: null,
     };
 
     if (this.props.obs_query) {
-      let pairs = this.props.obs_query.split(';').map(x => x.split('='));
+      let pairs = this.props.obs_query.split(";").map(x => x.split("="));
       let dict = pairs.reduce(function(d, p) {d[p[0]] = p[1]; return d}, {});
-      this.state['starttime'] = new Date(dict.start_date);
-      this.state['endtime'] = new Date(dict.end_date);
-      this.state['track_quantum'] = dict.quantum;
+      this.state["starttime"] = new Date(dict.start_date);
+      this.state["endtime"] = new Date(dict.end_date);
+      this.state["track_quantum"] = dict.quantum;
     }
 
     if (props.init != null) {
@@ -42,19 +47,17 @@ class TrackWindow extends React.Component {
   }
 
   componentDidMount() {
-    $.ajax({
-      url: `/api/v1.0/observation/tracktimerange/${this.props.track}.json`,
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          mindate: new Date(data.min),
-          maxdate: new Date(data.max),
-        });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(xhr.url, status, err.toString());
-      }.bind(this)
+    GetObsTrackTimeRange(this.props.track).then(result => {
+      const data = result.data;
+
+      this.setState({
+        minDate: new Date(data.min),
+        maxDate: new Date(data.max),
+      });
+
+    },
+    error => {
+      console.error(error);
     });
   }
 
@@ -139,35 +142,29 @@ class TrackWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</SelectBox>;
-    var starttime = <ContinousTimePicker
-      key='starttime'
-      id='starttime'
-      state={this.state.starttime}
-      title={_("Start Time")}
-      onUpdate={this.onLocalUpdate}
-      max={this.state.endtime}
-      min={this.state.mindate}
+    
+    
+    const timePicker = <DateTimePickerRange
+      key={"track-window-datetimepickerrange"}
+      quantum={this.state.track_quantum}
+      selectedStart={this.state.starttime}
+      selectedEnd={this.state.endtime}
+      minDate={this.state.minDate}
+      maxDate={this.state.maxDate}
+      onChange={this.onLocalUpdate}
     />;
-    var endtime = <ContinousTimePicker
-      key='endtime'
-      id='endtime'
-      state={this.state.endtime}
-      title={_("End Time")}
-      onUpdate={this.onLocalUpdate}
-      min={this.state.starttime}
-      max={this.state.maxdate}
-    />;
+    
     var track_quantum = <ComboBox
       key='track_quantum'
       id='track_quantum'
       state={this.state.track_quantum}
       data={[
-        {id: 'minute', value: 'Minute'},
-        {id: 'hour', value: 'Hour'},
-        {id: 'day', value: 'Day'},
-        {id: 'week', value: 'Week'},
-        {id: 'month', value: 'Month'},
-        {id: 'year', value: 'Year'},
+        {id: "minute", value: "Minute"},
+        {id: "hour", value: "Hour"},
+        {id: "day", value: "Day"},
+        {id: "week", value: "Week"},
+        {id: "month", value: "Month"},
+        {id: "year", value: "Year"},
       ]}
       title='Track Simplification'
       onUpdate={this.onLocalUpdate}
@@ -220,7 +217,7 @@ class TrackWindow extends React.Component {
       }
     }
     inputs = [
-      dataset, showmap, latlon, starttime, endtime, track_quantum,
+      dataset, showmap, latlon, timePicker, track_quantum,
       trackvariable, variable, depth, size
     ];
 

@@ -68,3 +68,9 @@ export function GetPresetAreasPromise() {
     "/api/v1.0/areas/"
   );
 }
+
+export function GetObsTrackTimeRange(trackId) {
+  return instance.get(
+    `/api/v1.0/observation/tracktimerange/${trackId}.json`
+  );
+}
