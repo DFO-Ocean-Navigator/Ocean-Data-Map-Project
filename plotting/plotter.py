@@ -381,37 +381,17 @@ class Plotter(metaclass=ABCMeta):
         return igoss_data
     
     def igoss_ascii(self, time, depths, data, points): 
-
-        igoss_data_vector   = []
+        igoss_data_vector = np.array([])
         for i in range(len(points)):
             igoss_header_helper = self.igoss_ascii_header(points[i], time) ## Calling Igoss Helper Function for header           
-            igoss_data_helper   = self.igoss_ascii_data(data[i], depths[i]) ## Calling Igoss Helper Function for data
-            igoss_data_block    = np.block([igoss_header_helper, igoss_data_helper])
-            n_row = int(np.ceil(len(igoss_data_block)/7))
-            if len(igoss_data_block) % 7 == 0 :
-                igoss_data_block = np.array(igoss_data_block)
-            else:
-                igoss_data_block = np.append(np.array(igoss_data_block), np.repeat('',7-(len(igoss_data_block)%7)))
-            igoss_data_block = np.reshape(igoss_data_block,(n_row ,7))
-            igoss_data_vector.append(igoss_data_block)           
-              
-        igoss_data_vector = np.asarray(igoss_data_vector)
-        print(igoss_data_vector)
-
-
+            igoss_data_helper = self.igoss_ascii_data(data[i], depths[i]) ## Calling Igoss Helper Function for data
+            igoss_data_block = np.block([igoss_header_helper, igoss_data_helper])
+            igoss_data_block = np.append(np.array(igoss_data_block), np.repeat('',7-(len(igoss_data_block)%7))) # this will still give you the right result when 7-(len(igoss_data_block)%7) = 0
+            igoss_data_vector = np.append(igoss_data_vector,igoss_data_block)    # using np.append here gives us a 1D array instead of 3D which we can reshape
+        igoss_data_vector = np.reshape(igoss_data_vector, (int(igoss_data_vector.shape[0]/7), 7))
         with contextlib.closing(StringIO()) as buf:
-            for j in range(len(igoss_data_vector)):
-                igoss_data = igoss_data_vector[j]
-                num_rows, num_cols= igoss_data.shape
-                for i in range(num_rows):
-                    buf.write(f'{igoss_data[i][0]} ' + \
-                            f'{igoss_data[i][1]} ' + \
-                            f'{igoss_data[i][2]} ' + \
-                            f'{igoss_data[i][3]} ' + \
-                            f'{igoss_data[i][4]} ' + \
-                            f'{igoss_data[i][5]} ' + \
-                            f'{igoss_data[i][6]}\n')
-
+            for r in igoss_data_vector:
+                buf.write(" ".join(r) + '\n')
             return (buf.getvalue(), self.mime, self.filename)
 
     def get_variable_names(self, dataset, variables: List[str]) -> List[str]:
