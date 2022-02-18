@@ -326,71 +326,84 @@ class Plotter(metaclass=ABCMeta):
             return (buf.getvalue(), self.mime, self.filename)
         
         # Defining igoss_ascii Helper Functions:
-    def igoss_ascii_header(self, points, time):       
-        latitude  = points[0]
-        longitude = points[1]
-        time      = time
-        if latitude > 0. and longitude > 0. :
-            quad_id = 1
-        elif latitude < 0. and longitude > 0. :
-            quad_id = 3
-        elif latitude < 0. and longitude < 0. :
-            quad_id = 5
-        elif latitude > 0. and longitude < 0. :
-            quad_id = 7
-        # convert decimal lat lon to deg & min
-        lat = int(np.floor(latitude))       
-        lat_min = int((latitude-lat)*60)
-        lat_string = f'{lat:02.0f}'
-        lat_min_string = f'{lat_min:02.0f}'
-        lon = int(np.floor(abs(longitude)))
-        lon_min = int((abs(longitude)-lon)*60)
-        lon_string = f'{lon:03.0f}'
-        lon_min_string = f'{lon_min:02.0f}'
-        dmy = time.strftime('%d%m%y')[0 : -2 ] + time.strftime('%d%m%y')[-1]
-        hm = time.strftime('%H%M/')
-        igoss_header = np.asarray(["JJYJ", dmy, hm,
-                                (str(quad_id)+str(lat_string) +str (lat_min_string)),
-                                (lon_string + str (lon_min_string)), 
-                                "88888", "04105" ])
+    def format_igoss_header(self, points, time):
+        igoss_header =np.empty((len(points),1,7), dtype= str)
+        for i in range(len(points)):        
+            latitude  = points[i][0]
+            longitude = points[i][1]
+            time      = time
+            if latitude > 0. and longitude > 0. :
+                quad_id = 1
+            elif latitude < 0. and longitude > 0. :
+                quad_id = 3
+            elif latitude < 0. and longitude < 0. :
+                quad_id = 5
+            elif latitude > 0. and longitude < 0. :
+                quad_id = 7
+            # convert decimal lat lon to deg & min
+            lat = int(np.floor(latitude))       
+            lat_min = int((latitude-lat)*60)
+            lat_string = f'{lat:02.0f}'
+            lat_min_string = f'{lat_min:02.0f}'
+            lon = int(np.floor(abs(longitude)))
+            lon_min = int((abs(longitude)-lon)*60)
+            lon_string = f'{lon:03.0f}'
+            lon_min_string = f'{lon_min:02.0f}'
+            dmy = time.strftime('%d%m%y')[0 : -2 ] + time.strftime('%d%m%y')[-1]
+            hm = time.strftime('%H%M/')
+            igoss_header[i,0,0:6] = np.asarray(["JJYY", dmy, hm,
+                                    (str(quad_id)+str(lat_string) +str (lat_min_string)),
+                                    (lon_string + str (lon_min_string)), 
+                                    "88888", "04105" ], dtype=str)
         return igoss_header
-    def igoss_ascii_data(self, data, depths):
-        data  = data[0]
-        depth = depths[0]
-        data  = data[~data.mask].data.flatten()       # get temperature data
-        depth = depth[~depth.mask].data.flatten()    # get depth data
-        # select data for igoss based on rules provided by James Herbert
-        # (points should be < 50 m apart with temp change > 2 degrees)
-        ig_temp  = np.where(data <= -10, -9.9, data)
-        ig_depth = depth[0:(len(ig_temp))]
-        igoss_data = []
-        depth_div = 100
-        for i in range(len(ig_temp)):
-            # add divider for 100 m's of depth
-            depth_str = f'{ig_depth[i]:03.0f}'.replace('.','')[-2:]
-            temp_str  = f'{ig_temp[i]:04.1f}'.replace('.','')[-3:].replace('-','5')[-3:]
-            new_div = np.floor(ig_depth[i]/100)
-            hundred_separator = lambda x : igoss_data.append('999'+f'{new_div:02.0f}') if(x > depth_div)else None
-            hundred_separator(ig_depth[i])
-            igoss_data.append(depth_str+temp_str)        
-            depth_div = 100*(new_div + 1)
-        # add end of data signifiers
-        igoss_data.append('00000') 
-        igoss_data.append('SHIP')
-        igoss_data = np.asarray(igoss_data)
-        return igoss_data
     
-    def igoss_ascii(self, time, depths, data, points): 
-        igoss_data_vector = np.array([])
-        for i in range(len(points)):
-            igoss_header_helper = self.igoss_ascii_header(points[i], time) ## Calling Igoss Helper Function for header           
-            igoss_data_helper = self.igoss_ascii_data(data[i], depths[i]) ## Calling Igoss Helper Function for data
-            igoss_data_block = np.block([igoss_header_helper, igoss_data_helper])
-            igoss_data_block = np.append(np.array(igoss_data_block), np.repeat('',7-(len(igoss_data_block)%7))) # this will still give you the right result when 7-(len(igoss_data_block)%7) = 0
-            igoss_data_vector = np.append(igoss_data_vector,igoss_data_block)    # using np.append here gives us a 1D array instead of 3D which we can reshape
-        igoss_data_vector = np.reshape(igoss_data_vector, (int(igoss_data_vector.shape[0]/7), 7))
+    def format_igoss_data(self, data, depths):
+        mask_indices = data.mask
+        data = np.where(data <= -10, -9.9, data) # JJYY lower temperature limit is -9.9
+        temp_str = np.char.replace(np.char.mod('%04.1f', data),'.','') # JJYY formatted temperatures
+        temp_str = np.char.replace(temp_str,'-','5') # 5 is used to indicate negative temperatures
+        depths_str = np.char.mod('%02i', depths % 100) # JJYY formatted depths
+        jjyy = np.char.add(depths_str, temp_str)
+        jjyy[mask_indices] = ''
+
+        # insert depth divisions
+        depth_div = np.char.mod('999%02i', depths/100)
+        idx = np.where(depth_div[0,0,:-1] != depth_div[0,0,1:])[0] + 1
+        depth_div[mask_indices] = ''
+        jjyy = np.insert(jjyy, idx, depth_div[:,:,idx], axis=2)
+
+        # remove empty elements  (I'm sure this could be done in a much nicer way)
+        last = 0
+        for i in range(len(jjyy)):
+            data_idx = np.max(np.where(jjyy[i,:,:].flatten() != ''))
+            jjyy[i,:,data_idx+1:data_idx+3] = ['00000','SHIP']
+            if data_idx+2 > last:
+                last = data_idx+2
+        return jjyy[:,:,:(last+7-(last%7))]
+
+
+
+    def igoss_ascii(self, time, depths, data, points):
+        igoss_data   = self.format_igoss_data(data, depths)
+        igoss_header = self.format_igoss_header(points, time)
+        igoss_data = np.insert(igoss_data, np.arange(7), igoss_header, axis=2)
+
+
+        
+        
+        
+        
+        
+        # igoss_data_vector = np.array([])
+        
+        #     igoss_header_helper = self.igoss_ascii_header(points[i], time) ## Calling Igoss Helper Function for header           
+        #     igoss_data_helper = self.igoss_ascii_data(data[i], depths[i]) ## Calling Igoss Helper Function for data
+        #     igoss_data_block = np.block([igoss_header_helper, igoss_data_helper])
+        #     igoss_data_block = np.append(np.array(igoss_data_block), np.repeat('',7-(len(igoss_data_block)%7))) # this will still give you the right result when 7-(len(igoss_data_block)%7) = 0
+        #     igoss_data_vector = np.append(igoss_data_vector,igoss_data_block)    # using np.append here gives us a 1D array instead of 3D which we can reshape
+        # igoss_data_vector = np.reshape(igoss_data_vector, (int(igoss_data_vector.shape[0]/7), 7))
         with contextlib.closing(StringIO()) as buf:
-            for r in igoss_data_vector:
+            for r in igoss_data:
                 buf.write(" ".join(r) + '\n')
             return (buf.getvalue(), self.mime, self.filename)
 
