@@ -327,7 +327,7 @@ class Plotter(metaclass=ABCMeta):
         
         # Defining igoss_ascii Helper Functions:
     def format_igoss_header(self, points, time):
-        igoss_header =np.empty((len(points),1,7), dtype= str)
+        igoss_header =np.empty((1,1,7), dtype= str)
         for i in range(len(points)):        
             latitude  = points[i][0]
             longitude = points[i][1]
@@ -343,18 +343,17 @@ class Plotter(metaclass=ABCMeta):
             # convert decimal lat lon to deg & min
             lat = int(np.floor(latitude))       
             lat_min = int((latitude-lat)*60)
-            lat_string = f'{lat:02.0f}'
-            lat_min_string = f'{lat_min:02.0f}'
             lon = int(np.floor(abs(longitude)))
             lon_min = int((abs(longitude)-lon)*60)
-            lon_string = f'{lon:03.0f}'
-            lon_min_string = f'{lon_min:02.0f}'
             dmy = time.strftime('%d%m%y')[0 : -2 ] + time.strftime('%d%m%y')[-1]
             hm = time.strftime('%H%M/')
-            igoss_header[i,0,0:6] = np.asarray(["JJYY", dmy, hm,
-                                    (str(quad_id)+str(lat_string) +str (lat_min_string)),
-                                    (lon_string + str (lon_min_string)), 
+            igoss_header_string = np.asarray(["JJYY ", dmy, hm, 
+                                    f"{quad_id}{lat:02.0f}{lat_min:02.0f}",
+                                    f"{lon:03.0f}{lon_min:02.0f}",
                                     "88888", "04105" ], dtype=str)
+            igoss_header_reshaped = np.reshape(igoss_header_string,(1,1,7))
+            igoss_header = np.append(igoss_header, igoss_header_reshaped, axis=0)
+        igoss_header = igoss_header[1:]
         return igoss_header
     
     def format_igoss_data(self, data, depths):
@@ -365,43 +364,29 @@ class Plotter(metaclass=ABCMeta):
         depths_str = np.char.mod('%02i', depths % 100) # JJYY formatted depths
         jjyy = np.char.add(depths_str, temp_str)
         jjyy[mask_indices] = ''
-
         # insert depth divisions
         depth_div = np.char.mod('999%02i', depths/100)
         idx = np.where(depth_div[0,0,:-1] != depth_div[0,0,1:])[0] + 1
         depth_div[mask_indices] = ''
         jjyy = np.insert(jjyy, idx, depth_div[:,:,idx], axis=2)
-
-        # remove empty elements  (I'm sure this could be done in a much nicer way)
-        last = 0
+        # insert closing 0000 SHIP tags
         for i in range(len(jjyy)):
             data_idx = np.max(np.where(jjyy[i,:,:].flatten() != ''))
             jjyy[i,:,data_idx+1:data_idx+3] = ['00000','SHIP']
-            if data_idx+2 > last:
-                last = data_idx+2
-        return jjyy[:,:,:(last+7-(last%7))]
-
-
+        igoss_data = np.pad(jjyy,((0,0),(0,0),(0,7-jjyy.shape[2]%7)),'constant',constant_values = (''))
+        return igoss_data
 
     def igoss_ascii(self, time, depths, data, points):
+        """Export igoss -JJYY format data in text format.
+        Parameters:
+        dataset -- the dataset
+        variables -- time, depths, data and points            
+        """
         igoss_data   = self.format_igoss_data(data, depths)
         igoss_header = self.format_igoss_header(points, time)
-        igoss_data = np.insert(igoss_data, np.arange(7), igoss_header, axis=2)
-
-
-        
-        
-        
-        
-        
-        # igoss_data_vector = np.array([])
-        
-        #     igoss_header_helper = self.igoss_ascii_header(points[i], time) ## Calling Igoss Helper Function for header           
-        #     igoss_data_helper = self.igoss_ascii_data(data[i], depths[i]) ## Calling Igoss Helper Function for data
-        #     igoss_data_block = np.block([igoss_header_helper, igoss_data_helper])
-        #     igoss_data_block = np.append(np.array(igoss_data_block), np.repeat('',7-(len(igoss_data_block)%7))) # this will still give you the right result when 7-(len(igoss_data_block)%7) = 0
-        #     igoss_data_vector = np.append(igoss_data_vector,igoss_data_block)    # using np.append here gives us a 1D array instead of 3D which we can reshape
-        # igoss_data_vector = np.reshape(igoss_data_vector, (int(igoss_data_vector.shape[0]/7), 7))
+        igoss_data = np.append(igoss_header, igoss_data, axis=2)
+        igoss_data = np.reshape(igoss_data, (int(igoss_data.size/7),7))
+        igoss_data = igoss_data[~np.all(igoss_data == '', axis=1)]
         with contextlib.closing(StringIO()) as buf:
             for r in igoss_data:
                 buf.write(" ".join(r) + '\n')
