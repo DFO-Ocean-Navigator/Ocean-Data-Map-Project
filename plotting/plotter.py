@@ -62,9 +62,8 @@ class Plotter(metaclass=ABCMeta):
             if self.format == 'odv':
                 return self.odv_ascii()
             elif self.format == 'igoss':
-                return self.igoss_ascii()
-        else:
-            return self.plot()
+                return self.igoss_ascii()     
+        return self.plot()
 
     # Receives query sent from javascript and parses it.
     @abstractmethod
@@ -327,11 +326,10 @@ class Plotter(metaclass=ABCMeta):
         
         # Defining igoss_ascii Helper Functions:
     def format_igoss_header(self, points, time):
-        igoss_header =np.empty((1,1,7), dtype= str)
-        for i in range(len(points)):        
-            latitude  = points[i][0]
-            longitude = points[i][1]
-            time      = time
+        igoss_header = np.array([],dtype=str)
+        for p in points:        
+            latitude = p[0]
+            longitude = p[1]
             if latitude > 0. and longitude > 0. :
                 quad_id = 1
             elif latitude < 0. and longitude > 0. :
@@ -340,6 +338,7 @@ class Plotter(metaclass=ABCMeta):
                 quad_id = 5
             elif latitude > 0. and longitude < 0. :
                 quad_id = 7
+            
             # convert decimal lat lon to deg & min
             lat = int(np.floor(latitude))       
             lat_min = int((latitude-lat)*60)
@@ -347,14 +346,11 @@ class Plotter(metaclass=ABCMeta):
             lon_min = int((abs(longitude)-lon)*60)
             dmy = time.strftime('%d%m%y')[0 : -2 ] + time.strftime('%d%m%y')[-1]
             hm = time.strftime('%H%M/')
-            igoss_header_string = np.asarray(["JJYY ", dmy, hm, 
+            igoss_header= np.append(igoss_header,["JJYY ", dmy, hm, 
                                     f"{quad_id}{lat:02.0f}{lat_min:02.0f}",
                                     f"{lon:03.0f}{lon_min:02.0f}",
-                                    "88888", "04105" ], dtype=str)
-            igoss_header_reshaped = np.reshape(igoss_header_string,(1,1,7))
-            igoss_header = np.append(igoss_header, igoss_header_reshaped, axis=0)
-        igoss_header = igoss_header[1:]
-        return igoss_header
+                                    "88888", "04105" ])
+        return np.reshape(igoss_header,(len(points),1,7))
     
     def format_igoss_data(self, data, depths):
         mask_indices = data.mask
@@ -364,11 +360,13 @@ class Plotter(metaclass=ABCMeta):
         depths_str = np.char.mod('%02i', depths % 100) # JJYY formatted depths
         jjyy = np.char.add(depths_str, temp_str)
         jjyy[mask_indices] = ''
+        
         # insert depth divisions
         depth_div = np.char.mod('999%02i', depths/100)
         idx = np.where(depth_div[0,0,:-1] != depth_div[0,0,1:])[0] + 1
         depth_div[mask_indices] = ''
         jjyy = np.insert(jjyy, idx, depth_div[:,:,idx], axis=2)
+        
         # insert closing 0000 SHIP tags
         for i in range(len(jjyy)):
             data_idx = np.max(np.where(jjyy[i,:,:].flatten() != ''))
@@ -377,10 +375,15 @@ class Plotter(metaclass=ABCMeta):
         return igoss_data
 
     def igoss_ascii(self, time, depths, data, points):
-        """Export igoss -JJYY format data in text format.
+        """Export igoss -JJYY format data in text format. This is
+        7 column array of encoded depth and temperature data for each point
+        in points  
         Parameters:
-        dataset -- the dataset
-        variables -- time, depths, data and points            
+        time : Timestamp of the data
+        depths: Array of model depth level 
+        data : Array of model temperatur corresponding to depth
+        points: List of selected point cordinates
+
         """
         igoss_data   = self.format_igoss_data(data, depths)
         igoss_header = self.format_igoss_header(points, time)

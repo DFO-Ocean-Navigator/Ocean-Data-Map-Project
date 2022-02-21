@@ -68,9 +68,6 @@ class ProfilePlotter(PointPlotter):
                 self.data,
                 self.points
             )
-        else:
-            return self.odv_ascii()
-
 
     def csv(self):
         header = [
