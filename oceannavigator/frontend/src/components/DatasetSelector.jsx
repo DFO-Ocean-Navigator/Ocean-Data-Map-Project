@@ -168,6 +168,22 @@ class DatasetSelector extends React.Component {
   }
 
   changeVariable(newVariable) {
+    if (this.state.datasetDepths.length === 0) {
+      this.setState({ 
+        loading: true, 
+        loadingPercent: 70,  
+        loadingTitle: `${this.state.datasetDepths}` 
+      });
+      GetDepthsPromise(this.state.dataset, newVariable).then(depthResult => {
+        this.setState({
+          datasetDepths: depthResult.data,
+          depth: 0,
+          loading: false,
+          loadingPercent: 0
+        })
+      });
+    }
+
     let newState = {};
 
     // Multiple variables were selected
@@ -246,21 +262,6 @@ class DatasetSelector extends React.Component {
     }
 
     if (this.variableChanged(key)) {
-      if (this.state.datasetDepths.length === 0) {
-        this.setState({ 
-          loading: true, 
-          loadingPercent: 70,  
-          loadingTitle: `${this.state.datasetDepths}` 
-        });
-        GetDepthsPromise(this.state.dataset, value).then(depthResult => {
-          this.setState({
-            datasetDepths: depthResult.data,
-            depth: 0,
-            loading: false,
-            loadingPercent: 0
-          })
-        });
-      }
       this.changeVariable(value);
       return;
     }
