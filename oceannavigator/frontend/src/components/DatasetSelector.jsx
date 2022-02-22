@@ -191,7 +191,7 @@ class DatasetSelector extends React.Component {
     if (newVariable instanceof HTMLCollection) {
       newState = {
         variable: Array.from(newVariable).map(o => o.value),
-        two_dimensional: false
+        variable_two_dimensional: false
       };
     }
     else {
@@ -200,7 +200,7 @@ class DatasetSelector extends React.Component {
       newState = {
         variable: newVariable,
         variable_scale: variable.scale,
-        two_dimensional : this.state.datasetVariables.find(v => v.id === newVariable).two_dimensional,
+        variable_two_dimensional : variable.two_dimensional,
         options: {
           ...this.state.options,
           interpType: variable.interp?.interpType || this.DEF_INTERP_TYPE,
@@ -391,7 +391,7 @@ class DatasetSelector extends React.Component {
 
     let depthSelector = null;
     // eslint-disable-next-line max-len
-    if (this.props.showDepthSelector && this.state.datasetDepths && this.state.datasetDepths.length > 0 && !this.state.loading && !this.state.two_dimensional) { 
+    if (this.props.showDepthSelector && this.state.datasetDepths && this.state.datasetDepths.length > 0 && !this.state.loading && !this.state.variable_two_dimensional) { 
       depthSelector = <SelectBox 
         id={`dataset-selector-depth-selector-${this.props.id}`}
         name={"depth"}
