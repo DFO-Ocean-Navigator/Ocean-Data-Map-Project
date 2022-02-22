@@ -112,7 +112,6 @@ class CalculatedArray():
         self._attrs: dict = attrs
         self._db_url: str = db_url
         self._shape: tuple = self.__calculate_var_shape()
-        self._coords: dict = {} 
 
         # This is a bit odd, but necessary. We run the expression through the
         # lexer so that the lexer variables get populated. This way we know the
@@ -128,13 +127,14 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        self.__calculate_arr_coords(key)            
+        key = self._format_key(key)
+        coords = self._calculate_coords(key)            
 
         if data_array.ndim != len(self._dims):
             shape = [k.stop-k.start if isinstance(k,slice) else 1 for k in key]
             data_array = np.reshape(data_array, shape)
 
-        return xr.DataArray(data_array, coords=self._coords, attrs=self.attrs)
+        return xr.DataArray(data_array, coords=coords, attrs=self.attrs)
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
@@ -142,17 +142,17 @@ class CalculatedArray():
         return tuple(self._parent[s].shape[0]
                      for s in self._dims)
 
-    def __calculate_arr_coords(self, key) -> tuple:
+    def _calculate_coords(self, key) -> tuple:
         # Determine coordinates of calculated array based 
-        # on key, its declared dims, and parent coords
-        key = self._format_key(key)
+        # on key, its declared dims, and parent coords     
         if self._parent.coords:
-            self._coords = {str(d) : self._parent.coords[d][k] 
-                                for d,k in zip(self._dims, key)}
+            return {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims, key)}
+        return {}
 
     def _format_key(self, key):
+        # ensure key and its elements are iterable. This ensures 
+        # coords have length > 0
         try:
-            iter(key)
             key = [[k] if isinstance(k, int) else k for k in key]
         except TypeError:
             key = [key]
