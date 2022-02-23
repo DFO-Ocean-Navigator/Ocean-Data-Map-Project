@@ -17,6 +17,13 @@ from oceannavigator import DatasetConfig
 
 # Base class for all plotting objects
 class Plotter(metaclass=ABCMeta):
+    NORTH_EAST_QUAD = 1
+    SOUTH_EAST_QUAD = 3
+    SOUTH_WEST_QUAD = 5
+    NORTH_WEST_QUAD = 7
+    JJYY_COLS = 7
+    CLOSING_ELEMENT = ['00000','SHIP']
+
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.dataset_name: str = dataset_name
         self.dataset_config: DatasetConfig = DatasetConfig(dataset_name)
@@ -331,13 +338,13 @@ class Plotter(metaclass=ABCMeta):
             latitude = p[0]
             longitude = p[1]
             if latitude > 0. and longitude > 0. :
-                quad_id = 1
+                quad_id = self.NORTH_EAST_QUAD
             elif latitude < 0. and longitude > 0. :
-                quad_id = 3
+                quad_id = self.SOUTH_EAST_QUAD
             elif latitude < 0. and longitude < 0. :
-                quad_id = 5
+                quad_id = self.SOUTH_WEST_QUAD
             elif latitude > 0. and longitude < 0. :
-                quad_id = 7
+                quad_id = self.NORTH_WEST_QUAD
             
             # convert decimal lat lon to deg & min
             lat = int(np.floor(latitude))       
@@ -350,28 +357,32 @@ class Plotter(metaclass=ABCMeta):
                                     f"{quad_id}{lat:02.0f}{lat_min:02.0f}",
                                     f"{lon:03.0f}{lon_min:02.0f}",
                                     "88888", "04105" ])
-        return np.reshape(igoss_header,(len(points),1,7))
+        return np.reshape(igoss_header,(len(points),1,self.JJYY_COLS))
     
+    def apply_lower_temp_limit(self, data):
+        return np.where(data <= -10, -9.9, data) # JJYY lower temperature limit is -9.9
+
     def format_igoss_data(self, data, depths):
         mask_indices = data.mask
-        data = np.where(data <= -10, -9.9, data) # JJYY lower temperature limit is -9.9
+        data = self.apply_lower_temp_limit(data)
         temp_str = np.char.replace(np.char.mod('%04.1f', data),'.','') # JJYY formatted temperatures
         temp_str = np.char.replace(temp_str,'-','5') # 5 is used to indicate negative temperatures
-        depths_str = np.char.mod('%02i', depths % 100) # JJYY formatted depths
+        depths_str = np.char.mod('%02i', np.round(depths % 100)) # JJYY formatted depths
         jjyy = np.char.add(depths_str, temp_str)
         jjyy[mask_indices] = ''
-        
-        # insert depth divisions
+        return jjyy
+
+    def insert_depth_division(self, depths, jjyy, mask_indices): 
         depth_div = np.char.mod('999%02i', depths/100)
         idx = np.where(depth_div[0,0,:-1] != depth_div[0,0,1:])[0] + 1
         depth_div[mask_indices] = ''
-        jjyy = np.insert(jjyy, idx, depth_div[:,:,idx], axis=2)
+        return np.insert(jjyy, idx, depth_div[:,:,idx], axis=2)
         
-        # insert closing 0000 SHIP tags
+    def insert_closing_element(self, jjyy):
         for i in range(len(jjyy)):
             data_idx = np.max(np.where(jjyy[i,:,:].flatten() != ''))
-            jjyy[i,:,data_idx+1:data_idx+3] = ['00000','SHIP']
-        igoss_data = np.pad(jjyy,((0,0),(0,0),(0,7-jjyy.shape[2]%7)),'constant',constant_values = (''))
+            jjyy[i,:,data_idx+1:data_idx+3] = self.CLOSING_ELEMENT
+        igoss_data = np.pad(jjyy,((0,0),(0,0),(0,self.JJYY_COLS-jjyy.shape[2]%self.JJYY_COLS)),'constant',constant_values = (''))
         return igoss_data
 
     def igoss_ascii(self, time, depths, data, points):
@@ -385,11 +396,14 @@ class Plotter(metaclass=ABCMeta):
         points: List of selected point cordinates
 
         """
-        igoss_data   = self.format_igoss_data(data, depths)
         igoss_header = self.format_igoss_header(points, time)
+        igoss_data = self.format_igoss_data(data, depths)
+        igoss_data = self.insert_depth_division(depths, igoss_data, data.mask)
+        igoss_data = self.insert_closing_element(igoss_data)
         igoss_data = np.append(igoss_header, igoss_data, axis=2)
-        igoss_data = np.reshape(igoss_data, (int(igoss_data.size/7),7))
+        igoss_data = np.reshape(igoss_data, (int(igoss_data.size/self.JJYY_COLS),self.JJYY_COLS))
         igoss_data = igoss_data[~np.all(igoss_data == '', axis=1)]
+        
         with contextlib.closing(StringIO()) as buf:
             for r in igoss_data:
                 buf.write(" ".join(r) + '\n')
