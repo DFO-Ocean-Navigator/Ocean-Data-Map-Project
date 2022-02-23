@@ -1,13 +1,14 @@
-from netCDF4 import Dataset
-import pyresample
-from pyresample.utils import wrap_longitudes
-import numpy as np
-from scipy.ndimage.filters import gaussian_filter
 import hashlib
-from cachetools import LRUCache
-import threading
-from flask import current_app
 import os
+import threading
+
+import numpy as np
+import pyresample
+from cachetools import LRUCache
+from flask import current_app
+from netCDF4 import Dataset
+from pyresample.utils import wrap_longitudes
+from scipy.ndimage.filters import gaussian_filter
 
 _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
 

@@ -5,13 +5,14 @@ from sys import argv
 
 import dask
 import sentry_sdk
-from data.observational import db
 from flask import Flask, request, send_file
 from flask_babel import Babel
 from flask_compress import Compress
 from sentry_sdk.integrations.flask import FlaskIntegration
-from utils.ascii_terminal_colors import ASCIITerminalColors
 from werkzeug.middleware.profiler import ProfilerMiddleware
+
+from data.observational import db
+from utils.ascii_terminal_colors import ASCIITerminalColors
 
 # Although DatasetConfig is not used in this module, this import is absolutely necessary
 # because it is how the rest of the app gets access to DatasetConfig

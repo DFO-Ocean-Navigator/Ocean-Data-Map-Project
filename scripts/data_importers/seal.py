@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
+import glob
+import os
+
+import defopt
 import numpy as np
 import pandas as pd
-import xarray as xr
-import defopt
 import seawater
-import os
-import glob
+import xarray as xr
+
 import data.observational
-from data.observational import Platform, Sample, Station, DataType
+from data.observational import DataType, Platform, Sample, Station
 
 VARIABLES = [ 'TEMP', 'PSAL' ]
 

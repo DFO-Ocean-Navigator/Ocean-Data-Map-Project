@@ -3,9 +3,10 @@
 Applies the masks from a netCDF file to another and saves it in a new file.
 
 """
+import sys
+
 import numpy as np
 from netCDF4 import Dataset
-import sys
 
 if len(sys.argv) < 4:
     print "Usage: " + sys.argv[0] + " inputfile maskedfile outputfile"

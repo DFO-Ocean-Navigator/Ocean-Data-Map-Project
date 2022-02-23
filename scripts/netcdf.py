@@ -3,8 +3,9 @@ Reads in NAFC p-files and outputs a NetCDF file using the CF conventions,
 with the data interpolated to standard depths.
 '''
 import sys
-from pfile import PFile
+
 from netCDF4 import Dataset, date2num
+from pfile import PFile
 from scipy.interpolate import interp1d
 
 STANDARD_DEPTHS = [

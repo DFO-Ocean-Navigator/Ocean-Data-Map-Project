@@ -1,4 +1,5 @@
 import warnings
+
 import matplotlib
 
 # Force the non-interactive PNG backend

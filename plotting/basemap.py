@@ -1,11 +1,13 @@
-from mpl_toolkits.basemap import Basemap
-import pickle
 import hashlib
+import math
+import os
+import pickle
 import threading
+
 from cachetools import LRUCache
 from flask import current_app
-import os
-import math
+from mpl_toolkits.basemap import Basemap
+
 from utils import return_type
 
 _maps_cache = LRUCache(maxsize=64)
