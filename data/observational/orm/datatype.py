@@ -1,5 +1,6 @@
 from data.observational import db
 
+
 class DataType(db.Model):
     __tablename__ = 'datatypes'
 

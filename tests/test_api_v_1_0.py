@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
+import datetime
 import json
 import unittest
-import datetime
-from unittest.mock import patch, PropertyMock, MagicMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from data.variable import Variable
 from data.variable_list import VariableList

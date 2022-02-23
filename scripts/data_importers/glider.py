@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import xarray as xr
-import defopt
-import os
 import glob
+import os
+
+import defopt
 import seawater
+import xarray as xr
+
 import data.observational
-from data.observational import Platform, Sample, Station, DataType
+from data.observational import DataType, Platform, Sample, Station
 
 VARIABLES = [ 'CHLA', 'PSAL', 'TEMP', 'CNDC']
 

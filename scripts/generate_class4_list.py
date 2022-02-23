@@ -10,11 +10,10 @@ import argparse
 import datetime
 import fcntl
 import logging
-from pathlib import Path
 import pickle
 import sys
 import time
-
+from pathlib import Path
 
 logging.basicConfig(format='%(message)s', level=logging.INFO)
 log = logging.getLogger()

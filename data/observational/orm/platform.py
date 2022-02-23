@@ -1,8 +1,9 @@
+import enum
 from types import MappingProxyType
 from typing import Dict, List
-import enum
 
 from data.observational import db
+
 
 class Platform(db.Model):
     __tablename__ = 'platforms'

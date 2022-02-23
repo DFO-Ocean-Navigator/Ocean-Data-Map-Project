@@ -1,8 +1,8 @@
 import abc
 
 import numpy
-from scipy.interpolate import interp1d
 import pyresample
+from scipy.interpolate import interp1d
 
 import data.geo as geo
 

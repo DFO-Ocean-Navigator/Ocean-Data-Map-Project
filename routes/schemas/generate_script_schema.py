@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
 
+
 class GenerateScriptSchema(Schema):
     """
     Defines the schema for the `/api/v1.0/generatescript?...`

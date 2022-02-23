@@ -1,16 +1,15 @@
 """Unit tests for data.class4 module.
 """
-import unittest
 import os
-from pathlib import Path
 import shutil
+import unittest
+from pathlib import Path
 
 import numpy
 import xarray
 
 import data.class4
 import oceannavigator
-
 
 app = oceannavigator.create_app(testing=True)
 
