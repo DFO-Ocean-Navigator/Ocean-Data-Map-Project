@@ -142,14 +142,14 @@ class CalculatedArray():
         return tuple(self._parent[s].shape[0]
                      for s in self._dims)
 
-    def _calculate_coords(self, key) -> tuple:
+    def _calculate_coords(self, key) -> dict:
         # Determine coordinates of calculated array based 
         # on key, its declared dims, and parent coords     
         if self._parent.coords:
             return {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims, key)}
         return {}
 
-    def _format_key(self, key):
+    def _format_key(self, key) -> list:
         # ensure key and its elements are iterable. This ensures 
         # coords have length > 0
         try:
