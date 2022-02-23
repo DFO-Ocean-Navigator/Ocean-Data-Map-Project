@@ -86,14 +86,22 @@ def handle_error_v1(error):
 @bp_v1_0.route("/api/")
 def info_v1():
     raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ..."
+        """
+        This is the Ocean Navigator API.
+        Additional parameters are required to complete a request.
+        Help can be found at ...
+        """
     )
 
 
 @bp_v1_0.route("/api/v1.0/")
 def info_v1_0():
     raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ..."
+        """
+        This is the Ocean Navigator API.
+        Additional parameters are required to complete a request.
+        Help can be found at ...
+        """
     )
 
 
@@ -152,10 +160,10 @@ def datasets_query_v1_0():
     API Format: /api/v1.0/datasets/
 
     Optional arguments:
-    * id : Show only the name and id of the datasets
+    * id: Show only the name and id of the datasets
 
     Returns:
-        Response -- Response object containing list of available datasets w/ some metadata.
+        List of available datasets w/ some metadata.
     """
 
     data = []
@@ -188,10 +196,10 @@ def quantum_query_v1_0():
     API Format: /api/v1.0/quantum/
 
     Required parameters:
-    * dataset       : Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
+    * dataset: Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
 
     Returns:
-        Response -- Response object containing the dataset quantum string as JSON.
+        Dataset quantum string.
     """
 
     try:
@@ -217,8 +225,8 @@ def variables_query_v1_0():
     * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
 
     Optional Arguments:
-    * 3d_only      : Boolean Value; When True, only variables with depth will be shown
-    * vectors_only : Boolean Value; When True, only variables with magnitude will be shown
+    * 3d_only      : Boolean; When True, only variables with depth will be returned
+    * vectors_only : Boolean; When True, only variables with magnitude will be returned
 
     **Boolean value: True / False**
     """
@@ -265,11 +273,11 @@ def depth_query_v1_0():
     API Format: /api/v1.0/depth/?dataset=''&variable=''
 
     Required parameters:
-    * dataset  : Dataset key - Can be found using /api/v1.0/datasets/
-    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset='...'
+    * dataset  : Dataset key - found using /api/v1.0/datasets/
+    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset=...
 
     Returns:
-        Response -- Response object containing all depths available for the given variable as a JSON array.
+        Array of all depths available for the given variable.
     """
 
     try:
@@ -284,7 +292,7 @@ def depth_query_v1_0():
 
     data = []
     with open_dataset(config, variable=variable, timestamp=-1) as ds:
-        if not variable in ds.variables:
+        if variable not in ds.variables:
             raise APIError("Variable not found in dataset: " + variable)
 
         v = ds.variables[variable]
@@ -310,9 +318,9 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
     """
     API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
 
-    <string:dataset>  : Dataset to extract data
-    <string:variable> : Type of data to retrieve - found using /api/variables/?dataset='...'
-    <string:scale>    : Desired scale
+    * dataset  : Dataset to extract data
+    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset=...
+    * scale    : min/max values for scale image.
 
     Returns a scale bar
     """
@@ -329,7 +337,7 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
 
 
 @bp_v1_0.route(
-    "/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json"
+    "/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json"  # noqa: E501
 )
 def range_query_v1_0(
     dataset: str,
@@ -388,7 +396,7 @@ def get_data_v1_0():
     cached_file_name = os.path.join(
         current_app.config["CACHE_DIR"],
         "data",
-        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",  # noqa: E501
     )
 
     if os.path.isfile(cached_file_name):
@@ -463,7 +471,7 @@ def class4_query_v1_0(q: str, class4_id: str):
     else:
         raise APIError(
             gettext(
-                "Please specify either forecasts or models using /models/ or /forecasts/"
+                "Please specify either forecasts or models using /models/ or /forecasts/"  # noqa: E501
             )
         )
 
@@ -479,7 +487,7 @@ def stats_v1_0():
 
     query = {
         dataset  : Dataset to extract data
-        variable : Type of data to plot - Options found using /api/variables/?dataset='...'
+        variable : variable key (e.g. votemper)
         time     : Time retrieved data was gathered/modeled
         depth    : Water Depth - found using /api/depth/?dataset='...'
         area     : Selected Area
@@ -564,7 +572,7 @@ def plot_v1_0():
         station   : Coordinates of the point/line/area/etc
         time      : Time retrieved data was gathered/modeled
         type      : File / Plot Type (Check Navigator for Possible options)
-        variable  : Type of data to plot - Options found using /api/variables/?dataset='...'
+        variable  : Variable key (e.g. votemper)
     }
     **Query must be written in JSON and converted to encodedURI**
     **Not all components of query are required
@@ -649,7 +657,11 @@ def plot_v1_0():
     response.cache_control.max_age = 300
 
     if "data" in args:
-        plotData = {"data": str(resp), "shape": resp.shape, "mask": str(resp.mask)}
+        plotData = {
+            "data": str(resp),  # noqa: F821
+            "shape": resp.shape,  # noqa: F821
+            "mask": str(resp.mask),  # noqa: F821
+        }
         plotData = json.dumps(plotData)
         return Response(plotData, status=200, mimetype="application/json")
 
@@ -770,16 +782,14 @@ def query_id_v1_0(q: str, q_id: str):
 
 
 @bp_v1_0.route(
-    "/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json"
+    "/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json"  # noqa: E501
 )
 def query_file_v1_0(
     q: str, projection: str, resolution: int, extent: str, file_id: str
 ):
     """
-    API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
-
     <string:q>          : Type of data (points, lines, areas, class4)
-    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
+    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)  # noqa: E501
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
     <string:file_id>    :
@@ -810,19 +820,17 @@ def query_file_v1_0(
 @bp_v1_0.route("/api/v1.0/timestamps/")
 def timestamps():
     """
-    Returns all timestamps available for a given variable in a dataset. This is variable-dependent
-    because datasets can have multiple "quantums", as in surface 2D variables may be hourly, while
-    3D variables may be daily.
-
-    API Format: /api/v1.0/timestamps/?dataset=''&variable=''
+    Returns all timestamps available for a given variable in a dataset.
+    This is variable-dependent because datasets can have multiple "quantums",
+    as in surface 2D variables may be hourly, while 3D variables may be daily.
 
     Required Arguments:
     * dataset : Dataset key - Can be found using /api/v1.0/datasets
     * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
 
     Returns:
-        Response object containing all timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string]) for the given
-        dataset and variable.
+        All timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string])
+        for the given dataset and variable.
     """
 
     try:
@@ -866,7 +874,7 @@ def timestamps():
 
 
 @bp_v1_0.route(
-    "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"
+    "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
 )
 def tile_v1_0(
     projection: str,
@@ -918,7 +926,7 @@ def tile_v1_0(
 
 
 @bp_v1_0.route(
-    "/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"
+    "/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
 )
 def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     """
@@ -991,7 +999,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     y = (2**zoom - 1) - y
     connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
     selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
+    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
     selector.execute(sqlite)
     tile = selector.fetchone()
     if tile is None:
