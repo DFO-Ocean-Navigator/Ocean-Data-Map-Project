@@ -11,8 +11,16 @@ import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from flask import (Blueprint, Response, abort, current_app, jsonify, request,
-                   send_file, send_from_directory)
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    jsonify,
+    request,
+    send_file,
+    send_from_directory,
+)
 from flask_babel import gettext
 from marshmallow.exceptions import ValidationError
 from PIL import Image
@@ -29,8 +37,11 @@ from data.observational import DataType, Platform, Sample, Station
 from data.observational import db as DB
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
-from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
-                        time_index_to_datetime)
+from data.utils import (
+    DateTimeEncoder,
+    get_data_vars_from_equation,
+    time_index_to_datetime,
+)
 from oceannavigator import DatasetConfig
 from plotting.class4 import Class4Plotter
 from plotting.hovmoller import HovmollerPlotter
@@ -47,10 +58,15 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import APIError, ClientError, ErrorBase
 
-from .schemas import (DepthSchema, GenerateScriptSchema, GetDataSchema,
-                      QuantumSchema, TimestampsSchema)
+from .schemas import (
+    DepthSchema,
+    GenerateScriptSchema,
+    GetDataSchema,
+    QuantumSchema,
+    TimestampsSchema,
+)
 
-bp_v1_0 = Blueprint('api_v1_0', __name__)
+bp_v1_0 = Blueprint("api_v1_0", __name__)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # API INTERFACE V1.0
@@ -59,6 +75,7 @@ bp_v1_0 = Blueprint('api_v1_0', __name__)
 MAX_CACHE = 315360000
 FAILURE = ClientError("Bad API usage")
 
+
 @bp_v1_0.errorhandler(ErrorBase)
 def handle_error_v1(error):
     response = jsonify(error.to_dict())
@@ -66,19 +83,21 @@ def handle_error_v1(error):
     return response
 
 
-@bp_v1_0.route('/api/')
+@bp_v1_0.route("/api/")
 def info_v1():
     raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ..."
+    )
 
 
-@bp_v1_0.route('/api/v1.0/')
+@bp_v1_0.route("/api/v1.0/")
 def info_v1_0():
     raise APIError(
-        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ...")
+        "This is the Ocean Navigator API - Additional Parameters are required to complete a request, help can be found at ..."
+    )
 
 
-@bp_v1_0.route('/api/test-sentry')
+@bp_v1_0.route("/api/test-sentry")
 def test_sentry():
     # Hit this endpoint to confirm that exception and transaction logging to Sentry are
     # operating correctly; a transaction should appear in the appropriate project at:
@@ -96,30 +115,38 @@ def generateScript():
     scriptType (string): Type of requested script (PLOT/CSV)
     **Query must be written in JSON and converted to encodedURI**
     """
-    
+
     try:
         result = GenerateScriptSchema().load(request.args)
     except ValidationError as e:
         abort(400, str(e))
 
-    lang = result['lang']
-    query = result['query']
-    script_type = result['scriptType']
+    lang = result["lang"]
+    query = result["query"]
+    script_type = result["scriptType"]
 
     if lang == "python":
         b = generatePython(query, script_type)
-        resp = send_file(b, as_attachment=True,
-                         attachment_filename=f"API_script_{script_type}.py", mimetype='application/x-python')
+        resp = send_file(
+            b,
+            as_attachment=True,
+            attachment_filename=f"API_script_{script_type}.py",
+            mimetype="application/x-python",
+        )
 
     elif lang == "r":
         b = generateR(query, script_type)
-        resp = send_file(b, as_attachment=True,
-                         attachment_filename=f"API_script_{script_type}.r", mimetype='text/plain')
+        resp = send_file(
+            b,
+            as_attachment=True,
+            attachment_filename=f"API_script_{script_type}.r",
+            mimetype="text/plain",
+        )
 
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/datasets/')
+@bp_v1_0.route("/api/v1.0/datasets/")
 def datasets_query_v1_0():
     """
     API Format: /api/v1.0/datasets/
@@ -132,29 +159,28 @@ def datasets_query_v1_0():
     """
 
     data = []
-    if 'id' in request.args:
+    if "id" in request.args:
         for key in DatasetConfig.get_datasets():
             config = DatasetConfig(key)
-            data.append({
-                'id': key,
-                'value': config.name
-            })
+            data.append({"id": key, "value": config.name})
     else:
         for key in DatasetConfig.get_datasets():
             config = DatasetConfig(key)
-            data.append({
-                'id': key,
-                'value': config.name,
-                'quantum': config.quantum,
-                'help': config.help,
-                'attribution': config.attribution,
-            })
-    data = sorted(data, key=lambda k: k['value'])
+            data.append(
+                {
+                    "id": key,
+                    "value": config.name,
+                    "quantum": config.quantum,
+                    "help": config.help,
+                    "attribution": config.attribution,
+                }
+            )
+    data = sorted(data, key=lambda k: k["value"])
     resp = jsonify(data)
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/quantum/')
+@bp_v1_0.route("/api/v1.0/quantum/")
 def quantum_query_v1_0():
     """
     Returns the quantum of a given dataset.
@@ -173,14 +199,14 @@ def quantum_query_v1_0():
     except ValidationError as e:
         abort(400, str(e))
 
-    config = DatasetConfig(result['dataset'])
+    config = DatasetConfig(result["dataset"])
 
     quantum = config.quantum
 
     return jsonify(quantum)
 
 
-@bp_v1_0.route('/api/v1.0/variables/', methods=['GET'])
+@bp_v1_0.route("/api/v1.0/variables/", methods=["GET"])
 def variables_query_v1_0():
     """
     Returns the available variables for a given dataset.
@@ -199,10 +225,10 @@ def variables_query_v1_0():
 
     args = request.args
 
-    if 'dataset' not in args:
+    if "dataset" not in args:
         raise APIError("Please specify a dataset Using ?dataset='...' ")
 
-    dataset = args.get('dataset')
+    dataset = args.get("dataset")
     config = DatasetConfig(dataset)
 
     data = []
@@ -212,26 +238,28 @@ def variables_query_v1_0():
             if config.variable[v.key].is_hidden:
                 continue
 
-            if ('3d_only' in args) and v.is_surface_only():
+            if ("3d_only" in args) and v.is_surface_only():
                 continue
 
-            if ('vectors_only' in args) and v.key not in config.vector_variables:
+            if ("vectors_only" in args) and v.key not in config.vector_variables:
                 continue
 
-            data.append({
-                'id': v.key,
-                'value': config.variable[v].name,
-                'scale': config.variable[v].scale,
-                'interp':config.variable[v].interpolation,
-                'two_dimensional': v.is_surface_only()
-            })
+            data.append(
+                {
+                    "id": v.key,
+                    "value": config.variable[v].name,
+                    "scale": config.variable[v].scale,
+                    "interp": config.variable[v].interpolation,
+                    "two_dimensional": v.is_surface_only(),
+                }
+            )
 
-    data = sorted(data, key=lambda k: k['value'])
+    data = sorted(data, key=lambda k: k["value"])
 
     return jsonify(data)
 
 
-@bp_v1_0.route('/api/v1.0/depth/')
+@bp_v1_0.route("/api/v1.0/depth/")
 def depth_query_v1_0():
     """
     API Format: /api/v1.0/depth/?dataset=''&variable=''
@@ -249,8 +277,8 @@ def depth_query_v1_0():
     except ValidationError as e:
         abort(400, str(e))
 
-    dataset = result['dataset']
-    variable = result['variable']
+    dataset = result["dataset"]
+    variable = result["variable"]
 
     config = DatasetConfig(dataset)
 
@@ -262,29 +290,22 @@ def depth_query_v1_0():
         v = ds.variables[variable]
 
         if v.has_depth():
-            if 'all' in result.keys():
-                if result['all'].lower() in ['true', 'yes', 'on']:
-                    data.append(
-                        {'id': 'all', 'value': gettext('All Depths')})
+            if "all" in result.keys():
+                if result["all"].lower() in ["true", "yes", "on"]:
+                    data.append({"id": "all", "value": gettext("All Depths")})
 
             for idx, value in enumerate(np.round(ds.depths)):
-                data.append({
-                    'id': idx,
-                    'value': "%d m" % (value)
-                })
+                data.append({"id": idx, "value": "%d m" % (value)})
 
             if len(data) > 0:
-                data.insert(
-                    0, {'id': 'bottom', 'value': gettext('Bottom')})
+                data.insert(0, {"id": "bottom", "value": gettext("Bottom")})
 
-    data = [
-        e for i, e in enumerate(data) if data.index(e) == i
-    ]
+    data = [e for i, e in enumerate(data) if data.index(e) == i]
 
     return jsonify(data)
 
 
-@bp_v1_0.route('/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png')
+@bp_v1_0.route("/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png")
 def scale_v1_0(dataset: str, variable: str, scale: str):
     """
     API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
@@ -296,31 +317,55 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
     Returns a scale bar
     """
 
-
-    bytesIOBuff = plotting.tile.scale({
-        'dataset': dataset,
-        'variable': variable,
-        'scale': scale,
-    })
+    bytesIOBuff = plotting.tile.scale(
+        {
+            "dataset": dataset,
+            "variable": variable,
+            "scale": scale,
+        }
+    )
 
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
 
-@bp_v1_0.route('/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json')
-def range_query_v1_0(dataset: str, variable: str, interp: str, radius: int, neighbours: int, projection: str, extent: str, depth: str, time: int):
+@bp_v1_0.route(
+    "/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json"
+)
+def range_query_v1_0(
+    dataset: str,
+    variable: str,
+    interp: str,
+    radius: int,
+    neighbours: int,
+    projection: str,
+    extent: str,
+    depth: str,
+    time: int,
+):
     extent = list(map(float, extent.split(",")))
 
     minValue, maxValue = plotting.scale.get_scale(
-        dataset, variable, depth, time, projection, extent, interp, radius*1000, neighbours)
-    resp = jsonify({
-        'min': minValue,
-        'max': maxValue,
-    })
+        dataset,
+        variable,
+        depth,
+        time,
+        projection,
+        extent,
+        interp,
+        radius * 1000,
+        neighbours,
+    )
+    resp = jsonify(
+        {
+            "min": minValue,
+            "max": maxValue,
+        }
+    )
     resp.cache_control.max_age = MAX_CACHE
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/data/', methods=['GET'])
+@bp_v1_0.route("/api/v1.0/data/", methods=["GET"])
 def get_data_v1_0():
     """
     Returns a geojson representation of requested model data.
@@ -341,18 +386,20 @@ def get_data_v1_0():
         abort(400, str(e))
 
     cached_file_name = os.path.join(
-        current_app.config['CACHE_DIR'],
+        current_app.config["CACHE_DIR"],
         "data",
-        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson"
-        )
-    
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",
+    )
+
     if os.path.isfile(cached_file_name):
         print(f"Using cached {cached_file_name}")
-        return send_file(cached_file_name, 'application/json')
+        return send_file(cached_file_name, "application/json")
 
-    config = DatasetConfig(result['dataset'])
-    
-    with open_dataset(config, variable=result['variable'], timestamp=result['time']) as ds:
+    config = DatasetConfig(result["dataset"])
+
+    with open_dataset(
+        config, variable=result["variable"], timestamp=result["time"]
+    ) as ds:
 
         lat_var, lon_var = ds.nc_data.latlon_variables
 
@@ -361,42 +408,41 @@ def get_data_v1_0():
         lat_slice = slice(0, lat_var.size, stride)
         lon_slice = slice(0, lon_var.size, stride)
 
-        time_index = ds.nc_data.timestamp_to_time_index(result['time'])     
-        
-        data = ds.nc_data.get_dataset_variable(result['variable'])
+        time_index = ds.nc_data.timestamp_to_time_index(result["time"])
+
+        data = ds.nc_data.get_dataset_variable(result["variable"])
 
         if len(data.shape) == 3:
             data_slice = (time_index, lat_slice, lon_slice)
         else:
-            data_slice = (time_index, result['depth'], lat_slice, lon_slice)
+            data_slice = (time_index, result["depth"], lat_slice, lon_slice)
 
         data = data[data_slice]
 
         bearings = None
-        if 'mag' in result['variable']:
-            with open_dataset(config, variable='bearing', timestamp=result['time']) as ds_bearing:
-                bearings = ds_bearing \
-                                .nc_data \
-                                .get_dataset_variable('bearing')[data_slice]
-                                
+        if "mag" in result["variable"]:
+            with open_dataset(
+                config, variable="bearing", timestamp=result["time"]
+            ) as ds_bearing:
+                bearings = ds_bearing.nc_data.get_dataset_variable("bearing")[
+                    data_slice
+                ]
+
         d = data_array_to_geojson(
-                data.squeeze(drop=True),
-                bearings.squeeze(drop=True), # this is a hack
-                lat_var[lat_slice],
-                lon_var[lon_slice]
-            )
-
-        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
-        with open(cached_file_name, 'w', encoding='utf-8') as f:
-            geojson.dump(d, f)
-        
-
-        return jsonify(
-           d
+            data.squeeze(drop=True),
+            bearings.squeeze(drop=True),  # this is a hack
+            lat_var[lat_slice],
+            lon_var[lon_slice],
         )
 
+        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
+        with open(cached_file_name, "w", encoding="utf-8") as f:
+            geojson.dump(d, f)
 
-@bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
+        return jsonify(d)
+
+
+@bp_v1_0.route("/api/v1.0/class4/<string:q>/<string:class4_id>/")
 def class4_query_v1_0(q: str, class4_id: str):
     """
     API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
@@ -410,20 +456,23 @@ def class4_query_v1_0(q: str, class4_id: str):
     if not class4_id:
         raise APIError("Please Specify an ID ")
 
-    if q == 'forecasts':
+    if q == "forecasts":
         pts = class4.list_class4_forecasts(class4_id)
-    elif q == 'models':
+    elif q == "models":
         pts = class4.list_class4_models(class4_id)
     else:
-        raise APIError(gettext(
-            "Please specify either forecasts or models using /models/ or /forecasts/"))
+        raise APIError(
+            gettext(
+                "Please specify either forecasts or models using /models/ or /forecasts/"
+            )
+        )
 
     resp = jsonify(pts)
     resp.cache_control.max_age = 86400
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/stats/', methods=['GET', 'POST'])
+@bp_v1_0.route("/api/v1.0/stats/", methods=["GET", "POST"])
 def stats_v1_0():
     """
     API Format: /api/v1.0/stats/?query='...'
@@ -439,36 +488,37 @@ def stats_v1_0():
     **Not all components of query are required
     """
 
-    if request.method == 'GET':
+    if request.method == "GET":
         args = request.args
     else:
         args = request.form
-    query = json.loads(args.get('query'))
+    query = json.loads(args.get("query"))
 
-    config = DatasetConfig(query.get('dataset'))
+    config = DatasetConfig(query.get("dataset"))
     with open_dataset(config) as dataset:
-        date = dataset.convert_to_timestamp(query.get('time'))
-        date = {'time': date}
+        date = dataset.convert_to_timestamp(query.get("time"))
+        date = {"time": date}
         query.update(date)
         if not query:
             # Invalid API Check
-            if 'query' not in args:  # Invalid API Check
+            if "query" not in args:  # Invalid API Check
                 raise APIError(
-                    "A Query must be specified in the form /stats/?query='...' ")
+                    "A Query must be specified in the form /stats/?query='...' "
+                )
             # Retrieves Query as JSON based on Request Method
-            query = json.loads(args.get('query'))
+            query = json.loads(args.get("query"))
 
-        dataset = query.get('dataset')  # Retrieves dataset from query
+        dataset = query.get("dataset")  # Retrieves dataset from query
 
         data = areastats(dataset, query)
-        return Response(data, status=200, mimetype='application/json')
+        return Response(data, status=200, mimetype="application/json")
 
 
-@bp_v1_0.route('/api/v1.0/subset/', methods=['GET', 'POST'])
+@bp_v1_0.route("/api/v1.0/subset/", methods=["GET", "POST"])
 def subset_query_v1_0():
 
     args = None
-    if request.method == 'GET':
+    if request.method == "GET":
         args = request.args
     else:
         args = request.form
@@ -476,27 +526,32 @@ def subset_query_v1_0():
     working_dir = None
     subset_filename = None
 
-    if 'area' in args.keys():
+    if "area" in args.keys():
         # Predefined area selected
-        area = args.get('area')                
-        sp = area.split('/', 1)
-        
+        area = args.get("area")
+        sp = area.split("/", 1)
+
         data = utils.misc.list_areas(sp[0], simplify=False)
 
-        b = [x for x in data if x.get('key') == area]
+        b = [x for x in data if x.get("key") == area]
         args = args.to_dict()
-        args['polygons'] = b[0]['polygons']
+        args["polygons"] = b[0]["polygons"]
 
-    config = DatasetConfig(args.get('dataset_name'))
-    time_range = args['time'].split(',')
-    variables = args['variables'].split(',')
-    with open_dataset(config, variable=variables, timestamp=int(time_range[0]), endtime=int(time_range[1])) as dataset:
+    config = DatasetConfig(args.get("dataset_name"))
+    time_range = args["time"].split(",")
+    variables = args["variables"].split(",")
+    with open_dataset(
+        config,
+        variable=variables,
+        timestamp=int(time_range[0]),
+        endtime=int(time_range[1]),
+    ) as dataset:
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
 
 
-@bp_v1_0.route('/api/v1.0/plot/', methods=['GET', 'POST'])
+@bp_v1_0.route("/api/v1.0/plot/", methods=["GET", "POST"])
 def plot_v1_0():
     """
     API Format: /api/v1.0/plot/?query='...'&format
@@ -515,7 +570,7 @@ def plot_v1_0():
     **Not all components of query are required
     """
 
-    if request.method == 'GET':
+    if request.method == "GET":
         args = request.args
     else:
         args = request.form
@@ -523,58 +578,61 @@ def plot_v1_0():
     if "query" not in args:
         raise APIError("Please provide a query.")
 
-    query = json.loads(args.get('query'))
+    query = json.loads(args.get("query"))
 
-    fmt = args.get('format')
-    if fmt == 'json':
+    fmt = args.get("format")
+    if fmt == "json":
+
         def make_response(data, mime):
             b64 = base64.encodebytes(data).decode()
 
-            return Response(json.dumps("data:%s;base64,%s" % (
-                mime,
-                b64
-            )), status=200, mimetype="application/json")
+            return Response(
+                json.dumps("data:%s;base64,%s" % (mime, b64)),
+                status=200,
+                mimetype="application/json",
+            )
+
     else:
+
         def make_response(data, mime):
             return Response(data, status=200, mimetype=mime)
 
-    dataset = query.get('dataset')
-    plottype = query.get('type')
+    dataset = query.get("dataset")
+    plottype = query.get("type")
 
     options = {
-        'format': fmt,
-        'size': args.get('size', '15x9'),
-        'dpi': args.get('dpi', 72)
+        "format": fmt,
+        "size": args.get("size", "15x9"),
+        "dpi": args.get("dpi", 72),
     }
 
     # Determine which plotter we need.
-    if plottype == 'map':
+    if plottype == "map":
         plotter = MapPlotter(dataset, query, **options)
-    elif plottype == 'transect':
+    elif plottype == "transect":
         plotter = TransectPlotter(dataset, query, **options)
-    elif plottype == 'timeseries':
+    elif plottype == "timeseries":
         plotter = TimeseriesPlotter(dataset, query, **options)
-    elif plottype == 'ts':
+    elif plottype == "ts":
         plotter = TemperatureSalinityPlotter(dataset, query, **options)
-    elif plottype == 'sound':
+    elif plottype == "sound":
         plotter = SoundSpeedPlotter(dataset, query, **options)
-    elif plottype == 'profile':
+    elif plottype == "profile":
         plotter = ProfilePlotter(dataset, query, **options)
-    elif plottype == 'hovmoller':
+    elif plottype == "hovmoller":
         plotter = HovmollerPlotter(dataset, query, **options)
-    elif plottype == 'observation':
+    elif plottype == "observation":
         plotter = ObservationPlotter(dataset, query, **options)
-    elif plottype == 'track':
+    elif plottype == "track":
         plotter = TrackPlotter(dataset, query, **options)
-    elif plottype == 'class4':
+    elif plottype == "class4":
         plotter = Class4Plotter(dataset, query, **options)
-    elif plottype == 'stick':
+    elif plottype == "stick":
         plotter = StickPlotter(dataset, query, **options)
     else:
-        raise APIError(
-            "You Have Not Selected a Plot Type - Please Review your Query")
+        raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
 
-    if 'data' in request.args:
+    if "data" in request.args:
         data = plotter.prepare_plot()
         return data
 
@@ -585,25 +643,20 @@ def plot_v1_0():
     else:
         raise FAILURE
 
-    if 'save' in args:
-        response.headers[
-            'Content-Disposition'] = "attachment; filename=\"%s\"" % filename
+    if "save" in args:
+        response.headers["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
     response.cache_control.max_age = 300
 
-    if 'data' in args:
-        plotData = {
-            'data': str(resp),
-            'shape': resp.shape,
-            'mask': str(resp.mask)
-        }
+    if "data" in args:
+        plotData = {"data": str(resp), "shape": resp.shape, "mask": str(resp.mask)}
         plotData = json.dumps(plotData)
-        return Response(plotData, status=200, mimetype='application/json')
+        return Response(plotData, status=200, mimetype="application/json")
 
     return response
 
 
-@bp_v1_0.route('/api/v1.0/colors/')
+@bp_v1_0.route("/api/v1.0/colors/")
 def colors_v1_0():
     """
     API Format: /api/v1.0/colors/
@@ -613,25 +666,25 @@ def colors_v1_0():
 
     args = request.args
     data = [
-        {'id': 'k', 'value': gettext('Black')},
-        {'id': 'b', 'value': gettext('Blue')},
-        {'id': 'g', 'value': gettext('Green')},
-        {'id': 'r', 'value': gettext('Red')},
-        {'id': 'c', 'value': gettext('Cyan')},
-        {'id': 'm', 'value': gettext('Magenta')},
-        {'id': 'y', 'value': gettext('Yellow')},
-        {'id': 'w', 'value': gettext('White')},
+        {"id": "k", "value": gettext("Black")},
+        {"id": "b", "value": gettext("Blue")},
+        {"id": "g", "value": gettext("Green")},
+        {"id": "r", "value": gettext("Red")},
+        {"id": "c", "value": gettext("Cyan")},
+        {"id": "m", "value": gettext("Magenta")},
+        {"id": "y", "value": gettext("Yellow")},
+        {"id": "w", "value": gettext("White")},
     ]
-    if args.get('random'):
-        data.insert(0, {'id': 'rnd', 'value': gettext('Randomize')})
-    if args.get('none'):
-        data.insert(0, {'id': 'none', 'value': gettext('None')})
+    if args.get("random"):
+        data.insert(0, {"id": "rnd", "value": gettext("Randomize")})
+    if args.get("none"):
+        data.insert(0, {"id": "none", "value": gettext("None")})
 
     resp = jsonify(data)
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/colormaps/')
+@bp_v1_0.route("/api/v1.0/colormaps/")
 def colormaps_v1_0():
     """
     API Format: /api/v1.0/colormaps/
@@ -639,20 +692,17 @@ def colormaps_v1_0():
     Returns a list of colourmaps
     """
 
-    data = sorted([
-        {
-            'id': i,
-            'value': n
-        }
-        for i, n in plotting.colormap.colormap_names.items()
-    ], key=lambda k: k['value'])
-    data.insert(0, {'id': 'default', 'value': gettext('Default for Variable')})
+    data = sorted(
+        [{"id": i, "value": n} for i, n in plotting.colormap.colormap_names.items()],
+        key=lambda k: k["value"],
+    )
+    data.insert(0, {"id": "default", "value": gettext("Default for Variable")})
 
     resp = jsonify(data)
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/colormaps.png')
+@bp_v1_0.route("/api/v1.0/colormaps.png")
 def colormap_image_v1_0():
     """
     API Format: /api/v1.0/colormaps.png
@@ -661,12 +711,12 @@ def colormap_image_v1_0():
     """
 
     img = plotting.colormap.plot_colormaps()
-    resp = Response(img, status=200, mimetype='image/png')
+    resp = Response(img, status=200, mimetype="image/png")
     resp.cache_control.max_age = 86400
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/<string:q>/')
+@bp_v1_0.route("/api/v1.0/<string:q>/")
 def query_v1_0(q: str):
     """
     API Format: /api/v1.0/<string:q>/
@@ -678,24 +728,25 @@ def query_v1_0(q: str):
 
     data = []
 
-    if q == 'points':
-        data = utils.misc.list_kml_files('point')
-    elif q == 'lines':
-        data = utils.misc.list_kml_files('line')
-    elif q == 'areas':
-        data = utils.misc.list_kml_files('area')
-    elif q == 'class4':
+    if q == "points":
+        data = utils.misc.list_kml_files("point")
+    elif q == "lines":
+        data = utils.misc.list_kml_files("line")
+    elif q == "areas":
+        data = utils.misc.list_kml_files("area")
+    elif q == "class4":
         data = class4.list_class4_files()
     else:
         raise APIError(
-            "Invalid API Query - Please review the API documentation for help.")
+            "Invalid API Query - Please review the API documentation for help."
+        )
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/<string:q>/<string:q_id>.json')
+@bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")
 def query_id_v1_0(q: str, q_id: str):
     """
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
@@ -704,21 +755,26 @@ def query_id_v1_0(q: str, q_id: str):
     <string:q_id> :
 
     """
-    if q == 'areas':
+    if q == "areas":
         data = utils.misc.list_areas(q_id)
-    elif q == 'class4':
+    elif q == "class4":
         data = class4.list_class4(q_id)
     else:
         raise APIError(
-            "The Specified Parameter is Invalid - Must be one of (areas, class4)")
+            "The Specified Parameter is Invalid - Must be one of (areas, class4)"
+        )
 
     resp = jsonify(data)
     resp.cache_control.max_age = 86400
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json')
-def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_id: str):
+@bp_v1_0.route(
+    "/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json"
+)
+def query_file_v1_0(
+    q: str, projection: str, resolution: int, extent: str, file_id: str
+):
     """
     API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
 
@@ -735,18 +791,14 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     data = []
     max_age = 86400
 
-    if q == 'points':
-        data = utils.misc.points(
-            file_id, projection, resolution, extent)
-    elif q == 'lines':
-        data = utils.misc.lines(
-            file_id, projection, resolution, extent)
-    elif q == 'areas':
-        data = utils.misc.areas(
-            file_id, projection, resolution, extent)
-    elif q == 'class4':
-        data = class4.class4(
-            file_id, projection, resolution, extent)
+    if q == "points":
+        data = utils.misc.points(file_id, projection, resolution, extent)
+    elif q == "lines":
+        data = utils.misc.lines(file_id, projection, resolution, extent)
+    elif q == "areas":
+        data = utils.misc.areas(file_id, projection, resolution, extent)
+    elif q == "class4":
+        data = class4.class4(file_id, projection, resolution, extent)
     else:
         raise FAILURE
 
@@ -755,7 +807,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/timestamps/')
+@bp_v1_0.route("/api/v1.0/timestamps/")
 def timestamps():
     """
     Returns all timestamps available for a given variable in a dataset. This is variable-dependent
@@ -778,8 +830,8 @@ def timestamps():
     except ValidationError as e:
         abort(400, str(e))
 
-    dataset = result['dataset']
-    variable = result['variable']
+    dataset = result["dataset"]
+    variable = result["variable"]
 
     config = DatasetConfig(dataset)
 
@@ -788,8 +840,10 @@ def timestamps():
     if url.endswith(".sqlite3"):
         with SQLiteDatabase(url) as db:
             if variable in config.calculated_variables:
-                data_vars = get_data_vars_from_equation(config.calculated_variables[variable]['equation'],
-                                                        [v.key for v in db.get_data_variables()])
+                data_vars = get_data_vars_from_equation(
+                    config.calculated_variables[variable]["equation"],
+                    [v.key for v in db.get_data_variables()],
+                )
                 vals = db.get_timestamps(data_vars[0])
             else:
                 vals = db.get_timestamps(variable)
@@ -800,103 +854,126 @@ def timestamps():
 
     result = []
     for idx, date in enumerate(converted_vals):
-        if config.quantum == 'month' or config.variable[variable].quantum == 'month':
-            date = datetime.datetime(
-                date.year,
-                date.month,
-                15
-            )
-        result.append({'id': vals[idx], 'value': date})
-    result = sorted(result, key=lambda k: k['id'])
+        if config.quantum == "month" or config.variable[variable].quantum == "month":
+            date = datetime.datetime(date.year, date.month, 15)
+        result.append({"id": vals[idx], "value": date})
+    result = sorted(result, key=lambda k: k["id"])
 
     js = json.dumps(result, cls=DateTimeEncoder)
 
-    resp = Response(js, status=200, mimetype='application/json')
+    resp = Response(js, status=200, mimetype="application/json")
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png')
-def tile_v1_0(projection: str, interp: str, radius: int, neighbours: int, dataset: str, variable: str, time: int, depth: str, scale: str, zoom: int, x: int, y: int):
+@bp_v1_0.route(
+    "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"
+)
+def tile_v1_0(
+    projection: str,
+    interp: str,
+    radius: int,
+    neighbours: int,
+    dataset: str,
+    variable: str,
+    time: int,
+    depth: str,
+    scale: str,
+    zoom: int,
+    x: int,
+    y: int,
+):
     """
-        Produces the map data tiles
+    Produces the map data tiles
     """
 
-    cache_dir = current_app.config['CACHE_DIR']
+    cache_dir = current_app.config["CACHE_DIR"]
     f = os.path.join(cache_dir, request.path[1:])
 
     # Check if the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
     # Render a new tile/image, then cache and send it
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
 
-    img = plotting.tile.plot(projection, x, y, zoom, {
-        'interp': interp,
-        'radius': radius*1000,
-        'neighbours': neighbours,
-        'dataset': dataset,
-        'variable': variable,
-        'time': time,
-        'depth': depth,
-        'scale': scale,
-    })
+    img = plotting.tile.plot(
+        projection,
+        x,
+        y,
+        zoom,
+        {
+            "interp": interp,
+            "radius": radius * 1000,
+            "neighbours": neighbours,
+            "dataset": dataset,
+            "variable": variable,
+            "time": time,
+            "depth": depth,
+            "scale": scale,
+        },
+    )
 
     return _cache_and_send_img(img, f)
 
 
-@bp_v1_0.route('/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
+@bp_v1_0.route(
+    "/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"
+)
 def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     """
-        Generates topographical tiles
+    Generates topographical tiles
     """
 
     bShaded_relief = shaded_relief == "true"
 
-    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
 
     if zoom > 7:
         return send_file(shape_file_dir + "/blank.png")
 
-    cache_dir = current_app.config['CACHE_DIR']
+    cache_dir = current_app.config["CACHE_DIR"]
     f = os.path.join(cache_dir, request.path[1:])
 
     if os.path.isfile(f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
     return _cache_and_send_img(bytesIOBuff, f)
 
 
-@bp_v1_0.route('/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png')
+@bp_v1_0.route(
+    "/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"
+)
 def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
     """
-       Generates bathymetry tiles
+    Generates bathymetry tiles
     """
 
-    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
 
     if zoom > 7:
         return send_file(shape_file_dir + "/blank.png")
 
-    cache_dir = current_app.config['CACHE_DIR']
+    cache_dir = current_app.config["CACHE_DIR"]
     f = os.path.join(cache_dir, request.path[1:])
 
     if os.path.isfile(f):
-        return send_file(f, mimetype='image/png', cache_timeout=MAX_CACHE)
+        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     img = plotting.tile.bathymetry(projection, x, y, zoom, {})
     return _cache_and_send_img(img, f)
 
 
-@bp_v1_0.route('/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>')
+@bp_v1_0.route(
+    "/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>"
+)
 def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     """
-         Serves mbt files
+    Serves mbt files
     """
-    cache_dir = current_app.config['CACHE_DIR']
-    shape_file_dir = current_app.config['SHAPE_FILE_DIR']
+    cache_dir = current_app.config["CACHE_DIR"]
+    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
     requestf = str(os.path.join(cache_dir, request.path[1:]))
     basedir = requestf.rsplit("/", 1)[0]
 
@@ -911,9 +988,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     if os.path.isfile(requestf):
         return send_file(requestf)
 
-    y = (2**zoom-1) - y
-    connection = sqlite3.connect(
-        shape_file_dir + "/{}.mbtiles".format(tiletype))
+    y = (2**zoom - 1) - y
+    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)
@@ -924,15 +1000,15 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     # Write tile to cache and send file
     if not os.path.isdir(basedir):
         os.makedirs(basedir)
-    with open(requestf + ".pbf", 'wb') as f:
+    with open(requestf + ".pbf", "wb") as f:
         f.write(tile[0])
-    with gzip.open(requestf + ".pbf", 'rb') as gzipped:
-        with open(requestf, 'wb') as tileout:
+    with gzip.open(requestf + ".pbf", "rb") as gzipped:
+        with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
 
 
-@bp_v1_0.route('/api/v1.0/observation/datatypes.json')
+@bp_v1_0.route("/api/v1.0/observation/datatypes.json")
 def observation_datatypes_v1_0():
     """
     API Format: /api/v1.0/observation/datatypes.json
@@ -944,8 +1020,8 @@ def observation_datatypes_v1_0():
     max_age = 86400
     data = [
         {
-            'id': dt.key,
-            'value': dt.name,
+            "id": dt.key,
+            "value": dt.name,
         }
         for dt in ob_queries.get_datatypes(DB.session)
     ]
@@ -953,7 +1029,8 @@ def observation_datatypes_v1_0():
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/meta_keys/<string:platform_types>.json')
+
+@bp_v1_0.route("/api/v1.0/observation/meta_keys/<string:platform_types>.json")
 def observation_keys_v1_0(platform_types: str):
     """
     API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
@@ -965,12 +1042,15 @@ def observation_keys_v1_0(platform_types: str):
     **Used in ObservationSelector**
     """
     max_age = 86400
-    data = ob_queries.get_meta_keys(DB.session, platform_types.split(','))
+    data = ob_queries.get_meta_keys(DB.session, platform_types.split(","))
     resp = jsonify(data)
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json')
+
+@bp_v1_0.route(
+    "/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json"
+)
 def observation_values_v1_0(platform_types: str, key: str):
     """
     API Format: /api/v1.0/observation/meta_values/<string:platform_types>.json
@@ -983,14 +1063,13 @@ def observation_values_v1_0(platform_types: str, key: str):
     **Used in ObservationSelector**
     """
     max_age = 86400
-    data = ob_queries.get_meta_values(
-        DB.session, platform_types.split(','), key
-    )
+    data = ob_queries.get_meta_values(DB.session, platform_types.split(","), key)
     resp = jsonify(data)
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/tracktimerange/<string:platform_id>.json')
+
+@bp_v1_0.route("/api/v1.0/observation/tracktimerange/<string:platform_id>.json")
 def observation_tracktime_v1_0(platform_id: str):
     """
     API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
@@ -1003,19 +1082,25 @@ def observation_tracktime_v1_0(platform_id: str):
     """
     max_age = 86400
     platform = DB.session.query(Platform).get(platform_id)
-    data = DB.session.query(
-        DB.func.min(Station.time),
-        DB.func.max(Station.time),
-    ).filter(Station.platform == platform).one()
-    resp = jsonify({
-        'min': data[0].isoformat(),
-        'max': data[1].isoformat(),
-    })
+    data = (
+        DB.session.query(
+            DB.func.min(Station.time),
+            DB.func.max(Station.time),
+        )
+        .filter(Station.platform == platform)
+        .one()
+    )
+    resp = jsonify(
+        {
+            "min": data[0].isoformat(),
+            "max": data[1].isoformat(),
+        }
+    )
     resp.cache_control.max_age = max_age
     return resp
 
 
-@bp_v1_0.route('/api/v1.0/observation/track/<string:query>.json')
+@bp_v1_0.route("/api/v1.0/observation/track/<string:query>.json")
 def observation_track_v1_0(query: str):
     """
     API Format: /api/v1.0/observation/track/<string:query>.json
@@ -1028,100 +1113,100 @@ def observation_track_v1_0(query: str):
 
     **Used in ObservationSelector**
     """
-    query_dict = {
-        key: value
-        for key, value in [ q.split('=') for q in query.split(';')]
-    }
+    query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
     max_age = 86400
     params = {}
 
     MAPPING = {
-        'start_date': 'starttime',
-        'end_date': 'endtime',
-        'platform_type': 'platform_types',
-        'meta_key': 'meta_key',
-        'meta_value': 'meta_value',
+        "start_date": "starttime",
+        "end_date": "endtime",
+        "platform_type": "platform_types",
+        "meta_key": "meta_key",
+        "meta_value": "meta_value",
     }
-    for k,v in query_dict.items():
+    for k, v in query_dict.items():
         if k not in MAPPING:
             continue
 
-        if k in ['start_date', 'end_date']:
+        if k in ["start_date", "end_date"]:
             params[MAPPING[k]] = dateparse(v)
-        elif k in ['datatype', 'meta_key', 'meta_value']:
-            if k == 'meta_key' and v == 'Any':
+        elif k in ["datatype", "meta_key", "meta_value"]:
+            if k == "meta_key" and v == "Any":
                 continue
-            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+            if k == "meta_value" and query_dict.get("meta_key") == "Any":
                 continue
 
             params[MAPPING[k]] = v
-        elif k == 'platform_type':
-            params[MAPPING[k]] = v.split(',')
+        elif k == "platform_type":
+            params[MAPPING[k]] = v.split(",")
         else:
             params[MAPPING[k]] = float(v)
 
-    if 'area' in query_dict:
-        area = json.loads(query_dict.get('area'))
+    if "area" in query_dict:
+        area = json.loads(query_dict.get("area"))
         if len(area) > 1:
             lats = [c[0] for c in area]
             lons = [c[1] for c in area]
-            params['minlat'] = min(lats)
-            params['minlon'] = min(lons)
-            params['maxlat'] = max(lats)
-            params['maxlon'] = max(lons)
+            params["minlat"] = min(lats)
+            params["minlon"] = min(lons)
+            params["maxlat"] = max(lats)
+            params["maxlon"] = max(lons)
         else:
-            params['latitude'] = area[0][0]
-            params['longitude'] = area[0][1]
-            params['radius'] = float(query_dict.get('radius', 10))
+            params["latitude"] = area[0][0]
+            params["longitude"] = area[0][1]
+            params["radius"] = float(query_dict.get("radius", 10))
 
         platforms = ob_queries.get_platforms(DB.session, **params)
         for param in [
-            'minlat', 'maxlat', 'minlon', 'maxlon', 'latitude', 'longitude',
-            'radius'
+            "minlat",
+            "maxlat",
+            "minlon",
+            "maxlon",
+            "latitude",
+            "longitude",
+            "radius",
         ]:
             if param in params:
                 del params[param]
 
-        params['platforms'] = platforms
+        params["platforms"] = platforms
 
     coordinates = ob_queries.get_platform_tracks(
-        DB.session,
-        query_dict.get("quantum", "day"),
-        **params
+        DB.session, query_dict.get("quantum", "day"), **params
     )
 
     if len(coordinates) > 1:
-        df = pd.DataFrame(np.array(coordinates), columns=['id', 'type', 'lon', 'lat'])
-        df['id'] = df.id.astype(int)
-        df['lon'] = (df['lon'] + 360) % 360
+        df = pd.DataFrame(np.array(coordinates), columns=["id", "type", "lon", "lat"])
+        df["id"] = df.id.astype(int)
+        df["lon"] = (df["lon"] + 360) % 360
 
         vc = df.id.value_counts()
         for p_id in vc.where(vc > 1).dropna().index:
             d = {
-                'type': "Feature",
-                'geometry': {
-                    'type': "LineString",
-                    'coordinates': df[['lon', 'lat']][df.id ==
-                                                    p_id].values.tolist()
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": df[["lon", "lat"]][df.id == p_id].values.tolist(),
                 },
-                'properties': {
-                    'id': int(p_id),
-                    'type': df.type[df.id == p_id].values[0].name,
-                    'class': 'observation',
-                }
+                "properties": {
+                    "id": int(p_id),
+                    "type": df.type[df.id == p_id].values[0].name,
+                    "class": "observation",
+                },
             }
             data.append(d)
 
     result = {
-        'type': "FeatureCollection",
-        'features': data,
+        "type": "FeatureCollection",
+        "features": data,
     }
     resp = jsonify(result)
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/point/<string:query>.json')
+
+@bp_v1_0.route("/api/v1.0/observation/point/<string:query>.json")
 def observation_point_v1_0(query: str):
     """
     API Format: /api/v1.0/observation/point/<string:query>.json
@@ -1134,58 +1219,55 @@ def observation_point_v1_0(query: str):
 
     **Used in ObservationSelector**
     """
-    query_dict = {
-        key: value
-        for key, value in [ q.split('=') for q in query.split(';')]
-    }
+    query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
     max_age = 86400
     params = {}
     MAPPING = {
-        'start_date': 'starttime',
-        'end_date': 'endtime',
-        'datatype': 'variable',
-        'platform_type': 'platform_types',
-        'meta_key': 'meta_key',
-        'meta_value': 'meta_value',
-        'mindepth': 'mindepth',
-        'maxdepth': 'maxdepth',
+        "start_date": "starttime",
+        "end_date": "endtime",
+        "datatype": "variable",
+        "platform_type": "platform_types",
+        "meta_key": "meta_key",
+        "meta_value": "meta_value",
+        "mindepth": "mindepth",
+        "maxdepth": "maxdepth",
     }
-    for k,v in query_dict.items():
+    for k, v in query_dict.items():
         if k not in MAPPING:
             continue
 
-        if k in ['start_date', 'end_date']:
+        if k in ["start_date", "end_date"]:
             params[MAPPING[k]] = dateparse(v)
-        elif k in ['datatype', 'meta_key', 'meta_value']:
-            if k == 'meta_key' and v == 'Any':
+        elif k in ["datatype", "meta_key", "meta_value"]:
+            if k == "meta_key" and v == "Any":
                 continue
-            if k == 'meta_value' and query_dict.get('meta_key') == 'Any':
+            if k == "meta_value" and query_dict.get("meta_key") == "Any":
                 continue
 
             params[MAPPING[k]] = v
-        elif k == 'platform_type':
-            params[MAPPING[k]] = v.split(',')
+        elif k == "platform_type":
+            params[MAPPING[k]] = v.split(",")
         else:
             params[MAPPING[k]] = float(v)
 
     checkpoly = False
     with_radius = False
-    if 'area' in query_dict:
-        area = json.loads(query_dict.get('area'))
+    if "area" in query_dict:
+        area = json.loads(query_dict.get("area"))
         if len(area) > 1:
             lats = [c[0] for c in area]
             lons = [c[1] for c in area]
-            params['minlat'] = min(lats)
-            params['minlon'] = min(lons)
-            params['maxlat'] = max(lats)
-            params['maxlon'] = max(lons)
+            params["minlat"] = min(lats)
+            params["minlon"] = min(lons)
+            params["maxlat"] = max(lats)
+            params["maxlon"] = max(lons)
             poly = Polygon(LinearRing(area))
             checkpoly = True
         else:
-            params['latitude'] = area[0][0]
-            params['longitude'] = area[0][1]
-            params['radius'] = float(query_dict.get('radius', 10))
+            params["latitude"] = area[0][0]
+            params["longitude"] = area[0][1]
+            params["radius"] = float(query_dict.get("radius", 10))
             with_radius = True
 
     if with_radius:
@@ -1194,38 +1276,36 @@ def observation_point_v1_0(query: str):
         stations = ob_queries.get_stations(session=DB.session, **params)
 
     if len(stations) > 500:
-        stations = stations[::round(len(stations)/500)]
+        stations = stations[:: round(len(stations) / 500)]
 
     for s in stations:
         if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
             continue
 
         d = {
-            'type': "Feature",
-            'geometry': {
-                'type': "Point",
-                'coordinates': [s.longitude, s.latitude]
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [s.longitude, s.latitude]},
+            "properties": {
+                "type": s.platform.type.name,
+                "id": s.id,
+                "class": "observation",
             },
-            'properties': {
-                'type': s.platform.type.name,
-                'id': s.id,
-                'class': 'observation',
-            }
         }
         if s.name:
-            d['properties']['name'] = s.name
+            d["properties"]["name"] = s.name
 
         data.append(d)
 
     result = {
-        'type': "FeatureCollection",
-        'features': data,
+        "type": "FeatureCollection",
+        "features": data,
     }
     resp = jsonify(result)
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/meta.json')
+
+@bp_v1_0.route("/api/v1.0/observation/meta.json")
 def observation_meta_v1_0():
     """
     API Format: /api/v1.0/observation/meta.json
@@ -1238,27 +1318,28 @@ def observation_meta_v1_0():
     identifier = request.args.get("id", "0")
     max_age = 86400
     data = {}
-    if key == 'station':
+    if key == "station":
         station = DB.session.query(Station).get(identifier)
-        data['Time'] = station.time.isoformat(' ')
+        data["Time"] = station.time.isoformat(" ")
         if station.name:
-            data['Station Name'] = station.name
+            data["Station Name"] = station.name
 
         platform = station.platform
 
-    elif key == 'platform':
+    elif key == "platform":
         platform = DB.session.query(Platform).get(identifier)
     else:
         raise FAILURE
 
     data.update(platform.attrs)
-    data['Platform Type'] = platform.type.name
-    data = { k: data[k] for k in sorted(data) }
+    data["Platform Type"] = platform.type.name
+    data = {k: data[k] for k in sorted(data)}
     resp = jsonify(data)
     resp.cache_control.max_age = max_age
     return resp
 
-@bp_v1_0.route('/api/v1.0/observation/variables/<string:query>.json')
+
+@bp_v1_0.route("/api/v1.0/observation/variables/<string:query>.json")
 def observation_variables_v1_0(query: str):
     """
     API Format: /api/v1.0/observation/variables/<string:query>.json
@@ -1270,34 +1351,35 @@ def observation_variables_v1_0(query: str):
 
     **Used in PointWindow for the observational variable selection**
     """
-    key, identifier = query.split('=')
+    key, identifier = query.split("=")
     data = []
     max_age = 86400
-    if key == 'station':
+    if key == "station":
         station = DB.session.query(Station).get(identifier)
-    elif key == 'platform':
+    elif key == "platform":
         platform = DB.session.query(Platform).get(identifier)
-        station = DB.session.query(Station).filter(
-            Station.platform == platform
-        ).first()
+        station = DB.session.query(Station).filter(Station.platform == platform).first()
     else:
         raise FAILURE
 
     datatype_keys = [
         k[0]
-        for k in DB.session.query(
-            DB.func.distinct(Sample.datatype_key)
-        ).filter(Sample.station == station).all()
+        for k in DB.session.query(DB.func.distinct(Sample.datatype_key))
+        .filter(Sample.station == station)
+        .all()
     ]
 
-    datatypes = DB.session.query(
-        DataType
-    ).filter(DataType.key.in_(datatype_keys)).order_by(DataType.key).all()
+    datatypes = (
+        DB.session.query(DataType)
+        .filter(DataType.key.in_(datatype_keys))
+        .order_by(DataType.key)
+        .all()
+    )
 
     data = [
         {
-            'id': idx,
-            'value': dt.name,
+            "id": idx,
+            "value": dt.name,
         }
         for idx, dt in enumerate(datatypes)
     ]
@@ -1313,28 +1395,24 @@ def after_request(response):
 
     header = response.headers
     # Relying on iptables to keep this safe
-    header['Access-Control-Allow-Origin'] = '*'
-    header['X-XSS-Protection'] = '1; mode=block'
-    header['X-Frame-Options'] = 'SAMEORIGIN'
+    header["Access-Control-Allow-Origin"] = "*"
+    header["X-XSS-Protection"] = "1; mode=block"
+    header["X-Frame-Options"] = "SAMEORIGIN"
 
     return response
 
 
 def _is_cache_valid(dataset: str, f: str) -> bool:
     """
-        Returns True if dataset cache is valid
+    Returns True if dataset cache is valid
     """
 
     config = DatasetConfig(dataset)
     if os.path.isfile(f):
         cache_time = config.cache
         if cache_time is not None:
-            modtime = datetime.datetime.fromtimestamp(
-                os.path.getmtime(f)
-            )
-            age_hours = (
-                datetime.datetime.now() - modtime
-            ).total_seconds() / 3600
+            modtime = datetime.datetime.fromtimestamp(os.path.getmtime(f))
+            age_hours = (datetime.datetime.now() - modtime).total_seconds() / 3600
             if age_hours > cache_time:
                 os.remove(f)
                 return False
@@ -1344,12 +1422,13 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
     else:
         return False
 
+
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
-        Caches a rendered image buffer on disk and sends it to the browser
+    Caches a rendered image buffer on disk and sends it to the browser
 
-        bytesIOBuff: BytesIO object containing image data
-        f: filename of image to be cached
+    bytesIOBuff: BytesIO object containing image data
+    f: filename of image to be cached
     """
     p = os.path.dirname(f)
     if not os.path.isdir(p):
@@ -1359,7 +1438,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff.seek(0)
     dataIO = BytesIO(bytesIOBuff.read())
     im = Image.open(dataIO)
-    im.save(f, format='PNG', optimize=True)  # For cache
+    im.save(f, format="PNG", optimize=True)  # For cache
 
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)

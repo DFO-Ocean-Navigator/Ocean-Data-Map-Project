@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from flask_babel import gettext
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 # Silence a FutureWarning
 from pandas.plotting import register_matplotlib_converters
 

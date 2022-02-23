@@ -7,9 +7,15 @@ import numpy as np
 import numpy.testing as npt
 import pytz
 
-from data.utils import (datetime_to_timestamp, find_ge, find_le,
-                        get_data_vars_from_equation, roll_time,
-                        time_index_to_datetime, trunc)
+from data.utils import (
+    datetime_to_timestamp,
+    find_ge,
+    find_le,
+    get_data_vars_from_equation,
+    roll_time,
+    time_index_to_datetime,
+    trunc,
+)
 
 
 class TestDataUtils(unittest.TestCase):
