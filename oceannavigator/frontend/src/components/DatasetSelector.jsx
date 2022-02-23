@@ -172,7 +172,6 @@ class DatasetSelector extends React.Component {
       this.setState({ 
         loading: true, 
         loadingPercent: 70,  
-        loadingTitle: `${this.state.datasetDepths}` 
       });
       GetDepthsPromise(this.state.dataset, newVariable).then(depthResult => {
         this.setState({
