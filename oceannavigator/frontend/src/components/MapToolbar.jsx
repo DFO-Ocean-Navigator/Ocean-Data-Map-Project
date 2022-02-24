@@ -15,7 +15,8 @@ import PropTypes from "prop-types";
 import { 
   GetPresetPointsPromise,
   GetPresetLinesPromise,
-  GetPresetAreasPromise 
+  GetPresetAreasPromise,
+  GetClass4Promise
 } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
@@ -33,7 +34,8 @@ class MapToolbar extends React.Component {
       pointFiles: [],
       lineFiles: [],
       areaFiles: [],
-      class4Files: {},
+      class4Files_op: {},
+      class4Files_rao: {},
       parser: null,
       showDriftersSelect: false,
       showPointCoordModal: false,
@@ -50,8 +52,8 @@ class MapToolbar extends React.Component {
     this.observationSelect = this.observationSelect.bind(this);
     this.lineSelect = this.lineSelect.bind(this);
     this.areaSelect = this.areaSelect.bind(this);
-    this.class4ButtonHandler = this.class4ButtonHandler.bind(this);
-    this.class4Select = this.class4Select.bind(this);
+    this.class4OpButtonHandler = this.class4OpButtonHandler.bind(this);
+    this.class4RaoButtonHandler = this.class4RaoButtonHandler.bind(this);
     this.observationSelectMenu = this.observationSelectMenu.bind(this);
     this.drifterSelect = this.drifterSelect.bind(this);
     this.setDrifterSelection = this.setDrifterSelection.bind(this);
@@ -74,36 +76,71 @@ class MapToolbar extends React.Component {
     this.props.action(name);
   }
   
-  class4ButtonHandler() {
-    const button = $(ReactDOM.findDOMNode(this.class4button));
-    if (this.class4Picker && this.class4Picker.is(":visible")) {
-      this.class4Picker.hide();
-    } else if (!this.class4Picker) {
-      if (this.class4Picker !== null) {
-        this.class4Picker = null;
+  class4OpButtonHandler() {
+    const button = $(ReactDOM.findDOMNode(this.class4OpButton));
+    if (this.class4OpPicker && this.class4OpPicker.is(":visible")) {
+      this.class4OpPicker.hide();
+    } else if (!this.class4OpPicker) {
+      if (this.class4OpPicker !== null) {
+        this.class4OpPicker = null;
       }
-      this.class4Picker = $(this.class4div).datepicker({
+      this.class4OpPicker = $(this.class4OpDiv).datepicker({
         dateFormat: "yy-mm-dd",
-        beforeShowDay: this.beforeShowDay.bind(this),
+        beforeShowDay: this.beforeShowDay_op.bind(this),
         regional: this.props.i18n.language,
         onSelect: function(text, picker) {
-          this.props.action("show", "class4", this.state.class4Files[text]);
-          this.class4Picker.hide();
+          this.props.action("show", "class4", this.state.class4Files_op[text], "class4_op");
+          this.class4OpPicker.hide();
         }.bind(this),
         defaultDate: this.state.class4Current,
       });
 
-      $(this.class4div).css("left", button.offset().left + "px");
+      $(this.class4OpDiv).css("left", button.offset().left + "px");
     } else {
-      this.class4Picker.show();
+      this.class4OpPicker.show();
     }
     this.forceUpdate();
   }
 
-  beforeShowDay(d) {
+  class4RaoButtonHandler() {
+    const button = $(ReactDOM.findDOMNode(this.class4RaoButton));
+    if (this.class4RaoPicker && this.class4RaoPicker.is(":visible")) {
+      this.class4RaoPicker.hide();
+    } else if (!this.class4RaoPicker) {
+      if (this.class4RaoPicker !== null) {
+        this.class4RaoPicker = null;
+      }
+      this.class4RaoPicker = $(this.class4RaoDiv).datepicker({
+        dateFormat: "yy-mm-dd",
+        beforeShowDay: this.beforeShowDay_rao.bind(this),
+        regional: this.props.i18n.language,
+        onSelect: function(text, picker) {
+          this.props.action("show", "class4", this.state.class4Files_rao[text], "class4_rao");
+          this.class4RaoPicker.hide();
+        }.bind(this),
+        defaultDate: this.state.class4Current,
+      });
+
+      $(this.class4RaoDiv).css("left", button.offset().left + "px");
+    } else {
+      this.class4RaoPicker.show();
+    }
+    this.forceUpdate();
+  }
+
+  beforeShowDay_op(d) {
     const formatted = $.datepicker.formatDate("yy-mm-dd", d);
     return [
-      this.state.class4Files.hasOwnProperty(formatted),
+      this.state.class4Files_op.hasOwnProperty(formatted),
+      "",
+      null
+    ];
+  }
+
+  beforeShowDay_rao(d) {
+    const formatted = $.datepicker.formatDate("yy-mm-dd", d);
+    return [
+      this.state.class4Files_rao.hasOwnProperty(formatted),
       "",
       null
     ];
@@ -137,22 +174,23 @@ class MapToolbar extends React.Component {
       console.error(error);
     });
 
-    $.ajax({
-      url: "/api/v1.0/class4/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          class4Files: data.reduce(function(map, obj) {
-            map[obj.name] = obj.id;
-            return map;
-          }, {}),
-          class4Current: data[0].name,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(`Failed to get class4: ${status}`);
-      }
+    GetClass4Promise().then(result => {
+      this.setState({
+        class4Files_op: result.data.class4_op.reduce(function(map, obj) {
+          map[obj.name] = obj.id;
+          return map;
+        }, {}),
+        class4Current_op: result.data.class4_op[0].name,
+
+        class4Files_rao: result.data.class4_rao.reduce(function(map, obj) {
+          map[obj.name] = obj.id;
+          return map;
+        }, {}),
+        class4Current_rao: result.data.class4_rao[0].name
+      });
+    },
+    error => {
+      console.error(error);
     });
   }
 
@@ -261,11 +299,6 @@ class MapToolbar extends React.Component {
         this.props.action("show", "areas", key);
         break;
     }
-  }
-
-  // Class4 selection
-  class4Select(key) {
-    this.props.action("show", "class4", key);
   }
 
   // When an option is clicked from the drifter button
@@ -652,12 +685,29 @@ class MapToolbar extends React.Component {
               id="class4"
               name="class4"
               title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
-              onClick={this.class4ButtonHandler}
-              ref={(b) => this.class4button = b}
             >
-              <MenuItem>
-                <div ref={(d) => this.class4div = d}/>
-              </MenuItem>
+              <NavDropdown
+                id="class4_op"
+                name="class4_op"
+                title={"OceanPredict"}
+                onClick={this.class4OpButtonHandler}
+                ref={(bo) => this.class4OpButton = bo}
+              >
+                <MenuItem>
+                  <div ref={(dop) => this.class4OpDiv = dop}/>
+                </MenuItem>
+              </NavDropdown>
+              <NavDropdown
+                id="class4_rao"
+                name="class4_rao"
+                title={"RIOPS Assimilated Observations "}
+                onClick={this.class4RaoButtonHandler}
+                ref={(br) => this.class4RaoButton = br}
+              >
+                <MenuItem>
+                  <div ref={(drao) => this.class4RaoDiv = drao}/>
+                </MenuItem>
+              </NavDropdown> 
             </NavDropdown>
             <NavDropdown
               id="observation"

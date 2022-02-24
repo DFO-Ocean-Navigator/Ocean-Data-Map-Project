@@ -392,9 +392,8 @@ def get_data_v1_0():
            d
         )
 
-
-@bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_id>/')
-def class4_query_v1_0(q: str, class4_id: str):
+@bp_v1_0.route('/api/v1.0/class4/<string:class4_type>/<string:q>/<string:class4_id>/')
+def class4_query_v1_0(class4_type : str, q: str, class4_id: str):
     """
     API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
 
@@ -408,9 +407,9 @@ def class4_query_v1_0(q: str, class4_id: str):
         raise APIError("Please Specify an ID ")
 
     if q == 'forecasts':
-        pts = class4.list_class4_forecasts(class4_id)
+        pts = class4.list_class4_forecasts(class4_id, class4_type)
     elif q == 'models':
-        pts = class4.list_class4_models(class4_id)
+        pts = class4.list_class4_models(class4_id, class4_type)
     else:
         raise APIError(gettext(
             "Please specify either forecasts or models using /models/ or /forecasts/"))
@@ -741,9 +740,12 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     elif q == 'areas':
         data = utils.misc.areas(
             file_id, projection, resolution, extent)
-    elif q == 'class4':
+    elif q == 'class4_op':
         data = class4.class4(
-            file_id, projection, resolution, extent)
+            q, file_id, projection, resolution, extent)
+    elif q == 'class4_rao':
+        data = class4.class4(
+            q, file_id, projection, resolution, extent)            
     else:
         raise FAILURE
 

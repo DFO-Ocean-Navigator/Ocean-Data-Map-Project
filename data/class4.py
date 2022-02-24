@@ -24,52 +24,64 @@ def list_class4_files():
     not accessible, this function falls back to the slow method of generating
     the list on the fly.
     """
-    cache_file_name = os.path.join(current_app.config['CACHE_DIR'],
-                                   'class4_files.pickle')
-    try:
-        fp = open(cache_file_name, 'rb')
-    except IOError as e:
-        msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
-               Falling back to slow method for generating the list of 
-               Class 4 files on the fly.
-               """
-        print(msg)
-        return _list_class4_files_slowly()
 
-    # We need to read from the cache file. To ensure another process is not
-    # currently *writing* to the cache file, first acquire a shared lock (i.e.,
-    # a read lock) on the file. We make at most "max_tries" attempts to acquire
-    # the lock.
-    num_tries, max_tries = 0, 10
-    attempt_lock, lock_acquired = True, False
-    attempt_lock = True
-    while attempt_lock:
+    pickle_files = ['class4_files.pickle', 'class4_ola_files.pickle']
+    data = {
+            'class4_op' : None,
+            "class4_rao" : None
+        }
+
+    for p in pickle_files:
+        cache_file_name = os.path.join(current_app.config['CACHE_DIR'], p)
         try:
-            fcntl.lockf(fp, fcntl.LOCK_SH | fcntl.LOCK_NB)
-        except IOError:
-            num_tries += 1
-            if num_tries == max_tries:
-                lock_acquired = False
-                attempt_lock = False
+            fp = open(cache_file_name, 'rb')
+        except IOError as e:
+            msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
+                   Falling back to slow method for generating the list of 
+                   Class 4 files on the fly.
+                   """
+            print(msg)
+            return _list_class4_files_slowly()
+
+        # We need to read from the cache file. To ensure another process is not
+        # currently *writing* to the cache file, first acquire a shared lock (i.e.,
+        # a read lock) on the file. We make at most "max_tries" attempts to acquire
+        # the lock.
+        num_tries, max_tries = 0, 10
+        attempt_lock, lock_acquired = True, False
+        attempt_lock = True
+        while attempt_lock:
+            try:
+                fcntl.lockf(fp, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            except IOError:
+                num_tries += 1
+                if num_tries == max_tries:
+                    lock_acquired = False
+                    attempt_lock = False
+                else:
+                    time.sleep(1)
             else:
-                time.sleep(1)
+                lock_acquired = True
+                attempt_lock = False
+
+        if lock_acquired:
+            result = pickle.load(fp)
+            fcntl.lockf(fp, fcntl.LOCK_UN)
         else:
-            lock_acquired = True
-            attempt_lock = False
+            msg = """"Warning: Unable to acquire read lock on Class 4 cache file.
+                Falling back to slow method for generating the list of 
+                Class 4 files on the fly.
+                """
+            print(msg)
+            result = _list_class4_files_slowly()
+        fp.close()
 
-    if lock_acquired:
-        result = pickle.load(fp)
-        fcntl.lockf(fp, fcntl.LOCK_UN)
-    else:
-        msg = """"Warning: Unable to acquire read lock on Class 4 cache file.
-               Falling back to slow method for generating the list of 
-               Class 4 files on the fly.
-               """
-        print(msg)
-        result = _list_class4_files_slowly()
-    fp.close()
+        if 'ola' in p:
+            data['class4_rao'] = result
+        else:
+            data["class4_op"] = result
 
-    return result
+    return data
 
 
 def _list_class4_files_slowly():
@@ -79,7 +91,7 @@ def _list_class4_files_slowly():
 
 def list_class4(d):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
+    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d[7:15], d)
 
     with xr.open_dataset(dataset_url) as ds:
         lats = ds['latitude'][:]
@@ -123,10 +135,15 @@ def get_view_from_extent(extent):
     return view
 
 
-def class4(class4_id, projection, resolution, extent):
+def class4(class4_type, class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11], class4_id)
+    if class4_type == 'class4_op':
+        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+    else:
+        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+
+    dataset_url = fname_pattern % (
+            class4_id[7:11], class4_id[7:15], class4_id)
 
     proj = pyproj.Proj(projection)
     view = get_view_from_extent(extent)
@@ -174,6 +191,7 @@ def class4(class4_id, projection, resolution, extent):
                 'error': float(rmse[idx]),
                 'error_norm': float(rmse_norm[idx]),
                 'type': 'class4',
+                'class4_type' : class4_type,
                 'resolution': 0,
             },
         })
@@ -186,7 +204,7 @@ def class4(class4_id, projection, resolution, extent):
     return result
 
 
-def list_class4_forecasts(class4_id: str) -> List[dict]:
+def list_class4_forecasts(class4_id: str, class4_type: str) -> List[dict]:
     """Get list of all forecasts for a given class4 id.
 
     Arguments:
@@ -197,8 +215,12 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
 
         List of dictionaries with `id` and `name` fields.
     """
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11], class4_id.rsplit('_', maxsplit=1)[0])
+    if class4_type == 'class4_op':
+        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+    else:
+        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+    dataset_url = fname_pattern % (
+        class4_id[7:11], class4_id[7:15], class4_id.rsplit('_', maxsplit=1)[0])
     with xr.open_dataset(dataset_url, decode_times=False) as ds:
         forecast_date = [
             f"{d:%d %B %Y}" for d in cftime.num2date(ds.modeljuld, ds.modeljuld.units)
@@ -221,7 +243,7 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
     return result
 
 
-def list_class4_models(class4_id: str) -> List[dict]:
+def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
     """Get list of all ocean models for a given class4 id.
 
     Arguments:
@@ -233,9 +255,14 @@ def list_class4_models(class4_id: str) -> List[dict]:
         List of dictionaries with `id` and `value` fields.
     """
 
+    if class4_type == 'class4_op':
+        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+    else:
+        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+
     yyyymmdd = class4_id[7:15]
     yyyy = yyyymmdd[:4]
-    path = Path(current_app.config["CLASS4_PATH"], yyyy, yyyymmdd)
+    path = Path(fname_pattern, yyyy, yyyymmdd)
 
     result = []
     # file pattern globbing != regex

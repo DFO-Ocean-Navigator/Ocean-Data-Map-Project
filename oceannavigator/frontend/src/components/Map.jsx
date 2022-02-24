@@ -186,6 +186,14 @@ export default class Map extends React.PureComponent {
             url = `/api/v1.0/observation/track/` +
               `${this.props.state.vectorid}.json`
             break;
+          case "class4":
+            url = `/api/v1.0` +
+              `/${this.props.state.class4type}` +
+              `/${projection.getCode()}` +
+              `/${Math.round(resolution)}` +
+              `/${extent.map(function (i) { return Math.round(i); })}` +
+              `/${this.props.state.vectorid}.json`
+            break;                       
           default:
             url = `/api/v1.0/${this.props.state.vectortype}` +
               `/${projection.getCode()}` +
