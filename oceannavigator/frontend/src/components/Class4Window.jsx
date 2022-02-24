@@ -172,6 +172,7 @@ Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
   dataset: PropTypes.string,
   class4id: PropTypes.array,
+  class4type: PropTypes.string,
   init: PropTypes.object,
   action: PropTypes.func,
 };
