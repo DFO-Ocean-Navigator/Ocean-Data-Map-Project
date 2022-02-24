@@ -18,10 +18,10 @@ class Parser:
         # highest, followed by exponentiation, then multiplication/division and
         # addition/subtraction is last on the list.
         self.precedence = (
-            ('left', 'PLUS', 'MINUS'),
-            ('left', 'TIMES', 'DIVIDE'),
-            ('left', 'POWER'),
-            ('right', 'UMINUS'),
+            ("left", "PLUS", "MINUS"),
+            ("left", "TIMES", "DIVIDE"),
+            ("left", "POWER"),
+            ("right", "UMINUS"),
         )
         self.parser = yacc.yacc(module=self)
         self.data = None
@@ -79,9 +79,9 @@ class Parser:
     def get_key_for_variable_full_depth(self, variable_key):
         variable = self.data.variables[variable_key]
 
-        if 'depth' in variable_key:
+        if "depth" in variable_key:
             depth_levels = variable.shape[0]  # Expecting (depth shape)
-            return (slice(0, depth_levels), )
+            return (slice(0, depth_levels),)
 
         key = list(self.key)
         # Expecting (time, depth, lat, lon) shape
@@ -93,59 +93,55 @@ class Parser:
     # Similar to the Lexer, these p_*, methods cannot have proper python
     # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
-        'statement : expression'
+        "statement : expression"
         self.result = t[1]
 
     def p_expression_variable(self, t):
-        'expression : ID'
+        "expression : ID"
         t[0] = self.data.variables[t[1]][
-            self.get_key_for_variable(
-                self.data.variables[t[1]]
-            )
+            self.get_key_for_variable(self.data.variables[t[1]])
         ]
 
     def p_expression_variable_full_depth(self, t):
-        '''expression : LBRKT ID RBRKT'''
+        """expression : LBRKT ID RBRKT"""
 
-        t[0] = self.data.variables[t[2]][
-            self.get_key_for_variable_full_depth(t[2])
-        ]
+        t[0] = self.data.variables[t[2]][self.get_key_for_variable_full_depth(t[2])]
 
     def p_expression_uop(self, t):
-        '''expression : MINUS expression %prec UMINUS'''
+        """expression : MINUS expression %prec UMINUS"""
         t[0] = -t[2]
 
     def p_expression_binop(self, t):
-        '''expression : expression PLUS expression
-                    | expression MINUS expression
-                    | expression TIMES expression
-                    | expression DIVIDE expression
-                    | expression POWER NUMBER'''
-        if t[2] == '+':
+        """expression : expression PLUS expression
+        | expression MINUS expression
+        | expression TIMES expression
+        | expression DIVIDE expression
+        | expression POWER NUMBER"""
+        if t[2] == "+":
             t[0] = t[1] + t[3]
-        elif t[2] == '-':
+        elif t[2] == "-":
             t[0] = t[1] - t[3]
-        elif t[2] == '*':
+        elif t[2] == "*":
             t[0] = t[1] * t[3]
-        elif t[2] == '/':
+        elif t[2] == "/":
             t[0] = t[1] / t[3]
-        elif t[2] == '^':
+        elif t[2] == "^":
             t[0] = t[1] ** t[3]
 
     def p_expression_group(self, t):
-        'expression : LPAREN expression RPAREN'
+        "expression : LPAREN expression RPAREN"
         t[0] = t[2]
 
     def p_expression_number(self, t):
-        'expression : NUMBER'
+        "expression : NUMBER"
         t[0] = t[1]
 
     def p_expression_const(self, t):
-        'expression : CONST'
+        "expression : CONST"
         t[0] = t[1]
 
     def p_expression_function(self, t):
-        'expression : ID LPAREN arguments RPAREN'
+        "expression : ID LPAREN arguments RPAREN"
         fname = t[1]
         arg_list = t[3]
         if fname in dir(functions):
@@ -154,18 +150,19 @@ class Parser:
             raise SyntaxError
 
     def p_arguments(self, t):
-        'arguments : argument'
+        "arguments : argument"
         t[0] = [t[1]]
 
     def p_arguments_1(self, t):
-        'arguments : arguments COMMA argument'
+        "arguments : arguments COMMA argument"
         t[0] = t[1]
         t[1].append(t[3])
 
     def p_argument(self, t):
-        'argument : expression'
+        "argument : expression"
         t[0] = t[1]
 
     def p_error(self, t):
         raise SyntaxError(
-            'Syntax error in equation: {}...{}'.format(self.expression, t))
+            "Syntax error in equation: {}...{}".format(self.expression, t)
+        )

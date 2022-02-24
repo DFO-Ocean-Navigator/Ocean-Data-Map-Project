@@ -55,7 +55,9 @@ def open_dataset(dataset, **kwargs):
     try:
         model_class = MODEL_CLASSES[getattr(dataset, "model_class", "").lower()]
     except (AttributeError, KeyError):
-        raise ValueError(f"Missing or unrecongized model_class attribute in config for dataset {dataset}")
+        raise ValueError(
+            f"Missing or unrecongized model_class attribute in config for dataset {dataset}"
+        )
 
     kwargs.update(
         {
