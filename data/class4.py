@@ -33,6 +33,12 @@ def list_class4_files():
 
     for p in pickle_files:
         cache_file_name = os.path.join(current_app.config['CACHE_DIR'], p)
+
+        if 'ola' in p:
+            class4_path = current_app.config['CLASS4_OLA_PATH']
+        else:
+            class4_path = current_app.config['CLASS4_PATH']
+
         try:
             fp = open(cache_file_name, 'rb')
         except IOError as e:
@@ -41,7 +47,7 @@ def list_class4_files():
                    Class 4 files on the fly.
                    """
             print(msg)
-            return _list_class4_files_slowly()
+            return _list_class4_files_slowly(class4_path)
 
         # We need to read from the cache file. To ensure another process is not
         # currently *writing* to the cache file, first acquire a shared lock (i.e.,
@@ -73,7 +79,7 @@ def list_class4_files():
                 Class 4 files on the fly.
                 """
             print(msg)
-            result = _list_class4_files_slowly()
+            result = _list_class4_files_slowly(class4_path)
         fp.close()
 
         if 'ola' in p:
@@ -84,8 +90,7 @@ def list_class4_files():
     return data
 
 
-def _list_class4_files_slowly():
-    class4_path = current_app.config['CLASS4_PATH']
+def _list_class4_files_slowly(class4_path):
     return generate_class4_list.list_class4_files(class4_path)
 
 
