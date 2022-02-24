@@ -6,9 +6,9 @@ from flask_babel import gettext
 import plotting.utils as utils
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
+from oceannavigator.dataset_config import DatasetConfig
 from plotting.point import PointPlotter
 from utils.errors import ClientError
-from oceannavigator.dataset_config import DatasetConfig
 
 
 class ProfilePlotter(PointPlotter):

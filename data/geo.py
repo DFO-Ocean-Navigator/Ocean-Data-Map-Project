@@ -1,7 +1,9 @@
-import numpy as np
-import geopy
-from geopy.distance import geodesic, GeodesicDistance
 import datetime
+
+import geopy
+import numpy as np
+from geopy.distance import GeodesicDistance, geodesic
+
 
 def bearing(lat0, lon0, lat1, lon1):
     lat0_rad = np.radians(lat0)

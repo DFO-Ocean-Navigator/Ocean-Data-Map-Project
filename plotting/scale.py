@@ -9,6 +9,7 @@ from data import open_dataset
 from oceannavigator import DatasetConfig
 from plotting.utils import normalize_scale
 
+
 def __magnitude(a, b):
     return np.sqrt(a.dot(a) + b.dot(b))
 

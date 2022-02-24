@@ -5,8 +5,8 @@ import numpy as np
 import pint
 from netCDF4 import Dataset
 
-from plotting.plotter import Plotter
 from oceannavigator import DatasetConfig
+from plotting.plotter import Plotter
 
 
 class PointPlotter(Plotter):

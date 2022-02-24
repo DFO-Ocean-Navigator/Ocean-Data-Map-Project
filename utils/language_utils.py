@@ -1,4 +1,5 @@
-from typing import get_type_hints, Any
+from typing import Any, get_type_hints
+
 
 def return_type(f):
 	try:
