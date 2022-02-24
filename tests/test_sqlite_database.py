@@ -6,17 +6,19 @@ from data.sqlite_database import SQLiteDatabase
 
 
 class TestSqliteDatabase(TestCase):
-
     def setUp(self):
-        self.historical_db = 'tests/testdata/databases/Historical.sqlite3'
-        self.historical_timestamps = sorted([2144966400,
-                                             2145052800,
-                                             2145139200,
-                                             2145225600,
-                                             2145312000,
-                                             2145398400,
-                                             2145484800
-                                             ])
+        self.historical_db = "tests/testdata/databases/Historical.sqlite3"
+        self.historical_timestamps = sorted(
+            [
+                2144966400,
+                2145052800,
+                2145139200,
+                2145225600,
+                2145312000,
+                2145398400,
+                2145484800,
+            ]
+        )
 
     def test_get_timestamps_returns_correct_timestamps_for_historical(self):
 
@@ -43,8 +45,7 @@ class TestSqliteDatabase(TestCase):
 
     def test_get_all_dimensions_returns_dims(self):
 
-        expected_dims = sorted(
-            ['axis_nbounds', 'depthv', 'time_counter', 'x', 'y'])
+        expected_dims = sorted(["axis_nbounds", "depthv", "time_counter", "x", "y"])
 
         with SQLiteDatabase(self.historical_db) as db:
 
@@ -83,7 +84,7 @@ class TestSqliteDatabase(TestCase):
             self.assertEqual(expected_value, latest)
 
     def test_get_earliest_timestamp_returns_earliest_timestamp(self):
-    
+
         expected_value = 2144881800
 
         with SQLiteDatabase(self.historical_db) as db:
@@ -99,20 +100,19 @@ class TestSqliteDatabase(TestCase):
             variables = db.get_data_variables()
 
             self.assertEqual(len(variables), 2)
-            self.assertTrue('vo' in variables)
-            self.assertTrue('zos' in variables)
-            self.assertEqual(
-                variables['vo'].name, "Sea Water Y Velocity")
-            self.assertEqual(variables['vo'].unit, "m/s")
+            self.assertTrue("vo" in variables)
+            self.assertTrue("zos" in variables)
+            self.assertEqual(variables["vo"].name, "Sea Water Y Velocity")
+            self.assertEqual(variables["vo"].unit, "m/s")
 
     def test_get_netcdf_files_returns_correct_files_for_historical(self):
         expected_nc_files = [
-            "/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc"]
+            "/home/nabil/test-mapper/ORCA025-CMC-TRIAL_1d_grid_V_2017122700.nc"
+        ]
 
         with SQLiteDatabase(self.historical_db) as db:
 
-            nc_files = sorted(db.get_netcdf_files(
-                self.historical_timestamps, ["vo"]))
+            nc_files = sorted(db.get_netcdf_files(self.historical_timestamps, ["vo"]))
 
             self.assertTrue(expected_nc_files == nc_files)
 
@@ -120,8 +120,7 @@ class TestSqliteDatabase(TestCase):
 
         with SQLiteDatabase(self.historical_db) as db:
 
-            ncfiles = db.get_netcdf_files(
-                self.historical_timestamps, "fake_variable")
+            ncfiles = db.get_netcdf_files(self.historical_timestamps, "fake_variable")
             timestamps = db.get_timestamps("fake_variable")
             dims = db.get_variable_dims("fake_variable")
             units = db.get_variable_units("fake_variable")
@@ -132,5 +131,5 @@ class TestSqliteDatabase(TestCase):
             self.assertFalse(units)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
