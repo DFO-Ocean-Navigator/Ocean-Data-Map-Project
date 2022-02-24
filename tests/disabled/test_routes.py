@@ -1,14 +1,16 @@
-import unittest
-import json
 import base64
-import os
-from oceannavigator import app, misc
-import mock
 import datetime
-from flask import Response
+import json
+import os
+import unittest
+
+import mock
 import numpy as np
-import data
 import views
+from flask import Response
+
+import data
+from oceannavigator import app, misc
 
 
 class TestRoutes(unittest.TestCase):

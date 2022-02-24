@@ -1,14 +1,15 @@
-import requests
-import time
-import logging
-import numpy as np
-import getopt
 import csv
-
-import sys, os, shutil
-
+import getopt
 import json
+import logging
+import os
+import shutil
+import sys
+import time
 from urllib.parse import urlencode
+
+import numpy as np
+import requests
 
 
 class ONav_Profiling_Driver():

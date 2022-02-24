@@ -18,7 +18,7 @@ def create_tables():
     db.create_all()
 
 
-from .orm.platform import Platform, PlatformMetadata
-from .orm.station import Station
-from .orm.sample import Sample
 from .orm.datatype import DataType
+from .orm.platform import Platform, PlatformMetadata
+from .orm.sample import Sample
+from .orm.station import Station

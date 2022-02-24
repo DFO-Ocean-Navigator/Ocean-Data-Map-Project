@@ -6,17 +6,18 @@ into one file per drifter
 '''
 import os
 import re
-import pandas as pd
-import numpy as np
-from netCDF4 import Dataset
-from datetime import datetime
+import sys
 import time
+from datetime import datetime
+
 import geopy
 import geopy.distance
-from scipy import interpolate
-import sys
+import numpy as np
+import pandas as pd
 import scipy
 import scipy.fftpack
+from netCDF4 import Dataset
+from scipy import interpolate
 
 dirname = "/data/drifter/raw/"
 shareddir = "/data/drifter/output/"

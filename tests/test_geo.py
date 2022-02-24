@@ -1,6 +1,9 @@
 import unittest
+
 import geopy
+
 from data.geo import *
+
 
 class TestGeo(unittest.TestCase):
 

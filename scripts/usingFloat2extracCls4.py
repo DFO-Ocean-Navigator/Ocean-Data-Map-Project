@@ -8,17 +8,20 @@ and
 @author: xuj
 """
 
-import cPickle as pickle 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from datetime import datetime
-from scipy import interpolate
+import errno
 #dt0= datetime.strptime(timeStr, "%Y-%m-%d %H:%M")
-import os,sys,errno
-from netCDF4 import Dataset
+import os
+import sys
+from datetime import datetime
 
+import cPickle as pickle
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+from netCDF4 import Dataset
 from novaFloatGiopsIce import novafloatIce
+from scipy import interpolate
+
 global novaId 
 
 def getOutPath():

@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
+import datetime
+import os
 import unittest
 
-from data.observational import (
-    init_db, create_tables, db, Platform, DataType, queries as q
-)
-
-import pandas as pd
 import numpy as np
-import os
-import datetime
+import pandas as pd
+
+from data.observational import DataType, Platform, create_tables, db, init_db
+from data.observational import queries as q
+
 
 class TestObservationalQueries(unittest.TestCase):
 
