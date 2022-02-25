@@ -127,22 +127,36 @@ class CalculatedArray():
         data_array = self._parser.parse(
             self._expression, self._parent, key, self._dims)
 
-        keys = [k if type(k) is slice else slice(k,k+1,None) for k in key]
-        coords = {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims,keys)}
-        arr_shape = [c.shape[0] for c in coords.values()]
+        key = self._format_key(key)
+        coords = self._calculate_coords(key)            
 
-        return xr.DataArray(
-                    data = np.reshape(data_array.data, arr_shape), 
-                    dims = self._dims,
-                    coords = coords,
-                    attrs = self.attrs
-                )
+        if data_array.ndim != len(self._dims):
+            shape = [k.stop-k.start if isinstance(k,slice) else 1 for k in key]
+            data_array = np.reshape(data_array, shape)
+
+        return xr.DataArray(data_array, coords=coords, attrs=self.attrs)
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
         # declared dims in datasetconfig.json
         return tuple(self._parent[s].shape[0]
                      for s in self._dims)
+
+    def _calculate_coords(self, key) -> dict:
+        # Determine coordinates of calculated array based 
+        # on key, its declared dims, and parent coords     
+        if self._parent.coords:
+            return {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims, key)}
+        return {}
+
+    def _format_key(self, key) -> list:
+        # ensure key and its elements are iterable. This ensures 
+        # coords have length > 0
+        try:
+            key = [[k] if isinstance(k, int) else k for k in key]
+        except TypeError:
+            key = [key]
+        return key
 
     @property
     def attrs(self):
