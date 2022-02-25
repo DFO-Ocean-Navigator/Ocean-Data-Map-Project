@@ -1,8 +1,10 @@
-from routes.api_v1_0 import plot_v1_0
-from oceannavigator import create_app
 import json
 import unittest
 from urllib.parse import urlencode
+
+from oceannavigator import create_app
+from routes.api_v1_0 import plot_v1_0
+
 
 # Tests Transect and Hovmoller plot requests.
 # We only are considering the status code

@@ -1,10 +1,11 @@
 import ast
-from plotting.scriptGenerator import generatePython, generateR
-from oceannavigator import create_app
 import hashlib
 import json
 import unittest
 from io import BytesIO
+
+from oceannavigator import create_app
+from plotting.scriptGenerator import generatePython, generateR
 
 
 class TestScriptGenerator(unittest.TestCase):

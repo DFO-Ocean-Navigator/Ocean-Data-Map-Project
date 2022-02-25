@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 
+
 class QuantumSchema(Schema):
     """
     Defines the schema for the `/api/v1.0/quantum?...`

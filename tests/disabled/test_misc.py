@@ -1,9 +1,12 @@
-import unittest
-from unittest.mock import MagicMock, Mock, patch 
 import os
+import unittest
+from unittest.mock import MagicMock, Mock, patch
+
 import numpy as np
-from utils.misc import *
+
 from oceannavigator import create_app
+from utils.misc import *
+
 
 class TestMisc(unittest.TestCase):
 

@@ -4,20 +4,20 @@ import time
 import dateutil.parser
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pytz
-from geopy.distance import distance
 import visvalingamwyatt as vw
 from flask_babel import gettext
+from geopy.distance import distance
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import interp1d
 
-import plotting.utils as utils
 import plotting.colormap as colormap
+import plotting.utils as utils
 from data import open_dataset
-from data.utils import datetime_to_timestamp
-from data.observational import db, Platform, DataType, Station, Sample
+from data.observational import DataType, Platform, Sample, Station, db
 from data.observational.queries import get_platform_variable_track
+from data.utils import datetime_to_timestamp
 from plotting.plotter import Plotter
 
 

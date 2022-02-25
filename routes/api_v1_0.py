@@ -7,11 +7,19 @@ import shutil
 import sqlite3
 from io import BytesIO
 
-import data.class4 as class4
-import data.observational.queries as ob_queries
 import geojson
 import numpy as np
 import pandas as pd
+from dateutil.parser import parse as dateparse
+from flask import (Blueprint, Response, abort, current_app, jsonify, request,
+                   send_file, send_from_directory)
+from flask_babel import gettext
+from marshmallow.exceptions import ValidationError
+from PIL import Image
+from shapely.geometry import LinearRing, Point, Polygon
+
+import data.class4 as class4
+import data.observational.queries as ob_queries
 import plotting.colormap
 import plotting.scale
 import plotting.tile
@@ -23,13 +31,7 @@ from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
 from data.utils import (DateTimeEncoder, get_data_vars_from_equation,
                         time_index_to_datetime)
-from dateutil.parser import parse as dateparse
-from flask import (Blueprint, Response, abort, current_app, jsonify, request,
-                   send_file, send_from_directory)
-from flask_babel import gettext
-from marshmallow.exceptions import ValidationError
 from oceannavigator import DatasetConfig
-from PIL import Image
 from plotting.class4 import Class4Plotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
@@ -43,7 +45,6 @@ from plotting.timeseries import TimeseriesPlotter
 from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
-from shapely.geometry import LinearRing, Point, Polygon
 from utils.errors import APIError, ClientError, ErrorBase
 
 from .schemas import (DepthSchema, GenerateScriptSchema, GetDataSchema,
