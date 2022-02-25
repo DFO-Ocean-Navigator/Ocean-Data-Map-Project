@@ -1,16 +1,18 @@
-from math import pi, radians, degrees
-import numpy as np
-from pykdtree.kdtree import KDTree
-import geopy
-from geopy.distance import GeodesicDistance
-import scipy.interpolate
 import itertools
+from bisect import bisect_left
+from math import degrees, pi, radians
+
+import cftime
+import geopy
+import numpy as np
+import pytz
+import scipy.interpolate
+from cachetools import LRUCache
+from geopy.distance import GeodesicDistance
+from pykdtree.kdtree import KDTree
 from pyresample.geometry import SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
-from cachetools import LRUCache
-import pytz
-import cftime
-from bisect import bisect_left
+
 import plotting.utils
 
 _data_cache = LRUCache(maxsize=16)

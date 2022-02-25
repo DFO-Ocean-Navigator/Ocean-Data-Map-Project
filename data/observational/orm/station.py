@@ -1,5 +1,6 @@
 from data.observational import db
 
+
 class Station(db.Model):
     __tablename__ = 'stations'
 

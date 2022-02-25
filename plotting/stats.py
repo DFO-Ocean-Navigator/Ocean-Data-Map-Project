@@ -1,16 +1,19 @@
-import numpy as np
-from oceannavigator import DatasetConfig
-from shapely.geometry import LinearRing, Polygon, MultiPolygon, Point
-from shapely.ops import cascaded_union
-from utils.misc import list_areas
-import json
-from operator import itemgetter
-import re
-from flask_babel import gettext
-from data import open_dataset
-import math
 import copy
+import json
+import math
+import re
+from operator import itemgetter
+
+import numpy as np
+from flask_babel import gettext
+from shapely.geometry import LinearRing, MultiPolygon, Point, Polygon
+from shapely.ops import cascaded_union
+
+from data import open_dataset
+from oceannavigator import DatasetConfig
 from utils.errors import ClientError, ServerError
+from utils.misc import list_areas
+
 
 class Area:
     def __init__(self, query):

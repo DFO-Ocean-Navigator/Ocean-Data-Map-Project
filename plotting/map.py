@@ -5,16 +5,15 @@ from textwrap import wrap
 
 import matplotlib.pyplot as plt
 import numpy as np
-from osgeo import osr
 import pyresample.utils
 from flask_babel import gettext
 from geopy.distance import GeodesicDistance
-from matplotlib.path import Path
 from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
+from matplotlib.path import Path
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
-from osgeo import gdal
+from osgeo import gdal, osr
 from shapely.geometry import LinearRing, MultiPolygon, Point
 from shapely.geometry import Polygon as Poly
 from shapely.ops import cascaded_union

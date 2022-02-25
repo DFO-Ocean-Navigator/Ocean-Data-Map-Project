@@ -2,6 +2,8 @@
 """
 import datetime
 import json
+import os
+import shutil
 import unittest
 from unittest.mock import patch
 
@@ -10,8 +12,6 @@ import netCDF4
 import numpy
 import pytz
 import xarray
-import os
-import shutil
 
 from data.netcdf_data import NetCDFData
 

@@ -7,8 +7,8 @@ from flask import current_app
 from flask_babel import gettext
 from netCDF4 import Dataset, chartostring
 
-from plotting.plotter import Plotter
 import plotting.utils as utils
+from plotting.plotter import Plotter
 
 
 class Class4Plotter(Plotter):

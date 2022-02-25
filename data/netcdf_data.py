@@ -3,7 +3,7 @@ import os
 import uuid
 import warnings
 import zipfile
-from typing import List, Dict, Union, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 
 import dateutil.parser
 import geopy

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import numpy as np
-import xarray as xr
-import pandas as pd
-import defopt
-import os
 import glob
+import os
+
+import defopt
+import numpy as np
+import pandas as pd
+import xarray as xr
+
 import data.observational
-from data.observational import Platform, Sample, Station, DataType
+from data.observational import DataType, Platform, Sample, Station
 
 # These files were created by our scripts so they don't have nice attributes
 # like standard_name, etc.

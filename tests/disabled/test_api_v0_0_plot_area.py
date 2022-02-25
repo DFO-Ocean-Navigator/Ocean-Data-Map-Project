@@ -1,32 +1,31 @@
-from routes.api_v1_0 import plot_v1_0
-from oceannavigator import create_app
+import base64
 import hashlib
 import json
-import unittest
-from flask import Response, Flask
-from unittest import mock
-import json
-import base64
 import os
-import data
-import requests
-import routes
-from urllib.parse import urlencode
-from oceannavigator import DatasetConfig
-import warnings
 import sys
-from flask import current_app
-from plotting.transect import TransectPlotter
-from plotting.drifter import DrifterPlotter
-from plotting.map import MapPlotter
-from plotting.timeseries import TimeseriesPlotter
-from plotting.ts import TemperatureSalinityPlotter
-from plotting.sound import SoundSpeedPlotter
-from plotting.profile import ProfilePlotter
-from plotting.hovmoller import HovmollerPlotter
-from plotting.observation import ObservationPlotter
+import unittest
+import warnings
+from unittest import mock
+from urllib.parse import urlencode
+
+import requests
+from flask import Flask, Response, current_app
+
+import data
+import routes
+from oceannavigator import DatasetConfig, create_app
 from plotting.class4 import Class4Plotter
+from plotting.drifter import DrifterPlotter
+from plotting.hovmoller import HovmollerPlotter
+from plotting.map import MapPlotter
+from plotting.observation import ObservationPlotter
+from plotting.profile import ProfilePlotter
+from plotting.sound import SoundSpeedPlotter
 from plotting.stick import StickPlotter
+from plotting.timeseries import TimeseriesPlotter
+from plotting.transect import TransectPlotter
+from plotting.ts import TemperatureSalinityPlotter
+from routes.api_v1_0 import plot_v1_0
 
 
 def geturl(query):
