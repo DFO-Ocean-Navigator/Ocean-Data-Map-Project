@@ -261,13 +261,13 @@ def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
     """
 
     if class4_type == 'class4_op':
-        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+        type_path = current_app.config["CLASS4_PATH"]
     else:
-        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+        type_path = current_app.config["CLASS4_OLA_PATH"]
 
     yyyymmdd = class4_id[7:15]
     yyyy = yyyymmdd[:4]
-    path = Path(fname_pattern, yyyy, yyyymmdd)
+    path = Path(type_path, yyyy, yyyymmdd)
 
     result = []
     # file pattern globbing != regex

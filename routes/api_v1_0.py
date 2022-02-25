@@ -396,7 +396,7 @@ def get_data_v1_0():
         )
 
 @bp_v1_0.route('/api/v1.0/class4/<string:class4_type>/<string:q>/<string:class4_id>/')
-def class4_query_v1_0(class4_type : str, q: str, class4_id: str):
+def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
     """
     API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
 

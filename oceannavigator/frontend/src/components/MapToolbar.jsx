@@ -180,13 +180,11 @@ class MapToolbar extends React.Component {
           map[obj.name] = obj.id;
           return map;
         }, {}),
-        class4Current_op: result.data.class4_op[0].name,
 
         class4Files_rao: result.data.class4_rao.reduce(function(map, obj) {
           map[obj.name] = obj.id;
           return map;
         }, {}),
-        class4Current_rao: result.data.class4_rao[0].name
       });
     },
     error => {
@@ -691,21 +689,21 @@ class MapToolbar extends React.Component {
                 name="class4_op"
                 title={"OceanPredict"}
                 onClick={this.class4OpButtonHandler}
-                ref={(bo) => this.class4OpButton = bo}
+                ref={(b) => this.class4OpButton = b}
               >
                 <MenuItem>
-                  <div ref={(dop) => this.class4OpDiv = dop}/>
+                  <div ref={(d) => this.class4OpDiv = d}/>
                 </MenuItem>
               </NavDropdown>
               <NavDropdown
                 id="class4_rao"
                 name="class4_rao"
-                title={"RIOPS Assimilated Observations "}
+                title={"RIOPS Assimilated Observations"}
                 onClick={this.class4RaoButtonHandler}
-                ref={(br) => this.class4RaoButton = br}
+                ref={(b) => this.class4RaoButton = b}
               >
                 <MenuItem>
-                  <div ref={(drao) => this.class4RaoDiv = drao}/>
+                  <div ref={(d) => this.class4RaoDiv = d}/>
                 </MenuItem>
               </NavDropdown> 
             </NavDropdown>
