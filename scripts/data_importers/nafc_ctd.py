@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-import xarray as xr
+import glob
+import os
+
+import defopt
 import pandas as pd
 import seawater
-import defopt
-import os
-import glob
+import xarray as xr
+
 import data.observational
-from data.observational import Platform, Sample, Station, DataType
+from data.observational import DataType, Platform, Sample, Station
+
 
 def main(uri: str, filename: str):
     """Import NAFC CTD

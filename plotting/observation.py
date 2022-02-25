@@ -10,12 +10,12 @@ import pytz
 from flask_babel import format_datetime, gettext
 
 from data import open_dataset
+from data.observational import DataType, Sample, Station, db
 from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
 
-from data.observational import db, Station, Sample, DataType
 
 class ObservationPlotter(PointPlotter):
 

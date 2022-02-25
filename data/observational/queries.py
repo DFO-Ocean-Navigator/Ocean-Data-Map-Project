@@ -1,9 +1,9 @@
-from typing import List, Tuple, Optional, Dict, Callable
-from enum import Enum
 import datetime
 import math
+from enum import Enum
+from typing import Callable, Dict, List, Optional, Tuple
 
-from . import DataType, Platform, PlatformMetadata, Station, Sample, db
+from . import DataType, Platform, PlatformMetadata, Sample, Station, db
 
 EARTH_RADIUS = 6371.01
 

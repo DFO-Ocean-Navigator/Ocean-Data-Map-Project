@@ -1,5 +1,6 @@
 from data.observational import db
 
+
 class Sample(db.Model):
     __tablename__ = 'samples'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

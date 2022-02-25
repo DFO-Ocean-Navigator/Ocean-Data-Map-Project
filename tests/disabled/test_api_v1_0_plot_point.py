@@ -1,19 +1,20 @@
-from routes.api_v1_0 import plot_v1_0
-from oceannavigator import create_app
-import hashlib
-import json
-import unittest
-from flask import Response, Flask
-from unittest import mock
-import json
 import base64
-import os
-import data
-import requests
-import routes
-from urllib.parse import urlencode
 import hashlib
+import json
+import os
+import unittest
+from unittest import mock
+from urllib.parse import urlencode
+
+import requests
+from flask import Flask, Response
 from PIL import Image
+
+import data
+import routes
+from oceannavigator import create_app
+from routes.api_v1_0 import plot_v1_0
+
 
 def geturl(query):
     request = "/api/v1.0/plot/?" + urlencode({"query": json.dumps(query)})

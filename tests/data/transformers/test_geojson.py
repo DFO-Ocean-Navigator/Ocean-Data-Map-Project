@@ -3,8 +3,9 @@
 import unittest
 
 import xarray as xr
-from data.transformers.geojson import data_array_to_geojson
 from geojson import FeatureCollection
+
+from data.transformers.geojson import data_array_to_geojson
 
 
 class GeoJSONTest(unittest.TestCase):

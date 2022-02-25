@@ -4,9 +4,9 @@ Class for reading in the NAFC p-file (*.p2017, etc.) files.
 Methods are available to convert the file to ODV-ASCII (Ocean Data Viewer),
 or to use the file as a Pandas Dataframe.
 '''
-import pandas as pd
-import numpy as np
 import dateutil
+import numpy as np
+import pandas as pd
 import seawater
 
 SHIP_NUMBERS = {

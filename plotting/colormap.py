@@ -311,9 +311,10 @@ def plot_colormaps():
 
 
 if __name__ == '__main__':
-    import viscm
-    import matplotlib.cm
     import sys
+
+    import matplotlib.cm
+    import viscm
 
     for k, v in colormaps.items():
         matplotlib.cm.register_cmap(name=k, cmap=v)
