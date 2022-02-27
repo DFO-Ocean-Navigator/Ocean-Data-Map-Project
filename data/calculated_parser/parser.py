@@ -93,8 +93,8 @@ class Parser:
     # Similar to the Lexer, these p_*, methods cannot have proper python
     # docstrings, because it's used for the parsing specification.
     def p_statement_expr(self, t):
-        'statement : expression'
-        if not isinstance(t[1],np.ndarray):
+        "statement : expression"
+        if not isinstance(t[1], np.ndarray):
             t[1] = np.array(t[1])
         self.result = t[1]
 

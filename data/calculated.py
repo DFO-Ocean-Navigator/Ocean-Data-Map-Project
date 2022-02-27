@@ -129,12 +129,11 @@ class CalculatedArray:
 
         data_array = self._parser.parse(self._expression, self._parent, key, self._dims)
 
-
         key = self._format_key(key)
-        coords = self._calculate_coords(key)            
+        coords = self._calculate_coords(key)
 
         if data_array.ndim != len(self._dims):
-            shape = [k.stop-k.start if isinstance(k,slice) else 1 for k in key]
+            shape = [k.stop - k.start if isinstance(k, slice) else 1 for k in key]
             data_array = np.reshape(data_array, shape)
 
         return xr.DataArray(data_array, coords=coords, attrs=self.attrs)
@@ -145,14 +144,14 @@ class CalculatedArray:
         return tuple(self._parent[s].shape[0] for s in self._dims)
 
     def _calculate_coords(self, key) -> dict:
-        # Determine coordinates of calculated array based 
-        # on key, its declared dims, and parent coords     
+        # Determine coordinates of calculated array based
+        # on key, its declared dims, and parent coords
         if self._parent.coords:
-            return {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims, key)}
+            return {str(d): self._parent.coords[d][k] for d, k in zip(self._dims, key)}
         return {}
 
     def _format_key(self, key) -> list:
-        # ensure key and its elements are iterable. This ensures 
+        # ensure key and its elements are iterable. This ensures
         # coords have length > 0
         try:
             key = [[k] if isinstance(k, int) else k for k in key]
