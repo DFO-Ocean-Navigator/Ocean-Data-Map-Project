@@ -52,8 +52,8 @@ class MapToolbar extends React.Component {
     this.observationSelect = this.observationSelect.bind(this);
     this.lineSelect = this.lineSelect.bind(this);
     this.areaSelect = this.areaSelect.bind(this);
-    this.class4OpButtonHandler = this.class4OpButtonHandler.bind(this);
-    this.class4RaoButtonHandler = this.class4RaoButtonHandler.bind(this);
+    this.class4ButtonHandler = this.class4ButtonHandler.bind(this);
+    this.beforeShowDay = this.beforeShowDay.bind(this);
     this.observationSelectMenu = this.observationSelectMenu.bind(this);
     this.drifterSelect = this.drifterSelect.bind(this);
     this.setDrifterSelection = this.setDrifterSelection.bind(this);
@@ -75,77 +75,56 @@ class MapToolbar extends React.Component {
     }
     this.props.action(name);
   }
+
+  class4ButtonHandler(type)  {
+    let button = null;
+    let div = null;
+    let class4Files = null;
+    switch (type){
+      case "class4_op":
+        button = $(ReactDOM.findDOMNode(this.class4OpButton));
+        div = this.class4OpDiv;
+        class4Files = this.state.class4Files_op
+        break;
+      case "class4_rao":
+        button = $(ReactDOM.findDOMNode(this.class4RaoButton));
+        div = this.class4RaoDiv;
+        class4Files = this.state.class4Files_rao
+        break;
+    }
+    if (this.class4Picker && this.class4Picker.is(":visible")) {
+          this.class4Picker.hide();
+        } else if (!this.class4Picker) {
+          this.class4Picker = $(div).datepicker({
+            dateFormat: "yy-mm-dd",
+            beforeShowDay: (d) => this.beforeShowDay(d,type),
+            regional: this.props.i18n.language,
+            onSelect: function(text, picker) {
+              this.props.action("show", "class4", class4Files[text], type);
+              this.class4Picker = null;
+              this.class4Picker.hide();
+            }.bind(this),
+            defaultDate: this.state.class4Current,
+          });
+    
+          $(div).css("left", button.offset() + "px");
+        } else {
+          this.class4Picker.show();
+        }
+        this.forceUpdate();
+  }
+
+  beforeShowDay(d, type) {
+    const formatted = $.datepicker.formatDate("yy-mm-dd", d);
+    var date = null;
+    if (type == 'class4_op') {
+      date = this.state.class4Files_op.hasOwnProperty(formatted)
+    } else {
+      date = this.state.class4Files_rao.hasOwnProperty(formatted)
+    }
+    return [date, "", null];
+  }
   
-  class4OpButtonHandler() {
-    const button = $(ReactDOM.findDOMNode(this.class4OpButton));
-    if (this.class4OpPicker && this.class4OpPicker.is(":visible")) {
-      this.class4OpPicker.hide();
-    } else if (!this.class4OpPicker) {
-      if (this.class4OpPicker !== null) {
-        this.class4OpPicker = null;
-      }
-      this.class4OpPicker = $(this.class4OpDiv).datepicker({
-        dateFormat: "yy-mm-dd",
-        beforeShowDay: this.beforeShowDay_op.bind(this),
-        regional: this.props.i18n.language,
-        onSelect: function(text, picker) {
-          this.props.action("show", "class4", this.state.class4Files_op[text], "class4_op");
-          this.class4OpPicker.hide();
-        }.bind(this),
-        defaultDate: this.state.class4Current,
-      });
-
-      $(this.class4OpDiv).css("left", button.offset().left + "px");
-    } else {
-      this.class4OpPicker.show();
-    }
-    this.forceUpdate();
-  }
-
-  class4RaoButtonHandler() {
-    const button = $(ReactDOM.findDOMNode(this.class4RaoButton));
-    if (this.class4RaoPicker && this.class4RaoPicker.is(":visible")) {
-      this.class4RaoPicker.hide();
-    } else if (!this.class4RaoPicker) {
-      if (this.class4RaoPicker !== null) {
-        this.class4RaoPicker = null;
-      }
-      this.class4RaoPicker = $(this.class4RaoDiv).datepicker({
-        dateFormat: "yy-mm-dd",
-        beforeShowDay: this.beforeShowDay_rao.bind(this),
-        regional: this.props.i18n.language,
-        onSelect: function(text, picker) {
-          this.props.action("show", "class4", this.state.class4Files_rao[text], "class4_rao");
-          this.class4RaoPicker.hide();
-        }.bind(this),
-        defaultDate: this.state.class4Current,
-      });
-
-      $(this.class4RaoDiv).css("left", button.offset().left + "px");
-    } else {
-      this.class4RaoPicker.show();
-    }
-    this.forceUpdate();
-  }
-
-  beforeShowDay_op(d) {
-    const formatted = $.datepicker.formatDate("yy-mm-dd", d);
-    return [
-      this.state.class4Files_op.hasOwnProperty(formatted),
-      "",
-      null
-    ];
-  }
-
-  beforeShowDay_rao(d) {
-    const formatted = $.datepicker.formatDate("yy-mm-dd", d);
-    return [
-      this.state.class4Files_rao.hasOwnProperty(formatted),
-      "",
-      null
-    ];
-  }
-
   componentDidMount() {
     GetPresetPointsPromise().then(result => {
       this.setState({
@@ -688,7 +667,7 @@ class MapToolbar extends React.Component {
                 id="class4_op"
                 name="class4_op"
                 title={"OceanPredict"}
-                onClick={this.class4OpButtonHandler}
+                onClick={() => this.class4ButtonHandler('class4_op')}
                 ref={(b) => this.class4OpButton = b}
               >
                 <MenuItem>
@@ -699,7 +678,7 @@ class MapToolbar extends React.Component {
                 id="class4_rao"
                 name="class4_rao"
                 title={"RIOPS Assimilated Observations"}
-                onClick={this.class4RaoButtonHandler}
+                onClick={() => this.class4ButtonHandler('class4_rao')}
                 ref={(b) => this.class4RaoButton = b}
               >
                 <MenuItem>
