@@ -168,6 +168,21 @@ class DatasetSelector extends React.Component {
   }
 
   changeVariable(newVariable) {
+    if (this.state.datasetDepths.length === 0) {
+      this.setState({ 
+        loading: true, 
+        loadingPercent: 70,  
+      });
+      GetDepthsPromise(this.state.dataset, newVariable).then(depthResult => {
+        this.setState({
+          datasetDepths: depthResult.data,
+          depth: 0,
+          loading: false,
+          loadingPercent: 0
+        })
+      });
+    }
+
     let newState = {};
 
     // Multiple variables were selected
@@ -175,6 +190,7 @@ class DatasetSelector extends React.Component {
     if (newVariable instanceof HTMLCollection) {
       newState = {
         variable: Array.from(newVariable).map(o => o.value),
+        variable_two_dimensional: false
       };
     }
     else {
@@ -183,6 +199,7 @@ class DatasetSelector extends React.Component {
       newState = {
         variable: newVariable,
         variable_scale: variable.scale,
+        variable_two_dimensional : variable.two_dimensional,
         options: {
           ...this.state.options,
           interpType: variable.interp?.interpType || this.DEF_INTERP_TYPE,
@@ -373,7 +390,7 @@ class DatasetSelector extends React.Component {
 
     let depthSelector = null;
     // eslint-disable-next-line max-len
-    if (this.props.showDepthSelector && this.state.datasetDepths && this.state.datasetDepths.length > 0 && !this.state.loading) { 
+    if (this.props.showDepthSelector && this.state.datasetDepths && this.state.datasetDepths.length > 0 && !this.state.loading && !this.state.variable_two_dimensional) { 
       depthSelector = <SelectBox 
         id={`dataset-selector-depth-selector-${this.props.id}`}
         name={"depth"}
@@ -387,7 +404,7 @@ class DatasetSelector extends React.Component {
             if (isNaN(depth)) { // when depth == "bottom" or "all"
               depth = this.state.depth;
             }
-
+  
             return d.id === depth;
           })[0].id
         }
