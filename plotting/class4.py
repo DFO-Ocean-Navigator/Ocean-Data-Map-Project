@@ -25,11 +25,15 @@ class Class4Plotter(Plotter):
             class4 = class4.split(",")
 
         self.class4 = np.array([c.rsplit("_", 1) for c in class4])
-        self.class4type = query.get("class4type")
         self.forecast = query.get('forecast')
         self.climatology = query.get('climatology') is None or \
             bool(query.get('climatology'))
         self.error = query.get('error')
+
+        if query.get("class4type") == 'class4_op':
+            self.fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+        else:
+            self.fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
 
         models = query.get("models")
         if models is None:
@@ -38,13 +42,9 @@ class Class4Plotter(Plotter):
         self.models = models
 
     def load_data(self):
-        indices = self.class4[:, 1].astype(int)
-        if self.class4type == 'class4_op':
-            fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
-        else:
-            fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+        indices = self.class4[:, 1].astype(int)  
         # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-        with Dataset(fname_pattern % (self.class4[0][0][7:11], self.class4[0][0][7:15], self.class4[0][0]), 'r') as ds:
+        with Dataset(self.fname_pattern % (self.class4[0][0][7:11], self.class4[0][0][7:15], self.class4[0][0]), 'r') as ds:
             self.latitude = ds['latitude'][indices]
             self.longitude = ds['longitude'][indices]
             self.ids = list(map(str.strip, chartostring(ds['id'][indices])))
@@ -88,7 +88,7 @@ class Class4Plotter(Plotter):
         for m in self.models:
             additional_model_names.append(m.split("_")[2])
             # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-            with Dataset(fname_pattern % (m[7:11], m[7:15], m), 'r') as ds:
+            with Dataset(self.fname_pattern % (m[7:11], m[7:15], m), 'r') as ds:
                 m_data = []
                 for i in indices:
                     data = []

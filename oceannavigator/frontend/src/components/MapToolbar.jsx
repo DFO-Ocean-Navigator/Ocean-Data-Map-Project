@@ -93,25 +93,24 @@ class MapToolbar extends React.Component {
         break;
     }
     if (this.class4Picker && this.class4Picker.is(":visible")) {
+      this.class4Picker.hide();
+    } else if (!this.class4Picker) {
+      this.class4Picker = $(div).datepicker({
+        dateFormat: "yy-mm-dd",
+        beforeShowDay: (d) => this.beforeShowDay(d,type),
+        regional: this.props.i18n.language,
+        onSelect: function(text, picker) {
+          this.props.action("show", "class4", class4Files[text], type);
           this.class4Picker.hide();
-        } else if (!this.class4Picker) {
-          this.class4Picker = $(div).datepicker({
-            dateFormat: "yy-mm-dd",
-            beforeShowDay: (d) => this.beforeShowDay(d,type),
-            regional: this.props.i18n.language,
-            onSelect: function(text, picker) {
-              this.props.action("show", "class4", class4Files[text], type);
-              this.class4Picker = null;
-              this.class4Picker.hide();
-            }.bind(this),
-            defaultDate: this.state.class4Current,
-          });
-    
-          $(div).css("left", button.offset() + "px");
-        } else {
-          this.class4Picker.show();
-        }
-        this.forceUpdate();
+          this.class4Picker = null;
+        }.bind(this),
+        defaultDate: this.state.class4Current,
+      }); 
+      $(div).css("left", button.offset() + "px");
+    } else {
+      this.class4Picker.show();
+    }
+    this.forceUpdate();
   }
 
   beforeShowDay(d, type) {
