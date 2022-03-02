@@ -98,12 +98,12 @@ class MapToolbar extends React.Component {
       regional: this.props.i18n.language,
       onSelect: function(text, picker) {
         this.props.action("show", "class4", class4Files[text], type);
-        this.class4Picker.hide();
       }.bind(this),
       defaultDate: this.state.class4Current,
     }); 
     $(div).css("left", button.offset() + "px");
     this.forceUpdate();
+    this.class4Picker = null;
   }
 
   beforeShowDay(d, type) {
