@@ -31,7 +31,7 @@ class TestListClass4Models(unittest.TestCase):
         shutil.rmtree(self.test_data/self.class4_test_data.parents[1])
 
     def test_list_class4_models(self):
-        app.config["CLASS4_PATH"] = os.fspath(self.test_data/self.class4_test_data.parents[1])
+        app.config["CLASS4_OP_PATH"] = os.fspath(self.test_data/self.class4_test_data.parents[1])
         class4_id = "class4_20201208_GIOPS_CONCEPTS_3.0_profile_541"
         with app.app_context():
             result = data.class4.list_class4_models(class4_id)
@@ -57,7 +57,7 @@ class TestListClass4Forecasts(unittest.TestCase):
         shutil.rmtree(self.test_data/self.class4_test_data.parents[1])
 
     def test_list_class4_forecasts_1_forecast_date(self):
-        app.config["CLASS4_FNAME_PATTERN"] = f"{self.test_data/self.class4_test_data.parents[0]}/%s/%s.nc"
+        app.config["CLASS4_OP_FNAME_PATTERN"] = f"{self.test_data/self.class4_test_data.parents[0]}/%s/%s.nc"
         class4_id = "class4_20201214_GIOPS_CONCEPTS_3.0_profile_541"
         with app.app_context():
             result = data.class4.list_class4_forecasts(class4_id)

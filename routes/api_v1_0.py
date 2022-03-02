@@ -721,7 +721,7 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     """
     API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
 
-    <string:q>          : Type of data (points, lines, areas, class4)
+    <string:q>          : Type of data (points, lines, areas, class4 Ocean Predict/RIOPS Assimilated Observations)
     <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
@@ -743,10 +743,10 @@ def query_file_v1_0(q: str, projection: str, resolution: int, extent: str, file_
     elif q == 'areas':
         data = utils.misc.areas(
             file_id, projection, resolution, extent)
-    elif q == 'class4_op':
+    elif q == 'ocean_predict':
         data = class4.class4(
             q, file_id, projection, resolution, extent)
-    elif q == 'class4_rao':
+    elif q == 'riops_obs':
         data = class4.class4(
             q, file_id, projection, resolution, extent)            
     else:

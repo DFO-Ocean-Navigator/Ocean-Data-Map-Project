@@ -30,10 +30,10 @@ class Class4Plotter(Plotter):
             bool(query.get('climatology'))
         self.error = query.get('error')
 
-        if query.get("class4type") == 'class4_op':
-            self.fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+        if query.get("class4type") == 'ocean_predict':
+            self.fname_pattern = current_app.config["CLASS4_OP_FNAME_PATTERN"]
         else:
-            self.fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+            self.fname_pattern = current_app.config["CLASS4_RAO_FNAME_PATTERN"]
 
         models = query.get("models")
         if models is None:

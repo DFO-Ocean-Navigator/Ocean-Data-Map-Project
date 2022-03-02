@@ -46,16 +46,16 @@ def main():
         log.error(f"Error: Unable to load configuration file {opts.config_file.name}.")
         sys.exit(1)
 
-    if 'CLASS4_PATH' not in config:
-        log.error("Error: CLASS4_PATH entry not found in config file.")
+    if 'CLASS4_OP_PATH' not in config:
+        log.error("Error: CLASS4_OP_PATH entry not found in config file.")
         sys.exit(1)
 
     if 'CACHE_DIR' not in config:
         log.error('Cache directory specification not found in configuration file')
         sys.exit(1)
 
-    log.info(f"Generating list of Class4 files from {config['CLASS4_PATH']}...")
-    class4_files = list_class4_files(config['CLASS4_PATH'])
+    log.info(f"Generating list of Class4 files from {config['CLASS4_OP_PATH']}...")
+    class4_files = list_class4_files(config['CLASS4_OP_PATH'])
 
     output_file_name = Path(config['CACHE_DIR'], 'class4_files.pickle')
     try:

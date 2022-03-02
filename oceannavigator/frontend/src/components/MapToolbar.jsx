@@ -34,8 +34,8 @@ class MapToolbar extends React.Component {
       pointFiles: [],
       lineFiles: [],
       areaFiles: [],
-      class4Files_op: {},
-      class4Files_rao: {},
+      class4OPFiles: {},
+      class4RAOFiles: {},
       parser: null,
       showDriftersSelect: false,
       showPointCoordModal: false,
@@ -81,45 +81,38 @@ class MapToolbar extends React.Component {
     let div = null;
     let class4Files = null;
     switch (type){
-      case "class4_op":
-        button = $(ReactDOM.findDOMNode(this.class4OpButton));
+      case "ocean_predict":
+        button = $(ReactDOM.findDOMNode(this.class4OPButton));
         div = this.class4OpDiv;
-        class4Files = this.state.class4Files_op
+        class4Files = this.state.class4OPFiles
         break;
-      case "class4_rao":
-        button = $(ReactDOM.findDOMNode(this.class4RaoButton));
-        div = this.class4RaoDiv;
-        class4Files = this.state.class4Files_rao
+      case "riops_obs":
+        button = $(ReactDOM.findDOMNode(this.class4RAOButton));
+        div = this.class4RAODiv;
+        class4Files = this.state.class4RAOFiles
         break;
     }
-    if (this.class4Picker && this.class4Picker.is(":visible")) {
-      this.class4Picker.hide();
-    } else if (!this.class4Picker) {
-      this.class4Picker = $(div).datepicker({
-        dateFormat: "yy-mm-dd",
-        beforeShowDay: (d) => this.beforeShowDay(d,type),
-        regional: this.props.i18n.language,
-        onSelect: function(text, picker) {
-          this.props.action("show", "class4", class4Files[text], type);
-          this.class4Picker.hide();
-          this.class4Picker = null;
-        }.bind(this),
-        defaultDate: this.state.class4Current,
-      }); 
-      $(div).css("left", button.offset() + "px");
-    } else {
-      this.class4Picker.show();
-    }
+    this.class4Picker = $(div).datepicker({
+      dateFormat: "yy-mm-dd",
+      beforeShowDay: (d) => this.beforeShowDay(d,type),
+      regional: this.props.i18n.language,
+      onSelect: function(text, picker) {
+        this.props.action("show", "class4", class4Files[text], type);
+        this.class4Picker.hide();
+      }.bind(this),
+      defaultDate: this.state.class4Current,
+    }); 
+    $(div).css("left", button.offset() + "px");
     this.forceUpdate();
   }
 
   beforeShowDay(d, type) {
     const formatted = $.datepicker.formatDate("yy-mm-dd", d);
     var date = null;
-    if (type == 'class4_op') {
-      date = this.state.class4Files_op.hasOwnProperty(formatted)
+    if (type == 'ocean_predict') {
+      date = this.state.class4OPFiles.hasOwnProperty(formatted)
     } else {
-      date = this.state.class4Files_rao.hasOwnProperty(formatted)
+      date = this.state.class4RAOFiles.hasOwnProperty(formatted)
     }
     return [date, "", null];
   }
@@ -154,12 +147,12 @@ class MapToolbar extends React.Component {
 
     GetClass4Promise().then(result => {
       this.setState({
-        class4Files_op: result.data.class4_op.reduce(function(map, obj) {
+        class4OPFiles: result.data.ocean_predict.reduce(function(map, obj) {
           map[obj.name] = obj.id;
           return map;
         }, {}),
 
-        class4Files_rao: result.data.class4_rao.reduce(function(map, obj) {
+        class4RAOFiles: result.data.riops_obs.reduce(function(map, obj) {
           map[obj.name] = obj.id;
           return map;
         }, {}),
@@ -663,25 +656,25 @@ class MapToolbar extends React.Component {
               title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
             >
               <NavDropdown
-                id="class4_op"
-                name="class4_op"
+                id="ocean_predict"
+                name="ocean_predict"
                 title={"OceanPredict"}
-                onClick={() => this.class4ButtonHandler('class4_op')}
-                ref={(b) => this.class4OpButton = b}
+                onClick={() => this.class4ButtonHandler('ocean_predict')}
+                ref={(b) => this.class4OPButton = b}
               >
                 <MenuItem>
                   <div ref={(d) => this.class4OpDiv = d}/>
                 </MenuItem>
               </NavDropdown>
               <NavDropdown
-                id="class4_rao"
-                name="class4_rao"
+                id="riops_obs"
+                name="riops_obs"
                 title={"RIOPS Assimilated Observations"}
-                onClick={() => this.class4ButtonHandler('class4_rao')}
-                ref={(b) => this.class4RaoButton = b}
+                onClick={() => this.class4ButtonHandler('riops_obs')}
+                ref={(b) => this.class4RAOButton = b}
               >
                 <MenuItem>
-                  <div ref={(d) => this.class4RaoDiv = d}/>
+                  <div ref={(d) => this.class4RAODiv = d}/>
                 </MenuItem>
               </NavDropdown> 
             </NavDropdown>

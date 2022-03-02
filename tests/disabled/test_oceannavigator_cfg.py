@@ -34,7 +34,7 @@ class TestOceanNavigatorCfg(unittest.TestCase):
         self.assertEqual(self.config.get("class4_catalog_url"),
                         "\"http://localhost:8080/thredds/catalog/class4/catalog.xml\"")
         self.assertEqual(self.config.get(
-            "CLASS4_FNAME_PATTERN"), "\"http://localhost:8080/thredds/dodsC/class4/%s.nc\"")
+            "CLASS4_OP_FNAME_PATTERN"), "\"http://localhost:8080/thredds/dodsC/class4/%s.nc\"")
         self.assertEqual(self.config.get("observation_agg_url"),
                          "\"http://localhost:8080/thredds/dodsC/misc/observations/aggregated.ncml\"")
         self.assertEqual(self.config.get("etopo_file"),

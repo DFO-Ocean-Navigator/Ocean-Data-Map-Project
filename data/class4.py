@@ -26,18 +26,11 @@ def list_class4_files():
     """
 
     pickle_files = ['class4_files.pickle', 'class4_ola_files.pickle']
-    data = {
-            'class4_op' : None,
-            "class4_rao" : None
-        }
+    class4_path =  ['CLASS4_OP_PATH', 'CLASS4_RAO_PATH']
+    data = { 'ocean_predict' : None, "riops_obs" : None}
 
-    for p in pickle_files:
+    for i,p in enumerate(pickle_files):
         cache_file_name = os.path.join(current_app.config['CACHE_DIR'], p)
-
-        if 'ola' in p:
-            class4_path = current_app.config['CLASS4_OLA_PATH']
-        else:
-            class4_path = current_app.config['CLASS4_PATH']
 
         try:
             fp = open(cache_file_name, 'rb')
@@ -47,7 +40,7 @@ def list_class4_files():
                    Class 4 files on the fly.
                    """
             print(msg)
-            return _list_class4_files_slowly(class4_path)
+            return _list_class4_files_slowly(current_app.config[class4_path[i]])
 
         # We need to read from the cache file. To ensure another process is not
         # currently *writing* to the cache file, first acquire a shared lock (i.e.,
@@ -79,13 +72,13 @@ def list_class4_files():
                 Class 4 files on the fly.
                 """
             print(msg)
-            result = _list_class4_files_slowly(class4_path)
+            result = _list_class4_files_slowly(current_app.config[class4_path[i]])
         fp.close()
 
-        if 'ola' in p:
-            data['class4_rao'] = result
-        else:
-            data["class4_op"] = result
+        if i ==0:
+            data["ocean_predict"] = result            
+        else:            
+            data['riops_obs'] = result    
 
     return data
 
@@ -96,7 +89,7 @@ def _list_class4_files_slowly(class4_path):
 
 def list_class4(d):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d[7:15], d)
+    dataset_url = current_app.config["CLASS4_OP_FNAME_PATTERN"] % (d[7:11], d[7:15], d)
 
     with xr.open_dataset(dataset_url) as ds:
         lats = ds['latitude'][:]
@@ -142,10 +135,10 @@ def get_view_from_extent(extent):
 
 def class4(class4_type, class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    if class4_type == 'class4_op':
-        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+    if class4_type == 'ocean_predict':
+        fname_pattern = current_app.config["CLASS4_OP_FNAME_PATTERN"]
     else:
-        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+        fname_pattern = current_app.config["CLASS4_RAO_FNAME_PATTERN"]
 
     dataset_url = fname_pattern % (
             class4_id[7:11], class4_id[7:15], class4_id)
@@ -220,10 +213,10 @@ def list_class4_forecasts(class4_id: str, class4_type: str) -> List[dict]:
 
         List of dictionaries with `id` and `name` fields.
     """
-    if class4_type == 'class4_op':
-        fname_pattern = current_app.config["CLASS4_FNAME_PATTERN"]
+    if class4_type == 'ocean_predict':
+        fname_pattern = current_app.config["CLASS4_OP_FNAME_PATTERN"]
     else:
-        fname_pattern = current_app.config["CLASS4_OLA_FNAME_PATTERN"]
+        fname_pattern = current_app.config["CLASS4_RAO_FNAME_PATTERN"]
     dataset_url = fname_pattern % (
         class4_id[7:11], class4_id[7:15], class4_id.rsplit('_', maxsplit=1)[0])
     with xr.open_dataset(dataset_url, decode_times=False) as ds:
@@ -260,10 +253,10 @@ def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
         List of dictionaries with `id` and `value` fields.
     """
 
-    if class4_type == 'class4_op':
-        type_path = current_app.config["CLASS4_PATH"]
+    if class4_type == 'ocean_predict':
+        type_path = current_app.config["CLASS4_OP_PATH"]
     else:
-        type_path = current_app.config["CLASS4_OLA_PATH"]
+        type_path = current_app.config["CLASS4_RAO_PATH"]
 
     yyyymmdd = class4_id[7:15]
     yyyy = yyyymmdd[:4]
