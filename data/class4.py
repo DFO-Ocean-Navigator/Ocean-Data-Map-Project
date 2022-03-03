@@ -24,10 +24,11 @@ def list_class4_files():
     not accessible, this function falls back to the slow method of generating
     the list on the fly.
     """
-    cache_file_name = os.path.join(current_app.config['CACHE_DIR'],
-                                   'class4_files.pickle')
+    cache_file_name = os.path.join(
+        current_app.config["CACHE_DIR"], "class4_files.pickle"
+    )
     try:
-        fp = open(cache_file_name, 'rb')
+        fp = open(cache_file_name, "rb")
     except IOError as e:
         msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
                Falling back to slow method for generating the list of 
@@ -73,7 +74,7 @@ def list_class4_files():
 
 
 def _list_class4_files_slowly():
-    class4_path = current_app.config['CLASS4_PATH']
+    class4_path = current_app.config["CLASS4_PATH"]
     return generate_class4_list.list_class4_files(class4_path)
 
 
@@ -82,14 +83,14 @@ def list_class4(d):
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
 
     with xr.open_dataset(dataset_url) as ds:
-        lats = ds['latitude'][:]
-        lons = ds['longitude'][:]
-        ids = np.char.decode(ds['id'][:].values, 'UTF-8')
+        lats = ds["latitude"][:]
+        lons = ds["longitude"][:]
+        ids = np.char.decode(ds["id"][:].values, "UTF-8")
         rmse = []
 
         for i in range(0, lats.shape[0]):
-            best = ds['best_estimate'][i, 0, :]
-            obsv = ds['observation'][i, 0, :]
+            best = ds["best_estimate"][i, 0, :]
+            obsv = ds["observation"][i, 0, :]
             rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
     rmse = np.ma.hstack(rmse)
@@ -100,33 +101,39 @@ def list_class4(d):
     for idx, (lat, lon) in enumerate(zip(lats, lons)):
         if np.ma.is_masked(rmse[idx]):
             continue
-        points.append({
-            'name': f"{ids[idx]}",
-            'loc': f"{lat.item():.6f},{lon.item():.6f}",
-            'id': f"{d}/{idx}",
-            'rmse': float(rmse[idx]),
-            'rmse_norm': float(rmse_norm[idx]),
-        })
-        points = sorted(points, key=lambda k: k['id'])
+        points.append(
+            {
+                "name": f"{ids[idx]}",
+                "loc": f"{lat.item():.6f},{lon.item():.6f}",
+                "id": f"{d}/{idx}",
+                "rmse": float(rmse[idx]),
+                "rmse_norm": float(rmse_norm[idx]),
+            }
+        )
+        points = sorted(points, key=lambda k: k["id"])
 
     return points
 
 
 def get_view_from_extent(extent):
     extent = list(map(float, extent.split(",")))
-    view = LinearRing([
-        (extent[1], extent[0]),
-        (extent[3], extent[0]),
-        (extent[3], extent[2]),
-        (extent[1], extent[2])
-    ])
+    view = LinearRing(
+        [
+            (extent[1], extent[0]),
+            (extent[3], extent[0]),
+            (extent[3], extent[2]),
+            (extent[1], extent[2]),
+        ]
+    )
     return view
 
 
 def class4(class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11], class4_id)
+        class4_id[7:11],
+        class4_id,
+    )
 
     proj = pyproj.Proj(projection)
     view = get_view_from_extent(extent)
@@ -137,9 +144,9 @@ def class4(class4_id, projection, resolution, extent):
     point_id = []
     identifiers = []
     with xr.open_dataset(dataset_url) as ds:
-        lat_in = ds['latitude'][:]
-        lon_in = ds['longitude'][:]
-        ids = np.char.decode(ds['id'][:].values, 'UTF-8')
+        lat_in = ds["latitude"][:]
+        lon_in = ds["longitude"][:]
+        ids = np.char.decode(ds["id"][:].values, "UTF-8")
         for i in range(0, lat_in.shape[0]):
             x, y = proj(lon_in[i], lat_in[i])
             p = Point(y, x)
@@ -147,8 +154,8 @@ def class4(class4_id, projection, resolution, extent):
                 lat.append(float(lat_in[i]))
                 lon.append(float(lon_in[i]))
                 identifiers.append(ids[i])
-                best = ds['best_estimate'][i, 0, :]
-                obsv = ds['observation'][i, 0, :]
+                best = ds["best_estimate"][i, 0, :]
+                obsv = ds["observation"][i, 0, :]
                 point_id.append(i)
                 rmse.append(np.ma.sqrt(((best - obsv) ** 2).mean()))
 
@@ -162,25 +169,27 @@ def class4(class4_id, projection, resolution, extent):
     for idx, ll in enumerate(loc):
         if np.ma.is_masked(rmse[idx]):
             continue
-        points.append({
-            'type': "Feature",
-            'geometry': {
-                'type': "Point",
-                'coordinates': ll,
-            },
-            'properties': {
-                'name': f"{identifiers[idx]}",
-                'id': f"{class4_id}/{point_id[idx]}",
-                'error': float(rmse[idx]),
-                'error_norm': float(rmse_norm[idx]),
-                'type': 'class4',
-                'resolution': 0,
-            },
-        })
+        points.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": ll,
+                },
+                "properties": {
+                    "name": f"{identifiers[idx]}",
+                    "id": f"{class4_id}/{point_id[idx]}",
+                    "error": float(rmse[idx]),
+                    "error_norm": float(rmse_norm[idx]),
+                    "type": "class4",
+                    "resolution": 0,
+                },
+            }
+        )
 
     result = {
-        'type': "FeatureCollection",
-        'features': points,
+        "type": "FeatureCollection",
+        "features": points,
     }
 
     return result
@@ -198,25 +207,26 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
         List of dictionaries with `id` and `name` fields.
     """
     dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11], class4_id.rsplit('_', maxsplit=1)[0])
+        class4_id[7:11],
+        class4_id.rsplit("_", maxsplit=1)[0],
+    )
     with xr.open_dataset(dataset_url, decode_times=False) as ds:
         forecast_date = [
             f"{d:%d %B %Y}" for d in cftime.num2date(ds.modeljuld, ds.modeljuld.units)
         ]
 
-    result = [{
-        'id': 'best',
-        'name': 'Best Estimate',
-    }]
+    result = [
+        {
+            "id": "best",
+            "name": "Best Estimate",
+        }
+    ]
 
     if len(set(forecast_date)) > 1:
         for idx, date in enumerate(forecast_date):
-            if result[-1]['name'] == date:
+            if result[-1]["name"] == date:
                 continue
-            result.append({
-                'id': idx,
-                'name': date
-            })
+            result.append({"id": idx, "name": date})
 
     return result
 
@@ -240,11 +250,10 @@ def list_class4_models(class4_id: str) -> List[dict]:
     result = []
     # file pattern globbing != regex
     for f in path.glob("*_profile.nc"):
-        model = f.name.split("_")[2]  # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile.nc
+        model = f.name.split("_")[
+            2
+        ]  # e.g get FOAM from class4_20190501_FOAM_orca025_14.1_profile.nc
         if model != "GIOPS":
-            result.append({
-                'id': f.stem,  # chop off .nc extension
-                'value': model
-            })
+            result.append({"id": f.stem, "value": model})  # chop off .nc extension
 
     return result

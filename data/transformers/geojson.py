@@ -1,4 +1,3 @@
-
 import numpy as np
 import xarray as xr
 from geojson import Feature, FeatureCollection, Point
@@ -6,7 +5,12 @@ from geojson import Feature, FeatureCollection, Point
 from data.utils import trunc
 
 
-def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_var: xr.DataArray, lon_var: xr.DataArray) -> FeatureCollection:
+def data_array_to_geojson(
+    data_array: xr.DataArray,
+    bearings: xr.DataArray,
+    lat_var: xr.DataArray,
+    lon_var: xr.DataArray,
+) -> FeatureCollection:
     """
     Converts a given xarray.DataArray, along with lat and lon keys to a geojson.FeatureCollection (subclass of dict).
 
@@ -42,19 +46,19 @@ def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_
     if bearings is not None:
         bearings = trunc(bearings).astype(float).values
 
-    units_key = next((s for s in data_array.attrs.keys() if 'unit' in s), None)
+    units_key = next((s for s in data_array.attrs.keys() if "unit" in s), None)
 
-    name_key = 'long_name'
-    if 'long_name' not in data_array.attrs.keys():
-        name_key = next((s for s in data_array.attrs.keys() if 'name' in s), None)
-    
-    attribs = { 
-        'units': data_array.attrs[units_key],
-        'name': data_array.attrs[name_key],
+    name_key = "long_name"
+    if "long_name" not in data_array.attrs.keys():
+        name_key = next((s for s in data_array.attrs.keys() if "name" in s), None)
+
+    attribs = {
+        "units": data_array.attrs[units_key],
+        "name": data_array.attrs[name_key],
     }
 
     def enumerate_nd_array(array: np.ndarray):
-        it = np.nditer(array, flags=['multi_index'], op_flags=['readonly'])
+        it = np.nditer(array, flags=["multi_index"], op_flags=["readonly"])
         while not it.finished:
             yield it[0], it.multi_index
             it.iternext()
@@ -67,18 +71,15 @@ def data_array_to_geojson(data_array: xr.DataArray, bearings: xr.DataArray, lat_
         p = Point(
             (
                 ((lon_var[multi_idx[1]].item() + 180.0) % 360.0) - 180.0,
-                lat_var[multi_idx[0]].item()
+                lat_var[multi_idx[0]].item(),
             )
         )
 
-        props = {
-            **attribs,
-            'data': elem.item()
-        }
+        props = {**attribs, "data": elem.item()}
 
         if bearings is not None:
-            props['bearing'] = bearings[multi_idx].item()
-        
+            props["bearing"] = bearings[multi_idx].item()
+
         features.append(Feature(geometry=p, properties=props))
 
     return FeatureCollection(features)

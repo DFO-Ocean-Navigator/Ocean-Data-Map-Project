@@ -22,7 +22,7 @@ class SQLiteDatabase:
     def __init__(self, url: str):
         self.url = url  # URL to sqlite database
         # URI for opening in read-only mode
-        self.uri = f'file:{url}?mode=ro'
+        self.uri = f"file:{url}?mode=ro"
         self.conn = None  # sqlite connection handle
         self.c = None
 
@@ -69,18 +69,18 @@ class SQLiteDatabase:
 
     def get_all_dimensions(self) -> List[str]:
         """Returns a list of all the dimensions in the Dimensions table.
-        
+
         Returns:
             List[str] -- List of strings of all dimension names (e.g. time_counter, depth, x, latitude, etc.)
         """
-        
+
         self.c.execute(
             """
             SELECT 
                 name 
             FROM 
                 Dimensions;
-            """ 
+            """
         )
 
         return self.__flatten_list(self.c.fetchall())
@@ -109,7 +109,8 @@ class SQLiteDatabase:
                 JOIN Dimensions d ON vd.dim_id = d.id
             WHERE
                 variable = ?;
-            """, (variable, )
+            """,
+            (variable,),
         )
 
         return self.__flatten_list(self.c.fetchall())
@@ -139,7 +140,8 @@ class SQLiteDatabase:
             WHERE
                 variable = ?;
 
-            """, (variable, )
+            """,
+            (variable,),
         )
 
         result = self.__flatten_list(self.c.fetchall())
@@ -172,7 +174,8 @@ class SQLiteDatabase:
                 variable = ?
             ORDER BY
                 timestamp ASC;
-            """, (variable, )
+            """,
+            (variable,),
         )
 
         return self.__flatten_list(self.c.fetchall())
@@ -200,7 +203,8 @@ class SQLiteDatabase:
                 JOIN Timestamps t ON tvf.timestamp_id = t.id
             WHERE
                 variable = ?;
-            """, (variable, )
+            """,
+            (variable,),
         )
 
         return self.__flatten_list(self.c.fetchall())[0]
@@ -228,12 +232,15 @@ class SQLiteDatabase:
                 JOIN Timestamps t ON tvf.timestamp_id = t.id
             WHERE
                 variable = ?;
-            """, (variable, )
+            """,
+            (variable,),
         )
 
         return self.__flatten_list(self.c.fetchall())[0]
 
-    def get_timestamp_range(self, starttime: int, endtime: int, variable: str) -> List[int]:
+    def get_timestamp_range(
+        self, starttime: int, endtime: int, variable: str
+    ) -> List[int]:
         """Retrieves all raw timestamps in the interval [starttime, endtime] for a variable.
 
         Arguments:
@@ -258,7 +265,12 @@ class SQLiteDatabase:
                 AND timestamp BETWEEN ?
                 and ?;
 
-            """, (variable[0] if isinstance(variable, list) else variable, starttime, endtime, )
+            """,
+            (
+                variable[0] if isinstance(variable, list) else variable,
+                starttime,
+                endtime,
+            ),
         )
 
         return self.__flatten_list(self.c.fetchall())
@@ -271,7 +283,8 @@ class SQLiteDatabase:
         """
 
         self.c.execute(
-            "SELECT variable, units, longName, validMin, validMax FROM Variables")
+            "SELECT variable, units, longName, validMin, validMax FROM Variables"
+        )
 
         result = self.c.fetchall()
 
@@ -288,7 +301,7 @@ class SQLiteDatabase:
 
         all_vars = self.get_all_variables()
 
-        regex = re.compile(r'^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$')
+        regex = re.compile(r"^(.)*(time|depth|lat|lon|polar|^x|^y)+(.)*$")
 
         result = list(filter(lambda i: not regex.match(i.key), all_vars))
 
@@ -309,6 +322,8 @@ class SQLiteDatabase:
         units = var_result[1] if var_result[1] else None
         long_name = var_result[2] if var_result[2] else name
         valid_min = var_result[3] if var_result[3] != 1.17549e-38 else None
-        valid_max = var_result[4] if var_result[4] != 3.40282e+38 else None
+        valid_max = var_result[4] if var_result[4] != 3.40282e38 else None
 
-        return Variable(name, long_name, units, self.get_variable_dims(name), valid_min, valid_max)
+        return Variable(
+            name, long_name, units, self.get_variable_dims(name), valid_min, valid_max
+        )

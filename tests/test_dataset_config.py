@@ -5,7 +5,6 @@ from oceannavigator import DatasetConfig, create_app
 
 
 class TestUtil(unittest.TestCase):
-
     def __init__(self, *args, **kwargs):
         super(TestUtil, self).__init__(*args, **kwargs)
         self.app = create_app()
@@ -37,7 +36,7 @@ class TestUtil(unittest.TestCase):
                     "var": {
                         "name": "my_variable",
                     }
-                }
+                },
             }
         }
 
@@ -79,8 +78,8 @@ class TestUtil(unittest.TestCase):
                         "name": "my_variable",
                         "east_vector_component": "u",
                         "north_vector_component": "v",
-                    }
-                }
+                    },
+                },
             },
         }
 
@@ -101,7 +100,7 @@ class TestUtil(unittest.TestCase):
                     "var": {
                         "name": "my_variable",
                     }
-                }
+                },
             },
         }
 
@@ -125,9 +124,9 @@ class TestUtil(unittest.TestCase):
 
         result = DatasetConfig.get_datasets()
         self.assertEqual(len(result), 2)
-        self.assertIn('k', result)
-        self.assertIn('key', result)
-        self.assertNotIn('disabled', result)
+        self.assertIn("k", result)
+        self.assertIn("key", result)
+        self.assertNotIn("disabled", result)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_dataset_misc(self, m):
@@ -141,54 +140,39 @@ class TestUtil(unittest.TestCase):
         }
 
         self.assertEqual(DatasetConfig("dataset").url, "the_url")
-        self.assertEqual(
-            DatasetConfig("dataset").climatology, "climatology_url")
-        self.assertEqual(
-            DatasetConfig("dataset").attribution, "My attribution bold")
+        self.assertEqual(DatasetConfig("dataset").climatology, "climatology_url")
+        self.assertEqual(DatasetConfig("dataset").attribution, "My attribution bold")
         self.assertEqual(DatasetConfig("dataset").cache, 5)
 
-        m.return_value = {
-            "dataset2": {
-            }
-        }
+        m.return_value = {"dataset2": {}}
         self.assertEqual(DatasetConfig("dataset2").cache, None)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_variables(self, m):
-        m.return_value = {
-            "ds": {
-                "variables": {
-                    "k": {
-                    },
-                    "key": {
-                    }
-                }
-            }
-        }
+        m.return_value = {"ds": {"variables": {"k": {}, "key": {}}}}
 
         result = DatasetConfig("ds").variables
         self.assertEqual(len(result), 2)
-        self.assertIn('k', result)
-        self.assertIn('key', result)
+        self.assertIn("k", result)
+        self.assertIn("key", result)
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_calculated_(self, m):
         m.return_value = {
             "ds": {
                 "variables": {
-                    "k": {
-                    },
+                    "k": {},
                     "key": {
                         "equation": "1+1",
-                    }
+                    },
                 }
             }
         }
 
         result = DatasetConfig("ds").calculated_variables
         self.assertEqual(len(result), 1)
-        self.assertIn('key', result)
-        self.assertEqual(result['key']['equation'], "1+1")
+        self.assertIn("key", result)
+        self.assertEqual(result["key"]["equation"], "1+1")
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_variable_misc(self, m):
@@ -206,63 +190,52 @@ class TestUtil(unittest.TestCase):
                     },
                     "var2": {
                         "hide": True,
-                    }
-                }
+                    },
+                },
             }
         }
 
         self.assertEqual(
-            DatasetConfig("dataset").variable[Mock(key="var")].name,
-            "the_name"
+            DatasetConfig("dataset").variable[Mock(key="var")].name, "the_name"
         )
         variable_mock = Mock()
         variable_mock.configure_mock(key="none", name="var_name")
         self.assertEqual(
-            DatasetConfig("dataset").variable[variable_mock].name,
-            "var_name"
+            DatasetConfig("dataset").variable[variable_mock].name, "var_name"
         )
         variable_mock.configure_mock(key="nameless", name=None)
         self.assertEqual(
-            DatasetConfig("dataset").variable[variable_mock].name,
-            "Nameless"
+            DatasetConfig("dataset").variable[variable_mock].name, "Nameless"
         )
 
         self.assertEqual(
-            DatasetConfig("dataset").variable[Mock(key="var")].unit,
-            "My Unit"
+            DatasetConfig("dataset").variable[Mock(key="var")].unit, "My Unit"
         )
         variable_mock.configure_mock(key="none", unit="var_unit")
         self.assertEqual(
-            DatasetConfig("dataset").variable[variable_mock].unit,
-            "var_unit"
+            DatasetConfig("dataset").variable[variable_mock].unit, "var_unit"
         )
         self.assertEqual(
             DatasetConfig("dataset").variable[Mock(key="varx", unit=None)].unit,
-            "Unknown"
+            "Unknown",
         )
 
         self.assertEqual(
-            DatasetConfig("dataset").variable[Mock(key="var")].scale,
-            [0, 10]
+            DatasetConfig("dataset").variable[Mock(key="var")].scale, [0, 10]
         )
         variable_mock.configure_mock(key="none", valid_min=5, valid_max=50)
         self.assertEqual(
-            DatasetConfig("dataset").variable[variable_mock].scale,
-            [5, 50]
+            DatasetConfig("dataset").variable[variable_mock].scale, [5, 50]
         )
         self.assertEqual(
-            DatasetConfig("dataset").variable[
-                Mock(key="varx", scale=None, valid_min=None,
-                                     valid_max=None)].scale,
-            [0, 100]
+            DatasetConfig("dataset")
+            .variable[Mock(key="varx", scale=None, valid_min=None, valid_max=None)]
+            .scale,
+            [0, 100],
         )
 
-        self.assertFalse(
-            DatasetConfig("dataset").variable[Mock(key="var")].is_hidden
-        )
-        self.assertTrue(
-            DatasetConfig("dataset").variable[Mock(key="var2")].is_hidden
-        )
+        self.assertFalse(DatasetConfig("dataset").variable[Mock(key="var")].is_hidden)
+        self.assertTrue(DatasetConfig("dataset").variable[Mock(key="var2")].is_hidden)
 
     def setUp(self):
         self.ctx = self.app.app_context()

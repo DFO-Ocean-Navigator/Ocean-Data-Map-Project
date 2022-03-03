@@ -6,15 +6,9 @@ from data.geo import *
 
 
 class TestGeo(unittest.TestCase):
-
     def test_bearing(self):
         self.assertAlmostEqual(
-            bearing(
-                40.0167, -105.2833,
-                -33.9333, 137.65
-            ),
-            -104.04,
-            places=2
+            bearing(40.0167, -105.2833, -33.9333, 137.65), -104.04, places=2
         )
 
     def test_points_between(self):

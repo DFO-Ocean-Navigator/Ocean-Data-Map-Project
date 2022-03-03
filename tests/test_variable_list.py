@@ -6,10 +6,10 @@ from data.variable_list import VariableList
 
 
 class TestVariableList(unittest.TestCase):
-
     def setUp(self):
-        self.variable_list = VariableList([Variable(
-            "my_key", "my_name", "my_unit", ('depth', 'dim2'), 0, 100)])
+        self.variable_list = VariableList(
+            [Variable("my_key", "my_name", "my_unit", ("depth", "dim2"), 0, 100)]
+        )
 
     def test__contains__(self):
         self.assertTrue("my_key" in self.variable_list)

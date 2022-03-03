@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import mpl_util
 import numpy as np
 from createMapsEtopo1 import findSubsetIndices
+
 #from geographiclib.geodesic import Geodesic
 from geographiclib import geodesic
 from geopy.distance import geodesic

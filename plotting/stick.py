@@ -11,7 +11,6 @@ from plotting.point import PointPlotter
 
 
 class StickPlotter(PointPlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
 
@@ -23,11 +22,15 @@ class StickPlotter(PointPlotter):
 
         self.depth = sorted(self.depth)
 
-        with open_dataset(self.dataset_config, timestamp=self.starttime, endtime=self.endtime, variable=self.variables) as dataset:
+        with open_dataset(
+            self.dataset_config,
+            timestamp=self.starttime,
+            endtime=self.endtime,
+            variable=self.variables,
+        ) as dataset:
 
             self.load_misc(dataset, self.variables)
-            self.variable_name = self.get_vector_variable_name(dataset,
-                                                               self.variables)
+            self.variable_name = self.get_vector_variable_name(dataset, self.variables)
 
             point_data = []
             point_depth = []
@@ -45,7 +48,7 @@ class StickPlotter(PointPlotter):
                             self.starttime,
                             self.endtime,
                             v,
-                            return_depth=True
+                            return_depth=True,
                         )
                         dd.append(da)
                         jj.append(dp)
@@ -63,7 +66,7 @@ class StickPlotter(PointPlotter):
 
     def csv(self):
         header = [
-            ['Dataset', self.dataset_name],
+            ["Dataset", self.dataset_name],
         ]
 
         columns = [
@@ -72,16 +75,17 @@ class StickPlotter(PointPlotter):
             "Depth (m)",
             "Time",
         ]
-        columns.extend([
-            "%s (%s)" % (self.variable_name, self.variable_units[0]),
-            "%s (%s)" % (self.variable_names[0], self.variable_units[0]),
-            "%s (%s)" % (self.variable_names[1], self.variable_units[1]),
-            "Bearing (degrees clockwise positive from North)"
-        ])
+        columns.extend(
+            [
+                "%s (%s)" % (self.variable_name, self.variable_units[0]),
+                "%s (%s)" % (self.variable_names[0], self.variable_units[0]),
+                "%s (%s)" % (self.variable_names[1], self.variable_units[1]),
+                "Bearing (degrees clockwise positive from North)",
+            ]
+        )
         data = []
 
-        magnitude = np.sqrt(self.data[:, 0, :, :] ** 2 +
-                            self.data[:, 1, :, :] ** 2)
+        magnitude = np.sqrt(self.data[:, 0, :, :] ** 2 + self.data[:, 1, :, :] ** 2)
         bearing = np.arctan2(self.data[:, 1, :, :], self.data[:, 0, :, :])
         bearing = np.pi / 2.0 - bearing
         bearing[bearing < 0] += 2 * np.pi
@@ -91,7 +95,7 @@ class StickPlotter(PointPlotter):
         inds = np.where(
             np.logical_and(
                 np.abs(self.data[:, 0, :, :]) < 10e-6,
-                np.abs(self.data[:, 1, :, :]) < 10e-6
+                np.abs(self.data[:, 1, :, :]) < 10e-6,
             )
         )
         bearing[inds] = np.nan
@@ -100,8 +104,8 @@ class StickPlotter(PointPlotter):
         for p in range(0, self.data.shape[0]):
             # For each depth
             for d in range(0, self.data.shape[2]):
-                if self.depth[d] == 'bottom':
-                    depth = 'Bottom'
+                if self.depth[d] == "bottom":
+                    depth = "Bottom"
                 else:
                     depth = "%d" % np.round(self.data_depth[p, 0, d, 0])
 
@@ -113,17 +117,19 @@ class StickPlotter(PointPlotter):
                         "%s" % depth,
                         self.timestamp[t].isoformat(),
                     ]
-                    entry.extend([
-                        "%0.4f" % magnitude[p, d, t],
-                        "%0.4f" % self.data[p, 0, d, t],
-                        "%0.4f" % self.data[p, 1, d, t],
-                        "%0.4f" % bearing[p, d, t]
-                    ])
+                    entry.extend(
+                        [
+                            "%0.4f" % magnitude[p, d, t],
+                            "%0.4f" % self.data[p, 0, d, t],
+                            "%0.4f" % self.data[p, 1, d, t],
+                            "%0.4f" % bearing[p, d, t],
+                        ]
+                    )
 
                     data.append(entry)
 
         d = np.array(data)
-        d[np.where(d == 'nan')] = ''
+        d[np.where(d == "nan")] = ""
         data = d.tolist()
 
         return super(StickPlotter, self).csv(header, columns, data)
@@ -136,21 +142,19 @@ class StickPlotter(PointPlotter):
             1,
             sharex=True,
             figsize=figuresize,
-            dpi=self.dpi
+            dpi=self.dpi,
         )
         if len(self.points) * len(self.depth) == 1:
             ax = [ax]
 
         if self.data.shape[1] == 2:
             for idx, p in enumerate(self.points):
-                magnitude = np.sqrt(self.data[idx, 0, :, :] ** 2 +
-                                    self.data[idx, 1, :, :] ** 2)
+                magnitude = np.sqrt(
+                    self.data[idx, 0, :, :] ** 2 + self.data[idx, 1, :, :] ** 2
+                )
                 scale = np.mean(magnitude)
                 if scale != 0:
-                    scale = np.round(
-                        scale,
-                        int(-np.floor(np.log10(scale)))
-                    )
+                    scale = np.round(scale, int(-np.floor(np.log10(scale))))
 
                 for idx2, d in enumerate(self.depth):
                     datenums = date2num(self.timestamp)
@@ -160,7 +164,7 @@ class StickPlotter(PointPlotter):
                         [0] * len(self.timestamp),
                         self.data[idx, 0, idx2, :],
                         self.data[idx, 1, idx2, :],
-                        angles='uv',
+                        angles="uv",
                         width=0.002,
                         headwidth=0,
                         headlength=0,
@@ -171,28 +175,26 @@ class StickPlotter(PointPlotter):
                     a.axes.get_xaxis().tick_bottom()
                     a.xaxis_date()
                     a.quiverkey(
-                        q, 0.1, 0.75, scale, "%.1g %s" % (
-                            scale,
-                            utils.mathtext(self.variable_units[0])
-                        )
+                        q,
+                        0.1,
+                        0.75,
+                        scale,
+                        "%.1g %s" % (scale, utils.mathtext(self.variable_units[0])),
                     )
                     dx = datenums[1] - datenums[0]
-                    a.set_xlim(
-                        [datenums[0] - dx / 2.0, datenums[-1] + dx / 2.0])
+                    a.set_xlim([datenums[0] - dx / 2.0, datenums[-1] + dx / 2.0])
                     a.set_frame_on(False)
-                    a.axhline(0, color='grey', ls=':')
+                    a.axhline(0, color="grey", ls=":")
                     if self.depth[idx2] == "bottom":
                         depth = "Bottom"
                     else:
-                        depth = "%d m" % np.round(self.data_depth[
-                            idx, 0, idx2, 0
-                        ])
+                        depth = "%d m" % np.round(self.data_depth[idx, 0, idx2, 0])
                     if self.plotTitle is None or self.plotTitle == "":
-                        a.set_title(gettext("%s at (%s)\n%s") % (
-                            self.variable_name,
-                            self.names[idx],
-                            depth
-                        ), fontsize=15)
+                        a.set_title(
+                            gettext("%s at (%s)\n%s")
+                            % (self.variable_name, self.names[idx], depth),
+                            fontsize=15,
+                        )
                     else:
                         a.set_title(self.plotTitle, fontsize=15)
 

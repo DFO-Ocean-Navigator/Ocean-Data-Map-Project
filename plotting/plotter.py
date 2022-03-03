@@ -21,9 +21,9 @@ class Plotter(metaclass=ABCMeta):
         self.dataset_name: str = dataset_name
         self.dataset_config: DatasetConfig = DatasetConfig(dataset_name)
         self.query: dict = query
-        self.format: str = kwargs['format']
-        self.dpi: int = int(kwargs['dpi'])
-        self.size: str = kwargs['size']
+        self.format: str = kwargs["format"]
+        self.dpi: int = int(kwargs["dpi"])
+        self.size: str = kwargs["size"]
         self.plotTitle: str = None
         self.compare: bool = False
         self.data = None
@@ -37,11 +37,9 @@ class Plotter(metaclass=ABCMeta):
         self.interp: str = "gaussian"
         self.radius: int = 25000  # radius in meters
         self.neighbours: int = 10
-        self.filetype, self.mime = utils.get_mimetype(kwargs['format'])
+        self.filetype, self.mime = utils.get_mimetype(kwargs["format"])
         self.filename: str = utils.get_filename(
-            self.plottype,
-            dataset_name,
-            self.filetype
+            self.plottype, dataset_name, self.filetype
         )
 
     def prepare_plot(self):
@@ -56,9 +54,9 @@ class Plotter(metaclass=ABCMeta):
     def run(self):
         _ = self.prepare_plot()
 
-        if self.filetype == 'csv':
+        if self.filetype == "csv":
             return self.csv()
-        elif self.filetype == 'txt':
+        elif self.filetype == "txt":
             return self.odv_ascii()
         else:
             return self.plot()
@@ -67,53 +65,53 @@ class Plotter(metaclass=ABCMeta):
     @abstractmethod
     def parse_query(self, query: dict):
 
-        self.date_formatter = self.__get_date_formatter(query.get('quantum'))
+        self.date_formatter = self.__get_date_formatter(query.get("quantum"))
 
-        self.time = self.__get_time(query.get('time'))
-        self.starttime = self.__get_time(query.get('starttime'))
-        self.endtime = self.__get_time(query.get('endtime'))
+        self.time = self.__get_time(query.get("time"))
+        self.starttime = self.__get_time(query.get("starttime"))
+        self.endtime = self.__get_time(query.get("endtime"))
 
-        if query.get('interp') is not None:
-            self.interp = query.get('interp')
-        if query.get('radius') is not None:
-            self.radius = query.get('radius') * 1000  # Convert to meters
-        if query.get('neighbours') is not None:
-            self.neighbours = query.get('neighbours')
+        if query.get("interp") is not None:
+            self.interp = query.get("interp")
+        if query.get("radius") is not None:
+            self.radius = query.get("radius") * 1000  # Convert to meters
+        if query.get("neighbours") is not None:
+            self.neighbours = query.get("neighbours")
 
-        self.plotTitle = query.get('plotTitle')
+        self.plotTitle = query.get("plotTitle")
 
-        self.scale = self.__get_scale(query.get('scale'))
+        self.scale = self.__get_scale(query.get("scale"))
 
-        self.variables = self.__get_variables(query.get('variable'))
+        self.variables = self.__get_variables(query.get("variable"))
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
-            self.compare['variables'] = self.compare['variable'].split(',')
+            self.compare["variables"] = self.compare["variable"].split(",")
 
-            if self.compare.get('colormap_diff') == 'default':
-                self.compare['colormap_diff'] = 'anomaly'
+            if self.compare.get("colormap_diff") == "default":
+                self.compare["colormap_diff"] = "anomaly"
 
             try:
                 # Variable scale
-                self.compare['scale'] = self.__get_scale(self.compare['scale'])
+                self.compare["scale"] = self.__get_scale(self.compare["scale"])
             except KeyError:
                 print("Ignoring scale attribute.")
             try:
                 # Difference plot scale
-                self.compare['scale_diff'] = self.__get_scale(
-                    self.compare['scale_diff'])
+                self.compare["scale_diff"] = self.__get_scale(
+                    self.compare["scale_diff"]
+                )
             except KeyError:
                 print("Ignoring scale_diff attribute.")
 
-        self.cmap = self.__get_colormap(query.get('colormap'))
+        self.cmap = self.__get_colormap(query.get("colormap"))
 
-        self.linearthresh = self.__get_linear_threshold(
-            query.get('linearthresh'))
+        self.linearthresh = self.__get_linear_threshold(query.get("linearthresh"))
 
-        self.depth = self.__get_depth(query.get('depth'))
+        self.depth = self.__get_depth(query.get("depth"))
 
-        self.showmap = self.__get_showmap(query.get('showmap'))
+        self.showmap = self.__get_showmap(query.get("showmap"))
 
     def __get_date_formatter(self, quantum: str):
         """
@@ -126,9 +124,9 @@ class Plotter(metaclass=ABCMeta):
             [lambda] -- Lambda that formats a given date string
         """
 
-        if quantum == 'month':
+        if quantum == "month":
             return lambda x: format_date(x, "MMMM yyyy")
-        elif quantum == 'hour':
+        elif quantum == "hour":
             return lambda x: format_datetime(x)
         else:
             return lambda x: format_date(x, "long")
@@ -144,10 +142,10 @@ class Plotter(metaclass=ABCMeta):
             [list] -- List of min/max values of query_scale
         """
 
-        if query_scale is None or 'auto' in query_scale:
+        if query_scale is None or "auto" in query_scale:
             return None
 
-        return [float(x) for x in query_scale.split(',')]
+        return [float(x) for x in query_scale.split(",")]
 
     def __get_variables(self, variables: str):
         """
@@ -161,12 +159,12 @@ class Plotter(metaclass=ABCMeta):
         """
 
         if variables is None:
-            variables = ['votemper']
+            variables = ["votemper"]
 
         if isinstance(variables, str) or isinstance(variables, str):
-            variables = variables.split(',')
+            variables = variables.split(",")
 
-        return [v for v in variables if v != '']
+        return [v for v in variables if v != ""]
 
     def __get_time(self, param: str):
         if param is None or len(str(param)) == 0:
@@ -185,7 +183,7 @@ class Plotter(metaclass=ABCMeta):
 
     def __get_linear_threshold(self, linearthresh: str):
 
-        if linearthresh is None or linearthresh == '':
+        if linearthresh is None or linearthresh == "":
             linearthresh = 200
         linearthresh = float(linearthresh)
         if not linearthresh > 0:
@@ -224,19 +222,31 @@ class Plotter(metaclass=ABCMeta):
         if fig is None:
             fig = plt.gcf()
 
-        fig.text(1.0, 0.015, self.dataset_config.attribution,
-                 ha='right', size='small', va='top')
+        fig.text(
+            1.0,
+            0.015,
+            self.dataset_config.attribution,
+            ha="right",
+            size="small",
+            va="top",
+        )
         if self.compare:
-            fig.text(1.0, 0.0, DatasetConfig(self.compare['dataset']).attribution,
-                     ha='right', size='small', va='top')
+            fig.text(
+                1.0,
+                0.0,
+                DatasetConfig(self.compare["dataset"]).attribution,
+                ha="right",
+                size="small",
+                va="top",
+            )
 
         with contextlib.closing(BytesIO()) as buf:
             plt.savefig(
                 buf,
                 format=self.filetype,
-                dpi='figure',
-                bbox_inches='tight',
-                pad_inches=0.5
+                dpi="figure",
+                bbox_inches="tight",
+                pad_inches=0.5,
             )
             plt.close(fig)
 
@@ -245,9 +255,7 @@ class Plotter(metaclass=ABCMeta):
 
     def csv(self, header=[], columns=[], data=[]):
         with contextlib.closing(StringIO()) as buf:
-            buf.write("\n".join(
-                ["// %s: %s" % (h[0], h[1]) for h in header]
-            ))
+            buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
             buf.write(", ".join(columns))
             buf.write("\n")
@@ -258,23 +266,38 @@ class Plotter(metaclass=ABCMeta):
 
             return (buf.getvalue(), self.mime, self.filename)
 
-    def odv_ascii(self, cruise="", variables=[], variable_units=[],
-                  station=[], latitude=[], longitude=[], depth=[], time=[],
-                  data=[]):
+    def odv_ascii(
+        self,
+        cruise="",
+        variables=[],
+        variable_units=[],
+        station=[],
+        latitude=[],
+        longitude=[],
+        depth=[],
+        time=[],
+        data=[],
+    ):
         with contextlib.closing(StringIO()) as buf:
-            buf.write("//<CreateTime>%s</CreateTime>\n" % (
-                datetime.datetime.now().isoformat()
-            ))
+            buf.write(
+                "//<CreateTime>%s</CreateTime>\n"
+                % (datetime.datetime.now().isoformat())
+            )
             buf.write("//<Software>Ocean Navigator</Software>\n")
-            buf.write("\t".join([
-                "Cruise",
-                "Station",
-                "Type",
-                "yyyy-mm-ddThh:mm:ss.sss",
-                "Longitude [degrees_east]",
-                "Latitude [degrees_north]",
-                "Depth [m]",
-            ] + ["%s [%s]" % x for x in zip(variables, variable_units)]))
+            buf.write(
+                "\t".join(
+                    [
+                        "Cruise",
+                        "Station",
+                        "Type",
+                        "yyyy-mm-ddThh:mm:ss.sss",
+                        "Longitude [degrees_east]",
+                        "Latitude [degrees_north]",
+                        "Depth [m]",
+                    ]
+                    + ["%s [%s]" % x for x in zip(variables, variable_units)]
+                )
+            )
             buf.write("\n")
 
             if len(depth.shape) == 1:
@@ -286,11 +309,9 @@ class Plotter(metaclass=ABCMeta):
                         cruise = ""
 
                     if isinstance(data[idx], np.ma.MaskedArray):
-                        if len(data.shape) == 3 and \
-                           data[idx, :, idx2].mask.all():
+                        if len(data.shape) == 3 and data[idx, :, idx2].mask.all():
                             continue
-                        if len(data.shape) == 2 and \
-                           np.ma.is_masked(data[idx, idx2]):
+                        if len(data.shape) == 2 and np.ma.is_masked(data[idx, idx2]):
                             continue
 
                     line = [
@@ -309,8 +330,7 @@ class Plotter(metaclass=ABCMeta):
                     else:
                         line.extend(list(map(str, data[idx, :, idx2])))
 
-                    if idx > 0 and station[idx] == station[idx - 1] or \
-                       idx2 > 0:
+                    if idx > 0 and station[idx] == station[idx - 1] or idx2 > 0:
                         line[1] = ""
                         line[2] = ""
                         line[3] = ""
@@ -333,8 +353,7 @@ class Plotter(metaclass=ABCMeta):
         names = []
 
         for _, v in enumerate(variables):
-            names.append(
-                self.dataset_config.variable[dataset.variables[v]].name)
+            names.append(self.dataset_config.variable[dataset.variables[v]].name)
 
         return names
 
@@ -360,8 +379,7 @@ class Plotter(metaclass=ABCMeta):
         units = []
 
         for idx, v in enumerate(variables):
-            units.append(
-                self.dataset_config.variable[dataset.variables[v]].unit)
+            units.append(self.dataset_config.variable[dataset.variables[v]].unit)
 
         return units
 
@@ -399,14 +417,16 @@ class Plotter(metaclass=ABCMeta):
 
     def plot_legend(self, figure, labels):
         if len(labels) > 10:
-            legend = plt.legend(labels, loc='upper right',
-                                bbox_to_anchor=(1, 0, 0.25, 1),
-                                borderaxespad=0.,
-                                bbox_transform=figure.transFigure,
-                                ncol=np.ceil(self.data.shape[0] /
-                                             30.0).astype(int))
+            legend = plt.legend(
+                labels,
+                loc="upper right",
+                bbox_to_anchor=(1, 0, 0.25, 1),
+                borderaxespad=0.0,
+                bbox_transform=figure.transFigure,
+                ncol=np.ceil(self.data.shape[0] / 30.0).astype(int),
+            )
         elif len(labels) > 1:
-            legend = plt.legend(labels, loc='best')
+            legend = plt.legend(labels, loc="best")
         else:
             legend = None
 
