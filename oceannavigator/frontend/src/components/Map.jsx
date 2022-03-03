@@ -426,7 +426,7 @@ export default class Map extends React.PureComponent {
                       color: "#000000",
                       width: 1,
                     }),
-                  }),                  
+                  }),
                   new olstyle.Style({
                     geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
                     text: new olstyle.Text({
@@ -440,7 +440,7 @@ export default class Map extends React.PureComponent {
                         width: 2,
                       }),
                     }),
-                  }),           
+                  }),
                 ];
               }
 
