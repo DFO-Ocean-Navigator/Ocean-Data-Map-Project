@@ -18,33 +18,37 @@ LINEAR = 200
 
 
 class TimeseriesPlotter(PointPlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "timeseries"
         super(TimeseriesPlotter, self).__init__(dataset_name, query, **kwargs)
-        self.size: str = '11x5'
+        self.size: str = "11x5"
 
     def parse_query(self, query):
         super(TimeseriesPlotter, self).parse_query(query)
 
-        qdepth = query.get('depth')
+        qdepth = query.get("depth")
         if isinstance(qdepth, list):
             qdepth = qdepth[0]
         depth = qdepth
 
         if qdepth and hasattr(qdepth, "__len__") and len(qdepth) > 0:
-            if qdepth == 'all':
-                depth = 'all'
-            elif qdepth == 'bottom':
-                depth = 'bottom'
+            if qdepth == "all":
+                depth = "all"
+            elif qdepth == "bottom":
+                depth = "bottom"
             else:
                 depth = int(qdepth)
 
         self.depth = depth
 
     def load_data(self):
-        
-        with open_dataset(self.dataset_config, variable=self.variables, timestamp=self.starttime, endtime=self.endtime) as dataset:
+
+        with open_dataset(
+            self.dataset_config,
+            variable=self.variables,
+            timestamp=self.starttime,
+            endtime=self.endtime,
+        ) as dataset:
             self.load_misc(dataset, self.variables)
 
             variable = self.variables[0]
@@ -55,35 +59,36 @@ class TimeseriesPlotter(PointPlotter):
             self.variable_name = self.dataset_config.variable[
                 dataset.variables[variable]
             ].name
-            
-            if self.depth != 'all' and self.depth != 'bottom' and \
-                (set(dataset.variables[variable].dimensions) &
-                    set(dataset.nc_data.depth_dimensions)):
-                self.depth_label = " at %d m" % (
-                    np.round(dataset.depths[self.depth])
-                )
 
-            elif self.depth == 'bottom':
-                self.depth_label = ' at Bottom'
+            if (
+                self.depth != "all"
+                and self.depth != "bottom"
+                and (
+                    set(dataset.variables[variable].dimensions)
+                    & set(dataset.nc_data.depth_dimensions)
+                )
+            ):
+                self.depth_label = " at %d m" % (np.round(dataset.depths[self.depth]))
+
+            elif self.depth == "bottom":
+                self.depth_label = " at Bottom"
             else:
-                self.depth_label = ''
+                self.depth_label = ""
 
             # Override depth request if requested variable has no depth (i.e. surface only)
-            if not (set(dataset.variables[variable].dimensions) &
-                    set(dataset.nc_data.depth_dimensions)):
+            if not (
+                set(dataset.variables[variable].dimensions)
+                & set(dataset.nc_data.depth_dimensions)
+            ):
                 self.depth = 0
 
             point_data = []
             depths = []
             for p in self.points:
                 data = []
-                if self.depth == 'all':
+                if self.depth == "all":
                     d, depths = dataset.get_timeseries_profile(
-                        float(p[0]),
-                        float(p[1]),
-                        self.starttime,
-                        self.endtime,
-                        variable
+                        float(p[0]), float(p[1]), self.starttime, self.endtime, variable
                     )
                 else:
                     d, depths = dataset.get_timeseries_point(
@@ -93,7 +98,7 @@ class TimeseriesPlotter(PointPlotter):
                         self.starttime,
                         self.endtime,
                         variable,
-                        return_depth=True
+                        return_depth=True,
                     )
                 data.append(d)
                 point_data.append(np.ma.array(data))
@@ -102,30 +107,38 @@ class TimeseriesPlotter(PointPlotter):
 
             starttime_idx = dataset.nc_data.timestamp_to_time_index(self.starttime)
             endtime_idx = dataset.nc_data.timestamp_to_time_index(self.endtime)
-            times = dataset.nc_data.timestamps[starttime_idx: endtime_idx + 1]
-            if self.dataset_config.quantum == 'month':
+            times = dataset.nc_data.timestamps[starttime_idx : endtime_idx + 1]
+            if self.dataset_config.quantum == "month":
                 times = [datetime.date(x.year, x.month, 1) for x in times]
-            
-            if 'mag' in variable and self.depth != 'all':
+
+            if "mag" in variable and self.depth != "all":
                 # Under the current API this indicates that velocity data is being
-                # loaded. Save each velocity vectorcomponent (X and Y) for possible 
-                # CSV export later. Currently, we only provide velocity components 
-                # for a single depth. 
+                # loaded. Save each velocity vectorcomponent (X and Y) for possible
+                # CSV export later. Currently, we only provide velocity components
+                # for a single depth.
 
                 vector_variables = [
-                    self.dataset_config.vector_variables[variable]['east_vector_component'],
-                    self.dataset_config.vector_variables[variable]['north_vector_component']
+                    self.dataset_config.vector_variables[variable][
+                        "east_vector_component"
+                    ],
+                    self.dataset_config.vector_variables[variable][
+                        "north_vector_component"
+                    ],
                 ]
 
-                self.vector_variable_names = self.get_variable_names(dataset, vector_variables)
-                self.vector_variable_units = self.get_variable_units(dataset, vector_variables)
-                                
+                self.vector_variable_names = self.get_variable_names(
+                    dataset, vector_variables
+                )
+                self.vector_variable_units = self.get_variable_units(
+                    dataset, vector_variables
+                )
+
                 d = []
                 vector_point_data = []
                 for vv in vector_variables:
                     for p in self.points:
                         vector_data = []
-                        
+
                         d, _ = dataset.get_timeseries_point(
                             float(p[0]),
                             float(p[1]),
@@ -133,12 +146,12 @@ class TimeseriesPlotter(PointPlotter):
                             self.starttime,
                             self.endtime,
                             vv,
-                            return_depth=True
+                            return_depth=True,
                         )
-                    
+
                     vector_data.append(d)
                     vector_point_data.append(np.ma.array(vector_data))
-                
+
                 self.quiver_data = vector_point_data
 
             self.times = times
@@ -148,8 +161,8 @@ class TimeseriesPlotter(PointPlotter):
 
     def csv(self):
         header = [
-            ['Dataset', self.dataset_config.name],
-            ['Attribution', self.dataset_config.attribution]
+            ["Dataset", self.dataset_config.name],
+            ["Attribution", self.dataset_config.attribution],
         ]
 
         columns = [
@@ -157,60 +170,67 @@ class TimeseriesPlotter(PointPlotter):
             "Longitude",
             "Time",
         ]
-        
-        # Check to see if the quiver attribute is present. If so the CSV export will 
-        # also include X and Y velocity components (pulled from the quiver_data attribute) 
-        # and bearing information (to be calculated below).
-        has_quiver = hasattr(self, 'quiver_data')
 
-        if self.depth != 'all':
+        # Check to see if the quiver attribute is present. If so the CSV export will
+        # also include X and Y velocity components (pulled from the quiver_data attribute)
+        # and bearing information (to be calculated below).
+        has_quiver = hasattr(self, "quiver_data")
+
+        if self.depth != "all":
             if isinstance(self.depth, str):
                 header.append(["Depth", self.depth])
             else:
-                header.append(
-                    ["Depth", "%.4f%s" % (self.depth,
-                                        self.depth_unit)]
-                )
+                header.append(["Depth", "%.4f%s" % (self.depth, self.depth_unit)])
 
-            columns.append("%s (%s)" % (self.variable_name,
-                                        self.variable_unit))
+            columns.append("%s (%s)" % (self.variable_name, self.variable_unit))
             if has_quiver:
-                columns.extend([
-                    "%s (%s)" % (self.vector_variable_names[0],
-                                 self.vector_variable_units[0]),
-                    "%s (%s)" % (self.vector_variable_names[1],
-                                 self.vector_variable_units[1]),
-                    "Bearing (degrees clockwise positive from North)"
-                ])
+                columns.extend(
+                    [
+                        "%s (%s)"
+                        % (
+                            self.vector_variable_names[0],
+                            self.vector_variable_units[0],
+                        ),
+                        "%s (%s)"
+                        % (
+                            self.vector_variable_names[1],
+                            self.vector_variable_units[1],
+                        ),
+                        "Bearing (degrees clockwise positive from North)",
+                    ]
+                )
         else:
             max_dep_idx = np.where(~self.data[:, 0, 0, :].mask)[1].max()
             if not has_quiver:
-                header.append(["Variable", "%s (%s)" % (self.variable_name,
-                                                        self.variable_unit)])
-                for dep in self.depths[:max_dep_idx + 1]:
+                header.append(
+                    ["Variable", "%s (%s)" % (self.variable_name, self.variable_unit)]
+                )
+                for dep in self.depths[: max_dep_idx + 1]:
                     columns.append("%d%s" % (np.round(dep), self.depth_unit))
             else:
                 header_text = "%s (%s) %s (%s) %s (%s) %s" % (
-                    self.variable_name, self.variable_unit,
-                    self.vector_variable_names[0], self.vector_variable_units[0],
-                    self.vector_variable_names[1], self.vector_variable_units[1],
-                    "Bearing (degrees clockwise positive from North)"
+                    self.variable_name,
+                    self.variable_unit,
+                    self.vector_variable_names[0],
+                    self.vector_variable_units[0],
+                    self.vector_variable_names[1],
+                    self.vector_variable_units[1],
+                    "Bearing (degrees clockwise positive from North)",
                 )
                 header.append(["Variables", header_text])
-                for var_name in [self.variable_name, 
-                                 *self.vector_variable_names, 
-                                 "Bearing"]:
-                    for dep in self.depths[:max_dep_idx + 1]:
+                for var_name in [
+                    self.variable_name,
+                    *self.vector_variable_names,
+                    "Bearing",
+                ]:
+                    for dep in self.depths[: max_dep_idx + 1]:
                         columns.append(
-                            "%s at %d%s" % (
-                                var_name, np.round(dep), self.depth_unit
-                            )
+                            "%s at %d%s" % (var_name, np.round(dep), self.depth_unit)
                         )
 
         if has_quiver:
             # Calculate bearings.
-            bearing = np.arctan2(self.quiver_data[1][:],
-                                 self.quiver_data[0][:])
+            bearing = np.arctan2(self.quiver_data[1][:], self.quiver_data[0][:])
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
@@ -218,7 +238,7 @@ class TimeseriesPlotter(PointPlotter):
             inds = np.where(
                 np.logical_and(
                     np.abs(self.quiver_data[1]) < 10e-6,
-                    np.abs(self.quiver_data[0]) < 10e-6
+                    np.abs(self.quiver_data[0]) < 10e-6,
                 )
             )
             bearing[inds] = np.nan
@@ -234,28 +254,40 @@ class TimeseriesPlotter(PointPlotter):
                     "%0.4f" % self.points[p][1],
                     self.times[t].isoformat(),
                 ]
-                if self.depth == 'all':
+                if self.depth == "all":
                     entry.extend(
-                        ["%0.3f" % f for f in self.data[p, 0, t, :max_dep_idx + 1]])
+                        ["%0.3f" % f for f in self.data[p, 0, t, : max_dep_idx + 1]]
+                    )
                     if has_quiver:
                         entry.extend(
-                            ["%0.3f" % f for f in self.quiver_data[0][p, t, :max_dep_idx + 1]])
+                            [
+                                "%0.3f" % f
+                                for f in self.quiver_data[0][p, t, : max_dep_idx + 1]
+                            ]
+                        )
                         entry.extend(
-                            ["%0.3f" % f for f in self.quiver_data[1][p, t, :max_dep_idx + 1]])
+                            [
+                                "%0.3f" % f
+                                for f in self.quiver_data[1][p, t, : max_dep_idx + 1]
+                            ]
+                        )
                         entry.extend(
-                            ["%0.3f" % f for f in bearing[p, t, :max_dep_idx + 1]])
+                            ["%0.3f" % f for f in bearing[p, t, : max_dep_idx + 1]]
+                        )
                 else:
                     entry.append("%0.3f" % self.data[p, 0, t])
                     if has_quiver:
-                        entry.extend([
-                            "%0.3f" % self.quiver_data[0][p, t],
-                            "%0.3f" % self.quiver_data[1][p, t],
-                            "%0.3f" % bearing[p, t]
-                        ])
+                        entry.extend(
+                            [
+                                "%0.3f" % self.quiver_data[0][p, t],
+                                "%0.3f" % self.quiver_data[1][p, t],
+                                "%0.3f" % bearing[p, t],
+                            ]
+                        )
                 data.append(entry)
 
         d = np.array(data)
-        d[np.where(d == 'nan')] = ''
+        d[np.where(d == "nan")] = ""
         data = d.tolist()
 
         return super(TimeseriesPlotter, self).csv(header, columns, data)
@@ -265,20 +297,21 @@ class TimeseriesPlotter(PointPlotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin, vmax = utils.normalize_scale(self.data,
-                                                self.dataset_config.variable[self.variables[0]])
+            vmin, vmax = utils.normalize_scale(
+                self.data, self.dataset_config.variable[self.variables[0]]
+            )
 
         if self.cmap is None:
             self.cmap = colormap.find_colormap(self.variable_name)
 
         datenum = matplotlib.dates.date2num(self.times)
-        if self.depth == 'all':
+        if self.depth == "all":
             size = list(map(float, self.size.split("x")))
             numpoints = len(self.points)
             figuresize = (size[0], size[1] * numpoints)
             fig, ax = plt.subplots(
-                numpoints, 1, sharex=True, figsize=figuresize,
-                dpi=self.dpi)
+                numpoints, 1, sharex=True, figsize=figuresize, dpi=self.dpi
+            )
 
             if not isinstance(ax, np.ndarray):
                 ax = [ax]
@@ -290,23 +323,26 @@ class TimeseriesPlotter(PointPlotter):
                 mindepth = self.depths[dlim[0]].min()
 
                 c = ax[idx].pcolormesh(
-                    datenum, self.depths[:dlim[1] + 1], d[
-                        :, :dlim[1] + 1].transpose(),
-                    shading='gouraud', cmap=self.cmap, vmin=vmin, vmax=vmax)
+                    datenum,
+                    self.depths[: dlim[1] + 1],
+                    d[:, : dlim[1] + 1].transpose(),
+                    shading="gouraud",
+                    cmap=self.cmap,
+                    vmin=vmin,
+                    vmax=vmax,
+                )
                 ax[idx].invert_yaxis()
                 if maxdepth > LINEAR:
-                    ax[idx].set_yscale('symlog', linthresh=LINEAR)
+                    ax[idx].set_yscale("symlog", linthresh=LINEAR)
                 ax[idx].yaxis.set_major_formatter(ScalarFormatter())
 
                 if maxdepth > LINEAR:
                     l = 10 ** np.floor(np.log10(maxdepth))
                     ax[idx].set_ylim(np.ceil(maxdepth / l) * l, mindepth)
-                    ax[idx].set_yticks(
-                        list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
+                    ax[idx].set_yticks(list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
                 else:
                     ax[idx].set_ylim(maxdepth, mindepth)
-                ax[idx].set_ylabel("Depth (%s)" %
-                                   utils.mathtext(self.depth_unit))
+                ax[idx].set_ylabel("Depth (%s)" % utils.mathtext(self.depth_unit))
 
                 ax[idx].xaxis_date()
                 ax[idx].set_xlim(datenum[0], datenum[-1])
@@ -314,12 +350,14 @@ class TimeseriesPlotter(PointPlotter):
                 divider = make_axes_locatable(ax[idx])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 bar = plt.colorbar(c, cax=cax)
-                bar.set_label("%s (%s)" % (self.variable_name.title(),
-                                           utils.mathtext(self.variable_unit)))
+                bar.set_label(
+                    "%s (%s)"
+                    % (self.variable_name.title(), utils.mathtext(self.variable_unit))
+                )
                 ax[idx].set_title(
-                    "%s%s at %s" % (
-                        self.variable_name.title(), self.depth_label,
-                        self.names[idx]))
+                    "%s%s at %s"
+                    % (self.variable_name.title(), self.depth_label, self.names[idx])
+                )
                 plt.setp(ax[idx].get_xticklabels(), rotation=30)
             fig.autofmt_xdate()
         else:
@@ -346,24 +384,36 @@ class TimeseriesPlotter(PointPlotter):
             if self.showmap:
                 plt.subplot(gs[0, 0])
                 subplot += 1
-                utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                           [x[1] for x in self.points]]))  # Longitudes
+                utils.point_plot(
+                    np.array(
+                        [
+                            [x[0] for x in self.points],  # Latitudes
+                            [x[1] for x in self.points],
+                        ]
+                    )
+                )  # Longitudes
 
             plt.subplot(gs[:, subplot])
-            plt.plot_date(datenum, np.squeeze(self.data), fmt='-', figure=fig, xdate=True)
+            plt.plot_date(
+                datenum, np.squeeze(self.data), fmt="-", figure=fig, xdate=True
+            )
             plt.ylabel(
                 f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
-                fontsize=14)
+                fontsize=14,
+            )
             plt.ylim(vmin, vmax)
 
             # Title
             if self.plotTitle is None or self.plotTitle == "":
                 wrapped_title = wrap(
-                    "%s%s at %s" % (
+                    "%s%s at %s"
+                    % (
                         self.variable_name.title(),
                         self.depth_label,
-                        ", ".join(self.names)
-                    ), 80)
+                        ", ".join(self.names),
+                    ),
+                    80,
+                )
                 plt.title("\n".join(wrapped_title), fontsize=15)
             else:
                 plt.title(self.plotTitle, fontsize=15)
@@ -375,4 +425,3 @@ class TimeseriesPlotter(PointPlotter):
             self.plot_legend(fig, self.names)
 
         return super(TimeseriesPlotter, self).plot(fig)
-        

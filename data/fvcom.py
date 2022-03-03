@@ -19,8 +19,8 @@ EARTH_RADIUS = 6378137.0
 
 
 class Fvcom(Model):
-    """ FVCOM datasets have a non-uniform grid,
-        so xArray can't handle it/
+    """FVCOM datasets have a non-uniform grid,
+    so xArray can't handle it/
     """
 
     __depths = None
@@ -41,13 +41,11 @@ class Fvcom(Model):
 
     @property
     def depth_dimensions(self):
-        """ Returns the possible names of the depth dimension in the dataset
-        """
-        return ['siglev', 'siglay']
+        """Returns the possible names of the depth dimension in the dataset"""
+        return ["siglev", "siglay"]
 
     def subset(self, query):
-        raise ServerError(
-            "Subsetting FVCOM datasets is currently not supported.")
+        raise ServerError("Subsetting FVCOM datasets is currently not supported.")
 
     def timestamp_to_time_index(self, timestamp: int):
         """Converts a given timestamp (e.g. 2031436800) into the corresponding
@@ -65,7 +63,9 @@ class Fvcom(Model):
 
         # https: // stackoverflow.com/a/41022847/2231969
         # We use 1.e-7 since the default 1.e-5 doesn't provide enough precision
-        return next(i for i, _ in enumerate(time_var) if np.isclose(_, timestamp, 1.e-7))
+        return next(
+            i for i, _ in enumerate(time_var) if np.isclose(_, timestamp, 1.0e-7)
+        )
 
     @property
     def depths(self):
@@ -77,20 +77,20 @@ class Fvcom(Model):
 
     @property
     def timestamps(self):
-        """ Loads, caches, and returns the time dimension from a dataset.
-        """
+        """Loads, caches, and returns the time dimension from a dataset."""
         if self.__timestamp_cache.get("timestamps") is None:
-            for v in ['Times']:
+            for v in ["Times"]:
                 if v in self.nc_data.dataset.variables:
                     var = self.nc_data.get_dataset_variable(v)
                     break
 
             tz = pytz.timezone(var.time_zone)
-            time_list = list(map(
-                lambda dateStr:
-                dateutil.parser.parse(dateStr).replace(tzinfo=tz),
-                netcdf.chartostring(var[:])
-            ))
+            time_list = list(
+                map(
+                    lambda dateStr: dateutil.parser.parse(dateStr).replace(tzinfo=tz),
+                    netcdf.chartostring(var[:]),
+                )
+            )
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
@@ -108,19 +108,20 @@ class Fvcom(Model):
         index = int(element)
 
         if element:
-            latvar = self.nc_data.get_dataset_variable('latc')
-            lonvar = self.nc_data.get_dataset_variable('lonc')
+            latvar = self.nc_data.get_dataset_variable("latc")
+            lonvar = self.nc_data.get_dataset_variable("lonc")
         else:
-            latvar = self.nc_data.get_dataset_variable('lat')
-            lonvar = self.nc_data.get_dataset_variable('lon')
+            latvar = self.nc_data.get_dataset_variable("lat")
+            lonvar = self.nc_data.get_dataset_variable("lon")
 
         if self._kdt[index] is None:
             latvals = latvar[:] * RAD_FACTOR
             lonvals = lonvar[:] * RAD_FACTOR
             clat, clon = np.cos(latvals), np.cos(lonvals)
             slat, slon = np.sin(latvals), np.sin(lonvals)
-            triples = np.array([np.ravel(clat * clon), np.ravel(clat * slon),
-                                np.ravel(slat)]).transpose()
+            triples = np.array(
+                [np.ravel(clat * clon), np.ravel(clat * slon), np.ravel(slat)]
+            ).transpose()
             self._kdt[index] = KDTree(triples)
             del clat, clon
             del slat, slon
@@ -163,21 +164,21 @@ class Fvcom(Model):
             return mn, mx
 
         if element:
-            latvar = self.nc_data.get_dataset_variable('latc')
+            latvar = self.nc_data.get_dataset_variable("latc")
         else:
-            latvar = self.nc_data.get_dataset_variable('lat')
+            latvar = self.nc_data.get_dataset_variable("lat")
         mini, maxi = fix_limits(index, latvar.shape)
 
         return mini[0], maxi[0], np.clip(np.amax(d), 5000, 50000)
 
     def __latlon_vars(self, data_var):
         var = self.nc_data.get_dataset_variable(data_var)
-        if 'latc' in var.coordinates:
-            latvar = self.nc_data.get_dataset_variable('latc')
-            lonvar = self.nc_data.get_dataset_variable('lonc')
+        if "latc" in var.coordinates:
+            latvar = self.nc_data.get_dataset_variable("latc")
+            lonvar = self.nc_data.get_dataset_variable("lonc")
         else:
-            latvar = self.nc_data.get_dataset_variable('lat')
-            lonvar = self.nc_data.get_dataset_variable('lon')
+            latvar = self.nc_data.get_dataset_variable("lat")
+            lonvar = self.nc_data.get_dataset_variable("lon")
 
         return latvar, lonvar
 
@@ -193,7 +194,7 @@ class Fvcom(Model):
 
         def weight(r):
             r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
-            return 1. / r  # ** 2
+            return 1.0 / r  # ** 2
 
         data = np.squeeze(var[:])
 
@@ -201,8 +202,7 @@ class Fvcom(Model):
         masked_lat_in = np.ma.array(lat_in)
 
         output_def = pyresample.geometry.SwathDefinition(
-            lons=np.ma.array(lon_out),
-            lats=np.ma.array(lat_out)
+            lons=np.ma.array(lon_out), lats=np.ma.array(lat_out)
         )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
@@ -211,34 +211,42 @@ class Fvcom(Model):
                 output = []
                 # multiple depths
                 for d in range(0, data.shape[1]):
-                    masked_lon_in.mask = masked_lat_in.mask = \
+                    masked_lon_in.mask = masked_lat_in.mask = (
                         data[:, d].view(np.ma.MaskedArray).mask
-                    input_def = pyresample.geometry.SwathDefinition(
-                        lons=masked_lon_in,
-                        lats=masked_lat_in
                     )
-                    output.append(pyresample.kd_tree.resample_custom(
-                        input_def, data[:, d], output_def,
-                        radius_of_influence=float(radius),
-                        neighbours=10,
-                        weight_funcs=weight,
-                        fill_value=None, nprocs=4
-                    ))
+                    input_def = pyresample.geometry.SwathDefinition(
+                        lons=masked_lon_in, lats=masked_lat_in
+                    )
+                    output.append(
+                        pyresample.kd_tree.resample_custom(
+                            input_def,
+                            data[:, d],
+                            output_def,
+                            radius_of_influence=float(radius),
+                            neighbours=10,
+                            weight_funcs=weight,
+                            fill_value=None,
+                            nprocs=4,
+                        )
+                    )
 
                 output = np.ma.array(output).transpose()
             else:
-                masked_lon_in.mask = masked_lat_in.mask = \
+                masked_lon_in.mask = masked_lat_in.mask = (
                     var[:].view(np.ma.MaskedArray).mask
+                )
                 input_def = pyresample.geometry.SwathDefinition(
-                    lons=masked_lon_in,
-                    lats=masked_lat_in
+                    lons=masked_lon_in, lats=masked_lat_in
                 )
                 output = pyresample.kd_tree.resample_custom(
-                    input_def, data, output_def,
+                    input_def,
+                    data,
+                    output_def,
                     radius_of_influence=float(radius),
                     neighbours=10,
                     weight_funcs=weight,
-                    fill_value=None, nprocs=4
+                    fill_value=None,
+                    nprocs=4,
                 )
 
         if len(origshape) == 3:
@@ -247,8 +255,7 @@ class Fvcom(Model):
         return np.squeeze(output)
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
-        min_i, max_i, radius = self.__bounding_box(
-            latitude, longitude, False, 10)
+        min_i, max_i, radius = self.__bounding_box(latitude, longitude, False, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -258,7 +265,7 @@ class Fvcom(Model):
         time = self.nc_data.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
-        if depth == 'bottom':
+        if depth == "bottom":
             depth = -1
 
         if len(var.shape) == 3:
@@ -266,29 +273,27 @@ class Fvcom(Model):
         else:
             data = var[time, min_i:max_i]
 
-        return (
-            latvar[min_i:max_i],
-            lonvar[min_i:max_i],
-            data
-        )
+        return (latvar[min_i:max_i], lonvar[min_i:max_i], data)
 
-    def get_point(self, latitude, longitude, depth, timestamp, variable,
-                  return_depth=False):
+    def get_point(
+        self, latitude, longitude, depth, timestamp, variable, return_depth=False
+    ):
         var = self.nc_data.get_dataset_variable(variable)
         time = self.nc_data.timestamp_to_time_index(timestamp)
         latvar, lonvar = self.__latlon_vars(variable)
 
         min_i, max_i, radius = self.__bounding_box(
-            latitude, longitude,
-            'nele' in self.nc_data.get_dataset_variable(variable).dimensions,
-            10
+            latitude,
+            longitude,
+            "nele" in self.nc_data.get_dataset_variable(variable).dimensions,
+            10,
         )
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
             longitude = np.array([longitude])
 
-        if depth == 'bottom':
+        if depth == "bottom":
             depth = -1
 
         if len(var.shape) == 3:
@@ -297,22 +302,14 @@ class Fvcom(Model):
             data = var[time, min_i:max_i]
 
         res = self.__resample(
-            latvar[min_i:max_i],
-            lonvar[min_i:max_i],
-            latitude, longitude,
-            data,
-            radius
+            latvar[min_i:max_i], lonvar[min_i:max_i], latitude, longitude, data, radius
         )
 
         if return_depth:
             d = self.__get_depths(variable, time, min_i, max_i)
 
             res_d = self.__resample(
-                latvar[min_i:max_i],
-                lonvar[min_i:max_i],
-                latitude, longitude,
-                d,
-                radius
+                latvar[min_i:max_i], lonvar[min_i:max_i], latitude, longitude, d, radius
             )
 
             if len(latitude) > 1:
@@ -327,42 +324,48 @@ class Fvcom(Model):
         var = self.nc_data.get_dataset_variable(variable)
         time = self.nc_data.timestamp_to_time_index(timestamp)
 
-        if 'nele' in var.dimensions:
+        if "nele" in var.dimensions:
             # First, find indicies to cover the nodes
-            nv = self.nc_data.get_dataset_variable('nv')[:, min_i:max_i]
+            nv = self.nc_data.get_dataset_variable("nv")[:, min_i:max_i]
             min_n, max_n = np.amin(nv), np.amax(nv)
 
-            if 'siglay' in var.dimensions:
-                sigma_var = 'siglay'
-            elif 'siglev' in var.dimensions:
-                sigma_var = 'siglev'
+            if "siglay" in var.dimensions:
+                sigma_var = "siglay"
+            elif "siglev" in var.dimensions:
+                sigma_var = "siglev"
             else:
                 return np.zeros(max_i - min_i)
 
             radius = 50000
 
-            lat_in = self.nc_data.get_dataset_variable('lat')[min_n:max_n]
-            lon_in = self.nc_data.get_dataset_variable('lon')[min_n:max_n]
-            lat_out = self.nc_data.get_dataset_variable('latc')[min_i:max_i]
-            lon_out = self.nc_data.get_dataset_variable('lonc')[min_i:max_i]
+            lat_in = self.nc_data.get_dataset_variable("lat")[min_n:max_n]
+            lon_in = self.nc_data.get_dataset_variable("lon")[min_n:max_n]
+            lat_out = self.nc_data.get_dataset_variable("latc")[min_i:max_i]
+            lon_out = self.nc_data.get_dataset_variable("lonc")[min_i:max_i]
 
             sigma = self.__resample(
-                lat_in, lon_in,
-                lat_out, lon_out,
+                lat_in,
+                lon_in,
+                lat_out,
+                lon_out,
                 self.nc_data.get_dataset_variable(sigma_var)[:, min_n:max_n],
-                radius
+                radius,
             ).transpose()
             bath = self.__resample(
-                lat_in, lon_in,
-                lat_out, lon_out,
-                self.nc_data.get_dataset_variable('h')[min_n:max_n],
-                radius
+                lat_in,
+                lon_in,
+                lat_out,
+                lon_out,
+                self.nc_data.get_dataset_variable("h")[min_n:max_n],
+                radius,
             )
             surf = self.__resample(
-                lat_in, lon_in,
-                lat_out, lon_out,
-                self.nc_data.get_dataset_variable('zeta')[time, min_n:max_n],
-                radius
+                lat_in,
+                lon_in,
+                lat_out,
+                lon_out,
+                self.nc_data.get_dataset_variable("zeta")[time, min_n:max_n],
+                radius,
             ).transpose()
 
             if hasattr(time, "__len__"):
@@ -372,15 +375,15 @@ class Fvcom(Model):
             z = -1 * (sigma * (bath + surf) + surf)
             return z
         else:
-            if 'siglay' in var.dimensions:
-                sigma = self.nc_data.get_dataset_variable('siglay')[:, min_i:max_i]
-            elif 'siglev' in var.dimensions:
-                sigma = self.nc_data.get_dataset_variable('siglev')[:, min_i:max_i]
+            if "siglay" in var.dimensions:
+                sigma = self.nc_data.get_dataset_variable("siglay")[:, min_i:max_i]
+            elif "siglev" in var.dimensions:
+                sigma = self.nc_data.get_dataset_variable("siglev")[:, min_i:max_i]
             else:
                 return np.array([0] * (max_i - min_i))
 
-            bath = self.nc_data.get_dataset_variable('h')[min_i:max_i]
-            surf = self.nc_data.get_dataset_variable('zeta')[time, min_i:max_i]
+            bath = self.nc_data.get_dataset_variable("h")[min_i:max_i]
+            surf = self.nc_data.get_dataset_variable("zeta")[time, min_i:max_i]
 
             if hasattr(time, "__len__"):
                 sigma = np.tile(sigma, (len(time), 1, 1))
@@ -394,9 +397,10 @@ class Fvcom(Model):
         time = self.nc_data.timestamp_to_time_index(timestamp)
 
         min_i, max_i, radius = self.__bounding_box(
-            latitude, longitude,
-            'nele' in self.nc_data.get_dataset_variable(variable).dimensions,
-            10
+            latitude,
+            longitude,
+            "nele" in self.nc_data.get_dataset_variable(variable).dimensions,
+            10,
         )
 
         if not hasattr(latitude, "__len__"):
@@ -407,19 +411,16 @@ class Fvcom(Model):
         res = self.__resample(
             latvar[min_i:max_i],
             lonvar[min_i:max_i],
-            [latitude], [longitude],
+            [latitude],
+            [longitude],
             data,
-            radius
+            radius,
         )
 
         d = self.__get_depths(variable, time, min_i, max_i)
 
         res_d = self.__resample(
-            latvar[min_i:max_i],
-            lonvar[min_i:max_i],
-            [latitude], [longitude],
-            d,
-            radius
+            latvar[min_i:max_i], lonvar[min_i:max_i], [latitude], [longitude], d, radius
         )
 
         dep = res_d

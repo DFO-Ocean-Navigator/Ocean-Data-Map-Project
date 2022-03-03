@@ -34,15 +34,15 @@ def main(uri: str, filename: str):
             if len(datatype_map) == 0:
                 # Generate the DataTypes; only consider variables that have depth
                 for var in filter(
-                    lambda x, dataset=ds: 'level' in dataset[x].coords,
-                    [d for d in ds.data_vars]
+                    lambda x, dataset=ds: "level" in dataset[x].coords,
+                    [d for d in ds.data_vars],
                 ):
                     dt = DataType.query.get(ds[var].standard_name)
                     if dt is None:
                         dt = DataType(
                             key=ds[var].standard_name,
                             name=ds[var].long_name,
-                            unit=ds[var].units
+                            unit=ds[var].units,
                         )
                     datatype_map[var] = dt
 
@@ -53,39 +53,43 @@ def main(uri: str, filename: str):
             # trip id also included the cast number, so I strip off the last 3
             # digits.
             unique_id = f"nafc_ctd_{ds.trip_id[:-3]}"
-            p = Platform.query.filter(Platform.unique_id==unique_id).one_or_none()
+            p = Platform.query.filter(Platform.unique_id == unique_id).one_or_none()
             if p is None:
                 p = Platform(type=Platform.Type.mission, unique_id=unique_id)
                 p.attrs = {
-                    'Institution': ds.institution,
-                    'Trip ID': ds.trip_id[:-3],
-                    'Ship Name': ds.shipname,
+                    "Institution": ds.institution,
+                    "Trip ID": ds.trip_id[:-3],
+                    "Ship Name": ds.shipname,
                 }
                 data.observational.db.session.add(p)
 
             # Generate the station
             s = Station(
-                latitude = ds.latitude.values[0],
-                longitude = ds.longitude.values[0],
-                time = pd.Timestamp(ds.time.values[0]),
+                latitude=ds.latitude.values[0],
+                longitude=ds.longitude.values[0],
+                time=pd.Timestamp(ds.time.values[0]),
             )
             p.stations.append(s)
             data.observational.db.session.commit()
 
-            ds['level'] = seawater.dpth(
-                ds.level.values,
-                ds.latitude[0].values
-            )
-            
+            ds["level"] = seawater.dpth(ds.level.values, ds.latitude[0].values)
+
             # Generate the samples
             for var, dt in datatype_map.items():
-                da = ds[var].dropna('level')
-                samples = [ Sample(value=d.item(), depth=d.level.item(),
-                                datatype_key=dt.key, station_id=s.id) for d in da ]
+                da = ds[var].dropna("level")
+                samples = [
+                    Sample(
+                        value=d.item(),
+                        depth=d.level.item(),
+                        datatype_key=dt.key,
+                        station_id=s.id,
+                    )
+                    for d in da
+                ]
                 data.observational.db.session.bulk_save_objects(samples)
 
             data.observational.db.session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     defopt.run(main)

@@ -11,20 +11,21 @@ import xarray as xr
 import data.observational
 from data.observational import DataType, Platform, Sample, Station
 
-VARIABLES = [ 'TEMP', 'PSAL' ]
+VARIABLES = ["TEMP", "PSAL"]
 
 META_FIELDS = {
-    'PLATFORM_NUMBER': None,
-    'PROJECT_NAME': None,
-    'PI_NAME': None,
-    'DATA_CENTRE': None,
-    'PLATFORM_TYPE': None,
-    'FLOAT_SERIAL_NO': None,
-    'FIRMWARE_VERSION': None,
-    'WMO_INST_TYPE': None
+    "PLATFORM_NUMBER": None,
+    "PROJECT_NAME": None,
+    "PI_NAME": None,
+    "DATA_CENTRE": None,
+    "PLATFORM_TYPE": None,
+    "FLOAT_SERIAL_NO": None,
+    "FIRMWARE_VERSION": None,
+    "WMO_INST_TYPE": None,
 }
 
 datatype_map = {}
+
 
 def main(uri: str, filename: str):
     """Import Argo Profiles
@@ -55,14 +56,17 @@ def main(uri: str, filename: str):
                 unique_id = f"argo_{plat_number}"
 
                 # Grab the platform from the db base on the unique id
-                platform = session.query(Platform).filter(
-                    Platform.unique_id == unique_id,
-                    Platform.type == Platform.Type.argo
-                ).first()
+                platform = (
+                    session.query(Platform)
+                    .filter(
+                        Platform.unique_id == unique_id,
+                        Platform.type == Platform.Type.argo,
+                    )
+                    .first()
+                )
                 if platform is None:
                     # ... or make a new platform
-                    platform = Platform(type=Platform.Type.argo,
-                                        unique_id=unique_id)
+                    platform = Platform(type=Platform.Type.argo, unique_id=unique_id)
                     attrs = {}
                     for f in META_FIELDS:
                         attrs[ds[f].long_name] = META_FIELDS[f][prof].strip()
@@ -74,15 +78,14 @@ def main(uri: str, filename: str):
                 station = Station(
                     time=times[prof],
                     latitude=ds.LATITUDE.values[prof],
-                    longitude=ds.LONGITUDE.values[prof]
+                    longitude=ds.LONGITUDE.values[prof],
                 )
                 platform.stations.append(station)
                 # We need to commit the station here so that it'll have an id
                 session.commit()
 
                 depth = seawater.dpth(
-                    ds.PRES[prof].dropna('N_LEVELS').values,
-                    ds.LATITUDE.values[prof]
+                    ds.PRES[prof].dropna("N_LEVELS").values, ds.LATITUDE.values[prof]
                 )
 
                 samples = []
@@ -96,7 +99,7 @@ def main(uri: str, filename: str):
                             dt = DataType(
                                 key=ds[variable].standard_name,
                                 name=ds[variable].long_name,
-                                unit=ds[variable].units
+                                unit=ds[variable].units,
                             )
 
                             data.observational.db.session.add(dt)
@@ -109,17 +112,17 @@ def main(uri: str, filename: str):
                     else:
                         dt = datatype_map[variable]
 
-                    values = ds[variable][prof].dropna('N_LEVELS').values
+                    values = ds[variable][prof].dropna("N_LEVELS").values
 
                     # Using station_id and datatype_key here instead of the
                     # actual objects so that we can use bulk_save_objects--this
                     # is much faster, but it doesn't follow any relationships.
                     samples = [
                         Sample(
-                        depth=pair[0],
-                        datatype_key=dt.key,
-                        value=pair[1],
-                        station_id = station.id
+                            depth=pair[0],
+                            datatype_key=dt.key,
+                            value=pair[1],
+                            station_id=station.id,
                         )
                         for pair in zip(depth, values)
                     ]
@@ -129,5 +132,5 @@ def main(uri: str, filename: str):
                 session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     defopt.run(main)

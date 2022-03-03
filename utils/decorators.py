@@ -3,6 +3,8 @@
 import json
 from functools import lru_cache, wraps
 
+from frozendict import frozendict
+
 
 def freeze_args(func):
     """Decorator to transform mutable dictionnary into immutable.
@@ -16,12 +18,15 @@ def freeze_args(func):
         def my_function(arg1, arg2):
             ...
     """
+
     @wraps(func)
     def wrapped(*args, **kwargs):
-        args = tuple([frozendict(arg) if isinstance(
-            arg, dict) else arg for arg in args])
-        kwargs = {k: frozendict(v) if isinstance(
-            v, dict) else v for k, v in kwargs.items()}
+        args = tuple(
+            [frozendict(arg) if isinstance(arg, dict) else arg for arg in args]
+        )
+        kwargs = {
+            k: frozendict(v) if isinstance(v, dict) else v for k, v in kwargs.items()
+        }
 
         return func(*args, **kwargs)
 
@@ -64,13 +69,19 @@ def hashable_lru(func):
 
     @wraps(func)
     def lru_decorator(*args, **kwargs):
-        _args = tuple([json.dumps(arg, sort_keys=True) if type(
-            arg) in (list, dict) else arg for arg in args])
-        _kwargs = {k: json.dumps(v, sort_keys=True) if type(
-            v) in (list, dict) else v for k, v in kwargs.items()}
+        _args = tuple(
+            [
+                json.dumps(arg, sort_keys=True) if type(arg) in (list, dict) else arg
+                for arg in args
+            ]
+        )
+        _kwargs = {
+            k: json.dumps(v, sort_keys=True) if type(v) in (list, dict) else v
+            for k, v in kwargs.items()
+        }
         return cached_function(*_args, **_kwargs)
-    
+
     lru_decorator.cache_info = cached_function.cache_info
     lru_decorator.cache_clear = cached_function.cache_clear
-    
+
     return lru_decorator

@@ -1,4 +1,3 @@
-
 import base64
 import hashlib
 import json
@@ -20,30 +19,29 @@ def geturl(query):
     request = "/plot/?" + urlencode({"query": json.dumps(query)})
     return request
 
+
 #
 # This Class Tests various different point plot requests
 #
 class TestPointPlot(unittest.TestCase):
-
     @classmethod
     def setUpClass(self):
         self.app = create_app().test_client()
-
 
     #
     # Tests API request with no data
     #
     def test_missing_data(self):
-        
-        resp = self.app.get('/plot/')
-        self.assertEqual(resp.status_code, 400)    #Error Response
+
+        resp = self.app.get("/plot/")
+        self.assertEqual(resp.status_code, 400)  # Error Response
 
     #
-    #Tests API request with invalid data
+    # Tests API request with invalid data
     #
     def test_invalid_data(self):
 
-        resp = self.app.get('/plot/?YOURDOINGITWRONG')
+        resp = self.app.get("/plot/?YOURDOINGITWRONG")
         self.assertEqual(resp.status_code, 400)
 
     #
@@ -51,15 +49,15 @@ class TestPointPlot(unittest.TestCase):
     #
     def test_invalid_syntax(self):
 
-        resp = self.app.get('/plot/this/is/invalid')
+        resp = self.app.get("/plot/this/is/invalid")
         self.assertEqual(resp.status_code, 404)
-    
+
     #
     # Tests Basic Plot Near NL
     #
     def test_basic_plot(self):
 
-        tests = ['profile','ts','sound','stick']
+        tests = ["profile", "ts", "sound", "stick"]
 
         query = {
             "dataset": "giops_day",
@@ -68,23 +66,23 @@ class TestPointPlot(unittest.TestCase):
             "quantum": "day",
             "showmap": True,
             "station": [[54.36520685523928, -51.3853818042208]],
-            "time": '820',
+            "time": "820",
             "type": "profile",
-            "variable": ['votemper'],
+            "variable": ["votemper"],
         }
-        
+
         for t in tests:
-            query['type'] = t
+            query["type"] = t
             resp = self.app.get(geturl(query))
             self.assertEqual(resp.status_code, 200)
 
-        #Virtual Mooring
+        # Virtual Mooring
         query = {
             "colormap": "default",
             "dataset": "giops_day",
             "depth": 0,
             "endtime": 866,
-            "names": ['72.9496, -63.0786'],
+            "names": ["72.9496, -63.0786"],
             "plotTitle": "",
             "quantum": "day",
             "scale": "-5,30,auto",
@@ -95,7 +93,7 @@ class TestPointPlot(unittest.TestCase):
             "variable": "votemper",
         }
         resp = self.app.get(geturl(query))
-        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.status_code, 200)
 
     #
     # Tests Arctic Plot
@@ -103,7 +101,7 @@ class TestPointPlot(unittest.TestCase):
     @unittest.expectedFailure
     def test_arctic_plot(self):
 
-        tests = ['profile','ts','sound','stick']
+        tests = ["profile", "ts", "sound", "stick"]
         query = {
             "dataset": "giops_day",
             "names": [],
@@ -111,14 +109,14 @@ class TestPointPlot(unittest.TestCase):
             "quantum": "day",
             "showmap": True,
             "station": [[86.84066959725412, -178.1067972143287]],
-            "time": '820',
+            "time": "820",
             "type": "profile",
-            "variable": ['votemper'],
+            "variable": ["votemper"],
         }
 
         for t in tests:
-            
-            query['type'] = t
+
+            query["type"] = t
             resp = self.app.get(geturl(query))
             self.assertEqual(resp.status_code, 200)
 
@@ -128,7 +126,7 @@ class TestPointPlot(unittest.TestCase):
     @unittest.expectedFailure
     def test_antarctic_plot(self):
 
-        tests = ['profile','ts','sound','stick']
+        tests = ["profile", "ts", "sound", "stick"]
         query = {
             "dataset": "giops_day",
             "names": [],
@@ -136,19 +134,15 @@ class TestPointPlot(unittest.TestCase):
             "quantum": "day",
             "showmap": True,
             "station": [[-85.70033363867887, -40.994686406996074]],
-            "time": '820',
+            "time": "820",
             "type": "profile",
-            "variable": ['votemper'],
+            "variable": ["votemper"],
         }
 
         for t in tests:
-            query['type'] = t
+            query["type"] = t
             resp = self.app.get(geturl(query))
             self.assertEqual(resp.status_code, 200)
-    
-    
-    
-    #def test_plot_point_arctic(self):
-    #def test_plot_point_antarctic(self):
 
-    
+    # def test_plot_point_arctic(self):
+    # def test_plot_point_antarctic(self):

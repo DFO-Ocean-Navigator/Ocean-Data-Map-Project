@@ -1,9 +1,9 @@
-'''
+"""
 Class for reading in the NAFC p-file (*.p2017, etc.) files.
 
 Methods are available to convert the file to ODV-ASCII (Ocean Data Viewer),
 or to use the file as a Pandas Dataframe.
-'''
+"""
 import dateutil
 import numpy as np
 import pandas as pd
@@ -114,25 +114,24 @@ SHIP_NUMBERS = {
 }
 
 ODV_COLUMN_ORDER = [
-    'Cruise',
-    'Station',
-    'Type',
-    'yyyy-mm-ddThh:mm:ss.sss',
-    'Longitude [degrees_east]',
-    'Latitude [degrees_north]',
-    'Temperature [Celsius]',
-    'Salinity [PSU]',
-    'Conductivity [S/m]',
-    'Sigma-t []',
-    'Oxygen [ml/L]',
-    'Fluorescence [mg/m^3]',
-    'PAR []',
-    'Ph []',
+    "Cruise",
+    "Station",
+    "Type",
+    "yyyy-mm-ddThh:mm:ss.sss",
+    "Longitude [degrees_east]",
+    "Latitude [degrees_north]",
+    "Temperature [Celsius]",
+    "Salinity [PSU]",
+    "Conductivity [S/m]",
+    "Sigma-t []",
+    "Oxygen [ml/L]",
+    "Fluorescence [mg/m^3]",
+    "PAR []",
+    "Ph []",
 ]
 
 
 class PFile:
-
     def __init__(self, filename):
         self.filename = filename
 
@@ -140,17 +139,15 @@ class PFile:
         self._read_file(skip, colspecs, names)
 
     def _read_meta(self):
-        with open(self.filename, 'r') as f:
+        with open(self.filename, "r") as f:
             skip = []
             n = 0
             prevline = ""
             for line in f:
                 if n == 1:
                     s = line.split()
-                    latitude = float(s[1]) + np.sign(
-                        float(s[1])) * float(s[2]) / 60.0
-                    longitude = float(s[3]) + np.sign(
-                        float(s[3])) * float(s[4]) / 60.0
+                    latitude = float(s[1]) + np.sign(float(s[1])) * float(s[2]) / 60.0
+                    longitude = float(s[3]) + np.sign(float(s[3])) * float(s[4]) / 60.0
                     ts = dateutil.parser.parse(s[5] + " " + s[6])
                     fid = s[0]
                 if line == "-- DATA --\n":
@@ -162,7 +159,7 @@ class PFile:
                     digits = "1234567890"
                     start = 0
                     for m in range(1, len(line)):
-                        if line[m] == ' ' and line[m - 1] in digits:
+                        if line[m] == " " and line[m - 1] in digits:
                             colspecs.append((start, m))
                             start = m + 1
                     break
@@ -172,14 +169,14 @@ class PFile:
                 prevline = line
 
             self.meta = {
-                'timestamp': ts,
-                'latitude': latitude,
-                'longitude': longitude,
-                'shipnumber': fid[0:2],
-                'ship': SHIP_NUMBERS.get(fid[0:2]) or "Unknown",
-                'trip': fid[2:5],
-                'cast': fid[5:8],
-                'id': fid,
+                "timestamp": ts,
+                "latitude": latitude,
+                "longitude": longitude,
+                "shipnumber": fid[0:2],
+                "ship": SHIP_NUMBERS.get(fid[0:2]) or "Unknown",
+                "trip": fid[2:5],
+                "cast": fid[5:8],
+                "id": fid,
             }
 
             return (skip, names, colspecs)
@@ -191,16 +188,17 @@ class PFile:
             colspecs=colspecs,
             header=None,
             names=names,
-            index_col=False
+            index_col=False,
         )
 
-        if 'pres' in self.dataframe.columns.values:
-            self.dataframe['depth'] = seawater.eos80.dpth(
-                self.dataframe['pres'], self.meta['latitude'])
+        if "pres" in self.dataframe.columns.values:
+            self.dataframe["depth"] = seawater.eos80.dpth(
+                self.dataframe["pres"], self.meta["latitude"]
+            )
 
     def remove_upcast(self):
         df = self.dataframe
-        idxmax = df['depth'].idxmax()
+        idxmax = df["depth"].idxmax()
         df.drop(df.index[df.index > idxmax], inplace=True)
 
     def to_odv(self, filename):
@@ -210,45 +208,32 @@ class PFile:
             if c in df.columns.values:
                 columns.append(c)
 
-        df.to_csv(
-            filename,
-            sep='\t',
-            index=False,
-            columns=columns
-        )
+        df.to_csv(filename, sep="\t", index=False, columns=columns)
 
     def _to_odv_df(self):
         df = pd.DataFrame()
 
         index = self.dataframe.index
-        df['Cruise'] = pd.Series(
-            "%s %s" % (self.meta['ship'].title(), self.meta['trip']),
-            index=index
+        df["Cruise"] = pd.Series(
+            "%s %s" % (self.meta["ship"].title(), self.meta["trip"]), index=index
         )
-        df['Station'] = pd.Series(self.meta['cast'], index=index)
-        df['Type'] = pd.Series("C", index=index)
-        df['yyyy-mm-ddThh:mm:ss.sss'] = pd.Series(
-            self.meta['timestamp'].isoformat(),
-            index=index
+        df["Station"] = pd.Series(self.meta["cast"], index=index)
+        df["Type"] = pd.Series("C", index=index)
+        df["yyyy-mm-ddThh:mm:ss.sss"] = pd.Series(
+            self.meta["timestamp"].isoformat(), index=index
         )
-        df['Longitude [degrees_east]'] = pd.Series(
-            self.meta['longitude'],
-            index=index
-        )
-        df['Latitude [degrees_north]'] = pd.Series(
-            self.meta['latitude'],
-            index=index
-        )
+        df["Longitude [degrees_east]"] = pd.Series(self.meta["longitude"], index=index)
+        df["Latitude [degrees_north]"] = pd.Series(self.meta["latitude"], index=index)
 
         column_mapping = {
-            'temp': 'Temperature [Celsius]',
-            'sal': 'Salinity [PSU]',
-            'cond': 'Conductivity [S/m]',
-            'sigt': 'Sigma-t []',
-            'oxy': 'Oxygen [ml/L]',
-            'flor': 'Fluorescence [mg/m^3]',
-            'par': 'PAR []',
-            'ph': 'pH []',
+            "temp": "Temperature [Celsius]",
+            "sal": "Salinity [PSU]",
+            "cond": "Conductivity [S/m]",
+            "sigt": "Sigma-t []",
+            "oxy": "Oxygen [ml/L]",
+            "flor": "Fluorescence [mg/m^3]",
+            "par": "PAR []",
+            "ph": "pH []",
         }
         for key, value in column_mapping.items():
             if key in self.dataframe.columns.values:
@@ -272,9 +257,4 @@ def make_odv(files, filename):
         if c in df.columns.values:
             columns.append(c)
 
-    df.to_csv(
-        filename,
-        sep='\t',
-        index=False,
-        columns=columns
-    )
+    df.to_csv(filename, sep="\t", index=False, columns=columns)

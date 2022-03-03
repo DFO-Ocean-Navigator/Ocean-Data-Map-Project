@@ -14,26 +14,25 @@ _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
 
 
 def bathymetry(basemap, target_lat, target_lon, blur=None):
-    CACHE_DIR = current_app.config['CACHE_DIR']
-    BATHYMETRY_FILE = current_app.config['BATHYMETRY_FILE']
+    CACHE_DIR = current_app.config["CACHE_DIR"]
+    BATHYMETRY_FILE = current_app.config["BATHYMETRY_FILE"]
 
     if basemap is None:
         fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
     else:
         fname = basemap.filename
 
-    hashed = hashlib.sha1("".join(fname +
-                          str(target_lat.shape) +
-                          str(target_lon.shape)
-                          ).encode()).hexdigest()
+    hashed = hashlib.sha1(
+        "".join(fname + str(target_lat.shape) + str(target_lon.shape)).encode()
+    ).hexdigest()
     if _bathymetry_cache.get(hashed) is None:
         try:
             data = np.load(CACHE_DIR + "/" + hashed + ".npy")
         except:
-            with Dataset(BATHYMETRY_FILE, 'r') as ds:
-                lat = ds.variables['y']
-                lon = ds.variables['x']
-                z = ds.variables['z']
+            with Dataset(BATHYMETRY_FILE, "r") as ds:
+                lat = ds.variables["y"]
+                lon = ds.variables["x"]
+                z = ds.variables["z"]
 
                 def lat_index(v):
                     return int(round((v - lat[0]) * 60.0))
@@ -54,8 +53,9 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
 
                 if minlon > maxlon:
                     in_lon = np.concatenate((lon[minlon:], lon[0:maxlon]))
-                    in_data = np.concatenate((z[minlat:maxlat, minlon:],
-                                              z[minlat:maxlat, 0:maxlon]), 1)
+                    in_data = np.concatenate(
+                        (z[minlat:maxlat, minlon:], z[minlat:maxlat, 0:maxlon]), 1
+                    )
                 else:
                     in_lon = lon[minlon:maxlon]
                     in_data = z[minlat:maxlat, minlon:maxlon]
@@ -64,18 +64,19 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
 
                 lats, lons = np.meshgrid(lat[minlat:maxlat], in_lon)
 
-            orig_def = pyresample.geometry.SwathDefinition(
-                lons=lons, lats=lats)
+            orig_def = pyresample.geometry.SwathDefinition(lons=lons, lats=lats)
             target_def = pyresample.geometry.SwathDefinition(
-                lons=target_lon.astype(np.float64),
-                lats=target_lat.astype(np.float64))
+                lons=target_lon.astype(np.float64), lats=target_lat.astype(np.float64)
+            )
 
             data = pyresample.kd_tree.resample_nearest(
-                orig_def, res,
+                orig_def,
+                res,
                 target_def,
                 radius_of_influence=500000,
                 fill_value=None,
-                nprocs=4)
+                nprocs=4,
+            )
 
             def do_save(filename, data):
                 np.save(filename, data.filled())
@@ -83,8 +84,7 @@ def bathymetry(basemap, target_lat, target_lon, blur=None):
             if not os.path.isdir(CACHE_DIR):
                 os.makedirs(CACHE_DIR)
 
-            t = threading.Thread(
-                target=do_save, args=(CACHE_DIR + "/" + hashed, data))
+            t = threading.Thread(target=do_save, args=(CACHE_DIR + "/" + hashed, data))
             t.daemon = True
             t.start()
 

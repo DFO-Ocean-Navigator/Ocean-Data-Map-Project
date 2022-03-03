@@ -11,7 +11,7 @@ class TimestampsSchema(Schema):
     """
 
     class Meta:
-        unknown = EXCLUDE # workaround for hidden "_" field being sent by jQuery
+        unknown = EXCLUDE  # workaround for hidden "_" field being sent by jQuery
 
     dataset = fields.Str(required=True)
     variable = fields.Str(required=True)

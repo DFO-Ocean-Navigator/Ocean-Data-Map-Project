@@ -18,5 +18,4 @@ class GetDataSchema(Schema):
     variable = fields.Str(required=True)
     time = fields.Integer(required=True)
     depth = fields.Integer(required=True, validate=Range(min=0))
-    geometry_type = fields.Str(
-        required=True, validate=OneOf({"point", "line", "area"}))
+    geometry_type = fields.Str(required=True, validate=OneOf({"point", "line", "area"}))
