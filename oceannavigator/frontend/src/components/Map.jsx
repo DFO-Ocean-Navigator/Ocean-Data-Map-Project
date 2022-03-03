@@ -871,25 +871,7 @@ export default class Map extends React.PureComponent {
 
     var select = new olinteraction.Select({
       style: function (feat, res) {
-        if (feat.get("type") == "area") {
-          return [
-            new olstyle.Style({
-              stroke: new olstyle.Stroke({
-                color: "#0099ff",
-                width: 3,
-              }),
-            }),
-            new olstyle.Style({
-              geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-              text: new olstyle.Text({
-                text: feat.get("name"),
-                fill: new olstyle.Fill({
-                  color: "#0099ff",
-                }),
-              }),
-            }),
-          ];
-        } else {
+        if (feat.get("type") != "area") {
           return new olstyle.Style({
             stroke: new olstyle.Stroke({
               color: "#0099ff",
@@ -1003,6 +985,9 @@ export default class Map extends React.PureComponent {
         this.infoRequest.abort();
       }
       this.infoOverlay.setPosition(undefined);
+      if (e.selected[0].get("type") == "area") {
+        this.selectedFeatures.clear();
+      }
     }.bind(this));
 
     dragBox.on("boxend", function () {
