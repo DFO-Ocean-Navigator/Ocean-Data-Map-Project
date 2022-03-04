@@ -5,23 +5,20 @@ import numpy as np
 import pint
 from netCDF4 import Dataset
 
-from plotting.plotter import Plotter
 from oceannavigator import DatasetConfig
+from plotting.plotter import Plotter
 
 
 class PointPlotter(Plotter):
-
     def parse_query(self, query):
         super(PointPlotter, self).parse_query(query)
 
         self.points: list = []
-        self.parse_names_points(query.get('names'), query.get('station'))
+        self.parse_names_points(query.get("names"), query.get("station"))
 
     def setup_subplots(self, numplots):
         fig, ax = plt.subplots(
-            1, numplots, sharey=True,
-            figsize=self.figuresize,
-            dpi=self.dpi
+            1, numplots, sharey=True, figsize=self.figuresize, dpi=self.dpi
         )
 
         if not isinstance(ax, np.ndarray):
@@ -33,13 +30,13 @@ class PointPlotter(Plotter):
         if points is None or len(points) < 1:
             points = [[47.546667, -52.586667]]
 
-        if names is None or \
-           len(names) == 0 or \
-           len(names) != len(points) or \
-           names[0] is None:
-            names = [
-                "(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in points
-            ]
+        if (
+            names is None
+            or len(names) == 0
+            or len(names) != len(points)
+            or names[0] is None
+        ):
+            names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in points]
 
         t = sorted(zip(names, points))
         self.names = [n for (n, p) in t]
@@ -53,12 +50,7 @@ class PointPlotter(Plotter):
             data = []
             depths = []
             for v in variables:
-                prof, d = dataset.get_profile(
-                    float(p[0]),
-                    float(p[1]),
-                    v,
-                    time
-                )
+                prof, d = dataset.get_profile(float(p[0]), float(p[1]), v, time)
                 data.append(prof)
                 depths.append(d)
 
@@ -69,17 +61,14 @@ class PointPlotter(Plotter):
 
     def subtract_other(self, data):
         if self.compare:
-            compare_config = DatasetConfig(self.compare['dataset'])
-            with Dataset(
-                compare_config.url, 'r'
-            ) as dataset:
+            compare_config = DatasetConfig(self.compare["dataset"])
+            with Dataset(compare_config.url, "r") as dataset:
                 cli = self.get_data(
-                    dataset, self.compare['variables'], self.compare['time']
+                    dataset, self.compare["variables"], self.compare["time"]
                 )
 
             for idx, _ in enumerate(self.variables):
-                data[:, idx, :] = \
-                    data[:, idx, :] - cli[:, idx, :]
+                data[:, idx, :] = data[:, idx, :] - cli[:, idx, :]
 
         return data
 

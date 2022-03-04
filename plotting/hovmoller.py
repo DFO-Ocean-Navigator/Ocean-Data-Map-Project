@@ -6,6 +6,9 @@ import numpy as np
 from flask_babel import gettext
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+# Silence a FutureWarning
+from pandas.plotting import register_matplotlib_converters
+
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
@@ -14,19 +17,15 @@ from oceannavigator import DatasetConfig
 from plotting.line import LinePlotter
 from utils.errors import ClientError, ServerError
 
-# Silence a FutureWarning
-from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
 
 class HovmollerPlotter(LinePlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "hovmoller"
         super(HovmollerPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
-
         def find_depth(depth, clip_length, dataset):
             """
             Calculates and returns the depth, depth-value, and depth unit from a given dataset
@@ -41,9 +40,9 @@ class HovmollerPlotter(LinePlotter):
             depth_unit = "m"
 
             if depth:
-                if depth == 'bottom':
-                    depth_value = 'Bottom'
-                    depth_unit = ''
+                if depth == "bottom":
+                    depth_value = "Bottom"
+                    depth_unit = ""
                     return (depth, depth_value, depth_unit)
                 else:
                     depth = np.clip(int(depth), 0, clip_length)
@@ -54,10 +53,16 @@ class HovmollerPlotter(LinePlotter):
             return (depth, depth_value, depth_unit)
 
         # Load left/Main Map
-        with open_dataset(self.dataset_config, timestamp=self.starttime, endtime=self.endtime, variable=self.variables) as dataset:
+        with open_dataset(
+            self.dataset_config,
+            timestamp=self.starttime,
+            endtime=self.endtime,
+            variable=self.variables,
+        ) as dataset:
 
             self.depth, self.depth_value, self.depth_unit = find_depth(
-                self.depth, len(dataset.depths) - 1, dataset)
+                self.depth, len(dataset.depths) - 1, dataset
+            )
 
             self.path_points, self.distance, times, data = dataset.get_path(
                 self.points,
@@ -65,10 +70,9 @@ class HovmollerPlotter(LinePlotter):
                 self.variables[0],
                 self.starttime,
                 self.endtime,
-                tile_time=False
+                tile_time=False,
             )
-            self.variable_name = self.get_variable_names(
-                dataset, self.variables)[0]
+            self.variable_name = self.get_variable_names(dataset, self.variables)[0]
 
             variable_units = self.get_variable_units(dataset, self.variables)
 
@@ -82,42 +86,53 @@ class HovmollerPlotter(LinePlotter):
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
-            compare_config = DatasetConfig(self.compare['dataset'])
-            with open_dataset(compare_config, timestamp=self.compare['starttime'], endtime=self.compare['endtime'], variable=self.compare['variables']) as dataset:
-                self.compare['depth'], self.compare['depth_value'], self.compare['depth_unit'] = find_depth(
-                    self.compare['depth'], len(dataset.depths) - 1, dataset)
+            compare_config = DatasetConfig(self.compare["dataset"])
+            with open_dataset(
+                compare_config,
+                timestamp=self.compare["starttime"],
+                endtime=self.compare["endtime"],
+                variable=self.compare["variables"],
+            ) as dataset:
+                (
+                    self.compare["depth"],
+                    self.compare["depth_value"],
+                    self.compare["depth_unit"],
+                ) = find_depth(self.compare["depth"], len(dataset.depths) - 1, dataset)
 
                 path, distance, times, data = dataset.get_path(
                     self.points,
-                    self.compare['depth'],
-                    self.compare['variables'][0],
-                    self.compare['starttime'],
-                    self.compare['endtime'],
-                    tile_time=False
+                    self.compare["depth"],
+                    self.compare["variables"][0],
+                    self.compare["starttime"],
+                    self.compare["endtime"],
+                    tile_time=False,
                 )
-                self.compare['variable_name'] = self.get_variable_names(
-                    dataset, self.compare['variables'])[0]
+                self.compare["variable_name"] = self.get_variable_names(
+                    dataset, self.compare["variables"]
+                )[0]
 
                 # Colourmap
-                if (self.compare['colormap'] == 'default'):
-                    self.compare['colormap'] = colormap.find_colormap(
-                        self.compare['variable_name'])
+                if self.compare["colormap"] == "default":
+                    self.compare["colormap"] = colormap.find_colormap(
+                        self.compare["variable_name"]
+                    )
                 else:
-                    self.compare['colormap'] = colormap.find_colormap(
-                        self.compare['colormap'])
+                    self.compare["colormap"] = colormap.find_colormap(
+                        self.compare["colormap"]
+                    )
 
                 variable_units = self.get_variable_units(
-                    dataset, self.compare['variables'])
+                    dataset, self.compare["variables"]
+                )
 
-                self.compare['variable_unit'] = variable_units[0]
-                self.compare['data'] = data.T
-                self.compare['times'] = times
+                self.compare["variable_unit"] = variable_units[0]
+                self.compare["data"] = data.T
+                self.compare["times"] = times
 
     # Render Hovmoller graph(s)
     def plot(self):
-
         def get_depth_label(depthValue, depthUnit):
-            if depthValue == 'bottom':
+            if depthValue == "bottom":
                 return " at Bottom"
             return " at %s %s" % (depthValue, depthUnit)
 
@@ -138,12 +153,14 @@ class HovmollerPlotter(LinePlotter):
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         if self.compare:
             # Don't show a difference plot if variables are different
-            if self.compare['variables'][0] == self.variables[0]:
+            if self.compare["variables"][0] == self.variables[0]:
                 gs = gridspec.GridSpec(
-                    3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1])
+                    3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1]
+                )
             else:
                 gs = gridspec.GridSpec(
-                    2, width, width_ratios=width_ratios, height_ratios=[1, 1])
+                    2, width, width_ratios=width_ratios, height_ratios=[1, 1]
+                )
         else:
             gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -157,81 +174,99 @@ class HovmollerPlotter(LinePlotter):
             vmin = self.scale[0]
             vmax = self.scale[1]
         else:
-            vmin, vmax = utils.normalize_scale(self.data,
-                                               self.dataset_config.variable[self.variables[0]])
+            vmin, vmax = utils.normalize_scale(
+                self.data, self.dataset_config.variable[self.variables[0]]
+            )
 
             if len(self.variables) > 1:
                 vmin = 0
 
         # Render
         self._hovmoller_plot(
-            gs, [0, 1], [0, 0],
+            gs,
+            [0, 1],
+            [0, 0],
             gettext(self.variable_name),
-            vmin, vmax,
+            vmin,
+            vmax,
             self.data,
             self.iso_timestamps,
             self.cmap,
             self.variable_unit,
-            gettext(self.variable_name) +
-            gettext(get_depth_label(self.depth_value, self.depth_unit))
+            gettext(self.variable_name)
+            + gettext(get_depth_label(self.depth_value, self.depth_unit)),
         )
 
         # If in compare mode
         if self.compare:
             # Calculate variable range
-            if self.compare['scale']:
-                vmin = self.compare['scale'][0]
-                vmax = self.compare['scale'][1]
+            if self.compare["scale"]:
+                vmin = self.compare["scale"][0]
+                vmax = self.compare["scale"][1]
             else:
-                vmin = np.amin(self.compare['data'])
-                vmax = np.amax(self.compare['data'])
-            if np.any([re.search(x, self.compare['variable_name'], re.IGNORECASE) for x in [
-                "velocity",
-                "surface height",
-                "wind"
-            ]]):
+                vmin = np.amin(self.compare["data"])
+                vmax = np.amax(self.compare["data"])
+            if np.any(
+                [
+                    re.search(x, self.compare["variable_name"], re.IGNORECASE)
+                    for x in ["velocity", "surface height", "wind"]
+                ]
+            ):
                 vmin = min(vmin, -vmax)
                 vmax = max(vmax, -vmin)
 
-            if len(self.compare['variables']) > 1:
+            if len(self.compare["variables"]) > 1:
                 vmin = 0
 
             self._hovmoller_plot(
-                gs, [1, 1], [1, 0],
-                gettext(self.compare['variable_name']),
-                vmin, vmax,
-                self.compare['data'],
-                self.compare['times'],
-                self.compare['colormap'],
-                self.compare['variable_unit'],
-                gettext(self.compare['variable_name']) + gettext(
-                    get_depth_label(self.compare['depth'], self.compare['depth_unit']))
+                gs,
+                [1, 1],
+                [1, 0],
+                gettext(self.compare["variable_name"]),
+                vmin,
+                vmax,
+                self.compare["data"],
+                self.compare["times"],
+                self.compare["colormap"],
+                self.compare["variable_unit"],
+                gettext(self.compare["variable_name"])
+                + gettext(
+                    get_depth_label(self.compare["depth"], self.compare["depth_unit"])
+                ),
             )
 
             # Difference plot
-            if self.compare['variables'][0] == self.variables[0]:
+            if self.compare["variables"][0] == self.variables[0]:
 
-                data_difference = self.data - self.compare['data']
+                data_difference = self.data - self.compare["data"]
                 vmin = np.amin(data_difference)
                 vmax = np.amax(data_difference)
 
                 self._hovmoller_plot(
-                    gs, [2, 1], [2, 0],
-                    gettext(self.compare['variable_name']),
-                    vmin, vmax,
+                    gs,
+                    [2, 1],
+                    [2, 0],
+                    gettext(self.compare["variable_name"]),
+                    vmin,
+                    vmax,
                     data_difference,
-                    self.compare['times'],
+                    self.compare["times"],
                     colormap.find_colormap("anomaly"),
-                    self.compare['variable_unit'],
-                    gettext(self.compare['variable_name']) + gettext(" Difference") + gettext(
-                        get_depth_label(self.compare['depth'], self.compare['depth_unit']))
+                    self.compare["variable_unit"],
+                    gettext(self.compare["variable_name"])
+                    + gettext(" Difference")
+                    + gettext(
+                        get_depth_label(
+                            self.compare["depth"], self.compare["depth_unit"]
+                        )
+                    ),
                 )
 
         # Image title
         if self.plotTitle:
-            fig.suptitle(gettext(u"Hovm\xf6ller Diagram(s) for:\n%s") % (
-                self.name
-            ), fontsize=15)
+            fig.suptitle(
+                gettext("Hovm\xf6ller Diagram(s) for:\n%s") % (self.name), fontsize=15
+            )
         else:
             fig.suptitle(self.plotTitle, fontsize=15)
         # Subplot padding
@@ -257,28 +292,40 @@ class HovmollerPlotter(LinePlotter):
         title: Plot title
     """
 
-    def _hovmoller_plot(self, subplot, map_subplot, nomap_subplot, name, vmin, vmax, data, times, cmap, unit, title):
+    def _hovmoller_plot(
+        self,
+        subplot,
+        map_subplot,
+        nomap_subplot,
+        name,
+        vmin,
+        vmax,
+        data,
+        times,
+        cmap,
+        unit,
+        title,
+    ):
         if self.showmap:
             plt.subplot(subplot[map_subplot[0], map_subplot[1]])
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-
-        c = plt.pcolormesh(self.distance,
-                            times,
-                            data,
-                            cmap=cmap,
-                            shading='gouraud',  # Smooth shading
-                            vmin=vmin,
-                            vmax=vmax
-                            )
-
+        c = plt.pcolormesh(
+            self.distance,
+            times,
+            data,
+            cmap=cmap,
+            shading="gouraud",  # Smooth shading
+            vmin=vmin,
+            vmax=vmax,
+        )
 
         ax = plt.gca()
         ax.set_title(title, fontsize=14)  # Set title of subplot
         ax.yaxis_date()
         ax.yaxis.grid(True)
-        ax.set_facecolor('dimgray')
+        ax.set_facecolor("dimgray")
 
         plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])

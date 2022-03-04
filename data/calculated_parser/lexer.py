@@ -18,35 +18,35 @@ class Lexer:
     def __init__(self, **kwargs):
         # a list of the tokens that are used in this language
         self.tokens = [
-            'NUMBER',
-            'PLUS',
-            'MINUS',
-            'TIMES',
-            'DIVIDE',
-            'POWER',
-            'LPAREN',
-            'RPAREN',
-            'ID', # variable key OR function name (see below t_ID)
-            'COMMA',
-            'CONST', # math constant (see below t_CONST)
-            'LBRKT',
-            'RBRKT'
+            "NUMBER",
+            "PLUS",
+            "MINUS",
+            "TIMES",
+            "DIVIDE",
+            "POWER",
+            "LPAREN",
+            "RPAREN",
+            "ID",  # variable key OR function name (see below t_ID)
+            "COMMA",
+            "CONST",  # math constant (see below t_CONST)
+            "LBRKT",
+            "RBRKT",
         ]
 
         # These tokens don't require any additional processing
-        self.t_PLUS = '\\+'
-        self.t_MINUS = '-'
-        self.t_TIMES = '\\*'
-        self.t_DIVIDE = '/'
-        self.t_POWER = '\\^'
-        self.t_LPAREN = '\\('
-        self.t_RPAREN = '\\)'
-        self.t_COMMA = ','
-        self.t_LBRKT = '\\['
-        self.t_RBRKT = '\\]'
+        self.t_PLUS = "\\+"
+        self.t_MINUS = "-"
+        self.t_TIMES = "\\*"
+        self.t_DIVIDE = "/"
+        self.t_POWER = "\\^"
+        self.t_LPAREN = "\\("
+        self.t_RPAREN = "\\)"
+        self.t_COMMA = ","
+        self.t_LBRKT = "\\["
+        self.t_RBRKT = "\\]"
 
         # Ignore tabs and spaces
-        self.t_ignore = ' \t'
+        self.t_ignore = " \t"
 
         # Empty set of variables that will get popualted as the expression is
         # tokenized
@@ -62,16 +62,16 @@ class Lexer:
     # any knowledge of the constants.
     def t_CONST(self, t):
         """(pi|e)"""
-        if t.value == 'pi':
+        if t.value == "pi":
             t.value = np.pi
-        if t.value == 'e':
+        if t.value == "e":
             t.value = np.e
         return t
 
     # Identifiers either function names or variable names
     def t_ID(self, t):
         """[a-zA-Z_][a-zA-Z_0-9]*"""
-        regex = re.compile('[a-zA-Z][a-zA-Z_0-9]*')
+        regex = re.compile("[a-zA-Z][a-zA-Z_0-9]*")
         # Look at the functions defined in the functions module, if they match
         # the regular expression (start with upper or lower-case character, and
         # only contain alphanumeric characters, underscores, and the digits 0-9

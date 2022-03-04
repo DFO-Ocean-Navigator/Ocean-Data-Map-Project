@@ -6,12 +6,8 @@ from routes.schemas.timestamps_schema import TimestampsSchema
 
 
 class TimestampsSchemaTest(unittest.TestCase):
-
     def test_timestamps_schema_validates_inputs(self) -> None:
-        valid_inputs = {
-            "dataset": "some_dataset",
-            "variable": "my_var"
-        }
+        valid_inputs = {"dataset": "some_dataset", "variable": "my_var"}
 
         errors = TimestampsSchema().validate(valid_inputs)
 

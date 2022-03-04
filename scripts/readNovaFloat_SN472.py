@@ -4,32 +4,31 @@ Created on Wed Mar  7 17:26:47 2018
 @author: xuj
 """
 
-import matplotlib.mlab as mlab
-import os 
-import sys
-import jdcal
-import numpy as np 
 import csv
+import os
+import sys
+from collections import Iterable, defaultdict
 
-from jdcal import MJD_0, MJD_JD2000
-from collections import defaultdict,Iterable
-
-from netCDF4 import Dataset
+import cPickle as pickle
+import jdcal
+import laplaceFilter
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import mpl_util
 import numpy as np
+from createMapsEtopo1 import findSubsetIndices
+
 #from geographiclib.geodesic import Geodesic
 from geographiclib import geodesic
-#from GeographicLib import Geodesic, GeodesicLine
-
 from geopy.distance import geodesic
-import matplotlib.pyplot as plt
-from createMapsEtopo1 import findSubsetIndices
-import laplaceFilter
-from mpl_toolkits.basemap import Basemap, shiftgrid #, NetCDFFile
-import mpl_util
+from jdcal import MJD_0, MJD_JD2000
+from mpl_toolkits.basemap import Basemap, shiftgrid  # , NetCDFFile
+from netCDF4 import Dataset
 from pylab import *
 from scipy import interpolate
-import os 
-import cPickle as pickle 
+
+#from GeographicLib import Geodesic, GeodesicLine
+
 
 def flatten(l):
     for el in l:

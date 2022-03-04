@@ -22,8 +22,8 @@ class CalculatedData(NetCDFData):
         calculated -- a dict of the calculated variables.
         """
         super().__init__(url, **kwargs)
-        if 'calculated' in kwargs:
-            self._calculated = kwargs['calculated']
+        if "calculated" in kwargs:
+            self._calculated = kwargs["calculated"]
         else:
             self._calculated = {}
 
@@ -31,11 +31,12 @@ class CalculatedData(NetCDFData):
 
     def __get_calculated_dims(self, variable_key: str) -> list:
         try:
-            return self._calculated[variable_key]['dims']
+            return self._calculated[variable_key]["dims"]
         except KeyError:
             raise KeyError(
                 f"{variable_key} does not have a dims attribute defined in datasetconfig.json. "
-                f"This is required for all calculated variables.")
+                f"This is required for all calculated variables."
+            )
 
     def get_dataset_variable(self, key: str):
         """
@@ -53,12 +54,14 @@ class CalculatedData(NetCDFData):
 
             attrs = {**attrs, **self._calculated[key]}
 
-            return CalculatedArray(self.dataset,
-                                   self._calculated[key]['equation'],
-                                   self.__get_calculated_dims(key),
-                                   attrs,
-                                   self.url)
-        
+            return CalculatedArray(
+                self.dataset,
+                self._calculated[key]["equation"],
+                self.__get_calculated_dims(key),
+                attrs,
+                self.url,
+            )
+
         return super().get_dataset_variable(key)
 
     @property
@@ -78,11 +81,11 @@ class CalculatedData(NetCDFData):
                 temp_list.append(
                     Variable(
                         name,
-                        calculated_var.get('long_name', name),
-                        calculated_var.get('units', '1'),
+                        calculated_var.get("long_name", name),
+                        calculated_var.get("units", "1"),
                         self.__get_calculated_dims(name),
-                        calculated_var.get('valid_min', np.finfo(np.float64).min),
-                        calculated_var.get('valid_max', np.finfo(np.float64).max),
+                        calculated_var.get("valid_min", np.finfo(np.float64).min),
+                        calculated_var.get("valid_max", np.finfo(np.float64).max),
                     )
                 )
 
@@ -91,7 +94,7 @@ class CalculatedData(NetCDFData):
         return self._calculated_variable_list
 
 
-class CalculatedArray():
+class CalculatedArray:
     """This class is the equivalent of an xarray or netcdf Variable object, but
     parses the expression and does any requested calculations before returning
     data to the calling method.
@@ -124,25 +127,37 @@ class CalculatedArray():
     def __getitem__(self, key: str) -> xr.DataArray:
         # This is where the magic happens.
 
-        data_array = self._parser.parse(
-            self._expression, self._parent, key, self._dims)
+        data_array = self._parser.parse(self._expression, self._parent, key, self._dims)
 
-        keys = [k if type(k) is slice else slice(k,k+1,None) for k in key]
-        coords = {str(d) : self._parent.coords[d][k] for d,k in zip(self._dims,keys)}
-        arr_shape = [c.shape[0] for c in coords.values()]
+        key = self._format_key(key)
+        coords = self._calculate_coords(key)
 
-        return xr.DataArray(
-                    data = np.reshape(data_array.data, arr_shape), 
-                    dims = self._dims,
-                    coords = coords,
-                    attrs = self.attrs
-                )
+        if data_array.ndim != len(self._dims):
+            shape = [k.stop - k.start if isinstance(k, slice) else 1 for k in key]
+            data_array = np.reshape(data_array, shape)
+
+        return xr.DataArray(data_array, coords=coords, attrs=self.attrs)
 
     def __calculate_var_shape(self) -> tuple:
         # Determine shape of calculated variable based on its
         # declared dims in datasetconfig.json
-        return tuple(self._parent[s].shape[0]
-                     for s in self._dims)
+        return tuple(self._parent[s].shape[0] for s in self._dims)
+
+    def _calculate_coords(self, key) -> dict:
+        # Determine coordinates of calculated array based
+        # on key, its declared dims, and parent coords
+        if self._parent.coords:
+            return {str(d): self._parent.coords[d][k] for d, k in zip(self._dims, key)}
+        return {}
+
+    def _format_key(self, key) -> list:
+        # ensure key and its elements are iterable. This ensures
+        # coords have length > 0
+        try:
+            key = [[k] if isinstance(k, int) else k for k in key]
+        except TypeError:
+            key = [key]
+        return key
 
     @property
     def attrs(self):
@@ -166,7 +181,7 @@ class CalculatedArray():
         if hasattr(self._parent.variables[variable], "dims"):
             # xarray calls it dims
             return self._parent.variables[variable].dims
-        
+
         return self._parent.variables[variable].dimensions
 
     def isel(self, **kwargs):
@@ -190,4 +205,3 @@ class CalculatedArray():
             key.append(keys[d])
 
         return self[tuple(key)]
-        

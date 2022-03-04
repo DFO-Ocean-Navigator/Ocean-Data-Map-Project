@@ -7,10 +7,9 @@ class Variable(object):
     Provides a common interface between dataset types (xarray vs netCDF4).
     """
 
-    __depth_dims = {'depth', 'deptht', 'z'}
+    __depth_dims = {"depth", "deptht", "z"}
 
-    def __init__(self, key, name, unit, dimensions, valid_min=None,
-                 valid_max=None):
+    def __init__(self, key, name, unit, dimensions, valid_min=None, valid_max=None):
         self._key: str = key
         self._name: str = name
         self._unit: str = unit

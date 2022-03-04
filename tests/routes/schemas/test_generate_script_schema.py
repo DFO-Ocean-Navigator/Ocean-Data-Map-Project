@@ -6,13 +6,8 @@ from routes.schemas.generate_script_schema import GenerateScriptSchema
 
 
 class GenerateScriptSchemaTest(unittest.TestCase):
-
     def test_generate_script_schema_validate_input(self) -> None:
-        valid_inputs = {
-            "query": "adsfasdf",
-            "lang": "python",
-            "scriptType": "PLOT"
-        }
+        valid_inputs = {"query": "adsfasdf", "lang": "python", "scriptType": "PLOT"}
 
         errors = GenerateScriptSchema().validate(valid_inputs)
 
@@ -24,17 +19,13 @@ class GenerateScriptSchemaTest(unittest.TestCase):
 
         self.assertTrue(errors)
         self.assertEqual(3, len(errors))
-    
+
     def test_generate_script_schema_returns_errors_with_wrong_values(self) -> None:
-        args = {
-            "query": "asddasf",
-            "lang": "c++",
-            "scriptType": "stats_table"
-        }
+        args = {"query": "asddasf", "lang": "c++", "scriptType": "stats_table"}
 
         errors = GenerateScriptSchema().validate(args)
 
         self.assertTrue(errors)
         self.assertEqual(2, len(errors))
-        self.assertTrue('lang' in errors)
-        self.assertTrue('scriptType' in errors)
+        self.assertTrue("lang" in errors)
+        self.assertTrue("scriptType" in errors)

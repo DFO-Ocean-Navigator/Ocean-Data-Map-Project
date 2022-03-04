@@ -27,9 +27,9 @@ class Mercator(Model):
             try:
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
             except KeyError:
-                print("Warning: No variables with latitude or longitude are loaded in this NetCDF dataset.")
-
-
+                print(
+                    "Warning: No variables with latitude or longitude are loaded in this NetCDF dataset."
+                )
 
         return self
 
@@ -38,8 +38,7 @@ class Mercator(Model):
 
     @property
     def depths(self) -> np.ndarray:
-        """Finds, caches, and returns the valid depths for the dataset.
-        """
+        """Finds, caches, and returns the valid depths for the dataset."""
         if self.__depths is None:
             var = None
             for v in self.nc_data.depth_dimensions:
@@ -74,48 +73,50 @@ class Mercator(Model):
         miny, maxy = fix_limits(y, self.latvar.shape[0])
         minx, maxx = fix_limits(x, self.lonvar.shape[0])
 
-        return np.int64(miny), np.int64(maxy), np.int64(minx), np.int64(maxx), np.amax(50000)
+        return (
+            np.int64(miny),
+            np.int64(maxy),
+            np.int64(minx),
+            np.int64(maxx),
+            np.amax(50000),
+        )
 
     def __resample(self, lat_in, lon_in, lat_out, lon_out, var, radius=50000):
         var = np.squeeze(var)
 
         origshape = var.shape
 
-        data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(lat_in,
-                                                                                     lon_in,
-                                                                                     lat_out,
-                                                                                     lon_out,
-                                                                                     var)
+        data, masked_lat_in, masked_lon_in, output_def = super()._make_resample_data(
+            lat_in, lon_in, lat_out, lon_out, var
+        )
 
         if len(data.shape) == 3:
             output = []
             # multiple depths
             for d in range(0, data.shape[2]):
-                grid_lat, grid_lon = np.meshgrid(
-                    masked_lat_in,
-                    masked_lon_in
-                )
-                grid_lat.mask = grid_lon.mask = \
+                grid_lat, grid_lon = np.meshgrid(masked_lat_in, masked_lon_in)
+                grid_lat.mask = grid_lon.mask = (
                     data[:, :, d].view(np.ma.MaskedArray).mask.transpose()
+                )
                 input_def = pyresample.geometry.SwathDefinition(
-                    lons=grid_lon,
-                    lats=grid_lat
+                    lons=grid_lon, lats=grid_lat
                 )
 
-                output.append(self.nc_data.interpolate(input_def, output_def, data[:, :, d].transpose()))
+                output.append(
+                    self.nc_data.interpolate(
+                        input_def, output_def, data[:, :, d].transpose()
+                    )
+                )
 
             output = np.ma.array(output).transpose()
         else:
-            grid_lat, grid_lon = np.meshgrid(
-                masked_lat_in,
-                masked_lon_in
-            )
-            grid_lat.mask = grid_lon.mask = \
-                data.view(np.ma.MaskedArray).mask.transpose()
+            grid_lat, grid_lon = np.meshgrid(masked_lat_in, masked_lon_in)
+            grid_lat.mask = grid_lon.mask = data.view(
+                np.ma.MaskedArray
+            ).mask.transpose()
 
             input_def = pyresample.geometry.SwathDefinition(
-                lons=grid_lon,
-                lats=grid_lat
+                lons=grid_lon, lats=grid_lat
             )
 
             output = self.nc_data.interpolate(input_def, output_def, data.transpose())
@@ -123,18 +124,19 @@ class Mercator(Model):
         if len(origshape) == 4:
             # un-collapse time and depth axes and
             # move axes back to original positions.
-            output = np.rollaxis(output, -1).reshape((
-                origshape[0], # time
-                origshape[1], # depth
-                output.shape[0], # lat
-                output.shape[1] # lon
-            ))
+            output = np.rollaxis(output, -1).reshape(
+                (
+                    origshape[0],  # time
+                    origshape[1],  # depth
+                    output.shape[0],  # lat
+                    output.shape[1],  # lon
+                )
+            )
 
         return np.squeeze(output)
 
     def get_raw_point(self, latitude, longitude, depth, timestamp, variable):
-        miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+        miny, maxy, minx, maxx, radius = self.__bounding_box(latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -144,7 +146,7 @@ class Mercator(Model):
 
         time = self.nc_data.timestamp_to_time_index(timestamp)
 
-        if depth == 'bottom':
+        if depth == "bottom":
             if hasattr(time, "__len__"):
                 d = var[time[0], :, miny:maxy, minx:maxx]
             else:
@@ -158,39 +160,38 @@ class Mercator(Model):
 
             if hasattr(time, "__len__"):
                 data_in = var[time, :, miny:maxy, minx:maxx]
-                data_in = data_in.reshape(
-                    [data_in.shape[0], data_in.shape[1], -1])
+                data_in = data_in.reshape([data_in.shape[0], data_in.shape[1], -1])
                 data = []
                 for i, t in enumerate(time):
                     data.append(data_in[i, depths, indices])
-                data = np.ma.array(data).reshape([len(time), d.shape[-2],
-                                                  d.shape[-1]])
+                data = np.ma.array(data).reshape([len(time), d.shape[-2], d.shape[-1]])
             else:
-                data = np.ma.MaskedArray(np.zeros(d.shape[1:]),
-                                         mask=True,
-                                         dtype=d.dtype)
-                data[np.unravel_index(indices, data.shape)] = \
-                    reshaped[depths, indices]
+                data = np.ma.MaskedArray(
+                    np.zeros(d.shape[1:]), mask=True, dtype=d.dtype
+                )
+                data[np.unravel_index(indices, data.shape)] = reshaped[depths, indices]
         else:
             if len(var.shape) == 4:
                 data = var[time, depth, miny:maxy, minx:maxx]
             else:
                 data = var[time, miny:maxy, minx:maxx]
 
-        lat_out, lon_out = np.meshgrid(self.latvar[miny:maxy],
-                                       self.lonvar[minx:maxx])
+        lat_out, lon_out = np.meshgrid(self.latvar[miny:maxy], self.lonvar[minx:maxx])
 
-        return (
-            lat_out,
-            lon_out,
-            data
-        )
+        return (lat_out, lon_out, data)
 
-    def get_point(self, latitude, longitude, depth, variable, starttime,
-                    endtime=None, return_depth=False):
+    def get_point(
+        self,
+        latitude,
+        longitude,
+        depth,
+        variable,
+        starttime,
+        endtime=None,
+        return_depth=False,
+    ):
 
-        miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+        miny, maxy, minx, maxx, radius = self.__bounding_box(latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -199,19 +200,19 @@ class Mercator(Model):
         var = self.nc_data.get_dataset_variable(variable)
 
         starttime_idx = self.nc_data.timestamp_to_time_index(starttime)
-        time_slice = slice(starttime_idx, starttime_idx + 1) # slice only 1 element
-        if endtime is not None: # we have a range of times
+        time_slice = slice(starttime_idx, starttime_idx + 1)  # slice only 1 element
+        if endtime is not None:  # we have a range of times
             endtime_idx = self.nc_data.timestamp_to_time_index(endtime)
             time_slice = slice(starttime_idx, endtime_idx + 1)
 
-            time_duration = endtime_idx - starttime_idx # how many time values we have
+            time_duration = endtime_idx - starttime_idx  # how many time values we have
 
         depth_value = None
         res = None
-        if depth == 'bottom':
+        if depth == "bottom":
             d = var[time_slice, :, miny:maxy, minx:maxx].values
 
-            d = np.rollaxis(d, 0, 4) # roll time to back
+            d = np.rollaxis(d, 0, 4)  # roll time to back
             # compress lat, lon, time along depth axis
             reshaped = np.ma.masked_invalid(d.reshape([d.shape[0], -1]))
 
@@ -220,11 +221,12 @@ class Mercator(Model):
             depths = edges[1, 0, :]
             indices = edges[1, 1, :]
 
-            data = np.ma.MaskedArray(np.zeros(d.shape[1:]), # copy lat lon and time axis shapes
-                                        mask=True,
-                                        dtype=d.dtype)
-            data[np.unravel_index(indices, data.shape)] = \
-                reshaped[depths, indices]
+            data = np.ma.MaskedArray(
+                np.zeros(d.shape[1:]),  # copy lat lon and time axis shapes
+                mask=True,
+                dtype=d.dtype,
+            )
+            data[np.unravel_index(indices, data.shape)] = reshaped[depths, indices]
 
             # Roll time axis back to the front
             data = np.rollaxis(data, 2, 0)
@@ -232,24 +234,28 @@ class Mercator(Model):
             res = self.__resample(
                 self.latvar[miny:maxy],
                 self.lonvar[minx:maxx],
-                [latitude], [longitude],
+                [latitude],
+                [longitude],
                 data,
-                radius
+                radius,
             )
 
             if return_depth:
-                depth_values = np.ma.MaskedArray(np.zeros(d.shape[1:]),
-                                      mask=True,
-                                      dtype=self.depths.dtype)
+                depth_values = np.ma.MaskedArray(
+                    np.zeros(d.shape[1:]), mask=True, dtype=self.depths.dtype
+                )
 
-                depth_values[np.unravel_index(indices, depth_values.shape)] = self.depths[depths]
+                depth_values[
+                    np.unravel_index(indices, depth_values.shape)
+                ] = self.depths[depths]
 
                 dep = self.__resample(
                     self.latvar[miny:maxy],
                     self.lonvar[minx:maxx],
-                    latitude, longitude,
+                    latitude,
+                    longitude,
                     np.reshape(depth_values, data.shape),
-                    radius
+                    radius,
                 )
 
         else:
@@ -261,9 +267,10 @@ class Mercator(Model):
             res = self.__resample(
                 self.latvar[miny:maxy],
                 self.lonvar[minx:maxx],
-                latitude, longitude,
+                latitude,
+                longitude,
                 data.values,
-                radius
+                radius,
             )
 
             if return_depth:
@@ -280,12 +287,13 @@ class Mercator(Model):
         var = self.nc_data.get_dataset_variable(variable)
         # We expect the following shape (time, depth, lat, lon)
         if len(var.shape) != 4:
-            raise APIError(f"This plot requires a depth dimension. This variable ({variable}) doesn't have a depth dimension.")
+            raise APIError(
+                f"This plot requires a depth dimension. This variable ({variable}) doesn't have a depth dimension."
+            )
 
         time_slice = self.nc_data.make_time_slice(starttime, endtime)
 
-        miny, maxy, minx, maxx, radius = self.__bounding_box(
-            latitude, longitude, 10)
+        miny, maxy, minx, maxx, radius = self.__bounding_box(latitude, longitude, 10)
 
         if not hasattr(latitude, "__len__"):
             latitude = np.array([latitude])
@@ -294,9 +302,10 @@ class Mercator(Model):
         res = self.__resample(
             self.latvar[miny:maxy],
             self.lonvar[minx:maxx],
-            [latitude], [longitude],
+            [latitude],
+            [longitude],
             var[time_slice, :, miny:maxy, minx:maxx].values,
-            radius
+            radius,
         )
 
         return res, np.squeeze([self.depths] * len(latitude))

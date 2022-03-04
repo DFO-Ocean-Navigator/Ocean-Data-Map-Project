@@ -3,7 +3,7 @@ import os
 import uuid
 import warnings
 import zipfile
-from typing import List, Dict, Union, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 
 import dateutil.parser
 import geopy
@@ -30,7 +30,7 @@ from oceannavigator.dataset_config import DatasetConfig
 class NetCDFData(Data):
     """Handles reading of netcdf files.
 
-       Injected as attribute into Model classes like Nemo, Mercator, Fvcom.
+    Injected as attribute into Model classes like Nemo, Mercator, Fvcom.
     """
 
     def __init__(self, url: Union[str, list], **kwargs: Dict) -> None:
@@ -38,27 +38,28 @@ class NetCDFData(Data):
         self.dataset: Union[xarray.Dataset, netCDF4.Dataset] = None
         self._variable_list: VariableList = None
         self.__timestamp_cache: TTLCache = TTLCache(1, 3600)
-        self._grid_angle_file_url: str = kwargs.get('grid_angle_file_url', "")
-        self._bathymetry_file_url: str = kwargs.get('bathymetry_file_url', "")
+        self._grid_angle_file_url: str = kwargs.get("grid_angle_file_url", "")
+        self._bathymetry_file_url: str = kwargs.get("bathymetry_file_url", "")
         self._time_variable: xarray.IndexVariable = None
         self._dataset_open: bool = False
-        self._dataset_key: str = kwargs.get('dataset_key', "")
+        self._dataset_key: str = kwargs.get("dataset_key", "")
         self._dataset_config: DatasetConfig = (
             DatasetConfig(self._dataset_key) if self._dataset_key else None
         )
-        self._nc_files: Union[List, None] = self.get_nc_file_list(self._dataset_config, **kwargs)
+        self._nc_files: Union[List, None] = self.get_nc_file_list(
+            self._dataset_config, **kwargs
+        )
 
     def __enter__(self):
         # Don't decode times since we do it anyways.
         decode_times = False
 
-        if (self.url.endswith(".sqlite3") if not isinstance(self.url, list) else False):
+        if self.url.endswith(".sqlite3") if not isinstance(self.url, list) else False:
             if self._nc_files:
                 try:
                     if len(self._nc_files) > 1:
                         self.dataset = xarray.open_mfdataset(
-                            self._nc_files,
-                            decode_times=decode_times
+                            self._nc_files, decode_times=decode_times
                         )
                     else:
                         self.dataset = xarray.open_dataset(
@@ -72,7 +73,7 @@ class NetCDFData(Data):
             else:
                 self.dataset = xarray.Dataset()
 
-        elif (self.url.endswith(".zarr") if not isinstance(self.url, list) else False):
+        elif self.url.endswith(".zarr") if not isinstance(self.url, list) else False:
             ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
             self.dataset = ds_zarr
 
@@ -91,7 +92,8 @@ class NetCDFData(Data):
             if getattr(self._dataset_config, "geo_ref", {}):
                 drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
                 geo_refs = xarray.open_dataset(
-                    self._dataset_config.geo_ref["url"], drop_variables=drop_variables,
+                    self._dataset_config.geo_ref["url"],
+                    drop_variables=drop_variables,
                 )
                 fields = fields.merge(geo_refs)
             self.dataset = fields
@@ -99,7 +101,10 @@ class NetCDFData(Data):
         if self._grid_angle_file_url:
             angle_file = xarray.open_dataset(
                 self._grid_angle_file_url,
-                drop_variables=[self._dataset_config.lat_var_key, self._dataset_config.lon_var_key]
+                drop_variables=[
+                    self._dataset_config.lat_var_key,
+                    self._dataset_config.lon_var_key,
+                ],
             )
             self.dataset = self.dataset.merge(angle_file)
             angle_file.close()
@@ -135,7 +140,9 @@ class NetCDFData(Data):
                 continue
         raise KeyError(f"None of {candidates} were found in {self.dataset}")
 
-    def make_time_slice(self, starttime: int, endtime: Union[int, None] = None) -> slice:
+    def make_time_slice(
+        self, starttime: int, endtime: Union[int, None] = None
+    ) -> slice:
         """Converts given start and/or end timestamp values (e.g. 60442857)
         into a slice object that captures the corresponding time
         indices such that [starttime, starttime] OR [starttime, endtime].
@@ -192,22 +199,20 @@ class NetCDFData(Data):
 
         time_var = self.time_variable
 
-        result = data.utils.time_index_to_datetime(timestamp, time_var.attrs['units'])
+        result = data.utils.time_index_to_datetime(timestamp, time_var.attrs["units"])
 
         return result if len(result) > 1 else result[0]
 
     def convert_to_timestamp(self, date: str):
-        """Converts ISO 8601 Extended date, to the corresponding dataset time index.
-        """
+        """Converts ISO 8601 Extended date, to the corresponding dataset time index."""
 
         # Time is in ISO 8601 Extended format
         # Get time index from dataset
 
-        time_range = [dateutil.parser.parse(x) for x in date.split(',')]
+        time_range = [dateutil.parser.parse(x) for x in date.split(",")]
         time_var = self.time_variable
         time_range[0] = time_range[0].replace(tzinfo=None)
-        time_range = [netCDF4.date2num(
-            x, time_var.attrs['units']) for x in time_range]
+        time_range = [netCDF4.date2num(x, time_var.attrs["units"]) for x in time_range]
         time_range = [np.where(time_var.values == x)[0] for x in time_range]
 
         if len(time_range) == 1:  # Single Date
@@ -215,47 +220,48 @@ class NetCDFData(Data):
         else:  # Multiple Dates
             date_formatted = {}
             i = 0
-            for x in date.split(','):   # x is a single date
+            for x in date.split(","):  # x is a single date
                 new_date = {x: int(str(time_range[i][0]))}
                 date_formatted.update(new_date)  # Add Next pair
                 i += 1
             return date_formatted
 
-
     def subset(self, query):
-        """ Subsets a netcdf file with all depths
-        """
+        """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
         if not os.path.isdir("/tmp/subset"):
             os.makedirs("/tmp/subset")
         working_dir = "/tmp/subset/"
 
         entire_globe = True  # subset the globe?
-        if 'min_range' in query:
+        if "min_range" in query:
             # Area explicitly specified
             entire_globe = False
             # Bounding box extents
-            bottom_left = [float(x) for x in query.get('min_range').split(',')]
-            top_right = [float(x) for x in query.get('max_range').split(',')]
+            bottom_left = [float(x) for x in query.get("min_range").split(",")]
+            top_right = [float(x) for x in query.get("max_range").split(",")]
 
-        if 'area' in query:
+        if "area" in query:
             # Predefined area specified
             entire_globe = False
             # get bounding area
-            polys =  np.squeeze(np.array(query['polygons']))
-            bottom_left = [np.min(polys[:,0]),np.min(polys[:,1])]
-            top_right = [np.max(polys[:,0]),np.max(polys[:,1])]
+            polys = np.squeeze(np.array(query["polygons"]))
+            bottom_left = [np.min(polys[:, 0]), np.min(polys[:, 1])]
+            top_right = [np.max(polys[:, 0]), np.max(polys[:, 1])]
 
         # Time range
         try:
             # Time is an index into timestamps array
-            time_range = [self.timestamp_to_time_index(
-                int(x)) for x in query.get('time').split(',')]
+            time_range = [
+                self.timestamp_to_time_index(int(x))
+                for x in query.get("time").split(",")
+            ]
         except ValueError:
             # Time is in ISO 8601 format and we need the dataset quantum
 
             quantum = self._dataset_config.quantum
-            if quantum == 'day' or quantum == 'hour':
+            if quantum == "day" or quantum == "hour":
+
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
                         # Only compare year, month, day.
@@ -266,15 +272,19 @@ class NetCDFData(Data):
                             return idx
 
             else:
+
                 def find_time_index(isoDate: datetime.datetime):
                     for idx, date in enumerate(self.timestamps):
                         # Only compare year and month
-                        if date.date().year == isoDate.date().year and \
-                                date.date().month == isoDate.date().month:
+                        if (
+                            date.date().year == isoDate.date().year
+                            and date.date().month == isoDate.date().month
+                        ):
                             return idx
 
-            time_range = [dateutil.parser.parse(
-                x) for x in query.get('time').split(',')]
+            time_range = [
+                dateutil.parser.parse(x) for x in query.get("time").split(",")
+            ]
             time_range = [find_time_index(x) for x in time_range]
 
         apply_time_range = False
@@ -294,8 +304,7 @@ class NetCDFData(Data):
         lat_var = find_variable("lat", list(self.dataset.variables.keys()))
         lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
-        depth_var = find_variable(
-            "depth", list(self.dataset.variables.keys()))
+        depth_var = find_variable("depth", list(self.dataset.variables.keys()))
 
         # self.get_dataset_variable should be used below instead of
         # self.dataset.variables[...] because self.dataset.variables[...]
@@ -304,20 +313,22 @@ class NetCDFData(Data):
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
             ymin_index, xmin_index, _ = find_nearest_grid_point(
-                bottom_left[0], bottom_left[1], self.get_dataset_variable(
-                    lat_var), self.get_dataset_variable(lon_var)
+                bottom_left[0],
+                bottom_left[1],
+                self.get_dataset_variable(lat_var),
+                self.get_dataset_variable(lon_var),
             )
             ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0], top_right[1], self.get_dataset_variable(
-                    lat_var), self.get_dataset_variable(lon_var)
+                top_right[0],
+                top_right[1],
+                self.get_dataset_variable(lat_var),
+                self.get_dataset_variable(lon_var),
             )
 
             # Compute min/max for each slice in case the values are flipped
             # the netCDF4 module does not support unordered slices
-            y_slice = slice(min(ymin_index, ymax_index),
-                            max(ymin_index, ymax_index))
-            x_slice = slice(min(xmin_index, xmax_index),
-                            max(xmin_index, xmax_index))
+            y_slice = slice(min(ymin_index, ymax_index), max(ymin_index, ymax_index))
+            x_slice = slice(min(xmin_index, xmax_index), max(xmin_index, xmax_index))
 
             # Get nicely formatted bearings
             p0 = geopy.Point(bottom_left)
@@ -331,14 +342,30 @@ class NetCDFData(Data):
 
         # Get timestamp
         time_var = find_variable("time", list(self.dataset.variables.keys()))
-        timestamp = str(format_date(pandas.to_datetime(np.float64(
-            self.get_dataset_variable(time_var)[time_range[0]].values)), "yyyyMMdd"))
+        timestamp = str(
+            format_date(
+                pandas.to_datetime(
+                    np.float64(
+                        self.get_dataset_variable(time_var)[time_range[0]].values
+                    )
+                ),
+                "yyyyMMdd",
+            )
+        )
         endtimestamp = ""
         if apply_time_range:
-            endtimestamp = "-" + str(format_date(pandas.to_datetime(np.float64(
-                self.get_dataset_variable(time_var)[time_range[1]].values)), "yyyyMMdd"))
+            endtimestamp = "-" + str(
+                format_date(
+                    pandas.to_datetime(
+                        np.float64(
+                            self.get_dataset_variable(time_var)[time_range[1]].values
+                        )
+                    ),
+                    "yyyyMMdd",
+                )
+            )
 
-        dataset_name = query.get('dataset_name')
+        dataset_name = query.get("dataset_name")
         y_coord, x_coord = self.yx_dimensions
 
         # Do subset along coordinates
@@ -354,7 +381,7 @@ class NetCDFData(Data):
         subset = subset.isel(**{time_var: time_slice})
 
         # Filter out unwanted variables
-        output_vars = query.get('variables').split(',')
+        output_vars = query.get("variables").split(",")
         # Keep the coordinate variables
         output_vars.extend(filter(None, [depth_var, time_var, lat_var, lon_var]))
         for variable in subset.data_vars:
@@ -363,24 +390,36 @@ class NetCDFData(Data):
 
         for variable in output_vars:
             # if variable is a computed variable, overwrite it
-            if isinstance(self.get_dataset_variable(variable),
-                          data.calculated.CalculatedArray):
-                subset = subset.assign(**{variable:
-                                          self.get_dataset_variable(variable).isel(**{
-                                              time_var: time_slice,
-                                              y_coord: y_slice,
-                                              x_coord: x_slice
-                                          })})
-                # Convert 'dims' attr to string (allows exporting to NC3 formats)            
-                subset[variable].attrs['dims'] = "(" + ",".join(subset[variable].attrs['dims']) + ")"
+            if isinstance(
+                self.get_dataset_variable(variable), data.calculated.CalculatedArray
+            ):
+                subset = subset.assign(
+                    **{
+                        variable: self.get_dataset_variable(variable).isel(
+                            **{time_var: time_slice, y_coord: y_slice, x_coord: x_slice}
+                        )
+                    }
+                )
+                # Convert 'dims' attr to string (allows exporting to NC3 formats)
+                subset[variable].attrs["dims"] = (
+                    "(" + ",".join(subset[variable].attrs["dims"]) + ")"
+                )
 
-        output_format = query.get('output_format')
-        filename = dataset_name + "_" + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude) \
-            + "_" + timestamp + endtimestamp + "_" + output_format
+        output_format = query.get("output_format")
+        filename = (
+            dataset_name
+            + "_"
+            + "%dN%dW-%dN%dW" % (p0.latitude, p0.longitude, p1.latitude, p1.longitude)
+            + "_"
+            + timestamp
+            + endtimestamp
+            + "_"
+            + output_format
+        )
 
         # Workaround for https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
-        if '_NCProperties' in subset.attrs.keys():
-            del subset.attrs['_NCProperties']
+        if "_NCProperties" in subset.attrs.keys():
+            del subset.attrs["_NCProperties"]
 
         # "Special" output
         if output_format == "NETCDF3_NC":
@@ -389,9 +428,11 @@ class NetCDFData(Data):
 
             # Regrids an input data array according to it's input grid definition
             # to the output definition
-            def regrid(data: np.ndarray,
-                       input_def: pyresample.geometry.SwathDefinition,
-                       output_def: pyresample.geometry.SwathDefinition):
+            def regrid(
+                data: np.ndarray,
+                input_def: pyresample.geometry.SwathDefinition,
+                output_def: pyresample.geometry.SwathDefinition,
+            ):
 
                 orig_shape = data.shape
 
@@ -402,61 +443,81 @@ class NetCDFData(Data):
 
                 # Perform regridding using nearest neighbour weighting
                 regridded = pyresample.kd_tree.resample_nearest(
-                    input_def, data, output_def, 50000, fill_value=None, nprocs=8)
+                    input_def, data, output_def, 50000, fill_value=None, nprocs=8
+                )
                 # Move merged axis back to front
                 regridded = np.moveaxis(regridded, -1, 0)
                 # Match target output grid (netcdf4 used to do this automatically but now it doesn't >.>)
-                return np.reshape(regridded, (orig_shape[0], orig_shape[1], GRID_RESOLUTION, GRID_RESOLUTION))
+                return np.reshape(
+                    regridded,
+                    (orig_shape[0], orig_shape[1], GRID_RESOLUTION, GRID_RESOLUTION),
+                )
 
             # Check lat/lon wrapping
             lon_vals, lat_vals = pyresample.utils.check_and_wrap(
-                lons=subset[lon_var].values, lats=subset[lat_var].values)
+                lons=subset[lon_var].values, lats=subset[lat_var].values
+            )
 
             # Generate our lat/lon grid of 50x50 resolution
             min_lon, max_lon = np.amin(lon_vals), np.amax(lon_vals)
             min_lat, max_lat = np.amin(lat_vals), np.amax(lat_vals)
-            XI = np.linspace(min_lon, max_lon,
-                             num=GRID_RESOLUTION, dtype=lon_vals.dtype)
-            YI = np.linspace(min_lat, max_lat,
-                             num=GRID_RESOLUTION, dtype=lat_vals.dtype)
+            XI = np.linspace(
+                min_lon, max_lon, num=GRID_RESOLUTION, dtype=lon_vals.dtype
+            )
+            YI = np.linspace(
+                min_lat, max_lat, num=GRID_RESOLUTION, dtype=lat_vals.dtype
+            )
             XI_mg, YI_mg = np.meshgrid(XI, YI)
 
             # Define input/output grid definitions
             if lon_vals.ndim == 1:
                 lon_vals, lat_vals = np.meshgrid(lon_vals, lat_vals)
             input_def = pyresample.geometry.SwathDefinition(
-                lons=lon_vals, lats=lat_vals)
-            output_def = pyresample.geometry.SwathDefinition(
-                lons=XI_mg, lats=YI_mg)
+                lons=lon_vals, lats=lat_vals
+            )
+            output_def = pyresample.geometry.SwathDefinition(lons=XI_mg, lats=YI_mg)
 
             # Find correct variable names in subset
-            temp_var = find_variable('temp', subset.variables)
-            saline_var = find_variable('salin', subset.variables)
-            x_vel_var = find_variable('crtx', subset.variables)
-            y_vel_var = find_variable('crty', subset.variables)
+            temp_var = find_variable("temp", subset.variables)
+            saline_var = find_variable("salin", subset.variables)
+            x_vel_var = find_variable("crtx", subset.variables)
+            y_vel_var = find_variable("crty", subset.variables)
 
             # Create file
             time_range = len(subset[time_var][:]) - 1
-            filename = dataset_name.upper() + "_" + \
-                datetime.date.today().strftime("%Y%m%d") + "_d0" + \
-                (("-"+str(time_range)) if time_range > 0 else "") + "_" + \
-                str(np.round(top_right[0]).astype(int)) + "N" + str(np.abs(np.round(bottom_left[1]).astype(int))).zfill(3) + "W" + \
-                str(np.round(bottom_left[0]).astype(int)) + "N" + str(np.abs(np.round(top_right[1])).astype(int)).zfill(3) + "W" + \
-                "_" + output_format
-            ds = netCDF4.Dataset(working_dir + filename +
-                                 ".nc", 'w', format="NETCDF3_CLASSIC")
+            filename = (
+                dataset_name.upper()
+                + "_"
+                + datetime.date.today().strftime("%Y%m%d")
+                + "_d0"
+                + (("-" + str(time_range)) if time_range > 0 else "")
+                + "_"
+                + str(np.round(top_right[0]).astype(int))
+                + "N"
+                + str(np.abs(np.round(bottom_left[1]).astype(int))).zfill(3)
+                + "W"
+                + str(np.round(bottom_left[0]).astype(int))
+                + "N"
+                + str(np.abs(np.round(top_right[1])).astype(int)).zfill(3)
+                + "W"
+                + "_"
+                + output_format
+            )
+            ds = netCDF4.Dataset(
+                working_dir + filename + ".nc", "w", format="NETCDF3_CLASSIC"
+            )
             ds.description = "Converted " + dataset_name
             ds.history = "Created: " + str(datetime.datetime.now())
             ds.source = "www.navigator.oceansdata.ca"
 
             # Create the netcdf dimensions
-            ds.createDimension('lat', GRID_RESOLUTION)
-            ds.createDimension('lon', GRID_RESOLUTION)
-            ds.createDimension('time', len(subset[time_var][:]))
+            ds.createDimension("lat", GRID_RESOLUTION)
+            ds.createDimension("lon", GRID_RESOLUTION)
+            ds.createDimension("time", len(subset[time_var][:]))
 
             # Create the netcdf variables and assign the values
-            latitudes = ds.createVariable('lat', 'd', ('lat',))
-            longitudes = ds.createVariable('lon', 'd', ('lon',))
+            latitudes = ds.createVariable("lat", "d", ("lat",))
+            longitudes = ds.createVariable("lon", "d", ("lon",))
             latitudes[:] = YI
             longitudes[:] = XI
 
@@ -470,8 +531,8 @@ class NetCDFData(Data):
             longitudes.NAVO_code = 2
 
             # LOL I had CreateDimension vs createDimension here >.< Stumped Clyde too hehe :P
-            ds.createDimension('depth', len(subset[depth_var][:]))
-            levels = ds.createVariable('depth', 'i', ('depth',))
+            ds.createDimension("depth", len(subset[depth_var][:]))
+            levels = ds.createVariable("depth", "i", ("depth",))
             levels[:] = subset[depth_var][:]
             levels.long_name = "Depth"
             levels.units = "meter"
@@ -480,9 +541,12 @@ class NetCDFData(Data):
 
             if temp_var is not None:
                 temp = ds.createVariable(
-                    'water_temp', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                temp_data = regrid(
-                    subset[temp_var].values, input_def, output_def)
+                    "water_temp",
+                    "d",
+                    ("time", "depth", "lat", "lon"),
+                    fill_value=-30000.0,
+                )
+                temp_data = regrid(subset[temp_var].values, input_def, output_def)
 
                 # Convert from Kelvin to Celsius
                 ureg = pint.UnitRegistry()
@@ -509,9 +573,14 @@ class NetCDFData(Data):
                 temp.NAVO_code = 15
             if saline_var is not None:
                 salinity = ds.createVariable(
-                    'salinity', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                salinity[:] = regrid(
-                    subset[saline_var].values, input_def, output_def)[:]
+                    "salinity",
+                    "d",
+                    ("time", "depth", "lat", "lon"),
+                    fill_value=-30000.0,
+                )
+                salinity[:] = regrid(subset[saline_var].values, input_def, output_def)[
+                    :
+                ]
                 salinity.long_name = "Salinity"
                 salinity.units = "psu"
                 salinity.valid_min = 0.0
@@ -519,17 +588,17 @@ class NetCDFData(Data):
                 salinity.NAVO_code = 16
             if x_vel_var is not None:
                 x_velo = ds.createVariable(
-                    'water_u', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                x_velo[:] = regrid(subset[x_vel_var].values,
-                                   input_def, output_def)[:]
+                    "water_u", "d", ("time", "depth", "lat", "lon"), fill_value=-30000.0
+                )
+                x_velo[:] = regrid(subset[x_vel_var].values, input_def, output_def)[:]
                 x_velo.long_name = "Eastward Water Velocity"
                 x_velo.units = "meter/sec"
                 x_velo.NAVO_code = 17
             if y_vel_var is not None:
                 y_velo = ds.createVariable(
-                    'water_v', 'd', ('time', 'depth', 'lat', 'lon'), fill_value=-30000.0)
-                y_velo[:] = regrid(subset[y_vel_var].values,
-                                   input_def, output_def)[:]
+                    "water_v", "d", ("time", "depth", "lat", "lon"), fill_value=-30000.0
+                )
+                y_velo[:] = regrid(subset[y_vel_var].values, input_def, output_def)[:]
                 y_velo.long_name = "Northward Water Velocity"
                 y_velo.units = "meter/sec"
                 y_velo.NAVO_code = 18
@@ -539,9 +608,9 @@ class NetCDFData(Data):
             subset.close()
 
             # Reopen using netCDF4 to get non-encoded time values
-            subset = netCDF4.Dataset(temp_file_name, 'r')
+            subset = netCDF4.Dataset(temp_file_name, "r")
 
-            times = ds.createVariable('time', 'i', ('time',))
+            times = ds.createVariable("time", "i", ("time",))
             # Convert time from seconds to hours
             for i in range(0, len(subset[time_var])):
                 times[i] = subset[time_var][i] / 3600
@@ -554,23 +623,23 @@ class NetCDFData(Data):
             subset.close()
         else:
             # Save subset normally
-            subset.to_netcdf(working_dir + filename +
-                             ".nc", format=output_format)
+            subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
 
-        if int(query.get('should_zip')) == 1:
-            myzip = zipfile.ZipFile('%s%s.zip' % (
-                working_dir, filename), mode='w')
-            myzip.write('%s%s.nc' % (working_dir, filename),
-                        os.path.basename('%s%s.nc' % (working_dir, filename)))
+        if int(query.get("should_zip")) == 1:
+            myzip = zipfile.ZipFile("%s%s.zip" % (working_dir, filename), mode="w")
+            myzip.write(
+                "%s%s.nc" % (working_dir, filename),
+                os.path.basename("%s%s.nc" % (working_dir, filename)),
+            )
             myzip.comment = b"Generated from www.navigator.oceansdata.ca"
             myzip.close()  # Must be called to actually create zip
-            return working_dir, filename+".zip"
+            return working_dir, filename + ".zip"
 
-        return working_dir, filename+".nc"
+        return working_dir, filename + ".nc"
 
     def interpolate(self, input_def, output_def, data):
-        """ Interpolates data given input and output definitions
-            and the selected interpolation algorithm.
+        """Interpolates data given input and output definitions
+        and the selected interpolation algorithm.
         """
 
         # Ignore pyresample warnings
@@ -580,57 +649,80 @@ class NetCDFData(Data):
 
             # Interpolation with gaussian weighting
             if self.interp == "gaussian":
-                return pyresample.kd_tree.resample_gauss(input_def, data,
-                                                         output_def, radius_of_influence=float(self.radius), sigmas=self.radius / 2, fill_value=None)
+                return pyresample.kd_tree.resample_gauss(
+                    input_def,
+                    data,
+                    output_def,
+                    radius_of_influence=float(self.radius),
+                    sigmas=self.radius / 2,
+                    fill_value=None,
+                )
 
             # Bilinear weighting
             elif self.interp == "bilinear":
                 """
-                    Weight function used to determine the effect of surrounding points
-                    on a given point
+                Weight function used to determine the effect of surrounding points
+                on a given point
                 """
-                def weight(r):
-                    r = np.clip(r, np.finfo(r.dtype).eps,
-                                np.finfo(r.dtype).max)
-                    return 1. / r
 
-                return pyresample.kd_tree.resample_custom(input_def, data,
-                                                          output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                                                          weight_funcs=weight)
+                def weight(r):
+                    r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
+                    return 1.0 / r
+
+                return pyresample.kd_tree.resample_custom(
+                    input_def,
+                    data,
+                    output_def,
+                    radius_of_influence=float(self.radius),
+                    neighbours=self.neighbours,
+                    fill_value=None,
+                    weight_funcs=weight,
+                )
 
             # Inverse-square weighting
             elif self.interp == "inverse":
                 """
-                    Weight function used to determine the effect of surrounding points
-                    on a given point
+                Weight function used to determine the effect of surrounding points
+                on a given point
                 """
-                def weight(r):
-                    r = np.clip(r, np.finfo(r.dtype).eps,
-                                np.finfo(r.dtype).max)
-                    return 1. / r ** 2
 
-                return pyresample.kd_tree.resample_custom(input_def, data,
-                                                          output_def, radius_of_influence=float(self.radius), neighbours=self.neighbours, fill_value=None,
-                                                          weight_funcs=weight)
+                def weight(r):
+                    r = np.clip(r, np.finfo(r.dtype).eps, np.finfo(r.dtype).max)
+                    return 1.0 / r**2
+
+                return pyresample.kd_tree.resample_custom(
+                    input_def,
+                    data,
+                    output_def,
+                    radius_of_influence=float(self.radius),
+                    neighbours=self.neighbours,
+                    fill_value=None,
+                    weight_funcs=weight,
+                )
 
             # Nearest-neighbour interpolation (junk)
             elif self.interp == "nearest":
-                return np.ma.asarray(pyresample.kd_tree.resample_nearest(input_def, data,
-                                                           output_def, radius_of_influence=float(self.radius)))
+                return np.ma.asarray(
+                    pyresample.kd_tree.resample_nearest(
+                        input_def,
+                        data,
+                        output_def,
+                        radius_of_influence=float(self.radius),
+                    )
+                )
 
         raise ValueError(f"Unknown interpolation method {self.interp}.")
 
     @property
     def time_variable(self):
         """Finds and returns the xArray.IndexVariable containing
-            the time dimension in self.dataset
+        the time dimension in self.dataset
         """
 
         if self._time_variable is not None:
             return self._time_variable
 
-        self._time_variable = self.__find_variable(
-            ['time', 'time_counter', 'Times'])
+        self._time_variable = self.__find_variable(["time", "time_counter", "Times"])
         return self._time_variable
 
     @property
@@ -642,8 +734,8 @@ class NetCDFData(Data):
             longitude.
         """
         return (
-            self.__find_variable(['nav_lat', 'latitude']),
-            self.__find_variable(['nav_lon', 'longitude'])
+            self.__find_variable(["nav_lat", "latitude"]),
+            self.__find_variable(["nav_lon", "longitude"]),
         )
 
     @property
@@ -660,7 +752,7 @@ class NetCDFData(Data):
         Returns the possible names of the depth dimension in the dataset
         """
 
-        return ['depth', 'deptht', 'z']
+        return ["depth", "deptht", "z"]
 
     @property
     def y_dimensions(self) -> Set[str]:
@@ -668,7 +760,7 @@ class NetCDFData(Data):
         Possible names of the y dimension in the dataset.
         """
 
-        return {'y', 'yc', 'latitude', 'gridY'}
+        return {"y", "yc", "latitude", "gridY"}
 
     @property
     def x_dimensions(self) -> Set[str]:
@@ -676,7 +768,7 @@ class NetCDFData(Data):
         Possible names of the x dimension in the dataset.
         """
 
-        return {'x', 'xc', 'longitude', 'gridX'}
+        return {"x", "xc", "longitude", "gridX"}
 
     @property
     def yx_dimensions(self) -> Tuple[str, str]:
@@ -690,14 +782,16 @@ class NetCDFData(Data):
             y_dim = y_dim.pop()
         except KeyError:
             raise ValueError(
-                f"None of {self.y_dimensions} were found in dataset's dimensions {dims}.") from KeyError
+                f"None of {self.y_dimensions} were found in dataset's dimensions {dims}."
+            ) from KeyError
 
         x_dim = self.x_dimensions.intersection(dims)
         try:
             x_dim = x_dim.pop()
         except KeyError:
             raise ValueError(
-                f"None of {self.x_dimensions} were found in dataset's dimensions {dims}.") from KeyError
+                f"None of {self.x_dimensions} were found in dataset's dimensions {dims}."
+            ) from KeyError
 
         return y_dim, x_dim
 
@@ -726,20 +820,47 @@ class NetCDFData(Data):
         url = self.url if not isinstance(self.url, list) else self.url[0]
         if url.endswith(".sqlite3"):
             with SQLiteDatabase(url) as db:
-                self._variable_list = db.get_data_variables()  # Cache the list for later
+                self._variable_list = (
+                    db.get_data_variables()
+                )  # Cache the list for later
 
         elif url.endswith(".zarr"):
             ds_zarr = xarray.open_zarr(url)
-            var_list =[]
+            var_list = []
             for var in list(ds_zarr.data_vars):
 
                 name = var
-                units = ds_zarr.variables[var].attrs['units'] if ds_zarr.variables[var].attrs['units'] else None
-                long_name = ds_zarr.variables[var].attrs['long_name'] if ds_zarr.variables[var].attrs['long_name'] else name
-                valid_min = ds_zarr.variables[var].attrs['valid_min'] if ds_zarr.variables[var].attrs['valid_min'] else None
-                valid_max = ds_zarr.variables[var].attrs['valid_max'] if ds_zarr.variables[var].attrs['valid_max'] else None
+                units = (
+                    ds_zarr.variables[var].attrs["units"]
+                    if ds_zarr.variables[var].attrs["units"]
+                    else None
+                )
+                long_name = (
+                    ds_zarr.variables[var].attrs["long_name"]
+                    if ds_zarr.variables[var].attrs["long_name"]
+                    else name
+                )
+                valid_min = (
+                    ds_zarr.variables[var].attrs["valid_min"]
+                    if ds_zarr.variables[var].attrs["valid_min"]
+                    else None
+                )
+                valid_max = (
+                    ds_zarr.variables[var].attrs["valid_max"]
+                    if ds_zarr.variables[var].attrs["valid_max"]
+                    else None
+                )
 
-                var_list.append(Variable(name, long_name, units, list(ds_zarr[name].dims), valid_min, valid_max))
+                var_list.append(
+                    Variable(
+                        name,
+                        long_name,
+                        units,
+                        list(ds_zarr[name].dims),
+                        valid_min,
+                        valid_max,
+                    )
+                )
 
             self._variable_list = var_list
 
@@ -751,13 +872,17 @@ class NetCDFData(Data):
                 # That warning should be resolvable by changing to:
                 # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
                 with xarray.open_mfdataset(url, decode_times=False) as ds:
-                    self._variable_list = self._get_xarray_data_variables(ds)  # Cache the list for later
+                    self._variable_list = self._get_xarray_data_variables(
+                        ds
+                    )  # Cache the list for later
 
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable label
                 # duplication issue, so fall back to using netCDF4.Dataset()
                 with netCDF4.Dataset(self.url) as ds:
-                    self._variable_list = self._get_netcdf4_data_variables(ds)  # Cache the list for later
+                    self._variable_list = self._get_netcdf4_data_variables(
+                        ds
+                    )  # Cache the list for later
 
         return self._variable_list
 
@@ -770,11 +895,15 @@ class NetCDFData(Data):
                 continue
             result.append(
                 Variable(
-                    var, ds[var].attrs["long_name"], ds[var].attrs["units"],
+                    var,
+                    ds[var].attrs["long_name"],
+                    ds[var].attrs["units"],
                     tuple([dim for dim in ds.dims]),
                     # Use .get() here to provide None if variable metadata lacks
                     # valid_min or valid_max
-                    ds[var].attrs.get("valid_min"), ds[var].attrs.get("valid_max"))
+                    ds[var].attrs.get("valid_min"),
+                    ds[var].attrs.get("valid_max"),
+                )
             )
         return VariableList(result)
 
@@ -795,20 +924,24 @@ class NetCDFData(Data):
                 valid_max = None
             result.append(
                 Variable(
-                    var, ds[var].getncattr("long_name"), ds[var].getncattr("units"),
+                    var,
+                    ds[var].getncattr("long_name"),
+                    ds[var].getncattr("units"),
                     tuple([dim for dim in ds.dimensions]),
-                    valid_min, valid_max)
+                    valid_min,
+                    valid_max,
+                )
             )
         return VariableList(result)
 
     @property
     def timestamps(self):
         """
-            Loads, caches, and returns the values of the
-            time dimension for the open netcdf files.
+        Loads, caches, and returns the values of the
+        time dimension for the open netcdf files.
 
-            Note: to get all timestamp values from a dataset,
-            you must query the SQLiteDatabase.
+        Note: to get all timestamp values from a dataset,
+        you must query the SQLiteDatabase.
         """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
@@ -816,14 +949,18 @@ class NetCDFData(Data):
             var = self.time_variable
 
             # Convert timestamps to UTC
-            time_list = data.utils.time_index_to_datetime(np.sort(var), var.attrs['units'])
+            time_list = data.utils.time_index_to_datetime(
+                np.sort(var), var.attrs["units"]
+            )
             timestamps = np.array(time_list)
             timestamps.setflags(write=False)  # Make immutable
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
 
-    def get_nc_file_list(self, datasetconfig: DatasetConfig, **kwargs: dict) -> Union[List, None]:
+    def get_nc_file_list(
+        self, datasetconfig: DatasetConfig, **kwargs: dict
+    ) -> Union[List, None]:
         try:
             if not datasetconfig.url.endswith(".sqlite3"):
                 # This method is only applicable to SQLite-indexed datasets
@@ -833,21 +970,26 @@ class NetCDFData(Data):
             return
 
         try:
-            variables = kwargs['variable']
+            variables = kwargs["variable"]
         except KeyError:
             variables = set()
-            
+
         variables = {variables} if isinstance(variables, str) else set(variables)
         calculated_variables = datasetconfig.calculated_variables
         with SQLiteDatabase(self.url) as db:
-            variables_to_load = self.__get_variables_to_load(db, variables, calculated_variables)
+            variables_to_load = self.__get_variables_to_load(
+                db, variables, calculated_variables
+            )
 
             if len(variables_to_load) == 0:
                 return []
 
             timestamp = self.__get_requested_timestamps(
-                db, variables_to_load[0], kwargs.get('timestamp', -1),
-                kwargs.get('endtime'), kwargs.get('nearest_timestamp', False)
+                db,
+                variables_to_load[0],
+                kwargs.get("timestamp", -1),
+                kwargs.get("endtime"),
+                kwargs.get("nearest_timestamp", False),
             )
 
             if not timestamp:
@@ -859,23 +1001,28 @@ class NetCDFData(Data):
 
             return file_list
 
-    def __get_variables_to_load(self, db: SQLiteDatabase, variable: set,
-                                    calculated_variables: dict) -> List[str]:
+    def __get_variables_to_load(
+        self, db: SQLiteDatabase, variable: set, calculated_variables: dict
+    ) -> List[str]:
 
         calc_var_keys = set(calculated_variables)
         variables_to_load = variable.difference(calc_var_keys)
         requested_calculated_variables = variable & calc_var_keys
         if requested_calculated_variables:
             for rcv in requested_calculated_variables:
-                equation = calculated_variables[rcv]['equation']
+                equation = calculated_variables[rcv]["equation"]
 
-                variables_to_load.update(data.utils.get_data_vars_from_equation(
-                    equation, [v.key for v in db.get_data_variables()]))
+                variables_to_load.update(
+                    data.utils.get_data_vars_from_equation(
+                        equation, [v.key for v in db.get_data_variables()]
+                    )
+                )
 
         return list(variables_to_load)
 
-    def __get_requested_timestamps(self, db: SQLiteDatabase, variable: str, timestamp, endtime,
-                                   nearest_timestamp) -> List[int]:
+    def __get_requested_timestamps(
+        self, db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp
+    ) -> List[int]:
 
         # We assume timestamp and/or endtime have been converted
         # to the same time units as the requested dataset. Otherwise
@@ -903,8 +1050,7 @@ class NetCDFData(Data):
         if timestamp > 0 and endtime > 0:
             # We've received a request for a time range
             # with specific timestamps given
-            return db.get_timestamp_range(
-                timestamp, endtime, variable)
+            return db.get_timestamp_range(timestamp, endtime, variable)
 
         # Otherwise assume negative values are indices into timestamp list
         all_timestamps = db.get_timestamps(variable)

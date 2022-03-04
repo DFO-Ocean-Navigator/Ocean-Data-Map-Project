@@ -4,88 +4,90 @@ import time
 import dateutil.parser
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pytz
-from geopy.distance import distance
 import visvalingamwyatt as vw
 from flask_babel import gettext
+from geopy.distance import distance
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import interp1d
 
-import plotting.utils as utils
 import plotting.colormap as colormap
+import plotting.utils as utils
 from data import open_dataset
-from data.utils import datetime_to_timestamp
-from data.observational import db, Platform, DataType, Station, Sample
+from data.observational import DataType, Platform, Sample, Station, db
 from data.observational.queries import get_platform_variable_track
+from data.utils import datetime_to_timestamp
 from plotting.plotter import Plotter
 
 
 class TrackPlotter(Plotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "track"
         super().__init__(dataset_name, query, **kwargs)
-        self.size: str = '11x5'
+        self.size: str = "11x5"
         self.model_depths = None
 
     def parse_query(self, query):
         super().parse_query(query)
-        self.latlon = query.get('latlon') is None or bool(query.get('latlon'))
+        self.latlon = query.get("latlon") is None or bool(query.get("latlon"))
 
-        track = query.get('track')
+        track = query.get("track")
         if isinstance(track, str):
-            tracks = track.split(',')
+            tracks = track.split(",")
         else:
             tracks = track
 
         self.platform = tracks[0]
 
-        trackvariable = query.get('trackvariable')
+        trackvariable = query.get("trackvariable")
         if isinstance(trackvariable, str):
-            trackvariables = trackvariable.split(',')
+            trackvariables = trackvariable.split(",")
         else:
             trackvariables = trackvariable
 
         self.trackvariables = trackvariables
 
-        self.starttime = dateutil.parser.parse(query.get('starttime'))
-        self.endtime = dateutil.parser.parse(query.get('endtime'))
-        self.track_quantum = query.get('track_quantum', 'hour')
+        self.starttime = dateutil.parser.parse(query.get("starttime"))
+        self.endtime = dateutil.parser.parse(query.get("endtime"))
+        self.track_quantum = query.get("track_quantum", "hour")
 
     def load_data(self):
         platform = db.session.query(Platform).get(self.platform)
         self.name = platform.unique_id
 
         # First get the variable
-        st0 = db.session.query(Station).filter(
-            Station.platform == platform
-        ).first()
-        datatype_keys = db.session.query(
-            db.func.distinct(Sample.datatype_key)
-        ).filter(Sample.station == st0).all()
+        st0 = db.session.query(Station).filter(Station.platform == platform).first()
+        datatype_keys = (
+            db.session.query(db.func.distinct(Sample.datatype_key))
+            .filter(Sample.station == st0)
+            .all()
+        )
 
-        datatypes = db.session.query(
-            DataType
-        ).filter(DataType.key.in_([d for d, in datatype_keys])).order_by(DataType.key).all()
+        datatypes = (
+            db.session.query(DataType)
+            .filter(DataType.key.in_([d for d, in datatype_keys]))
+            .order_by(DataType.key)
+            .all()
+        )
 
         variables = [datatypes[int(x)] for x in self.trackvariables]
         self.data_names = [dt.name for dt in variables]
         self.data_units = [dt.unit for dt in variables]
-        self.track_cmaps = [
-            colormap.find_colormap(dt.name) for dt in variables
-        ]
+        self.track_cmaps = [colormap.find_colormap(dt.name) for dt in variables]
 
         d = []
         for v in variables:
-            d.append(get_platform_variable_track(
-                db.session,
-                platform,
-                v.key,
-                self.track_quantum,
-                starttime=self.starttime,
-                endtime=self.endtime,
-            ))
+            d.append(
+                get_platform_variable_track(
+                    db.session,
+                    platform,
+                    v.key,
+                    self.track_quantum,
+                    starttime=self.starttime,
+                    endtime=self.endtime,
+                )
+            )
 
         d = np.array(d)
 
@@ -96,37 +98,43 @@ class TrackPlotter(Plotter):
         self.depth = d[0, :, 3].astype(float)
 
         d_delta = [
-            distance(p0, p1).km
-            for p0,p1 in zip(self.points[0:-1], self.points[1:])
+            distance(p0, p1).km for p0, p1 in zip(self.points[0:-1], self.points[1:])
         ]
         d_delta.insert(0, 0)
         self.distances = np.cumsum(d_delta)
 
-        start = int(datetime_to_timestamp(self.times[0], self.dataset_config.time_dim_units))
-        end = int(datetime_to_timestamp(self.times[-1], self.dataset_config.time_dim_units))
+        start = int(
+            datetime_to_timestamp(self.times[0], self.dataset_config.time_dim_units)
+        )
+        end = int(
+            datetime_to_timestamp(self.times[-1], self.dataset_config.time_dim_units)
+        )
 
         points_simplified = self.points
         if len(self.points) > 100:
             points_simplified = np.array(vw.simplify(self.points, number=100))
 
         if len(self.variables) > 0:
-            with open_dataset(self.dataset_config, timestamp=start, endtime=end, variable=self.variables, nearest_timestamp=True) as dataset:
+            with open_dataset(
+                self.dataset_config,
+                timestamp=start,
+                endtime=end,
+                variable=self.variables,
+                nearest_timestamp=True,
+            ) as dataset:
                 # Make distance -> time function
                 dist_to_time = interp1d(
                     self.distances,
-                    [ time.mktime(t.timetuple()) for t in self.times],
+                    [time.mktime(t.timetuple()) for t in self.times],
                     assume_sorted=True,
                     bounds_error=False,
                 )
 
-                output_times = dist_to_time(
-                    np.linspace(0, self.distances[-1], 100)
-                )
+                output_times = dist_to_time(np.linspace(0, self.distances[-1], 100))
 
-                model_times = sorted([
-                    time.mktime(t.timetuple())
-                    for t in dataset.nc_data.timestamps
-                ])
+                model_times = sorted(
+                    [time.mktime(t.timetuple()) for t in dataset.nc_data.timestamps]
+                )
 
                 self.model_depths = dataset.depths
 
@@ -138,14 +146,18 @@ class TrackPlotter(Plotter):
                         pts, dist, md, dep = dataset.get_path_profile(
                             points_simplified,
                             v,
-                            int(datetime_to_timestamp(
-                                dataset.nc_data.timestamps[0],
-                                self.dataset_config.time_dim_units
-                            )),
-                            endtime=int(datetime_to_timestamp(
-                                dataset.nc_data.timestamps[-1],
-                                self.dataset_config.time_dim_units
-                            )),
+                            int(
+                                datetime_to_timestamp(
+                                    dataset.nc_data.timestamps[0],
+                                    self.dataset_config.time_dim_units,
+                                )
+                            ),
+                            endtime=int(
+                                datetime_to_timestamp(
+                                    dataset.nc_data.timestamps[-1],
+                                    self.dataset_config.time_dim_units,
+                                )
+                            ),
                         )
 
                         if len(model_times) > 1:
@@ -163,18 +175,18 @@ class TrackPlotter(Plotter):
 
                         # Clear model data beneath observed data
                         od[
-                            np.where(
-                                self.model_depths > max(self.depth)
-                            )[0][1:],
-                            :
+                            np.where(self.model_depths > max(self.depth))[0][1:], :
                         ] = np.nan
 
                         d.append(od)
 
                         mt = [
-                            int(datetime_to_timestamp(
-                                t, self.dataset_config.time_dim_units
-                            )) for t in dataset.nc_data.timestamps
+                            int(
+                                datetime_to_timestamp(
+                                    t, self.dataset_config.time_dim_units
+                                )
+                            )
+                            for t in dataset.nc_data.timestamps
                         ]
                         model_dist = dist
                     else:
@@ -184,13 +196,13 @@ class TrackPlotter(Plotter):
                             v,
                             datetime_to_timestamp(
                                 dataset.nc_data.timestamps[0],
-                                self.dataset_config.time_dim_units
+                                self.dataset_config.time_dim_units,
                             ),
                             endtime=datetime_to_timestamp(
                                 dataset.nc_data.timestamps[-1],
-                                self.dataset_config.time_dim_units
+                                self.dataset_config.time_dim_units,
                             ),
-                            times=output_times
+                            times=output_times,
                         )
                         model_dist = dist
 
@@ -224,7 +236,6 @@ class TrackPlotter(Plotter):
                 self.variable_names = variable_names
                 self.variable_units = variable_units
                 self.cmaps = cmaps
-
 
     def plot(self):
         if self.showmap:
@@ -277,7 +288,7 @@ class TrackPlotter(Plotter):
 
                 RES = (50, 100)
 
-                dd = np.empty((RES[0]+1, RES[1]+1))
+                dd = np.empty((RES[0] + 1, RES[1] + 1))
                 dd[:, :] = np.nan
                 x = np.linspace(0, max(self.distances), RES[1])
                 y = np.linspace(0, max(self.depth), RES[0])
@@ -293,7 +304,7 @@ class TrackPlotter(Plotter):
                     y,
                     np.ma.masked_invalid(dd[:-1, :-1]),
                     cmap=self.track_cmaps[j],
-                    shading='gouraud'
+                    shading="gouraud",
                 )
                 ax.set_xlim(0, max(self.distances))
 
@@ -308,25 +319,28 @@ class TrackPlotter(Plotter):
             legend = [self.name]
 
             if len(legend) > 1:
-                leg = plt.legend(legend, loc='best')
+                leg = plt.legend(legend, loc="best")
                 for legobj in leg.legendHandles:
                     legobj.set_linewidth(4.0)
 
             if len(np.unique(self.depth)) == 1:
                 if self.data_units[j] is not None:
-                    ax.set_ylabel("%s (%s)" % (self.data_names[j],
-                                            utils.mathtext(self.data_units[j])))
+                    ax.set_ylabel(
+                        "%s (%s)"
+                        % (self.data_names[j], utils.mathtext(self.data_units[j]))
+                    )
                 else:
                     ax.set_ylabel(self.data_names[j])
             else:
                 if self.data_units[j] is not None:
-                    bar.set_label("%s (%s)" % (self.data_names[j],
-                                               utils.mathtext(self.data_units[j])))
+                    bar.set_label(
+                        "%s (%s)"
+                        % (self.data_names[j], utils.mathtext(self.data_units[j]))
+                    )
                 else:
                     bar.set_label(self.data_names[j])
 
                 ax.set_ylabel("Depth (m)")
-
 
         for idx, v in enumerate(self.variables):
             if np.isnan(self.model_data[idx]).all():
@@ -352,7 +366,7 @@ class TrackPlotter(Plotter):
                     self.model_depths,
                     mdata,
                     cmap=self.cmaps[idx],
-                    shading='gouraud',
+                    shading="gouraud",
                 )
                 ax.invert_yaxis()
                 ax.set_ylim(max(self.depth), 0)
@@ -361,10 +375,7 @@ class TrackPlotter(Plotter):
                 cax = divider.append_axes("right", size="5%", pad="5%")
                 bar = plt.colorbar(c, cax=cax)
             else:
-                ax.plot(
-                    self.model_dist,
-                    self.model_data[idx]
-                )
+                ax.plot(self.model_dist, self.model_data[idx])
 
             ax.set_xlim(
                 self.model_dist[0],
@@ -374,17 +385,28 @@ class TrackPlotter(Plotter):
 
             if len(np.unique(self.depth)) > 1:
                 ax.set_ylabel("Depth (m)")
-                bar.set_label("%s (%s)" % (self.variable_names[idx],
-                                           utils.mathtext(self.variable_units[idx])))
+                bar.set_label(
+                    "%s (%s)"
+                    % (
+                        self.variable_names[idx],
+                        utils.mathtext(self.variable_units[idx]),
+                    )
+                )
             else:
-                ax.set_ylabel("%s (%s)" % (self.variable_names[idx],
-                                           utils.mathtext(self.variable_units[idx])))
+                ax.set_ylabel(
+                    "%s (%s)"
+                    % (
+                        self.variable_names[idx],
+                        utils.mathtext(self.variable_units[idx]),
+                    )
+                )
             plt.setp(ax.get_xticklabels(), rotation=30)
 
         # latlon
         if self.latlon:
-            for j, label in enumerate([gettext("Latitude (degrees)"),
-                                       gettext("Longitude (degrees)")]):
+            for j, label in enumerate(
+                [gettext("Latitude (degrees)"), gettext("Longitude (degrees)")]
+            ):
                 plt.subplot(gs[subplot])
                 subplot += subplot_inc
 
@@ -394,11 +416,12 @@ class TrackPlotter(Plotter):
                 plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
         fig.suptitle(
-            gettext("Track Plot (Observed %s - %s, Modelled %s - %s)") % (
+            gettext("Track Plot (Observed %s - %s, Modelled %s - %s)")
+            % (
                 self.times[0].strftime("%Y-%m-%d"),
                 self.times[-1].strftime("%Y-%m-%d"),
                 self.model_times[0].strftime("%Y-%m-%d"),
-                self.model_times[-1].strftime("%Y-%m-%d")
+                self.model_times[-1].strftime("%Y-%m-%d"),
             )
         )
         fig.tight_layout(pad=3, w_pad=4)
@@ -406,8 +429,8 @@ class TrackPlotter(Plotter):
 
     def csv(self):
         header = [
-            ['Dataset', self.dataset_name],
-            ['Buoy ID', self.name],
+            ["Dataset", self.dataset_name],
+            ["Buoy ID", self.name],
         ]
 
         columns = [

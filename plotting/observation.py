@@ -10,15 +10,14 @@ import pytz
 from flask_babel import format_datetime, gettext
 
 from data import open_dataset
+from data.observational import DataType, Sample, Station, db
 from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
 
-from data.observational import db, Station, Sample, DataType
 
 class ObservationPlotter(PointPlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "observation"
         super(ObservationPlotter, self).__init__(dataset_name, query, **kwargs)
@@ -35,9 +34,9 @@ class ObservationPlotter(PointPlotter):
             for idx, o in enumerate(self.observation):
                 station = db.session.query(Station).get(o)
                 observation = {
-                    'time': station.time.isoformat(),
-                    'longitude': station.longitude,
-                    'latitude': station.latitude,
+                    "time": station.time.isoformat(),
+                    "longitude": station.longitude,
+                    "latitude": station.latitude,
                 }
                 self.observation_time = station.time
                 self.observation_times.append(station.time)
@@ -50,47 +49,42 @@ class ObservationPlotter(PointPlotter):
                     )
                 datatype_keys = [
                     k[0]
-                    for k in db.session.query(
-                        db.func.distinct(Sample.datatype_key)
-                    ).filter(Sample.station == station).all()
+                    for k in db.session.query(db.func.distinct(Sample.datatype_key))
+                    .filter(Sample.station == station)
+                    .all()
                 ]
 
-                datatypes = db.session.query(
-                    DataType
-                ).filter(
-                    DataType.key.in_(datatype_keys)
-                ).order_by(DataType.key).all()
+                datatypes = (
+                    db.session.query(DataType)
+                    .filter(DataType.key.in_(datatype_keys))
+                    .order_by(DataType.key)
+                    .all()
+                )
 
-                observation['datatypes'] = [
-                    f"{dt.name} [{dt.unit}]"
-                    for dt in datatypes
+                observation["datatypes"] = [
+                    f"{dt.name} [{dt.unit}]" for dt in datatypes
                 ]
 
                 data = []
                 for dt in datatypes:
                     data.append(
-                        db.session.query(
-                            Sample.depth, Sample.value
-                        ).filter(
-                            Sample.station == station,
-                            Sample.datatype == dt
-                        ).all()
+                        db.session.query(Sample.depth, Sample.value)
+                        .filter(Sample.station == station, Sample.datatype == dt)
+                        .all()
                     )
 
                     if idx == 0:
                         self.observation_variable_names.append(dt.name)
                         self.observation_variable_units.append(dt.unit)
 
-                observation['data'] = np.ma.array(data)#.transpose()
+                observation["data"] = np.ma.array(data)  # .transpose()
                 self.observation[idx] = observation
 
-                self.points = [[o['latitude'], o['longitude']]
-                               for o in self.observation]
+                self.points = [
+                    [o["latitude"], o["longitude"]] for o in self.observation
+                ]
 
-        cftime = datetime_to_timestamp(
-            station.time,
-            self.dataset_config.time_dim_units
-        )
+        cftime = datetime_to_timestamp(station.time, self.dataset_config.time_dim_units)
 
         with open_dataset(
             self.dataset_config,
@@ -103,15 +97,12 @@ class ObservationPlotter(PointPlotter):
             observation_times = []
             timestamps = []
             for o in self.observation:
-                observation_time = dateutil.parser.parse(o['time']).replace(
+                observation_time = dateutil.parser.parse(o["time"]).replace(
                     tzinfo=pytz.UTC
                 )
                 observation_times.append(observation_time)
 
-                deltas = [
-                    (x - observation_time).total_seconds()
-                    for x in ts
-                ]
+                deltas = [(x - observation_time).total_seconds() for x in ts]
 
                 time = np.abs(deltas).argmin()
                 timestamp = ts[time]
@@ -120,16 +111,21 @@ class ObservationPlotter(PointPlotter):
             try:
                 self.load_misc(dataset, self.variables)
             except IndexError as e:
-                raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
+                raise ClientError(
+                    gettext(
+                        "The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable.") + str(e))
+                Please select another variable."
+                    )
+                    + str(e)
+                )
 
             point_data, self.depths = self.get_data(
-                dataset, self.variables,
+                dataset,
+                self.variables,
                 datetime_to_timestamp(
-                    timestamps[0],
-                    self.dataset_config.time_dim_units
-                )
+                    timestamps[0], self.dataset_config.time_dim_units
+                ),
             )
             point_data = np.ma.array(point_data)
 
@@ -142,18 +138,19 @@ class ObservationPlotter(PointPlotter):
     def parse_query(self, query):
         super(ObservationPlotter, self).parse_query(query)
 
-        observation_variable = list(
-            map(int, query.get("observation_variable")))
+        observation_variable = list(map(int, query.get("observation_variable")))
         observation = query.get("observation")
         if not isinstance(observation[0], numbers.Number):
             observation_variable_names = [
-                re.sub(r" \[.*\]", "", x) for x in observation[0]['datatypes']]
+                re.sub(r" \[.*\]", "", x) for x in observation[0]["datatypes"]
+            ]
             observation_variable_units = [
-                re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]['datatypes']]
+                re.match(r".*\[(.*)\]", x).group(1) for x in observation[0]["datatypes"]
+            ]
 
             self.parse_names_points(
-                [str(o.get('station')) for o in observation],
-                [[o.get('latitude'), o.get('longitude')] for o in observation]
+                [str(o.get("station")) for o in observation],
+                [[o.get("latitude"), o.get("longitude")] for o in observation],
             )
 
             self.observation_variable_names = observation_variable_names
@@ -175,8 +172,8 @@ class ObservationPlotter(PointPlotter):
 
         data = []
         for o in self.observation:
-            d = np.ma.MaskedArray(o['data'])
-            d[np.where(d == '')] = np.ma.masked
+            d = np.ma.MaskedArray(o["data"])
+            d[np.where(d == "")] = np.ma.masked
             d = np.ma.masked_invalid(d.filled(np.nan).astype(np.float32))
             data.append(d)
 
@@ -188,37 +185,31 @@ class ObservationPlotter(PointPlotter):
             ax_idx += 1
             for d in data:
                 if d.shape[1] == 1:
-                    style = '.'
+                    style = "."
                 else:
-                    style = '-'
+                    style = "-"
 
-                ax[ax_idx].plot(
-                    d[idx, :, 1],
-                    d[idx, :, 0],
-                    style
+                ax[ax_idx].plot(d[idx, :, 1], d[idx, :, 0], style)
+            ax[ax_idx].xaxis.set_label_position("top")
+            ax[ax_idx].xaxis.set_ticks_position("top")
+            ax[ax_idx].set_xlabel(
+                "%s (%s)"
+                % (
+                    self.observation_variable_names[idx],
+                    mathtext(self.observation_variable_units[idx]),
                 )
-            ax[ax_idx].xaxis.set_label_position('top')
-            ax[ax_idx].xaxis.set_ticks_position('top')
-            ax[ax_idx].set_xlabel("%s (%s)" % (
-                self.observation_variable_names[idx],
-                mathtext(self.observation_variable_units[idx]),
-            ))
+            )
             axis_map[self.observation_variable_names[idx]] = ax[ax_idx]
 
             try:
                 if "_" in self.observation_variable_units[idx]:
-                    u = self.observation_variable_units[idx].lower().split(
-                        "_",
-                        1
-                    )[1]
+                    u = self.observation_variable_units[idx].lower().split("_", 1)[1]
                 else:
                     u = self.observation_variable_units[idx].lower()
-                unit_map[
-                    self.observation_variable_names[idx]] = ureg.parse_units(u)
+                unit_map[self.observation_variable_names[idx]] = ureg.parse_units(u)
 
             except:
-                unit_map[
-                    self.observation_variable_names[idx]] = ureg.dimensionless
+                unit_map[self.observation_variable_names[idx]] = ureg.dimensionless
 
         for k, v in list(unit_map.items()):
             if v == ureg.speed_of_light:
@@ -234,8 +225,7 @@ class ObservationPlotter(PointPlotter):
                 axis = ax[ax_idx]
                 showlegend = False
                 try:
-                    destunit = ureg.parse_units(
-                        self.variable_units[idx].lower())
+                    destunit = ureg.parse_units(self.variable_units[idx].lower())
                     if destunit == ureg.speed_of_light:
                         destunit = ureg.celsius
 
@@ -250,24 +240,26 @@ class ObservationPlotter(PointPlotter):
 
                     quan = ureg.Quantity(self.data[j, idx, :], u)
                 except:
-                    quan = ureg.Quantity(
-                        self.data[j, idx, :], ureg.dimensionless)
+                    quan = ureg.Quantity(self.data[j, idx, :], ureg.dimensionless)
 
                 axis.plot(quan.to(destunit).magnitude, self.depths[j, idx, :])
 
             showlegend = showlegend or len(self.observation) > 1
             if not showlegend:
-                axis.xaxis.set_label_position('top')
-                axis.xaxis.set_ticks_position('top')
-                axis.set_xlabel("%s (%s)" % (
-                    self.variable_names[idx],
-                    mathtext(self.variable_units[idx]),
-                ))
+                axis.xaxis.set_label_position("top")
+                axis.xaxis.set_ticks_position("top")
+                axis.set_xlabel(
+                    "%s (%s)"
+                    % (
+                        self.variable_names[idx],
+                        mathtext(self.variable_units[idx]),
+                    )
+                )
             else:
                 l = []
                 for j in [
                     (gettext("Observed"), self.observation_times),
-                    (gettext("Modelled"), self.timestamps)
+                    (gettext("Modelled"), self.timestamps),
                 ]:
                     for i, name in enumerate(self.names):
                         if len(self.names) == 1:
@@ -275,13 +267,9 @@ class ObservationPlotter(PointPlotter):
                         else:
                             name = name + " "
 
-                        l.append("%s%s (%s)" % (
-                            name,
-                            j[0],
-                            format_datetime(j[1][i])
-                        ))
+                        l.append("%s%s (%s)" % (name, j[0], format_datetime(j[1][i])))
 
-                leg = axis.legend(l, loc='best')
+                leg = axis.legend(l, loc="best")
 
                 for legobj in leg.legendHandles:
                     legobj.set_linewidth(4.0)
@@ -291,23 +279,32 @@ class ObservationPlotter(PointPlotter):
 
         if not self.plotTitle:
             if len(self.variables) > 0:
-                plt.suptitle("\n".join(
-                    wrap(
-                        gettext("Profile for %s, Observed at %s, Modelled at %s")
-                        % (
-                            ", ".join(self.names),
-                            format_datetime(self.observation_time),
-                            format_datetime(self.timestamp)
-                        ), 80)
-                ))
+                plt.suptitle(
+                    "\n".join(
+                        wrap(
+                            gettext("Profile for %s, Observed at %s, Modelled at %s")
+                            % (
+                                ", ".join(self.names),
+                                format_datetime(self.observation_time),
+                                format_datetime(self.timestamp),
+                            ),
+                            80,
+                        )
+                    )
+                )
             else:
-                plt.suptitle("\n".join(
-                    wrap(
-                        gettext("Profile for %s (%s)") % (
-                            ", ".join(self.names),
-                            format_datetime(self.observation_time)
-                        ), 80)
-                ))
+                plt.suptitle(
+                    "\n".join(
+                        wrap(
+                            gettext("Profile for %s (%s)")
+                            % (
+                                ", ".join(self.names),
+                                format_datetime(self.observation_time),
+                            ),
+                            80,
+                        )
+                    )
+                )
         else:
             plt.suptitle(self.plotTitle, fontsize=15)
 

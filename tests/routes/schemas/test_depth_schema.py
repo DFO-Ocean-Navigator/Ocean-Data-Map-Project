@@ -6,13 +6,8 @@ from routes.schemas.depth_schema import DepthSchema
 
 
 class DepthSchemaTest(unittest.TestCase):
-
     def test_depth_schema_validates_inputs(self) -> None:
-        valid_inputs = {
-            "dataset": "some_dataset",
-            "variable": "my_var",
-            "all": "yes"
-        }
+        valid_inputs = {"dataset": "some_dataset", "variable": "my_var", "all": "yes"}
 
         errors = DepthSchema().validate(valid_inputs)
 

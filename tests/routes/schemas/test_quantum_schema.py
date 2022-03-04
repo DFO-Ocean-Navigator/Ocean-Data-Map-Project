@@ -6,11 +6,8 @@ from routes.schemas.quantum_schema import QuantumSchema
 
 
 class QuantumSchemaTest(unittest.TestCase):
-
     def test_quantum_schema_validates_inputs(self) -> None:
-        valid_inputs = {
-            "dataset": "some_dataset"
-        }
+        valid_inputs = {"dataset": "some_dataset"}
 
         errors = QuantumSchema().validate(valid_inputs)
 

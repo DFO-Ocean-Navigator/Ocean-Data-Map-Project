@@ -5,14 +5,13 @@ from data.variable import Variable
 
 
 class TestVariable(unittest.TestCase):
-
     def test_properties(self):
         variable = self.__make_3d_variable()
 
         self.assertEqual(variable.key, "my_key")
         self.assertEqual(variable.name, "my_name")
         self.assertEqual(variable.unit, "my_unit")
-        self.assertTupleEqual(variable.dimensions, ('depth', 'dim2'))
+        self.assertTupleEqual(variable.dimensions, ("depth", "dim2"))
         self.assertEqual(variable.valid_min, 0)
         self.assertEqual(variable.valid_max, 100)
 
@@ -42,9 +41,7 @@ class TestVariable(unittest.TestCase):
         self.assertFalse(variable.is_surface_only())
 
     def __make_3d_variable(self):
-        return Variable(
-            "my_key", "my_name", "my_unit", ('depth', 'dim2'), 0, 100)
+        return Variable("my_key", "my_name", "my_unit", ("depth", "dim2"), 0, 100)
 
     def __make_surface_variable(self):
-        return Variable(
-            "my_key", "my_name", "my_unit", ('dim2'), 0, 100)
+        return Variable("my_key", "my_name", "my_unit", ("dim2"), 0, 100)

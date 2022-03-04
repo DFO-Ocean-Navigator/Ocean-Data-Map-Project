@@ -8,11 +8,7 @@ from utils.errors import ClientError, ServerError
 
 
 def get_filename(plot_type, dataset_name, extension):
-    outname = [
-        plot_type,
-        dataset_name,
-        datetime.datetime.now().isoformat()
-    ]
+    outname = [plot_type, dataset_name, datetime.datetime.now().isoformat()]
 
     return "%s.%s" % ("_".join(map(str, outname)), extension)
 
@@ -21,30 +17,30 @@ def get_mimetype(filetype: str):
     if filetype:
         filetype = filetype.lower()
 
-    if filetype == 'png':
-        mime = 'image/png'
-    elif filetype == 'jpeg':
-        mime = 'image/jpeg'
-    elif filetype == 'svg':
-        mime = 'image/svg+xml'
-    elif filetype == 'pdf':
-        mime = 'application/pdf'
-    elif filetype == 'ps':
-        mime = 'application/postscript'
-    elif filetype == 'tiff':
-        mime = 'image/tiff'
-    elif filetype == 'eps':
-        mime = 'application/postscript'
-    elif filetype == 'geotiff':
-        mime = 'image/geotifffloat64'
-    elif filetype == 'csv':
-        mime = 'text/csv'
-    elif filetype == 'odv':
-        mime = 'text/plain'
-        filetype = 'txt'
+    if filetype == "png":
+        mime = "image/png"
+    elif filetype == "jpeg":
+        mime = "image/jpeg"
+    elif filetype == "svg":
+        mime = "image/svg+xml"
+    elif filetype == "pdf":
+        mime = "application/pdf"
+    elif filetype == "ps":
+        mime = "application/postscript"
+    elif filetype == "tiff":
+        mime = "image/tiff"
+    elif filetype == "eps":
+        mime = "application/postscript"
+    elif filetype == "geotiff":
+        mime = "image/geotifffloat64"
+    elif filetype == "csv":
+        mime = "text/csv"
+    elif filetype == "odv":
+        mime = "text/plain"
+        filetype = "txt"
     else:
-        filetype = 'png'
-        mime = 'image/png'
+        filetype = "png"
+        mime = "image/png"
 
     return (filetype, mime)
 
@@ -57,7 +53,7 @@ def normalize_scale(data, variable_config):
         vmax = max(abs(vmax), abs(vmin))
         vmin = -vmax
 
-    if variable_config.unit == 'fraction':
+    if variable_config.unit == "fraction":
         vmin = 0
         vmax = 1
 
@@ -66,9 +62,9 @@ def normalize_scale(data, variable_config):
 
 def mathtext(text):
     if re.search(r"[Cc]elsius", text):
-        text = re.sub(r"(degree[_ ])?[Cc]elsius", '\u00b0C', text)
+        text = re.sub(r"(degree[_ ])?[Cc]elsius", "\u00b0C", text)
     if re.search(r"[Kk]elvin", text):
-        text = re.sub(r"(degree[_ ])?[Kk]elvin", '\u00b0K', text)
+        text = re.sub(r"(degree[_ ])?[Kk]elvin", "\u00b0K", text)
     if re.search(r"-[0-9]", text):
         text = re.sub(r" ([^- ])-1", r"/\1", text)
         text = re.sub(r" ([^- ])-([2-9][0-9]*)", r"/\1^\2", text)
@@ -105,33 +101,46 @@ def _map_plot(points, path=True, quiver=True):
         urcrnrlat=maxlat,
         lat_0=np.mean(points[0, :]),
         lon_0=np.mean(points[1, :]),
-        resolution='i', projection='merc',
+        resolution="i",
+        projection="merc",
         rsphere=(6378137.00, 6356752.3142),
     )
 
     if path:
-        marker = ''
-        if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and \
-                (np.round(points[0, :], 2) == np.round(points[0, 0], 2)).all():
-            marker = '.'
-        m.plot(points[1, :], points[0, :],
-               latlon=True, color='r', linestyle='-', marker=marker)
+        marker = ""
+        if (np.round(points[1, :], 2) == np.round(points[1, 0], 2)).all() and (
+            np.round(points[0, :], 2) == np.round(points[0, 0], 2)
+        ).all():
+            marker = "."
+        m.plot(
+            points[1, :],
+            points[0, :],
+            latlon=True,
+            color="r",
+            linestyle="-",
+            marker=marker,
+        )
         if quiver:
             qx, qy = m([points[1, -1]], [points[0, -1]])
             qu = points[1, -1] - points[1, -2]
             qv = points[0, -1] - points[0, -2]
-            qmag = np.sqrt(qu ** 2 + qv ** 2)
+            qmag = np.sqrt(qu**2 + qv**2)
             qu /= qmag
             qv /= qmag
-            m.quiver(qx, qy, qu, qv,
-                     pivot='tip',
-                     scale=8,
-                     width=0.25,
-                     minlength=0.25,
-                     color='r')
+            m.quiver(
+                qx,
+                qy,
+                qu,
+                qv,
+                pivot="tip",
+                scale=8,
+                width=0.25,
+                minlength=0.25,
+                color="r",
+            )
     else:
         for idx in range(0, points.shape[1]):
-            m.plot(points[1, idx], points[0, idx], 'o', latlon=True, color='r')
+            m.plot(points[1, idx], points[0, idx], "o", latlon=True, color="r")
 
     # Draw a realistic background "blue marble"
     try:
@@ -141,16 +150,22 @@ def _map_plot(points, path=True, quiver=True):
             np.arange(
                 round(minlat),
                 round(maxlat),
-                round(max(lat_d / 1.5, (maxlat - minlat)/5))
-            ), labels=[0, 1, 0, 0])
+                round(max(lat_d / 1.5, (maxlat - minlat) / 5)),
+            ),
+            labels=[0, 1, 0, 0],
+        )
         m.drawmeridians(
             np.arange(
                 round(minlon),
                 round(maxlon),
-                round(max(lon_d / 1.5, (maxlon - minlon)/5))
-            ), labels=[0, 0, 0, 1])
+                round(max(lon_d / 1.5, (maxlon - minlon) / 5)),
+            ),
+            labels=[0, 0, 0, 1],
+        )
     except:
-        raise ClientError("Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection")
+        raise ClientError(
+            "Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection"
+        )
 
 
 def point_plot(points):
