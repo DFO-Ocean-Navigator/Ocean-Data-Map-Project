@@ -12,7 +12,7 @@ const DataInput = {
 class CoordInputPanel extends React.Component {
   constructor(props) {
     super(props);
-    
+
     this.state = {
       coordinate: [],
     };

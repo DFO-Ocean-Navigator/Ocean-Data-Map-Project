@@ -42,6 +42,8 @@ class MapToolbar extends React.Component {
       observationSelection: {
       },
       drifterList: [],
+      applyPointCoordModal: false,
+      cordsAddList: []
     };
 
     // Function bindings
@@ -62,6 +64,7 @@ class MapToolbar extends React.Component {
     this.applyAreaCoords = this.applyAreaCoords.bind(this);
     this.parseCSV = this.parseCSV.bind(this);
     this.parseODV = this.parseODV.bind(this);
+    this.addCoordData = this.addCoordData.bind(this);
   }
 
   buttonHandler(e) {
@@ -297,13 +300,22 @@ class MapToolbar extends React.Component {
     this.setState(data);
   }
 
+  addCoordData(data) {
+    if (this.state.cordsAddList) {
+      this.setState({cordsAddList:[...this.state.cordsAddList, data.coordinate]})
+    } else{
+      this.setState({cordsAddList:new Array(data.coordinate)})
+    }
+    this.setState({applyPointCoordModal:true})
+  }
+
   // Instructs the OceanNavigator to fetch point data
   applyPointCoords() {
     // Draw points on map(s)
-    this.props.action("add", "point", [this.state.coordinate]);
+    this.props.action("add", "point", this.state.cordsAddList);
     // We send "enterPoint" too so that the coordinates do not get
     // negated or reversed.
-    this.props.action("point", this.state.coordinate, "enterPoint");
+    this.props.action("point", this.state.cordsAddList, "enterPoint");
   }
 
   // Fetch line data
@@ -782,6 +794,7 @@ class MapToolbar extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <EnterPoint
+              addCoordData={this.addCoordData}
               setCoordData={this.setCoordData}
             />
           </Modal.Body>
@@ -791,6 +804,7 @@ class MapToolbar extends React.Component {
             ><Icon icon="close" /> {_("Close")}</Button>
             <Button
               bsStyle="primary"
+              disabled  = {!this.state.applyPointCoordModal}
               onClick={function() {
                 this.setState({showPointCoordModal: false});
                 this.applyPointCoords();
