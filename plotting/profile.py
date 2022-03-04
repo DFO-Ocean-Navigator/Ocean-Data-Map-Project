@@ -6,30 +6,35 @@ from flask_babel import gettext
 import plotting.utils as utils
 from data import open_dataset
 from data.sqlite_database import SQLiteDatabase
+from oceannavigator.dataset_config import DatasetConfig
 from plotting.point import PointPlotter
 from utils.errors import ClientError
-from oceannavigator.dataset_config import DatasetConfig
 
 
 class ProfilePlotter(PointPlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
         super(ProfilePlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
 
-        with open_dataset(self.dataset_config, timestamp=self.time, variable=self.variables) as ds:
+        with open_dataset(
+            self.dataset_config, timestamp=self.time, variable=self.variables
+        ) as ds:
 
             try:
                 self.load_misc(ds, self.variables)
             except IndexError as e:
-                raise ClientError(gettext("The selected variable(s) were not found in the dataset. \
+                raise ClientError(
+                    gettext(
+                        "The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable. ") + str(e))
+                Please select another variable. "
+                    )
+                    + str(e)
+                )
 
-            point_data, point_depths = self.get_data(
-                ds, self.variables, self.time)
+            point_data, point_depths = self.get_data(ds, self.variables, self.time)
 
             self.iso_timestamp = ds.nc_data.timestamp_to_iso_8601(self.time)
 
@@ -56,23 +61,13 @@ class ProfilePlotter(PointPlotter):
             longitude,
             depth,
             time,
-            data
+            data,
         )
-
-    def igoss_ascii(self):
-        if 'Temperature' in self.variable_names:
-            time = self.iso_timestamp
-            return super(ProfilePlotter, self).igoss_ascii(
-                time,
-                self.depths,
-                self.data,
-                self.points
-            )
 
     def csv(self):
         header = [
-            ['Dataset', self.dataset_name],
-            ["Timestamp", self.iso_timestamp.isoformat()]
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.iso_timestamp.isoformat()],
         ]
 
         columns = [
@@ -120,8 +115,14 @@ class ProfilePlotter(PointPlotter):
         if self.showmap:
             plt.subplot(gs[0, subplot])
             subplot += 1
-            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                       [x[1] for x in self.points]]))  # Longitudes
+            utils.point_plot(
+                np.array(
+                    [
+                        [x[0] for x in self.points],  # Latitudes
+                        [x[1] for x in self.points],
+                    ]
+                )
+            )  # Longitudes
 
         is_y_label_plotted = False
         # Create a subplot for each variable selected
@@ -130,18 +131,19 @@ class ProfilePlotter(PointPlotter):
             plt.subplot(gs[:, subplot])
 
             plt.plot(
-                self.data[:, idx, :].transpose(),
-                self.depths[:, idx, :].transpose()
+                self.data[:, idx, :].transpose(), self.depths[:, idx, :].transpose()
             )
 
             current_axis = plt.gca()
-            current_axis.xaxis.set_label_position('top')
-            current_axis.xaxis.set_ticks_position('top')
+            current_axis.xaxis.set_label_position("top")
+            current_axis.xaxis.set_ticks_position("top")
             current_axis.invert_yaxis()
             current_axis.grid(True)
-            current_axis.set_xlabel("%s (%s)" %
-                                    (self.variable_names[idx],
-                                     utils.mathtext(self.variable_units[idx])), fontsize=14)
+            current_axis.set_xlabel(
+                "%s (%s)"
+                % (self.variable_names[idx], utils.mathtext(self.variable_units[idx])),
+                fontsize=14,
+            )
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
@@ -157,11 +159,16 @@ class ProfilePlotter(PointPlotter):
         self.plot_legend(fig, self.names)
 
         if not self.plotTitle:
-            plt.suptitle("%s(%s)\n%s\n%s" % (gettext("Profile for "),
-                                             ", ".join(self.names),
-                                             ", ".join(self.variable_names),
-                                             self.date_formatter(self.iso_timestamp)),
-                         fontsize=15)
+            plt.suptitle(
+                "%s(%s)\n%s\n%s"
+                % (
+                    gettext("Profile for "),
+                    ", ".join(self.names),
+                    ", ".join(self.variable_names),
+                    self.date_formatter(self.iso_timestamp),
+                ),
+                fontsize=15,
+            )
         else:
             plt.suptitle(self.plotTitle, fontsize=15)
 
