@@ -67,6 +67,7 @@ dependencies:
   - fonttools=4.29.1=py38h497a2fe_0
   - freetype=2.10.4=h0708190_1
   - freexl=1.0.6=h7f98852_0
+  - frozendict=2.3.0=py38h497a2fe_1
   - fsspec=2022.2.0=pyhd8ed1ab_0
   - gdal=3.3.2=py38h81a01a0_2
   - geographiclib=1.52=pyhd8ed1ab_0
@@ -267,5 +268,8 @@ dependencies:
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.5.2=ha95c52a_0
   - pip:
+    - docopt==0.6.2
+    - pipreqs==0.4.11
     - visvalingamwyatt==0.1.4
+    - yarg==0.1.9
 prefix: /home/vagrant/onav-cloud/tools/miniconda/3/amd64/envs/navigator
