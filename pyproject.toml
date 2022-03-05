@@ -6,6 +6,7 @@ target-version = ['py38']
 include = '\.pyi?$'
 exclude = '''
 /(
-    .+\/frontend\/.+
+      .+\/frontend\/.+
+    | scripts
 )/
 '''
