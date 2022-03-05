@@ -286,7 +286,7 @@ class OceanNavigator extends React.Component {
           // pair, so no need to swap it.
           if (arg2 === "enterPoint") {
             this.setState({
-              point: [[arg[0], arg[1]]],
+              point:arg,
               modal: "point",
               names: [],
             });
