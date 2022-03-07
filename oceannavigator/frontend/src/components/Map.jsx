@@ -414,6 +414,15 @@ export default class Map extends React.PureComponent {
                 return [
                   new olstyle.Style({
                     stroke: new olstyle.Stroke({
+                      color: "#FFFFFF",
+                      width: 2,
+                    }),
+                    fill: new olstyle.Fill({
+                      color: "#FFFFFF00"
+                    })
+                  }),
+                  new olstyle.Style({
+                    stroke: new olstyle.Stroke({
                       color: "#000000",
                       width: 1,
                     }),
@@ -422,8 +431,13 @@ export default class Map extends React.PureComponent {
                     geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
                     text: new olstyle.Text({
                       text: feat.get("name"),
+                      font: '14px sans-serif',
                       fill: new olstyle.Fill({
                         color: "#000",
+                      }),
+                      stroke: new olstyle.Stroke({
+                        color: "#FFFFFF", 
+                        width: 2,
                       }),
                     }),
                   }),
@@ -712,7 +726,12 @@ export default class Map extends React.PureComponent {
     //this.mapView.on("change:center", this.constrainPan.bind(this));
     this.map.setView(this.mapView);
 
+    let selected = null;
     this.map.on("pointermove", function (e) {
+      if (selected !== null) {
+        selected.setStyle(undefined);
+        selected = null;
+      }
       const feature = this.map.forEachFeatureAtPixel(
         this.map.getEventPixel(e.originalEvent),
         function (feature, layer) {
@@ -734,6 +753,44 @@ export default class Map extends React.PureComponent {
           this.popupElement.innerHTML = feature.get("name");
         }
         $(this.map.getTarget()).css("cursor", "pointer");
+
+        if (feature.get("type") == "area") {
+          this.map.forEachFeatureAtPixel(e.pixel, function (f) {
+            selected = f;
+            f.setStyle([
+              new olstyle.Style({
+                stroke: new olstyle.Stroke({
+                  color: "#FFFFFF",
+                  width: 2,
+                }),
+                fill: new olstyle.Fill({
+                  color: "#FFFFFF80"
+                })
+              }),
+              new olstyle.Style({
+                stroke: new olstyle.Stroke({
+                  color: "#000000",
+                  width: 1,
+                }),
+              }),                  
+              new olstyle.Style({
+                geometry: new olgeom.Point(olproj.transform(f.get("centroid"), "EPSG:4326", this.props.state.projection)),
+                text: new olstyle.Text({
+                  text: f.get("name"),
+                  font: '14px sans-serif',
+                  fill: new olstyle.Fill({
+                    color: "#000000",
+                  }),
+                  stroke: new olstyle.Stroke({
+                    color: "#FFFFFF", 
+                    width: 2,
+                  }),
+                }),
+              }),  
+            ]);
+            return true;    
+          }.bind(this));
+        }
       } else if (feature && feature.get("class") == "observation") {
         if (feature.get("meta")) {
           this.overlay.setPosition(e.coordinate);
@@ -814,25 +871,7 @@ export default class Map extends React.PureComponent {
 
     var select = new olinteraction.Select({
       style: function (feat, res) {
-        if (feat.get("type") == "area") {
-          return [
-            new olstyle.Style({
-              stroke: new olstyle.Stroke({
-                color: "#0099ff",
-                width: 3,
-              }),
-            }),
-            new olstyle.Style({
-              geometry: new olgeom.Point(olproj.transform(feat.get("centroid"), "EPSG:4326", this.props.state.projection)),
-              text: new olstyle.Text({
-                text: feat.get("name"),
-                fill: new olstyle.Fill({
-                  color: "#0099ff",
-                }),
-              }),
-            }),
-          ];
-        } else {
+        if (feat.get("type") != "area") {
           return new olstyle.Style({
             stroke: new olstyle.Stroke({
               color: "#0099ff",
@@ -946,6 +985,9 @@ export default class Map extends React.PureComponent {
         this.infoRequest.abort();
       }
       this.infoOverlay.setPosition(undefined);
+      if (e.selected[0].get("type") == "area") {
+        this.selectedFeatures.clear();
+      }
     }.bind(this));
 
     dragBox.on("boxend", function () {
