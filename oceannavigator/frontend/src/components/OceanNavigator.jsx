@@ -500,10 +500,8 @@ class OceanNavigator extends React.Component {
             options={this.state.options}
           />
         );
-        modalTitle = formatLatLon(
-          this.state.point[0][0],
-          this.state.point[0][1]
-        );
+        modalTitle = this.state.point.map(p => formatLatLon(p[0], p[1]))
+        modalTitle = modalTitle.join(", ")
         break;
       case "line":
         modalContent = (
@@ -581,7 +579,7 @@ class OceanNavigator extends React.Component {
         modalTitle = "";
         break;
     }
-    if (this.state.names && this.state.names.length > 0) {
+    if (this.state.modal !="point" && this.state.names && this.state.names.length > 0) {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
 
