@@ -302,11 +302,11 @@ class MapToolbar extends React.Component {
 
   addCoordData(data) {
     if (this.state.cordsAddList) {
-      this.setState({cordsAddList:[...this.state.cordsAddList, data.coordinate]})
+      this.setState({cordsAddList:[...this.state.cordsAddList, data.coordinate]});
     } else{
-      this.setState({cordsAddList:new Array(data.coordinate)})
+      this.setState({cordsAddList:new Array(data.coordinate)});
     }
-    this.setState({applyPointCoordModal:true})
+    this.setState({applyPointCoordModal:true});
   }
 
   // Instructs the OceanNavigator to fetch point data

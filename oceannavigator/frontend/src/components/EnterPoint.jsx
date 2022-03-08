@@ -26,7 +26,7 @@ class EnterPoint extends React.Component {
     this.props.setCoordData(newState);
 
     if( (this.state.coordinate[0]) && (this.state.coordinate[1]) ){
-      this.setState({addPointCoordModal:true})
+      this.setState({addPointCoordModal:true});
     }
   }
 
@@ -34,7 +34,7 @@ class EnterPoint extends React.Component {
     var newState = this.state;
     this.setState(prevState => ({
       coordinate: [prevState.coordinate, newState]
-    }))
+    }));
     this.props.addCoordData(newState, this.props.id); // Update Added List
   }
 
