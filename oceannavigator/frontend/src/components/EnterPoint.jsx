@@ -13,7 +13,8 @@ class EnterPoint extends React.Component {
 
     this.state = {
       coordinate: [],
-      addPointCoordModal: false
+      addPointCoordModal: false,
+      lastAdded :null
     };
   this.onAdd = this.onAdd.bind(this);
   }
@@ -24,7 +25,6 @@ class EnterPoint extends React.Component {
     newState.coordinate[1] = state.coordinate[1]; // Long
     this.setState(newState);
     this.props.setCoordData(newState);
-
     if( (this.state.coordinate[0]) && (this.state.coordinate[1]) ){
       this.setState({addPointCoordModal:true})
     }
@@ -36,7 +36,7 @@ class EnterPoint extends React.Component {
       coordinate: [prevState.coordinate, newState]
     }))
     this.props.addCoordData(newState, this.props.id); // Update Added List
-    console.log(this.state)
+    this.setState({lastAdded:this.state.coordinate})
   }
 
   render() {
@@ -48,6 +48,7 @@ class EnterPoint extends React.Component {
         <CoordInputPanel
           header={_("Lat/Long Pair")}
           setCoordData={this.setCoordData.bind(this)}
+          key ={this.state.lastAdded}
         />
         <Button 
           bsStyle="primary"
