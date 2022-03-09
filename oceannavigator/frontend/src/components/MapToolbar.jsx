@@ -321,9 +321,16 @@ class MapToolbar extends React.Component {
   // Fetch line data
   applyLineCoords() {
     // Draw line on map(s)
-    this.props.action("add", "line", [this.state.line.startCoord, this.state.line.endCoord]);
+    this.props.action(
+      "add", 
+      "line", 
+      [this.state.line.startCoord, this.state.line.endCoord]
+      );
     // Needs to be a nested array so multiple lines can be parsed
-    this.props.action("line", [[this.state.line.startCoord, this.state.line.endCoord]]);
+    this.props.action(
+      "line", 
+      [[this.state.line.startCoord, this.state.line.endCoord]]
+    );
   }
 
   // Fetch area data
