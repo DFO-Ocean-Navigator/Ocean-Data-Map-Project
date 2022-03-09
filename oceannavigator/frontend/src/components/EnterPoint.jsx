@@ -18,7 +18,7 @@ class EnterPoint extends React.Component {
   this.onAdd = this.onAdd.bind(this);
   }
 
-  setCoordData(state, id) {
+  setCoordData(state) {
     const newState = this.state;
     newState.coordinate[0] = state.coordinate[0]; // Lat
     newState.coordinate[1] = state.coordinate[1]; // Long
@@ -34,7 +34,8 @@ class EnterPoint extends React.Component {
     this.setState(prevState => ({
       coordinate: [prevState.coordinate, newState]
     }));
-    this.props.addCoordData(newState, this.props.id); // Update Added List
+    this.props.addCoordData(newState); // Update Added List
+    this.setState({lastAdded:this.state.coordinate})
   }
 
   render() {
