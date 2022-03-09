@@ -2,7 +2,6 @@ import React from "react";
 import {Alert} from "react-bootstrap";
 import CoordInputPanel from "./CoordInputPanel.jsx";
 import PropTypes from "prop-types";
-
 import { withTranslation } from "react-i18next";
 import Icon from "./lib/Icon.jsx";
 import {Button} from "react-bootstrap";
