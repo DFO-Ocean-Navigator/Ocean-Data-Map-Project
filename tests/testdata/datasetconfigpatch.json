@@ -46,6 +46,23 @@
         }
     },
 
+    "giops_3d_lat_lon": {
+        "enabled": true,
+        "url": "tests/testdata/giops_3d_lat_lon.nc",
+        "name": "GIOPS Forecast 3D - Lat/Lon",
+        "model_class": "Mercator",
+        "quantum": "day",
+        "type": "forecast",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
+        "help": "some help",
+        "variables": {
+            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"] }
+        }
+    },
+
     "nemo_sqlite3": {
         "enabled": 1,
         "url": "tests/testdata/databases/test-nemo.sqlite3",

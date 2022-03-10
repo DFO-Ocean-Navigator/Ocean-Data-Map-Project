@@ -9,7 +9,10 @@ from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator import DatasetConfig, create_app
 
-app = create_app(testing=True)
+app = create_app(
+    testing=True,
+    dataset_config_path="tests/testdata/datasetconfigpatch.json"
+)
 
 # Note that patches are applied in bottom-up order
 
@@ -193,17 +196,18 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["range"])
         self.assertEqual(res.status_code, 200)
 
-    # OverflowError: signed integer is greater than maximum
-    @unittest.skip("Skipping api/data.. problem with timestamp conversion")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_data_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_data_endpoint_3d_lat_lon(self):
         res = self.app.get(
-            "/api/v1.0/data/giops_real/votemper/2212704000/0/60,-29.json"
+            "/api/v1.0/data",
+            query_string = {
+                "dataset": "giops_3d_lat_lon",
+                "variable": "votemper",
+                "time": "2212704000",
+                "depth": "0",
+                "geometry_type": "area"
+            }
         )
+        
         self.assertEqual(res.status_code, 200)
 
     def test_class4_models_endpoint(self):
