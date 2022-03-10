@@ -132,8 +132,8 @@ class CalculatedArray:
         key = self._format_key(key)
         coords = self._calculate_coords(key)
 
-        if data_array.ndim != len(self._dims):
-            shape = [k.stop - k.start if isinstance(k, slice) else 1 for k in key]
+        if coords and data_array.ndim != len(self._dims):
+            shape = [c.size for c in coords.values()]
             data_array = np.reshape(data_array, shape)
 
         return xr.DataArray(data_array, coords=coords, attrs=self.attrs)
@@ -151,8 +151,8 @@ class CalculatedArray:
         return {}
 
     def _format_key(self, key) -> list:
-        # ensure key and its elements are iterable. This ensures
-        # coords have length > 0
+        # ensure key and its elements are iterable so that
+        # coordinates have length > 0
         try:
             key = [[k] if isinstance(k, int) else k for k in key]
         except TypeError:
