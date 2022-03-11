@@ -1,0 +1,42 @@
+name: Python tests
+
+
+on:
+  push:
+    branches: [ master, ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test-linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+      max-parallel: 5
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda env update --file config/conda/environment.yml --name base
+        echo PROJ_LIB=$CONDA_PREFIX/share/proj >> $GITHUB_ENV
+    - name: Run tests
+      run: |
+        ./run_python_tests.sh
