@@ -333,7 +333,7 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
         }
     )
 
-    return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
+    return send_file(bytesIOBuff, mimetype="image/png", max_age=MAX_CACHE)
 
 
 @bp_v1_0.route(
