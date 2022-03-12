@@ -180,7 +180,7 @@ class NetCDFData(Data):
             [int or ndarray] -- Time index(es).
         """
 
-        time_var = np.sort(self.time_variable.astype(np.int))
+        time_var = np.sort(self.time_variable.astype(int))
 
         result = np.nonzero(np.isin(time_var, timestamp))[0]
 
@@ -386,7 +386,7 @@ class NetCDFData(Data):
         output_vars.extend(filter(None, [depth_var, time_var, lat_var, lon_var]))
         for variable in subset.data_vars:
             if variable not in output_vars:
-                subset = subset.drop(variable)
+                subset = subset.drop_vars([variable])
 
         for variable in output_vars:
             # if variable is a computed variable, overwrite it
