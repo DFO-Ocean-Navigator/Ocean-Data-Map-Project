@@ -19,6 +19,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, ubuntu-20.04]
       max-parallel: 5
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
     - name: Checkout repo
@@ -29,23 +32,25 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: 3.8
     - name: Set cache date
       run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-    - name: Cache conda packages
+    - name: Cache Conda env
       uses: actions/cache@v2
       with:
-        path: $CONDA/envs/base
-        key: ${{ matrix.os }}-conda-${{ hashFiles('config/conda/environment.yml') }}-${{ env.DATE }}
+        path: ${{ env.CONDA }}/envs
+        key: conda-${{ matrix.os }}--${{ env.DATE }}-${{ hashFiles('config/conda/environment.yml') }}-${{ env.CACHE_NUMBER }}
+      env:
+        # Increase this value to reset cache if config/conda/environment.yml has not changed
+        CACHE_NUMBER: 0
       id: cache
-    - name: Install dependencies
-      run: |
-        conda env update --file config/conda/environment.yml --name base
-        echo PROJ_LIB=$CONDA_PREFIX/share/proj >> $GITHUB_ENV
+    - name: Update environment
+      run: conda env update -f config/conda/environment.yml --name test
       if: steps.cache.outputs.cache-hit != 'true'
     - name: Run tests
       run: |
+        echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
+        conda activate test
         ./run_python_tests.sh
