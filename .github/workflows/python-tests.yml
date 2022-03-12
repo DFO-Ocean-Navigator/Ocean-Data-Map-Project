@@ -32,23 +32,23 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Set cache date
-      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-    - name: Cache conda
-      uses: actions/cache@v2
-      env:
-        # Increase this value to reset cache if etc/example-environment.yml has not changed
-        CACHE_NUMBER: 0
-      with:
-        path: ~/conda_pkgs_dir
-        key:
-          ${{ matrix.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-          hashFiles('config/conda/environment.yml') }}-${{ env.DATE }}
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        environment-file: config/conda/environment.yml
         python-version: 3.8
-        use-only-tar-bz2: true
+    - name: Set cache date
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+    - name: Cache Conda env
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.CONDA }}/envs
+        key: conda-${{ matrix.os }}--$DATE-${{ hashFiles('config/conda/environment.yml') }}-${{ env.CACHE_NUMBER }}
+      env:
+        # Increase this value to reset cache if config/conda/environment.yml has not changed
+        CACHE_NUMBER: 0
+      id: cache
+    - name: Update environment
+      run: conda env update -f config/conda/environment.yml
+      if: steps.cache.outputs.cache-hit != 'true'
     - name: Run tests
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
