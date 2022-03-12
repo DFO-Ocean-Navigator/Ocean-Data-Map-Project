@@ -73,6 +73,13 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
             f"{ASCIITerminalColors.WARNING}[Warning] -- Cached files will NOT be cleaned after tests complete: {cache_dir} AND {tile_dir}{ASCIITerminalColors.ENDC}"  # noqa: E501
         )
 
+    # Customize Flask debug logger message format
+    app.logger.handlers[0].setFormatter(
+        logging.Formatter(
+            "%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
     db.init_app(app)
 
     datasetConfig = argv[-1]
