@@ -2,6 +2,7 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/dfo-ocean-navigator/ocean-data-map-project/badge)](https://www.codefactor.io/repository/github/dfo-ocean-navigator/ocean-data-map-project)
 [![Lint Python](https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/actions/workflows/lint_python.yml/badge.svg)](https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/actions/workflows/lint_python.yml)
+[![Python tests](https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/actions/workflows/python-tests.yml/badge.svg)](https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/actions/workflows/python-tests.yml)
 
 ## Contents
 * Overview
