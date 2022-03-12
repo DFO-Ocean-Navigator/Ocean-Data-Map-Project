@@ -48,9 +48,12 @@
 
     "nemo_sqlite3": {
         "enabled": 1,
+        "name": "Nemo SQLITE3",
         "url": "tests/testdata/databases/test-nemo.sqlite3",
+        "quantum": "day",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "model_class": "Nemo",
+        "attribution": "attrib",
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }
@@ -103,10 +106,13 @@
     "mercator_test": {
         "enabled": 1,
         "url": "tests/testdata/mercator_test.nc",
+        "name": "Mercator test",
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "model_class": "Mercator",
+        "quantum": "day",
         "lat_var_key": "latitude",
         "lon_var_key": "longitude",
+        "attribution": "attrib",
         "variables": {
             "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
         }

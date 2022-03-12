@@ -39,7 +39,7 @@ def config_dask(app) -> None:
     )
 
 
-def create_app(testing: bool = False):
+def create_app(testing: bool = False, dataset_config_path: str = ""):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
@@ -73,13 +73,6 @@ def create_app(testing: bool = False):
             f"{ASCIITerminalColors.WARNING}[Warning] -- Cached files will NOT be cleaned after tests complete: {cache_dir} AND {tile_dir}{ASCIITerminalColors.ENDC}"  # noqa: E501
         )
 
-    # Customize Flask debug logger message format
-    app.logger.handlers[0].setFormatter(
-        logging.Formatter(
-            "%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-    )
     db.init_app(app)
 
     datasetConfig = argv[-1]
@@ -87,6 +80,9 @@ def create_app(testing: bool = False):
         app.config["datasetConfig"] = datasetConfig
     else:
         app.config["datasetConfig"] = "datasetconfig.json"
+
+    if dataset_config_path:
+        app.config["datasetConfig"] = dataset_config_path
 
     @app.route("/public/")
     def public_index():
