@@ -306,7 +306,7 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].name, "Sea water potential temperature")
             self.assertEqual(variables[0].unit, "Kelvin")
             self.assertEqual(
-                variables[0].dimensions, ("depth", "latitude", "longitude", "time")
+                variables[0].dimensions, ("depth", "time", "latitude", "longitude")
             )
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
@@ -314,7 +314,7 @@ class TestNetCDFData(unittest.TestCase):
     def test_xarray_dimensions(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
             self.assertEqual(
-                ["depth", "latitude", "longitude", "time"], nc_data.dimensions
+                ["depth", "time", "latitude", "longitude"], nc_data.dimensions
             )
 
     def test_zarr_xarray_variables(self):
