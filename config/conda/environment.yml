@@ -200,11 +200,6 @@ dependencies:
   - pyopenssl=22.0.0=pyhd8ed1ab_0
   - pyparsing=3.0.7=pyhd8ed1ab_0
   - pyproj=3.3.0=py38h4df08a6_1
-  - pyqt=5.12.3=py38h578d9bd_8
-  - pyqt-impl=5.12.3=py38h0ffb2e6_8
-  - pyqt5-sip=4.19.18=py38h709712a_8
-  - pyqtchart=5.12=py38h7400c14_8
-  - pyqtwebengine=5.12.1=py38h7400c14_8
   - pyresample=1.22.3=py38h43a58ef_0
   - pyshp=2.2.0=pyhd8ed1ab_0
   - pysocks=1.7.1=py38h578d9bd_4
@@ -214,7 +209,6 @@ dependencies:
   - pytz=2021.3=pyhd8ed1ab_0
   - pywavelets=1.2.0=py38h6c62de6_1
   - pyyaml=6.0=py38h497a2fe_3
-  - qt=5.12.9=hda022c4_4
   - readline=8.1=h46c0cb4_0
   - requests=2.26.0=pyhd8ed1ab_1
   - scikit-image=0.19.0=py38h43a58ef_0
