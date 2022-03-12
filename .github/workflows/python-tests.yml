@@ -35,8 +35,6 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: 3.8
-        auto-activate-base: true
-        activate-environment: ""
     - name: Set cache date
       run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
     - name: Cache Conda env
@@ -49,10 +47,10 @@ jobs:
         CACHE_NUMBER: 0
       id: cache
     - name: Update environment
-      run: conda env update -f config/conda/environment.yml
+      run: conda env update -f config/conda/environment.yml --name test
       if: steps.cache.outputs.cache-hit != 'true'
     - name: Run tests
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
-        conda activate
+        conda activate test
         ./run_python_tests.sh
