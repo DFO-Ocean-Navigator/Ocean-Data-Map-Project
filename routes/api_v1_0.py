@@ -138,7 +138,7 @@ def generateScript():
         resp = send_file(
             b,
             as_attachment=True,
-            attachment_filename=f"API_script_{script_type}.py",
+            download_name=f"API_script_{script_type}.py",
             mimetype="application/x-python",
         )
 
@@ -147,7 +147,7 @@ def generateScript():
         resp = send_file(
             b,
             as_attachment=True,
-            attachment_filename=f"API_script_{script_type}.r",
+            download_name=f"API_script_{script_type}.r",
             mimetype="text/plain",
         )
 
