@@ -41,7 +41,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.CONDA }}/envs
-        key: conda-${{ matrix.os }}--$DATE-${{ hashFiles('config/conda/environment.yml') }}-${{ env.CACHE_NUMBER }}
+        key: conda-${{ matrix.os }}--${{ env.DATE }}-${{ hashFiles('config/conda/environment.yml') }}-${{ env.CACHE_NUMBER }}
       env:
         # Increase this value to reset cache if config/conda/environment.yml has not changed
         CACHE_NUMBER: 0
