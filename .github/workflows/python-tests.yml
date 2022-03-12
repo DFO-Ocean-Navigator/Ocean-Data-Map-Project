@@ -33,10 +33,19 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
+    - name: Set cache date
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+    - name: Cache conda packages
+      uses: actions/cache@v2
+      with:
+        path: $CONDA/envs/base
+        key: ${{ matrix.os }}-conda-${{ hashFiles('config/conda/environment.yml') }}-${{ env.DATE }}
+      id: cache
     - name: Install dependencies
       run: |
         conda env update --file config/conda/environment.yml --name base
         echo PROJ_LIB=$CONDA_PREFIX/share/proj >> $GITHUB_ENV
+      if: steps.cache.outputs.cache-hit != 'true'
     - name: Run tests
       run: |
         ./run_python_tests.sh
