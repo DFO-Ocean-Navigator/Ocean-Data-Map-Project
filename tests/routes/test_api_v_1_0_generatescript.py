@@ -1,10 +1,10 @@
-"""Integration tests for API v1.0 endpoint /generatescript
-"""
 import unittest
 
 from oceannavigator import create_app
 
-app = create_app(testing=True)
+app = create_app(
+    testing=True, dataset_config_path="../tests/testdata/datasetconfigpatch.json"
+)
 
 
 class TestApiv10GenerateScript(unittest.TestCase):

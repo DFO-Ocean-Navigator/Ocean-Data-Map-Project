@@ -39,7 +39,7 @@ def config_dask(app) -> None:
     )
 
 
-def create_app(testing: bool = False):
+def create_app(testing: bool = False, dataset_config_path: str = ""):
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
@@ -87,6 +87,9 @@ def create_app(testing: bool = False):
         app.config["datasetConfig"] = datasetConfig
     else:
         app.config["datasetConfig"] = "datasetconfig.json"
+
+    if dataset_config_path:
+        app.config["datasetConfig"] = dataset_config_path
 
     @app.route("/public/")
     def public_index():

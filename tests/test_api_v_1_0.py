@@ -5,11 +5,11 @@ import json
 import unittest
 from unittest.mock import MagicMock, PropertyMock, patch
 
-from data.variable import Variable
-from data.variable_list import VariableList
-from oceannavigator import DatasetConfig, create_app
+from oceannavigator import create_app
 
-app = create_app(testing=True)
+app = create_app(
+    testing=True, dataset_config_path="../tests/testdata/datasetconfigpatch.json"
+)
 
 # Note that patches are applied in bottom-up order
 
@@ -20,29 +20,11 @@ class TestAPIv1(unittest.TestCase):
 
         with open("tests/testdata/endpoints.json") as endpoints:
             self.apiLinks = json.load(endpoints)
-        with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
-            self.patch_dataset_config_ret_val = json.load(dataPatch)
-
-        self.patch_data_vars_ret_val = VariableList(
-            [
-                Variable(
-                    "votemper",
-                    "Water temperature at CMC",
-                    "Kelvins",
-                    sorted(["deptht", "time_counter", "y", "x"]),
-                )
-            ]
-        )
 
     def __get_response_data(self, resp):
         return json.loads(resp.get_data(as_text=True))
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_variables_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_variables_endpoint(self):
 
         res = self.app.get("/api/v1.0/variables/?dataset=giops&3d_only")
 
@@ -68,16 +50,7 @@ class TestAPIv1(unittest.TestCase):
         resp_data = self.__get_response_data(res)
         self.assertEqual(len(resp_data), 0)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_latest_timestamp")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_depth_endpoint(
-        self, patch_get_data_vars, patch_get_latest_timestamp, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_latest_timestamp.return_value = 2034072000
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_depth_endpoint(self):
 
         res = self.app.get("/api/v1.0/depth/?dataset=giops&variable=votemper")
 
@@ -88,19 +61,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res_data[0]["id"], "bottom")
         self.assertEqual(res_data[0]["value"], "Bottom")
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    @patch("data.sqlite_database.SQLiteDatabase.get_timestamps")
-    def test_timestamps_endpoint_sqlite(
-        self,
-        patch_get_all_timestamps,
-        patch_get_data_variables,
-        patch_get_dataset_config,
-    ):
-
-        patch_get_all_timestamps.return_value = sorted([2031436800, 2034072000])
-        patch_get_data_variables.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_timestamps_endpoint_sqlite(self):
 
         res = self.app.get(
             "/api/v1.0/timestamps/?dataset=nemo_sqlite3&variable=votemper"
@@ -113,9 +74,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res_data[0]["id"], 2031436800)
         self.assertEqual(res_data[0]["value"], "2014-05-17T00:00:00+00:00")
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    def test_timestamps_endpoint_xarray(self, patch_get_dataset_config):
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_timestamps_endpoint_xarray(self):
 
         res = self.app.get("/api/v1.0/timestamps/?dataset=giops&variable=votemper")
 
@@ -126,23 +85,13 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res_data[0]["id"], 2031436800)
         self.assertEqual(res_data[0]["value"], "2014-05-17T00:00:00+00:00")
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_scale_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_scale_endpoint(self):
 
         res = self.app.get("/api/v1.0/scale/giops/votemper/-5,30.png")
 
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "get_datasets")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    def test_datasets_endpoint(self, patch_get_dataset_config, patch_get_datasets):
-
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-        patch_get_datasets = ["giops"]
+    def test_datasets_endpoint(self):
 
         res = self.app.get("/api/v1.0/datasets/")
 
@@ -167,9 +116,7 @@ class TestAPIv1(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    def test_quantum_query(self, patch_get_dataset_config):
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_quantum_query(self):
 
         res = self.app.get("/api/v1.0/quantum/?dataset=giops")
 
@@ -185,25 +132,10 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get("/api/v1.0/")
         self.assertEqual(res.status_code, 400)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_range_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_range_endpoint(self):
+
         res = self.app.get(self.apiLinks["range"])
-        self.assertEqual(res.status_code, 200)
 
-    # OverflowError: signed integer is greater than maximum
-    @unittest.skip("Skipping api/data.. problem with timestamp conversion")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_data_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        res = self.app.get(
-            "/api/v1.0/data/giops_real/votemper/2212704000/0/60,-29.json"
-        )
         self.assertEqual(res.status_code, 200)
 
     def test_class4_models_endpoint(self):
@@ -212,35 +144,14 @@ class TestAPIv1(unittest.TestCase):
         )
         self.assertEqual(res.status_code, 200)
 
-    # RuntimeError: Opening a dataset via sqlite requires the 'variable' keyword argument.
-    @unittest.skip("Skipping api/stats.. needs re-write")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_stats_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
-        res = self.app.get(self.apiLinks["stats"])
-        self.assertEqual(res.status_code, 200)
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.netcdf_data.NetCDFData._get_xarray_data_variables")
-    def test_subset_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_subset_endpoint(self):
 
         res = self.app.get(self.apiLinks["subset"])
+
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.netcdf_data.NetCDFData._get_xarray_data_variables")
-    def test_plot_map_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_plot_map_endpoint(self):
 
         # map (area)
         res = self.app.get(self.apiLinks["plot_map"])
@@ -259,14 +170,7 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.netcdf_data.NetCDFData._get_xarray_data_variables")
-    def test_plot_transect_endpoint(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
+    def test_plot_transect_endpoint(self):
 
         # transect (line)
         res = self.app.get(self.apiLinks["plot_transect"])
@@ -278,76 +182,37 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_transect_csv"])
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_timeseries_endpoint(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_timeseries_endpoint(self):
         # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries"])
+
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_timeseries_endpoint_all_depths(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_timeseries_endpoint_all_depths(self):
         # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries_all_depths"])
+
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_timeseries_endpoint_bottom_depth(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_timeseries_endpoint_bottom_depth(self):
         # timeseries (point, virtual mooring)
         res = self.app.get(self.apiLinks["plot_timeseries_bottom"])
+
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_ts_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_ts_endpoint(self):
         # ts (point, T/S Plot)
         res = self.app.get(self.apiLinks["plot_ts"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/sound.. returning error")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_sound_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_sound_endpoint(self):
         # sound (point, Speed of Sound)
         # IndexError: list index out of range
         res = self.app.get(self.apiLinks["plot_sound"])
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.netcdf_data.NetCDFData._get_xarray_data_variables")
-    def test_plot_profile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_profile_endpoint(self):
         # profile (point, profile)
         res = self.app.get(self.apiLinks["plot_profile"])
         self.assertEqual(res.status_code, 200)
@@ -355,15 +220,7 @@ class TestAPIv1(unittest.TestCase):
         res = self.app.get(self.apiLinks["plot_profile_multi_variable"])
         self.assertEqual(res.status_code, 200)
 
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_hovmoller_endpoint(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_hovmoller_endpoint(self):
         # hovmoller (line, Hovmöller Diagram)
         res = self.app.get(self.apiLinks["plot_hovmoller"])
         self.assertEqual(res.status_code, 200)
@@ -372,28 +229,14 @@ class TestAPIv1(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/observation.. returning error")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_observation_endpoint(
-        self, patch_get_data_vars, patch_get_dataset_config
-    ):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_observation_endpoint(self):
         # observation (point, Observation)
         # returns RuntimeError: Opening a dataset via sqlite requires the 'timestamp' keyword argument.
         res = self.app.get(self.apiLinks["plot_observation"])
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Skipping api/plot/stickplot.. explaination in definition..")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_plot_stick_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_plot_stick_endpoint(self):
         # stick (point, Stick Plot) returns NameError: name 'timestamp' is not defined
         # or RuntimeError: Error finding timestamp(s) in database.
         res = self.app.get(self.apiLinks["plot_stick"])
@@ -459,49 +302,29 @@ class TestAPIv1(unittest.TestCase):
             self.assertEqual(res[i].status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.netcdf_data.NetCDFData._get_xarray_data_variables")
-    def test_tile_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_tile_endpoint(self):
         res = self.app.get(
             "/api/v1.0/tiles/gaussian/25/10/EPSG:3857/giops_real/votemper/2212704000/0/-5,30/6/50/40.png"
         )
+
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_topo_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_topo_endpoint(self):
         res = self.app.get("/api/v1.0/tiles/topo/false/EPSG:3857/6/52/41.png")
+
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_bath_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_bath_endpoint(self):
         res = self.app.get("/api/v1.0/tiles/bath/EPSG:3857/6/56/41.png")
+
         self.assertEqual(res.status_code, 200)
 
     @unittest.skip("Failing")
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
-    def test_mbt_endpoint(self, patch_get_data_vars, patch_get_dataset_config):
-
-        patch_get_data_vars.return_value = self.patch_data_vars_ret_val
-        patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
-
+    def test_mbt_endpoint(self):
         res = self.app.get("/api/v1.0/mbt/EPSG:3857/lands/7/105/77")
+
         self.assertEqual(res.status_code, 200)
 
     @patch("data.observational.queries.get_datatypes")
