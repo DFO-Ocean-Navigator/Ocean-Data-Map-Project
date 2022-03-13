@@ -182,9 +182,9 @@ class NetCDFData(Data):
 
         time_var = np.sort(self.time_variable.astype(int))
 
-        result = np.nonzero(np.isin(time_var, timestamp))[0]
+        result = np.nonzero(np.isin(time_var, timestamp))[0].tolist()
 
-        return result if result.shape[0] > 1 else result[0]
+        return result if len(result) > 1 else result[0]
 
     def timestamp_to_iso_8601(self, timestamp: Union[int, List]):
         """Converts a given timestamp (e.g. 2031436800) or list of timestamps
