@@ -434,11 +434,11 @@ def get_data_v1_0():
             ) as ds_bearing:
                 bearings = ds_bearing.nc_data.get_dataset_variable("bearing")[
                     data_slice
-                ]
+                ].squeeze(drop=True)
 
         d = data_array_to_geojson(
             data.squeeze(drop=True),
-            bearings.squeeze(drop=True),  # this is a hack
+            bearings,  # this is a hack
             lat_var[lat_slice],
             lon_var[lon_slice],
         )
