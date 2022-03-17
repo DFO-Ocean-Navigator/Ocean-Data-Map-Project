@@ -72,6 +72,7 @@ class MapToolbar extends React.Component {
       name = elem.name;
     }
     this.props.action(name);
+    this.props.disablePlotInteraction();
   }
   
   class4ButtonHandler() {
