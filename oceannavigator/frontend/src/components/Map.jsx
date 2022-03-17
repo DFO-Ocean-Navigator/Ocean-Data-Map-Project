@@ -168,6 +168,7 @@ export default class Map extends React.PureComponent {
 
     this.state = {
       location: [0, 90],
+      lonlat: []
     };
 
     this.scaleViewer = new app.ScaleViewer({
@@ -1138,6 +1139,7 @@ export default class Map extends React.PureComponent {
     this.obsDrawSource.clear();
     this.overlay.setPosition(undefined);
     this.infoOverlay.setPosition(undefined);
+    this.setState({lonlat: []});
   }
 
   removeMapInteractions(type) {
@@ -1260,12 +1262,12 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      let lonlat_vector = [...this.state.lonlat, [lonlat[1], lonlat[0]]]
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
-      this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
-      this.map.removeInteraction(draw);
+      this.props.action("point", lonlat_vector);    //This function has the sole responsibility for opening the point window
       this._drawing = false;
       setTimeout(
         function () { this.controlDoubleClickZoom(true); }.bind(this),
@@ -1308,6 +1310,7 @@ export default class Map extends React.PureComponent {
         function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
+      this.setState({lonlat: lonlat_vector});
     }.bind(this));
     this.map.addInteraction(draw);
   }
@@ -1693,10 +1696,6 @@ export default class Map extends React.PureComponent {
   }
 
   add(type, data, name) {
-    if (this._mounted) {
-      this.resetMap();
-    }
-
     var geom;
     var feat;
     switch (type) {
