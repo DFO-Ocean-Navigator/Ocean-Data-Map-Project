@@ -106,6 +106,7 @@ class OceanNavigator extends React.Component {
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
+    this.removeMapInteraction = this.removeMapInteraction.bind(this);
   }
 
   // Opens/closes the sidebar state
@@ -134,8 +135,10 @@ class OceanNavigator extends React.Component {
   }
 
   // Turns off map drawing
-  removeMapInteraction(mode) {
-    this.mapComponent.removeMapInteractions(mode);
+  removeMapInteraction(mode="All") {
+     if (this.mapComponent){
+      this.mapComponent.removeMapInteractions(mode);
+    }
     if (this.mapComponent2) {
       this.mapComponent2.removeMapInteractions(mode);
     }
@@ -295,7 +298,7 @@ class OceanNavigator extends React.Component {
           // so swap it.
           else {
             this.setState({
-              point: [[arg[1], arg[0]]],
+              point: arg,
               modal: "point",
               names: [],
             });
@@ -308,8 +311,6 @@ class OceanNavigator extends React.Component {
             action: "click",
             label: "PointPlot"
           });
-
-          this.showModal();
         } 
         else {
           // Enable point selection in both maps
@@ -657,6 +658,7 @@ class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             showObservationSelect={this.state.showObservationSelect}
             observationArea={this.state.observationArea}
+            disablePlotInteraction={this.removeMapInteraction}
           />
           {map}
         </div>
