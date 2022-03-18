@@ -1264,7 +1264,7 @@ export default class Map extends React.PureComponent {
       const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
       let lonlat_vector = [...this.state.lonlat, [lonlat[1], lonlat[0]]]
       // Draw point on map(s)
-      this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      this.props.action("add", "point", [[lonlat[1], lonlat[0]]], "multipoint_click");
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
       this.props.action("point", lonlat_vector);    //This function has the sole responsibility for opening the point window
@@ -1697,6 +1697,9 @@ export default class Map extends React.PureComponent {
   }
 
   add(type, data, name) {
+    if ((name!="multipoint_click") && (this._mounted)) {
+      this.resetMap();
+    }
     var geom;
     var feat;
     switch (type) {

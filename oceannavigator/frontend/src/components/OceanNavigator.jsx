@@ -292,7 +292,8 @@ class OceanNavigator extends React.Component {
               point: [[arg[0], arg[1]]],
               modal: "point",
               names: [],
-            });
+            });       
+            this.showModal();
           }
           // Drawing on the map results in a reversed coordinate pair
           // so swap it.
@@ -304,7 +305,6 @@ class OceanNavigator extends React.Component {
             });
           }
 
-          // Disable point selection in both maps
           ReactGA.event({
             category: "PointPlot",
             action: "click",
