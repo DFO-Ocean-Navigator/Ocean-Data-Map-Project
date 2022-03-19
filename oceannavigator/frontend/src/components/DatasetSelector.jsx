@@ -58,8 +58,8 @@ class DatasetSelector extends React.Component {
        datasetVariables: [],
        datasetTimestamps: [],
        datasetDepths: [],
-       ncTimestampDateTimeMap: null,
-       dateTimeNCTimestampMap: null,
+       ncTimestampDateTimeMap: new Map(),
+       dateTimeNCTimestampMap: new Map(),
        options: {
          ...props.options,
        },
