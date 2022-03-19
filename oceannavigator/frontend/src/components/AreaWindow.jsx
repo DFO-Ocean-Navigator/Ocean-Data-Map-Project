@@ -407,7 +407,7 @@ class AreaWindow extends React.Component {
     let subsetDateTimePicker = null;
     if (this.state.output_timerange) {
       subsetDateTimePicker = <DateTimePickerRange
-        key={`areawindow-subset-datetimepicker`}
+        key={`areawindow-subset-datetimepickerrange`}
         quantum={this.state.dataset_0.quantum}
         selectedStart={
           this.ncTimestampToDateTime(this.state.output_starttime)
@@ -421,7 +421,11 @@ class AreaWindow extends React.Component {
         maxDate={
           this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[this.state.outputDatasetTimestamps.length - 1])
         }
-        onChange={this.onUpdate}
+        onChange={(id, value) => {
+          const stateKey = id === "starttime" ? "output_starttime" : "output_endtime";
+
+          this.setState({ [stateKey]: value });
+        }}
       />;
     }
     else {
@@ -438,7 +442,7 @@ class AreaWindow extends React.Component {
         maxDate={
           this.ncTimestampToDateTime(this.state.outputDatasetTimestamps[this.state.outputDatasetTimestamps.length - 1])
         }
-        onChange={ (_, value) => { this.setState({output_endtime: value}); } }
+        onChange={ (_, value) => { this.setState({ output_endtime: value }); }}
         label={_("Time (UTC)")}
       />;
     }

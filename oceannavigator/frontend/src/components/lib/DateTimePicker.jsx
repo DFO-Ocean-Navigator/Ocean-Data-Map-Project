@@ -16,18 +16,26 @@ class DateTimePicker extends React.PureComponent {
 
 
   render() {
+    let label = null;
+    if (this.props.label) {
+      label = <h2>{this.props.label}</h2>;
+    }
+
     return (
       <>
-        <h2>{this.props.label}</h2>
+        {label}
         
         <DatePicker
           selected={this.props.selected}
           minDate={this.props.minDate}
           maxDate={this.props.maxDate}
+          includeDates={this.props.includeDates}
           onChange={(value) => {
             this.props.onChange(this.props.id, value);
           }}
+          showTimeSelect={this.showTimeSelect}
           showMonthYearDropdown={this.showMonthYearPicker}
+          inline={this.props.inline}
         />
       </>
     );
@@ -43,6 +51,12 @@ DateTimePicker.propTypes = {
   label: PropTypes.string,
   minDate: PropTypes.string,
   maxDate: PropTypes.string,
+  includeDates: PropTypes.array,
+  inline: PropTypes.bool,
+};
+
+DateTimePicker.defaultProps = {
+  inline: false,
 };
 
 export default DateTimePicker;

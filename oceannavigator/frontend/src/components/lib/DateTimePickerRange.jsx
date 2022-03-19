@@ -6,6 +6,11 @@ import DateTimePicker from "./DateTimePicker";
 import { withTranslation } from "react-i18next";
 
 class DateTimePickerRange extends React.PureComponent {
+
+  randomString() {
+    Math.random().toString(36).substring(2, 5)
+  }
+
   render() {
     _("Start Time (UTC)");
     _("End Time (UTC)");
@@ -13,26 +18,24 @@ class DateTimePickerRange extends React.PureComponent {
     return (
       <>
         <DateTimePicker
-          // eslint-disable-next-line max-len
-          key={`datetimepickerrange-starttime-${Math.random().toString(36).substring(2, 5)}`}
+          key={`datetimepickerrange-starttime-${this.randomString()}`}
           id='starttime'
           quantum={this.props.quantum}
           selected={this.props.selectedStart}
           minDate={this.props.minDate}
           maxDate={this.props.selectedEnd}
-          onChange={this.onUpdate}
+          onChange={this.props.onChange}
           label={_("Start Time (UTC)")}
         />
 
         <DateTimePicker
-          // eslint-disable-next-line max-len
-          key={`datetimepickerrange-endtime-${Math.random().toString(36).substring(2, 5)}`}
+          key={`datetimepickerrange-endtime-${this.randomString()}`}
           id='time'
           quantum={this.props.quantum}
           selected={this.props.selectedEnd}
           minDate={this.props.selectedStart}
           maxDate={this.props.maxDate}
-          onChange={this.onUpdate}
+          onChange={this.props.onChange}
           label={_("End Time (UTC)")}
         />
       </>

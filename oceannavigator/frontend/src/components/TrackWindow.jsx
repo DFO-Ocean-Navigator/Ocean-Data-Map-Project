@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 
 import DateTimePickerRange from "./lib/DateTimePickerRange.jsx";
 
-import { GetObsTrackTimeRange } from "../remote/OceanNavigator.js";
+import { GetObsTrackTimeRangePromise } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -47,7 +47,7 @@ class TrackWindow extends React.Component {
   }
 
   componentDidMount() {
-    GetObsTrackTimeRange(this.props.track).then(result => {
+    GetObsTrackTimeRangePromise(this.props.track).then(result => {
       const data = result.data;
 
       this.setState({

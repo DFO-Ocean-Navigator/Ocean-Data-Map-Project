@@ -69,8 +69,14 @@ export function GetPresetAreasPromise() {
   );
 }
 
-export function GetObsTrackTimeRange(trackId) {
+export function GetObsTrackTimeRangePromise(trackId) {
   return instance.get(
     `/api/v1.0/observation/tracktimerange/${trackId}.json`
+  );
+}
+
+export function GetClass4Promise() {
+  return instance.get(
+    "/api/v1.0/class4/"
   );
 }

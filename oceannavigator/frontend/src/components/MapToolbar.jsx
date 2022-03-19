@@ -12,18 +12,16 @@ import EnterArea from "./EnterArea.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import PropTypes from "prop-types";
 
+import DateTimePicker from "./lib/DateTimePicker.jsx";
+
 import { 
   GetPresetPointsPromise,
   GetPresetLinesPromise,
-  GetPresetAreasPromise 
+  GetPresetAreasPromise, 
+  GetClass4Promise
 } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
-
-import "jquery-ui-css/base.css";
-import "jquery-ui-css/datepicker.css";
-import "jquery-ui-css/theme.css";
-import "jquery-ui/datepicker";
 
 class MapToolbar extends React.Component {
   constructor(props) {
@@ -33,25 +31,25 @@ class MapToolbar extends React.Component {
       pointFiles: [],
       lineFiles: [],
       areaFiles: [],
-      class4Files: {},
+      class4Files: new Map(),
+      class4Current: null,
       parser: null,
       showDriftersSelect: false,
       showPointCoordModal: false,
       showLineCoordModal: false,
       showAreaCoordModal: false,
-      observationSelection: {
-      },
+      observationSelection: {},
       drifterList: [],
     };
 
     // Function bindings
     this.buttonHandler = this.buttonHandler.bind(this);
+    this.handleClass4Selection = this.handleClass4Selection.bind(this);
     this.pointSelect = this.pointSelect.bind(this);
     this.observationSelect = this.observationSelect.bind(this);
     this.lineSelect = this.lineSelect.bind(this);
     this.areaSelect = this.areaSelect.bind(this);
     this.class4ButtonHandler = this.class4ButtonHandler.bind(this);
-    this.class4Select = this.class4Select.bind(this);
     this.observationSelectMenu = this.observationSelectMenu.bind(this);
     this.drifterSelect = this.drifterSelect.bind(this);
     this.setDrifterSelection = this.setDrifterSelection.bind(this);
@@ -75,6 +73,9 @@ class MapToolbar extends React.Component {
   }
   
   class4ButtonHandler() {
+
+
+
     const button = $(ReactDOM.findDOMNode(this.class4button));
     if (this.class4Picker && this.class4Picker.is(":visible")) {
       this.class4Picker.hide();
@@ -87,7 +88,7 @@ class MapToolbar extends React.Component {
         beforeShowDay: this.beforeShowDay.bind(this),
         regional: this.props.i18n.language,
         onSelect: function(text, picker) {
-          this.props.action("show", "class4", this.state.class4Files[text]);
+          this.props.action("show", "class4", this.state.class4Files.get(text));
           this.class4Picker.hide();
         }.bind(this),
         defaultDate: this.state.class4Current,
@@ -98,15 +99,6 @@ class MapToolbar extends React.Component {
       this.class4Picker.show();
     }
     this.forceUpdate();
-  }
-
-  beforeShowDay(d) {
-    const formatted = $.datepicker.formatDate("yy-mm-dd", d);
-    return [
-      this.state.class4Files.hasOwnProperty(formatted),
-      "",
-      null
-    ];
   }
 
   componentDidMount() {
@@ -137,23 +129,25 @@ class MapToolbar extends React.Component {
       console.error(error);
     });
 
-    $.ajax({
-      url: "/api/v1.0/class4/",
-      dataType: "json",
-      cache: true,
-      success: function(data) {
-        this.setState({
-          class4Files: data.reduce(function(map, obj) {
-            map[obj.name] = obj.id;
-            return map;
-          }, {}),
-          class4Current: data[0].name,
-        });
-      }.bind(this),
-      error: function(r, status, err) {
-        console.error(`Failed to get class4: ${status}`);
-      }
+    GetClass4Promise().then(result => {
+      const data = result.data;
+
+      this.setState({
+        class4Files: new Map(data.map(d => [d.name, d.id])),
+        class4Current: data[0].name,
+      });
+    },
+    error => {
+      console.error(error);
     });
+  }
+
+  handleClass4Selection(key) {
+    this.setState({ class4Current: key });
+
+    const class4Id = this.state.class4Files.get(key);
+
+    this.props.action("show", "class4", class4Id);
   }
 
   // Handles when an option is clicked in the Point dropdown button
@@ -261,11 +255,6 @@ class MapToolbar extends React.Component {
         this.props.action("show", "areas", key);
         break;
     }
-  }
-
-  // Class4 selection
-  class4Select(key) {
-    this.props.action("show", "class4", key);
   }
 
   // When an option is clicked from the drifter button
@@ -652,11 +641,17 @@ class MapToolbar extends React.Component {
               id="class4"
               name="class4"
               title={<span><Icon icon="calculator" /> {_("Class4")}</span>}
-              onClick={this.class4ButtonHandler}
-              ref={(b) => this.class4button = b}
             >
               <MenuItem>
-                <div ref={(d) => this.class4div = d}/>
+                <DateTimePicker
+                  key="class4-datetimepicker"
+                  id="class4Current"
+                  quantum="day"
+                  selected={this.state.class4Current}
+                  includeDates={Array.from(this.state.class4Files.keys())}
+                  onChange={this.handleClass4Selection}
+                  inline
+                />
               </MenuItem>
             </NavDropdown>
             <NavDropdown
