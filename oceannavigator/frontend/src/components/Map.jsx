@@ -1311,7 +1311,6 @@ export default class Map extends React.PureComponent {
         function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
-      this.setState({lonlat: lonlat_vector});
     }.bind(this));
     this.map.addInteraction(draw);
   }
