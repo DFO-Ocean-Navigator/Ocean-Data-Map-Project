@@ -976,9 +976,13 @@ export default class Map extends React.PureComponent {
       ) {
         this.selectedFeatures.clear();
         this.selectedFeatures.push(e.selected[0]);
+      } 
+      if (e.selected.length == 0){
+        this.props.updateState("plotEnabled", true);
+        this.props.action("point", this.state.lonlat);  
       }
       pushSelection();
-
+  
       if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
         this.props.action("plot");
       }
@@ -1267,7 +1271,7 @@ export default class Map extends React.PureComponent {
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]], "multipoint_click");
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
-      this.props.action("point", lonlat_vector);    //This function has the sole responsibility for opening the point window
+      this.props.action("point", lonlat_vector);    
       this._drawing = false;
       setTimeout(
         function () { this.controlDoubleClickZoom(true); }.bind(this),
@@ -1311,7 +1315,6 @@ export default class Map extends React.PureComponent {
         function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
-      this.setState({lonlat: lonlat_vector});
     }.bind(this));
     this.map.addInteraction(draw);
   }
