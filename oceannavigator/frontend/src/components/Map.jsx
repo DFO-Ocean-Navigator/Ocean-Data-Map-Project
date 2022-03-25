@@ -1700,7 +1700,7 @@ export default class Map extends React.PureComponent {
   }
 
   add(type, data, name) {
-    if ((name!="multipoint_click") && (this._mounted)) {
+    if ((name !== "multipoint_click") && (this._mounted)) {
       this.resetMap();
     }
     var geom;
