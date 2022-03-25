@@ -579,7 +579,7 @@ class OceanNavigator extends React.Component {
         modalTitle = "";
         break;
     }
-    if (this.state.modal !="point" && this.state.names && this.state.names.length > 0) {
+    if (this.state.modal !== "point" && this.state.names && this.state.names.length > 0) {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
 
