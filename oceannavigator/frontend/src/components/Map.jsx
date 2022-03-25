@@ -1266,7 +1266,7 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
-      let lonlat_vector = [...this.state.lonlat, [lonlat[1], lonlat[0]]]
+      const drawn_lonlats = [...this.state.lonlat, [lonlat[1], lonlat[0]] ];
       // Draw point on map(s)
       this.props.action("add", "point", [[lonlat[1], lonlat[0]]], "multipoint_click");
       this.props.updateState("plotEnabled", true);
