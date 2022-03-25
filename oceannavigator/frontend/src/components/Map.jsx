@@ -168,7 +168,7 @@ export default class Map extends React.PureComponent {
 
     this.state = {
       location: [0, 90],
-      lonlat: []
+      latlon: []
     };
 
     this.scaleViewer = new app.ScaleViewer({
@@ -967,6 +967,7 @@ export default class Map extends React.PureComponent {
       this.props.updateState(t, content);
       this.props.updateState("modal", t);
       this.props.updateState("names", names);
+      this.props.updateState("plotEnabled", false);
 
     }.bind(this);
 
@@ -979,7 +980,7 @@ export default class Map extends React.PureComponent {
       } 
       if (e.selected.length == 0) {
         this.props.updateState("plotEnabled", true);
-        this.props.action("point", this.state.lonlat);  
+        this.props.action("point", this.state.latlon);  
       }
       pushSelection();
   
@@ -1143,7 +1144,7 @@ export default class Map extends React.PureComponent {
     this.obsDrawSource.clear();
     this.overlay.setPosition(undefined);
     this.infoOverlay.setPosition(undefined);
-    this.setState({lonlat: []});
+    this.setState({latlon: []});
   }
 
   removeMapInteractions(type) {
@@ -1265,19 +1266,21 @@ export default class Map extends React.PureComponent {
     draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
-      const drawn_lonlats = [...this.state.lonlat, [lonlat[1], lonlat[0]] ];
+      const latlon = olproj
+      .transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326")
+      .reverse(); 
+      const drawn_latlons = [...this.state.latlon, latlon];
       // Draw point on map(s)
-      this.props.action("add", "point", [[lonlat[1], lonlat[0]]], "multipoint_click");
+      this.props.action("add", "point", [latlon], "multipoint_click"); //[[latlon[0], latlon[1]]]
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
-      this.props.action("point", lonlat_vector);    
+      this.props.action("point", drawn_latlons);    
       this._drawing = false;
       setTimeout(
         function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
-      this.setState({lonlat: lonlat_vector});
+      this.setState({latlon: drawn_latlons});
     }.bind(this));
     this.map.addInteraction(draw);
   }

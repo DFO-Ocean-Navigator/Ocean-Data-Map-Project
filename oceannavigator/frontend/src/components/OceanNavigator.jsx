@@ -135,7 +135,7 @@ class OceanNavigator extends React.Component {
   }
 
   // Turns off map drawing
-  removeMapInteraction(mode = "All") {
+  removeMapInteraction(mode = "DrawPoints") {
      if (this.mapComponent){
       this.mapComponent.removeMapInteractions(mode);
     }

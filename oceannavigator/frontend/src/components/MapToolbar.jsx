@@ -922,6 +922,7 @@ MapToolbar.propTypes = {
   toggleOptionsSidebar: PropTypes.func,
   showObservationSelect: PropTypes.bool,
   observationArea: PropTypes.array,
+  disablePlotInteraction: PropTypes.func,
 };
 
 export default withTranslation()(MapToolbar);
