@@ -977,7 +977,7 @@ export default class Map extends React.PureComponent {
         this.selectedFeatures.clear();
         this.selectedFeatures.push(e.selected[0]);
       } 
-      if (e.selected.length == 0){
+      if (e.selected.length == 0) {
         this.props.updateState("plotEnabled", true);
         this.props.action("point", this.state.lonlat);  
       }
