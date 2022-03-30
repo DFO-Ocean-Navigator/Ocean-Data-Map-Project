@@ -8,6 +8,7 @@ import pickle
 import shutil
 import sqlite3
 import sys
+import tempfile
 from io import BytesIO
 
 import geojson
@@ -119,8 +120,7 @@ def test_sentry():
 @bp_v1_0.route("/api/dump-heap-memory", methods=["GET"])
 def dump_heap_memory():
 
-    filename = f"/tmp/onav_memory_dump_{datetime.datetime.now()}.pickle"
-    with open(filename, "wb") as dump:
+    with tempfile.NamedTemporaryFile() as dump:
         xs = []
         for obj in gc.get_objects():
             i = id(obj)
@@ -134,7 +134,12 @@ def dump_heap_memory():
                 xs.append({"id": i, "class": cls, "size": size, "referents": referents})
         pickle.dump(xs, dump)
 
-    return send_file(filename, as_attachment=True, mimetype="application/octet-stream")
+        return send_file(
+            dump.name,
+            download_name=f"onav_memory_dump_{datetime.datetime.now()}.pickle",
+            as_attachment=True,
+            mimetype="application/octet-stream",
+        )
 
 
 @bp_v1_0.route("/api/v1.0/generatescript/")
