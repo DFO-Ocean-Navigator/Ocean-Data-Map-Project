@@ -86,8 +86,8 @@ class AreaWindow extends React.Component {
       output_endtime: props.dataset_0.time,
       output_format: "NETCDF4", // Subset output format
       outputDatasetTimestamps: [],
-      outputNcTimestampDateTimeMap: null,
-      outputDateTimeNCTimestampMap: null,
+      outputNcTimestampDateTimeMap: new Map(),
+      outputDateTimeNCTimestampMap: new Map(),
       zip: false, // Should subset file(s) be zipped
     };
 
