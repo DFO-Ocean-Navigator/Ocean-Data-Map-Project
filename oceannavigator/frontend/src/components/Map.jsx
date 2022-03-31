@@ -1407,7 +1407,7 @@ export default class Map extends React.PureComponent {
       default:
         source = new olsource.XYZ({
           url: (
-            `/api/v1.0/tiles/bath/${currentBathy}` +
+            `/api/v1.0/tiles/bath/${currentProj}` +
             "/{z}/{x}/{y}.png"
           ),
           projection: currentProj,
