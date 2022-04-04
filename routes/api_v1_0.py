@@ -1,10 +1,14 @@
 import base64
 import datetime
+import gc
 import gzip
 import json
 import os
+import pickle
 import shutil
 import sqlite3
+import sys
+import tempfile
 from io import BytesIO
 
 import geojson
@@ -111,6 +115,31 @@ def test_sentry():
     # operating correctly; a transaction should appear in the appropriate project at:
     # https://sentry.io/organizations/dfo-ocean-navigator/performance/
     raise APIError("This is the Ocean Navigator API Sentry integration test endpoint.")
+
+
+@bp_v1_0.route("/api/dump-heap-memory", methods=["GET"])
+def dump_heap_memory():
+
+    with tempfile.NamedTemporaryFile() as dump:
+        xs = []
+        for obj in gc.get_objects():
+            i = id(obj)
+            size = sys.getsizeof(obj, 0)
+            #    referrers = [id(o) for o in gc.get_referrers(obj) if hasattr(o, '__class__')]
+            referents = [
+                id(o) for o in gc.get_referents(obj) if hasattr(o, "__class__")
+            ]
+            if hasattr(obj, "__class__"):
+                cls = str(obj.__class__)
+                xs.append({"id": i, "class": cls, "size": size, "referents": referents})
+        pickle.dump(xs, dump)
+
+        return send_file(
+            dump.name,
+            download_name=f"onav_memory_dump_{datetime.datetime.now()}.pickle",
+            as_attachment=True,
+            mimetype="application/octet-stream",
+        )
 
 
 @bp_v1_0.route("/api/v1.0/generatescript/")
