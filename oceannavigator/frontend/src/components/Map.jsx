@@ -1267,8 +1267,9 @@ export default class Map extends React.PureComponent {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
       const latlon = olproj
-      .transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326")
-      .reverse(); 
+            .transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326")
+            .reverse(); 
+
       const drawn_latlons = [...this.state.latlon, latlon];
       // Draw point on map(s)
       this.props.action("add", "point", [latlon], "multipoint_click"); //[[latlon[0], latlon[1]]]
