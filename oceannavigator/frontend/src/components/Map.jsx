@@ -1272,7 +1272,7 @@ export default class Map extends React.PureComponent {
 
       const drawn_latlons = [...this.state.latlon, latlon];
       // Draw point on map(s)
-      this.props.action("add", "point", [latlon], "multipoint_click"); //[[latlon[0], latlon[1]]]
+      this.props.action("add", "point", [latlon], "multipoint_click");
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
       this.props.action("point", drawn_latlons);    
