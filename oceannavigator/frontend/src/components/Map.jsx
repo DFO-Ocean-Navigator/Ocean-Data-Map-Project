@@ -258,7 +258,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ollayer.Tile(
       {
-        preload: 7,
+        preload: 1,
         source: new olsource.XYZ({
           attributions: [
             new olcontrol.Attribution({
@@ -277,7 +277,7 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: 7,
+        preload: 1,
     });
 
     // MBTiles Land shapes (high res)
@@ -1022,7 +1022,7 @@ export default class Map extends React.PureComponent {
         const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
 
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -1035,7 +1035,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -1048,7 +1048,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
