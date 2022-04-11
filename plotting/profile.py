@@ -113,16 +113,16 @@ class ProfilePlotter(PointPlotter):
 
         # Render point location
         if self.showmap:
-            plt.subplot(gs[0, subplot])
-            subplot += 1
             utils.point_plot(
                 np.array(
                     [
                         [x[0] for x in self.points],  # Latitudes
-                        [x[1] for x in self.points],
+                        [x[1] for x in self.points],  # Longitudes
                     ]
-                )
-            )  # Longitudes
+                ),
+                gs[0, subplot],
+            )
+            subplot += 1
 
         is_y_label_plotted = False
         # Create a subplot for each variable selected
