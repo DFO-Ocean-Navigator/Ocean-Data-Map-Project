@@ -7,6 +7,7 @@ import os
 import pickle
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 from io import BytesIO
@@ -141,6 +142,13 @@ def dump_heap_memory():
             mimetype="application/octet-stream",
         )
 
+@bp_v1_0.route('/api/v1.0/gitversion')
+def git_version():
+    """
+    Returns the current Git hash of the application.
+    """
+    git_version = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+    return jsonify(git_version)
 
 @bp_v1_0.route("/api/v1.0/generatescript/")
 def generateScript():
