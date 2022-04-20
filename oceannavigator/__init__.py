@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import tempfile
 from sys import argv
 
@@ -62,6 +63,9 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
     app.add_url_rule("/", "root", lambda: app.send_static_file("index.html"))
     app.config.from_pyfile("oceannavigator.cfg", silent=False)
     app.config.from_envvar("OCEANNAVIGATOR_SETTINGS", silent=True)
+    app.git_version = (
+        subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+    )
     app.testing = testing
 
     if app.config.get("WSGI_PROFILING"):

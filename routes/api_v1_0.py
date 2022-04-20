@@ -7,7 +7,6 @@ import os
 import pickle
 import shutil
 import sqlite3
-import subprocess
 import sys
 import tempfile
 from io import BytesIO
@@ -147,8 +146,7 @@ def git_version():
     """
     Returns the current Git hash of the application.
     """
-    git_version = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
-    return jsonify(git_version)
+    return jsonify(current_app.git_version)
 
 @bp_v1_0.route("/api/v1.0/generatescript/")
 def generateScript():
@@ -1441,9 +1439,10 @@ def after_request(response):
     header = response.headers
     # Relying on iptables to keep this safe
     header["Access-Control-Allow-Origin"] = "*"
+    header["Git-Version"] = current_app.git_version
     header["X-XSS-Protection"] = "1; mode=block"
     header["X-Frame-Options"] = "SAMEORIGIN"
-
+    
     return response
 
 
