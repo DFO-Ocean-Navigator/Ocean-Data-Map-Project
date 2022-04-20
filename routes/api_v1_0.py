@@ -1442,7 +1442,7 @@ def after_request(response):
     header["X-ONav-Git-Version"] = current_app.git_version
     header["X-XSS-Protection"] = "1; mode=block"
     header["X-Frame-Options"] = "SAMEORIGIN"
-    
+
     return response
 
 
