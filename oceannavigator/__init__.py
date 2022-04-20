@@ -6,6 +6,7 @@ from sys import argv
 import dask
 import sentry_sdk
 from flask import Flask, request, send_file
+from flask.logging import default_handler
 from flask_babel import Babel
 from flask_compress import Compress
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -39,7 +40,18 @@ def config_dask(app) -> None:
     )
 
 
+def configure_log_formatter() -> None:
+    default_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+
+
 def create_app(testing: bool = False, dataset_config_path: str = ""):
+    configure_log_formatter()
+
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
         integrations=[FlaskIntegration()],
@@ -73,13 +85,6 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
             f"{ASCIITerminalColors.WARNING}[Warning] -- Cached files will NOT be cleaned after tests complete: {cache_dir} AND {tile_dir}{ASCIITerminalColors.ENDC}"  # noqa: E501
         )
 
-    # Customize Flask debug logger message format
-    app.logger.handlers[0].setFormatter(
-        logging.Formatter(
-            "%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-    )
     db.init_app(app)
 
     datasetConfig = argv[-1]
