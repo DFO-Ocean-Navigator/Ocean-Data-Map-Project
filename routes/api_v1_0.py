@@ -1439,7 +1439,7 @@ def after_request(response):
     header = response.headers
     # Relying on iptables to keep this safe
     header["Access-Control-Allow-Origin"] = "*"
-    header["Git-Version"] = current_app.git_version
+    header["X-ONav-Git-Version"] = current_app.git_version
     header["X-XSS-Protection"] = "1; mode=block"
     header["X-Frame-Options"] = "SAMEORIGIN"
     
