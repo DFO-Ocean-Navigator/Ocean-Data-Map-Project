@@ -63,10 +63,15 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
     app.add_url_rule("/", "root", lambda: app.send_static_file("index.html"))
     app.config.from_pyfile("oceannavigator.cfg", silent=False)
     app.config.from_envvar("OCEANNAVIGATOR_SETTINGS", silent=True)
-    app.git_version = (
+    app.testing = testing
+    app.git_hash = (
         subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
     )
-    app.testing = testing
+    app.git_tag = (
+        subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"])
+        .decode("ascii")
+        .strip()
+    )
 
     if app.config.get("WSGI_PROFILING"):
         if not os.path.isdir("./profiler_results"):
