@@ -239,8 +239,10 @@ class Plotter(metaclass=ABCMeta):
                 size="small",
                 va="top",
             )
-
+ 
         with contextlib.closing(BytesIO()) as buf:
+            import time
+            start_time = time.time()
             plt.savefig(
                 buf,
                 format=self.filetype,
@@ -251,6 +253,7 @@ class Plotter(metaclass=ABCMeta):
             plt.close(fig)
 
             buf.seek(0)
+            print(f"**********************plt.savefig time: {time.time() - start_time}**********************")
             return (buf.getvalue(), self.mime, self.filename)
 
     def csv(self, header=[], columns=[], data=[]):
