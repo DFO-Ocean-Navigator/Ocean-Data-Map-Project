@@ -10,8 +10,9 @@ def bearing(lat0, lon0, lat1, lon1):
     lat1_rad = np.radians(lat1)
     diff_rad = np.radians(lon1 - lon0)
     x = np.cos(lat1_rad) * np.sin(diff_rad)
-    y = np.cos(lat0_rad) * np.sin(lat1_rad) - np.sin(
-        lat0_rad) * np.cos(lat1_rad) * np.cos(diff_rad)
+    y = np.cos(lat0_rad) * np.sin(lat1_rad) - np.sin(lat0_rad) * np.cos(
+        lat1_rad
+    ) * np.cos(diff_rad)
     b = np.arctan2(x, y)
     return np.degrees(b)
 
@@ -22,8 +23,14 @@ def path_to_points(points, n=100, times=None):
 
     if len(times) != len(points):
         if isinstance(times[0], datetime.datetime):
-            times = times[0] + np.array([datetime.timedelta(0, d) for d in np.linspace(
-                    0, (times[-1] - times[0]).total_seconds(), num=len(points))])
+            times = times[0] + np.array(
+                [
+                    datetime.timedelta(0, d)
+                    for d in np.linspace(
+                        0, (times[-1] - times[0]).total_seconds(), num=len(points)
+                    )
+                ]
+            )
         else:
             times = np.linspace(times[0], times[-1], num=len(points))
 
@@ -41,8 +48,7 @@ def path_to_points(points, n=100, times=None):
     output_time = []
 
     for index, pair in enumerate(tuples):
-        n_pts = int(np.ceil(n * (distance_between[index] /
-                                 total_distance)))
+        n_pts = int(np.ceil(n * (distance_between[index] / total_distance)))
         n_pts = np.clip(n_pts, 2, n)
         p = list(map(geopy.Point, pair[0:2]))
 
@@ -55,10 +61,9 @@ def path_to_points(points, n=100, times=None):
         latitude.extend(p_lat)
         longitude.extend(p_lon)
         bearings.extend([b] * len(p_dist))
-        output_time.extend([
-            pair[2] + i * (pair[3] - pair[2]) / (n_pts - 1)
-            for i in range(0, n_pts)
-        ])
+        output_time.extend(
+            [pair[2] + i * (pair[3] - pair[2]) / (n_pts - 1) for i in range(0, n_pts)]
+        )
     return distance, output_time, latitude, longitude, bearings
 
 

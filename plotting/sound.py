@@ -11,19 +11,18 @@ from plotting.ts import TemperatureSalinityPlotter
 
 
 class SoundSpeedPlotter(TemperatureSalinityPlotter):
-
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "sound"
 
-        super(
-            SoundSpeedPlotter, self).__init__(dataset_name, query,
-                                              **kwargs)
+        super(SoundSpeedPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
         super(SoundSpeedPlotter, self).load_data()
 
-        self.pressure = [seawater.pres(self.temperature_depths[idx], ll[0])
-                         for idx, ll in enumerate(self.points)]
+        self.pressure = [
+            seawater.pres(self.temperature_depths[idx], ll[0])
+            for idx, ll in enumerate(self.points)
+        ]
 
         ureg = pint.UnitRegistry()
         try:
@@ -35,14 +34,13 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             u = ureg.kelvin
 
         if u == ureg.kelvin:
-            temperature_c = ureg.Quantity(
-                self.temperature, u).to(ureg.celsius).magnitude
+            temperature_c = (
+                ureg.Quantity(self.temperature, u).to(ureg.celsius).magnitude
+            )
         else:
             temperature_c = self.temperature
 
-        self.sspeed = seawater.svel(
-            self.salinity, temperature_c, self.pressure
-        )
+        self.sspeed = seawater.svel(self.salinity, temperature_c, self.pressure)
 
     def plot(self):
         # Create base figure
@@ -59,34 +57,44 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Render point location
         if self.showmap:
             plt.subplot(gs[0, 0])
-            utils.point_plot(np.array([[x[0] for x in self.points],  # Latitudes
-                                       [x[1] for x in self.points]]))  # Longitudes
+            utils.point_plot(
+                np.array(
+                    [
+                        [x[0] for x in self.points],  # Latitudes
+                        [x[1] for x in self.points],
+                    ]
+                )
+            )  # Longitudes
 
         # Plot Sound Speed profile
         plt.subplot(gs[:, 1 if self.showmap else 0])
         ax = plt.gca()
         for i, ss in enumerate(self.sspeed):
-            ax.plot(ss, self.temperature_depths[i], '-')
+            ax.plot(ss, self.temperature_depths[i], "-")
 
         minspeed = np.amin(self.sspeed)
         maxspeed = np.amax(self.sspeed)
 
-        ax.set_xlim([
-            np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
-            np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
-        ])
+        ax.set_xlim(
+            [
+                np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
+                np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
+            ]
+        )
         ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         ax.invert_yaxis()
-        ax.xaxis.set_ticks_position('top')
-        ax.xaxis.set_label_position('top')
+        ax.xaxis.set_ticks_position("top")
+        ax.xaxis.set_label_position("top")
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
 
         if not self.plotTitle:
-            ax.set_title(gettext("Sound Speed Profile for (%s)\n%s") % (
-                ", ".join(self.names), self.date_formatter(self.iso_timestamp)
-            ), fontsize=15)
+            ax.set_title(
+                gettext("Sound Speed Profile for (%s)\n%s")
+                % (", ".join(self.names), self.date_formatter(self.iso_timestamp)),
+                fontsize=15,
+            )
         else:
             ax.set_title(self.plotTitle, fontsize=15)
 
@@ -107,10 +115,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
-        header = [
-            ["Dataset", self.dataset_name],
-            ["Timestamp", self.iso_timestamp]
-        ]
+        header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
 
         columns = [
             "Latitude",
@@ -119,7 +124,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             "Pressure",
             "Salinity",
             "Temperature",
-            "Sound Speed"
+            "Sound Speed",
         ]
 
         data = []
@@ -129,16 +134,16 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             for idx2, val in enumerate(self.temperature[idx]):
                 if np.ma.is_masked(val):
                     break
-                data.append([
-                    "%0.4f" % p[0],
-                    "%0.4f" % p[1],
-                    "%0.1f" % self.temperature_depths[idx][idx2],
-                    "%0.1f" % self.pressure[idx][idx2],
-                    "%0.1f" % self.salinity[idx][idx2],
-                    "%0.1f" % self.temperature[idx][idx2],
-                    "%0.1f" % self.sspeed[idx][idx2]
-                ])
+                data.append(
+                    [
+                        "%0.4f" % p[0],
+                        "%0.4f" % p[1],
+                        "%0.1f" % self.temperature_depths[idx][idx2],
+                        "%0.1f" % self.pressure[idx][idx2],
+                        "%0.1f" % self.salinity[idx][idx2],
+                        "%0.1f" % self.temperature[idx][idx2],
+                        "%0.1f" % self.sspeed[idx][idx2],
+                    ]
+                )
 
-        return super(TemperatureSalinityPlotter, self).csv(
-            header, columns, data
-        )
+        return super(TemperatureSalinityPlotter, self).csv(header, columns, data)

@@ -4,8 +4,7 @@ from data.variable import Variable
 
 
 class VariableList(list):
-    """Subclass of `list` to hold values of type `Variable`.
-    """
+    """Subclass of `list` to hold values of type `Variable`."""
 
     def __getitem__(self, pos) -> Variable:
         if isinstance(pos, str):

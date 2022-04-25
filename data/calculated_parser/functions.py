@@ -54,7 +54,7 @@ def magnitude(a, b):
     Returns:
         np.ndarray -- magnitude of a and b
     """
-    return np.sqrt(a ** 2 + b ** 2)
+    return np.sqrt(a**2 + b**2)
 
 
 def bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
@@ -65,22 +65,17 @@ def bearing(north_vel: xr.DataArray, east_vel: xr.DataArray) -> xr.DataArray:
     Returns:
         xr.DataArray -- bearing of east_vel and north_vel
     """
-    
+
     east_vel = np.squeeze(east_vel)
     north_vel = np.squeeze(north_vel)
 
     bearing = np.arctan2(north_vel, east_vel)
     bearing = np.pi / 2.0 - bearing
-    bearing = xr.where(bearing < 0, bearing + 2*np.pi, bearing)
+    bearing = xr.where(bearing < 0, bearing + 2 * np.pi, bearing)
     bearing *= 180.0 / np.pi
 
     # Deal with undefined angles (where velocity is 0 or very close)
-    inds = np.where(
-            np.logical_and(
-                np.abs(east_vel) < 10e-6,
-                np.abs(north_vel) < 10e-6
-            )
-        )
+    inds = np.where(np.logical_and(np.abs(east_vel) < 10e-6, np.abs(north_vel) < 10e-6))
     bearing.values[inds] = np.nan
 
     return bearing
@@ -161,7 +156,7 @@ def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarra
 
 
 def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-    
+
     if not np.ma.is_masked(data):
         # Mask out NaN values to prevent an exception blow-up.
         masked = np.ma.masked_array(data, np.isnan(data))
@@ -172,8 +167,7 @@ def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarra
     return np.argmax(masked, axis=depth_axis)
 
 
-def oxygensaturation(temperature: np.ndarray,
-                     salinity: np.ndarray) -> np.ndarray:
+def oxygensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarray:
     """
     Calculate the solubility (saturation) of
     Oxygen (O2) in seawater.
@@ -187,8 +181,7 @@ def oxygensaturation(temperature: np.ndarray,
     return seawater.satO2(salinity, temperature)
 
 
-def nitrogensaturation(temperature: np.ndarray,
-                       salinity: np.ndarray) -> np.ndarray:
+def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarray:
     """
     Calculate the solubility (saturation) of
     Nitrogen (N2) in seawater.
@@ -202,10 +195,12 @@ def nitrogensaturation(temperature: np.ndarray,
     return seawater.satN2(salinity, temperature)
 
 
-def sspeed(depth: Union[np.ndarray, xr.Variable],
-           latitude: np.ndarray,
-           temperature: np.ndarray,
-           salinity: np.ndarray) -> np.ndarray:
+def sspeed(
+    depth: Union[np.ndarray, xr.Variable],
+    latitude: np.ndarray,
+    temperature: np.ndarray,
+    salinity: np.ndarray,
+) -> np.ndarray:
     """
     Calculates the speed of sound.
 
@@ -218,7 +213,8 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     press = __calc_pressure(depth, latitude)
 
@@ -226,7 +222,7 @@ def sspeed(depth: Union[np.ndarray, xr.Variable],
         # Need to pad press so it can broadcast against temperature and salinity.
         # eg. if using GIOPS and salinity has shape (3, 50, 3, 12) then press has
         # shape (50, 3). This logic pads press to give shape (1, 50, 3, 1).
-        for ax, val in enumerate(salinity.shape):  
+        for ax, val in enumerate(salinity.shape):
             if ax > press.ndim - 1 or press.shape[ax] != val:
                 press = np.expand_dims(press, axis=ax)
 
@@ -280,7 +276,8 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     press = __calc_pressure(depth, latitude)
 
@@ -288,18 +285,21 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
     return np.array(tempgradient)
 
 
-def __get_soniclayerdepth_mask(soundspeed: np.ndarray, min_depth_indices: np.ndarray) -> np.ndarray:  
+def __get_soniclayerdepth_mask(
+    soundspeed: np.ndarray, min_depth_indices: np.ndarray
+) -> np.ndarray:
     """
     Create mask which masks out values BELOW deep sound channel.
     """
 
-    mask = min_depth_indices.ravel()[..., np.newaxis] < np.arange(
-        soundspeed.shape[0])
+    mask = min_depth_indices.ravel()[..., np.newaxis] < np.arange(soundspeed.shape[0])
 
-    return  mask.T.reshape(soundspeed.shape)
+    return mask.T.reshape(soundspeed.shape)
 
 
-def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray) -> np.ndarray:
+def __soniclayerdepth_from_sound_speed(
+    soundspeed: np.ndarray, depth: np.ndarray
+) -> np.ndarray:
 
     min_indices = __find_depth_index_of_min_value(soundspeed)
 
@@ -309,7 +309,7 @@ def __soniclayerdepth_from_sound_speed(soundspeed: np.ndarray, depth: np.ndarray
 
     # Find sonic layer depth indices
     max_indices = __find_depth_index_of_max_value(soundspeed)
-    
+
     data = depth[max_indices]
 
     # Mask out surface depths, since sonic layer depth cannot physically
@@ -333,11 +333,14 @@ def soniclayerdepth(depth, latitude, temperature, salinity) -> np.ndarray:
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
-    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x)
-        sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
+    if len(sound_speed.shape) > 3:  # if true dims are (time, depth, y, x)
+        sound_speed = np.swapaxes(
+            sound_speed, 0, 1
+        )  # swap time and depth dims to ensure depth is 0th
 
     return __soniclayerdepth_from_sound_speed(sound_speed, depth)
 
@@ -357,11 +360,14 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     sound_speed = sspeed(depth, latitude, temperature, salinity)
-    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x) 
-        sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
+    if len(sound_speed.shape) > 3:  # if true dims are (time, depth, y, x)
+        sound_speed = np.swapaxes(
+            sound_speed, 0, 1
+        )  # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
@@ -390,15 +396,20 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     # Use masked array to quickly enable/disable data (see below)
-    sound_speed = np.ma.array(sspeed(depth, latitude, temperature, salinity), fill_value=np.nan)
-    if (len(sound_speed.shape) > 3): # if true dims are (time, depth, y, x) 
-        sound_speed = np.swapaxes(sound_speed,0,1) # swap time and depth dims to ensure depth is 0th
+    sound_speed = np.ma.array(
+        sspeed(depth, latitude, temperature, salinity), fill_value=np.nan
+    )
+    if len(sound_speed.shape) > 3:  # if true dims are (time, depth, y, x)
+        sound_speed = np.swapaxes(
+            sound_speed, 0, 1
+        )  # swap time and depth dims to ensure depth is 0th
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
-    
+
     sound_speed.mask = __get_soniclayerdepth_mask(sound_speed, min_indices)
 
     # Find sonic layer depth indices
@@ -408,8 +419,8 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     sound_speed_values_at_sonic_layer_depth = np.squeeze(
         np.take_along_axis(
             sound_speed,
-            max_indices[np.newaxis, :], # pad to equate number of dims to sound_speed
-            0 # apply along depth axis
+            max_indices[np.newaxis, :],  # pad to equate number of dims to sound_speed
+            0,  # apply along depth axis
         )
     )
 
@@ -420,11 +431,14 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     # Nearest neighbour
     # numpy broadcasting handles subtraction between 3D and 2D arrays
     min_difference = np.abs(
-            sound_speed - sound_speed_values_at_sonic_layer_depth
-        ).argmin(axis=0) # We can use argmin here because the fill_value of the masked arrays is np.nan
+        sound_speed - sound_speed_values_at_sonic_layer_depth
+    ).argmin(
+        axis=0
+    )  # We can use argmin here because the fill_value of the masked arrays is np.nan
 
     # Finito...LOOK MOM! NO LOOPS!!!
     return depth[min_difference]
+
 
 def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     """
@@ -440,7 +454,7 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
 
         * salinity: Salinity
 
-        * bathy: 
+        * bathy:
     """
 
     dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity)
@@ -448,99 +462,119 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     # Actually do the math.
     return dscb - bathy.data
 
-def calculate_del_C(depth:np.ndarray,soundspeed:np.ndarray,minima:np.ndarray,maxima:np.ndarray,freq_cutoff:float) -> np.ndarray:
+
+def calculate_del_C(
+    depth: np.ndarray,
+    soundspeed: np.ndarray,
+    minima: np.ndarray,
+    maxima: np.ndarray,
+    freq_cutoff: float,
+) -> np.ndarray:
     """
-     Calculate ΔC from a given sound profile and freq cutoff
-     Required Arguments:
-        * depth: The depth(s) in meters
-        * soundspeed: Speed of sound in m/s
-        * minima: Minima ndarray of Speed of sound, which contains the index where the minima occurs
-        * maxima: Maxima ndarray of Speed of sound,  which contains the index where the maxima occurs
-        * freq_cutoff: Desired frequency cutoff in Hz
-     Returns the value of ΔC, which will later be used inside the PSSC detection method
+    Calculate ΔC from a given sound profile and freq cutoff
+    Required Arguments:
+       * depth: The depth(s) in meters
+       * soundspeed: Speed of sound in m/s
+       * minima: Minima ndarray of Speed of sound, which contains the index where the minima occurs
+       * maxima: Maxima ndarray of Speed of sound,  which contains the index where the maxima occurs
+       * freq_cutoff: Desired frequency cutoff in Hz
+    Returns the value of ΔC, which will later be used inside the PSSC detection method
     """
     # Getting Cmin from the sound speed profile
-    first_minimum = np.empty_like(minima, dtype='int64')
+    first_minimum = np.empty_like(minima, dtype="int64")
     # TODO: need to look at alternative for the following operation
-    it = np.nditer(minima,flags=['refs_ok','multi_index'])
+    it = np.nditer(minima, flags=["refs_ok", "multi_index"])
     for x in it:
         array_size = x.tolist().size
-        first_minimum[it.multi_index]= x.tolist()[0] if array_size>0 else -1
-    Cmin = np.squeeze(np.take_along_axis(soundspeed, first_minimum[np.newaxis,:, :], axis=0))
-    Cmin[first_minimum==-1] = np.nan
-    #calculating delZ
-    first_maximum = np.empty_like(maxima, dtype='int64')
-    it = np.nditer(maxima,flags=['refs_ok','multi_index'])
+        first_minimum[it.multi_index] = x.tolist()[0] if array_size > 0 else -1
+    Cmin = np.squeeze(
+        np.take_along_axis(soundspeed, first_minimum[np.newaxis, :, :], axis=0)
+    )
+    Cmin[first_minimum == -1] = np.nan
+    # calculating delZ
+    first_maximum = np.empty_like(maxima, dtype="int64")
+    it = np.nditer(maxima, flags=["refs_ok", "multi_index"])
     for x in it:
         array_size = x.tolist().size
-        first_maximum[it.multi_index] =x.tolist()[0] if array_size>0 else -1 
+        first_maximum[it.multi_index] = x.tolist()[0] if array_size > 0 else -1
     channel_start_depth = depth[first_maximum]
-    channel_start_depth[first_maximum==-1] = np.nan
-    Cmax = np.squeeze(np.take_along_axis(soundspeed, first_maximum[np.newaxis,:, :], axis=0))
-    Cmax[first_minimum==-1] = np.nan
-    #channel_end_depth = np.apply_along_axis(np.interp,0, Cmax,soundspeed,depth) 
-    channel_end_depth = np.empty_like(Cmax,dtype='float')
-    it = np.nditer(Cmax,flags=['refs_ok','multi_index'])
+    channel_start_depth[first_maximum == -1] = np.nan
+    Cmax = np.squeeze(
+        np.take_along_axis(soundspeed, first_maximum[np.newaxis, :, :], axis=0)
+    )
+    Cmax[first_minimum == -1] = np.nan
+    # channel_end_depth = np.apply_along_axis(np.interp,0, Cmax,soundspeed,depth)
+    channel_end_depth = np.empty_like(Cmax, dtype="float")
+    it = np.nditer(Cmax, flags=["refs_ok", "multi_index"])
     for x in it:
-        channel_end_depth[it.multi_index] = np.interp(x, soundspeed[:,it.multi_index[0], it.multi_index[1]],depth)
-    del_Z = channel_end_depth-channel_start_depth
+        channel_end_depth[it.multi_index] = np.interp(
+            x, soundspeed[:, it.multi_index[0], it.multi_index[1]], depth
+        )
+    del_Z = channel_end_depth - channel_start_depth
     numerator = freq_cutoff * del_Z
     denominator = 0.2652 * Cmin
-    final_denom = numerator/denominator 
-    final_denom = np.power(final_denom,2)
-    delC = Cmin/final_denom
-    #print(delC)
+    final_denom = numerator / denominator
+    final_denom = np.power(final_denom, 2)
+    delC = Cmin / final_denom
+    # print(delC)
     return delC
 
-def potentialsubsurfacechannel(depth, latitude,temperature, salinity, freq_cutoff = 2755.03 )-> np.ndarray:  
+
+def potentialsubsurfacechannel(
+    depth, latitude, temperature, salinity, freq_cutoff=2755.03
+) -> np.ndarray:
     """
-     Detect if there is sub-surface channel. 
-     Required Arguments:
-        * depth: Depth in meters
-        * latitude: Latitude in degrees North
-        * temperature: Temperatures in Celsius
-        * salinity: Salinity
-        * freq_cutoff: Desired frequency cutoff in Hz
-     Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
+    Detect if there is sub-surface channel.
+    Required Arguments:
+       * depth: Depth in meters
+       * latitude: Latitude in degrees North
+       * temperature: Temperatures in Celsius
+       * salinity: Salinity
+       * freq_cutoff: Desired frequency cutoff in Hz
+    Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
     """
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
-        depth, latitude, temperature, salinity)
+        depth, latitude, temperature, salinity
+    )
 
     # Trimming the profile considering the depth above 1000m
-    depth = depth[depth<1000]
+    depth = depth[depth < 1000]
     depth_length = len(depth)
-    temp = temperature[0:depth_length,:,:]
-    sal =  salinity[0:depth_length,:,:]
+    temp = temperature[0:depth_length, :, :]
+    sal = salinity[0:depth_length, :, :]
     sound_speed = sspeed(depth, latitude, temp, sal)
-    minima = np.apply_along_axis(spsignal.find_peaks,0,-sound_speed)[0] 
-    maxima = np.apply_along_axis(spsignal.find_peaks,0, sound_speed)[0]
-    delC = calculate_del_C(depth,sound_speed,minima,maxima, freq_cutoff)
-    hasPSSC = np.zeros_like(minima, dtype='float')
-    
-    it = np.nditer(minima,flags=['refs_ok','multi_index'])
+    minima = np.apply_along_axis(spsignal.find_peaks, 0, -sound_speed)[0]
+    maxima = np.apply_along_axis(spsignal.find_peaks, 0, sound_speed)[0]
+    delC = calculate_del_C(depth, sound_speed, minima, maxima, freq_cutoff)
+    hasPSSC = np.zeros_like(minima, dtype="float")
+
+    it = np.nditer(minima, flags=["refs_ok", "multi_index"])
     for minima_array in it:
         minima_list = minima_array.tolist()
         maxima_list = maxima[it.multi_index].tolist()
-        if len(minima_list)>=2:
+        if len(minima_list) >= 2:
             p1 = 0
             p2 = minima[it.multi_index].tolist()[0]
-            if len(maxima_list) >=2:
+            if len(maxima_list) >= 2:
                 p1 = maxima_list[0]
                 p3 = maxima_list[1]
             else:
-                p3= maxima_list[0]
-            if p3 > p2: #if the only maximum is not higher in the water column than the minima
-                p1_sound_speed = sound_speed[p1,it.multi_index[0], it.multi_index[1]]
-                p2_sound_speed = sound_speed[p2,it.multi_index[0], it.multi_index[1]]
-                p3_sound_speed = sound_speed[p3,it.multi_index[0], it.multi_index[1]]
-                
-                c1 = abs(p1_sound_speed-p2_sound_speed) 
-                c2 = abs(p3_sound_speed-p2_sound_speed)
-                
-                if c1> delC[it.multi_index] and c2> delC[it.multi_index]: 
-                    hasPSSC[it.multi_index]= 1
-                                                        
+                p3 = maxima_list[0]
+            if (
+                p3 > p2
+            ):  # if the only maximum is not higher in the water column than the minima
+                p1_sound_speed = sound_speed[p1, it.multi_index[0], it.multi_index[1]]
+                p2_sound_speed = sound_speed[p2, it.multi_index[0], it.multi_index[1]]
+                p3_sound_speed = sound_speed[p3, it.multi_index[0], it.multi_index[1]]
+
+                c1 = abs(p1_sound_speed - p2_sound_speed)
+                c2 = abs(p3_sound_speed - p2_sound_speed)
+
+                if c1 > delC[it.multi_index] and c2 > delC[it.multi_index]:
+                    hasPSSC[it.multi_index] = 1
+
     return hasPSSC
+
 
 def _metpy(func, data, lat, lon, dim):
     """Wrapper for MetPy functions
@@ -558,7 +592,7 @@ def _metpy(func, data, lat, lon, dim):
         dims = data.dimensions
 
     dx, dy = metpy.calc.lat_lon_grid_deltas(np.array(lon), np.array(lat))
-    dim_order = "".join([d for d in dims if d in 'yx'])
+    dim_order = "".join([d for d in dims if d in "yx"])
 
     if dim_order == "yx":
         deltas = [dy, dx]
@@ -569,33 +603,33 @@ def _metpy(func, data, lat, lon, dim):
         axes = list(range(0, len(dims)))
         new_axes = list(axes)
         new_dims = list(dims)
-        if dim_order == 'yx':
-            new_axes += [new_axes.pop(new_dims.index('y'))]
-            new_dims += [new_dims.pop(new_dims.index('y'))]
-            new_axes += [new_axes.pop(new_dims.index('x'))]
-            new_dims += [new_dims.pop(new_dims.index('x'))]
-            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
-                                                                     len(dims))))]
+        if dim_order == "yx":
+            new_axes += [new_axes.pop(new_dims.index("y"))]
+            new_dims += [new_dims.pop(new_dims.index("y"))]
+            new_axes += [new_axes.pop(new_dims.index("x"))]
+            new_dims += [new_dims.pop(new_dims.index("x"))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0, len(dims))))]
         else:
-            new_axes += [new_axes.pop(new_dims.index('x'))]
-            new_dims += [new_dims.pop(new_dims.index('x'))]
-            new_axes += [new_axes.pop(new_dims.index('y'))]
-            new_dims += [new_dims.pop(new_dims.index('y'))]
-            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
-                                                                     len(dims))))]
+            new_axes += [new_axes.pop(new_dims.index("x"))]
+            new_dims += [new_dims.pop(new_dims.index("x"))]
+            new_axes += [new_axes.pop(new_dims.index("y"))]
+            new_dims += [new_dims.pop(new_dims.index("y"))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0, len(dims))))]
 
         data = np.transpose(np.array(data), new_axes)
 
         oshape = data.shape
         extra_axes = data.shape[:-2]
-        data = np.reshape(data, (functools.reduce(np.multiply, extra_axes),
-                                 *data.shape[-2:]))
+        data = np.reshape(
+            data, (functools.reduce(np.multiply, extra_axes), *data.shape[-2:])
+        )
 
         result = []
         for j in range(0, len(data)):
             result.append(
                 func(np.array(data[j]), deltas=deltas, dim_order=dim_order)[
-                    dim_order.index(dim)].magnitude
+                    dim_order.index(dim)
+                ].magnitude
             )
 
         result = np.array(result)
@@ -605,7 +639,9 @@ def _metpy(func, data, lat, lon, dim):
 
         return result
     else:
-        return func(np.array(data), deltas=deltas, dim_order=dim_order)[dim_order.index(dim)].magnitude
+        return func(np.array(data), deltas=deltas, dim_order=dim_order)[
+            dim_order.index(dim)
+        ].magnitude
 
 
 def _metpy_uv(func, u, v, lat, lon):
@@ -624,36 +660,32 @@ def _metpy_uv(func, u, v, lat, lon):
         dims = u.dimensions
 
     dx, dy = metpy.calc.lat_lon_grid_deltas(np.array(lon), np.array(lat))
-    dim_order = "".join([d for d in dims if d in 'yx'])
+    dim_order = "".join([d for d in dims if d in "yx"])
 
     if len(dims) > 2:
         axes = list(range(0, len(dims)))
         new_axes = list(axes)
         new_dims = list(dims)
-        if dim_order == 'yx':
-            new_axes += [new_axes.pop(new_dims.index('y'))]
-            new_dims += [new_dims.pop(new_dims.index('y'))]
-            new_axes += [new_axes.pop(new_dims.index('x'))]
-            new_dims += [new_dims.pop(new_dims.index('x'))]
-            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
-                                                                     len(dims))))]
+        if dim_order == "yx":
+            new_axes += [new_axes.pop(new_dims.index("y"))]
+            new_dims += [new_dims.pop(new_dims.index("y"))]
+            new_axes += [new_axes.pop(new_dims.index("x"))]
+            new_dims += [new_dims.pop(new_dims.index("x"))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0, len(dims))))]
         else:
-            new_axes += [new_axes.pop(new_dims.index('x'))]
-            new_dims += [new_dims.pop(new_dims.index('x'))]
-            new_axes += [new_axes.pop(new_dims.index('y'))]
-            new_dims += [new_dims.pop(new_dims.index('y'))]
-            restore_axes = [x for _, x in sorted(zip(new_axes, range(0,
-                                                                     len(dims))))]
+            new_axes += [new_axes.pop(new_dims.index("x"))]
+            new_dims += [new_dims.pop(new_dims.index("x"))]
+            new_axes += [new_axes.pop(new_dims.index("y"))]
+            new_dims += [new_dims.pop(new_dims.index("y"))]
+            restore_axes = [x for _, x in sorted(zip(new_axes, range(0, len(dims))))]
 
         u = np.transpose(np.array(u), new_axes)
         v = np.transpose(np.array(v), new_axes)
 
         oshape = u.shape
         extra_axes = u.shape[:-2]
-        u = np.reshape(u, (functools.reduce(
-            np.multiply, extra_axes), *u.shape[-2:]))
-        v = np.reshape(v, (functools.reduce(
-            np.multiply, extra_axes), *v.shape[-2:]))
+        u = np.reshape(u, (functools.reduce(np.multiply, extra_axes), *u.shape[-2:]))
+        v = np.reshape(v, (functools.reduce(np.multiply, extra_axes), *v.shape[-2:]))
 
         result = []
         for j in range(0, len(u)):
@@ -661,7 +693,10 @@ def _metpy_uv(func, u, v, lat, lon):
                 func(
                     np.array(u[j]) * units.meter / units.second,
                     np.array(v[j]) * units.meter / units.second,
-                    dx, dy, dim_order=dim_order).magnitude
+                    dx,
+                    dy,
+                    dim_order=dim_order,
+                ).magnitude
             )
 
         result = np.array(result)
@@ -692,17 +727,18 @@ def geostrophic_x(h, lat, lon):
     else:
         dims = h.dimensions
 
-    dim_order = "".join([d for d in dims if d in 'yx'])
+    dim_order = "".join([d for d in dims if d in "yx"])
 
     def f(heights, **kwargs):
         c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
         if dim_order == "yx":
-            dy, dx = kwargs['deltas']
+            dy, dx = kwargs["deltas"]
         else:
-            dx, dy = kwargs['deltas']
+            dx, dy = kwargs["deltas"]
 
-        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
-                                           dim_order=kwargs['dim_order'])
+        return metpy.calc.geostrophic_wind(
+            xr.DataArray(heights), c, dx, dy, dim_order=kwargs["dim_order"]
+        )
 
     return _metpy(f, h, lat, lon, dim_order[0])
 
@@ -723,17 +759,18 @@ def geostrophic_y(h, lat, lon):
     else:
         dims = h.dimensions
 
-    dim_order = "".join([d for d in dims if d in 'yx'])
+    dim_order = "".join([d for d in dims if d in "yx"])
 
     def f(heights, **kwargs):
         c = metpy.calc.coriolis_parameter(lat * _ureg.degrees)
         if dim_order == "yx":
-            dy, dx = kwargs['deltas']
+            dy, dx = kwargs["deltas"]
         else:
-            dx, dy = kwargs['deltas']
+            dx, dy = kwargs["deltas"]
 
-        return metpy.calc.geostrophic_wind(xr.DataArray(heights), c, dx, dy,
-                                           dim_order=kwargs['dim_order'])
+        return metpy.calc.geostrophic_wind(
+            xr.DataArray(heights), c, dx, dy, dim_order=kwargs["dim_order"]
+        )
 
     return _metpy(f, h, lat, lon, dim_order[1])
 
@@ -770,7 +807,7 @@ def gradient_x(d, lat, lon):
     lat -- an array of latitudes, the shape must match that of d
     lon -- an array of longitudes, the shape must match that of d
     """
-    return _metpy(metpy.calc.gradient, d, lat, lon, 'x')
+    return _metpy(metpy.calc.gradient, d, lat, lon, "x")
 
 
 def gradient_y(d, lat, lon):
@@ -781,4 +818,4 @@ def gradient_y(d, lat, lon):
     lat -- an array of latitudes, the shape must match that of d
     lon -- an array of longitudes, the shape must match that of d
     """
-    return _metpy(metpy.calc.gradient, d, lat, lon, 'y')
+    return _metpy(metpy.calc.gradient, d, lat, lon, "y")

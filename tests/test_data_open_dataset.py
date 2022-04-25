@@ -37,7 +37,11 @@ class TestOpenDataset(unittest.TestCase):
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_open_dataset_bad_model_class_raises(self, patch_get_dataset_config):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Foo", "variables": {}}
+            "giops": {
+                "url": "tests/testdata/mercator_test.nc",
+                "model_class": "Foo",
+                "variables": {},
+            }
         }
         config = DatasetConfig("giops")
 
@@ -50,7 +54,11 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
+            "giops": {
+                "url": "tests/testdata/mercator_test.nc",
+                "model_class": "Mercator",
+                "variables": {},
+            }
         }
         config = DatasetConfig("giops")
 
@@ -63,7 +71,11 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/nemo_test.nc", "model_class": "Nemo", "variables": {}}
+            "giops": {
+                "url": "tests/testdata/nemo_test.nc",
+                "model_class": "Nemo",
+                "variables": {},
+            }
         }
         config = DatasetConfig("giops")
 
@@ -76,28 +88,13 @@ class TestOpenDataset(unittest.TestCase):
         self, patch_calculated_data, patch_get_dataset_config
     ):
         patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/fvcom_test.nc", "model_class": "Fvcom", "variables": {}}
+            "giops": {
+                "url": "tests/testdata/fvcom_test.nc",
+                "model_class": "Fvcom",
+                "variables": {},
+            }
         }
         config = DatasetConfig("giops")
 
         with open_dataset(config) as ds:
             self.assertTrue(isinstance(ds, Fvcom))
-
-    @patch.object(DatasetConfig, "_get_dataset_config")
-    @patch.object(data.calculated, "CalculatedData")
-    def test_open_dataset_uses_lru_cache(self, patch_calculated_data, patch_get_dataset_config):
-        open_dataset.cache_clear()  # clear the cache from other test runs
-
-        patch_get_dataset_config.return_value = {
-            "giops": {"url": "tests/testdata/mercator_test.nc", "model_class": "Mercator", "variables": {}}
-        }
-        config = DatasetConfig("giops")
-
-        for i in range(0, 20):
-            with open_dataset(config) as ds:
-                pass
-
-        cache_info = open_dataset.cache_info()
-        self.assertEqual(cache_info.misses, 1)
-        self.assertEqual(cache_info.hits, 19)
-        self.assertEqual(cache_info.currsize, 1)

@@ -1,0 +1,44 @@
+name: Python tests
+
+
+on:
+  push:
+    branches: [ master, ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test-linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+      max-parallel: 5
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: 3.8
+    - name: Update environment
+      run: conda env update -f config/conda/environment.yml --name test
+    - name: Run tests
+      run: |
+        echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
+        conda activate test
+        ./run_python_tests.sh

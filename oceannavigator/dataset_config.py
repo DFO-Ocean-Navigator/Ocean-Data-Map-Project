@@ -8,6 +8,7 @@ from flask import current_app
 
 class DatasetConfig:
     """Access class for the dataset configuration"""
+
     __config = None
 
     def __init__(self, dataset: str) -> None:
@@ -17,7 +18,7 @@ class DatasetConfig:
     @staticmethod
     def get_datasets() -> list:
         """
-            Returns a list of the currently enabled datasets in the dataset config file
+        Returns a list of the currently enabled datasets in the dataset config file
         """
         config = DatasetConfig._get_dataset_config()
 
@@ -28,7 +29,7 @@ class DatasetConfig:
     def _get_dataset_config() -> dict:
         if DatasetConfig.__config is None:
             cwd = os.path.dirname(os.path.realpath(__file__))
-            with open(os.path.join(cwd, current_app.config['datasetConfig']), 'r') as f:
+            with open(os.path.join(cwd, current_app.config["datasetConfig"]), "r") as f:
                 DatasetConfig.__config = json.load(f)
 
         return DatasetConfig.__config
@@ -46,8 +47,9 @@ class DatasetConfig:
     @property
     def geo_ref(self) -> dict:
         """
-        Returns the dict of information about the ERDDAP dataset that provides the mapping of
-        grid index to lat/lon for the given dataset.
+        Returns the dict of information about the ERDDAP dataset
+        that provides the mapping of grid index to lat/lon for
+        the given dataset.
         """
         return self._get_attribute("geo_ref")
 
@@ -118,7 +120,7 @@ class DatasetConfig:
             return stride
 
         return 4
-    
+
     @property
     def model_class(self) -> str:
         return self._get_attribute("model_class")
@@ -151,12 +153,8 @@ class DatasetConfig:
         """
         # Strip any HTML from this
         try:
-            return re.sub(
-                r"<[^>]*>",
-                "",
-                self._get_attribute("attribution")
-            )
-        except:
+            return re.sub(r"<[^>]*>", "", self._get_attribute("attribution"))
+        except KeyError:
             return ""
 
     @property
@@ -173,18 +171,19 @@ class DatasetConfig:
     @property
     def variables(self) -> list:
         """
-            Returns a list of the variables for the specified dataset
-            not hidden in dataset config file
+        Returns a list of the variables for the specified dataset
+        not hidden in dataset config file
         """
         variables = []
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
-            is_vector = ',' in key
+            is_vector = "," in key
 
-            if (is_hidden is False or \
-                    is_hidden is None or \
-                    is_hidden in ['false', 'False']) and \
-                    not is_vector:
+            if (
+                is_hidden is False
+                or is_hidden is None
+                or is_hidden in ["false", "False"]
+            ) and not is_vector:
                 variables.append(key)
         return variables
 
@@ -194,24 +193,25 @@ class DatasetConfig:
         Returns any magnitude variables.
         """
         variables = {}
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
-            is_vector = 'mag' in key
+            is_vector = "mag" in key
 
-            if (is_hidden is False or \
-                    is_hidden is None or \
-                    is_hidden in ['false', 'False']) and \
-                    is_vector:
+            if (
+                is_hidden is False
+                or is_hidden is None
+                or is_hidden in ["false", "False"]
+            ) and is_vector:
                 variables[key] = data
         return variables
 
     @property
     def calculated_variables(self) -> dict:
         """
-            Returns a dict of the calculated variables for the specified dataset
+        Returns a dict of the calculated variables for the specified dataset
         """
         variables = {}
-        for key,data in self._get_attribute("variables").items():
+        for key, data in self._get_attribute("variables").items():
             if "equation" in data.keys():
                 variables[key] = data
         return variables
@@ -219,9 +219,9 @@ class DatasetConfig:
     @property
     def variable(self):
         """
-            Accessor for variables.
-            Returns a private class that implements __getitem__, so that
-            DatasetConfig.variable["variablename"] works.
+        Accessor for variables.
+        Returns a private class that implements __getitem__, so that
+        DatasetConfig.variable["variablename"] works.
         """
         return self._VariableGetter(self)
 
@@ -236,7 +236,7 @@ class DatasetConfig:
                 variable_name = key.key
             if variable_name in self._config.vector_variables:
                 return VectorVariableConfig(self._config, key)
-            
+
             return VariableConfig(self._config, key)
 
 
@@ -260,8 +260,9 @@ class VariableConfig:
             # will return None for any attribute. It extends a dict in case any
             # future code is added that will need any attributes populated.
             self._key = variable
+
             class attrdict(dict):
-                #def __init__(self, *args, **kwargs):
+                # def __init__(self, *args, **kwargs):
                 #    dict.__init__(self, *args, **kwargs)
                 #    self.__dict__ = self
                 def __getattr__(self, key):
@@ -295,7 +296,8 @@ class VariableConfig:
     @property
     def quantum(self) -> str:
         """
-        Returns the quantum (time scale) for the variable as defined in dataset config file
+        Returns the quantum (time scale) for
+        the variable as defined in dataset config file
 
         Returns:
             str -- variable quantum
@@ -306,7 +308,6 @@ class VariableConfig:
             quantum = None
 
         return quantum
-
 
     @property
     def unit(self) -> str:
@@ -338,8 +339,10 @@ class VariableConfig:
 
         if scale is not None:
             return scale
-        elif self._variable.valid_min is not None \
-                and self._variable.valid_max is not None:
+        elif (
+            self._variable.valid_min is not None
+            and self._variable.valid_max is not None
+        ):
             return [self._variable.valid_min, self._variable.valid_max]
         else:
             return [0, 100]
@@ -352,7 +355,7 @@ class VariableConfig:
 
         try:
             from_config = self.__get_attribute("hide")
-            return from_config in ['true', 'True'] or from_config == True
+            return from_config in ["true", "True"] or from_config is True
         except KeyError:
             return True
 
@@ -370,19 +373,22 @@ class VariableConfig:
         """
         try:
             from_config = self.__get_attribute("zero_centered")
-            return from_config in ['true', 'True'] or from_config == True
+            return from_config in ["true", "True"] or from_config is True
         except KeyError:
             return False
+
     @property
     def interpolation(self) -> dict:
         """
-        This will contain the variable specific interpolation config from the datasetconfig file
+        This will contain the variable specific interpolation
+        config from the datasetconfig file
         """
         try:
             interp_config = self.__get_attribute("interpolation")
             return interp_config
         except KeyError:
             return None
+
 
 class VectorVariableConfig(VariableConfig):
     """
@@ -401,11 +407,11 @@ class VectorVariableConfig(VariableConfig):
     def __get_attribute(self, attr):
         return self._config._get_attribute("variables")[self._key].get(attr)
 
-
     @property
     def east_vector_component(self) -> str:
         """
-        Returns the east_vector_component for the variable if defined in dataset config file
+        Returns the east_vector_component for the variable
+        if defined in dataset config file
 
         Returns:
             str -- east_vector_component name
@@ -417,11 +423,11 @@ class VectorVariableConfig(VariableConfig):
 
         return east_vector_component
 
-
     @property
     def north_vector_component(self) -> str:
         """
-        Returns the north_vector_component for the variable if defined in dataset config file
+        Returns the north_vector_component for the variable
+        if defined in dataset config file
 
         Returns:
             str -- north_vector_component name

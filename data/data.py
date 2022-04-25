@@ -5,8 +5,7 @@ from data.variable_list import VariableList
 
 
 class Data(metaclass=abc.ABCMeta):
-    """ Abstract base class for data access.
-    """
+    """Abstract base class for data access."""
 
     def __init__(self, url: str) -> None:
         self.url: str = url

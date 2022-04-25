@@ -2,10 +2,8 @@ from data.calculated import CalculatedData
 from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
-from utils.decorators import hashable_lru
 
 
-@hashable_lru
 def open_dataset(dataset, **kwargs):
     """Open a dataset.
 
@@ -55,7 +53,9 @@ def open_dataset(dataset, **kwargs):
     try:
         model_class = MODEL_CLASSES[getattr(dataset, "model_class", "").lower()]
     except (AttributeError, KeyError):
-        raise ValueError(f"Missing or unrecongized model_class attribute in config for dataset {dataset}")
+        raise ValueError(
+            f"Missing or unrecongized model_class attribute in config for dataset {dataset}"
+        )
 
     kwargs.update(
         {

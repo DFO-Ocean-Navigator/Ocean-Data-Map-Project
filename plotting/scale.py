@@ -13,7 +13,10 @@ from plotting.utils import normalize_scale
 def __magnitude(a, b):
     return np.sqrt(a.dot(a) + b.dot(b))
 
-def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, radius, neighbours):
+
+def get_scale(
+    dataset, variable, depth, timestamp, projection, extent, interp, radius, neighbours
+):
     """
     Calculates and returns the range (min, max values) of a selected variable,
     given the current map extents.
@@ -36,7 +39,7 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
             variables[0],
             interp,
             radius,
-            neighbours
+            neighbours,
         )
 
         if len(variables) > 1:
@@ -48,8 +51,8 @@ def get_scale(dataset, variable, depth, timestamp, projection, extent, interp, r
                 variables[1],
                 interp,
                 radius,
-                neighbours
+                neighbours,
             )
-            d = __magnitude(d0, d1)# Use your dot-product instead of exponents
+            d = __magnitude(d0, d1)  # Use your dot-product instead of exponents
 
         return normalize_scale(d, config.variable[",".join(variables)])

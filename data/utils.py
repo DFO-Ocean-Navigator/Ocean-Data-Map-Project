@@ -23,7 +23,7 @@ def find_le(a, x):
     """
     i = bisect_right(a, x)
     if i:
-        return a[i-1]
+        return a[i - 1]
     return a[0]
 
 
@@ -58,7 +58,7 @@ def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> Lis
             present in the dataset's netcdf file.
     """
 
-    regex = re.compile(r'[a-zA-Z][a-zA-Z_0-9]*')
+    regex = re.compile(r"[a-zA-Z][a-zA-Z_0-9]*")
 
     variables = set(re.findall(regex, equation))
     data_vars = set(data_variables)
@@ -77,7 +77,7 @@ def datetime_to_timestamp(datetime: datetime.datetime, time_units: str):
     Returns:
         [int] -- timestamp integer
     """
-    
+
     datetime = datetime.replace(tzinfo=pytz.UTC)
 
     return cftime.date2num(datetime, time_units)
@@ -91,7 +91,12 @@ def time_index_to_datetime(timestamps, time_units: str):
     if not isinstance(timestamps, list):
         timestamps = [timestamps]
 
-    result = [cftime.num2date(timestamp, time_units, only_use_cftime_datetimes=False).replace(tzinfo=pytz.UTC) for timestamp in timestamps]
+    result = [
+        cftime.num2date(timestamp, time_units, only_use_cftime_datetimes=False).replace(
+            tzinfo=pytz.UTC
+        )
+        for timestamp in timestamps
+    ]
 
     if isinstance(result[0], list):
         return list(itertools.chain(*result))
@@ -107,7 +112,6 @@ def roll_time(requested_index: int, len_timestamp_dim: int):
 
 
 class DateTimeEncoder(json.JSONEncoder):
-
     def default(self, o):
         if isinstance(o, datetime.datetime):
             return o.isoformat()
@@ -115,7 +119,9 @@ class DateTimeEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-def trunc(values: Union[np.float, np.ndarray], num_decimals: int = 3) -> Union[np.float, np.ndarray]:
+def trunc(
+    values: Union[np.float, np.ndarray], num_decimals: int = 3
+) -> Union[np.float, np.ndarray]:
     """
     Truncates the floating-point value(s) to `num_decimals` places.
 
@@ -123,4 +129,4 @@ def trunc(values: Union[np.float, np.ndarray], num_decimals: int = 3) -> Union[n
     https://stackoverflow.com/a/46020635/2231969
     """
     ten_to_the_power_of = 10**num_decimals
-    return np.trunc(values*ten_to_the_power_of) / ten_to_the_power_of
+    return np.trunc(values * ten_to_the_power_of) / ten_to_the_power_of

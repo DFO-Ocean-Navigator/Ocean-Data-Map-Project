@@ -106,6 +106,7 @@ class OceanNavigator extends React.Component {
     this.generatePermLink = this.generatePermLink.bind(this);
     this.updateOptions = this.updateOptions.bind(this);
     this.setStartTime = this.setStartTime.bind(this);
+    this.removeMapInteraction = this.removeMapInteraction.bind(this);
   }
 
   // Opens/closes the sidebar state
@@ -134,10 +135,12 @@ class OceanNavigator extends React.Component {
   }
 
   // Turns off map drawing
-  removeMapInteraction(mode) {
-    this.mapComponent.removeMapInteractions(mode);
+  removeMapInteraction(type = "all") {
+     if (this.mapComponent){
+      this.mapComponent.removeMapInteractions(type);
+    }
     if (this.mapComponent2) {
-      this.mapComponent2.removeMapInteractions(mode);
+      this.mapComponent2.removeMapInteractions(type);
     }
   }
 
@@ -289,27 +292,24 @@ class OceanNavigator extends React.Component {
               point: [[arg[0], arg[1]]],
               modal: "point",
               names: [],
-            });
+            });       
+            this.showModal();
           }
           // Drawing on the map results in a reversed coordinate pair
           // so swap it.
           else {
             this.setState({
-              point: [[arg[1], arg[0]]],
+              point: arg,
               modal: "point",
               names: [],
             });
           }
 
-          // Disable point selection in both maps
-          this.removeMapInteraction("Point");
           ReactGA.event({
             category: "PointPlot",
             action: "click",
             label: "PointPlot"
           });
-
-          this.showModal();
         } 
         else {
           // Enable point selection in both maps
@@ -503,10 +503,8 @@ class OceanNavigator extends React.Component {
             options={this.state.options}
           />
         );
-        modalTitle = formatLatLon(
-          this.state.point[0][0],
-          this.state.point[0][1]
-        );
+        modalTitle = this.state.point.map(p => formatLatLon(p[0], p[1]))
+        modalTitle = modalTitle.join(", ")
         break;
       case "line":
         modalContent = (
@@ -586,7 +584,7 @@ class OceanNavigator extends React.Component {
         modalTitle = "";
         break;
     }
-    if (this.state.names && this.state.names.length > 0) {
+    if (this.state.modal !== "point" && this.state.names && this.state.names.length > 0) {
       modalTitle = this.state.names.slice(0).sort().join(", ");
     }
 
@@ -662,6 +660,7 @@ class OceanNavigator extends React.Component {
             toggleOptionsSidebar={this.toggleOptionsSidebar}
             showObservationSelect={this.state.showObservationSelect}
             observationArea={this.state.observationArea}
+            disablePlotInteraction={this.removeMapInteraction}
           />
           {map}
         </div>

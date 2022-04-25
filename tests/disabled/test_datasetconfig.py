@@ -7,25 +7,53 @@ import unittest
 
 
 class TestDatasetConfig(unittest.TestCase):
-
     def setUp(self):
         self.datasetConfig = {}
-        with open("oceannavigator/datasetconfig.json", 'r') as f:
+        with open("oceannavigator/datasetconfig.json", "r") as f:
             self.datasetConfig = json.loads(f.read())
 
     def test_required_datasets_are_present(self):
-        expected_datasets = ["giops_month", "giops_day", "giops_forecast", "riops_daily",
-                             "riops", "riops_monthly", "riops_forecast", "glorys3", "glorys4", "glorys4_climatology",
-                             "glorys_climatology", "levitus98_phc21", "biomer", "biomer_climatology", "fvcom_demo",
-                             "gem", "gulf", "gulf_daily", "gulf_monthly", "SJAP100", "BayOfFundy"]
-        
+        expected_datasets = [
+            "giops_month",
+            "giops_day",
+            "giops_forecast",
+            "riops_daily",
+            "riops",
+            "riops_monthly",
+            "riops_forecast",
+            "glorys3",
+            "glorys4",
+            "glorys4_climatology",
+            "glorys_climatology",
+            "levitus98_phc21",
+            "biomer",
+            "biomer_climatology",
+            "fvcom_demo",
+            "gem",
+            "gulf",
+            "gulf_daily",
+            "gulf_monthly",
+            "SJAP100",
+            "BayOfFundy",
+        ]
+
         actual_datasets = self.datasetConfig.keys()
 
         for ds in expected_datasets:
             self.assertTrue(ds in actual_datasets)
 
     def test_all_datasets_have_required_attributes(self):
-        expected_attributes = ["url", "name", "enabled", "quantum", "attribution", "climatology", "variables", "help", "type"]
+        expected_attributes = [
+            "url",
+            "name",
+            "enabled",
+            "quantum",
+            "attribution",
+            "climatology",
+            "variables",
+            "help",
+            "type",
+        ]
 
         for ds in self.datasetConfig:
             actual_attribs = self.datasetConfig[ds].keys()
