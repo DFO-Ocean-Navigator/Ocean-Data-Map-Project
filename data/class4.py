@@ -25,9 +25,9 @@ def list_class4_files():
     the list on the fly.
     """
 
-    pickle_files = ['class4_files.pickle', 'class4_ola_files.pickle']
+    pickle_files = ['class4_OP_files.pickle', 'class4_RAO_files.pickle']
     class4_path =  ['CLASS4_OP_PATH', 'CLASS4_RAO_PATH']
-    data = { 'ocean_predict' : None, "riops_obs" : None}
+    data = {'ocean_predict' : None, "riops_obs" : None}
 
     for i,p in enumerate(pickle_files):
         cache_file_name = os.path.join(current_app.config['CACHE_DIR'], p)
