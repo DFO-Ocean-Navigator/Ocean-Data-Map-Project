@@ -6,7 +6,6 @@ from textwrap import wrap
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from flask_babel import gettext
@@ -128,12 +127,9 @@ class MapPlotter(Plotter):
                 )
                 width_scale = 1.5
             else:
-                # self.plot_projection = ccrs.LambertConformal(
-                #     central_latitude=self.centroid[0],
-                #     central_longitude=self.centroid[1],
-                # )
-                self.plot_projection = ccrs.PlateCarree(
-                    central_longitude=self.centroid[1]
+                self.plot_projection = ccrs.LambertConformal(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
                 )
         elif self.projection == "EPSG:3031":  # south pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
@@ -150,12 +146,9 @@ class MapPlotter(Plotter):
                 )
                 width_scale = 1.5
             else:
-                # self.plot_projection = ccrs.LambertConformal(
-                #     central_latitude=self.centroid[0],
-                #     central_longitude=self.centroid[1],
-                # )
-                self.plot_projection = ccrs.PlateCarree(
-                    central_longitude=self.centroid[1]
+                self.plot_projection = ccrs.LambertConformal(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
                 )
 
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
@@ -171,29 +164,9 @@ class MapPlotter(Plotter):
             self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
 
         else:
-            # self.plot_projection = ccrs.LambertConformal(
-            #     central_latitude=self.centroid[0], central_longitude=self.centroid[1]
-            # )
-            self.plot_projection = ccrs.PlateCarree(
-                # central_longitude=self.centroid[1]
+            self.plot_projection = ccrs.LambertConformal(
+                central_latitude=self.centroid[0], central_longitude=self.centroid[1]
             )
-        
-
-        # distance = GeodesicDistance()
-        # height = (
-        #     distance.measure(
-        #         (self.bounds[0], self.centroid[1]), (self.bounds[2], self.centroid[1])
-        #     )
-        #     * 1000
-        #     * 1.25
-        # )
-        # width = (
-        #     distance.measure(
-        #         (self.centroid[0], self.bounds[1]), (self.centroid[0], self.bounds[3])
-        #     )
-        #     * 1000
-        #     * width_scale
-        # )
 
         proj_bounds = self.plot_projection.transform_points(
             self.pc_projection,
@@ -204,15 +177,6 @@ class MapPlotter(Plotter):
 
         width = proj_size[0][0] * width_scale
         height = proj_size[0][1] * height_scale
-
-        proj_centroid = self.plot_projection.transform_point(
-            self.centroid[1],
-            self.centroid[0],
-            self.pc_projection
-        )
-        
-        x_extent = (proj_centroid[0] - width/2, proj_centroid[0] + width/2)
-        y_extent = (proj_centroid[1] - height/2, proj_centroid[1] + height/2)
 
         aspect_ratio = height / width
         if aspect_ratio < 1:
@@ -228,8 +192,8 @@ class MapPlotter(Plotter):
             self.plot_projection,
             gridx,
             gridy,
-            x_extents=x_extent,
-            y_extents=y_extent,
+            x_extents=(-width / 2, width / 2),
+            y_extents=(-height / 2, height / 2),
         )
 
         latlon_grid = self.pc_projection.transform_points(
@@ -615,8 +579,7 @@ class MapPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
-        import time
-        start_time = time.time()
+
         if self.filetype == "geotiff":
             f, fname = tempfile.mkstemp()
             os.close(f)
@@ -996,12 +959,13 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
             and self.quiver["magnitude"] == "color"
         ):
-            bax = divider.append_axes("bottom", size="5%", pad=0.35)
+            pos_x = axpos.x0
+            pos_y = axpos.y0 - 0.05
+            bax = fig.add_axes([pos_x, pos_y, axpos.width, 0.03])
             qbar = plt.colorbar(q, orientation="horizontal", cax=bax)
             qbar.set_label(
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
             )
-        print(f"**********************map.plot time: {time.time() - start_time}**********************")
 
         return super(MapPlotter, self).plot(fig)

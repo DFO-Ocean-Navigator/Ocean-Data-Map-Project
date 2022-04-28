@@ -4,21 +4,18 @@ import pickle
 import threading
 
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
+import numpy as np
+import shapely.geometry as sgeom
 from flask import current_app
 from typing import Union
-
-import pyproj
-
-import time
 
 
 def get_resolution(height: float, width: float) -> str:
     area = height * width / 1e6
 
-    if area < 1e8:
+    if area < 1e5:
         return "f"  # full resolution
     elif area < 1e12:
         return "i"  # intermediate resolution
@@ -26,7 +23,7 @@ def get_resolution(height: float, width: float) -> str:
         return "c"  # crude resolution
 
 
-def _get_shapefile(resolution: str) -> shpreader.BasicReader:
+def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
 
     if resolution == "f":
         land_shp = shpreader.BasicReader(
@@ -41,35 +38,48 @@ def _get_shapefile(resolution: str) -> shpreader.BasicReader:
             current_app.config["SHAPE_FILE_DIR"] + "/ne_110m_diff.shp"
         )
 
-    return land_shp
+    # crop land geometries to plot extent
+    bbox = sgeom.box(*extent)
+    geoms = [geom.intersection(bbox) for geom in land_shp.geometries()]
+
+    return geoms
 
 
 def load_map(
     plot_proj: ccrs, extent: list, figuresize: list, dpi: int, plot_resolution: str
 ) -> Union[plt.figure, plt.axes]:
-    
-    pyproj.set_use_global_context(active=True)
+
     CACHE_DIR = current_app.config["CACHE_DIR"]
     filename = _get_filename(plot_proj.proj4_params["proj"], extent)
     filename = "".join([CACHE_DIR, "/", filename])
 
-    land_shp = _get_shapefile(plot_resolution)
+    pc_proj = ccrs.PlateCarree()
+    pc_extent = pc_proj.transform_points(
+        plot_proj, np.array(extent[:2]), np.array(extent[2:])
+    )
+    pc_extent = [
+        pc_extent[0, 0] - 5,
+        pc_extent[0, 1] - 5,
+        pc_extent[1, 0] + 5,
+        pc_extent[1, 1] + 5,
+    ]
+
+    land_geoms = _get_land_geoms(plot_resolution, pc_extent)
 
     if not os.path.exists(filename):
 
         fig = plt.figure(figsize=figuresize, dpi=dpi)
+        ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
+        ax.set_extent(extent, crs=plot_proj)
 
-        map_plot = plt.axes(projection=plot_proj, facecolor="dimgrey")
-        map_plot.set_extent(extent, crs=plot_proj)
-
-        map_plot.add_geometries(
-            land_shp.geometries(),
-            crs=ccrs.PlateCarree(),
+        ax.add_geometries(
+            land_geoms,
+            crs=pc_proj,
             facecolor="grey",
             edgecolor="black",
-        )     
+        )
 
-        map_plot.gridlines(
+        ax.gridlines(
             draw_labels={"bottom": "x", "left": "y"},
             dms=True,
             x_inline=False,
@@ -77,7 +87,7 @@ def load_map(
             xlabel_style={"size": 10, "rotation": 0},
             ylabel_style={"size": 10},
             zorder=2,
-        )     
+        )
 
         def do_pickle(fig, ax, filename: str) -> None:
             pickle.dump((fig, ax), open(filename, "wb"), -1)
@@ -85,13 +95,13 @@ def load_map(
         if not os.path.isdir(CACHE_DIR):
             os.makedirs(CACHE_DIR)
 
-        t = threading.Thread(target=do_pickle, args=(fig, map_plot, filename))
+        t = threading.Thread(target=do_pickle, args=(fig, ax, filename))
         t.daemon = True
         t.start()
     else:
-        fig, map_plot = pickle.load(open(filename, "rb"))
+        fig, ax = pickle.load(open(filename, "rb"))
 
-    return fig, map_plot
+    return fig, ax
 
 
 def _get_filename(projection: str, extent: list) -> str:
