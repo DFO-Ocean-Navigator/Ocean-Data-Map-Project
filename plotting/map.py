@@ -4,12 +4,10 @@ import tempfile
 from textwrap import wrap
 
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
 from flask_babel import gettext
-from geopy.distance import GeodesicDistance
 from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
