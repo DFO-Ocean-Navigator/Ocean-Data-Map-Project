@@ -91,14 +91,14 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         # Render point location
         if self.showmap:
-            plt.subplot(gs[0, 0])
             utils.point_plot(
                 np.array(
                     [
                         [x[0] for x in self.points],  # Latitudes
                         [x[1] for x in self.points],
                     ]
-                )
+                ),
+                gs[0, 0]
             )  # Longitudes
 
         # Plot TS Diagram
