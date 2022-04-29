@@ -164,7 +164,7 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         zorder=1,
     )
 
-    img = plt.imread(current_app.config["SHAPE_FILE_DIR"] + "/bluemarble.png")
+    img = plt.imread(current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/bluemarble.png")
     img_extent = (-180, 180, -90, 90)
     m.imshow(
         img, origin="upper", extent=img_extent, transform=ccrs.PlateCarree(), zorder=1
