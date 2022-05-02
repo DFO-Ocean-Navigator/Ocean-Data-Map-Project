@@ -14,4 +14,4 @@ print(url)
 
 
 print("Downloading file and exiting...")
-download.file(url, fname, method="libcurl")
+download.file(url, fname, method="auto", mode = 'wb')
