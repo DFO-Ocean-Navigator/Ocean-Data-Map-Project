@@ -261,6 +261,11 @@ class MapPlotter(Plotter):
 
             self.data = data[0]
 
+            self.data_min = np.nanmin(self.data)
+            self.data_max = np.nanmax(self.data)
+            self.data_mean = np.nanmean(self.data)
+            self.data_std = np.nanstd(self.data)
+
             quiver_data = []
             # Store the quiver data on the same grid as the main variable. This
             # will only be used for CSV export.
@@ -930,6 +935,7 @@ class MapPlotter(Plotter):
 
         title = self.plotTitle
 
+        var_unit = utils.mathtext(self.variable_unit)
         if self.plotTitle is None or self.plotTitle == "":
             area_title = "\n".join(wrap(", ".join(self.names), 60)) + "\n"
 
@@ -946,10 +952,14 @@ class MapPlotter(Plotter):
         cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
         bar = plt.colorbar(c, cax=cax)
         bar.set_label(
-            "%s (%s)"
-            % (self.variable_name.title(), utils.mathtext(self.variable_unit)),
+            "%s (%s)" % (self.variable_name.title(), var_unit),
             fontsize=14,
         )
+
+        stat_str = (f"Min: {self.data_min:.2f} ({var_unit}) "
+                    f"Max: {self.data_max:.2f} ({var_unit}) "
+                    f"Mean: {self.data_mean:.2f} ({var_unit}) "
+                    f"STD: {self.data_std:.2f} ({var_unit})")
 
         if (
             self.quiver is not None
@@ -964,6 +974,21 @@ class MapPlotter(Plotter):
             qbar.set_label(
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
+            )
+            ax.text(
+                axpos.x0,
+                axpos.y0 - 0.10,
+                stat_str,
+                fontsize=14,
+                transform=plt.gcf().transFigure,
+            )
+        else:
+            ax.text(
+                axpos.x0,
+                axpos.y0 - 0.05,
+                stat_str,
+                fontsize=14,
+                transform=plt.gcf().transFigure,
             )
 
         return super(MapPlotter, self).plot(fig)
