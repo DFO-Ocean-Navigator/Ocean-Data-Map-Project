@@ -13,14 +13,11 @@ from scipy.ndimage.filters import gaussian_filter
 _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
 
 
-def bathymetry(basemap, target_lat, target_lon, blur=None):
+def bathymetry(target_lat, target_lon, blur=None):
     CACHE_DIR = current_app.config["CACHE_DIR"]
     BATHYMETRY_FILE = current_app.config["BATHYMETRY_FILE"]
 
-    if basemap is None:
-        fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
-    else:
-        fname = basemap.filename
+    fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
 
     hashed = hashlib.sha1(
         "".join(fname + str(target_lat.shape) + str(target_lon.shape)).encode()

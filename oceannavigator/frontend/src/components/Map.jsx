@@ -168,6 +168,7 @@ export default class Map extends React.PureComponent {
 
     this.state = {
       location: [0, 90],
+      latlon: []
     };
 
     this.scaleViewer = new app.ScaleViewer({
@@ -257,7 +258,7 @@ export default class Map extends React.PureComponent {
     // Data layer
     this.layer_data = new ollayer.Tile(
       {
-        preload: 7,
+        preload: 1,
         source: new olsource.XYZ({
           attributions: [
             new olcontrol.Attribution({
@@ -276,7 +277,7 @@ export default class Map extends React.PureComponent {
         }),
         opacity: this.props.options.mapBathymetryOpacity,
         visible: this.props.options.bathymetry,
-        preload: 7,
+        preload: 1,
     });
 
     // MBTiles Land shapes (high res)
@@ -966,6 +967,7 @@ export default class Map extends React.PureComponent {
       this.props.updateState(t, content);
       this.props.updateState("modal", t);
       this.props.updateState("names", names);
+      this.props.updateState("plotEnabled", false);
 
     }.bind(this);
 
@@ -975,9 +977,13 @@ export default class Map extends React.PureComponent {
       ) {
         this.selectedFeatures.clear();
         this.selectedFeatures.push(e.selected[0]);
+      } 
+      if (e.selected.length == 0) {
+        this.props.updateState("plotEnabled", true);
+        this.props.action("point", this.state.latlon);  
       }
       pushSelection();
-
+  
       if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
         this.props.action("plot");
       }
@@ -1016,7 +1022,7 @@ export default class Map extends React.PureComponent {
         const shadedRelief = this.props.options.topoShadedRelief ? "true" : "false";
 
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
             projection: projection,
@@ -1029,7 +1035,7 @@ export default class Map extends React.PureComponent {
         });
       case "ocean":
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -1042,7 +1048,7 @@ export default class Map extends React.PureComponent {
         });
       case "world":
         return new ollayer.Tile({
-          preload: 7,
+          preload: 1,
           source: new olsource.XYZ({
             url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             projection: "EPSG:3857",
@@ -1138,6 +1144,7 @@ export default class Map extends React.PureComponent {
     this.obsDrawSource.clear();
     this.overlay.setPosition(undefined);
     this.infoOverlay.setPosition(undefined);
+    this.setState({latlon: []});
   }
 
   removeMapInteractions(type) {
@@ -1259,18 +1266,22 @@ export default class Map extends React.PureComponent {
     draw.on("drawend", function (e) {
       // Disable zooming when drawing
       this.controlDoubleClickZoom(false);
-      const lonlat = olproj.transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326");
+      const latlon = olproj
+            .transform(e.feature.getGeometry().getCoordinates(), this.props.state.projection, "EPSG:4326")
+            .reverse(); 
+
+      const drawn_latlons = [...this.state.latlon, latlon];
       // Draw point on map(s)
-      this.props.action("add", "point", [[lonlat[1], lonlat[0]]]);
+      this.props.action("add", "point", [latlon], "multipoint_click");
       this.props.updateState("plotEnabled", true);
       // Pass point to PointWindow
-      this.props.action("point", lonlat);   //This function has the sole responsibility for opening the point window
-      this.map.removeInteraction(draw);
+      this.props.action("point", drawn_latlons);    
       this._drawing = false;
       setTimeout(
         function () { this.controlDoubleClickZoom(true); }.bind(this),
         251
       );
+      this.setState({latlon: drawn_latlons});
     }.bind(this));
     this.map.addInteraction(draw);
   }
@@ -1407,7 +1418,7 @@ export default class Map extends React.PureComponent {
       default:
         source = new olsource.XYZ({
           url: (
-            `/api/v1.0/tiles/bath/${currentBathy}` +
+            `/api/v1.0/tiles/bath/${currentProj}` +
             "/{z}/{x}/{y}.png"
           ),
           projection: currentProj,
@@ -1693,10 +1704,9 @@ export default class Map extends React.PureComponent {
   }
 
   add(type, data, name) {
-    if (this._mounted) {
+    if ((name !== "multipoint_click") && (this._mounted)) {
       this.resetMap();
     }
-
     var geom;
     var feat;
     switch (type) {

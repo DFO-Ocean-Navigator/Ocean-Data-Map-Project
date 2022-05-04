@@ -144,9 +144,8 @@ class Class4Plotter(Plotter):
 
         # Render point location
         if self.showmap:
-            plt.subplot(gs[0, subplot])
+            utils.point_plot(np.array([self.latitude, self.longitude]), gs[0, subplot])
             subplot += 1
-            utils.point_plot(np.array([self.latitude, self.longitude]))
             if len(self.ids) > 1:
                 plt.legend(self.ids, loc="best")
 

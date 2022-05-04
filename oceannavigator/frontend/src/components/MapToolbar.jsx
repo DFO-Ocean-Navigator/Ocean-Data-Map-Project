@@ -70,6 +70,7 @@ class MapToolbar extends React.Component {
       name = elem.name;
     }
     this.props.action(name);
+    this.props.disablePlotInteraction();
   }
   
   class4ButtonHandler() {
@@ -169,6 +170,7 @@ class MapToolbar extends React.Component {
         this.setState({showPointCoordModal: true,});
         break;
       default:
+        this.props.updateState("plotEnabled", false);
         this.props.action("show", "points", key);
         break;
     }
@@ -203,6 +205,7 @@ class MapToolbar extends React.Component {
         this.setState({showLineCoordModal: true,});
         break;
       default:
+        this.props.updateState("plotEnabled", false);
         this.props.action("show", "lines", key);
         break;
     }
@@ -252,6 +255,7 @@ class MapToolbar extends React.Component {
         this.setState({showAreaCoordModal: true,});
         break;
       default:
+        this.props.updateState("plotEnabled", false);
         this.props.action("show", "areas", key);
         break;
     }
@@ -913,6 +917,7 @@ MapToolbar.propTypes = {
   toggleOptionsSidebar: PropTypes.func,
   showObservationSelect: PropTypes.bool,
   observationArea: PropTypes.array,
+  disablePlotInteraction: PropTypes.func,
 };
 
 export default withTranslation()(MapToolbar);

@@ -260,11 +260,9 @@ class TrackPlotter(Plotter):
         if self.showmap:
             # Plot the path on a map
             if numplots > 1:
-                plt.subplot(gs[:, 0])
+                utils.path_plot(self.points.transpose(), gs[:, 0], False)
             else:
-                plt.subplot(gs[0])
-
-            utils.path_plot(self.points.transpose(), False)
+                utils.path_plot(self.points.transpose(), gs[0], False)
 
         # Plot observed
         if self.showmap:

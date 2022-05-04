@@ -2,10 +2,8 @@ from data.calculated import CalculatedData
 from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
-from utils.decorators import hashable_lru
 
 
-@hashable_lru
 def open_dataset(dataset, **kwargs):
     """Open a dataset.
 

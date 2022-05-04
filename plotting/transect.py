@@ -515,8 +515,7 @@ class TransectPlotter(LinePlotter):
 
         # Plot the transect on a map
         if self.showmap:
-            plt.subplot(gs[0, 0])
-            utils.path_plot(self.transect_data["points"])
+            utils.path_plot(self.transect_data["points"], gs[0, 0])
 
         def do_plot(
             subplots, map_subplot, data, name, cmapLabel, vmin, vmax, units, cmap
