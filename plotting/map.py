@@ -108,6 +108,32 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
+    def _calculate_stats(self) -> tuple:
+        area = self.area[0]
+        polys = []
+        for co in area["polygons"] + area["innerrings"]:
+            polys.append(np.array(co))
+
+        area_poly = Poly(polys[0])
+        path = Path(area_poly.boundary)
+
+        points = [
+            (lat, lon)
+            for lat, lon in zip(np.ravel(self.latitude), np.ravel(self.longitude))
+        ]
+        inside_points = path.contains_points(points)
+        inside_points = np.reshape(inside_points, self.data.shape)
+
+        mask = self.data.mask + ~inside_points
+        stats_data = self.data.data[~mask]
+
+        return {
+            "min": f"{np.nanmin(stats_data):.2f}",
+            "max": f"{np.nanmax(stats_data):.2f}",
+            "mean": f"{np.nanmin(stats_data):.2f}",
+            "std": f"{np.nanstd(stats_data):.2f}"
+        }
+
     def load_data(self):
 
         width_scale = 1.25
@@ -261,10 +287,7 @@ class MapPlotter(Plotter):
 
             self.data = data[0]
 
-            self.data_min = np.nanmin(self.data)
-            self.data_max = np.nanmax(self.data)
-            self.data_mean = np.nanmean(self.data)
-            self.data_std = np.nanstd(self.data)
+            self.stats = self._calculate_stats()
 
             quiver_data = []
             # Store the quiver data on the same grid as the main variable. This
@@ -498,6 +521,10 @@ class MapPlotter(Plotter):
         header = [
             ["Dataset", self.dataset_name],
             ["Timestamp", self.timestamp.isoformat()],
+            ["Min", self.stats["min"]],
+            ["Max", self.stats["max"]],
+            ["Mean", self.stats["mean"]],
+            ["Standard Deviation", self.stats["std"]],
         ]
 
         columns = [
@@ -956,10 +983,12 @@ class MapPlotter(Plotter):
             fontsize=14,
         )
 
-        stat_str = (f"Min: {self.data_min:.2f} ({var_unit}) "
-                    f"Max: {self.data_max:.2f} ({var_unit}) "
-                    f"Mean: {self.data_mean:.2f} ({var_unit}) "
-                    f"STD: {self.data_std:.2f} ({var_unit})")
+        stat_str = (
+            f"Min: {self.stats['min']}, "
+            f"Max: {self.stats['max']}, "
+            f"Mean: {self.stats['mean']}, "
+            f"STD: {self.stats['std']} ({var_unit})"
+        )
 
         if (
             self.quiver is not None
@@ -975,20 +1004,16 @@ class MapPlotter(Plotter):
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
             )
-            ax.text(
-                axpos.x0,
-                axpos.y0 - 0.10,
-                stat_str,
-                fontsize=14,
-                transform=plt.gcf().transFigure,
-            )
+            text_y = axpos.y0 - 0.15
         else:
-            ax.text(
-                axpos.x0,
-                axpos.y0 - 0.05,
-                stat_str,
-                fontsize=14,
-                transform=plt.gcf().transFigure,
-            )
+            text_y = axpos.y0 - 0.05
+            
+        ax.text(
+            axpos.x0,
+            text_y,
+            stat_str,
+            fontsize=14,
+            transform=plt.gcf().transFigure,
+        )
 
         return super(MapPlotter, self).plot(fig)
