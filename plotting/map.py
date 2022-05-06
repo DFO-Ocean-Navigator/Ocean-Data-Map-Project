@@ -108,7 +108,7 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
-    def _calculate_stats(self) -> tuple:
+    def __calculate_stats(self) -> tuple:
         area = self.area[0]
         polys = []
         for co in area["polygons"] + area["innerrings"]:
@@ -130,7 +130,7 @@ class MapPlotter(Plotter):
         return {
             "min": f"{np.nanmin(stats_data):.2f}",
             "max": f"{np.nanmax(stats_data):.2f}",
-            "mean": f"{np.nanmin(stats_data):.2f}",
+            "mean": f"{np.nanmean(stats_data):.2f}",
             "std": f"{np.nanstd(stats_data):.2f}"
         }
 
@@ -287,7 +287,7 @@ class MapPlotter(Plotter):
 
             self.data = data[0]
 
-            self.stats = self._calculate_stats()
+            self.stats = self.__calculate_stats()
 
             quiver_data = []
             # Store the quiver data on the same grid as the main variable. This
@@ -983,7 +983,7 @@ class MapPlotter(Plotter):
             fontsize=14,
         )
 
-        stat_str = (
+        stats_str = (
             f"Min: {self.stats['min']}, "
             f"Max: {self.stats['max']}, "
             f"Mean: {self.stats['mean']}, "
@@ -1007,11 +1007,11 @@ class MapPlotter(Plotter):
             text_y = axpos.y0 - 0.15
         else:
             text_y = axpos.y0 - 0.05
-            
+
         ax.text(
             axpos.x0,
             text_y,
-            stat_str,
+            stats_str,
             fontsize=14,
             transform=plt.gcf().transFigure,
         )

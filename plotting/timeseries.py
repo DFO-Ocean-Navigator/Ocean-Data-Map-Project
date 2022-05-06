@@ -41,6 +41,15 @@ class TimeseriesPlotter(PointPlotter):
 
         self.depth = depth
 
+    def __calculate_stats(self):
+        stats = {
+            "min": f"{np.nanmin(self.data):.2f}",
+            "max": f"{np.nanmax(self.data):.2f}",
+            "mean": f"{np.nanmean(self.data):.2f}",
+            "std": f"{np.nanstd(self.data):.2f}"
+        }
+        return stats        
+
     def load_data(self):
 
         with open_dataset(
@@ -156,6 +165,7 @@ class TimeseriesPlotter(PointPlotter):
 
             self.times = times
             self.data = point_data
+            self.stats = self.__calculate_stats()
             self.depths = depths
             self.depth_unit = "m"
 
@@ -163,6 +173,10 @@ class TimeseriesPlotter(PointPlotter):
         header = [
             ["Dataset", self.dataset_config.name],
             ["Attribution", self.dataset_config.attribution],
+            ["Min", self.stats["min"]],
+            ["Max", self.stats["max"]],
+            ["Mean", self.stats["mean"]],
+            ["Standard Deviation", self.stats["std"]],
         ]
 
         columns = [
@@ -305,6 +319,7 @@ class TimeseriesPlotter(PointPlotter):
             self.cmap = colormap.find_colormap(self.variable_name)
 
         datenum = matplotlib.dates.date2num(self.times)
+        var_unit = utils.mathtext(self.variable_unit)
         if self.depth == "all":
             size = list(map(float, self.size.split("x")))
             numpoints = len(self.points)
@@ -352,7 +367,7 @@ class TimeseriesPlotter(PointPlotter):
                 bar = plt.colorbar(c, cax=cax)
                 bar.set_label(
                     "%s (%s)"
-                    % (self.variable_name.title(), utils.mathtext(self.variable_unit))
+                    % (self.variable_name.title(), var_unit)
                 )
                 ax[idx].set_title(
                     "%s%s at %s"
@@ -398,7 +413,7 @@ class TimeseriesPlotter(PointPlotter):
                 datenum, np.squeeze(self.data), fmt="-", figure=fig, xdate=True
             )
             plt.ylabel(
-                f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
+                f"{self.variable_name.title()} ({var_unit})",
                 fontsize=14,
             )
             plt.ylim(vmin, vmax)
@@ -418,10 +433,27 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 plt.title(self.plotTitle, fontsize=15)
 
-            plt.gca().grid(True)
+            ax = plt.gca()
+            ax.grid(True)
 
             fig.autofmt_xdate()
 
             self.plot_legend(fig, self.names)
+        
+            stats_str = (
+                f"Min: {self.stats['min']}, "
+                f"Max: {self.stats['max']}, "
+                f"Mean: {self.stats['mean']}, "
+                f"STD: {self.stats['std']} ({var_unit})"
+            )
+
+            
+            ax.text(
+                0,
+                -0.25,
+                stats_str,
+                fontsize=14,
+                transform=ax.transAxes,
+            )                    
 
         return super(TimeseriesPlotter, self).plot(fig)
