@@ -50,7 +50,7 @@ class TransectPlotter(LinePlotter):
                 idx = ~z_shifted.mask * z.mask
                 z[idx] = z_shifted[idx]
             else:
-                break
+                break             
 
     def load_data(self):
         vars_to_load = self.variables
@@ -136,6 +136,10 @@ class TransectPlotter(LinePlotter):
                 "perpendicular": perpendicular,
                 "magnitude": magnitude,
             }
+
+            self.stats = self.get_data_stats(
+                self.transect_data['data']
+            )
 
             if self.surface:
                 surface_pts, surface_dist, _, surface_value = dataset.get_path(
@@ -930,6 +934,22 @@ class TransectPlotter(LinePlotter):
 
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
+        var_unit = utils.mathtext(unit)
+        stats_str = (
+            f"Min: {np.nanmin(values):.2f}, "
+            f"Max: {np.nanmax(values):.2f}, "
+            f"Mean: {np.nanmean(values):.2f}, "
+            f"STD: {np.nanstd(values):.2f} ({var_unit})"
+        )
+
+        ax.text(
+            0,
+            -0.1,
+            stats_str,
+            fontsize=14,
+            transform=ax.transAxes,
+        )
+
         # Mask out the bottom
         plt.fill_between(
             self.bathymetry["x"],
@@ -973,7 +993,7 @@ class TransectPlotter(LinePlotter):
         bar = plt.colorbar(c, cax=cax)
 
         # Append variable units to color scale label
-        bar.set_label(cmapLabel + " (" + utils.mathtext(unit) + ")")
+        bar.set_label(cmapLabel + " (" + var_unit + ")")
 
         if len(self.points) > 2:
             station_distances = []

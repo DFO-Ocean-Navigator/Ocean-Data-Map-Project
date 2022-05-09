@@ -127,13 +127,8 @@ class MapPlotter(Plotter):
         mask = self.data.mask + ~inside_points
         stats_data = self.data.data[~mask]
 
-        return {
-            "min": f"{np.nanmin(stats_data):.2f}",
-            "max": f"{np.nanmax(stats_data):.2f}",
-            "mean": f"{np.nanmean(stats_data):.2f}",
-            "std": f"{np.nanstd(stats_data):.2f}"
-        }
-
+        return self.get_data_stats(stats_data)
+        
     def load_data(self):
 
         width_scale = 1.25

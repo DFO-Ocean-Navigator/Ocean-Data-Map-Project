@@ -14,7 +14,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "sound"
 
-        super(SoundSpeedPlotter, self).__init__(dataset_name, query, **kwargs)
+        super(SoundSpeedPlotter, self).__init__(dataset_name, query, **kwargs) 
 
     def load_data(self):
         super(SoundSpeedPlotter, self).load_data()
@@ -41,6 +41,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             temperature_c = self.temperature
 
         self.sspeed = seawater.svel(self.salinity, temperature_c, self.pressure)
+        self.stats = self.get_data_stats(self.data)
 
     def plot(self):
         # Create base figure
@@ -109,6 +110,21 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ureg = pint.UnitRegistry()
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
+
+        stats_str = (
+            f"Min: {self.stats['min']}, "
+            f"Max: {self.stats['max']}, "
+            f"Mean: {self.stats['mean']}, "
+            f"STD: {self.stats['std']} (m/s)"
+        )
+
+        ax.text(
+            0,
+            -0.05,
+            stats_str,
+            fontsize=14,
+            transform=ax.transAxes,
+        )         
 
         # This is a little strange where we want to skip calling the TSP.plot and go straigh
         # to Point.plot

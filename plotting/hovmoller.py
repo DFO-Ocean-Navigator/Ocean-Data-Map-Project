@@ -326,10 +326,21 @@ class HovmollerPlotter(LinePlotter):
         ax.yaxis.grid(True)
         ax.set_facecolor("dimgray")
 
+        math_unit = utils.mathtext(unit)
+        stats_str = self.get_stats_str(data, math_unit)
+
+        ax.text(
+            0,
+            -0.1,
+            stats_str,
+            fontsize=14,
+            transform=ax.transAxes,
+        )
+
         plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])
 
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
-        bar.set_label("%s (%s)" % (name, utils.mathtext(unit)))
+        bar.set_label("%s (%s)" % (name, math_unit))

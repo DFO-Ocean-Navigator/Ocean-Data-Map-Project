@@ -19,12 +19,7 @@ class ProfilePlotter(PointPlotter):
     def __calculate_stats(self):
         stats = []
         for idx, _ in enumerate(self.variables):
-            stats.append({
-                "min": f"{np.nanmin(self.data[:,idx,:]):.2f}",
-                "max": f"{np.nanmax(self.data[:,idx,:]):.2f}",
-                "mean": f"{np.nanmean(self.data[:,idx,:]):.2f}",
-                "std": f"{np.nanstd(self.data[:,idx,:]):.2f}"
-            })
+            stats.append(self.get_data_stats(self.data[:, idx, :]))
         return stats
 
     def load_data(self):
@@ -64,7 +59,7 @@ class ProfilePlotter(PointPlotter):
         time = np.repeat(self.iso_timestamp, data.shape[0])
         depth = self.depths[:, 0, :]
 
-        return super(ProfilePlotter, self).odv_ascii(
+        return super(ProfilePlotter, self).odv_ascii(   
             self.dataset_name,
             self.variable_names,
             self.variable_units,
@@ -192,6 +187,7 @@ class ProfilePlotter(PointPlotter):
                 stats_str,
                 fontsize=14,
                 transform=current_axis.transAxes,
+                wrap=True
             )
 
             # Put y-axis label on left-most graph (but after the point location)

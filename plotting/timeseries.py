@@ -39,16 +39,7 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 depth = int(qdepth)
 
-        self.depth = depth
-
-    def __calculate_stats(self):
-        stats = {
-            "min": f"{np.nanmin(self.data):.2f}",
-            "max": f"{np.nanmax(self.data):.2f}",
-            "mean": f"{np.nanmean(self.data):.2f}",
-            "std": f"{np.nanstd(self.data):.2f}"
-        }
-        return stats        
+        self.depth = depth     
 
     def load_data(self):
 
@@ -165,7 +156,7 @@ class TimeseriesPlotter(PointPlotter):
 
             self.times = times
             self.data = point_data
-            self.stats = self.__calculate_stats()
+            self.stats = self.get_data_stats(self.data)
             self.depths = depths
             self.depth_unit = "m"
 
@@ -439,7 +430,7 @@ class TimeseriesPlotter(PointPlotter):
             fig.autofmt_xdate()
 
             self.plot_legend(fig, self.names)
-        
+
             stats_str = (
                 f"Min: {self.stats['min']}, "
                 f"Max: {self.stats['max']}, "
@@ -447,13 +438,12 @@ class TimeseriesPlotter(PointPlotter):
                 f"STD: {self.stats['std']} ({var_unit})"
             )
 
-            
             ax.text(
                 0,
                 -0.25,
                 stats_str,
                 fontsize=14,
                 transform=ax.transAxes,
-            )                    
+            )                  
 
         return super(TimeseriesPlotter, self).plot(fig)
