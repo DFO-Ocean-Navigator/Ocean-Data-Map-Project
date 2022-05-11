@@ -4,6 +4,7 @@ import pickle
 import threading
 
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,27 +17,23 @@ def get_resolution(height: float, width: float) -> str:
     area = height * width / 1e6
 
     if area < 1e5:
-        return "f"  # full resolution
+        return "10m"  # full resolution
     elif area < 1e12:
-        return "i"  # intermediate resolution
+        return "50m"  # intermediate resolution
     else:
-        return "c"  # crude resolution
+        return "110m"  # crude resolution
 
 
 def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
 
-    if resolution == "f":
+    shp_file = f"/cartopy_resources/ne_{resolution}_diff.shp"
+
+    try:
         land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_10m_diff.shp"
+            current_app.config["SHAPE_FILE_DIR"] + shp_file
         )
-    elif resolution == "i":
-        land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_50m_diff.shp"
-        )
-    else:
-        land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_110m_diff.shp"
-        )
+    except shpreader.shapefile.ShapefileException:
+        land_shp = cfeature.NaturalEarthFeature("physical", "land", resolution)
 
     # crop land geometries to plot extent
     bbox = sgeom.box(*extent)
@@ -64,14 +61,12 @@ def load_map(
         pc_extent[1, 1] + 5,
     ]
 
-    land_geoms = _get_land_geoms(plot_resolution, pc_extent)
-
     if not os.path.exists(filename):
-
         fig = plt.figure(figsize=figuresize, dpi=dpi)
         ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
         ax.set_extent(extent, crs=plot_proj)
 
+        land_geoms = _get_land_geoms(plot_resolution, pc_extent)
         ax.add_geometries(
             land_geoms,
             crs=pc_proj,
