@@ -1,13 +1,11 @@
 import contextlib
 import datetime
-import re
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pint
 from flask_babel import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -253,15 +251,19 @@ class Plotter(metaclass=ABCMeta):
             buf.seek(0)
             return (buf.getvalue(), self.mime, self.filename)
 
-    def csv(self, header=[], columns=[], data=[]):
+    def csv(self, header=[], columns=[], data=[], statistics=[]):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
+            for s in statistics:
+                buf.write("\n" + ", ".join(s))
+            buf.write("\n\n")
             buf.write(", ".join(columns))
+
             buf.write("\n")
 
-            for l in data:
-                buf.write(", ".join(map(str, l)))
+            for line in data:
+                buf.write(", ".join(map(str, line)))
                 buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
@@ -393,15 +395,6 @@ class Plotter(metaclass=ABCMeta):
         """
         v = ",".join(variables)
         return self.dataset_config.variable[v].unit
-
-    def get_data_stats(self, data) -> dict:
-        stats = {
-            "min": f"{np.nanmin(data):.2f}",
-            "max": f"{np.nanmax(data):.2f}",
-            "mean": f"{np.nanmean(data):.2f}",
-            "std": f"{np.nanstd(data):.2f}"
-        }
-        return stats
 
     def get_stats_str(self, data, unit) -> str:
         stats = (

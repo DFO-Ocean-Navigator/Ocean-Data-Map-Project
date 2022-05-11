@@ -5,8 +5,6 @@ from flask_babel import gettext
 
 import plotting.utils as utils
 from data import open_dataset
-from data.sqlite_database import SQLiteDatabase
-from oceannavigator.dataset_config import DatasetConfig
 from plotting.point import PointPlotter
 from utils.errors import ClientError
 
@@ -15,12 +13,6 @@ class ProfilePlotter(PointPlotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "profile"
         super(ProfilePlotter, self).__init__(dataset_name, query, **kwargs)
-
-    def __calculate_stats(self):
-        stats = []
-        for idx, _ in enumerate(self.variables):
-            stats.append(self.get_data_stats(self.data[:, idx, :]))
-        return stats
 
     def load_data(self):
 
@@ -34,8 +26,8 @@ class ProfilePlotter(PointPlotter):
                 raise ClientError(
                     gettext(
                         "The selected variable(s) were not found in the dataset. \
-                Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable. "
+                        Most likely, this variable is a derived product from \
+                        existing dataset variables. Please select another variable. "
                     )
                     + str(e)
                 )
@@ -45,7 +37,6 @@ class ProfilePlotter(PointPlotter):
             self.iso_timestamp = ds.nc_data.timestamp_to_iso_8601(self.time)
 
         self.data = self.subtract_other(point_data)
-        self.stats = self.__calculate_stats()
         self.depths = point_depths
 
     def odv_ascii(self):
@@ -59,7 +50,7 @@ class ProfilePlotter(PointPlotter):
         time = np.repeat(self.iso_timestamp, data.shape[0])
         depth = self.depths[:, 0, :]
 
-        return super(ProfilePlotter, self).odv_ascii(   
+        return super(ProfilePlotter, self).odv_ascii(
             self.dataset_name,
             self.variable_names,
             self.variable_units,
@@ -73,8 +64,8 @@ class ProfilePlotter(PointPlotter):
 
     def csv(self):
         header = [
-            ["Dataset", self.dataset_name] + ['']*(3*len(self.variables)-2),
-            ["Timestamp", self.iso_timestamp.isoformat()] + ['']*(3*len(self.variables)-2),
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.iso_timestamp.isoformat()],
         ]
 
         columns = [
@@ -97,22 +88,24 @@ class ProfilePlotter(PointPlotter):
                 ] + ["%0.1f" % x for x in self.data[p, :, d]]
                 data.append(entry)
 
-        min = ['Min:', '', '']
-        max = ['Max:', '', '']
-        mean = ['Mean:', '', '']
-        std = ['Std:', '', '']
+        stats_header = [""]
+        stats_min = ["Min:"]
+        stats_max = ["Max:"]
+        stats_mean = ["Mean:"]
+        stats_std = ["Std:"]
 
         for idx, _ in enumerate(self.variables):
-            min = min + [self.stats[idx]['max']]
-            max = max + [self.stats[idx]['max']]
-            mean = mean + [self.stats[idx]['mean']]
-            std = std + [self.stats[idx]['std']]
+            stats_header.append(
+                f"{self.variable_names[idx]} ({self.variable_units[idx]})"
+            )
+            stats_min.append(f"{np.nanmin(self.data[:, idx, :]):.2f}")
+            stats_max.append(f"{np.nanmax(self.data[:, idx, :]):.2f}")
+            stats_mean.append(f"{np.nanmean(self.data[:, idx, :]):.2f}")
+            stats_std.append(f"{np.nanstd(self.data[:, idx, :]):.2f}")
 
-        data.append(min)
-        data.append(max)
-        data.append(mean)
-        data.append(std)
-        return super(ProfilePlotter, self).csv(header, columns, data)
+        stats = [stats_header, stats_min, stats_max, stats_mean, stats_std]
+
+        return super(ProfilePlotter, self).csv(header, columns, data, stats)
 
     def plot(self):
         # Create base figure
@@ -147,12 +140,6 @@ class ProfilePlotter(PointPlotter):
             subplot += 1
 
         is_y_label_plotted = False
-        if len(self.variables) > 2:
-            end_line = "\n"
-            text_y = -0.15
-        else:
-            end_line = " "
-            text_y = -0.05
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
         for idx, _ in enumerate(self.variables):
@@ -169,25 +156,19 @@ class ProfilePlotter(PointPlotter):
             current_axis.invert_yaxis()
             current_axis.grid(True)
             current_axis.set_xlabel(
-                "%s (%s)"
-                % (self.variable_names[idx], var_unit),
+                "%s (%s)" % (self.variable_names[idx], var_unit),
                 fontsize=14,
             )
 
-            stats_str = (
-                f"Min: {self.stats[idx]['min']},{end_line}"
-                f"Max: {self.stats[idx]['max']},{end_line}"
-                f"Mean: {self.stats[idx]['mean']},{end_line}"
-                f"STD: {self.stats[idx]['std']} ({var_unit})"
-            )
+            stats_str = self.get_stats_str(self.data[:, idx, :], var_unit)
+
+            y_offset = -0.05
+            if len(self.variables) > 2:
+                stats_str = stats_str.replace(", ", ",\n")
+                y_offset = -0.15
 
             current_axis.text(
-                0,
-                text_y,
-                stats_str,
-                fontsize=14,
-                transform=current_axis.transAxes,
-                wrap=True
+                0, y_offset, stats_str, fontsize=14, transform=current_axis.transAxes
             )
 
             # Put y-axis label on left-most graph (but after the point location)

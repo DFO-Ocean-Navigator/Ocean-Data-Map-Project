@@ -12,10 +12,8 @@ from pandas.plotting import register_matplotlib_converters
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
-from data.sqlite_database import SQLiteDatabase
 from oceannavigator import DatasetConfig
 from plotting.line import LinePlotter
-from utils.errors import ClientError, ServerError
 
 register_matplotlib_converters()
 
@@ -28,10 +26,12 @@ class HovmollerPlotter(LinePlotter):
     def load_data(self):
         def find_depth(depth, clip_length, dataset):
             """
-            Calculates and returns the depth, depth-value, and depth unit from a given dataset
+            Calculates and returns the depth, depth-value, and depth unit from a given
+            dataset
             Args:
                 * depth: Stored depth information (self.depth or self.compare['depth'])
-                * clip_length: How many depth values to clip (usually len(dataset.depths) - 1)
+                * clip_length: How many depth values to clip (usually
+                  len(dataset.depths) - 1)
                 * dataset: Opened dataset
             Returns:
                 (depth, depth_value, depth_unit)
@@ -155,14 +155,22 @@ class HovmollerPlotter(LinePlotter):
             # Don't show a difference plot if variables are different
             if self.compare["variables"][0] == self.variables[0]:
                 gs = gridspec.GridSpec(
-                    3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1]
+                    3,
+                    width,
+                    width_ratios=width_ratios,
+                    height_ratios=[1, 1, 1],
+                    hspace=0.35,
                 )
             else:
                 gs = gridspec.GridSpec(
-                    2, width, width_ratios=width_ratios, height_ratios=[1, 1]
+                    2,
+                    width,
+                    width_ratios=width_ratios,
+                    height_ratios=[1, 1],
+                    hspace=0.35,
                 )
         else:
-            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
+            gs = gridspec.GridSpec(1, width, width_ratios=width_ratios, hspace=0.35)
 
         if self.showmap:
             # Plot the path on a map
@@ -283,7 +291,8 @@ class HovmollerPlotter(LinePlotter):
                        toggled off (consecutive works here)
         name: Nice name for variable of subplot
         vmin: minimum value for a variable (grabbed from the lowest value of some data)
-        vmax: maxmimum value for a variable (grabbed from the highest value of some data)
+        vmax: maxmimum value for a variable (grabbed from the highest value of some
+              data)
         data: Data to be plotted
         times: Date range
         cmap: colormap for variable
@@ -328,10 +337,13 @@ class HovmollerPlotter(LinePlotter):
 
         math_unit = utils.mathtext(unit)
         stats_str = self.get_stats_str(data, math_unit)
+        y_offset = -0.1
+        if self.compare:
+            y_offset = -0.22
 
         ax.text(
             0,
-            -0.1,
+            y_offset,
             stats_str,
             fontsize=14,
             transform=ax.transAxes,

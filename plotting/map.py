@@ -108,7 +108,7 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
-    def __calculate_stats(self) -> tuple:
+    def __apply_poly_mask(self, data) -> np.ma.MaskedArray:
         area = self.area[0]
         polys = []
         for co in area["polygons"] + area["innerrings"]:
@@ -125,10 +125,8 @@ class MapPlotter(Plotter):
         inside_points = np.reshape(inside_points, self.data.shape)
 
         mask = self.data.mask + ~inside_points
-        stats_data = self.data.data[~mask]
+        return self.data.data[~mask]
 
-        return self.get_data_stats(stats_data)
-        
     def load_data(self):
 
         width_scale = 1.25
@@ -282,8 +280,6 @@ class MapPlotter(Plotter):
 
             self.data = data[0]
 
-            self.stats = self.__calculate_stats()
-
             quiver_data = []
             # Store the quiver data on the same grid as the main variable. This
             # will only be used for CSV export.
@@ -292,7 +288,6 @@ class MapPlotter(Plotter):
             if self.__load_quiver():
                 var = dataset.variables[self.quiver["variable"]]
                 quiver_unit = self.dataset_config.variable[var].unit
-                quiver_name = self.dataset_config.variable[var].name
                 quiver_x_var = self.dataset_config.variable[var].east_vector_component
                 quiver_y_var = self.dataset_config.variable[var].north_vector_component
                 quiver_x, quiver_y, _ = cimg_transform.mesh_projection(
@@ -516,10 +511,15 @@ class MapPlotter(Plotter):
         header = [
             ["Dataset", self.dataset_name],
             ["Timestamp", self.timestamp.isoformat()],
-            ["Min", self.stats["min"]],
-            ["Max", self.stats["max"]],
-            ["Mean", self.stats["mean"]],
-            ["Standard Deviation", self.stats["std"]],
+        ]
+
+        masked_data = self.__apply_poly_mask(self.data)
+        stats = [
+            ["", f"{self.variable_name} ({self.variable_unit})"],
+            ["Min", f"{np.nanmin(masked_data):.2f}"],
+            ["Max", f"{np.nanmax(masked_data):.2f}"],
+            ["Mean", f"{np.nanmean(masked_data):.2f}"],
+            ["Standard Deviation", f"{np.nanstd(masked_data):.2f}"],
         ]
 
         columns = [
@@ -576,7 +576,7 @@ class MapPlotter(Plotter):
                 )
             data.append(entry)
 
-        return super(MapPlotter, self).csv(header, columns, data)
+        return super(MapPlotter, self).csv(header, columns, data, stats)
 
     def pole_proximity(self, points):
         near_pole, covers_pole, quad1, quad2, quad3, quad4 = (
@@ -978,12 +978,8 @@ class MapPlotter(Plotter):
             fontsize=14,
         )
 
-        stats_str = (
-            f"Min: {self.stats['min']}, "
-            f"Max: {self.stats['max']}, "
-            f"Mean: {self.stats['mean']}, "
-            f"STD: {self.stats['std']} ({var_unit})"
-        )
+        masked_data = self.__apply_poly_mask(self.data)
+        stats_str = self.get_stats_str(masked_data, var_unit)
 
         if (
             self.quiver is not None
@@ -999,16 +995,16 @@ class MapPlotter(Plotter):
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
             )
-            text_y = axpos.y0 - 0.15
+            y_offset = -0.25
         else:
-            text_y = axpos.y0 - 0.05
+            y_offset = -0.1
 
         ax.text(
-            axpos.x0,
-            text_y,
+            0,
+            y_offset,
             stats_str,
             fontsize=14,
-            transform=plt.gcf().transFigure,
+            transform=map_plot.transAxes,
         )
 
         return super(MapPlotter, self).plot(fig)

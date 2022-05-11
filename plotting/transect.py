@@ -1,5 +1,3 @@
-import re
-
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,7 +48,7 @@ class TransectPlotter(LinePlotter):
                 idx = ~z_shifted.mask * z.mask
                 z[idx] = z_shifted[idx]
             else:
-                break             
+                break
 
     def load_data(self):
         vars_to_load = self.variables
@@ -136,10 +134,6 @@ class TransectPlotter(LinePlotter):
                 "perpendicular": perpendicular,
                 "magnitude": magnitude,
             }
-
-            self.stats = self.get_data_stats(
-                self.transect_data['data']
-            )
 
             if self.surface:
                 surface_pts, surface_dist, _, surface_value = dataset.get_path(
@@ -304,6 +298,14 @@ class TransectPlotter(LinePlotter):
     def csv(self):
         header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
 
+        stats = [
+            ["", f"{self.transect_data['name']} {self.transect_data['unit']}"],
+            ["Min", f"{np.nanmin(self.transect_data['data']):.2f}"],
+            ["Max", f"{np.nanmax(self.transect_data['data']):.2f}"],
+            ["Mean", f"{np.nanmean(self.transect_data['data']):.2f}"],
+            ["Standard Deviation", f"{np.nanstd(self.transect_data['data']):.2f}"],
+        ]
+
         columns = [
             "Latitude",
             "Longitude",
@@ -358,7 +360,7 @@ class TransectPlotter(LinePlotter):
 
                 data.append(entry)
 
-        return super(TransectPlotter, self).csv(header, columns, data)
+        return super(TransectPlotter, self).csv(header, columns, data, stats)
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
@@ -492,11 +494,19 @@ class TransectPlotter(LinePlotter):
             if velocity:
                 figuresize[0] *= 1.25  # Horizontal scaling of figure
                 gs = gridspec.GridSpec(
-                    4, width, width_ratios=width_ratios, height_ratios=[1, 1, 1, 1]
+                    4,
+                    width,
+                    width_ratios=width_ratios,
+                    height_ratios=[1, 1, 1, 1],
+                    hspace=0.2,
                 )
             else:
                 gs = gridspec.GridSpec(
-                    3, width, width_ratios=width_ratios, height_ratios=[1, 1, 1]
+                    3,
+                    width,
+                    width_ratios=width_ratios,
+                    height_ratios=[1, 1, 1],
+                    hspace=0.2,
                 )
         else:
             figuresize[1] *= len(self.variables) * 1.5
@@ -504,10 +514,14 @@ class TransectPlotter(LinePlotter):
                 figuresize[0] *= 1.35
 
                 gs = gridspec.GridSpec(
-                    Row, Col, width_ratios=width_ratios, height_ratios=height_ratios
+                    Row,
+                    Col,
+                    width_ratios=width_ratios,
+                    height_ratios=height_ratios,
+                    hspace=0.2,
                 )
             else:
-                gs = gridspec.GridSpec(Row, Col, width_ratios=width_ratios)
+                gs = gridspec.GridSpec(Row, Col, width_ratios=width_ratios, hspace=0.2)
 
         fig = plt.figure(figsize=figuresize, dpi=self.dpi)
 
@@ -527,12 +541,15 @@ class TransectPlotter(LinePlotter):
             """
             Args:
                 subplots: a GridSpec object (gs)
-                map_subplot: Row number (Note: don't use consecutive rows to allow for expanding figure height)
+                map_subplot: Row number (Note: don't use consecutive rows to allow for
+                             expanding figure height)
                 data: Data to be plotted
                 name: subplot title
                 cmapLabel: label for colourmap legend
-                vmin: minimum value for a variable (grabbed from the lowest value of some data)
-                vmax: maxmimum value for a variable (grabbed from the highest value of some data)onstrate a networked Ope
+                vmin: minimum value for a variable (grabbed from the lowest value of
+                      some data)
+                vmax: maxmimum value for a variable (grabbed from the highest value
+                      of some data)
                 units: units for variable (PSU, Celsius, etc)
                 cmap: colormap for variable
             """
@@ -550,7 +567,8 @@ class TransectPlotter(LinePlotter):
             """
             Finds and returns the correct min/max values for the variable scale
             Args:
-                scale: scale for the left or Right Map (self.scale or self.compare['scale])
+                scale: scale for the left or Right Map (self.scale or
+                       self.compare['scale])
                 data: transect_data
             Returns:
                 (min, max)
@@ -815,7 +833,8 @@ class TransectPlotter(LinePlotter):
                         self.transect_data["name"],
                         vmin,
                         vmax,
-                        # Since both variables are the same doesn't matter which view we reference
+                        # Since both variables are the same doesn't matter which
+                        # view we reference
                         self.transect_data["unit"],
                         # Colormap for difference graphs
                         colormap.find_colormap(self.compare["colormap_diff"]),
@@ -841,8 +860,6 @@ class TransectPlotter(LinePlotter):
                     )
                     vmin = min(vmin, -vmax)
                     vmax = max(vmax, -vmin)
-
-                Row = 0
 
                 velocity_plot()
 
@@ -935,16 +952,14 @@ class TransectPlotter(LinePlotter):
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         var_unit = utils.mathtext(unit)
-        stats_str = (
-            f"Min: {np.nanmin(values):.2f}, "
-            f"Max: {np.nanmax(values):.2f}, "
-            f"Mean: {np.nanmean(values):.2f}, "
-            f"STD: {np.nanstd(values):.2f} ({var_unit})"
-        )
+        stats_str = self.get_stats_str(values, var_unit)
+        y_offset = -0.08
+        if self.compare:
+            y_offset = -0.1
 
         ax.text(
             0,
-            -0.1,
+            y_offset,
             stats_str,
             fontsize=14,
             transform=ax.transAxes,
@@ -971,8 +986,8 @@ class TransectPlotter(LinePlotter):
             plt.ylim(self.depth_limit, 0)
         else:
             deep = np.amax(self.bathymetry["y"] * -1)
-            l = 10 ** np.floor(np.log10(deep))
-            plt.ylim(np.ceil(deep / l) * l, 0)
+            lim = 10 ** np.floor(np.log10(deep))
+            plt.ylim(np.ceil(deep / lim) * lim, 0)
 
         ticks = sorted(set(list(plt.yticks()[0]) + [self.linearthresh, plt.ylim()[0]]))
         if self.depth_limit is not None:
@@ -993,7 +1008,7 @@ class TransectPlotter(LinePlotter):
         bar = plt.colorbar(c, cax=cax)
 
         # Append variable units to color scale label
-        bar.set_label(cmapLabel + " (" + var_unit + ")")
+        bar.set_label(f"{cmapLabel} ({var_unit})")
 
         if len(self.points) > 2:
             station_distances = []
