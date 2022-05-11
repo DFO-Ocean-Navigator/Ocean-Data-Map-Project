@@ -731,7 +731,7 @@ class MapToolbar extends React.Component {
               className="languageButton"
             />
 
-            <OverlayTrigger
+            {/* <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("API Documentation")}</Tooltip>}
             >
@@ -742,7 +742,7 @@ class MapToolbar extends React.Component {
               >
                 API
               </NavItem>
-            </OverlayTrigger>
+            </OverlayTrigger> */}
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip">{_("Help")}</Tooltip>}

@@ -27,15 +27,15 @@ def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
 
     if resolution == "f":
         land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/ne_10m_diff.shp"
+            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_10m_diff.shp"
         )
     elif resolution == "i":
         land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/ne_50m_diff.shp"
+            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_50m_diff.shp"
         )
     else:
         land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + "/ne_110m_diff.shp"
+            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/ne_110m_diff.shp"
         )
 
     # crop land geometries to plot extent
