@@ -162,10 +162,11 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         ylabel_style={"size": 10},
         zorder=1,
     )
-
+    
+    img_path = "/cartopy_resources/bluemarble.png"
     try:
         img = plt.imread(
-            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/bluemarble.png"
+            current_app.config["SHAPE_FILE_DIR"] + img_path
         )
         m.imshow(
             img,
@@ -175,6 +176,7 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
             zorder=1,
         )
     except FileNotFoundError:
+        print(f"Could not open {img_path}, using Cartopy feature interface.")
         m.add_feature(cfeature.LAND)
         m.add_feature(cfeature.OCEAN)
 

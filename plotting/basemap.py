@@ -33,6 +33,7 @@ def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
             current_app.config["SHAPE_FILE_DIR"] + shp_file
         )
     except shpreader.shapefile.ShapefileException:
+        print(f"Could not open {shp_file}, using Cartopy feature interface.")
         land_shp = cfeature.NaturalEarthFeature("physical", "land", resolution)
 
     # crop land geometries to plot extent
