@@ -2,11 +2,10 @@ import datetime
 import re
 
 import cartopy.crs as ccrs
-import numpy as np
+import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
-
+import numpy as np
 from flask import current_app
-from utils.errors import ClientError
 
 
 def get_filename(plot_type, dataset_name, extension):
@@ -164,11 +163,20 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         zorder=1,
     )
 
-    img = plt.imread(current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/bluemarble.png")
-    img_extent = (-180, 180, -90, 90)
-    m.imshow(
-        img, origin="upper", extent=img_extent, transform=ccrs.PlateCarree(), zorder=1
-    )
+    try:
+        img = plt.imread(
+            current_app.config["SHAPE_FILE_DIR"] + "/cartopy_resources/bluemarble.png"
+        )
+        m.imshow(
+            img,
+            origin="upper",
+            extent=(-180, 180, -90, 90),
+            transform=ccrs.PlateCarree(),
+            zorder=1,
+        )
+    except FileNotFoundError:
+        m.add_feature(cfeature.LAND)
+        m.add_feature(cfeature.OCEAN)
 
 
 def point_plot(points, grid_loc):
