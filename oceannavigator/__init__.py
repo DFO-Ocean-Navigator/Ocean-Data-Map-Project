@@ -50,6 +50,25 @@ def configure_log_formatter() -> None:
     )
 
 
+def subprocess_check_output(*args) -> str:
+    try:
+        return (
+            subprocess.check_output([*args], stderr=subprocess.STDOUT)
+            .decode("ascii")
+            .strip()
+        )
+    except UnicodeDecodeError:
+        print(
+            "Unable to decode subprocess response - try updating your current branch."
+        )
+        return ""
+    except subprocess.CalledProcessError as e:
+        print(
+            f"Exception on process - args={args} rc=#{e.returncode} output=#{e.output}"
+        )
+        return ""
+
+
 def create_app(testing: bool = False, dataset_config_path: str = ""):
     configure_log_formatter()
 
@@ -64,14 +83,8 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
     app.config.from_pyfile("oceannavigator.cfg", silent=False)
     app.config.from_envvar("OCEANNAVIGATOR_SETTINGS", silent=True)
     app.testing = testing
-    app.git_hash = (
-        subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
-    )
-    app.git_tag = (
-        subprocess.check_output(["git", "describe", "--tags", "--abbrev=0"])
-        .decode("ascii")
-        .strip()
-    )
+    app.git_hash = subprocess_check_output("git", "rev-parse", "HEAD")
+    app.git_tag = subprocess_check_output("git", "describe", "--tags", "--abbrev=0")
 
     if app.config.get("WSGI_PROFILING"):
         if not os.path.isdir("./profiler_results"):
