@@ -141,6 +141,17 @@ def dump_heap_memory():
             mimetype="application/octet-stream",
         )
 
+@bp_v1_0.route('/api/v1.0/gitinfo')
+def git_info():
+    """
+    Returns the current Git hash of the application.
+    """
+    git_info = {
+        "git_hash" : current_app.git_hash,
+        "git_tag" : current_app.git_tag,
+    }
+    
+    return jsonify(git_info)
 
 @bp_v1_0.route("/api/v1.0/generatescript/")
 def generateScript():
@@ -1433,6 +1444,8 @@ def after_request(response):
     header = response.headers
     # Relying on iptables to keep this safe
     header["Access-Control-Allow-Origin"] = "*"
+    header["X-ONav-Git-Hash"] = current_app.git_hash
+    header["X-ONav-Git-Tag"] = current_app.git_tag
     header["X-XSS-Protection"] = "1; mode=block"
     header["X-Frame-Options"] = "SAMEORIGIN"
 
