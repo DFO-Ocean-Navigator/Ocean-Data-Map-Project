@@ -623,33 +623,20 @@ class MapPlotter(Plotter):
             bearing[bearing < 0] += 2 * np.pi
             bearing *= 180.0 / np.pi
 
+            stats_data = np.stack(
+                (
+                    masked_data.ravel(),
+                    masked_qiver_ew.ravel(),
+                    masked_qiver_ns.ravel(),
+                    bearing.ravel(),
+                )
+            )
             data = data + [
-                [
-                    np.nanmin(masked_data),
-                    np.nanmax(masked_data),
-                    np.nanmean(masked_data),
-                    np.nanstd(masked_data),
-                ],
-                [
-                    np.nanmin(masked_qiver_ew),
-                    np.nanmax(masked_qiver_ew),
-                    np.nanmean(masked_qiver_ew),
-                    np.nanstd(masked_qiver_ew),
-                ],
-                [
-                    np.nanmin(masked_qiver_ns),
-                    np.nanmax(masked_qiver_ns),
-                    np.nanmean(masked_qiver_ns),
-                    np.nanstd(masked_qiver_ns),
-                ],
-                [
-                    np.nanmin(bearing),
-                    np.nanmax(bearing),
-                    np.nanmean(bearing),
-                    np.nanstd(bearing),
-                ],
+                np.nanmin(stats_data, axis=1),
+                np.nanmax(stats_data, axis=1),
+                np.nanmean(stats_data, axis=1),
+                np.nanstd(stats_data, axis=1),
             ]
-
         else:
             data.append(
                 [
@@ -659,6 +646,7 @@ class MapPlotter(Plotter):
                     np.nanstd(masked_data),
                 ]
             )
+        data = np.array(data).T.tolist()
 
         return super(MapPlotter, self).csv(header, columns, data)
 

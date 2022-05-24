@@ -341,31 +341,19 @@ class TimeseriesPlotter(PointPlotter):
                 )
             )
             bearing[inds] = np.nan
+            stats_data = np.stack(
+                (
+                    self.data.ravel(),
+                    self.quiver_data[0].ravel(),
+                    self.quiver_data[1].ravel(),
+                    bearing.ravel(),
+                )
+            )
             data = data + [
-                [
-                    np.nanmin(self.data),
-                    np.nanmax(self.data),
-                    np.nanmean(self.data),
-                    np.nanstd(self.data),
-                ],
-                [
-                    np.nanmin(self.quiver_data[0]),
-                    np.nanmax(self.quiver_data[0]),
-                    np.nanmean(self.quiver_data[0]),
-                    np.nanstd(self.quiver_data[0]),
-                ],
-                [
-                    np.nanmin(self.quiver_data[1]),
-                    np.nanmax(self.quiver_data[1]),
-                    np.nanmean(self.quiver_data[1]),
-                    np.nanstd(self.quiver_data[1]),
-                ],
-                [
-                    np.nanmin(bearing),
-                    np.nanmax(bearing),
-                    np.nanmean(bearing),
-                    np.nanstd(bearing),
-                ],
+                np.nanmin(stats_data, axis=1),
+                np.nanmax(stats_data, axis=1),
+                np.nanmean(stats_data, axis=1),
+                np.nanstd(stats_data, axis=1),
             ]
         else:
             data.append(
