@@ -170,7 +170,6 @@ class ProfilePlotter(PointPlotter):
             )
 
             stats_str = self.get_stats_str(self.data[:, idx, :], var_unit)
-
             y_offset = -0.05
             if len(self.variables) > 2:
                 stats_str = stats_str.replace(", ", ",\n")

@@ -584,17 +584,6 @@ class MapPlotter(Plotter):
             "%s (%s)" % (self.variable_name, self.variable_unit),
         ]
 
-        if have_quiver:
-            # Include bearing information in the exported data, as per user
-            # requests.
-            columns.extend(
-                [
-                    "%s X (%s)" % (self.quiver_name, self.quiver_unit),
-                    "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
-                    "Bearing (degrees clockwise positive from North)",
-                ]
-            )
-
         data = [
             ["Min", "Max", "Mean", "Standard Deviation"],
         ]

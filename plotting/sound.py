@@ -159,30 +159,21 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
     def stats_csv(self):
         header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
 
-        columns = [
-            "Statistic",
-            "Pressure",
-            "Salinity",
-            "Temperature",
-            "Sound Speed",
-        ]
+        columns = ["Statistic", "Pressure", "Salinity", "Temperature", "Sound Speed"]
 
         data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
-        variables = [
-            self.pressure,
-            self.salinity,
-            self.temperature,
-            self.sspeed,
-        ]
+        variables = [self.pressure, self.salinity, self.temperature, self.sspeed]
 
         for var in variables:
-            data.append([
-                np.nanmin(var),
-                np.nanmax(var),
-                np.nanmean(var),
-                np.nanstd(var),
-            ])
+            data.append(
+                [
+                    np.nanmin(var),
+                    np.nanmax(var),
+                    np.nanmean(var),
+                    np.nanstd(var),
+                ]
+            )
 
         data = np.array(data).T.tolist()
 
