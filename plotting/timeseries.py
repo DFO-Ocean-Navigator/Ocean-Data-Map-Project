@@ -402,9 +402,14 @@ class TimeseriesPlotter(PointPlotter):
                 subplot += 1
 
             plt.subplot(gs[:, subplot])
-            plt.plot_date(
-                datenum, np.squeeze(self.data), fmt="-", figure=fig, xdate=True
-            )
+            for idx, _ in enumerate(self.points):
+                plt.plot_date(
+                    datenum,
+                    np.squeeze(self.data[idx, :, :]),
+                    fmt="-",
+                    figure=fig,
+                    xdate=True,
+                )
             plt.ylabel(
                 f"{self.variable_name.title()} ({var_unit})",
                 fontsize=14,
