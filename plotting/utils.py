@@ -9,6 +9,8 @@ from flask import current_app
 
 
 def get_filename(plot_type, dataset_name, extension):
+    if extension == 'stats':
+        extension = 'csv'
     outname = [plot_type, dataset_name, datetime.datetime.now().isoformat()]
 
     return "%s.%s" % ("_".join(map(str, outname)), extension)
@@ -39,6 +41,8 @@ def get_mimetype(filetype: str):
     elif filetype == "odv":
         mime = "text/plain"
         filetype = "txt"
+    elif filetype == "stats":
+        mime = "text/csv"
     else:
         filetype = "png"
         mime = "image/png"

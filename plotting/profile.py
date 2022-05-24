@@ -88,24 +88,33 @@ class ProfilePlotter(PointPlotter):
                 ] + ["%0.1f" % x for x in self.data[p, :, d]]
                 data.append(entry)
 
-        stats_header = [""]
-        stats_min = ["Min:"]
-        stats_max = ["Max:"]
-        stats_mean = ["Mean:"]
-        stats_std = ["Std:"]
+        return super(ProfilePlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        header = [
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.iso_timestamp.isoformat()],
+        ]
+
+        columns = [
+            "Statistic",
+        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
+
+        data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
         for idx, _ in enumerate(self.variables):
-            stats_header.append(
-                f"{self.variable_names[idx]} ({self.variable_units[idx]})"
+            data.append(
+                [
+                    np.nanmin(self.data[:, idx, :]),
+                    np.nanmax(self.data[:, idx, :]),
+                    np.nanmean(self.data[:, idx, :]),
+                    np.nanstd(self.data[:, idx, :]),
+                ]
             )
-            stats_min.append(f"{np.nanmin(self.data[:, idx, :]):.2f}")
-            stats_max.append(f"{np.nanmax(self.data[:, idx, :]):.2f}")
-            stats_mean.append(f"{np.nanmean(self.data[:, idx, :]):.2f}")
-            stats_std.append(f"{np.nanstd(self.data[:, idx, :]):.2f}")
 
-        stats = [stats_header, stats_min, stats_max, stats_mean, stats_std]
+        data = np.array(data).T.tolist()
 
-        return super(ProfilePlotter, self).csv(header, columns, data, stats)
+        return super(ProfilePlotter, self).csv(header, columns, data)
 
     def plot(self):
         # Create base figure

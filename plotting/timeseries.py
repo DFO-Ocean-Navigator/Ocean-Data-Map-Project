@@ -165,8 +165,6 @@ class TimeseriesPlotter(PointPlotter):
             ["Attribution", self.dataset_config.attribution],
         ]
 
-        stats = [[""], ["Min"], ["Max"], ["Mean"], ["Standard Deviation"]]
-
         columns = [
             "Latitude",
             "Longitude",
@@ -292,15 +290,95 @@ class TimeseriesPlotter(PointPlotter):
         d[np.where(d == "nan")] = ""
         data = d.tolist()
 
-        stats[0] = stats[0] + columns[3:]
+        return super(TimeseriesPlotter, self).csv(header, columns, data)
 
-        for i in range(3, d.shape[1]):
-            stats[1].append(f"{np.nanmin(d[:,i].astype(np.double)):.2f}")
-            stats[2].append(f"{np.nanmax(d[:,i].astype(np.double)):.2f}")
-            stats[3].append(f"{np.nanmean(d[:,i].astype(np.double)):.2f}")
-            stats[4].append(f"{np.nanstd(d[:,i].astype(np.double)):.2f}")
+    def stats_csv(self):
+        header = [
+            ["Dataset", self.dataset_config.name],
+            ["Attribution", self.dataset_config.attribution],
+        ]
 
-        return super(TimeseriesPlotter, self).csv(header, columns, data, stats)
+        columns = ["Statistics"]
+
+        # Check to see if the quiver attribute is present. If so the CSV export will
+        # also include X and Y velocity components (pulled from the quiver_data
+        # attribute) and bearing information (to be calculated below).
+        has_quiver = hasattr(self, "quiver_data")
+
+        columns.append("%s (%s)" % (self.variable_name, self.variable_unit))
+
+        data = [
+            ["Min", "Max", "Mean", "Standard Deviation"],
+        ]
+
+        if has_quiver:
+            columns.extend(
+                [
+                    "%s (%s)"
+                    % (
+                        self.vector_variable_names[0],
+                        self.vector_variable_units[0],
+                    ),
+                    "%s (%s)"
+                    % (
+                        self.vector_variable_names[1],
+                        self.vector_variable_units[1],
+                    ),
+                    "Bearing (degrees clockwise positive from North)",
+                ]
+            )
+
+            # Calculate bearings.
+            bearing = np.arctan2(self.quiver_data[1][:], self.quiver_data[0][:])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds = np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data[1]) < 10e-6,
+                    np.abs(self.quiver_data[0]) < 10e-6,
+                )
+            )
+            bearing[inds] = np.nan
+            data = data + [
+                [
+                    np.nanmin(self.data),
+                    np.nanmax(self.data),
+                    np.nanmean(self.data),
+                    np.nanstd(self.data),
+                ],
+                [
+                    np.nanmin(self.quiver_data[0]),
+                    np.nanmax(self.quiver_data[0]),
+                    np.nanmean(self.quiver_data[0]),
+                    np.nanstd(self.quiver_data[0]),
+                ],
+                [
+                    np.nanmin(self.quiver_data[1]),
+                    np.nanmax(self.quiver_data[1]),
+                    np.nanmean(self.quiver_data[1]),
+                    np.nanstd(self.quiver_data[1]),
+                ],
+                [
+                    np.nanmin(bearing),
+                    np.nanmax(bearing),
+                    np.nanmean(bearing),
+                    np.nanstd(bearing),
+                ],
+            ]
+        else:
+            data.append(
+                [
+                    np.nanmin(self.data),
+                    np.nanmax(self.data),
+                    np.nanmean(self.data),
+                    np.nanstd(self.data),
+                ]
+            )
+        data = np.array(data, dtype=object).T.tolist()
+
+        return super(TimeseriesPlotter, self).csv(header, columns, data)
 
     def plot(self):
         if self.scale:
@@ -357,6 +435,14 @@ class TimeseriesPlotter(PointPlotter):
 
                 ax[idx].xaxis_date()
                 ax[idx].set_xlim(datenum[0], datenum[-1])
+
+                ax[idx].text(
+                    0,
+                    -0.25,
+                    self.get_stats_str(self.data[idx, 0, :], var_unit),
+                    fontsize=14,
+                    transform=ax[idx].transAxes,
+                )
 
                 divider = make_axes_locatable(ax[idx])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -438,12 +524,10 @@ class TimeseriesPlotter(PointPlotter):
 
             self.plot_legend(fig, self.names)
 
-            stats_str = self.get_stats_str(self.data, var_unit)
-
             ax.text(
                 0,
                 -0.25,
-                stats_str,
+                self.get_stats_str(self.data, var_unit),
                 fontsize=14,
                 transform=ax.transAxes,
             )

@@ -142,7 +142,6 @@ class TransectPlotter(LinePlotter):
                 vc = self.dataset_config.variable[dataset.variables[self.surface]]
                 surface_unit = vc.unit
                 surface_name = vc.name
-                surface_value = np.multiply(surface_value, surface_factor)
 
                 self.surface_data = {
                     "config": vc,
@@ -298,14 +297,6 @@ class TransectPlotter(LinePlotter):
     def csv(self):
         header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
 
-        stats = [
-            ["", f"{self.transect_data['name']} {self.transect_data['unit']}"],
-            ["Min", f"{np.nanmin(self.transect_data['data']):.2f}"],
-            ["Max", f"{np.nanmax(self.transect_data['data']):.2f}"],
-            ["Mean", f"{np.nanmean(self.transect_data['data']):.2f}"],
-            ["Standard Deviation", f"{np.nanstd(self.transect_data['data']):.2f}"],
-        ]
-
         columns = [
             "Latitude",
             "Longitude",
@@ -360,7 +351,29 @@ class TransectPlotter(LinePlotter):
 
                 data.append(entry)
 
-        return super(TransectPlotter, self).csv(header, columns, data, stats)
+        return super(TransectPlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
+
+        columns = [
+            "Statistic",
+        ] + ["%s (%s)" % (self.transect_data["name"], self.transect_data["unit"])]
+
+        data = [["Min", "Max", "Mean", "Standard Deviation"]]
+
+        data.append(
+                [
+                    np.nanmin(self.transect_data['data']),
+                    np.nanmax(self.transect_data['data']),
+                    np.nanmean(self.transect_data['data']),
+                    np.nanstd(self.transect_data['data']),
+                ]
+            )
+
+        data = np.array(data).T.tolist()
+
+        return super(TransectPlotter, self).csv(header, columns, data)
 
     def odv_ascii(self):
         float_to_str = np.vectorize(lambda x: "%0.3f" % x)
@@ -952,7 +965,6 @@ class TransectPlotter(LinePlotter):
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         var_unit = utils.mathtext(unit)
-        stats_str = self.get_stats_str(values, var_unit)
         y_offset = -0.08
         if self.compare:
             y_offset = -0.1
@@ -960,7 +972,7 @@ class TransectPlotter(LinePlotter):
         ax.text(
             0,
             y_offset,
-            stats_str,
+            self.get_stats_str(values, var_unit),
             fontsize=14,
             transform=ax.transAxes,
         )

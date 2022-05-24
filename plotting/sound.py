@@ -110,12 +110,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        stats_str = self.get_stats_str(self.data, "m/s")
-
         ax.text(
             0,
             -0.05,
-            stats_str,
+            self.get_stats_str(self.sspeed, "m/s"),
             fontsize=14,
             transform=ax.transAxes,
         )
@@ -155,5 +153,37 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                         "%0.1f" % self.sspeed[idx][idx2],
                     ]
                 )
+
+        return super(TemperatureSalinityPlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
+
+        columns = [
+            "Statistic",
+            "Pressure",
+            "Salinity",
+            "Temperature",
+            "Sound Speed",
+        ]
+
+        data = [["Min", "Max", "Mean", "Standard Deviation"]]
+
+        variables = [
+            self.pressure,
+            self.salinity,
+            self.temperature,
+            self.sspeed,
+        ]
+
+        for var in variables:
+            data.append([
+                np.nanmin(var),
+                np.nanmax(var),
+                np.nanmean(var),
+                np.nanstd(var),
+            ])
+
+        data = np.array(data).T.tolist()
 
         return super(TemperatureSalinityPlotter, self).csv(header, columns, data)

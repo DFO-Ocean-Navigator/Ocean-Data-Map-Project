@@ -56,6 +56,8 @@ class Plotter(metaclass=ABCMeta):
             return self.csv()
         elif self.filetype == "txt":
             return self.odv_ascii()
+        elif self.filetype == "stats":
+            return self.stats_csv()
         else:
             return self.plot()
 
@@ -251,15 +253,11 @@ class Plotter(metaclass=ABCMeta):
             buf.seek(0)
             return (buf.getvalue(), self.mime, self.filename)
 
-    def csv(self, header=[], columns=[], data=[], statistics=[]):
+    def csv(self, header=[], columns=[], data=[]):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
-            for s in statistics:
-                buf.write("\n" + ", ".join(s))
-            buf.write("\n\n")
-            buf.write(", ".join(columns))
-
+            buf.write(", ".join(columns))   
             buf.write("\n")
 
             for line in data:

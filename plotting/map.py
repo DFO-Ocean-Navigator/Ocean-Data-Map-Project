@@ -122,10 +122,10 @@ class MapPlotter(Plotter):
             for lat, lon in zip(np.ravel(self.latitude), np.ravel(self.longitude))
         ]
         inside_points = path.contains_points(points)
-        inside_points = np.reshape(inside_points, self.data.shape)
+        inside_points = np.reshape(inside_points, data.shape)
 
-        mask = self.data.mask + ~inside_points
-        return self.data.data[~mask]
+        mask = data.mask + ~inside_points
+        return data.data[~mask]
 
     def load_data(self):
 
@@ -513,15 +513,6 @@ class MapPlotter(Plotter):
             ["Timestamp", self.timestamp.isoformat()],
         ]
 
-        masked_data = self.__apply_poly_mask(self.data)
-        stats = [
-            ["", f"{self.variable_name} ({self.variable_unit})"],
-            ["Min", f"{np.nanmin(masked_data):.2f}"],
-            ["Max", f"{np.nanmax(masked_data):.2f}"],
-            ["Mean", f"{np.nanmean(masked_data):.2f}"],
-            ["Standard Deviation", f"{np.nanstd(masked_data):.2f}"],
-        ]
-
         columns = [
             "Latitude",
             "Longitude",
@@ -576,7 +567,100 @@ class MapPlotter(Plotter):
                 )
             data.append(entry)
 
-        return super(MapPlotter, self).csv(header, columns, data, stats)
+        return super(MapPlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        # If the user has selected the display of quiver data in the browser,
+        # then also export that data in the CSV file.
+        have_quiver = self.__load_quiver()
+
+        header = [
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()],
+        ]
+
+        columns = [
+            "Statistic",
+            "%s (%s)" % (self.variable_name, self.variable_unit),
+        ]
+
+        if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
+            columns.extend(
+                [
+                    "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                    "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                    "Bearing (degrees clockwise positive from North)",
+                ]
+            )
+
+        data = [
+            ["Min", "Max", "Mean", "Standard Deviation"],
+        ]
+
+        masked_data = self.__apply_poly_mask(self.data)
+
+        if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
+            columns.extend(
+                [
+                    "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                    "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                    "Bearing (degrees clockwise positive from North)",
+                ]
+            )
+
+            masked_qiver_ew = self.__apply_poly_mask(self.quiver_data_fullgrid[0])
+            masked_qiver_ns = self.__apply_poly_mask(self.quiver_data_fullgrid[1])
+
+            bearing = np.arctan2(
+                masked_qiver_ew.ravel(),
+                masked_qiver_ns.ravel(),
+            )
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
+
+            data = data + [
+                [
+                    np.nanmin(masked_data),
+                    np.nanmax(masked_data),
+                    np.nanmean(masked_data),
+                    np.nanstd(masked_data),
+                ],
+                [
+                    np.nanmin(masked_qiver_ew),
+                    np.nanmax(masked_qiver_ew),
+                    np.nanmean(masked_qiver_ew),
+                    np.nanstd(masked_qiver_ew),
+                ],
+                [
+                    np.nanmin(masked_qiver_ns),
+                    np.nanmax(masked_qiver_ns),
+                    np.nanmean(masked_qiver_ns),
+                    np.nanstd(masked_qiver_ns),
+                ],
+                [
+                    np.nanmin(bearing),
+                    np.nanmax(bearing),
+                    np.nanmean(bearing),
+                    np.nanstd(bearing),
+                ],
+            ]
+
+        else:
+            data.append(
+                [
+                    np.nanmin(masked_data),
+                    np.nanmax(masked_data),
+                    np.nanmean(masked_data),
+                    np.nanstd(masked_data),
+                ]
+            )
+
+        return super(MapPlotter, self).csv(header, columns, data)
 
     def pole_proximity(self, points):
         near_pole, covers_pole, quad1, quad2, quad3, quad4 = (
@@ -891,9 +975,9 @@ class MapPlotter(Plotter):
                     )
 
                 if self.contour["legend"]:
-                    handles, l = contours.legend_elements()
+                    handles, lab = contours.legend_elements()
                     labels = []
-                    for i, lab in enumerate(l):
+                    for i, _ in enumerate(lab):
                         if self.contour.get("hatch"):
                             if self.contour_unit == "fraction":
                                 if i == 0:
@@ -978,9 +1062,6 @@ class MapPlotter(Plotter):
             fontsize=14,
         )
 
-        masked_data = self.__apply_poly_mask(self.data)
-        stats_str = self.get_stats_str(masked_data, var_unit)
-
         if (
             self.quiver is not None
             and self.quiver["variable"] != ""
@@ -999,10 +1080,12 @@ class MapPlotter(Plotter):
         else:
             y_offset = -0.1
 
+        masked_data = self.__apply_poly_mask(self.data)
+
         ax.text(
             0,
             y_offset,
-            stats_str,
+            self.get_stats_str(masked_data, var_unit),
             fontsize=14,
             transform=map_plot.transAxes,
         )

@@ -336,7 +336,6 @@ class HovmollerPlotter(LinePlotter):
         ax.set_facecolor("dimgray")
 
         math_unit = utils.mathtext(unit)
-        stats_str = self.get_stats_str(data, math_unit)
         y_offset = -0.1
         if self.compare:
             y_offset = -0.22
@@ -344,7 +343,7 @@ class HovmollerPlotter(LinePlotter):
         ax.text(
             0,
             y_offset,
-            stats_str,
+            self.get_stats_str(data, math_unit),
             fontsize=14,
             transform=ax.transAxes,
         )
