@@ -1,10 +1,11 @@
 import datetime
 import re
 
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.basemap import Basemap
-
-from utils.errors import ClientError, ServerError
+from flask import current_app
 
 
 def get_filename(plot_type, dataset_name, extension):
@@ -76,7 +77,7 @@ def mathtext(text):
 
 
 # Plots point(s) on a map (called when "Show Location" is true)
-def _map_plot(points, path=True, quiver=True):
+def _map_plot(points, grid_loc, path=True, quiver=True):
     minlat = np.min(points[0, :])
     maxlat = np.max(points[0, :])
     minlon = np.min(points[1, :])
@@ -94,17 +95,16 @@ def _map_plot(points, path=True, quiver=True):
     if maxlat > 90:
         maxlat = 90
 
-    m = Basemap(
-        llcrnrlon=minlon,
-        llcrnrlat=minlat,
-        urcrnrlon=maxlon,
-        urcrnrlat=maxlat,
-        lat_0=np.mean(points[0, :]),
-        lon_0=np.mean(points[1, :]),
-        resolution="i",
-        projection="merc",
-        rsphere=(6378137.00, 6356752.3142),
+    plot_projection = ccrs.Mercator(
+        central_longitude=np.mean(points[1, :]),
+        min_latitude=minlat,
+        max_latitude=maxlat,
     )
+    pc_projection = ccrs.PlateCarree()
+
+    m = plt.subplot(grid_loc, projection=plot_projection)
+    m.set_extent([minlon, maxlon, minlat, maxlat])
+    m.coastlines()
 
     if path:
         marker = ""
@@ -115,15 +115,17 @@ def _map_plot(points, path=True, quiver=True):
         m.plot(
             points[1, :],
             points[0, :],
-            latlon=True,
             color="r",
             linestyle="-",
             marker=marker,
+            transform=pc_projection,
+            zorder=2,
         )
         if quiver:
-            qx, qy = m([points[1, -1]], [points[0, -1]])
-            qu = points[1, -1] - points[1, -2]
-            qv = points[0, -1] - points[0, -2]
+            qx = np.array([points[1, -1]])
+            qy = np.array([points[0, -1]])
+            qu = np.array([points[1, -1] - points[1, -2]])
+            qv = np.array([points[0, -1] - points[0, -2]])
             qmag = np.sqrt(qu**2 + qv**2)
             qu /= qmag
             qv /= qmag
@@ -137,40 +139,51 @@ def _map_plot(points, path=True, quiver=True):
                 width=0.25,
                 minlength=0.25,
                 color="r",
+                transform=pc_projection,
+                zorder=3,
             )
     else:
         for idx in range(0, points.shape[1]):
-            m.plot(points[1, idx], points[0, idx], "o", latlon=True, color="r")
+            m.plot(
+                points[1, idx],
+                points[0, idx],
+                "o",
+                color="r",
+                transform=pc_projection,
+                zorder=2,
+            )
 
-    # Draw a realistic background "blue marble"
+    m.gridlines(
+        draw_labels={"bottom": "x", "left": "y"},
+        dms=True,
+        x_inline=False,
+        y_inline=False,
+        xlabel_style={"size": 10, "rotation": 0},
+        ylabel_style={"size": 10},
+        zorder=1,
+    )
+    
+    img_path = "/cartopy_resources/bluemarble.png"
     try:
-        m.bluemarble()
-
-        m.drawparallels(
-            np.arange(
-                round(minlat),
-                round(maxlat),
-                round(max(lat_d / 1.5, (maxlat - minlat) / 5)),
-            ),
-            labels=[0, 1, 0, 0],
+        img = plt.imread(
+            current_app.config["SHAPE_FILE_DIR"] + img_path
         )
-        m.drawmeridians(
-            np.arange(
-                round(minlon),
-                round(maxlon),
-                round(max(lon_d / 1.5, (maxlon - minlon) / 5)),
-            ),
-            labels=[0, 0, 0, 1],
+        m.imshow(
+            img,
+            origin="upper",
+            extent=(-180, 180, -90, 90),
+            transform=ccrs.PlateCarree(),
+            zorder=1,
         )
-    except:
-        raise ClientError(
-            "Plot is too close to pole. Changing your projection may solve this - Return to the main page, under settings, then Projection"
-        )
+    except FileNotFoundError:
+        print(f"Could not open {img_path}, using Cartopy feature interface.")
+        m.add_feature(cfeature.LAND)
+        m.add_feature(cfeature.OCEAN)
 
 
-def point_plot(points):
-    _map_plot(points, False)
+def point_plot(points, grid_loc):
+    _map_plot(points, grid_loc, False)
 
 
-def path_plot(points, quiver=True):
-    _map_plot(points, True, quiver=quiver)
+def path_plot(points, grid_loc, quiver=True):
+    _map_plot(points, grid_loc, True, quiver=quiver)

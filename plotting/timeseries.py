@@ -382,21 +382,26 @@ class TimeseriesPlotter(PointPlotter):
 
             # Render point location
             if self.showmap:
-                plt.subplot(gs[0, 0])
-                subplot += 1
                 utils.point_plot(
                     np.array(
                         [
                             [x[0] for x in self.points],  # Latitudes
-                            [x[1] for x in self.points],
+                            [x[1] for x in self.points],  # Longitudes
                         ]
-                    )
-                )  # Longitudes
+                    ),
+                    gs[0, subplot],
+                )
+                subplot += 1
 
             plt.subplot(gs[:, subplot])
-            plt.plot_date(
-                datenum, np.squeeze(self.data), fmt="-", figure=fig, xdate=True
-            )
+            for idx, _ in enumerate(self.points):
+                plt.plot_date(
+                    datenum,
+                    np.squeeze(self.data[idx, :, :]),
+                    fmt="-",
+                    figure=fig,
+                    xdate=True,
+                )
             plt.ylabel(
                 f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
                 fontsize=14,

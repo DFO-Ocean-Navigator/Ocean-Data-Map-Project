@@ -3,15 +3,14 @@ import os
 import tempfile
 from textwrap import wrap
 
+import cartopy.crs as ccrs
+import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-import pyresample.utils
 from flask_babel import gettext
-from geopy.distance import GeodesicDistance
 from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.basemap import maskoceans
 from osgeo import gdal, osr
 from shapely.geometry import LinearRing, MultiPolygon, Point
@@ -25,13 +24,15 @@ import plotting.utils as utils
 from data import open_dataset
 from oceannavigator import DatasetConfig
 from plotting.plotter import Plotter
-from utils.errors import ClientError, ServerError
+from utils.errors import ClientError
 from utils.misc import list_areas
 
 
 class MapPlotter(Plotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "map"
+        self.plot_projection = None
+        self.pc_projection = ccrs.PlateCarree()
 
         super().__init__(dataset_name, query, **kwargs)
 
@@ -40,7 +41,8 @@ class MapPlotter(Plotter):
 
         if len(self.variables) > 1:
             raise ClientError(
-                f"MapPlotter only supports 1 variable. Received multiple: {self.variables}"
+                f"MapPlotter only supports 1 variable. \
+                    Received multiple: {self.variables}"
             )
 
         self.projection = query.get("projection")
@@ -107,21 +109,9 @@ class MapPlotter(Plotter):
         )
 
     def load_data(self):
-        distance = GeodesicDistance()
-        height = (
-            distance.measure(
-                (self.bounds[0], self.centroid[1]), (self.bounds[2], self.centroid[1])
-            )
-            * 1000
-            * 1.25
-        )
-        width = (
-            distance.measure(
-                (self.centroid[0], self.bounds[1]), (self.centroid[0], self.bounds[3])
-            )
-            * 1000
-            * 1.25
-        )
+
+        width_scale = 1.25
+        height_scale = 1.25
 
         if self.projection == "EPSG:32661":  # north pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
@@ -129,15 +119,16 @@ class MapPlotter(Plotter):
             blat = 5 * np.floor(blat / 5)
 
             if self.centroid[0] > 80 or near_pole or covers_pole:
-                self.basemap = basemap.load_map(
-                    "npstere",
-                    self.centroid,
-                    height,
-                    width,
-                    min(self.bounds[0], self.bounds[2]),
+                self.plot_projection = ccrs.Stereographic(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
                 )
+                width_scale = 1.5
             else:
-                self.basemap = basemap.load_map("lcc", self.centroid, height, width)
+                self.plot_projection = ccrs.LambertConformal(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
+                )
         elif self.projection == "EPSG:3031":  # south pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
             blat = max(self.bounds[0], self.bounds[2])
@@ -147,73 +138,69 @@ class MapPlotter(Plotter):
                 (self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80)
                 or covers_pole
             ) or near_pole:
-                self.basemap = basemap.load_map(
-                    "spstere",
-                    self.centroid,
-                    height,
-                    width,
-                    max(self.bounds[0], self.bounds[2]),
+                self.plot_projection = ccrs.Stereographic(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
                 )
+                width_scale = 1.5
             else:
-                self.basemap = basemap.load_map("lcc", self.centroid, height, width)
+                self.plot_projection = ccrs.LambertConformal(
+                    central_latitude=self.centroid[0],
+                    central_longitude=self.centroid[1],
+                )
+
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
-            height_bounds = [self.bounds[0], self.bounds[2]]
-            width_bounds = [self.bounds[1], self.bounds[3]]
-            height_buffer = (abs(height_bounds[1] - height_bounds[0])) * 0.1
-            width_buffer = (abs(width_bounds[0] - width_bounds[1])) * 0.1
-
-            if abs(width_bounds[1] - width_bounds[0]) > 360:
+            if abs(self.bounds[3] - self.bounds[1]) > 360:
                 raise ClientError(
                     gettext(
-                        "You have requested an area that exceeds the width of the world. \
-                                        Thinking big is good but plots need to be less than 360 deg wide."
+                        "You have requested an area that exceeds the width \
+                        of the world. Thinking big is good but plots need to \
+                        be less than 360 deg wide."
                     )
                 )
+            self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
 
-            if height_bounds[1] < 0:
-                height_bounds[1] = height_bounds[1] + height_buffer
-            else:
-                height_bounds[1] = height_bounds[1] + height_buffer
-            if height_bounds[0] < 0:
-                height_bounds[0] = height_bounds[0] - height_buffer
-            else:
-                height_bounds[0] = height_bounds[0] - height_buffer
-
-            new_width_bounds = []
-            new_width_bounds.append(width_bounds[0] - width_buffer)
-
-            new_width_bounds.append(width_bounds[1] + width_buffer)
-
-            if abs(new_width_bounds[1] - new_width_bounds[0]) > 360:
-                width_buffer = np.floor(
-                    (360 - abs(width_bounds[1] - width_bounds[0])) / 2
-                )
-                new_width_bounds[0] = width_bounds[0] - width_buffer
-                new_width_bounds[1] = width_bounds[1] + width_buffer
-
-            if new_width_bounds[0] < -360:
-                new_width_bounds[0] = -360
-            if new_width_bounds[1] > 720:
-                new_width_bounds[1] = 720
-
-            self.basemap = basemap.load_map(
-                "merc",
-                self.centroid,
-                (height_bounds[0], height_bounds[1]),
-                (new_width_bounds[0], new_width_bounds[1]),
-            )
         else:
-            self.basemap = basemap.load_map("lcc", self.centroid, height, width)
+            self.plot_projection = ccrs.LambertConformal(
+                central_latitude=self.centroid[0], central_longitude=self.centroid[1]
+            )
 
-        if self.basemap.aspect < 1:
+        proj_bounds = self.plot_projection.transform_points(
+            self.pc_projection,
+            np.array([self.bounds[1], self.bounds[3]]),
+            np.array([self.bounds[0], self.bounds[2]]),
+        )
+        proj_size = np.diff(proj_bounds, axis=0)
+
+        width = proj_size[0][0] * width_scale
+        height = proj_size[0][1] * height_scale
+
+        aspect_ratio = height / width
+        if aspect_ratio < 1:
             gridx = 500
-            gridy = int(500 * self.basemap.aspect)
+            gridy = int(500 * aspect_ratio)
         else:
             gridy = 500
-            gridx = int(500 / self.basemap.aspect)
+            gridx = int(500 / aspect_ratio)
 
-        self.longitude, self.latitude = self.basemap.makegrid(gridx, gridy)
+        self.plot_res = basemap.get_resolution(height, width)
+
+        x_grid, y_grid, self.plot_extent = cimg_transform.mesh_projection(
+            self.plot_projection,
+            gridx,
+            gridy,
+            x_extents=(-width / 2, width / 2),
+            y_extents=(-height / 2, height / 2),
+        )
+
+        latlon_grid = self.pc_projection.transform_points(
+            self.plot_projection, x_grid, y_grid
+        )
+
+        self.longitude = latlon_grid[:, :, 0]
+        self.latitude = latlon_grid[:, :, 1]
+
         variables_to_load = self.variables[
             :
         ]  # we don't want to change self,variables so copy it
@@ -285,7 +272,18 @@ class MapPlotter(Plotter):
                 quiver_name = self.dataset_config.variable[var].name
                 quiver_x_var = self.dataset_config.variable[var].east_vector_component
                 quiver_y_var = self.dataset_config.variable[var].north_vector_component
-                quiver_lon, quiver_lat = self.basemap.makegrid(50, 50)
+                quiver_x, quiver_y, _ = cimg_transform.mesh_projection(
+                    self.plot_projection,
+                    50,
+                    50,
+                    self.plot_extent[:2],
+                    self.plot_extent[2:],
+                )
+                quiver_coords = self.pc_projection.transform_points(
+                    self.plot_projection, quiver_x, quiver_y
+                )
+                quiver_lon = quiver_coords[:, :, 0]
+                quiver_lat = quiver_coords[:, :, 1]
 
                 x_vals = dataset.get_area(
                     np.array([quiver_lat, quiver_lon]),
@@ -408,15 +406,11 @@ class MapPlotter(Plotter):
 
                 self.data -= data
         # Load bathymetry data
-        self.bathymetry = overlays.bathymetry(
-            self.basemap, self.latitude, self.longitude, blur=2
-        )
+        self.bathymetry = overlays.bathymetry(self.latitude, self.longitude, blur=2)
 
         if self.depth != "bottom" and self.depth != 0:
             if quiver_data:
-                quiver_bathymetry = overlays.bathymetry(
-                    self.basemap, quiver_lat, quiver_lon
-                )
+                quiver_bathymetry = overlays.bathymetry(quiver_lat, quiver_lon)
 
             self.data[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
             for d in self.quiver_data:
@@ -583,6 +577,7 @@ class MapPlotter(Plotter):
         return near_pole, covers_pole
 
     def plot(self):
+
         if self.filetype == "geotiff":
             f, fname = tempfile.mkstemp()
             os.close(f)
@@ -595,19 +590,21 @@ class MapPlotter(Plotter):
                 1,
                 gdal.GDT_Float64,
             )
-            x = [self.longitude[0, 0], self.longitude[-1, -1]]
-            y = [self.latitude[0, 0], self.latitude[-1, -1]]
+            x = np.array([self.longitude[0, 0], self.longitude[-1, -1]])
+            y = np.array([self.latitude[0, 0], self.latitude[-1, -1]])
             outRasterSRS = osr.SpatialReference()
 
-            x, y = self.basemap(x, y)
-            outRasterSRS.ImportFromProj4(self.basemap.proj4string)
+            pts = self.plot_projection.transform_points(self.pc_projection, x, y)
+            x = pts[:, 0]
+            y = pts[:, 1]
+            outRasterSRS.ImportFromProj4(self.plot_projection.proj4_init)
 
             pixelWidth = (x[-1] - x[0]) / self.longitude.shape[0]
             pixelHeight = (y[-1] - y[0]) / self.latitude.shape[0]
             outRaster.SetGeoTransform((x[0], pixelWidth, 0, y[0], 0, pixelHeight))
 
             outband = outRaster.GetRasterBand(1)
-            d = self.data.astype("Float64")
+            d = self.data.astype(np.float64)
             ndv = d.fill_value
             outband.WriteArray(d.filled(ndv))
             outband.SetNoDataValue(ndv)
@@ -622,7 +619,14 @@ class MapPlotter(Plotter):
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
         figuresize = list(map(float, self.size.split("x")))
-        fig = plt.figure(figsize=figuresize, dpi=self.dpi)
+        fig, map_plot = basemap.load_map(
+            self.plot_projection,
+            self.plot_extent,
+            figuresize,
+            self.dpi,
+            self.plot_res,
+        )
+
         ax = plt.gca()
 
         if self.scale:
@@ -633,13 +637,28 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        c = self.basemap.imshow(self.data, vmin=vmin, vmax=vmax, cmap=self.cmap)
+        c = map_plot.imshow(
+            self.data,
+            vmin=vmin,
+            vmax=vmax,
+            cmap=self.cmap,
+            extent=self.plot_extent,
+            transform=self.plot_projection,
+            origin="lower",
+            zorder=0,
+        )
 
         if len(self.quiver_data) == 2:
             qx, qy = self.quiver_data
-            qx, qy, x, y = self.basemap.rotate_vector(
-                qx, qy, self.quiver_longitude, self.quiver_latitude, returnxy=True
+            qx, qy = self.plot_projection.transform_vectors(
+                self.pc_projection, self.quiver_longitude, self.quiver_latitude, qx, qy
             )
+            pts = self.plot_projection.transform_points(
+                self.pc_projection, self.quiver_longitude, self.quiver_latitude
+            )
+            x = pts[:, :, 0]
+            y = pts[:, :, 1]
+
             qx = np.ma.masked_where(np.ma.getmask(self.quiver_data[0]), qx)
             qy = np.ma.masked_where(np.ma.getmask(self.quiver_data[1]), qy)
 
@@ -658,7 +677,7 @@ class MapPlotter(Plotter):
                     qcmap = colormap.colormaps.get("speed")
                 else:
                     qcmap = colormap.colormaps.get(self.quiver["colormap"])
-                q = self.basemap.quiver(
+                q = map_plot.quiver(
                     x,
                     y,
                     qx,
@@ -670,9 +689,10 @@ class MapPlotter(Plotter):
                     scale=qscale,
                     pivot="mid",
                     cmap=qcmap,
+                    transform=self.plot_projection,
                 )
             else:
-                q = self.basemap.quiver(
+                q = map_plot.quiver(
                     x,
                     y,
                     qx,
@@ -682,6 +702,8 @@ class MapPlotter(Plotter):
                     headlength=4,
                     scale=qscale,
                     pivot="mid",
+                    transform=self.plot_projection,
+                    zorder=6,
                 )
 
             if self.quiver["magnitude"] == "length":
@@ -708,17 +730,18 @@ class MapPlotter(Plotter):
 
         if self.show_bathymetry:
             # Plot bathymetry on top
-            cs = self.basemap.contour(
+            cs = map_plot.contour(
                 self.longitude,
                 self.latitude,
                 self.bathymetry,
-                latlon=True,
                 linewidths=0.5,
                 norm=FuncNorm(
                     (lambda x: np.log10(x), lambda x: 10**x), vmin=1, vmax=6000
                 ),
                 cmap="Greys",
                 levels=[100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000],
+                transform=self.pc_projection,
+                zorder=4,
             )
             plt.clabel(cs, fontsize="x-large", fmt="%1.0fm")
 
@@ -727,7 +750,11 @@ class MapPlotter(Plotter):
                 polys = []
                 for co in a["polygons"] + a["innerrings"]:
                     coords = np.array(co).transpose()
-                    mx, my = self.basemap(coords[1], coords[0])
+                    coords_transform = self.plot_projection.transform_points(
+                        self.pc_projection, coords[1], coords[0]
+                    )
+                    mx = coords_transform[:, 0]
+                    my = coords_transform[:, 1]
                     map_coords = list(zip(mx, my))
                     polys.append(Polygon(map_coords))
 
@@ -736,14 +763,24 @@ class MapPlotter(Plotter):
                     paths.append(poly.get_path())
                 path = Path.make_compound_path(*paths)
 
-                poly = PathPatch(path, fill=None, edgecolor="#ffffff", linewidth=5)
-                plt.gca().add_patch(poly)
-                poly = PathPatch(path, fill=None, edgecolor="k", linewidth=2)
-                plt.gca().add_patch(poly)
+                for ec, lw in zip(["w", "k"], [5, 3]):
+                    poly = PathPatch(
+                        path,
+                        fill=None,
+                        edgecolor=ec,
+                        linewidth=lw,
+                        transform=self.plot_projection,
+                        zorder=3,
+                    )
+                    map_plot.add_patch(poly)
 
             if self.names is not None and len(self.names) > 1:
                 for idx, name in enumerate(self.names):
-                    x, y = self.basemap(self.centroids[idx].y, self.centroids[idx].x)
+                    pts = self.plot_projection.transform_points(
+                        self.pc_projection, self.centroids[idx].x, self.centroids[idx].y
+                    )
+                    x = pts[:, 0]
+                    y = pts[:, 1]
                     plt.annotate(
                         xy=(x, y),
                         s=name,
@@ -788,39 +825,42 @@ class MapPlotter(Plotter):
                         cmap = colormap.find_colormap(self.contour_name)
 
                 if not self.contour.get("hatch"):
-                    contours = self.basemap.contour(
+                    contours = map_plot.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
-                        latlon=True,
                         linewidths=2,
                         levels=levels,
                         cmap=cmap,
+                        transform=self.pc_projection,
+                        zorder=5,
                     )
                 else:
                     hatches = ["//", "xx", "\\\\", "--", "||", "..", "oo", "**"]
                     if len(levels) + 1 < len(hatches):
                         hatches = hatches[0 : len(levels) + 2]
-                    self.basemap.contour(
+                    map_plot.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
-                        latlon=True,
                         linewidths=1,
                         levels=levels,
                         colors="k",
+                        transform=self.pc_projection,
+                        zorder=5,
                     )
-                    contours = self.basemap.contourf(
+                    contours = map_plot.contourf(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
-                        latlon=True,
                         colors=["none"],
                         levels=levels,
                         hatches=hatches,
                         vmin=cmin,
                         vmax=cmax,
                         extend="both",
+                        transform=self.pc_projection,
+                        zorder=5,
                     )
 
                 if self.contour["legend"]:
@@ -888,37 +928,6 @@ class MapPlotter(Plotter):
                         for legobj in leg.legendHandles:
                             legobj.set_linewidth(3)
 
-        # Map Info
-        self.basemap.drawmapboundary(fill_color=(0.3, 0.3, 0.3), zorder=-1)
-        if (
-            self.basemap.coastsegs and self.basemap.coastsegs[0]
-        ):  # ensure map contains coastline before trying to draw
-            self.basemap.drawcoastlines(linewidth=0.5)
-        self.basemap.fillcontinents(color="grey", lake_color="dimgrey")
-
-        def find_lines(values):
-            if np.amax(values) - np.amin(values) < 1:
-                return [values.mean()]
-            elif np.amax(values) - np.amin(values) < 25:
-                return np.round(
-                    np.arange(
-                        np.amin(values),
-                        np.amax(values),
-                        round(np.amax(values) - np.amin(values)) / 5,
-                    )
-                )
-            else:
-                return np.arange(
-                    round(np.amin(values), -1), round(np.amax(values), -1), 5
-                )
-
-        parallels = find_lines(self.latitude)
-        meridians = find_lines(self.longitude)
-        self.basemap.drawparallels(parallels, labels=[1, 0, 0, 0], color=(0, 0, 0, 0.5))
-        self.basemap.drawmeridians(
-            meridians, labels=[0, 0, 0, 1], color=(0, 0, 0, 0.5), latmax=85
-        )
-
         title = self.plotTitle
 
         if self.plotTitle is None or self.plotTitle == "":
@@ -931,9 +940,10 @@ class MapPlotter(Plotter):
                 self.date_formatter(self.timestamp),
             )
         plt.title(title.strip())
-        ax = plt.gca()
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
+        axpos = map_plot.get_position()
+        pos_x = axpos.x0 + axpos.width + 0.01
+        pos_y = axpos.y0
+        cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
         bar = plt.colorbar(c, cax=cax)
         bar.set_label(
             "%s (%s)"
@@ -947,13 +957,13 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
             and self.quiver["magnitude"] == "color"
         ):
-            bax = divider.append_axes("bottom", size="5%", pad=0.35)
+            pos_x = axpos.x0
+            pos_y = axpos.y0 - 0.05
+            bax = fig.add_axes([pos_x, pos_y, axpos.width, 0.03])
             qbar = plt.colorbar(q, orientation="horizontal", cax=bax)
             qbar.set_label(
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
             )
-
-        fig.tight_layout(pad=3, w_pad=4)
 
         return super(MapPlotter, self).plot(fig)

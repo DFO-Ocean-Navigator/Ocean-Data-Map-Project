@@ -166,8 +166,7 @@ class HovmollerPlotter(LinePlotter):
 
         if self.showmap:
             # Plot the path on a map
-            plt.subplot(gs[:, 0])
-            utils.path_plot(self.path_points)
+            utils.path_plot(self.path_points, gs[:, 0])
 
         # Calculate variable range
         if self.scale:
