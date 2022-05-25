@@ -307,10 +307,6 @@ class TimeseriesPlotter(PointPlotter):
 
         columns.append("%s (%s)" % (self.variable_name, self.variable_unit))
 
-        data = [
-            ["Min", "Max", "Mean", "Standard Deviation"],
-        ]
-
         if has_quiver:
             columns.extend(
                 [

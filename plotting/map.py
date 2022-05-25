@@ -584,10 +584,6 @@ class MapPlotter(Plotter):
             "%s (%s)" % (self.variable_name, self.variable_unit),
         ]
 
-        data = [
-            ["Min", "Max", "Mean", "Standard Deviation"],
-        ]
-
         masked_data = self.__apply_poly_mask(self.data)
 
         if have_quiver:
