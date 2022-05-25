@@ -9,8 +9,8 @@ from flask import current_app
 
 
 def get_filename(plot_type, dataset_name, extension):
-    if extension == 'stats':
-        extension = 'csv'
+    if extension == "stats":
+        extension = "csv"
     outname = [plot_type, dataset_name, datetime.datetime.now().isoformat()]
 
     return "%s.%s" % ("_".join(map(str, outname)), extension)
