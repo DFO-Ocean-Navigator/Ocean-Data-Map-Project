@@ -348,23 +348,16 @@ class TimeseriesPlotter(PointPlotter):
                     self.quiver_data[1].ravel(),
                     bearing.ravel(),
                 )
-            )
-            data = data + [
-                np.nanmin(stats_data, axis=1),
-                np.nanmax(stats_data, axis=1),
-                np.nanmean(stats_data, axis=1),
-                np.nanstd(stats_data, axis=1),
-            ]
+            ).T
         else:
-            data.append(
-                [
-                    np.nanmin(self.data),
-                    np.nanmax(self.data),
-                    np.nanmean(self.data),
-                    np.nanstd(self.data),
-                ]
-            )
-        data = np.array(data, dtype=object).T.tolist()
+            stats_data = np.expand_dims(self.data, 1)
+
+        data = [
+            ["Min"] + np.array(np.nanmin(stats_data, axis=0)).tolist(),
+            ["Max"] + np.array(np.nanmax(stats_data, axis=0)).tolist(),
+            ["Mean"] + np.array(np.nanmean(stats_data, axis=0)).tolist(),
+            ["Standard Deviation"] + np.array(np.nanstd(stats_data, axis=0)).tolist(),
+        ]
 
         return super(TimeseriesPlotter, self).csv(header, columns, data)
 

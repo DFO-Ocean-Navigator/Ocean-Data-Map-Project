@@ -601,12 +601,12 @@ class MapPlotter(Plotter):
                 ]
             )
 
-            masked_qiver_ew = self.__apply_poly_mask(self.quiver_data_fullgrid[0])
-            masked_qiver_ns = self.__apply_poly_mask(self.quiver_data_fullgrid[1])
+            masked_quiver_ew = self.__apply_poly_mask(self.quiver_data_fullgrid[0])
+            masked_quiver_ns = self.__apply_poly_mask(self.quiver_data_fullgrid[1])
 
             bearing = np.arctan2(
-                masked_qiver_ew.ravel(),
-                masked_qiver_ns.ravel(),
+                masked_quiver_ew.ravel(),
+                masked_quiver_ns.ravel(),
             )
             bearing = np.pi / 2.0 - bearing
             bearing[bearing < 0] += 2 * np.pi
@@ -615,27 +615,20 @@ class MapPlotter(Plotter):
             stats_data = np.stack(
                 (
                     masked_data.ravel(),
-                    masked_qiver_ew.ravel(),
-                    masked_qiver_ns.ravel(),
+                    masked_quiver_ew.ravel(),
+                    masked_quiver_ns.ravel(),
                     bearing.ravel(),
                 )
-            )
-            data = data + [
-                np.nanmin(stats_data, axis=1),
-                np.nanmax(stats_data, axis=1),
-                np.nanmean(stats_data, axis=1),
-                np.nanstd(stats_data, axis=1),
-            ]
+            ).T
         else:
-            data.append(
-                [
-                    np.nanmin(masked_data),
-                    np.nanmax(masked_data),
-                    np.nanmean(masked_data),
-                    np.nanstd(masked_data),
-                ]
-            )
-        data = np.array(data).T.tolist()
+            stats_data = np.expand_dims(masked_data, 1)
+
+        data = [
+            ["Min"] + np.nanmin(stats_data, axis=0).tolist(),
+            ["Max"] + np.nanmax(stats_data, axis=0).tolist(),
+            ["Mean"] + np.nanmean(stats_data, axis=0).tolist(),
+            ["Standard Deviation"] + np.nanstd(stats_data, axis=0).tolist(),
+        ]
 
         return super(MapPlotter, self).csv(header, columns, data)
 
