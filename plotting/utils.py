@@ -10,6 +10,7 @@ from flask import current_app
 
 def get_filename(plot_type, dataset_name, extension):
     if extension == "stats":
+        plot_type += "_statistics"
         extension = "csv"
     outname = [plot_type, dataset_name, datetime.datetime.now().isoformat()]
 
