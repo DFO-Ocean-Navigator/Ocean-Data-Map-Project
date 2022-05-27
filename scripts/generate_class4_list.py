@@ -19,8 +19,8 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 log = logging.getLogger()
 
 
-def list_class4_files(class4_path):
-    files = {f for f in Path(class4_path).glob("**/*GIOPS*profile.nc")}
+def list_class4_files(class4_path, pattern):
+    files = {f for f in Path(class4_path).glob(pattern)}
     result = [
         {
             "name": datetime.datetime.strptime(
@@ -46,7 +46,8 @@ def main():
 
     config = {}
     log.info(
-        f"Attempting to load Ocean Navigator configuration from file {opts.config_file.name}..."
+        f"Attempting to load Ocean Navigator configuration\
+             from file {opts.config_file.name}..."
     )
     try:
         exec(compile(opts.config_file.read(), opts.config_file.name, "exec"), config)
@@ -58,53 +59,62 @@ def main():
         log.error("Error: CLASS4_OP_PATH entry not found in config file.")
         sys.exit(1)
 
+    if 'CLASS4_RAO_PATH' not in config:
+        log.error("Error: CLASS4_RAO_PATH entry not found in config file.")
+        sys.exit(1)
+
     if "CACHE_DIR" not in config:
         log.error("Cache directory specification not found in configuration file")
         sys.exit(1)
 
-    log.info(f"Generating list of Class4 files from {config['CLASS4_OP_PATH']}...")
-    class4_files = list_class4_files(config['CLASS4_OP_PATH'])
+    class4_paths = [config['CLASS4_OP_PATH'], config['CLASS4_RAO_PATH']]
+    output_files = ["class4_OP_files.pickle", "class4_RAO_files.pickle"]
+    pattern = ["**/**/*GIOPS*profile.nc", "**/**/*SAM2_OLA.nc"]
 
-    output_file_name = Path(config["CACHE_DIR"], "class4_files.pickle")
-    try:
-        output_file = open(output_file_name, "wb")
-    except IOError:
-        log.error(f"Unable to open output file {output_file_name}")
-        sys.exit(1)
+    for path, file, pattern in zip(class4_paths, output_files, pattern):
+        log.info(f"Generating list of Class4 files from {path}...")
+        class4_files = list_class4_files(path, pattern)
 
-    log.info(f"Obtaining exclusive lock on output file {output_file_name }...")
-    # Make at most "max_tries" attempts to acquire the lock.
-    num_tries, max_tries = 0, 10
-    attempt_lock, lock_acquired = True, False
-    while attempt_lock:
+        output_file_name = Path(config["CACHE_DIR"], file)
         try:
-            fcntl.lockf(output_file, fcntl.LOCK_EX)
+            output_file = open(output_file_name, "wb")
         except IOError:
-            num_tries += 1
-            if num_tries == max_tries:
-                lock_acquired = False
-                attempt_lock = False
+            log.error(f"Unable to open output file {output_file_name}")
+            sys.exit(1)
+
+        log.info(f"Obtaining exclusive lock on output file {output_file_name }...")
+        # Make at most "max_tries" attempts to acquire the lock.
+        num_tries, max_tries = 0, 10
+        attempt_lock, lock_acquired = True, False
+        while attempt_lock:
+            try:
+                fcntl.lockf(output_file, fcntl.LOCK_EX)
+            except IOError:
+                num_tries += 1
+                if num_tries == max_tries:
+                    lock_acquired = False
+                    attempt_lock = False
+                else:
+                    time.sleep(1)
             else:
-                time.sleep(1)
-        else:
-            lock_acquired = True
-            attempt_lock = False
+                lock_acquired = True
+                attempt_lock = False
 
-    if not lock_acquired:
-        log.error(f"Unable to acquire lock on output file {output_file_name}")
-        sys.exit(1)
+        if not lock_acquired:
+            log.error(f"Unable to acquire lock on output file {output_file_name}")
+            sys.exit(1)
 
-    log.info("Writing list of Class4 files to output file ...")
-    pickle.dump(class4_files, output_file)
+        log.info("Writing list of Class4 files to output file ...")
+        pickle.dump(class4_files, output_file)
 
-    log.info("Releasing lock on output file ...")
-    try:
-        fcntl.lockf(output_file, fcntl.LOCK_UN)
-    except IOError:
-        log.error(f"Unable to release lock on output file {output_file_name}")
-        sys.exit(1)
-    finally:
-        output_file.close()
+        log.info("Releasing lock on output file ...")
+        try:
+            fcntl.lockf(output_file, fcntl.LOCK_UN)
+        except IOError:
+            log.error(f"Unable to release lock on output file {output_file_name}")
+            sys.exit(1)
+        finally:
+            output_file.close()
     log.info("Finished.")
 
 
