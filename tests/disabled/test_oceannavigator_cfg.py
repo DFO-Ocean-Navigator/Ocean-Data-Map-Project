@@ -16,7 +16,6 @@ class TestOceanNavigatorCfg(unittest.TestCase):
             self.config = dict(config_parser.items("dummy_section"))
 
     def test_config_values(self):
-      
         self.assertEqual(self.config.get("cache_dir"), '"/tmp/oceannavigator"')
         self.assertEqual(
             self.config.get("tile_cache_dir"), '"/tmp/oceannavigator/tiles"'

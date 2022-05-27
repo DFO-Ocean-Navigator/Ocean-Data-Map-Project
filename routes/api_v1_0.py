@@ -490,13 +490,15 @@ def get_data_v1_0():
         return jsonify(d)
 
 
-@bp_v1_0.route('/api/v1.0/class4/<string:class4_type>/<string:q>/<string:class4_id>/')
+@bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_type>/<string:class4_id>/')
 def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
 
     """
     API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
 
     <string:q>         : forecasts / models (Data Request)
+    <string:class4_type> : type of the desired class4 - Can be ocean_predict or 
+                           riops_obs
     <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
 
     Returns a list of class4 datapoints for a given day
