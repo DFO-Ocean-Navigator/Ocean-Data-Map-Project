@@ -800,20 +800,21 @@ def query_v1_0(q: str):
     resp.cache_control.max_age = 86400
     return resp
 
-
+@bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>/<string:q_type>.json")
 @bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")
-def query_id_v1_0(q: str, q_id: str):
+def query_id_v1_0(q: str, q_id: str, q_type: str = None):
     """
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
 
     <string:q>    : Type of Data (areas, class4)
     <string:q_id> :
+    <string:q_type> : Type of class4 data (optional)
 
     """
     if q == "areas":
         data = utils.misc.list_areas(q_id)
     elif q == "class4":
-        data = class4.list_class4(q_id)
+        data = class4.list_class4(q_id, q_type)
     else:
         raise APIError(
             "The Specified Parameter is Invalid - Must be one of (areas, class4)"

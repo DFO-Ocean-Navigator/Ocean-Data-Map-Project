@@ -42,7 +42,7 @@ class Class4Window extends React.Component {
   }
 
   onLocalUpdate(key, value) {
-    if (this._mounted) {
+    if (this._mounted && value) {
 
       let newState = {};
       if (typeof(key) === "string") {
