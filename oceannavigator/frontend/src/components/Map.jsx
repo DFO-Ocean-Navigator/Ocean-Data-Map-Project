@@ -559,7 +559,7 @@ export default class Map extends React.PureComponent {
           if (velocity < knotsToMetersPerSecond(0.5)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
-                scale: 0.3,
+                scale: 0.25,
                 src: I1,
                 opacity: 1,
                 anchor: anchor,
@@ -570,7 +570,7 @@ export default class Map extends React.PureComponent {
           else if (velocity < knotsToMetersPerSecond(1.0)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
-                scale: 0.35,
+                scale: 0.30,
                 src: I2,
                 opacity: 1,
                 anchor: anchor,
@@ -600,7 +600,7 @@ export default class Map extends React.PureComponent {
               })
             })
           }
-          else if (velocity < knotsToMetersPerSecond(5.0)) {
+          else if (velocity < knotsToMetersPerSecond(6.0)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
                 scale: 0.5,
@@ -611,10 +611,10 @@ export default class Map extends React.PureComponent {
               })
             })
           }
-          else if (velocity < knotsToMetersPerSecond(7.0)) {
+          else if (velocity < knotsToMetersPerSecond(12.0)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
-                scale: 0.7,
+                scale: 0.6,
                 src: I6,
                 opacity: 1,
                 anchor: anchor,
@@ -622,10 +622,10 @@ export default class Map extends React.PureComponent {
               })
             })
           }
-          else if (velocity < knotsToMetersPerSecond(10.0)) {
+          else if (velocity < knotsToMetersPerSecond(18.0)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
-                scale: 0.75,
+                scale: 0.7,
                 src: I7,
                 opacity: 1,
                 anchor: anchor,
@@ -633,10 +633,10 @@ export default class Map extends React.PureComponent {
               })
             })
           }
-          else if (velocity < knotsToMetersPerSecond(13.0)) {
+          else if (velocity < knotsToMetersPerSecond(36.0)) {
             return new olstyle.Style({
               image: new olstyle.Icon({
-                scale: 0.9,
+                scale: 0.8,
                 src: I8,
                 opacity: 1,
                 anchor: anchor,
