@@ -221,6 +221,7 @@ def datasets_query_v1_0():
                     "quantum": config.quantum,
                     "help": config.help,
                     "attribution": config.attribution,
+                    "model_class": config.model_class,
                 }
             )
     data = sorted(data, key=lambda k: k["value"])
@@ -469,10 +470,14 @@ def get_data_v1_0():
 
         bearings = None
         if "mag" in result["variable"]:
+            bearings_var = DatasetConfig(
+                result["dataset"]).variable[result["variable"]].bearing_component
+            if not bearings_var:
+                bearings_var = "bearing"            
             with open_dataset(
-                config, variable="bearing", timestamp=result["time"]
+                config, variable=bearings_var, timestamp=result["time"]
             ) as ds_bearing:
-                bearings = ds_bearing.nc_data.get_dataset_variable("bearing")[
+                bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
                     data_slice
                 ].squeeze(drop=True)
 
