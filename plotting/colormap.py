@@ -293,6 +293,15 @@ colormaps = {
     "temperature": mcolors.ListedColormap(
         np.loadtxt(os.path.join(data_dir, "temperature.txt"))
     ),
+    "10 metre U wind component": cmocean.cm.balance,
+    "10 metre v wind component": cmocean.cm.balance,
+    "Significant height of wind waves": cmocean.cm.tempo,
+    "Direction of wind waves": cmocean.cm.balance,
+    "Mean zero-crossing wave period": cmocean.cm.phase,
+    "Peak wave period": cmocean.cm.phase,
+    "Sea ice area fraction": cmocean.cm.matter,
+    "Significant height of combined wind waves and swell": cmocean.cm.tempo,
+    "Wind Velocity": cmocean.cm.amp,
 }
 colormaps["wind"] = colormaps["velocity"]
 

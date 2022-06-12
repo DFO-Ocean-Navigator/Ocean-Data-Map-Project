@@ -438,3 +438,19 @@ class VectorVariableConfig(VariableConfig):
             north_vector_component = None
 
         return north_vector_component
+    
+    @property
+    def bearing_component(self) -> str:
+        """
+        Returns the bearing_component for the variable
+        if defined in dataset config file
+
+        Returns:
+            str -- bearing_component name
+        """
+        try:
+            bearing_component = self.__get_attribute("bearing_component")
+        except KeyError:
+            bearing_component = None
+
+        return bearing_component

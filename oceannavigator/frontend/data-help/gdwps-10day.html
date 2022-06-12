@@ -1,0 +1,43 @@
+<html>
+	<p><a href="https://dd.weather.gc.ca/model_gdwps/netcdf/">Global Deterministic Wave Prediction System (GDWPS)</a><br/><br/>
+How the GDWPS 05 day atmospheric elements forecasts are derived;<br/><br/>
+<table>
+	<tr><td> GDWPS pseudo-analysis is executed four times a day for 6 hours
+			 centred at 00, 06, 12, and 18 UTC </td></tr>
+</table><br/><br/>
+The Global Deterministic Wave Prediction System (GDWPS) carries out physics calculations to arrive at deterministic predictions of atmospheric elements from the current day out to 10 days into the future. 
+Atmospheric elements include temperature, precipitation, cloud cover, wind speed and direction, humidity and others.
+This product contains raw numerical results of these calculations. 
+Geographical coverage is global. Data is available at horizontal resolutions of 25 km and 66 km. Data is available for 28 vertical levels.
+The winds and ice are available hourly from the IAU (incremental analysis update) cycle of the GDWPS G2 run. 
+The GDWPS pseudo-analysis is executed four times a day for 6 hourscentred at 00, 06, 12, and 18 UTC. 
+Each pseudo-analysis retrieves initial conditions by reading a restart file, 
+which was written at the end of the previous pseudo-analysis, and so it is a smooth continuation of the previous run. 
+The forecast is executed twice per day. 
+The initial conditions of the 00 UTC forecast come from the previous day's 18 UTC pseudo-analysis, 
+and the initial conditions of the 12 UTC forecast come from the 06 UTC pseudo-analysis. 
+In order to bridge the 3-hour gap from the end of the pseudo-analysis to 
+the availability of the GDWPS G1 run, the G1 IAU data is used.<br/><br/>
+<table>
+<tr><td>Variables and derived products from GDWPS: </td>
+    <td>Significant height of wind waves (m)<br/>
+	Direction of wind waves (degree<br/>
+	10 metre U wind component (m/s)<br/>
+	10 metre V wind component (m/s)<br/>
+	Mean zero-crossing wave period (s)<br/>
+	Peak wave period (s)<br/>
+	Sea ice area fraction (%)<br/>
+	Wind Velocity (m/s)<br/>
+	derived wind wave velocity (m/s)</td></tr>
+</table><br/><br/>
+Geographical Coverage: global ocean<br/><br/>
+Spatial Resolution: Direction: 36 bins (10° each) Frequency: 36 bins from 0.035 Hz to 0.984 Hz in increments of 1.10.
+Horizontal resolution: 1/4 degree
+Independent variables: x, y, time, spectral frequency, spectral direction
+<br/><br/>
+Geographical Coverage: global ocean
+Domain: Computational 3 overlapping grids (p01: 59N - 86N,  p02: 65S - 65N,  p03: 80S - 61.5S) <br/><br/>
+Formulation: Linear balance equation for the spectral wave action density<br/><br/>
+Time steps: Overall time step 450 s<br/><br/>
+Data Source: <a href="https://eccc-msc.github.io/open-data/msc-datamart/readme_en/">Environment and Climate Change Canada</a></p>
+</html>

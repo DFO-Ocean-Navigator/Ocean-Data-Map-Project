@@ -75,7 +75,8 @@ class DatasetSelector extends React.Component {
     });
 
     const quantum = currentDataset.quantum;
-
+    const model_class= currentDataset.model_class
+    
     GetVariablesPromise(newDataset).then(variableResult => {
       this.setState({ loadingPercent: 33 });
 
@@ -124,7 +125,7 @@ class DatasetSelector extends React.Component {
             dataset: newDataset,
 
             quantum: quantum,
-
+            model_class: model_class,
             datasetVariables: variableResult.data,
             variable: newVariable,
             variable_scale: newVariableScale,
@@ -370,7 +371,8 @@ class DatasetSelector extends React.Component {
     let quiverSelector = null;
     if (this.props.showQuiverSelector && !this.state.loading) {
       let quiverVariables = [];
-      if (this.state.datasetVariables) {
+      const ListvalidQuivModelClass = ["Mercator"]    // List of Valid Model_Class for Quiver Plot. Need to update this List when Model_Class : "Nemo" and "Fvcom" working
+      if ((ListvalidQuivModelClass.includes(this.state.model_class)) && (this.state.datasetVariables)) {
         quiverVariables = this.state.datasetVariables.filter((variable) => {
           return variable.id.includes("mag") && variable.id.includes("vel");
         });
