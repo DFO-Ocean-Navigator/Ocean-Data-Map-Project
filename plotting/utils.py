@@ -162,12 +162,10 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         ylabel_style={"size": 10},
         zorder=1,
     )
-    
+
     img_path = "/cartopy_resources/bluemarble.png"
     try:
-        img = plt.imread(
-            current_app.config["SHAPE_FILE_DIR"] + img_path
-        )
+        img = plt.imread(current_app.config["SHAPE_FILE_DIR"] + img_path)
         m.imshow(
             img,
             origin="upper",

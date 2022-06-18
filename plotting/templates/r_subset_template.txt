@@ -1,0 +1,6 @@
+library(jsonlite)
+
+
+query <- '{q}'
+
+print("NOT IMPLEMENTED")

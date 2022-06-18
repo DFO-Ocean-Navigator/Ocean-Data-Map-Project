@@ -1,28 +1,31 @@
 import os
 import xml.etree.ElementTree as ET
 from operator import itemgetter
+from typing import List, Union
 
 import numpy as np
 import pyproj
-from flask import current_app
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import LinearRing
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
+from oceannavigator.settings import get_settings
 
 
-def list_kml_files(subdir):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
+def list_kml_files(subdir: str) -> List[dict]:
+    settings = get_settings()
+
+    kml_dir = os.path.join(settings.overlay_kml_dir, subdir)
 
     files = []
-    for f in os.listdir(DIR):
+    for f in os.listdir(kml_dir):
         name = None
         if not f.endswith(".kml"):
             continue
         try:
-            root = ET.parse(DIR + "/" + f).getroot()
+            root = ET.parse(kml_dir + "/" + f).getroot()
         except ET.ParseError:
             continue
         nsmap = root.tag.split("}", 1)[0] + "}"
@@ -37,7 +40,10 @@ def list_kml_files(subdir):
     return sorted(files, key=itemgetter("name"))
 
 
-def _get_view(extent):
+def _get_view(extent: Union[str, None]) -> Union[LinearRing, None]:
+    if not extent:
+        return None
+
     extent = list(map(float, extent.split(",")))
     view = LinearRing(
         [
@@ -50,8 +56,10 @@ def _get_view(extent):
     return view
 
 
-def _get_kml(subdir, file_id):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
+def _get_kml(subdir: str, file_id: str):
+    settings = get_settings()
+
+    DIR = os.path.join(settings.overlay_kml_dir, subdir)
     f = os.path.join(DIR, "%s.kml" % file_id)
     folder = None
     root = ET.parse(f).getroot()
@@ -64,10 +72,10 @@ def _get_kml(subdir, file_id):
     return folder, nsmap
 
 
-def points(file_id, projection, resolution, extent):
+def points(file_id: str, projection: str, extent: str) -> dict:
     proj = pyproj.Proj(projection)
     view = _get_view(extent)
-    folder, nsmap = _get_kml("point", file_id)
+    folder, _ = _get_kml("point", file_id)
     points = []
     name = None
 
@@ -77,10 +85,14 @@ def points(file_id, projection, resolution, extent):
         if "coordinates" in child.tag:
             c_txt = child.text
             lonlat = list(map(float, c_txt.split(",")))
-            x, y = proj(lonlat[0], lonlat[1])
-            p = Point(y, x)
 
-            if view.envelope.intersects(p):
+            should_append = True
+            if view:
+                x, y = proj(lonlat[0], lonlat[1])
+                p = Point(y, x)
+                should_append = view.envelope.intersects(p)
+
+            if should_append:
                 points.append(
                     {
                         "type": "Feature",
@@ -96,17 +108,16 @@ def points(file_id, projection, resolution, extent):
                     }
                 )
 
-    result = {
+    return {
         "type": "FeatureCollection",
         "features": points,
     }
-    return result
 
 
-def lines(file_id, projection, resolution, extent):
+def lines(file_id, projection, extent) -> dict:
     proj = pyproj.Proj(projection)
     view = _get_view(extent)
-    folder, nsmap = _get_kml("line", file_id)
+    folder, _ = _get_kml("line", file_id)
     lines = []
     name = None
 
@@ -148,8 +159,9 @@ def lines(file_id, projection, resolution, extent):
     return result
 
 
-def list_areas(file_id, simplify=True):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
+def list_areas(file_id, simplify=True) -> List[dict]:
+    settings = get_settings()
+    AREA_DIR = os.path.join(settings.overlay_kml_dir, "area")
 
     areas = []
     f = os.path.join(AREA_DIR, "%s.kml" % file_id)
@@ -194,9 +206,7 @@ def list_areas(file_id, simplify=True):
             }
         )
 
-    areas = sorted(areas, key=lambda k: k["name"])
-
-    return areas
+    return sorted(areas, key=lambda k: k["name"])
 
 
 def areas(area_id, projection, resolution, extent):
@@ -273,12 +283,10 @@ def areas(area_id, projection, resolution, extent):
                 }
             )
 
-    result = {
+    return {
         "type": "FeatureCollection",
         "features": areas,
     }
-
-    return result
 
 
 def get_point_data(dataset, variable, time, depth, location):

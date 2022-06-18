@@ -19,7 +19,7 @@ def generatePython(url, scriptType: str) -> BytesIO:
     if "null" in query:
         query = query.replace("null", "None")
 
-    with open(f"plotting/templates/python{scriptType}template.txt", "r") as f:
+    with open(f"plotting/templates/python_{scriptType}_template.txt", "r") as f:
         template = str(f.read())
 
         if scriptType == "PLOT":
@@ -51,7 +51,7 @@ def generateR(url, scriptType: str) -> BytesIO:
     if "null" in query:
         query = query.replace("null", "None")
 
-    with open(f"plotting/templates/r{scriptType}template.txt", "r") as f:
+    with open(f"plotting/templates/r_{scriptType}_template.txt", "r") as f:
         template = str(f.read())
 
         if scriptType == "PLOT":

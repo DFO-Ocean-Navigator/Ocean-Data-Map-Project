@@ -98,7 +98,7 @@ class TemperatureSalinityPlotter(PointPlotter):
                         [x[1] for x in self.points],
                     ]
                 ),
-                gs[0, 0]
+                gs[0, 0],
             )  # Longitudes
 
         # Plot TS Diagram

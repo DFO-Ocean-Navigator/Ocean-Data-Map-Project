@@ -1,10 +1,13 @@
+from typing import Union
+
 from data.calculated import CalculatedData
 from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
+from oceannavigator.dataset_config import DatasetConfig
 
 
-def open_dataset(dataset, **kwargs):
+def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
     """Open a dataset.
 
     Creates a CalculatedData (derived from NetCDFData) instance to handle dataset file
@@ -38,7 +41,7 @@ def open_dataset(dataset, **kwargs):
     }
 
     if not dataset:
-        raise ValueError("Unknown dataset.")
+        raise ValueError(f"Unknown dataset: {dataset}")
 
     try:
         url = dataset.url

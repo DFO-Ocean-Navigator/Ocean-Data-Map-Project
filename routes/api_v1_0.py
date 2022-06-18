@@ -1,14 +1,36 @@
+import datetime
+import os
+
+import geojson
+import numpy as np
+from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import FileResponse, StreamingResponse
+
+import plotting.colormap
+import routes.enums as e
+import utils.misc
+from data import open_dataset
+from data.sqlite_database import SQLiteDatabase
+from data.transformers.geojson import data_array_to_geojson
+from data.utils import get_data_vars_from_equation, time_index_to_datetime
+from oceannavigator.dataset_config import DatasetConfig
+from oceannavigator.log import log
+from oceannavigator.settings import get_settings
+from plotting.colormap import plot_colormaps
+from plotting.scale import get_scale
+from plotting.scriptGenerator import generatePython, generateR
+from plotting.tile import bathymetry as plot_bathymetry
+from plotting.tile import scale as plot_scale
+
+"""
 import base64
 import datetime
-import gc
 import gzip
 import json
 import os
-import pickle
 import shutil
 import sqlite3
-import sys
-import tempfile
 from io import BytesIO
 
 import geojson
@@ -46,13 +68,12 @@ from data.utils import (
     get_data_vars_from_equation,
     time_index_to_datetime,
 )
-from oceannavigator import DatasetConfig
+from oceannavigator.dataset_config import get_dataset_config
 from plotting.class4 import Class4Plotter
 from plotting.hovmoller import HovmollerPlotter
 from plotting.map import MapPlotter
 from plotting.observation import ObservationPlotter
 from plotting.profile import ProfilePlotter
-from plotting.scriptGenerator import generatePython, generateR
 from plotting.sound import SoundSpeedPlotter
 from plotting.stats import stats as areastats
 from plotting.stick import StickPlotter
@@ -61,235 +82,142 @@ from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import APIError, ClientError, ErrorBase
-
-from .schemas import (
-    DepthSchema,
-    GenerateScriptSchema,
-    GetDataSchema,
-    QuantumSchema,
-    TimestampsSchema,
+"""
+router = APIRouter(
+    prefix="/api/v1.0",
+    responses={404: {"message": "Not found"}},
 )
 
-bp_v1_0 = Blueprint("api_v1_0", __name__)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~
-# API INTERFACE V1.0
-# ~~~~~~~~~~~~~~~~~~~~~~~
-
 MAX_CACHE = 315360000
-FAILURE = ClientError("Bad API usage")
 
 
-@bp_v1_0.errorhandler(ErrorBase)
-def handle_error_v1(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
-
-
-@bp_v1_0.route("/api/")
-def info_v1():
-    raise APIError(
-        """
-        This is the Ocean Navigator API.
-        Additional parameters are required to complete a request.
-        Help can be found at ...
-        """
-    )
-
-
-@bp_v1_0.route("/api/v1.0/")
-def info_v1_0():
-    raise APIError(
-        """
-        This is the Ocean Navigator API.
-        Additional parameters are required to complete a request.
-        Help can be found at ...
-        """
-    )
-
-
-@bp_v1_0.route("/api/test-sentry")
-def test_sentry():
-    # Hit this endpoint to confirm that exception and transaction logging to Sentry are
-    # operating correctly; a transaction should appear in the appropriate project at:
-    # https://sentry.io/organizations/dfo-ocean-navigator/performance/
-    raise APIError("This is the Ocean Navigator API Sentry integration test endpoint.")
-
-
-@bp_v1_0.route("/api/dump-heap-memory", methods=["GET"])
-def dump_heap_memory():
-
-    with tempfile.NamedTemporaryFile() as dump:
-        xs = []
-        for obj in gc.get_objects():
-            i = id(obj)
-            size = sys.getsizeof(obj, 0)
-            #    referrers = [id(o) for o in gc.get_referrers(obj) if hasattr(o, '__class__')]
-            referents = [
-                id(o) for o in gc.get_referents(obj) if hasattr(o, "__class__")
-            ]
-            if hasattr(obj, "__class__"):
-                cls = str(obj.__class__)
-                xs.append({"id": i, "class": cls, "size": size, "referents": referents})
-        pickle.dump(xs, dump)
-
-        return send_file(
-            dump.name,
-            download_name=f"onav_memory_dump_{datetime.datetime.now()}.pickle",
-            as_attachment=True,
-            mimetype="application/octet-stream",
-        )
-
-@bp_v1_0.route('/api/v1.0/gitinfo')
-def git_info():
+@router.get("/git_info")
+async def git_info():
     """
     Returns the current Git hash of the application.
     """
+
+    settings = get_settings()
+
     git_info = {
-        "git_hash" : current_app.git_hash,
-        "git_tag" : current_app.git_tag,
+        "git_hash": settings.git_hash,
+        "git_tag": settings.git_tag,
     }
-    
-    return jsonify(git_info)
 
-@bp_v1_0.route("/api/v1.0/generatescript/")
-def generateScript():
-    """
-    API Format: /api/v1.0/generatescript/?query='...'&lang='...'&scriptType='...'
+    return git_info
 
-    query(JSON): Will contain the URI encoded JSON query object for the api script
-    lang (string) : Language of the requested API script (python/r)
-    scriptType (string): Type of requested script (PLOT/CSV)
-    **Query must be written in JSON and converted to encodedURI**
-    """
 
-    try:
-        result = GenerateScriptSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
-
-    lang = result["lang"]
-    query = result["query"]
-    script_type = result["scriptType"]
-
-    if lang == "python":
+@router.get("/generate_script")
+async def generate_script(
+    query: str = Query(..., description="string-ified JSON"),
+    lang: e.ScriptLang = Query(..., description="Language of the requested API script"),
+    script_type: e.ScriptType = Query(..., description="Type of requested script"),
+):
+    if lang == e.ScriptLang.python:
         b = generatePython(query, script_type)
-        resp = send_file(
-            b,
-            as_attachment=True,
-            download_name=f"API_script_{script_type}.py",
-            mimetype="application/x-python",
-        )
+        media_type = "application/x-python"
+        filename = f"ocean_navigator_api_script_{script_type}.py"
 
-    elif lang == "r":
+    elif lang == e.ScriptLang.r:
         b = generateR(query, script_type)
-        resp = send_file(
-            b,
-            as_attachment=True,
-            download_name=f"API_script_{script_type}.r",
-            mimetype="text/plain",
-        )
+        media_type = "text/plain"
+        filename = f"ocean_navigator_api_script_{script_type}.r"
 
-    return resp
+    return StreamingResponse(
+        b,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename=#{filename}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/datasets/")
-def datasets_query_v1_0():
+@router.get("/datasets")
+async def datasets():
     """
-    API Format: /api/v1.0/datasets/
-
-    Optional arguments:
-    * id: Show only the name and id of the datasets
-
-    Returns:
-        List of available datasets w/ some metadata.
+    List of available datasets w/ some metadata.
     """
 
     data = []
-    if "id" in request.args:
-        for key in DatasetConfig.get_datasets():
-            config = DatasetConfig(key)
-            data.append({"id": key, "value": config.name})
-    else:
-        for key in DatasetConfig.get_datasets():
-            config = DatasetConfig(key)
-            data.append(
-                {
-                    "id": key,
-                    "value": config.name,
-                    "quantum": config.quantum,
-                    "help": config.help,
-                    "attribution": config.attribution,
-                }
-            )
+    for key in DatasetConfig.get_datasets():
+        config = DatasetConfig(key)
+        data.append(
+            {
+                "id": key,
+                "value": config.name,
+                "quantum": config.quantum,
+                "help": config.help,
+                "attribution": config.attribution,
+            }
+        )
     data = sorted(data, key=lambda k: k["value"])
-    resp = jsonify(data)
-    return resp
+    return data
 
 
-@bp_v1_0.route("/api/v1.0/quantum/")
-def quantum_query_v1_0():
+@router.get("/dataset/{dataset}")
+async def dataset(
+    dataset: str = Path(
+        None,
+        title="The key of the dataset.",
+        example="giops_day",
+    )
+):
+    config = DatasetConfig(dataset)
+
+    return {
+        "id": dataset,
+        "value": config.name,
+        "quantum": config.quantum,
+        "help": config.help,
+        "attribution": config.attribution,
+    }
+
+
+@router.get("/dataset/{dataset}/quantum")
+async def quantum(
+    dataset: str = Path(
+        ...,
+        title="The key of the dataset.",
+        example="giops_day",
+    )
+):
     """
-    Returns the quantum of a given dataset.
-
-    API Format: /api/v1.0/quantum/
-
-    Required parameters:
-    * dataset: Dataset key (e.g. giops_day) - can be found using /api/v1.0/datasets/
-
-    Returns:
-        Dataset quantum string.
+    Returns the time scale (i.e. quantum) for a dataset.
     """
 
-    try:
-        result = QuantumSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
+    config = DatasetConfig(dataset)
 
-    config = DatasetConfig(result["dataset"])
-
-    quantum = config.quantum
-
-    return jsonify(quantum)
+    return {"value": config.quantum}
 
 
-@bp_v1_0.route("/api/v1.0/variables/", methods=["GET"])
-def variables_query_v1_0():
+@router.get("/dataset/{dataset}/variables")
+async def variables(
+    dataset: str = Path(
+        ...,
+        title="The key of the dataset.",
+        example="giops_day",
+    ),
+    has_depth_only: bool = Query(
+        False, description="When True, only variables with depth will be returned"
+    ),
+    vectors_only: bool = Query(
+        False, description="When True, only variables with magnitude will be returned"
+    ),
+):
     """
     Returns the available variables for a given dataset.
-
-    API Format: /api/v1.0/variables/?dataset='...'&3d_only&vectors_only
-
-    Required Arguments:
-    * dataset      : Dataset key - Can be found using /api/v1.0/datasets/
-
-    Optional Arguments:
-    * 3d_only      : Boolean; When True, only variables with depth will be returned
-    * vectors_only : Boolean; When True, only variables with magnitude will be returned
-
-    **Boolean value: True / False**
     """
 
-    args = request.args
-
-    if "dataset" not in args:
-        raise APIError("Please specify a dataset Using ?dataset='...' ")
-
-    dataset = args.get("dataset")
     config = DatasetConfig(dataset)
 
     data = []
-
     with open_dataset(config) as ds:
         for v in ds.variables:
             if config.variable[v.key].is_hidden:
                 continue
 
-            if ("3d_only" in args) and v.is_surface_only():
+            if (has_depth_only) and v.is_surface_only():
                 continue
 
-            if ("vectors_only" in args) and v.key not in config.vector_variables:
+            if (vectors_only) and v.key not in config.vector_variables:
                 continue
 
             data.append(
@@ -304,68 +232,70 @@ def variables_query_v1_0():
 
     data = sorted(data, key=lambda k: k["value"])
 
-    return jsonify(data)
+    return data
 
 
-@bp_v1_0.route("/api/v1.0/depth/")
-def depth_query_v1_0():
+@router.get("/dataset/{dataset}/{variable}/depths")
+async def depths(
+    dataset: str = Path(
+        ...,
+        title="The key of the dataset.",
+        example="giops_day",
+    ),
+    variable: str = Path(
+        ...,
+        title="The key of the variable.",
+        example="votemper",
+    ),
+    include_all_key: bool = Query(True),
+):
     """
-    API Format: /api/v1.0/depth/?dataset=''&variable=''
-
-    Required parameters:
-    * dataset  : Dataset key - found using /api/v1.0/datasets/
-    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset=...
-
-    Returns:
-        Array of all depths available for the given variable.
+    Returns array of all depths available for the given variable.
     """
-
-    try:
-        result = DepthSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
-
-    dataset = result["dataset"]
-    variable = result["variable"]
 
     config = DatasetConfig(dataset)
 
     data = []
     with open_dataset(config, variable=variable, timestamp=-1) as ds:
         if variable not in ds.variables:
-            raise APIError("Variable not found in dataset: " + variable)
+            raise HTTPException(
+                status_code=404, detail=f"{variable} not found in dataset {dataset}"
+            )
 
         v = ds.variables[variable]
 
         if v.has_depth():
-            if "all" in result.keys():
-                if result["all"].lower() in ["true", "yes", "on"]:
-                    data.append({"id": "all", "value": gettext("All Depths")})
+            if include_all_key:
+                data.append({"id": "all", "value": "All Depths"})
 
             for idx, value in enumerate(np.round(ds.depths)):
                 data.append({"id": idx, "value": "%d m" % (value)})
 
             if len(data) > 0:
-                data.insert(0, {"id": "bottom", "value": gettext("Bottom")})
+                data.insert(0, {"id": "bottom", "value": "Bottom"})
 
     data = [e for i, e in enumerate(data) if data.index(e) == i]
 
-    return jsonify(data)
+    return data
 
 
-@bp_v1_0.route("/api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png")
-def scale_v1_0(dataset: str, variable: str, scale: str):
+@router.get("/scale")
+async def scale(
+    dataset: str = Query(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Query(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    scale: str = Query(
+        ..., description="Min/max values for scale image", example="-5,30"
+    ),
+):
     """
-    API Format: /api/v1.0/scale/<string:dataset>/<string:variable>/<string:scale>.png
-
-    * dataset  : Dataset to extract data
-    * variable : Variable key of interest - found using /api/v1.0/variables/?dataset=...
-    * scale    : min/max values for scale image.
-
-    Returns a scale bar
+    Returns a scale bar png
     """
 
-    bytesIOBuff = plotting.tile.scale(
+    bytes = plot_scale(
         {
             "dataset": dataset,
             "variable": variable,
@@ -373,26 +303,58 @@ def scale_v1_0(dataset: str, variable: str, scale: str):
         }
     )
 
-    return send_file(bytesIOBuff, mimetype="image/png", max_age=MAX_CACHE)
+    filename = f"{dataset}_{variable}_scale_{scale}.png"
+
+    return StreamingResponse(
+        bytes,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename=#{filename}"},
+    )
 
 
-@bp_v1_0.route(
-    "/api/v1.0/range/<string:dataset>/<string:variable>/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:extent>/<string:depth>/<int:time>.json"  # noqa: E501
-)
-def range_query_v1_0(
-    dataset: str,
-    variable: str,
-    interp: str,
-    radius: int,
-    neighbours: int,
-    projection: str,
-    extent: str,
-    depth: str,
-    time: int,
+@router.get("/range")
+async def range(
+    dataset: str = Query(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Query(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    interp: e.InterpolationType = Query("gaussian", description="", example="gaussian"),
+    radius: int = Query(
+        25, description="Radius in km to search for neighbours", example=25
+    ),
+    neighbours: int = Query(
+        10,
+        description="The max number of nearest neighbours to search for.",
+        example=10,
+    ),
+    projection: str = Query(
+        "EPSG:3857",
+        description="EPSG code of the desired projection.",
+        example="EPSG:3857",
+    ),
+    extent: str = Query(
+        ...,
+        description="View extent",
+        example="-17815466.9445,3631998.6003,6683517.8652,10333997.2404",
+    ),
+    depth: str = Query(
+        ...,
+        description="Depth index",
+        examples={
+            "numerical index": {"value": "1"},
+            "bottom index": {"value": "bottom"},
+        },
+    ),
+    time: int = Query(..., description="NetCDF timestamp"),
 ):
+    """
+    Returns the min/max values of a variable for a given view extent.
+    """
     extent = list(map(float, extent.split(",")))
 
-    minValue, maxValue = plotting.scale.get_scale(
+    min_value, max_value = get_scale(
         dataset,
         variable,
         depth,
@@ -403,51 +365,43 @@ def range_query_v1_0(
         radius * 1000,
         neighbours,
     )
-    resp = jsonify(
-        {
-            "min": minValue,
-            "max": maxValue,
-        }
-    )
-    resp.cache_control.max_age = MAX_CACHE
-    return resp
+
+    return {
+        "min": min_value,
+        "max": max_value,
+    }
 
 
-@bp_v1_0.route("/api/v1.0/data/", methods=["GET"])
-def get_data_v1_0():
+@router.get("/data")
+async def data(
+    dataset: str = Query(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Query(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    time: int = Query(..., description="NetCDF timestamp"),
+    depth: int = Query(..., description="Depth index", example=0),
+):
     """
     Returns a geojson representation of requested model data.
-
-    API Format: GET /api/v1.0/data?...
-
-    Required params:
-    * dataset: dataset key (e.g. giops_day)
-    * variable: variable key (e.g. votemper)
-    * time: time index (e.g. 0)
-    * depth: depth index (e.g. 49)
-    * geometry_type: the "shape" of the data being requested
     """
 
-    try:
-        result = GetDataSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
+    settings = get_settings()
 
     cached_file_name = os.path.join(
-        current_app.config["CACHE_DIR"],
+        settings.cache_dir,
         "data",
-        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",  # noqa: E501
+        f"get_data_{dataset}_{variable}_{depth}_{time}.geojson",
     )
 
     if os.path.isfile(cached_file_name):
-        print(f"Using cached {cached_file_name}")
-        return send_file(cached_file_name, "application/json")
+        log().info(f"Using cached {cached_file_name}.")
+        return FileResponse(cached_file_name, media_type="application/json")
 
-    config = DatasetConfig(result["dataset"])
+    config = DatasetConfig(dataset)
 
-    with open_dataset(
-        config, variable=result["variable"], timestamp=result["time"]
-    ) as ds:
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
 
         lat_var, lon_var = ds.nc_data.latlon_variables
 
@@ -456,22 +410,20 @@ def get_data_v1_0():
         lat_slice = slice(0, lat_var.size, stride)
         lon_slice = slice(0, lon_var.size, stride)
 
-        time_index = ds.nc_data.timestamp_to_time_index(result["time"])
+        time_index = ds.nc_data.timestamp_to_time_index(time)
 
-        data = ds.nc_data.get_dataset_variable(result["variable"])
+        data = ds.nc_data.get_dataset_variable(variable)
 
         if len(data.shape) == 3:
             data_slice = (time_index, lat_slice, lon_slice)
         else:
-            data_slice = (time_index, result["depth"], lat_slice, lon_slice)
+            data_slice = (time_index, depth, lat_slice, lon_slice)
 
         data = data[data_slice]
 
         bearings = None
-        if "mag" in result["variable"]:
-            with open_dataset(
-                config, variable="bearing", timestamp=result["time"]
-            ) as ds_bearing:
+        if "mag" in variable:
+            with open_dataset(config, variable="bearing", timestamp=time) as ds_bearing:
                 bearings = ds_bearing.nc_data.get_dataset_variable("bearing")[
                     data_slice
                 ].squeeze(drop=True)
@@ -487,9 +439,10 @@ def get_data_v1_0():
         with open(cached_file_name, "w", encoding="utf-8") as f:
             geojson.dump(d, f)
 
-        return jsonify(d)
+        return d
 
 
+'''
 @bp_v1_0.route("/api/v1.0/class4/<string:q>/<string:class4_id>/")
 def class4_query_v1_0(q: str, class4_id: str):
     """
@@ -734,70 +687,103 @@ def colors_v1_0():
 
     resp = jsonify(data)
     return resp
+'''
 
 
-@bp_v1_0.route("/api/v1.0/colormaps/")
-def colormaps_v1_0():
+@router.get("/plot/colormaps.json")
+async def colormaps_json():
     """
-    API Format: /api/v1.0/colormaps/
-
-    Returns a list of colourmaps
+    Returns list of available colormaps
     """
 
     data = sorted(
         [{"id": i, "value": n} for i, n in plotting.colormap.colormap_names.items()],
         key=lambda k: k["value"],
     )
-    data.insert(0, {"id": "default", "value": gettext("Default for Variable")})
+    data.insert(0, {"id": "default", "value": "Default for Variable"})
 
-    resp = jsonify(data)
-    return resp
+    return data
 
 
-@bp_v1_0.route("/api/v1.0/colormaps.png")
-def colormap_image_v1_0():
+@router.get("/plot/colormaps.png")
+async def colormaps_png():
     """
-    API Format: /api/v1.0/colormaps.png
-
-    Returns image of colourmap example configurations
+    Returns image of available colourmaps
     """
 
-    img = plotting.colormap.plot_colormaps()
-    resp = Response(img, status=200, mimetype="image/png")
-    resp.cache_control.max_age = 86400
-    return resp
+    img = plot_colormaps()
+
+    return StreamingResponse(
+        img,
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/<string:q>/")
-def query_v1_0(q: str):
+@router.get("/kml/points")
+async def kml_points():
     """
-    API Format: /api/v1.0/<string:q>/
+    Returns the KML groups containing of interest from hard-coded KML files
+    """
+    return utils.misc.list_kml_files("point")
 
-    <string:q> : Zone Type Can be (points,lines, areas, or class4)
 
-    Returns predefined  points / lines / areas / class4's
+@router.get("/kml/points/{id}")
+async def kml_point(
+    id: str = Path(..., example="NL-AZMP_Stations"),
+    projection: str = Query(
+        ...,
+        description="EPSG code for desired projection. Used to map resulting KML coords",
+        example="EPSG:3857",
+    ),
+    view_bounds: str = Query(
+        None,
+        description="Used to exclude KML points that aren't visible. Useful for filtering large KML groups.",
+    ),
+):
+    """
+    Returns the GeoJSON representation of the features contained in the KML file id.
     """
 
-    data = []
-
-    if q == "points":
-        data = utils.misc.list_kml_files("point")
-    elif q == "lines":
-        data = utils.misc.list_kml_files("line")
-    elif q == "areas":
-        data = utils.misc.list_kml_files("area")
-    elif q == "class4":
-        data = class4.list_class4_files()
-    else:
-        raise APIError(
-            "Invalid API Query - Please review the API documentation for help."
-        )
-
-    resp = jsonify(data)
-    resp.cache_control.max_age = 86400
-    return resp
+    return utils.misc.points(id, projection, view_bounds)
 
 
+@router.get("/kml/lines")
+async def kml_lines():
+    """
+    Returns the KML groups containing of interest from hard-coded KML files
+    """
+    return utils.misc.list_kml_files("line")
+
+
+'''
+TODO: IMPLEMENT THIS BASED ON kml_point
+@router.get("/kml/lines/{id}")
+async def kml_line():
+    """
+    """
+    return {}
+'''
+
+
+@router.get("/kml/areas")
+async def kml_areas():
+    """
+    Returns the KML groups containing of interest from hard-coded KML files
+    """
+    return utils.misc.list_kml_files("area")
+
+
+'''
+TODO: IMPLEMENT THIS BASED ON kml_point
+@router.get("/kml/areas/{id}")
+async def kml_area():
+    """
+    """
+    return {}
+'''
+
+'''
 @bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")
 def query_id_v1_0(q: str, q_id: str):
     """
@@ -855,31 +841,23 @@ def query_file_v1_0(
     resp = jsonify(data)
     resp.cache_control.max_age = max_age
     return resp
+'''
 
 
-@bp_v1_0.route("/api/v1.0/timestamps/")
-def timestamps():
+@router.get("/dataset/{dataset}/{variable}/timestamps")
+async def timestamps(
+    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
+    variable: str = Path(..., title="The key of the variable.", example="votemper"),
+):
     """
     Returns all timestamps available for a given variable in a dataset.
     This is variable-dependent because datasets can have multiple "quantums",
     as in surface 2D variables may be hourly, while 3D variables may be daily.
 
-    Required Arguments:
-    * dataset : Dataset key - Can be found using /api/v1.0/datasets
-    * variable : Variable key - Can be found using /api/v1.0/variables/?dataset='...'...
-
     Returns:
-        All timestamp pairs (e.g. [raw_timestamp_integer, iso_8601_date_string])
+        All timestamp pairs (e.g. [netcdf_timestamp_integer, iso_8601_date_string])
         for the given dataset and variable.
     """
-
-    try:
-        result = TimestampsSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
-
-    dataset = result["dataset"]
-    variable = result["variable"]
 
     config = DatasetConfig(dataset)
 
@@ -904,15 +882,14 @@ def timestamps():
     for idx, date in enumerate(converted_vals):
         if config.quantum == "month" or config.variable[variable].quantum == "month":
             date = datetime.datetime(date.year, date.month, 15)
-        result.append({"id": vals[idx], "value": date})
+        result.append({"id": vals[idx], "value": date.isoformat()})
+
     result = sorted(result, key=lambda k: k["id"])
 
-    js = json.dumps(result, cls=DateTimeEncoder)
-
-    resp = Response(js, status=200, mimetype="application/json")
-    return resp
+    return jsonable_encoder(result)
 
 
+'''
 @bp_v1_0.route(
     "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
 )
@@ -989,29 +966,37 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
     return _cache_and_send_img(bytesIOBuff, f)
 
-
-@bp_v1_0.route(
-    "/api/v1.0/tiles/bath/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"
-)
-def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
+@router.get("/tiles/bath/{projection}/{zoom}/{x}/{y}")
+async def bathymetry_v1_0(
+    projection: str = Path(..., title="EPSG projection code.", example="EPSG:3857"),
+    zoom: int = Path(..., example=4),
+    x: int = Path(...),
+    y: int = Path(...),
+):
     """
     Generates bathymetry tiles
     """
 
-    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
+    settings = get_settings()
 
     if zoom > 7:
-        return send_file(shape_file_dir + "/blank.png")
+        return FileResponse(
+            os.path.join(settings.shape_file_dir, "blank.png"),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = os.path.join(settings.cache_dir, request.path[1:])
 
     if os.path.isfile(f):
-        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    img = plotting.tile.bathymetry(projection, x, y, zoom, {})
+    img = plot_bathymetry(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
-
 
 @bp_v1_0.route(
     "/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>"
@@ -1055,12 +1040,9 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
 
-
-@bp_v1_0.route("/api/v1.0/observation/datatypes.json")
-def observation_datatypes_v1_0():
+@router.get("/observation/datatypes")
+async def observation_datatypes():
     """
-    API Format: /api/v1.0/observation/datatypes.json
-
     Returns the list of observational data types
 
     **Used in ObservationSelector**
@@ -1492,3 +1474,5 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
 
     bytesIOBuff.seek(0)
     return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
+
+'''

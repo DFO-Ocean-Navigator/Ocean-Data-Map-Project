@@ -63,7 +63,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                         [x[1] for x in self.points],
                     ]
                 ),
-                gs[0, 0]
+                gs[0, 0],
             )  # Longitudes
 
         # Plot Sound Speed profile

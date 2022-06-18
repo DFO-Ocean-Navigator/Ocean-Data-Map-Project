@@ -2,7 +2,6 @@
 
 import datetime
 import itertools
-import json
 import re
 from bisect import bisect_left, bisect_right
 from typing import List, Union
@@ -109,14 +108,6 @@ def roll_time(requested_index: int, len_timestamp_dim: int):
         return -1
 
     return requested_index
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, datetime.datetime):
-            return o.isoformat()
-
-        return json.JSONEncoder.default(self, o)
 
 
 def trunc(

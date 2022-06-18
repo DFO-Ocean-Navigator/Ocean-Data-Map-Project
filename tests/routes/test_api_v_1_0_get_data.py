@@ -1,24 +1,17 @@
-import json
 import unittest
+
+from fastapi.testclient import TestClient
 
 from oceannavigator import create_app
 
-app = create_app(
-    testing=True, dataset_config_path="../tests/testdata/datasetconfigpatch.json"
-)
+client = TestClient(create_app())
 
 
 class TestAPIv1GetData(unittest.TestCase):
-    def setUp(self) -> None:
-        self.app = app.test_client()
-
-    def __get_response_data(self, resp):
-        return json.loads(resp.get_data(as_text=True))
-
     def test_data_endpoint_no_bearing(self) -> None:
-        res = self.app.get(
-            "/api/v1.0/data/",
-            query_string={
+        response = client.get(
+            "/api/v1.0/data",
+            params={
                 "dataset": "giops_real",
                 "variable": "votemper",
                 "time": 2212444800,
@@ -27,16 +20,16 @@ class TestAPIv1GetData(unittest.TestCase):
             },
         )
 
-        data = self.__get_response_data(res)
+        data = response.json()
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.content_type, "application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "application/json")
         self.assertEqual(len(data["features"]), 265)
 
     def test_data_endpoint_with_bearing(self) -> None:
-        res = self.app.get(
-            "/api/v1.0/data/",
-            query_string={
+        response = client.get(
+            "/api/v1.0/data",
+            params={
                 "dataset": "giops_real",
                 "variable": "magwatervel",
                 "time": 2212444800,
@@ -45,13 +38,13 @@ class TestAPIv1GetData(unittest.TestCase):
             },
         )
 
-        data = self.__get_response_data(res)
+        data = response.json()
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.content_type, "application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "application/json")
         self.assertEqual(len(data["features"]), 265)
 
-    def test_data_endpoint_returns_error_400_when_args_are_missing(self) -> None:
-        res = self.app.get("/api/v1.0/data/", query_string={})
+    def test_data_endpoint_returns_error_422_when_params_are_missing(self) -> None:
+        response = client.get("/api/v1.0/data", params={})
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(response.status_code, 422)

@@ -981,6 +981,7 @@ class NetCDFData(Data):
                 db, variables, calculated_variables
             )
 
+            print(variables_to_load)
             if len(variables_to_load) == 0:
                 return []
 
