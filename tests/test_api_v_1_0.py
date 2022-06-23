@@ -140,7 +140,7 @@ class TestAPIv1(unittest.TestCase):
 
     def test_class4_models_endpoint(self):
         res = self.app.get(
-            "/api/v1.0/class4/models/class4_20190102_GIOPS_CONCEPTS_2.3_profile/"
+            "/api/v1.0/class4/models/ocean_predict/class4_20190102_GIOPS_CONCEPTS_2.3_profile/"
         )
         self.assertEqual(res.status_code, 200)
 

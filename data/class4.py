@@ -24,63 +24,71 @@ def list_class4_files():
     not accessible, this function falls back to the slow method of generating
     the list on the fly.
     """
-    cache_file_name = os.path.join(
-        current_app.config["CACHE_DIR"], "class4_files.pickle"
-    )
-    try:
-        fp = open(cache_file_name, "rb")
-    except IOError as e:
-        msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
-               Falling back to slow method for generating the list of 
-               Class 4 files on the fly.
-               """
-        print(msg)
-        return _list_class4_files_slowly()
 
-    # We need to read from the cache file. To ensure another process is not
-    # currently *writing* to the cache file, first acquire a shared lock (i.e.,
-    # a read lock) on the file. We make at most "max_tries" attempts to acquire
-    # the lock.
-    num_tries, max_tries = 0, 10
-    attempt_lock, lock_acquired = True, False
-    attempt_lock = True
-    while attempt_lock:
+    pickle_files = ["class4_OP_files.pickle", "class4_RAO_files.pickle"]
+    class4_path = ["CLASS4_OP_PATH", "CLASS4_RAO_PATH"]
+    data = {"ocean_predict": None, "riops_obs": None}
+
+    for file, path, class4_type in zip(pickle_files, class4_path, data.keys()):
+        cache_file_name = os.path.join(current_app.config["CACHE_DIR"], file)
+
         try:
-            fcntl.lockf(fp, fcntl.LOCK_SH | fcntl.LOCK_NB)
-        except IOError:
-            num_tries += 1
-            if num_tries == max_tries:
-                lock_acquired = False
-                attempt_lock = False
+            fp = open(cache_file_name, "rb")
+        except IOError as e:
+            msg = f"""Warning: Unable to open cache list of Class 4 files: {str(e)}.
+                   Falling back to slow method for generating the list of
+                   Class 4 files on the fly.
+                   """
+            print(msg)
+            return _list_class4_files_slowly(current_app.config[path])
+
+        # We need to read from the cache file. To ensure another process is not
+        # currently *writing* to the cache file, first acquire a shared lock (i.e.,
+        # a read lock) on the file. We make at most "max_tries" attempts to acquire
+        # the lock.
+        num_tries, max_tries = 0, 10
+        attempt_lock, lock_acquired = True, False
+        attempt_lock = True
+        while attempt_lock:
+            try:
+                fcntl.lockf(fp, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            except IOError:
+                num_tries += 1
+                if num_tries == max_tries:
+                    lock_acquired = False
+                    attempt_lock = False
+                else:
+                    time.sleep(1)
             else:
-                time.sleep(1)
+                lock_acquired = True
+                attempt_lock = False
+
+        if lock_acquired:
+            result = pickle.load(fp)
+            fcntl.lockf(fp, fcntl.LOCK_UN)
         else:
-            lock_acquired = True
-            attempt_lock = False
+            msg = """"Warning: Unable to acquire read lock on Class 4 cache file.
+                Falling back to slow method for generating the list of
+                Class 4 files on the fly.
+                """
+            print(msg)
+            result = _list_class4_files_slowly(current_app.config[path])
+        fp.close()
 
-    if lock_acquired:
-        result = pickle.load(fp)
-        fcntl.lockf(fp, fcntl.LOCK_UN)
-    else:
-        msg = """"Warning: Unable to acquire read lock on Class 4 cache file.
-               Falling back to slow method for generating the list of 
-               Class 4 files on the fly.
-               """
-        print(msg)
-        result = _list_class4_files_slowly()
-    fp.close()
+        data[class4_type] = result
 
-    return result
+    return data
 
 
-def _list_class4_files_slowly():
-    class4_path = current_app.config["CLASS4_PATH"]
+def _list_class4_files_slowly(class4_path):
     return generate_class4_list.list_class4_files(class4_path)
 
 
-def list_class4(d):
+def list_class4(id, class4_type):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (d[7:11], d)
+
+    fname_pattern = get_fname_pattern(class4_type)
+    dataset_url = fname_pattern % (id[7:11], id[7:15], id)
 
     with xr.open_dataset(dataset_url) as ds:
         lats = ds["latitude"][:]
@@ -105,7 +113,7 @@ def list_class4(d):
             {
                 "name": f"{ids[idx]}",
                 "loc": f"{lat.item():.6f},{lon.item():.6f}",
-                "id": f"{d}/{idx}",
+                "id": f"{id}/{idx}",
                 "rmse": float(rmse[idx]),
                 "rmse_norm": float(rmse_norm[idx]),
             }
@@ -128,12 +136,11 @@ def get_view_from_extent(extent):
     return view
 
 
-def class4(class4_id, projection, resolution, extent):
+def class4(class4_type, class4_id, projection, resolution, extent):
     # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
-        class4_id[7:11],
-        class4_id,
-    )
+    fname_pattern = get_fname_pattern(class4_type)
+
+    dataset_url = fname_pattern % (class4_id[7:11], class4_id[7:15], class4_id)
 
     proj = pyproj.Proj(projection)
     view = get_view_from_extent(extent)
@@ -169,6 +176,7 @@ def class4(class4_id, projection, resolution, extent):
     for idx, ll in enumerate(loc):
         if np.ma.is_masked(rmse[idx]):
             continue
+
         points.append(
             {
                 "type": "Feature",
@@ -182,6 +190,7 @@ def class4(class4_id, projection, resolution, extent):
                     "error": float(rmse[idx]),
                     "error_norm": float(rmse_norm[idx]),
                     "type": "class4",
+                    "class4_type": class4_type,
                     "resolution": 0,
                 },
             }
@@ -195,21 +204,27 @@ def class4(class4_id, projection, resolution, extent):
     return result
 
 
-def list_class4_forecasts(class4_id: str) -> List[dict]:
+def list_class4_forecasts(class4_id: str, class4_type: str) -> List[dict]:
     """Get list of all forecasts for a given class4 id.
 
     Arguments:
 
-        * `class4_id` -- {str} Class4 ID (e.g. `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
+        * `class4_id` -- {str} Class4 ID (e.g.
+                        `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
 
     Returns:
 
         List of dictionaries with `id` and `name` fields.
     """
-    dataset_url = current_app.config["CLASS4_FNAME_PATTERN"] % (
+
+    fname_pattern = get_fname_pattern(class4_type)
+
+    dataset_url = fname_pattern % (
         class4_id[7:11],
+        class4_id[7:15],
         class4_id.rsplit("_", maxsplit=1)[0],
     )
+
     with xr.open_dataset(dataset_url, decode_times=False) as ds:
         forecast_date = [
             f"{d:%d %B %Y}" for d in cftime.num2date(ds.modeljuld, ds.modeljuld.units)
@@ -231,21 +246,27 @@ def list_class4_forecasts(class4_id: str) -> List[dict]:
     return result
 
 
-def list_class4_models(class4_id: str) -> List[dict]:
+def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
     """Get list of all ocean models for a given class4 id.
 
     Arguments:
 
-        * `class4_id` -- {str} Class4 ID (e.g. `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
+        * `class4_id` -- {str} Class4 ID (e.g.
+                    `class4_20190501_GIOPS_CONCEPTS_2.3_profile_343`)
 
     Returns:
 
         List of dictionaries with `id` and `value` fields.
     """
 
+    if class4_type == "ocean_predict":
+        type_path = current_app.config["CLASS4_OP_PATH"]
+    else:
+        type_path = current_app.config["CLASS4_RAO_PATH"]
+
     yyyymmdd = class4_id[7:15]
     yyyy = yyyymmdd[:4]
-    path = Path(current_app.config["CLASS4_PATH"], yyyy, yyyymmdd)
+    path = Path(type_path, yyyy, yyyymmdd)
 
     result = []
     # file pattern globbing != regex
@@ -257,3 +278,12 @@ def list_class4_models(class4_id: str) -> List[dict]:
             result.append({"id": f.stem, "value": model})  # chop off .nc extension
 
     return result
+
+
+def get_fname_pattern(class4_type):
+    if class4_type == "ocean_predict":
+        fname_pattern = current_app.config["CLASS4_OP_PATH"]
+    else:
+        fname_pattern = current_app.config["CLASS4_RAO_PATH"]
+
+    return fname_pattern + current_app.config["CLASS4_FNAME_PATTERN"]

@@ -273,6 +273,7 @@ class PlotImage extends React.PureComponent {
         break;
       case "class4":
         query.class4id = q.class4id;
+        query.class4type = q.class4type;
         query.forecast = q.forecast;
         query.error = q.error;
         query.showmap = q.showmap;

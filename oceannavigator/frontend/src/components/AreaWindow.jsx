@@ -180,7 +180,7 @@ class AreaWindow extends React.Component {
     const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime
     window.location.href = "/api/v1.0/subset/?" +
        "&output_format=" + this.state.output_format +
-       "&dataset_name=" + this.state.dataset_0.dataset +
+       "&dataset_name=" + this.props.dataset_0.dataset +
        "&variables=" + this.state.output_variables.join() +
         queryString +
        "&time=" + [this.state.output_starttime, output_endtime].join() +
@@ -191,7 +191,7 @@ class AreaWindow extends React.Component {
   saveScript(key) {
     let query = {
       "output_format": this.state.output_format,
-      "dataset_name": this.state.dataset_0.dataset,
+      "dataset_name": this.props.dataset_0.dataset,
       "variables": this.state.output_variables.join(),
       "time": [this.state.output_starttime, this.state.output_endtime].join(),
       "user_grid": (this.state.convertToUserGrid ? 1:0),
@@ -382,7 +382,7 @@ class AreaWindow extends React.Component {
               state={this.state.output_variables}
               def={"defaults.dataset"}
               onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
-              url={"/api/v1.0/variables/?dataset=" + this.state.dataset_0.dataset
+              url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset
               }
               title={_("Variables")}
             />
