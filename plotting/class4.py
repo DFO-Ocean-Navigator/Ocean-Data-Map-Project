@@ -30,6 +30,12 @@ class Class4Plotter(Plotter):
         )
         self.error = query.get("error")
 
+        if query.get("class4type") == "ocean_predict":
+            self.fname_pattern = current_app.config["CLASS4_OP_PATH"]
+        else:
+            self.fname_pattern = current_app.config["CLASS4_RAO_PATH"]
+        self.fname_pattern += current_app.config["CLASS4_FNAME_PATTERN"]
+
         models = query.get("models")
         if models is None:
             models = []
@@ -39,9 +45,10 @@ class Class4Plotter(Plotter):
     def load_data(self):
         indices = self.class4[:, 1].astype(int)
         # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
+
         with Dataset(
-            current_app.config["CLASS4_FNAME_PATTERN"]
-            % (self.class4[0][0][7:11], self.class4[0][0]),
+            self.fname_pattern
+            % (self.class4[0][0][7:11], self.class4[0][0][7:15], self.class4[0][0]),
             "r",
         ) as ds:
             self.latitude = ds["latitude"][indices]
@@ -83,9 +90,8 @@ class Class4Plotter(Plotter):
         for m in self.models:
             additional_model_names.append(m.split("_")[2])
             # Expecting specific class4 ID format: "class4_YYYMMDD_*.nc"
-            with Dataset(
-                current_app.config["CLASS4_FNAME_PATTERN"] % (m[7:11], m), "r"
-            ) as ds:
+
+            with Dataset(self.fname_pattern % (m[7:11], m[7:15], m), "r") as ds:
                 m_data = []
                 for i in indices:
                     data = []

@@ -42,7 +42,7 @@ class Class4Window extends React.Component {
   }
 
   onLocalUpdate(key, value) {
-    if (this._mounted) {
+    if (this._mounted && value) {
 
       let newState = {};
       if (typeof(key) === "string") {
@@ -60,6 +60,7 @@ class Class4Window extends React.Component {
   render() {
     const plot_query = {
       type: "class4",
+      class4type: this.props.class4type,
       dataset: this.props.dataset,
       forecast: this.state.forecast,
       class4id: this.props.class4id,
@@ -109,7 +110,7 @@ class Class4Window extends React.Component {
                     state={this.state.forecast}
                     def=''
                     url={
-                      "/api/v1.0/class4/forecasts/" + this.props.class4id
+                      "/api/v1.0/class4/forecasts/" + this.props.class4type + "/" + this.props.class4id
                     }
                     title={_("Forecast")}
                     onUpdate={this.onLocalUpdate}
@@ -132,7 +133,7 @@ class Class4Window extends React.Component {
                     state={this.state.models}
                     multiple
                     onUpdate={this.onLocalUpdate}
-                    url={"/api/v1.0/class4/models/" + this.props.class4id}
+                    url={"/api/v1.0/class4/models/" + this.props.class4type + "/" + this.props.class4id}
                     title={_("Additional Models")} />
                   <ComboBox
                     key='error'
@@ -171,6 +172,7 @@ Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
   dataset: PropTypes.string,
   class4id: PropTypes.array,
+  class4type: PropTypes.string,
   init: PropTypes.object,
   action: PropTypes.func,
 };

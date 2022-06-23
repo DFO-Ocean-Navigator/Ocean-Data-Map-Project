@@ -385,6 +385,9 @@ class OceanNavigator extends React.Component {
         if (this.mapComponent2) {
           this.mapComponent2.show(arg, arg2);
         }
+        if (arg === 'class4') {
+          this.setState({class4type : arg3})
+        }
         break;
       case "add":
         this.mapComponent.add(arg, arg2, arg3);
@@ -572,6 +575,8 @@ class OceanNavigator extends React.Component {
           <Class4Window
             dataset={this.state.dataset}
             class4id={this.state.class4}
+            class4type={this.state.class4type}
+            calss4type={this.state.modal}
             init={this.state.subquery}
             action={this.action}
           />
